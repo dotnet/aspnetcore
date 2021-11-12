@@ -325,6 +325,9 @@ internal sealed class ManifestStaticWebAssetFileProvider : IFileProvider
 
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Public properties preserved with DynamicDependency")]
         [DynamicDependency(JsonSerializerSettings, typeof(StaticWebAssetManifest))]
+        [DynamicDependency(JsonSerializerSettings, typeof(StaticWebAssetNode))]
+        [DynamicDependency(JsonSerializerSettings, typeof(StaticWebAssetMatch))]
+        [DynamicDependency(JsonSerializerSettings, typeof(StaticWebAssetPattern))]
         internal static StaticWebAssetManifest Parse(Stream manifest)
         {
             return JsonSerializer.Deserialize<StaticWebAssetManifest>(manifest)!;
@@ -371,6 +374,8 @@ internal sealed class ManifestStaticWebAssetFileProvider : IFileProvider
     {
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Public properties preserved with DynamicDependency")]
         [DynamicDependency(JsonSerializerSettings, typeof(StaticWebAssetNode))]
+        [DynamicDependency(JsonSerializerSettings, typeof(StaticWebAssetMatch))]
+        [DynamicDependency(JsonSerializerSettings, typeof(StaticWebAssetPattern))]
         public override Dictionary<string, StaticWebAssetNode> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             var parsed = JsonSerializer.Deserialize<IDictionary<string, StaticWebAssetNode>>(ref reader, options)!;
@@ -429,6 +434,8 @@ internal sealed class ManifestStaticWebAssetFileProvider : IFileProvider
 
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Public properties preserved with DynamicDependency")]
         [DynamicDependency(JsonSerializerSettings, typeof(StaticWebAssetNode))]
+        [DynamicDependency(JsonSerializerSettings, typeof(StaticWebAssetMatch))]
+        [DynamicDependency(JsonSerializerSettings, typeof(StaticWebAssetPattern))]
         public override void Write(Utf8JsonWriter writer, Dictionary<string, StaticWebAssetNode> value, JsonSerializerOptions options)
         {
             JsonSerializer.Serialize(writer, value, options);

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.Options;
@@ -36,6 +37,7 @@ internal class DefaultParameterPolicyFactory : ParameterPolicyFactory
         return parameterPolicy;
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCodeAttribute", Justification = "ConstraintMap is safe to use if it's only used for reading/deleting constraints")]
     public override IParameterPolicy Create(RoutePatternParameterPart? parameter, string inlineText)
     {
         if (inlineText == null)
@@ -44,9 +46,7 @@ internal class DefaultParameterPolicyFactory : ParameterPolicyFactory
         }
 
         var parameterPolicy = ParameterPolicyActivator.ResolveParameterPolicy<IParameterPolicy>(
-#pragma warning disable IL2026 // RequiresUnreferencedCodeAttribute: ConstraintMap is safe to use if it's only used for reading/deleting constraints
             _options.ConstraintMap,
-#pragma warning restore IL2026
             _serviceProvider,
             inlineText,
             out var parameterPolicyKey);

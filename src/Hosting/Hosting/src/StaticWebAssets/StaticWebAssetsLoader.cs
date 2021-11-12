@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -44,13 +45,12 @@ public class StaticWebAssetsLoader
         environment.WebRootFileProvider = new CompositeFileProvider(new[] { provider, environment.WebRootFileProvider });
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCodeAttribute", Justification = "string should not be trimmed away and thus is safe to use")]
     internal static Stream? ResolveManifest(IWebHostEnvironment environment, IConfiguration configuration)
     {
         try
         {
-#pragma warning disable IL2026 // RequiresUnreferencedCodeAttribute: string should not be trimmed away and thus is safe to use
             var candidate = configuration.GetValue<string>(WebHostDefaults.StaticWebAssetsKey) ?? ResolveRelativeToAssembly(environment);
-#pragma warning restore IL2026
             if (candidate != null && File.Exists(candidate))
             {
                 return File.OpenRead(candidate);

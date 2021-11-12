@@ -17,7 +17,6 @@ namespace Microsoft.Extensions.StackTrace.Sources;
 
 internal class StackTraceHelper
 {
-    [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode", Justification = "StackFrame.GetMethod() is best effort to display helpful information.")]
     public static IList<StackFrameInfo> GetFrames(Exception exception, out AggregateException? error)
     {
         if (exception == null)
@@ -43,7 +42,7 @@ internal class StackTraceHelper
         for (var i = 0; i < stackFrames.Length; i++)
         {
             var frame = stackFrames[i];
-            var method = frame.GetMethod();
+            var method = GetStackFrameMethod(frame);
 
             // Always show last stackFrame
             if (!ShowInStackTrace(method) && i < stackFrames.Length - 1)
@@ -51,7 +50,7 @@ internal class StackTraceHelper
                 continue;
             }
 
-            var stackFrame = new StackFrameInfo(frame.GetFileLineNumber(), frame.GetFileName(), frame, GetMethodDisplayString(frame.GetMethod()));
+            var stackFrame = new StackFrameInfo(frame.GetFileLineNumber(), frame.GetFileName(), frame, GetMethodDisplayString(GetStackFrameMethod(frame)));
             frames.Add(stackFrame);
         }
 
@@ -63,6 +62,13 @@ internal class StackTraceHelper
 
         error = default;
         return frames;
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCodeAttribute", Justification = "StackFrame.GetMethod() is best effort to display helpful information.")]
+    // Separate method so we don't potentially hide any more linker warnings in the calling method
+    private static MethodBase? GetStackFrameMethod(StackFrame frame)
+    {
+        return frame.GetMethod();
     }
 
     internal static MethodDisplayInfo? GetMethodDisplayString(MethodBase? method)
