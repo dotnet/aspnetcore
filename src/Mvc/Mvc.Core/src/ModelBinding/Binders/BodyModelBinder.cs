@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -143,6 +144,17 @@ public class BodyModelBinder : IModelBinder
 
         if (formatter == null)
         {
+            if (AllowEmptyBody)
+            {
+                var hasBody = httpContext.Features.Get<IHttpRequestBodyDetectionFeature>()?.CanHaveBody;
+                hasBody ??= httpContext.Request.ContentLength is not null && httpContext.Request.ContentLength == 0;
+                if (hasBody == false)
+                {
+                    bindingContext.Result = ModelBindingResult.Success(model: null);
+                    return;
+                }
+            }
+
             _logger.NoInputFormatterSelected(formatterContext);
 
             var message = Resources.FormatUnsupportedContentType(httpContext.Request.ContentType);
