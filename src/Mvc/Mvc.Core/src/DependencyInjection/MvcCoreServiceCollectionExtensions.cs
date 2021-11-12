@@ -161,6 +161,8 @@ public static class MvcCoreServiceCollectionExtensions
         services.TryAddEnumerable(
             ServiceDescriptor.Transient<IApplicationModelProvider, DefaultApplicationModelProvider>());
         services.TryAddEnumerable(
+            ServiceDescriptor.Transient<IApplicationModelProvider, AntiforgeryApplicationModelProvider>());
+        services.TryAddEnumerable(
             ServiceDescriptor.Transient<IApplicationModelProvider, ApiBehaviorApplicationModelProvider>());
         services.TryAddEnumerable(
             ServiceDescriptor.Transient<IActionDescriptorProvider, ControllerActionDescriptorProvider>());

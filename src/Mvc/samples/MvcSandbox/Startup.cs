@@ -24,7 +24,10 @@ public class Startup
         app.UseDeveloperExceptionPage();
         app.UseStaticFiles();
 
+
         app.UseRouting();
+        app.UseAntiforgery();
+
         app.UseEndpoints(builder =>
         {
             builder.MapControllers();

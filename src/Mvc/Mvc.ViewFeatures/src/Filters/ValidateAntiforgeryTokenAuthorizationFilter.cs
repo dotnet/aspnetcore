@@ -1,11 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters;
 
@@ -13,8 +12,9 @@ internal class ValidateAntiforgeryTokenAuthorizationFilter : IAsyncAuthorization
 {
     private readonly IAntiforgery _antiforgery;
     private readonly ILogger _logger;
+    private readonly MvcOptions _mvcOptions;
 
-    public ValidateAntiforgeryTokenAuthorizationFilter(IAntiforgery antiforgery, ILoggerFactory loggerFactory)
+    public ValidateAntiforgeryTokenAuthorizationFilter(IAntiforgery antiforgery, ILoggerFactory loggerFactory, IOptions<MvcOptions> mvcOptions)
     {
         if (antiforgery == null)
         {
@@ -23,9 +23,20 @@ internal class ValidateAntiforgeryTokenAuthorizationFilter : IAsyncAuthorization
 
         _antiforgery = antiforgery;
         _logger = loggerFactory.CreateLogger(GetType());
+        _mvcOptions = mvcOptions.Value;
     }
 
-    public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
+    public Task OnAuthorizationAsync(AuthorizationFilterContext context)
+    {
+        if (_mvcOptions.EnableEndpointRouting)
+        {
+            return Task.CompletedTask;
+        }
+
+        return OnAuthorizationCoreAsync(context);
+    }
+
+    private async Task OnAuthorizationCoreAsync(AuthorizationFilterContext context)
     {
         if (context == null)
         {

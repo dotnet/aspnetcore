@@ -1,3 +1,6 @@
 #nullable enable
 *REMOVED*abstract Microsoft.AspNetCore.Http.HttpResponse.ContentType.get -> string!
+Microsoft.AspNetCore.Http.Abstractions.Metadata.IAntiforgeryMetadata
+Microsoft.AspNetCore.Http.Abstractions.Metadata.IValidateAntiforgeryMetadata
+Microsoft.AspNetCore.Http.Abstractions.Metadata.IValidateAntiforgeryMetadata.ValidateIdempotentRequests.get -> bool
 abstract Microsoft.AspNetCore.Http.HttpResponse.ContentType.get -> string?

@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.AspNetCore.Builder.AntiforgeryMiddlewareExtensions
+static Microsoft.AspNetCore.Builder.AntiforgeryMiddlewareExtensions.UseAntiforgery(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!

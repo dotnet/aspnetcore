@@ -1,4 +1,5 @@
-﻿@{
+﻿@model MvcSandbox.Controllers.Person
+@{
     ViewData["Title"] = "Home Page";
 }
 
@@ -6,3 +7,11 @@
     <h1 class="display-4">Sandbox</h1>
     <p>This sandbox should give you a quick view of a basic MVC application.</p>
 </div>
+
+
+<form method="post">
+    <input asp-for="Name" /> <br />
+    <input asp-for="Age" />
+
+    <button type="submit">Submit</button>
+</form>

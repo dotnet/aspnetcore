@@ -10,8 +10,23 @@ public class HomeController : Controller
     [ModelBinder]
     public string Id { get; set; }
 
+    [HttpGet]
     public IActionResult Index()
     {
         return View();
     }
+
+    [ValidateAntiForgeryToken]
+    [HttpPost]
+    public IActionResult Index(Person person)
+    {
+        return View();
+    }
+}
+
+public class Person
+{
+    public string Name { get; set; }
+
+    public int Age { get; set; }
 }

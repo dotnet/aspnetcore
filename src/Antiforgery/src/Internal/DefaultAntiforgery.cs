@@ -1,10 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -100,35 +98,43 @@ internal class DefaultAntiforgery : IAntiforgery
             throw new ArgumentNullException(nameof(httpContext));
         }
 
+        var (result, _) = await TryValidateAsync(httpContext, validateIdempotentRequests: false);
+        return result;
+    }
+
+    internal async ValueTask<(bool success, string? errorMessage)> TryValidateAsync(HttpContext httpContext, bool validateIdempotentRequests)
+    {
         CheckSSLConfig(httpContext);
 
         var method = httpContext.Request.Method;
-        if (HttpMethods.IsGet(method) ||
+        if (
+            !validateIdempotentRequests &&
+            (HttpMethods.IsGet(method) ||
             HttpMethods.IsHead(method) ||
             HttpMethods.IsOptions(method) ||
-            HttpMethods.IsTrace(method))
+            HttpMethods.IsTrace(method)))
         {
             // Validation not needed for these request types.
-            return true;
+            return (true, null);
         }
 
         var tokens = await _tokenStore.GetRequestTokensAsync(httpContext);
         if (tokens.CookieToken == null)
         {
             _logger.MissingCookieToken(_options.Cookie.Name);
-            return false;
+            return (false, "Missing cookie token");
         }
 
         if (tokens.RequestToken == null)
         {
             _logger.MissingRequestToken(_options.FormFieldName, _options.HeaderName);
-            return false;
+            return (false, "Antiforgery token could not be found in the HTTP request.");
         }
 
         // Extract cookie & request tokens
         if (!TryDeserializeTokens(httpContext, tokens, out var deserializedCookieToken, out var deserializedRequestToken))
         {
-            return false;
+            return (false, "Unable to deserialize antiforgery tokens");
         }
 
         // Validate
@@ -147,7 +153,7 @@ internal class DefaultAntiforgery : IAntiforgery
             _logger.ValidationFailed(message!);
         }
 
-        return result;
+        return (result, message);
     }
 
     /// <inheritdoc />

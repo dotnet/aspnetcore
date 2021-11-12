@@ -4,6 +4,7 @@
 #nullable enable
 
 using System;
+using Microsoft.AspNetCore.Http.Abstractions.Metadata;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Filters;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc;
 /// a controller or action.
 /// </remarks>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-public class AutoValidateAntiforgeryTokenAttribute : Attribute, IFilterFactory, IOrderedFilter
+public class AutoValidateAntiforgeryTokenAttribute : Attribute, IFilterFactory, IOrderedFilter, IValidateAntiforgeryMetadata
 {
     /// <summary>
     /// Gets the order value for determining the order of execution of filters. Filters execute in
@@ -43,6 +44,8 @@ public class AutoValidateAntiforgeryTokenAttribute : Attribute, IFilterFactory, 
 
     /// <inheritdoc />
     public bool IsReusable => true;
+
+    bool IValidateAntiforgeryMetadata.ValidateIdempotentRequests => false;
 
     /// <inheritdoc />
     public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
