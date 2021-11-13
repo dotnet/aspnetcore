@@ -27,5 +27,8 @@
   },
   "dependencies": {
     "oidc-client": "^1.11.5"
+  },
+  "resolutions": {
+    "ansi-regex": "5.0.1"
   }
 }
