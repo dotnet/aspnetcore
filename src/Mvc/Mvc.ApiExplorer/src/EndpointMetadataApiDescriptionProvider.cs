@@ -122,7 +122,7 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
         {
             // Add a default body parameter if there was no explicitly defined parameter associated with
             // either the body or a form and the user explicity defined some metadata describing the
-            // content types the endpoint consumes (such as Accepts<TRequest(...) or [Consumes(...)]).
+            // content types the endpoint consumes (such as Accepts<TRequest>(...) or [Consumes(...)]).
             if (!hasBodyOrFormFileParameter)
             {
                 var acceptsRequestType = acceptsMetadata.RequestType;
