@@ -38,6 +38,7 @@
     <EnforceCodeStyleInBuild Condition="'$(BuildingInsideVisualStudio)' == 'true' AND $([MSBuild]::VersionGreaterThanOrEquals('$(VisualStudioVersion)', '17.0'))">false</EnforceCodeStyleInBuild>
     <EnforceCodeStyleInBuild Condition="'$(EnforceCodeStyleInBuild)' == ''">true</EnforceCodeStyleInBuild>
 
+    <!-- Enable trimming annotation validation in DI. See https://github.com/dotnet/runtime/blob/main/docs/workflow/trimming/feature-switches.md -->
     <VerifyDependencyInjectionOpenGenericServiceTrimmability Condition="'$(IsTestProject)' == 'true'">true</VerifyDependencyInjectionOpenGenericServiceTrimmability>
   </PropertyGroup>
 
