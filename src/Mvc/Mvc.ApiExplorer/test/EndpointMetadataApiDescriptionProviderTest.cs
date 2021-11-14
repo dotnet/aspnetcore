@@ -109,6 +109,8 @@ public class EndpointMetadataApiDescriptionProviderTest
         Assert.False(apiParameterDescription.IsRequired);
     }
 
+#nullable enable
+
     [Fact]
     public void AddsMultipleRequestFormatsFromMetadataWithRequiredBodyParameter()
     {
@@ -123,6 +125,8 @@ public class EndpointMetadataApiDescriptionProviderTest
         Assert.Equal("InferredJsonClass", apiParameterDescription.Type.Name);
         Assert.True(apiParameterDescription.IsRequired);
     }
+
+#nullable disable
 
     [Fact]
     public void AddsJsonResponseFormatWhenFromBodyInferred()
@@ -362,15 +366,19 @@ public class EndpointMetadataApiDescriptionProviderTest
     }
 
     [Fact]
-    public void DoesNotAddFromBodyParameterInTheParameterDescription()
+    public void AddsBodyParameterInTheParameterDescription()
     {
-        static void AssertBodyParameter(ApiDescription apiDescription, Type expectedType)
+        static void AssertBodyParameter(ApiDescription apiDescription, string expectedName, Type expectedType)
         {
-            Assert.Empty(apiDescription.ParameterDescriptions);
+            var param = Assert.Single(apiDescription.ParameterDescriptions);
+            Assert.Equal(expectedName, param.Name);
+            Assert.Equal(expectedType, param.Type);
+            Assert.Equal(expectedType, param.ModelMetadata.ModelType);
+            Assert.Equal(BindingSource.Body, param.Source);
         }
 
-        AssertBodyParameter(GetApiDescription((InferredJsonClass foo) => { }), typeof(InferredJsonClass));
-        AssertBodyParameter(GetApiDescription(([FromBody] int foo) => { }), typeof(int));
+        AssertBodyParameter(GetApiDescription((InferredJsonClass foo) => { }), "foo", typeof(InferredJsonClass));
+        AssertBodyParameter(GetApiDescription(([FromBody] int bar) => { }), "bar", typeof(int));
     }
 
     [Fact]
@@ -382,24 +390,37 @@ public class EndpointMetadataApiDescriptionProviderTest
         Assert.Equal(42, param.DefaultValue);
     }
 
+#nullable enable
+
     [Fact]
     public void AddsMultipleParameters()
     {
         var apiDescription = GetApiDescription(([FromRoute] int foo, int bar, InferredJsonClass fromBody) => { });
-        Assert.Equal(2, apiDescription.ParameterDescriptions.Count);
+        Assert.Equal(3, apiDescription.ParameterDescriptions.Count);
 
         var fooParam = apiDescription.ParameterDescriptions[0];
+        Assert.Equal("foo", fooParam.Name);
         Assert.Equal(typeof(int), fooParam.Type);
         Assert.Equal(typeof(int), fooParam.ModelMetadata.ModelType);
         Assert.Equal(BindingSource.Path, fooParam.Source);
         Assert.True(fooParam.IsRequired);
 
         var barParam = apiDescription.ParameterDescriptions[1];
+        Assert.Equal("bar", barParam.Name);
         Assert.Equal(typeof(int), barParam.Type);
         Assert.Equal(typeof(int), barParam.ModelMetadata.ModelType);
         Assert.Equal(BindingSource.Query, barParam.Source);
         Assert.True(barParam.IsRequired);
+
+        var fromBodyParam = apiDescription.ParameterDescriptions[2];
+        Assert.Equal("fromBody", fromBodyParam.Name);
+        Assert.Equal(typeof(InferredJsonClass), fromBodyParam.Type);
+        Assert.Equal(typeof(InferredJsonClass), fromBodyParam.ModelMetadata.ModelType);
+        Assert.Equal(BindingSource.Body, fromBodyParam.Source);
+        Assert.True(fromBodyParam.IsRequired);
     }
+
+#nullable disable
 
     [Fact]
     public void TestParameterIsRequired()
@@ -711,8 +732,8 @@ public class EndpointMetadataApiDescriptionProviderTest
         var parameterDescriptions = context.Results.SelectMany(r => r.ParameterDescriptions);
         var bodyParameterDescription = parameterDescriptions.Single();
         Assert.Equal(typeof(InferredJsonClass), bodyParameterDescription.Type);
-        Assert.Equal(typeof(InferredJsonClass).Name, bodyParameterDescription.Name);
-        Assert.True(bodyParameterDescription.IsRequired);
+        Assert.Equal("inferredJsonClass", bodyParameterDescription.Name);
+        Assert.False(bodyParameterDescription.IsRequired);
     }
 
     [Fact]
@@ -774,7 +795,7 @@ public class EndpointMetadataApiDescriptionProviderTest
         var parameterDescriptions = context.Results.SelectMany(r => r.ParameterDescriptions);
         var bodyParameterDescription = parameterDescriptions.Single();
         Assert.Equal(typeof(InferredJsonClass), bodyParameterDescription.Type);
-        Assert.Equal(typeof(InferredJsonClass).Name, bodyParameterDescription.Name);
+        Assert.Equal("inferredJsonClass", bodyParameterDescription.Name);
         Assert.True(bodyParameterDescription.IsRequired);
 
         // Assert
@@ -808,7 +829,7 @@ public class EndpointMetadataApiDescriptionProviderTest
         var parameterDescriptions = context.Results.SelectMany(r => r.ParameterDescriptions);
         var bodyParameterDescription = parameterDescriptions.Single();
         Assert.Equal(typeof(InferredJsonClass), bodyParameterDescription.Type);
-        Assert.Equal(typeof(InferredJsonClass).Name, bodyParameterDescription.Name);
+        Assert.Equal("inferredJsonClass", bodyParameterDescription.Name);
         Assert.False(bodyParameterDescription.IsRequired);
 
         // Assert
@@ -841,9 +862,9 @@ public class EndpointMetadataApiDescriptionProviderTest
         // Assert
         var parameterDescriptions = context.Results.SelectMany(r => r.ParameterDescriptions);
         var bodyParameterDescription = parameterDescriptions.Single();
-        Assert.Equal(typeof(void), bodyParameterDescription.Type);
-        Assert.Equal(typeof(void).Name, bodyParameterDescription.Name);
-        Assert.True(bodyParameterDescription.IsRequired);
+        Assert.Equal(typeof(InferredJsonClass), bodyParameterDescription.Type);
+        Assert.Equal("inferredJsonClass", bodyParameterDescription.Name);
+        Assert.False(bodyParameterDescription.IsRequired);
 
         // Assert
         var requestFormats = context.Results.SelectMany(r => r.SupportedRequestFormats);

@@ -92,11 +92,13 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
             {
                 DisplayName = routeEndpoint.DisplayName,
                 RouteValues =
-                    {
-                        ["controller"] = controllerName,
-                    },
+                {
+                    ["controller"] = controllerName,
+                },
             },
         };
+
+        var hasBodyOrFormFileParameter = false;
 
         foreach (var parameter in methodInfo.GetParameters())
         {
@@ -108,19 +110,20 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
             }
 
             apiDescription.ParameterDescriptions.Add(parameterDescription);
+
+            hasBodyOrFormFileParameter |=
+                parameterDescription.Source == BindingSource.Body ||
+                parameterDescription.Source == BindingSource.FormFile;
         }
 
         // Get IAcceptsMetadata.
         var acceptsMetadata = routeEndpoint.Metadata.GetMetadata<IAcceptsMetadata>();
         if (acceptsMetadata is not null)
         {
-            // Do not add an implicit body parameter description if a parameter already
-            // exists for something derived from the body's content, such as a form file.
-            var alreadyHasAnyBodyParameter = apiDescription.ParameterDescriptions.Any(x =>
-                x.Source == BindingSource.Body ||
-                x.Source == BindingSource.FormFile);
-
-            if (!alreadyHasAnyBodyParameter)
+            // Add a default body parameter if there was no explicitly defined parameter associated with
+            // either the body or a form and the user explicity defined some metadata describing the
+            // content types the endpoint consumes (such as Accepts<TRequest(...) or [Consumes(...)]).
+            if (!hasBodyOrFormFileParameter)
             {
                 var acceptsRequestType = acceptsMetadata.RequestType;
                 var isOptional = acceptsMetadata.IsOptional;
@@ -157,8 +160,7 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
         var (source, name, allowEmpty, paramType) = GetBindingSourceAndName(parameter, pattern);
 
         // Services are ignored because they are not request parameters.
-        // We ignore/skip body parameter because the value will be retrieved from the IAcceptsMetadata.
-        if (source == BindingSource.Services || source == BindingSource.Body)
+        if (source == BindingSource.Services)
         {
             return null;
         }
