@@ -18,12 +18,14 @@ All the issues which the engineer believes are lower than `Priority-3` - remain 
 The issues which engineers think are good candidates and fit in the above listed requirements are moved to the `.NET V Planning` milestone, where `V` is the updcoming version number (7 at the time of this writing) - `.NET 7 Planning`.
 
 ### Rough costing
-At this phase engineers apply rough cost estimates to the final list of issues that they have moved to the `.NET V Planning` milestone, by applying one of the `Cost: X` labels, where X is the size:
+At this phase engineers apply rough cost estimates to the final list of issues that they have moved to the `.NET V Planning` milestone, by applying one of the `Cost: X` labels below, where X is the size:
 ![image](https://user-images.githubusercontent.com/34246760/139494632-2a5145f6-eec9-40d6-919f-3ece8b9c986a.png)
 
 This will be used later during the planning process.
 
-**Note**: while costing issues, it's important to reevaluate costs for those, which already have cost labels applied. Those are most probably from the past and may be outdated, not properly representing the cost any more. 
+For issues which don't have a clear description of the associated work, it's important to drop a comment summarizing the work involved. This will help at a later time, in case a question about the cost will be raised.
+
+**Note**: while costing issues, it's important to reevaluate costs for those, which already have cost labels applied. Those are most probably from the past and may be outdated, not properly representing the cost any more.
 
 ### Team Review & Priority adjustment
 Now, that all the issues are in the `.NET V planning` milestone, the team reviews each issue one at a time starting from the highest priority ones (Priority: 1).
