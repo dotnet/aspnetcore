@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 #if INSTALLPLAYWRIGHT
-using PlaywrightSharp;
+using Microsoft.Playwright;
 #endif
 
 namespace RunTests

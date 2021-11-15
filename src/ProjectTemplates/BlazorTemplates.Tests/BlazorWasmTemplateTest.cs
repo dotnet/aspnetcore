@@ -16,7 +16,7 @@ using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.CommandLineUtils;
 using Newtonsoft.Json.Linq;
-using PlaywrightSharp;
+using Microsoft.Playwright;
 using Templates.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;
