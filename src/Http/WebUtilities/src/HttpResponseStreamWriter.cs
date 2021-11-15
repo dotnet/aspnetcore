@@ -419,6 +419,41 @@ public class HttpResponseStreamWriter : TextWriter
         await WriteAsync(NewLine);
     }
 
+    /// <inheritdoc/>
+    public override Task WriteLineAsync(string? value)
+    {
+        if (_disposed)
+        {
+            return GetObjectDisposedTask();
+        }
+
+        if (string.IsNullOrEmpty(value) && NewLine.Length == 0)
+        {
+            return Task.CompletedTask;
+        }
+
+        value ??= string.Empty;
+
+        var remaining = _charBufferSize - _charBufferCount;
+        if (remaining >= value.Length + NewLine.Length)
+        {
+            // Enough room in buffer, no need to go async
+            CopyToCharBuffer(value);
+            CopyToCharBuffer(NewLine);
+            return Task.CompletedTask;
+        }
+        else
+        {
+            return WriteLineAsyncAwaited(value);
+        }
+    }
+
+    private async Task WriteLineAsyncAwaited(string value)
+    {
+        await WriteAsync(value);
+        await WriteAsync(NewLine);
+    }
+
     // We want to flush the stream when Flush/FlushAsync is explicitly
     // called by the user (example: from a Razor view).
 

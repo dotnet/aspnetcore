@@ -1,1 +1,2 @@
 #nullable enable
+override Microsoft.AspNetCore.WebUtilities.HttpResponseStreamWriter.WriteLineAsync(string? value) -> System.Threading.Tasks.Task!
