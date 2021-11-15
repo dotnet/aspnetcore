@@ -20,52 +20,6 @@ namespace Microsoft.AspNetCore.Identity.Test;
 
 public class SignInManagerTest
 {
-    //[Theory]
-    //[InlineData(true)]
-    //[InlineData(false)]
-    //public async Task VerifyAccountControllerSignInFunctional(bool isPersistent)
-    //{
-    //    var app = new ApplicationBuilder(new ServiceCollection().BuildServiceProvider());
-    //    app.UseCookieAuthentication(new CookieAuthenticationOptions
-    //    {
-    //        AuthenticationScheme = ClaimsIdentityOptions.DefaultAuthenticationScheme
-    //    });
-
-    // TODO: how to functionally test context?
-    //    var context = new DefaultHttpContext(new FeatureCollection());
-    //    var contextAccessor = new Mock<IHttpContextAccessor>();
-    //    contextAccessor.Setup(a => a.Value).Returns(context);
-    //    app.UseServices(services =>
-    //    {
-    //        services.AddSingleton(contextAccessor.Object);
-    //        services.AddSingleton<Ilogger>(new Nulllogger());
-    //        services.AddIdentity<ApplicationUser, IdentityRole>(s =>
-    //        {
-    //            s.AddUserStore(() => new InMemoryUserStore<ApplicationUser>());
-    //            s.AddUserManager<ApplicationUserManager>();
-    //            s.AddRoleStore(() => new InMemoryRoleStore<IdentityRole>());
-    //            s.AddRoleManager<ApplicationRoleManager>();
-    //        });
-    //        services.AddTransient<ApplicationHttpSignInManager>();
-    //    });
-
-    //    // Act
-    //    var user = new ApplicationUser
-    //    {
-    //        UserName = "Yolo"
-    //    };
-    //    const string password = "[PLACEHOLDER]-1a";
-    //    var userManager = app.ApplicationServices.GetRequiredService<ApplicationUserManager>();
-    //    var HttpSignInManager = app.ApplicationServices.GetRequiredService<ApplicationHttpSignInManager>();
-
-    //    IdentityResultAssert.IsSuccess(await userManager.CreateAsync(user, password));
-    //    var result = await HttpSignInManager.PasswordSignInAsync(user.UserName, password, isPersistent, false);
-
-    //    // Assert
-    //    Assert.Equal(SignInStatus.Success, result);
-    //    contextAccessor.Verify();
-    //}
-
     [Fact]
     public void ConstructorNullChecks()
     {
@@ -77,34 +31,6 @@ public class SignInManagerTest
         contextAccessor.Setup(a => a.HttpContext).Returns(context.Object);
         Assert.Throws<ArgumentNullException>("claimsFactory", () => new SignInManager<PocoUser>(userManager, contextAccessor.Object, null, null, null, null, null));
     }
-
-    //[Fact]
-    //public async Task EnsureClaimsPrincipalFactoryCreateIdentityCalled()
-    //{
-    //    // Setup
-    //    var user = new TestUser { UserName = "Foo" };
-    //    var userManager = MockHelpers.TestUserManager<TestUser>();
-    //    var identityFactory = new Mock<IUserClaimsPrincipalFactory<TestUser>>();
-    //    const string authType = "Test";
-    //    var testIdentity = new ClaimsPrincipal();
-    //    identityFactory.Setup(s => s.CreateAsync(user)).ReturnsAsync(testIdentity).Verifiable();
-    //    var context = new Mock<HttpContext>();
-    //    var response = new Mock<HttpResponse>();
-    //    context.Setup(c => c.Response).Returns(response.Object).Verifiable();
-    //    response.Setup(r => r.SignIn(testIdentity, It.IsAny<AuthenticationProperties>())).Verifiable();
-    //    var contextAccessor = new Mock<IHttpContextAccessor>();
-    //    contextAccessor.Setup(a => a.Value).Returns(context.Object);
-    //    var helper = new HttpAuthenticationManager(contextAccessor.Object);
-
-    //    // Act
-    //    helper.SignIn(user, false);
-
-    //    // Assert
-    //    identityFactory.Verify();
-    //    context.Verify();
-    //    contextAccessor.Verify();
-    //    response.Verify();
-    //}
 
     [Fact]
     public async Task PasswordSignInReturnsLockedOutWhenLockedOut()
