@@ -1,8 +1,0 @@
-{
-  "BrowserOptions": {
-    "Firefox": {
-      "BrowserKind": "Firefox",
-      "IsEnabled": false
-    }
-  }
-}
