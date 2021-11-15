@@ -36,7 +36,7 @@ export class Arg {
 /** @private */
 export class Platform {
     public static get isBrowser(): boolean {
-        return typeof window === "object";
+        return typeof window === "object" && !!window.document;
     }
 
     public static get isWebWorker(): boolean {
