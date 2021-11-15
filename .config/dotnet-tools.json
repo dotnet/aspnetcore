@@ -9,7 +9,7 @@
       ]
     },
     "playwright-sharp-tool": {
-      "version": "0.192.0",
+      "version": "1.16.1",
       "commands": [
         "playwright-sharp"
       ]
