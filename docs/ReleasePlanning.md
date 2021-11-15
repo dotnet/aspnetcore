@@ -23,6 +23,8 @@ At this phase engineers apply rough cost estimates to the final list of issues t
 
 This will be used later during the planning process.
 
+**Note**: while costing issues, it's important to reevaluate costs for those, which already have cost labels applied. Those are most probably from the past and may be outdated, not properly representing the cost any more. 
+
 ### Team Review & Priority adjustment
 Now, that all the issues are in the `.NET V planning` milestone, the team reviews each issue one at a time starting from the highest priority ones (Priority: 1).
 We discuss the issues and agree on the priority at this point. Sometimes we make adjustments to the suggested individual priorities. After discussing each issue the `Priority: X` label is applied to each issue.
