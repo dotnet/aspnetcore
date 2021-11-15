@@ -212,9 +212,9 @@
     <MicrosoftWebAdministrationVersion>11.1.0</MicrosoftWebAdministrationVersion>
     <MicrosoftWebXdtVersion>1.4.0</MicrosoftWebXdtVersion>
     <SystemIdentityModelTokensJwtVersion>6.10.0</SystemIdentityModelTokensJwtVersion>
-    <NuGetPackagingVersion>5.10.0-rc.7240</NuGetPackagingVersion>
-    <NuGetVersioningVersion>5.10.0-rc.7240</NuGetVersioningVersion>
-    <NuGetFrameworksVersion>5.10.0-rc.7240</NuGetFrameworksVersion>
+    <NuGetPackagingVersion>5.11.0</NuGetPackagingVersion>
+    <NuGetVersioningVersion>5.11.0</NuGetVersioningVersion>
+    <NuGetFrameworksVersion>5.11.0</NuGetFrameworksVersion>
     <SystemComponentModelAnnotationsVersion>5.0.0</SystemComponentModelAnnotationsVersion>
     <SystemNetExperimentalMsQuicVersion>5.0.0-alpha.20560.6</SystemNetExperimentalMsQuicVersion>
     <SystemSecurityPrincipalWindowsVersion>5.0.0</SystemSecurityPrincipalWindowsVersion>
