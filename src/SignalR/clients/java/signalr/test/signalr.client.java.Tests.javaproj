@@ -4,6 +4,7 @@
   <PropertyGroup>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <IsUnitTestProject>true</IsUnitTestProject>
     <!-- Installing Java on ARM will take some work -->
     <SkipHelixArm>true</SkipHelixArm>
     <SkipHelixAlpine>true</SkipHelixAlpine>
@@ -53,5 +54,4 @@
     <HelixPostCommand Condition=" !$(IsWindowsHelixQueue) " Include="cp %24{HELIX_WORKITEM_ROOT}/test/test-results/TEST-junit-jupiter.xml %24{HELIX_WORKITEM_ROOT}/junit-results.xml" />
     <HelixPostCommand Condition=" $(IsWindowsHelixQueue) " Include="copy %25HELIX_WORKITEM_ROOT%25\test\test-results\TEST-junit-jupiter.xml %25HELIX_WORKITEM_ROOT%25\junit-results.xml" />
   </ItemGroup>
-
 </Project>

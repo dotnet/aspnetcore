@@ -7,13 +7,21 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
 
   <PropertyGroup>
-    <!-- Keep this property after importing Directory.Build.props, it works around arcade assuming test projects have "Test" in the name -->
+    <!--
+      Keep these properties after importing Directory.Build.props, it works around arcade assuming test projects
+      have ".UnitTests" or ".Test" in the name.
+    -->
     <IsTestProject>true</IsTestProject>
+    <IsUnitTestProject>true</IsUnitTestProject>
+
     <IsPackable>false</IsPackable>
     <IsBuildable>false</IsBuildable>
+
     <!-- Npm tests don't run on Helix currently, so we need to set this to false to still run the tests on non-Helix -->
     <BuildHelixPayload>false</BuildHelixPayload>
   </PropertyGroup>
+
+  <Import Project="$(RepoRoot)eng\targets\Helix.props" />
 
   <ItemGroup>
     <ProjectReference Include="signalr\signalr.npmproj" />
