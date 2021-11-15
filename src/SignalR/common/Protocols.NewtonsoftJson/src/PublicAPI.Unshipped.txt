@@ -1,13 +1,1 @@
 #nullable enable
-*REMOVED*~Microsoft.AspNetCore.SignalR.Protocol.NewtonsoftJsonHubProtocol.Name.get -> string
-*REMOVED*~Microsoft.AspNetCore.SignalR.Protocol.NewtonsoftJsonHubProtocol.NewtonsoftJsonHubProtocol(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.SignalR.NewtonsoftJsonHubProtocolOptions> options) -> void
-*REMOVED*~Microsoft.AspNetCore.SignalR.Protocol.NewtonsoftJsonHubProtocol.PayloadSerializer.get -> Newtonsoft.Json.JsonSerializer
-*REMOVED*~Microsoft.AspNetCore.SignalR.Protocol.NewtonsoftJsonHubProtocol.TryParseMessage(ref System.Buffers.ReadOnlySequence<byte> input, Microsoft.AspNetCore.SignalR.IInvocationBinder binder, out Microsoft.AspNetCore.SignalR.Protocol.HubMessage message) -> bool
-*REMOVED*~Microsoft.AspNetCore.SignalR.Protocol.NewtonsoftJsonHubProtocol.WriteMessage(Microsoft.AspNetCore.SignalR.Protocol.HubMessage message, System.Buffers.IBufferWriter<byte> output) -> void
-*REMOVED*~Microsoft.AspNetCore.SignalR.Protocol.NewtonsoftJsonHubProtocol.GetMessageBytes(Microsoft.AspNetCore.SignalR.Protocol.HubMessage message) -> System.ReadOnlyMemory<byte>
-Microsoft.AspNetCore.SignalR.Protocol.NewtonsoftJsonHubProtocol.Name.get -> string!
-~Microsoft.AspNetCore.SignalR.Protocol.NewtonsoftJsonHubProtocol.NewtonsoftJsonHubProtocol(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.SignalR.NewtonsoftJsonHubProtocolOptions!>! options) -> void
-Microsoft.AspNetCore.SignalR.Protocol.NewtonsoftJsonHubProtocol.PayloadSerializer.get -> Newtonsoft.Json.JsonSerializer!
-Microsoft.AspNetCore.SignalR.Protocol.NewtonsoftJsonHubProtocol.TryParseMessage(ref System.Buffers.ReadOnlySequence<byte> input, Microsoft.AspNetCore.SignalR.IInvocationBinder! binder, out Microsoft.AspNetCore.SignalR.Protocol.HubMessage? message) -> bool
-Microsoft.AspNetCore.SignalR.Protocol.NewtonsoftJsonHubProtocol.WriteMessage(Microsoft.AspNetCore.SignalR.Protocol.HubMessage! message, System.Buffers.IBufferWriter<byte>! output) -> void
-Microsoft.AspNetCore.SignalR.Protocol.NewtonsoftJsonHubProtocol.GetMessageBytes(Microsoft.AspNetCore.SignalR.Protocol.HubMessage! message) -> System.ReadOnlyMemory<byte>
