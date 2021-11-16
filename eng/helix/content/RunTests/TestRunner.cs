@@ -55,9 +55,6 @@ namespace RunTests
                 var playwrightBrowsers = Environment.GetEnvironmentVariable("PLAYWRIGHT_BROWSERS_PATH");
                 Console.WriteLine($"Setting PLAYWRIGHT_BROWSERS_PATH: {playwrightBrowsers}");
                 EnvironmentVariables.Add("PLAYWRIGHT_BROWSERS_PATH", playwrightBrowsers);
-                var playrightDriver = Environment.GetEnvironmentVariable("PLAYWRIGHT_DRIVER_PATH");
-                Console.WriteLine($"Setting PLAYWRIGHT_DRIVER_PATH: {playrightDriver}");
-                EnvironmentVariables.Add("PLAYWRIGHT_DRIVER_PATH", playrightDriver);
 #else
                 Console.WriteLine($"Skipping setting PLAYWRIGHT_BROWSERS_PATH");
 #endif
@@ -112,8 +109,25 @@ namespace RunTests
         {
             try
             {
-                Console.WriteLine($"Installing Playwright to Browsers: {Environment.GetEnvironmentVariable("PLAYWRIGHT_BROWSERS_PATH")} Driver: {Environment.GetEnvironmentVariable("PLAYWRIGHT_DRIVER_PATH")}");
-                await Playwright.InstallAsync(Environment.GetEnvironmentVariable("PLAYWRIGHT_BROWSERS_PATH"), Environment.GetEnvironmentVariable("PLAYWRIGHT_DRIVER_PATH"));
+                Console.WriteLine($"Installing Microsoft.Playwright.CLI dotnet tool to {Options.HELIX_WORKITEM_ROOT}");
+
+                await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
+                    $"tool install Microsoft.Playwright.CLI --tool-path {Options.HELIX_WORKITEM_ROOT}",
+                    environmentVariables: EnvironmentVariables,
+                    outputDataReceived: Console.WriteLine,
+                    errorDataReceived: Console.Error.WriteLine,
+                    throwOnError: false,
+                    cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
+
+                Console.WriteLine($"Installing Playwright Browsers: {Environment.GetEnvironmentVariable("PLAYWRIGHT_BROWSERS_PATH")}");
+
+                await ProcessUtil.RunAsync($"playwright install",
+                    environmentVariables: EnvironmentVariables,
+                    outputDataReceived: Console.WriteLine,
+                    errorDataReceived: Console.Error.WriteLine,
+                    throwOnError: false,
+                    cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
+
                 DisplayContents(Environment.GetEnvironmentVariable("PLAYWRIGHT_BROWSERS_PATH"));
                 return true;
             }

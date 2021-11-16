@@ -7,6 +7,12 @@
       "commands": [
         "dotnet-serve"
       ]
+    },
+    "Microsoft.Playwright.CLI": {
+      "version": "1.2.0",
+      "commands": [
+        "playwright"
+      ]
     }
   }
 }
