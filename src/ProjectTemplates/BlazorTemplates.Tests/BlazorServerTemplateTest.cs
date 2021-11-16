@@ -137,19 +137,31 @@ public class BlazorServerTemplateTest : BlazorTemplateTest
     private async Task TestBasicNavigation(Project project, IPage page)
     {
         var socket = BrowserContextInfo.Pages[page].WebSockets.SingleOrDefault() ??
-            (await page.WaitForEventAsync(PageEvent.WebSocket)).WebSocket;
+            (await page.WaitForWebSocketAsync());
+
+        var receivedSemaphore = new SemaphoreSlim(0, 1);
+        var sentSemaphore = new SemaphoreSlim(0, 1);
+
+        void FrameReceived(object sender, IWebSocketFrame frame) { receivedSemaphore.Release(); }
+        void FrameSent(object sender, IWebSocketFrame frame) { sentSemaphore.Release(); }
+
+        socket.FrameReceived += FrameReceived;
+        socket.FrameSent += FrameSent;
 
         // Receive render batch
-        await socket.WaitForEventAsync(WebSocketEvent.FrameReceived);
-        await socket.WaitForEventAsync(WebSocketEvent.FrameSent);
+        await receivedSemaphore.WaitAsync();
+        await sentSemaphore.WaitAsync();
 
         // JS interop call to intercept navigation
-        await socket.WaitForEventAsync(WebSocketEvent.FrameReceived);
-        await socket.WaitForEventAsync(WebSocketEvent.FrameSent);
+        await receivedSemaphore.WaitAsync();
+        await sentSemaphore.WaitAsync();
+
+        socket.FrameReceived -= FrameReceived;
+        socket.FrameSent -= FrameSent;
 
         await page.WaitForSelectorAsync("nav");
         // <title> element gets project ID injected into it during template execution
-        Assert.Equal("Index", (await page.GetTitleAsync()).Trim());
+        Assert.Equal("Index", (await page.TitleAsync()).Trim());
 
         // Initially displays the home page
         await page.WaitForSelectorAsync("h1 >> text=Hello, world!");
@@ -168,7 +180,7 @@ public class BlazorServerTemplateTest : BlazorTemplateTest
 
         // Asynchronously loads and displays the table of weather forecasts
         await page.WaitForSelectorAsync("table>tbody>tr");
-        Assert.Equal(5, (await page.QuerySelectorAllAsync("p+table>tbody>tr")).Count());
+        Assert.Equal(5, (await page.QuerySelectorAllAsync("p+table>tbody>tr")).Count);
     }
 
     [Theory]

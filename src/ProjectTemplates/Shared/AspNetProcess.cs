@@ -109,7 +109,7 @@ public class AspNetProcess : IDisposable
     public async Task VisitInBrowserAsync(IPage page)
     {
         _output.WriteLine($"Opening browser at {ListeningUri}...");
-        await page.GoToAsync(ListeningUri.AbsoluteUri);
+        await page.GotoAsync(ListeningUri.AbsoluteUri);
     }
 
 
