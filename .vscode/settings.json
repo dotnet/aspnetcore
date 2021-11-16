@@ -5,11 +5,11 @@
     "*.props": "xml",
     "*.targets": "xml",
     "*.tasks": "xml"
-},
-"markdownlint.config": {
+  },
+  "markdownlint.config": {
     "MD028": false,
     "MD025": {
-        "front_matter_title": ""
+      "front_matter_title": ""
     }
-}
+  }
 }
