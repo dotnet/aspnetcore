@@ -517,6 +517,30 @@ public class HttpResponseStreamWriterTest
     }
 
     [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(HttpResponseStreamWriter.DefaultBufferSize - 1)]
+    [InlineData(HttpResponseStreamWriter.DefaultBufferSize)]
+    public async Task WriteLineAsyncChar_WritesToStream(int newLineLength)
+    {
+        // Arrange
+        var content = 'a';
+        var stream = new TestMemoryStream();
+        var writer = new HttpResponseStreamWriter(stream, Encoding.UTF8);
+        writer.NewLine = new string('\n', newLineLength);
+
+        // Act
+        using (writer)
+        {
+            await writer.WriteLineAsync(content);
+        }
+
+        // Assert
+        Assert.Equal(newLineLength + 1, stream.Length);
+    }
+
+    [Theory]
     [InlineData(0, 1)]
     [InlineData(1022, 1)]
     [InlineData(1023, 1)]

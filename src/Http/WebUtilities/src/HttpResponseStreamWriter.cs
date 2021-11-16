@@ -455,6 +455,37 @@ public class HttpResponseStreamWriter : TextWriter
     }
 
     /// <inheritdoc/>
+    public override Task WriteLineAsync(char value)
+    {
+        if (_disposed)
+        {
+            return GetObjectDisposedTask();
+        }
+
+        var remaining = _charBufferSize - _charBufferCount;
+        if (remaining >= NewLine.Length + 1)
+        {
+            // Enough room in buffer, no need to go async
+            _charBuffer[_charBufferCount] = value;
+            _charBufferCount++;
+
+            CopyToCharBuffer(NewLine);
+
+            return Task.CompletedTask;
+        }
+        else
+        {
+            return WriteLineAsyncAwaited(value);
+        }
+    }
+
+    private async Task WriteLineAsyncAwaited(char value)
+    {
+        await WriteAsync(value);
+        await WriteAsync(NewLine);
+    }
+
+    /// <inheritdoc/>
     public override Task WriteLineAsync(string? value)
     {
         if (_disposed)
