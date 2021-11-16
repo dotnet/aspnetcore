@@ -1,13 +1,13 @@
 <Project>
   <!-- this file is shared between Helix.proj and .csproj files -->
   <PropertyGroup>
-    <HelixQueueAlpine312>(Alpine.312.Amd64.Open)Ubuntu.1804.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.12-helix-20200908125345-56c6673</HelixQueueAlpine312>
-    <HelixQueueDebian11>(Debian.11.Amd64.Open)ubuntu.1804.amd64.open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-11-helix-amd64-20210304164428-5a7c380</HelixQueueDebian11>
-    <HelixQueueFedora34>(Fedora.34.Amd64.Open)ubuntu.1804.amd64.open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-34-helix-20210728124700-4f64125</HelixQueueFedora34>
+    <HelixQueueAlpine314>(Alpine.314.Amd64.Open)Ubuntu.1804.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.14-helix-amd64-20210910135833-1848e19</HelixQueueAlpine314>
+    <HelixQueueDebian11>(Debian.11.Amd64.Open)Ubuntu.1804.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-11-helix-amd64-20211001171307-0ece9b3</HelixQueueDebian11>
+    <HelixQueueFedora34>(Fedora.34.Amd64.Open)Ubuntu.1804.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-34-helix-20210924174119-4f64125</HelixQueueFedora34>
     <HelixQueueMariner>(Mariner)Ubuntu.1804.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-1.0-helix-20210528192219-92bf620</HelixQueueMariner>
-    <HelixQueueArmDebian9>(Debian.9.Arm64.Open)Ubuntu.1804.Armarch.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-9-helix-arm64v8-a12566d-20190807161036</HelixQueueArmDebian9>
+    <HelixQueueArmDebian11>(Debian.11.Arm64.Open)Ubuntu.1804.Armarch.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-11-helix-arm64v8-20211001171229-97d8652</HelixQueueArmDebian11>
   </PropertyGroup>
-  
+
   <ItemGroup Condition="'$(IsWindowsOnlyTest)' != 'true'">
     <HelixAvailablePlatform Include="Windows" />
     <HelixAvailablePlatform Include="OSX" />
@@ -22,9 +22,9 @@
   <ItemGroup Condition="'$(IsRequiredCheck)' == 'true' AND '$(TargetArchitecture)' == 'x64' AND '$(IsHelixDaily)' != 'true'">
     <HelixAvailableTargetQueue Include="Ubuntu.1804.Amd64.Open" Platform="Linux" />
     <HelixAvailableTargetQueue Include="Windows.11.Amd64.ClientPre.Open" Platform="Windows" />
-    <HelixAvailableTargetQueue Include="OSX.1014.Amd64.Open" Platform="OSX" />
+    <HelixAvailableTargetQueue Include="OSX.1100.Amd64.Open" Platform="OSX" />
   </ItemGroup>
-  
+
   <!-- x64 Quarantined-only (quarantined-pr.yml and quarantined-tests.yml) test queues -->
   <ItemGroup Condition="'$(IsRequiredCheck)' == 'true' AND '$(TargetArchitecture)' == 'x64' AND '$(_UseHelixOpenQueues)' == 'true' AND '$(RunQuarantinedTests)' == 'true'">
     <HelixAvailableTargetQueue Include="$(HelixQueueFedora34)" Platform="Linux" />
@@ -33,25 +33,22 @@
   <!-- x64 Queues for public helix-matrix.yml and quarantine pipelines, except in windows-only cases -->
   <ItemGroup Condition="'$(TargetArchitecture)' == 'x64' AND '$(IsHelixDaily)' == 'true' AND '$(_UseHelixOpenQueues)' == 'true' AND '$(IsWindowsOnlyTest)' != 'true'">
     <!-- Linux -->
-    <HelixAvailableTargetQueue Include="$(HelixQueueDebian11)" Platform="Linux" />
     <HelixAvailableTargetQueue Include="Redhat.7.Amd64.Open" Platform="Linux" />
     <HelixAvailableTargetQueue Include="Ubuntu.2004.Amd64.Open" Platform="Linux" />
-    <HelixAvailableTargetQueue Include="Ubuntu.1804.Amd64.Open" Platform="Linux" />
 
     <!-- Mac -->
-    <HelixAvailableTargetQueue Include="OSX.1014.Amd64.Open" Platform="OSX" />
-    <HelixAvailableTargetQueue Include="OSX.1100.Amd64.Open" Platform="OSX" />
+    <HelixAvailableTargetQueue Include="OSX.1015.Amd64.Open" Platform="OSX" />
 
     <!-- Containers -->
+    <HelixAvailableTargetQueue Include="$(HelixQueueAlpine314)" Platform="Linux" />
+    <HelixAvailableTargetQueue Include="$(HelixQueueDebian11)" Platform="Linux" />
     <HelixAvailableTargetQueue Include="$(HelixQueueFedora34)" Platform="Linux" />
-    <HelixAvailableTargetQueue Include="$(HelixQueueAlpine312)" Platform="Linux" />
-    <HelixAvailableTargetQueue Include="$(HelixQueueMariner)" Platform="Linux" />    
+    <HelixAvailableTargetQueue Include="$(HelixQueueMariner)" Platform="Linux" />
   </ItemGroup>
 
   <!-- x64 Queues for public helix-matrix.yml and quarantine pipelines, Windows cases-->
   <ItemGroup Condition="'$(TargetArchitecture)' == 'x64' AND '$(IsHelixDaily)' == 'true' AND '$(_UseHelixOpenQueues)' == 'true'">
     <HelixAvailableTargetQueue Include="Windows.10.Amd64.Server20H2.Open" Platform="Windows" />
-    <HelixAvailableTargetQueue Include="Windows.11.Amd64.ClientPre.Open" Platform="Windows" />
     <HelixAvailableTargetQueue Include="Windows.Amd64.Server2022.Open" Platform="Windows" />
   </ItemGroup>
 
@@ -62,7 +59,7 @@
 
   <!-- arm64 queues for helix-matrix.yml and quarantine pipeline -->
   <ItemGroup Condition="'$(TargetArchitecture)' == 'arm64' AND '$(IsHelixDaily)' == 'true' AND '$(_UseHelixOpenQueues)' == 'true' AND '$(IsWindowsOnlyTest)' != 'true'">
-    <HelixAvailableTargetQueue Include="$(HelixQueueArmDebian9)" Platform="Linux" />
+    <HelixAvailableTargetQueue Include="$(HelixQueueArmDebian11)" Platform="Linux" />
   </ItemGroup>
 
   <!-- IIS Express isn't supported on arm64 and most of the IsWindowsOnlyTests depend on it's setup scripts. -->

@@ -10,14 +10,12 @@
 
   <PropertyGroup Condition="'$(TestDependsOnPlaywright)' == 'true'">
     <SkipHelixQueues>
-      $(HelixQueueAlpine312);
+      $(HelixQueueAlpine314);
       $(HelixQueueDebian11);
       $(HelixQueueFedora34);
       $(HelixQueueMariner);
       Redhat.7.Amd64.Open;
       Ubuntu.2004.Amd64.Open;
-      Windows.7.Amd64.Open;
-      Windows.81.Amd64.Open;
     </SkipHelixQueues>
     <SkipHelixArm>true</SkipHelixArm>
   </PropertyGroup>
