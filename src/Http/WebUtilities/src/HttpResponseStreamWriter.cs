@@ -450,8 +450,8 @@ public class HttpResponseStreamWriter : TextWriter
 
     private async Task WriteLineAsyncAwaited(char[] values, int index, int count)
     {
-        await WriteLineAsync(values, index, count);
-        await WriteLineAsync(NewLine);
+        await WriteAsync(values, index, count);
+        await WriteAsync(NewLine);
     }
 
     /// <inheritdoc/>
