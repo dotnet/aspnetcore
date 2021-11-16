@@ -477,7 +477,67 @@ public class HttpResponseStreamWriterTest
     [InlineData(HttpResponseStreamWriter.DefaultBufferSize + 1, 1)]
     [InlineData(HttpResponseStreamWriter.DefaultBufferSize + 1, 2)]
     [InlineData(HttpResponseStreamWriter.DefaultBufferSize + 1, HttpResponseStreamWriter.DefaultBufferSize)]
-    public async Task WriteLineStringAsync_WritesToStream(int charCount, int newLineLength)
+    public async Task WriteLineAsyncCharArray_WritesToStream(int charCount, int newLineLength)
+    {
+        // Arrange
+        var content = new char[charCount];
+        var stream = new TestMemoryStream();
+        var writer = new HttpResponseStreamWriter(stream, Encoding.UTF8);
+        writer.NewLine = new string('\n', newLineLength);
+
+        // Act
+        using (writer)
+        {
+            await writer.WriteLineAsync(content);
+        }
+
+        // Assert
+        Assert.Equal(charCount + newLineLength, stream.Length);
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    public async Task WriteLineAsyncCharArray_OnlyWritesNewLineToStream_ForNullArgument(int newLineLength)
+    {
+        // Arrange
+        char[]? content = null;
+        var stream = new TestMemoryStream();
+        var writer = new HttpResponseStreamWriter(stream, Encoding.UTF8);
+        writer.NewLine = new string('\n', newLineLength);
+
+        // Act
+        using (writer)
+        {
+            await writer.WriteLineAsync(content);
+        }
+
+        // Assert
+        Assert.Equal(newLineLength, stream.Length);
+    }
+
+    [Theory]
+    [InlineData(0, 1)]
+    [InlineData(1022, 1)]
+    [InlineData(1023, 1)]
+    [InlineData(1024, 1)]
+    [InlineData(1050, 1)]
+    [InlineData(2047, 1)]
+    [InlineData(2048, 1)]
+    [InlineData(1021, 2)]
+    [InlineData(1022, 2)]
+    [InlineData(1023, 2)]
+    [InlineData(1024, 2)]
+    [InlineData(1024, 1023)]
+    [InlineData(1024, 1024)]
+    [InlineData(1024, 1050)]
+    [InlineData(1050, 2)]
+    [InlineData(2046, 2)]
+    [InlineData(2048, 2)]
+    [InlineData(HttpResponseStreamWriter.DefaultBufferSize + 1, 1)]
+    [InlineData(HttpResponseStreamWriter.DefaultBufferSize + 1, 2)]
+    [InlineData(HttpResponseStreamWriter.DefaultBufferSize + 1, HttpResponseStreamWriter.DefaultBufferSize)]
+    public async Task WriteLineAsyncString_WritesToStream(int charCount, int newLineLength)
     {
         // Arrange
         var content = new string('a', charCount);
@@ -796,6 +856,14 @@ public class HttpResponseStreamWriterTest
         yield return new object[] { new Func<HttpResponseStreamWriter, Task>(async (httpResponseStreamWriter) =>
             {
                 await httpResponseStreamWriter.WriteLineAsync(new ReadOnlyMemory<char>(new char[] { 'a', 'b' }));
+            })};
+        yield return new object[] { new Func<HttpResponseStreamWriter, Task>(async (httpResponseStreamWriter) =>
+            {
+                await httpResponseStreamWriter.WriteLineAsync(new char[] { 'a', 'b' }, 0, 1);
+            })};
+        yield return new object[] { new Func<HttpResponseStreamWriter, Task>(async (httpResponseStreamWriter) =>
+            {
+                await httpResponseStreamWriter.WriteLineAsync('a');
             })};
         yield return new object[] { new Func<HttpResponseStreamWriter, Task>(async (httpResponseStreamWriter) =>
             {
