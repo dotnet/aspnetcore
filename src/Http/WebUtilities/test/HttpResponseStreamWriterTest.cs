@@ -488,7 +488,7 @@ public class HttpResponseStreamWriterTest
         // Act
         using (writer)
         {
-            await writer.WriteLineAsync(content);
+            await writer.WriteLineAsync(content, 0, charCount);
         }
 
         // Assert
@@ -498,6 +498,7 @@ public class HttpResponseStreamWriterTest
     [Theory]
     [InlineData(1)]
     [InlineData(2)]
+    [InlineData(HttpResponseStreamWriter.DefaultBufferSize + 1)]
     public async Task WriteLineAsyncCharArray_OnlyWritesNewLineToStream_ForNullArgument(int newLineLength)
     {
         // Arrange
@@ -509,7 +510,7 @@ public class HttpResponseStreamWriterTest
         // Act
         using (writer)
         {
-            await writer.WriteLineAsync(content);
+            await writer.WriteLineAsync(content!, 0, 0);
         }
 
         // Assert
@@ -582,6 +583,7 @@ public class HttpResponseStreamWriterTest
     [Theory]
     [InlineData(1)]
     [InlineData(2)]
+    [InlineData(HttpResponseStreamWriter.DefaultBufferSize + 1)]
     public async Task WriteLineAsyncString_OnlyWritesNewLineToStream_ForNullArgument(int newLineLength)
     {
         // Arrange
