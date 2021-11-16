@@ -445,7 +445,7 @@ public class HttpResponseStreamWriter : TextWriter
         }
         else
         {
-            return WriteAsyncAwaited(values, index, count);
+            return WriteLineAsyncAwaited(values, index, count);
         }
     }
 
