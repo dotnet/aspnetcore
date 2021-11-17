@@ -164,14 +164,7 @@ internal class DefaultPageHandlerMethodSelector : IPageHandlerMethodSelector
 
     private static string? GetFuzzyMatchHttpMethod(PageContext context)
     {
-        var httpMethod = context.HttpContext.Request.Method;
-
         // Map HEAD to get.
-        if (string.Equals("HEAD", httpMethod, StringComparison.OrdinalIgnoreCase))
-        {
-            return HttpMethods.Get;
-        }
-
-        return null;
+        return HttpMethods.IsHead(context.HttpContext.Request.Method) ? HttpMethods.Get : null
     }
 }
