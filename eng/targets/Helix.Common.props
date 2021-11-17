@@ -25,11 +25,6 @@
     <HelixAvailableTargetQueue Include="OSX.1100.Amd64.Open" Platform="OSX" />
   </ItemGroup>
 
-  <!-- x64 Quarantined-only (quarantined-pr.yml and quarantined-tests.yml) test queues -->
-  <ItemGroup Condition="'$(IsRequiredCheck)' == 'true' AND '$(TargetArchitecture)' == 'x64' AND '$(_UseHelixOpenQueues)' == 'true' AND '$(RunQuarantinedTests)' == 'true'">
-    <HelixAvailableTargetQueue Include="$(HelixQueueFedora34)" Platform="Linux" />
-  </ItemGroup>
-
   <!-- x64 Queues for public helix-matrix.yml and quarantine pipelines, except in windows-only cases -->
   <ItemGroup Condition="'$(TargetArchitecture)' == 'x64' AND '$(IsHelixDaily)' == 'true' AND '$(_UseHelixOpenQueues)' == 'true' AND '$(IsWindowsOnlyTest)' != 'true'">
     <!-- Linux -->
