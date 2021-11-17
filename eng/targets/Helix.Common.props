@@ -20,7 +20,7 @@
 
   <!-- x64 PR(ci.yaml) required queues for internal and public cases -->
   <ItemGroup Condition="'$(IsRequiredCheck)' == 'true' AND '$(TargetArchitecture)' == 'x64' AND '$(IsHelixDaily)' != 'true'">
-    <HelixAvailableTargetQueue Include="(Ubuntu.21.10)ubuntu-21.10-helix-amd64-20211116135132-0f8d97e@mcr.microsoft.com/dotnet-buildtools/prereqs@sha256:6ee62401a58440350cc1063d51399d87035aff2933e69387fdd94aa246636acf" Platform="Linux" />
+    <HelixAvailableTargetQueue Include="(Ubuntu.21.10.Amd64.Open)Ubuntu.1804.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs@ubuntu-21.10-helix-amd64-20211116135132-0f8d97e" Platform="Linux" />
     <HelixAvailableTargetQueue Include="Ubuntu.1804.Amd64.Open" Platform="Linux" />
     <HelixAvailableTargetQueue Include="Windows.11.Amd64.ClientPre.Open" Platform="Windows" />
     <HelixAvailableTargetQueue Include="OSX.1014.Amd64.Open" Platform="OSX" />
