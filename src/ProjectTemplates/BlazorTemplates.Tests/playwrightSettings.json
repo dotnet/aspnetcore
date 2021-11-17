@@ -4,18 +4,12 @@
   "BaseArtifactsFolder": ".",
   "GlobalBrowserOptions": {
     "ChromiumSandbox": true,
-    "DumpIO": true,
-    "IgnoreHTTPSErrors": true,
     "Headless": true,
     "Timeout": 30000
   },
   "GlobalContextOptions": {
-    "RecordVideo": {
-      "Dir": "videos"
-    },
-    "RecordHar": {
-      "Path": "har"
-    },
+    "RecordVideoDir": "videos",
+    "RecordHarPath": "har",
     "IgnoreHTTPSErrors": true
   },
   "BrowserOptions": {
