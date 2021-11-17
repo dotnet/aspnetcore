@@ -136,25 +136,24 @@ public class BlazorServerTemplateTest : BlazorTemplateTest
 
     private async Task TestBasicNavigation(Project project, IPage page)
     {
-        var socket = BrowserContextInfo.Pages[page].WebSockets.SingleOrDefault() ??
-            (await page.WaitForWebSocketAsync());
+        var socket = await page.WaitForWebSocketAsync();
 
-        var receivedSemaphore = new SemaphoreSlim(0, 1);
-        var sentSemaphore = new SemaphoreSlim(0, 1);
+        var framesReceived = 0;
+        var framesSent = 0;
 
-        void FrameReceived(object sender, IWebSocketFrame frame) { receivedSemaphore.Release(); }
-        void FrameSent(object sender, IWebSocketFrame frame) { sentSemaphore.Release(); }
+        void FrameReceived(object sender, IWebSocketFrame frame) { framesReceived++; }
+        void FrameSent(object sender, IWebSocketFrame frame) { framesSent++; }
 
         socket.FrameReceived += FrameReceived;
         socket.FrameSent += FrameSent;
 
         // Receive render batch
-        await receivedSemaphore.WaitAsync();
-        await sentSemaphore.WaitAsync();
+        await page.WaitForWebSocketAsync(new() { Predicate = (s) => framesReceived == 1 });
+        await page.WaitForWebSocketAsync(new() { Predicate = (s) => framesSent == 1 });
 
         // JS interop call to intercept navigation
-        await receivedSemaphore.WaitAsync();
-        await sentSemaphore.WaitAsync();
+        await page.WaitForWebSocketAsync(new() { Predicate = (s) => framesReceived == 2 });
+        await page.WaitForWebSocketAsync(new() { Predicate = (s) => framesSent == 2 });
 
         socket.FrameReceived -= FrameReceived;
         socket.FrameSent -= FrameSent;
