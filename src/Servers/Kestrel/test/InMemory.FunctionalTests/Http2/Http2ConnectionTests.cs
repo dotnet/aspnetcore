@@ -710,7 +710,7 @@ public class Http2ConnectionTests : Http2TestBase
         var length = Http2PeerSettings.MinAllowedMaxFrameSize + 10;
         _serviceContext.ServerOptions.Limits.Http2.MaxFrameSize = length;
 
-        await InitializeConnectionAsync(_echoApplication, expectedSettingsCount: 4);
+        await InitializeConnectionAsync(_echoApplication, expectedSettingsCount: 5);
 
         await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
         await SendDataAsync(1, new byte[length], endStream: true);
@@ -2195,7 +2195,7 @@ public class Http2ConnectionTests : Http2TestBase
     {
         _serviceContext.ServerOptions.Limits.Http2.HeaderTableSize = 0;
 
-        await InitializeConnectionAsync(_noopApplication, expectedSettingsCount: 4);
+        await InitializeConnectionAsync(_noopApplication, expectedSettingsCount: 5);
 
         await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
 
@@ -3360,13 +3360,13 @@ public class Http2ConnectionTests : Http2TestBase
         await SendSettingsAsync();
 
         var frame = await ExpectAsync(Http2FrameType.SETTINGS,
-            withLength: Http2FrameReader.SettingSize * 3,
+            withLength: Http2FrameReader.SettingSize * 4,
             withFlags: 0,
             withStreamId: 0);
 
         // Only non protocol defaults are sent
         var settings = Http2FrameReader.ReadSettings(frame.PayloadSequence);
-        Assert.Equal(3, settings.Count);
+        Assert.Equal(4, settings.Count);
 
         var setting = settings[0];
         Assert.Equal(Http2SettingsParameter.SETTINGS_MAX_CONCURRENT_STREAMS, setting.Parameter);
@@ -3379,6 +3379,10 @@ public class Http2ConnectionTests : Http2TestBase
         setting = settings[2];
         Assert.Equal(Http2SettingsParameter.SETTINGS_MAX_HEADER_LIST_SIZE, setting.Parameter);
         Assert.Equal(32 * 1024u, setting.Value);
+
+        setting = settings[3];
+        Assert.Equal(Http2SettingsParameter.SETTINGS_ENABLE_CONNECT_PROTOCOL, setting.Parameter);
+        Assert.Equal(1u, setting.Value);
 
         var update = await ExpectAsync(Http2FrameType.WINDOW_UPDATE,
             withLength: 4,
@@ -3411,13 +3415,13 @@ public class Http2ConnectionTests : Http2TestBase
         await SendSettingsAsync();
 
         var frame = await ExpectAsync(Http2FrameType.SETTINGS,
-            withLength: Http2FrameReader.SettingSize * 4,
+            withLength: Http2FrameReader.SettingSize * 5,
             withFlags: 0,
             withStreamId: 0);
 
         // Only non protocol defaults are sent
         var settings = Http2FrameReader.ReadSettings(frame.PayloadSequence);
-        Assert.Equal(4, settings.Count);
+        Assert.Equal(5, settings.Count);
 
         var setting = settings[0];
         Assert.Equal(Http2SettingsParameter.SETTINGS_HEADER_TABLE_SIZE, setting.Parameter);
@@ -3434,6 +3438,10 @@ public class Http2ConnectionTests : Http2TestBase
         setting = settings[3];
         Assert.Equal(Http2SettingsParameter.SETTINGS_MAX_HEADER_LIST_SIZE, setting.Parameter);
         Assert.Equal(4 * 1024u, setting.Value);
+
+        setting = settings[4];
+        Assert.Equal(Http2SettingsParameter.SETTINGS_ENABLE_CONNECT_PROTOCOL, setting.Parameter);
+        Assert.Equal(1u, setting.Value);
 
         var update = await ExpectAsync(Http2FrameType.WINDOW_UPDATE,
             withLength: 4,
@@ -3607,7 +3615,7 @@ public class Http2ConnectionTests : Http2TestBase
             context.Response.Headers["A"] = new string('a', headerValueLength);
             context.Response.Headers["B"] = new string('b', headerValueLength);
             return context.Response.Body.WriteAsync(new byte[payloadLength], 0, payloadLength);
-        }, expectedSettingsCount: 4);
+        }, expectedSettingsCount: 5);
 
         // Update client settings
         _clientSettings.MaxFrameSize = (uint)payloadLength;
@@ -3656,7 +3664,7 @@ public class Http2ConnectionTests : Http2TestBase
         await InitializeConnectionAsync(context =>
         {
             return context.Response.Body.WriteAsync(new byte[clientMaxFrame], 0, clientMaxFrame);
-        }, expectedSettingsCount: 4);
+        }, expectedSettingsCount: 5);
 
         // Start request
         await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
@@ -3715,7 +3723,7 @@ public class Http2ConnectionTests : Http2TestBase
     {
         _serviceContext.ServerOptions.Limits.Http2.HeaderTableSize = 40000;
 
-        await InitializeConnectionAsync(_noopApplication, expectedSettingsCount: 4);
+        await InitializeConnectionAsync(_noopApplication, expectedSettingsCount: 5);
 
         // Update client settings
         _clientSettings.HeaderTableSize = 65536; // Chrome's default, larger than the 4kb spec default
@@ -5091,7 +5099,7 @@ public class Http2ConnectionTests : Http2TestBase
         await StartStreamAsync(1, headers, endStream: false);
 
         await ExpectAsync(Http2FrameType.SETTINGS,
-            withLength: 3 * Http2FrameReader.SettingSize,
+            withLength: 4 * Http2FrameReader.SettingSize,
             withFlags: 0,
             withStreamId: 0);
 
@@ -5179,7 +5187,7 @@ public class Http2ConnectionTests : Http2TestBase
         await SendDataAsync(7, new byte[100], endStream: false);
 
         await ExpectAsync(Http2FrameType.SETTINGS,
-            withLength: 3 * Http2FrameReader.SettingSize,
+            withLength: 4 * Http2FrameReader.SettingSize,
             withFlags: 0,
             withStreamId: 0);
 
