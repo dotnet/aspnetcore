@@ -220,7 +220,9 @@ public class TargetingPackTests
             });
 
             Assert.True(hasRefAssemblyAttribute, $"{path} should have {nameof(ReferenceAssemblyAttribute)}");
+#pragma warning disable SYSLIB0037 // AssemblyName.ProcessorArchitecture is obsolete
             Assert.Equal(ProcessorArchitecture.None, assemblyName.ProcessorArchitecture);
+#pragma warning restore SYSLIB0037
         });
     }
 

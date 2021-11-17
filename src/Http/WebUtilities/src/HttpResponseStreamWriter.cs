@@ -382,6 +382,7 @@ public class HttpResponseStreamWriter : TextWriter
     }
 
     /// <inheritdoc/>
+    [SuppressMessage("ApiDesign", "RS0027:Public API with optional parameter(s) should have the most parameters amongst its public overloads.", Justification = "Required to maintain compatibility")] 
     public override Task WriteLineAsync(ReadOnlyMemory<char> value, CancellationToken cancellationToken = default)
     {
         if (_disposed)
@@ -414,6 +415,107 @@ public class HttpResponseStreamWriter : TextWriter
     }
 
     private async Task WriteLineAsyncAwaited(ReadOnlyMemory<char> value)
+    {
+        await WriteAsync(value);
+        await WriteAsync(NewLine);
+    }
+
+    /// <inheritdoc/>
+    public override Task WriteLineAsync(char[] values, int index, int count)
+    {
+        if (_disposed)
+        {
+            return GetObjectDisposedTask();
+        }
+
+        if ((values == null || count == 0) && NewLine.Length == 0)
+        {
+            return Task.CompletedTask;
+        }
+
+        values ??= Array.Empty<char>();
+
+        var remaining = _charBufferSize - _charBufferCount;
+        if (remaining >= values.Length + NewLine.Length)
+        {
+            // Enough room in buffer, no need to go async
+            CopyToCharBuffer(values, ref index, ref count);
+            CopyToCharBuffer(NewLine);
+            return Task.CompletedTask;
+        }
+        else
+        {
+            return WriteLineAsyncAwaited(values, index, count);
+        }
+    }
+
+    private async Task WriteLineAsyncAwaited(char[] values, int index, int count)
+    {
+        await WriteAsync(values, index, count);
+        await WriteAsync(NewLine);
+    }
+
+    /// <inheritdoc/>
+    public override Task WriteLineAsync(char value)
+    {
+        if (_disposed)
+        {
+            return GetObjectDisposedTask();
+        }
+
+        var remaining = _charBufferSize - _charBufferCount;
+        if (remaining >= NewLine.Length + 1)
+        {
+            // Enough room in buffer, no need to go async
+            _charBuffer[_charBufferCount] = value;
+            _charBufferCount++;
+
+            CopyToCharBuffer(NewLine);
+
+            return Task.CompletedTask;
+        }
+        else
+        {
+            return WriteLineAsyncAwaited(value);
+        }
+    }
+
+    private async Task WriteLineAsyncAwaited(char value)
+    {
+        await WriteAsync(value);
+        await WriteAsync(NewLine);
+    }
+
+    /// <inheritdoc/>
+    public override Task WriteLineAsync(string? value)
+    {
+        if (_disposed)
+        {
+            return GetObjectDisposedTask();
+        }
+
+        if (string.IsNullOrEmpty(value) && NewLine.Length == 0)
+        {
+            return Task.CompletedTask;
+        }
+
+        value ??= string.Empty;
+
+        var remaining = _charBufferSize - _charBufferCount;
+        if (remaining >= value.Length + NewLine.Length)
+        {
+            // Enough room in buffer, no need to go async
+            CopyToCharBuffer(value);
+            CopyToCharBuffer(NewLine);
+            return Task.CompletedTask;
+        }
+        else
+        {
+            return WriteLineAsyncAwaited(value);
+        }
+    }
+
+    private async Task WriteLineAsyncAwaited(string value)
     {
         await WriteAsync(value);
         await WriteAsync(NewLine);
