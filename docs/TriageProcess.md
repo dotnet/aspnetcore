@@ -76,7 +76,7 @@ As we go through all the issues in the Backlog milestone as part of our release 
 ## Process Visualization
 
 The following diagram summarizes the processes detailed above:
-![image](https://user-images.githubusercontent.com/34246760/84076162-23d58c00-a98a-11ea-909d-6d17b91d4f84.png)
+![image](https://user-images.githubusercontent.com/34246760/142244350-bd3484e2-fdee-450d-ac94-e0d192aa962a.png)
 
 ## References
 
