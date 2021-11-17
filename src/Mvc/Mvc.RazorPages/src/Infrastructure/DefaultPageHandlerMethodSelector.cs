@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 
@@ -168,7 +169,7 @@ internal class DefaultPageHandlerMethodSelector : IPageHandlerMethodSelector
         // Map HEAD to get.
         if (string.Equals("HEAD", httpMethod, StringComparison.OrdinalIgnoreCase))
         {
-            return "GET";
+            return HttpMethods.Get;
         }
 
         return null;
