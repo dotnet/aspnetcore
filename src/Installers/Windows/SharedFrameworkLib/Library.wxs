@@ -11,13 +11,14 @@
             <?undef DotNetHome?>
             <?endif?>
             <?if $(var.Platform)=x86?>
-            <?define SharedFrameworkInstallCondition=(NOT OPT_NO_SHAREDFX) AND (NOT OPT_NO_X86)?>
+            <!-- These variables could be unset at this point, which we explicitly treat as 'false' -->
+            <?define SharedFrameworkInstallCondition=(NOT OPT_NO_SHAREDFX OR OPT_NO_SHAREDFX="0") AND (NOT OPT_NO_X86 OR OPT_NO_X86="0")?>
             <?define DotNetHome=DOTNETHOME_X86?>
             <?elseif $(var.Platform)=x64?>
-            <?define SharedFrameworkInstallCondition=VersionNT64 AND (NOT OPT_NO_SHAREDFX)?>
+            <?define SharedFrameworkInstallCondition=VersionNT64 AND (NOT OPT_NO_SHAREDFX OR OPT_NO_SHAREDFX="0")?>
             <?define DotNetHome=DOTNETHOME_X64?>
             <?elseif $(var.Platform)=arm64?>
-            <?define SharedFrameworkInstallCondition=VersionNT64 AND (NOT OPT_NO_SHAREDFX)?>
+            <?define SharedFrameworkInstallCondition=VersionNT64 AND (NOT OPT_NO_SHAREDFX OR OPT_NO_SHAREDFX="0")?>
             <?define DotNetHome=DOTNETHOME_ARM64?>
             <?endif?>
 

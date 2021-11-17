@@ -28,7 +28,7 @@ jobs:
     - name: AzDOBuildId
       value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOBuildId'] ]
   pool:
-    name: Hosted VS2017
+    vmImage: windows-2019
   steps:
   - checkout: self
     clean: true

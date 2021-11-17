@@ -9,37 +9,37 @@
 -->
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="dotnet-ef" Version="5.0.12">
+    <Dependency Name="dotnet-ef" Version="5.0.13">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-efcore</Uri>
-      <Sha>8d3ca1a23a881f6ff435c797a43b1d893328eee9</Sha>
+      <Sha>1f3daac17f21c7bd143540897751c35f3e1c1908</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.InMemory" Version="5.0.12">
+    <Dependency Name="Microsoft.EntityFrameworkCore.InMemory" Version="5.0.13">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-efcore</Uri>
-      <Sha>8d3ca1a23a881f6ff435c797a43b1d893328eee9</Sha>
+      <Sha>1f3daac17f21c7bd143540897751c35f3e1c1908</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Relational" Version="5.0.12">
+    <Dependency Name="Microsoft.EntityFrameworkCore.Relational" Version="5.0.13">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-efcore</Uri>
-      <Sha>8d3ca1a23a881f6ff435c797a43b1d893328eee9</Sha>
+      <Sha>1f3daac17f21c7bd143540897751c35f3e1c1908</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Sqlite" Version="5.0.12">
+    <Dependency Name="Microsoft.EntityFrameworkCore.Sqlite" Version="5.0.13">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-efcore</Uri>
-      <Sha>8d3ca1a23a881f6ff435c797a43b1d893328eee9</Sha>
+      <Sha>1f3daac17f21c7bd143540897751c35f3e1c1908</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.12">
+    <Dependency Name="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.13">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-efcore</Uri>
-      <Sha>8d3ca1a23a881f6ff435c797a43b1d893328eee9</Sha>
+      <Sha>1f3daac17f21c7bd143540897751c35f3e1c1908</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Tools" Version="5.0.12">
+    <Dependency Name="Microsoft.EntityFrameworkCore.Tools" Version="5.0.13">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-efcore</Uri>
-      <Sha>8d3ca1a23a881f6ff435c797a43b1d893328eee9</Sha>
+      <Sha>1f3daac17f21c7bd143540897751c35f3e1c1908</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore" Version="5.0.12">
+    <Dependency Name="Microsoft.EntityFrameworkCore" Version="5.0.13">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-efcore</Uri>
-      <Sha>8d3ca1a23a881f6ff435c797a43b1d893328eee9</Sha>
+      <Sha>1f3daac17f21c7bd143540897751c35f3e1c1908</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Design" Version="5.0.12">
+    <Dependency Name="Microsoft.EntityFrameworkCore.Design" Version="5.0.13">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-efcore</Uri>
-      <Sha>8d3ca1a23a881f6ff435c797a43b1d893328eee9</Sha>
+      <Sha>1f3daac17f21c7bd143540897751c35f3e1c1908</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Caching.Abstractions" Version="5.0.0">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -313,17 +313,17 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>f431858f8b1f1510723ace6343786c9194dbd7fc</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="5.0.0-beta.21513.1">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="5.0.0-beta.21552.7">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>f7347c7eda15739dbbc6b031364729938b041b14</Sha>
+      <Sha>03adeadd89875039da245253a3f6038874e2fa88</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="5.0.0-beta.21513.1">
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="5.0.0-beta.21552.7">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>f7347c7eda15739dbbc6b031364729938b041b14</Sha>
+      <Sha>03adeadd89875039da245253a3f6038874e2fa88</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="5.0.0-beta.21513.1">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="5.0.0-beta.21552.7">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>f7347c7eda15739dbbc6b031364729938b041b14</Sha>
+      <Sha>03adeadd89875039da245253a3f6038874e2fa88</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
