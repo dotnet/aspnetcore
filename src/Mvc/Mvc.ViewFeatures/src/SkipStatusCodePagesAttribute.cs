@@ -4,6 +4,7 @@
 using System;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Http.Metadata;
 
 namespace Microsoft.AspNetCore.Mvc;
 
@@ -11,8 +12,17 @@ namespace Microsoft.AspNetCore.Mvc;
 /// A filter that prevents execution of the StatusCodePages middleware.
 /// </summary>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-public class SkipStatusCodePagesAttribute : Attribute, IResourceFilter
+public class SkipStatusCodePagesAttribute : Attribute, IResourceFilter, ISkipStatusCodePagesMetadata
 {
+    /// <summary>
+    /// Initializes a new instace of <see cref="SkipStatusCodePagesAttribute" />
+    /// with <see cref="ISkipStatusCodePagesMetadata.Enabled" /> set to <lang ref="false" />.
+    /// </summary>
+    public SkipStatusCodePagesAttribute()
+    {
+        Enabled = false;
+    }
+
     /// <inheritdoc />
     public void OnResourceExecuted(ResourceExecutedContext context)
     {
@@ -33,4 +43,7 @@ public class SkipStatusCodePagesAttribute : Attribute, IResourceFilter
             statusCodeFeature.Enabled = false;
         }
     }
+
+    /// <inheritdoc />
+    public bool Enabled { get; }
 }

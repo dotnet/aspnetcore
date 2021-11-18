@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Diagnostics;
@@ -41,10 +42,12 @@ public class StatusCodePagesMiddleware
     {
         var statusCodeFeature = new StatusCodePagesFeature();
         context.Features.Set<IStatusCodePagesFeature>(statusCodeFeature);
+        var endpoint = context.GetEndpoint();
+        var statusCodeMetadata = endpoint?.Metadata.GetMetadata<ISkipStatusCodePagesMetadata>();
 
         await _next(context);
 
-        if (!statusCodeFeature.Enabled)
+        if (!statusCodeFeature.Enabled || statusCodeMetadata?.Enabled is false)
         {
             // Check if the feature is still available because other middleware (such as a web API written in MVC) could
             // have disabled the feature to prevent HTML status code responses from showing up to an API client.

@@ -1,1 +1,2 @@
 #nullable enable
+Microsoft.AspNetCore.Mvc.SkipStatusCodePagesAttribute.Enabled.get -> bool
