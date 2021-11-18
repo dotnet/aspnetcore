@@ -109,10 +109,20 @@ namespace RunTests
         {
             try
             {
-                Console.WriteLine($"Installing Microsoft.Playwright.CLI dotnet tool to {Options.HELIX_WORKITEM_ROOT}");
+                Console.WriteLine($"Installing playwright npm package");
 
-                await ProcessUtil.RunAsync($"npx",
-                    $"playwright install",
+                await ProcessUtil.RunAsync($"npm",
+                    $"install playwright",
+                    environmentVariables: EnvironmentVariables,
+                    outputDataReceived: Console.WriteLine,
+                    errorDataReceived: Console.Error.WriteLine,
+                    throwOnError: false,
+                    cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
+
+                Console.WriteLine($"Installing playwright Browsers");
+
+                await ProcessUtil.RunAsync($"playwright",
+                    $"install",
                     environmentVariables: EnvironmentVariables,
                     outputDataReceived: Console.WriteLine,
                     errorDataReceived: Console.Error.WriteLine,
