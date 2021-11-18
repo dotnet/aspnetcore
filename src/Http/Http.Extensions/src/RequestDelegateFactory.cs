@@ -1376,7 +1376,7 @@ public static partial class RequestDelegateFactory
             errorMessage.AppendLine(FormattableString.Invariant($"{kv.Key,-19} | {kv.Value,-15}"));
         }
         errorMessage.AppendLine().AppendLine();
-        errorMessage.AppendLine("Did you mean to register the \"Body (Inferred)\" parameter(s) as a Service or apply the [FromService] or [FromBody] attribute?")
+        errorMessage.AppendLine("Did you mean to register the \"Body (Inferred)\" parameter(s) as a Service or apply the [FromServices] or [FromBody] attribute?")
             .AppendLine();
         return errorMessage.ToString();
     }
