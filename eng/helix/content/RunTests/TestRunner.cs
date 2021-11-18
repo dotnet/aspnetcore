@@ -111,18 +111,8 @@ namespace RunTests
             {
                 Console.WriteLine($"Installing Microsoft.Playwright.CLI dotnet tool to {Options.HELIX_WORKITEM_ROOT}");
 
-                await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                    $"tool install Microsoft.Playwright.CLI --tool-path {Options.HELIX_WORKITEM_ROOT}",
-                    environmentVariables: EnvironmentVariables,
-                    outputDataReceived: Console.WriteLine,
-                    errorDataReceived: Console.Error.WriteLine,
-                    throwOnError: false,
-                    cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
-
-                Console.WriteLine($"Installing Playwright Browsers: {Environment.GetEnvironmentVariable("PLAYWRIGHT_BROWSERS_PATH")}");
-
-                await ProcessUtil.RunAsync($"playwright",
-                    "install",
+                await ProcessUtil.RunAsync($"npx",
+                    $"playwright install",
                     environmentVariables: EnvironmentVariables,
                     outputDataReceived: Console.WriteLine,
                     errorDataReceived: Console.Error.WriteLine,
