@@ -155,6 +155,8 @@ internal partial class HttpProtocol
 
     bool IHttpUpgradeFeature.IsUpgradableRequest => IsUpgradableRequest;
 
+    string? IHttpUpgradeFeature.Protocol => ConnectProtocol;
+
     IPAddress? IHttpConnectionFeature.RemoteIpAddress
     {
         get => RemoteIpAddress;
@@ -270,20 +272,24 @@ internal partial class HttpProtocol
             throw new InvalidOperationException(CoreStrings.UpgradeCannotBeCalledMultipleTimes);
         }
 
-        if (!ServiceContext.ConnectionManager.UpgradedConnectionCount.TryLockOne())
+        KestrelEventSource.Log.RequestUpgradedStart(this);
+
+        if (_httpVersion < Http.HttpVersion.Http2)
         {
-            throw new InvalidOperationException(CoreStrings.UpgradedConnectionLimitReached);
+            if (!ServiceContext.ConnectionManager.UpgradedConnectionCount.TryLockOne())
+            {
+                throw new InvalidOperationException(CoreStrings.UpgradedConnectionLimitReached);
+            }
+
+            ConnectionFeatures.Get<IDecrementConcurrentConnectionCountFeature>()?.ReleaseConnection();
+
+            StatusCode = StatusCodes.Status101SwitchingProtocols;
+            ReasonPhrase = "Switching Protocols";
+            ResponseHeaders.Connection = HeaderNames.Upgrade;
         }
 
         IsUpgraded = true;
 
-        KestrelEventSource.Log.RequestUpgradedStart(this);
-
-        ConnectionFeatures.Get<IDecrementConcurrentConnectionCountFeature>()?.ReleaseConnection();
-
-        StatusCode = StatusCodes.Status101SwitchingProtocols;
-        ReasonPhrase = "Switching Protocols";
-        ResponseHeaders.Connection = HeaderNames.Upgrade;
 
         await FlushAsync();
 

@@ -19,6 +19,7 @@ internal sealed class Http2MessageBody : MessageBody
         : base(context)
     {
         _context = context;
+        RequestUpgrade = !string.IsNullOrEmpty(context.ConnectProtocol);
     }
 
     protected override void OnReadStarting()
