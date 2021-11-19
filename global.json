@@ -5,12 +5,11 @@
   "tools": {
     "dotnet": "7.0.100-alpha.1.21558.2",
     "runtimes": {
-      "dotnet/x64": [
-        "2.1.30",
+      "dotnet": [
         "$(MicrosoftNETCoreBrowserDebugHostTransportVersion)"
       ],
-      "dotnet/x86": [
-        "$(MicrosoftNETCoreBrowserDebugHostTransportVersion)"
+      "dotnet/x64": [
+        "2.1.30"
       ],
       "aspnetcore/x64": [
         "3.1.21"
