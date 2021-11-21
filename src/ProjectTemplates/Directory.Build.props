@@ -6,9 +6,9 @@
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
   </PropertyGroup>
 
-  <Import Project="TemplateProjects.props" Condition="'$(IsTestProject)' != 'true' AND '$(IsTestAssetProject)' != 'true'" />
+  <Import Project="TemplateProjects.props" Condition=" !$(IsTestProject) AND '$(IsTestAssetProject)' != 'true'" />
 
-  <ItemGroup Condition="'$(IsTestProject)' == 'true'">
+  <ItemGroup Condition=" $(IsTestProject) ">
     <Content Include="$(MSBuildThisFileDirectory)xunit.runner.json" Link="xunit.runner.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

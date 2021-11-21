@@ -4,7 +4,6 @@
   <PropertyGroup>
     <PackageId>@microsoft/signalr</PackageId>
     <IsPackable>true</IsPackable>
-    <IsTestProject>false</IsTestProject>
   </PropertyGroup>
 
   <ItemGroup>

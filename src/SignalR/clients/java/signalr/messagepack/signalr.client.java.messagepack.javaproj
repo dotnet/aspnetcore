@@ -6,7 +6,6 @@
     <PackageId>java:signalr-messagepack</PackageId>
     <!-- In servicing builds, this will be set to value if the Java client is not configured to be released in the currently building patch. -->
     <IsPackable>true</IsPackable>
-    <IsTestProject>false</IsTestProject>
     <PublishDir>$(OutputPath)</PublishDir>
   </PropertyGroup>
 

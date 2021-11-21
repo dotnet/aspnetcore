@@ -1,11 +1,10 @@
 ﻿<Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.targets))\Directory.Build.targets" />
 
-  <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
+  <PropertyGroup Condition=" $(IsTestProject) ">
     <!-- Don't run SignalR tests in parallel with others. This causes OutOfMemoryException on hosted Azure Pipelines agents. -->
     <TestGroupName>SignalR</TestGroupName>
 
     <RuntimeIdentifier Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">win-x86</RuntimeIdentifier>
   </PropertyGroup>
-
 </Project>

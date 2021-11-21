@@ -10,7 +10,7 @@
     <KestrelSharedSourceRoot>$(MSBuildThisFileDirectory)shared\</KestrelSharedSourceRoot>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(IsTestProject)' == 'true' ">
+  <PropertyGroup Condition=" $(IsTestProject) ">
     <!--
       Workaround for "Use executable flags in Microsoft.NET.Test.Sdk" (https://github.com/Microsoft/vstest/issues/792).
       Remove when fixed.
@@ -18,7 +18,7 @@
     <HasRuntimeOutput>true</HasRuntimeOutput>
   </PropertyGroup>
 
-  <ItemGroup Condition=" '$(IsTestProject)' == 'true' ">
+  <ItemGroup Condition=" $(IsTestProject) ">
     <None Include="$(MSBuildThisFileDirectory)xunit.runner.json" Link="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

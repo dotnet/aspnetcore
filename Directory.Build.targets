@@ -1,5 +1,4 @@
 ﻿<Project>
-
   <PropertyGroup>
     <!-- Only build Microsoft.AspNetCore.App, Microsoft.AspNetCore.App.Ref, and ref/ assemblies in source build. -->
     <!-- Analyzer package are needed in source build for WebSDK -->
@@ -10,8 +9,7 @@
      suppress all targets for TestProjects using ExcludeFromBuild. -->
     <ExcludeFromBuild Condition="'$(IsPackable)' != 'true' and
         '$(SkipTestBuild)' == 'true' and
-        ('$(IsTestProject)' == 'true' or
-         '$(IsUnitTestProject)' == 'true' or
+        ($(IsTestProject) or
          '$(IsTestAssetProject)' == 'true' or
          '$(IsBenchmarkProject)' == 'true' or
          '$(IsSampleProject)' == 'true' or
@@ -62,7 +60,7 @@
   <PropertyGroup Condition=" '$(MSBuildProjectExtension)' == '.csproj' ">
     <PackageId Condition=" '$(PackageId)' == '' ">$(AssemblyName)</PackageId>
     <IsPackable
-        Condition="'$(IsPackable)' == '' AND ( '$(IsTestProject)' == 'true' OR '$(IsTestAssetProject)' == 'true' OR
+        Condition="'$(IsPackable)' == '' AND ( $(IsTestProject) OR '$(IsTestAssetProject)' == 'true' OR
          '$(IsBenchmarkProject)' == 'true' OR '$(IsSampleProject)' == 'true' OR '$(IsMicrobenchmarksProject)' == 'true') ">false</IsPackable>
   </PropertyGroup>
 
@@ -112,7 +110,7 @@
         '$(IsSampleProject)' != 'true' AND
         '$(IsSpecificationTestProject)' != 'true' AND
         '$(IsTestAssetProject)' != 'true' AND
-        '$(IsTestProject)' != 'true' AND
+        !$(IsTestProject) AND
         '$(IsMicrobenchmarksProject)' != 'true' ">true</IsImplementationProject>
 
     <!-- This determines whether a project is available as a <Reference> to other projects in this repo. -->
@@ -131,7 +129,7 @@
     <IsPackable Condition="'$(IsPackable)' == '' AND ('$(IsImplementationProject)' == 'true' OR '$(IsAnalyzersProject)' == 'true') ">true</IsPackable>
     <IsPackable Condition="'$(IsPackable)' == '' ">false</IsPackable>
 
-    <BuildHelixPayload Condition="'$(BuildHelixPayload)' == '' AND '$(IsTestProject)' == 'true'">true</BuildHelixPayload>
+    <BuildHelixPayload Condition="'$(BuildHelixPayload)' == '' AND $(IsTestProject) ">true</BuildHelixPayload>
     <SkipTests Condition="'$(SkipHelixReadyTests)' == 'true' AND '$(BuildHelixPayload)' == 'true'">true</SkipTests>
   </PropertyGroup>
 
@@ -194,8 +192,7 @@
   <Import Project="eng\targets\Wix.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.wixproj'" />
   <Import Project="eng\targets\Npm.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.npmproj'" />
   <Import Project="eng\targets\Java.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.javaproj'" />
-  <Import Project="eng\targets\Helix.targets" Condition="'$(IsTestProject)' == 'true'" />
+  <Import Project="eng\targets\Helix.targets" Condition=" $(IsTestProject) " />
   <Import Project="eng\targets\FunctionalTestAsset.targets" Condition="'$(IsTestAssetProject)' == 'true'" />
   <Import Project="eng\targets\FunctionalTestWithAssets.targets" Condition="'$(ContainsFunctionalTestAssets)' == 'true'" />
-
 </Project>
