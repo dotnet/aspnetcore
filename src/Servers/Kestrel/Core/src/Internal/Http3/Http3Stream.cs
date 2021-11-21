@@ -10,6 +10,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
@@ -718,8 +719,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpH
             RequestBodyPipe.Writer.Write(segment.Span);
         }
 
-        // TODO this can be better.
-        return RequestBodyPipe.Writer.FlushAsync().AsTask();
+        return RequestBodyPipe.Writer.FlushAsync().GetAsTask();
     }
 
     protected override void OnReset()
