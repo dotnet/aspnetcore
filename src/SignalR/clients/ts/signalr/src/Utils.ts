@@ -47,7 +47,7 @@ export class Platform {
 
     // react-native has a window but no document
     static get isReactNative(): boolean {
-        return typeof window === "object" && window.document === undefined;
+        return typeof window === "object" && typeof window.document === "undefined";
     }
 
     // Node apps shouldn't have a window object, but WebWorkers don't either
