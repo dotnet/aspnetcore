@@ -37,7 +37,7 @@ export class Arg {
 export class Platform {
     // react-native has a window but no document so we should check both
     public static get isBrowser(): boolean {
-        return typeof window === "object" && !!window.document;
+        return typeof window === "object" && typeof window.document === "object";
     }
 
     // WebWorkers don't have a window object so the isBrowser check would fail
@@ -45,10 +45,15 @@ export class Platform {
         return typeof self === "object" && "importScripts" in self;
     }
 
+    // react-native has a window but no document
+    static get isReactNative(): boolean {
+        return typeof window === "object" && window.document === undefined;
+    }
+
     // Node apps shouldn't have a window object, but WebWorkers don't either
     // so we need to check for both WebWorker and window
     public static get isNode(): boolean {
-        return !this.isBrowser && !this.isWebWorker && typeof window !== "object";
+        return !this.isBrowser && !this.isWebWorker && !this.isReactNative;
     }
 }
 
