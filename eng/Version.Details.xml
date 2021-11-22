@@ -207,7 +207,7 @@
     </Dependency>
     <Dependency Name="System.Drawing.Common" Version="5.0.3">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>dcdf74cbb0b398d843ae25921cf8491e733cc2bd</Sha>
+      <Sha>7211aa01b34bb55ca67bdddd6e80ce23ee201bd2</Sha>
     </Dependency>
     <Dependency Name="System.IO.Pipelines" Version="5.0.1">
       <Uri>https://github.com/dotnet/runtime</Uri>
