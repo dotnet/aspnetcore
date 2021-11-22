@@ -41,6 +41,12 @@ public:
         InitializeSRWLock(&m_srwLock);
     }
 
+    bool
+    ShouldRecycleOnConfigChange()
+    {
+        return !m_handlerResolver.GetDisallowRotationOnConfigChange();
+    }
+
 private:
 
     std::unordered_map<std::wstring, std::shared_ptr<APPLICATION_INFO>>      m_pApplicationInfoHash;

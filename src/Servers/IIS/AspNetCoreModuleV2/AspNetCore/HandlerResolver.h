@@ -18,6 +18,7 @@ public:
     HRESULT GetApplicationFactory(const IHttpApplication &pApplication, const std::filesystem::path& shadowCopyPath, std::unique_ptr<ApplicationFactory>& pApplicationFactory, const ShimOptions& options, ErrorContext& errorContext);
     void ResetHostingModel();
     APP_HOSTING_MODEL GetHostingModel();
+    bool GetDisallowRotationOnConfigChange();
 
 private:
     HRESULT LoadRequestHandlerAssembly(const IHttpApplication &pApplication, const std::filesystem::path& shadowCopyPath, const ShimOptions& pConfiguration, std::unique_ptr<ApplicationFactory>& pApplicationFactory, ErrorContext& errorContext);
@@ -38,6 +39,7 @@ private:
     std::wstring m_loadedApplicationId;
     APP_HOSTING_MODEL m_loadedApplicationHostingModel;
     HostFxr m_hHostFxrDll;
+    bool m_disallowRotationOnConfigChange;
 
     static const PCWSTR          s_pwzAspnetcoreInProcessRequestHandlerName;
     static const PCWSTR          s_pwzAspnetcoreOutOfProcessRequestHandlerName;

@@ -83,7 +83,7 @@ public:
         return m_strShadowCopyingDirectory;
     }
 
-    const std::wstring&
+    bool
     QueryDisallowRotationOnConfigChange() const noexcept
     {
         return m_fDisallowRotationOnConfigChange;
