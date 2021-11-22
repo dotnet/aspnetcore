@@ -24,7 +24,7 @@
     at the moment. And, most Windows-specific checks are handled using @(HelixAvailablePlatform) in Helix.props.
   -->
   <Choose>
-    <When Condition=" '$(IsHelixDaily)' != 'true' ">
+    <When Condition=" '$(IsHelixPRCheck)' == 'true' ">
       <!-- aspnetcore-ci[-official] (ci.yml) -->
       <!-- aspnetcore-quarantined-pr (quarantined-pr.yml) -->
       <ItemGroup>
