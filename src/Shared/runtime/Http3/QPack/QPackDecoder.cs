@@ -176,15 +176,15 @@ namespace System.Net.Http.QPack
             _state = State.RequiredInsertCount;
         }
 
-        public void Decode(in ReadOnlySequence<byte> headerBlock, IHttpHeadersHandler handler)
+        public void Decode(in ReadOnlySequence<byte> headerBlock, bool endHeaders, IHttpHeadersHandler handler)
         {
             foreach (ReadOnlyMemory<byte> segment in headerBlock)
             {
-                Decode(segment.Span, handler);
+                Decode(segment.Span, endHeaders: false, handler);
             }
         }
 
-        public void Decode(ReadOnlySpan<byte> headerBlock, IHttpHeadersHandler handler)
+        public void Decode(ReadOnlySpan<byte> headerBlock, bool endHeaders, IHttpHeadersHandler handler)
         {
             foreach (byte b in headerBlock)
             {

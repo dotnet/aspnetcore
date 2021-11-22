@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Net.Http.QPack;
 using System.Text;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.Extensions.Primitives;
@@ -147,7 +148,89 @@ internal sealed class Http3HeadersEnumerator : IEnumerator<KeyValuePair<string, 
 
     internal static int GetResponseHeaderStaticTableId(KnownHeaderType responseHeaderType)
     {
-        // Not Implemented
-        return -1;
+        // Not every header in the QPACK static table is known.
+        // These are missing from this test and the full header name is written.
+        // Missing:
+        // - link
+        // - location
+        // - strict-transport-security
+        // - x-content-type-options
+        // - x-xss-protection
+        // - content-security-policy
+        // - early-data
+        // - expect-ct
+        // - purpose
+        // - timing-allow-origin
+        // - x-forwarded-for
+        // - x-frame-options
+        switch (responseHeaderType)
+        {
+            case KnownHeaderType.Age:
+                return H3StaticTable.Age0;
+            case KnownHeaderType.ContentLength:
+                return H3StaticTable.ContentLength0;
+            case KnownHeaderType.Date:
+                return H3StaticTable.Date;
+            case KnownHeaderType.Cookie:
+                return H3StaticTable.Cookie;
+            case KnownHeaderType.ETag:
+                return H3StaticTable.ETag;
+            case KnownHeaderType.IfModifiedSince:
+                return H3StaticTable.IfModifiedSince;
+            case KnownHeaderType.IfNoneMatch:
+                return H3StaticTable.IfNoneMatch;
+            case KnownHeaderType.LastModified:
+                return H3StaticTable.LastModified;
+            case KnownHeaderType.Location:
+                return H3StaticTable.Location;
+            case KnownHeaderType.Referer:
+                return H3StaticTable.Referer;
+            case KnownHeaderType.SetCookie:
+                return H3StaticTable.SetCookie;
+            case KnownHeaderType.Method:
+                return H3StaticTable.MethodConnect;
+            case KnownHeaderType.Accept:
+                return H3StaticTable.AcceptAny;
+            case KnownHeaderType.AcceptEncoding:
+                return H3StaticTable.AcceptEncodingGzipDeflateBr;
+            case KnownHeaderType.AcceptRanges:
+                return H3StaticTable.AcceptRangesBytes;
+            case KnownHeaderType.AccessControlAllowHeaders:
+                return H3StaticTable.AccessControlAllowHeadersCacheControl;
+            case KnownHeaderType.AccessControlAllowOrigin:
+                return H3StaticTable.AccessControlAllowOriginAny;
+            case KnownHeaderType.CacheControl:
+                return H3StaticTable.CacheControlMaxAge0;
+            case KnownHeaderType.ContentEncoding:
+                return H3StaticTable.ContentEncodingBr;
+            case KnownHeaderType.ContentType:
+                return H3StaticTable.ContentTypeApplicationDnsMessage;
+            case KnownHeaderType.Range:
+                return H3StaticTable.RangeBytes0ToAll;
+            case KnownHeaderType.Vary:
+                return H3StaticTable.VaryAcceptEncoding;
+            case KnownHeaderType.AcceptLanguage:
+                return H3StaticTable.AcceptLanguage;
+            case KnownHeaderType.AccessControlAllowCredentials:
+                return H3StaticTable.AccessControlAllowCredentials;
+            case KnownHeaderType.AccessControlAllowMethods:
+                return H3StaticTable.AccessControlAllowMethodsGet;
+            case KnownHeaderType.AltSvc:
+                return H3StaticTable.AltSvcClear;
+            case KnownHeaderType.Authorization:
+                return H3StaticTable.Authorization;
+            case KnownHeaderType.IfRange:
+                return H3StaticTable.IfRange;
+            case KnownHeaderType.Origin:
+                return H3StaticTable.Origin;
+            case KnownHeaderType.Server:
+                return H3StaticTable.Server;
+            case KnownHeaderType.UpgradeInsecureRequests:
+                return H3StaticTable.UpgradeInsecureRequests1;
+            case KnownHeaderType.UserAgent:
+                return H3StaticTable.UserAgent;
+            default:
+                return -1;
+        }
     }
 }

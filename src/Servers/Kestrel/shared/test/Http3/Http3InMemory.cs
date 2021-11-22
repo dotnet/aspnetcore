@@ -637,7 +637,7 @@ internal class Http3RequestStream : Http3StreamBase, IHttpHeadersHandler
         var headersTotalSize = 0;
 
         var buffer = _headerHandler.HeaderEncodingBuffer.AsMemory();
-        var done = QPackHeaderWriter.BeginEncode(headers, buffer.Span, ref headersTotalSize, out var length);
+        var done = QPackHeaderWriter.BeginEncodeHeaders(headers, buffer.Span, ref headersTotalSize, out var length);
         if (!done)
         {
             throw new InvalidOperationException("Headers not sent.");
@@ -676,7 +676,7 @@ internal class Http3RequestStream : Http3StreamBase, IHttpHeadersHandler
         Http3InMemory.AssertFrameType(http3WithPayload.Type, Http3FrameType.Headers);
 
         _headerHandler.DecodedHeaders.Clear();
-        _headerHandler.QpackDecoder.Decode(http3WithPayload.PayloadSequence, this);
+        _headerHandler.QpackDecoder.Decode(http3WithPayload.PayloadSequence, endHeaders: true, this);
         _headerHandler.QpackDecoder.Reset();
         return _headerHandler.DecodedHeaders.ToDictionary(kvp => kvp.Key, kvp => kvp.Value, _headerHandler.DecodedHeaders.Comparer);
     }
@@ -693,7 +693,7 @@ internal class Http3RequestStream : Http3StreamBase, IHttpHeadersHandler
         Http3InMemory.AssertFrameType(http3WithPayload.Type, Http3FrameType.Headers);
 
         _headerHandler.DecodedHeaders.Clear();
-        _headerHandler.QpackDecoder.Decode(http3WithPayload.PayloadSequence, this);
+        _headerHandler.QpackDecoder.Decode(http3WithPayload.PayloadSequence, endHeaders: true, this);
         _headerHandler.QpackDecoder.Reset();
         return _headerHandler.DecodedHeaders.ToDictionary(kvp => kvp.Key, kvp => kvp.Value, _headerHandler.DecodedHeaders.Comparer);
     }

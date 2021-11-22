@@ -315,7 +315,7 @@ internal class Http3FrameWriter
 
                 _outgoingFrame.PrepareHeaders();
                 var buffer = _headerEncodingBuffer.GetSpan(HeaderBufferSize);
-                var done = QPackHeaderWriter.BeginEncode(_headersEnumerator, buffer, ref _headersTotalSize, out var payloadLength);
+                var done = QPackHeaderWriter.BeginEncodeHeaders(_headersEnumerator, buffer, ref _headersTotalSize, out var payloadLength);
                 FinishWritingHeaders(payloadLength, done);
             }
             // Any exception from the QPack encoder can leave the dynamic table in a corrupt state.
@@ -370,7 +370,7 @@ internal class Http3FrameWriter
 
                 _outgoingFrame.PrepareHeaders();
                 var buffer = _headerEncodingBuffer.GetSpan(HeaderBufferSize);
-                var done = QPackHeaderWriter.BeginEncode(statusCode, _headersEnumerator, buffer, ref _headersTotalSize, out var payloadLength);
+                var done = QPackHeaderWriter.BeginEncodeHeaders(statusCode, _headersEnumerator, buffer, ref _headersTotalSize, out var payloadLength);
                 FinishWritingHeaders(payloadLength, done);
             }
             // Any exception from the QPack encoder can leave the dynamic table in a corrupt state.
