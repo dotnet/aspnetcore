@@ -14,15 +14,6 @@ namespace Microsoft.AspNetCore.Mvc;
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
 public class SkipStatusCodePagesAttribute : Attribute, IResourceFilter, ISkipStatusCodePagesMetadata
 {
-    /// <summary>
-    /// Initializes a new instace of <see cref="SkipStatusCodePagesAttribute" />
-    /// with <see cref="ISkipStatusCodePagesMetadata.Enabled" /> set to <lang ref="false" />.
-    /// </summary>
-    public SkipStatusCodePagesAttribute()
-    {
-        Enabled = false;
-    }
-
     /// <inheritdoc />
     public void OnResourceExecuted(ResourceExecutedContext context)
     {
@@ -43,7 +34,4 @@ public class SkipStatusCodePagesAttribute : Attribute, IResourceFilter, ISkipSta
             statusCodeFeature.Enabled = false;
         }
     }
-
-    /// <inheritdoc />
-    public bool Enabled { get; }
 }

@@ -9,8 +9,4 @@ namespace Microsoft.AspNetCore.Http.Metadata;
 /// </summary>
 public interface ISkipStatusCodePagesMetadata
 {
-    /// <summary>
-    /// Gets whether or not status code pages are enabled for an endpoint.
-    /// </summary>
-    bool Enabled { get; }
 }

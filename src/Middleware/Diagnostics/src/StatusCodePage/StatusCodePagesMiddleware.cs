@@ -43,11 +43,16 @@ public class StatusCodePagesMiddleware
         var statusCodeFeature = new StatusCodePagesFeature();
         context.Features.Set<IStatusCodePagesFeature>(statusCodeFeature);
         var endpoint = context.GetEndpoint();
-        var statusCodeMetadata = endpoint?.Metadata.GetMetadata<ISkipStatusCodePagesMetadata>();
+        var skipStatusCodePageMetadata = endpoint?.Metadata.GetMetadata<ISkipStatusCodePagesMetadata>();
+
+        if (skipStatusCodePageMetadata is not null)
+        {
+            statusCodeFeature.Enabled = false;
+        }
 
         await _next(context);
 
-        if (!statusCodeFeature.Enabled || statusCodeMetadata?.Enabled is false)
+        if (!statusCodeFeature.Enabled)
         {
             // Check if the feature is still available because other middleware (such as a web API written in MVC) could
             // have disabled the feature to prevent HTML status code responses from showing up to an API client.

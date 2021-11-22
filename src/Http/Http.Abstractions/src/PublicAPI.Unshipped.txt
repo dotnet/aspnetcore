@@ -2,4 +2,3 @@
 *REMOVED*abstract Microsoft.AspNetCore.Http.HttpResponse.ContentType.get -> string!
 abstract Microsoft.AspNetCore.Http.HttpResponse.ContentType.get -> string?
 Microsoft.AspNetCore.Http.Metadata.ISkipStatusCodePagesMetadata
-Microsoft.AspNetCore.Http.Metadata.ISkipStatusCodePagesMetadata.Enabled.get -> bool

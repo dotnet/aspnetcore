@@ -28,7 +28,6 @@ public class SkipStatusCodePagesAttributeTest
 
         // Assert
         Assert.False(statusCodePagesFeature.Enabled);
-        Assert.False(skipStatusCodeAttribute.Enabled);
     }
 
     [Fact]
@@ -40,9 +39,6 @@ public class SkipStatusCodePagesAttributeTest
 
         // Act
         skipStatusCodeAttribute.OnResourceExecuting(resourceExecutingContext);
-
-        // Assert
-        Assert.False(skipStatusCodeAttribute.Enabled);
     }
 
     private static ResourceExecutingContext CreateResourceExecutingContext(IFilterMetadata[] filters)
