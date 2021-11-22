@@ -96,6 +96,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task MoveFile(bool usePolling)
         {
             await UsingTempDirectory(async dir =>
