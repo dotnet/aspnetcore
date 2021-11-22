@@ -7,6 +7,7 @@ using System.IO.Pipelines;
 using System.Net.Http;
 using System.Net.Http.QPack;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks.Sources;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -46,8 +47,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpH
     private int _totalParsedHeaderSize;
     private bool _isMethodConnect;
 
-    // TODO: Change to resetable ValueTask source
-    private TaskCompletionSource? _appCompleted;
+    private readonly ManualResetValueTaskSource<object?> _appCompletedTaskSource = new ManualResetValueTaskSource<object?>();
 
     private StreamCompletionFlags _completionState;
     private readonly object _completionLock = new object();
@@ -69,8 +69,8 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpH
     public long StreamId => _streamIdFeature.StreamId;
 
     public long StreamTimeoutTicks { get; set; }
-    public bool IsReceivingHeader => _appCompleted == null; // TCS is assigned once headers are received
-    public bool IsDraining => _appCompleted?.Task.IsCompleted ?? false; // Draining starts once app is complete
+    public bool IsReceivingHeader => _requestHeaderParsingState <= RequestHeaderParsingState.Headers; // Assigned once headers are received
+    public bool IsDraining => _appCompletedTaskSource.GetStatus() != ValueTaskSourceStatus.Pending; // Draining starts once app is complete
 
     public bool IsRequestStream => true;
 
@@ -86,7 +86,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpH
         _streamIdFeature = _context.ConnectionFeatures.Get<IStreamIdFeature>()!;
         _streamAbortFeature = _context.ConnectionFeatures.Get<IStreamAbortFeature>()!;
 
-        _appCompleted = null;
+        _appCompletedTaskSource.Reset();
         _isClosed = 0;
         _requestHeaderParsingState = default;
         _parsedPseudoHeaderFields = default;
@@ -402,8 +402,8 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpH
 
         // Stream will be pooled after app completed.
         // Wait to signal app completed after any potential aborts on the stream.
-        Debug.Assert(_appCompleted != null);
-        _appCompleted.SetResult();
+        Debug.Assert(_appCompletedTaskSource != null);
+        _appCompletedTaskSource.SetResult(null);
     }
 
     private bool TryClose()
@@ -491,8 +491,12 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpH
 
             await Input.CompleteAsync();
 
-            var appCompleted = _appCompleted?.Task ?? Task.CompletedTask;
-            if (!appCompleted.IsCompletedSuccessfully)
+            // Once the header is finished being received then the app has started.
+            var appCompletedTask = !IsReceivingHeader
+                ? new ValueTask(_appCompletedTaskSource, _appCompletedTaskSource.Version)
+                : ValueTask.CompletedTask;
+
+            if (!appCompletedTask.IsCompletedSuccessfully)
             {
                 // At this point in the stream's read-side is complete. However, with HTTP/3
                 // the write-side of the stream can still be aborted by the client on request
@@ -528,7 +532,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpH
                 }, this);
 
                 // Make sure application func is completed before completing writer.
-                await appCompleted;
+                await appCompletedTask;
             }
 
             try
@@ -629,7 +633,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpH
             throw new Http3ConnectionErrorException(CoreStrings.FormatHttp3StreamErrorFrameReceivedAfterTrailers(Http3Formatting.ToFormattedType(Http3FrameType.Headers)), Http3ErrorCode.UnexpectedFrame);
         }
 
-        if (_requestHeaderParsingState == RequestHeaderParsingState.Headers)
+        if (_requestHeaderParsingState == RequestHeaderParsingState.Body)
         {
             _requestHeaderParsingState = RequestHeaderParsingState.Trailers;
         }
@@ -678,7 +682,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpH
             throw new Http3StreamErrorException(CoreStrings.HttpErrorMissingMandatoryPseudoHeaderFields, Http3ErrorCode.MessageError);
         }
 
-        _appCompleted = new TaskCompletionSource();
+        _requestHeaderParsingState = RequestHeaderParsingState.Body;
         StreamTimeoutTicks = default;
         _context.StreamLifetimeHandler.OnStreamHeaderReceived(this);
 
@@ -990,6 +994,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpH
         Ready,
         PseudoHeaderFields,
         Headers,
+        Body,
         Trailers
     }
 
