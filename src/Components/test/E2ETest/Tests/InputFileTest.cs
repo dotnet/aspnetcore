@@ -128,6 +128,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/pull/38532")]
         public void CanUploadAndConvertImageFile()
         {
             var sourceImageId = "image-source";
