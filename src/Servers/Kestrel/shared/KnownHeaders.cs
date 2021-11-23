@@ -59,6 +59,7 @@ public class KnownHeaders
         .ToArray();
 
     public static readonly long InvalidH2H3ResponseHeadersBits;
+    public static readonly long PsuedoRequestHeadersBits;
 
     static KnownHeaders()
     {
@@ -261,6 +262,11 @@ public class KnownHeaders
 
         InvalidH2H3ResponseHeadersBits = ResponseHeaders
             .Where(header => invalidH2H3ResponseHeaders.Contains(header.Name))
+            .Select(header => 1L << header.Index)
+            .Aggregate((a, b) => a | b);
+
+        PsuedoRequestHeadersBits = RequestHeaders
+            .Where(header => PsuedoHeaderNames.Contains(header.Identifier))
             .Select(header => 1L << header.Index)
             .Aggregate((a, b) => a | b);
     }
@@ -1249,6 +1255,11 @@ $@"        private void Clear(long bitsToClear)
                 }}
             }} while (tempBits != 0);
         }}" : "")}{(loop.ClassName == "HttpRequestHeaders" ? $@"
+        internal void ClearPsuedoRequestHeaders()
+        {{
+            _psuedoBits = _bits & {PsuedoRequestHeadersBits};
+            _bits &= ~{PsuedoRequestHeadersBits};
+        }}
         {Each(new string[] { "ushort", "uint", "ulong" }, type => $@"
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static unsafe {type} ReadUnalignedLittleEndian_{type}(ref byte source)
