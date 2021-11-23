@@ -7102,6 +7102,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return true;
         }
         
+        internal void ClearPseudoRequestHeaders()
+        {
+            _pseudoBits = _bits & 240;
+            _bits &= ~240;
+        }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static unsafe ushort ReadUnalignedLittleEndian_ushort(ref byte source)
