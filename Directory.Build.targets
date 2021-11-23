@@ -200,7 +200,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Net.Compilers.Toolset"
-      Version="4.0.1-ci.final"
+      Version="4.1.0-ci.final"
       PrivateAssets="all"
       IsImplicitlyDefined="true" />
   </ItemGroup>
