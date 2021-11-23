@@ -209,8 +209,8 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
         // do the reading from a pipeline, nor do we use endConnection to report connection-level errors.
         endConnection = !TryValidatePseudoHeaders();
 
-        // Suppress pseduo headers from the public headers collection.
-        HttpRequestHeaders.ClearPsuedoRequestHeaders();
+        // Suppress pseudo headers from the public headers collection.
+        HttpRequestHeaders.ClearPseudoRequestHeaders();
 
         return true;
     }

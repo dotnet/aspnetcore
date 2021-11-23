@@ -19,7 +19,7 @@ internal sealed partial class HttpRequestHeaders : HttpHeaders
 {
     private EnumeratorCache? _enumeratorCache;
     private long _previousBits;
-    private long _psuedoBits;
+    private long _pseudoBits;
 
     public bool ReuseHeaderValues { get; set; }
     public Func<string, Encoding?> EncodingSelector { get; set; }
@@ -55,19 +55,19 @@ internal sealed partial class HttpRequestHeaders : HttpHeaders
         if (!ReuseHeaderValues)
         {
             // If we aren't reusing headers clear them all
-            Clear(_bits);
+            Clear(_bits | _pseudoBits);
         }
         else
         {
             // If we are reusing headers, store the currently set headers for comparison later
-            // Psuedo header bits were cleared at the start of a request to hide from the user.
+            // Pseudo header bits were cleared at the start of a request to hide from the user.
             // Keep those values for reuse.
-            _previousBits = _bits | _psuedoBits;
+            _previousBits = _bits | _pseudoBits;
         }
 
         // Mark no headers as currently in use
         _bits = 0;
-        _psuedoBits = 0;
+        _pseudoBits = 0;
         // Clear ContentLength and any unknown headers as we will never reuse them
         _contentLength = null;
         MaybeUnknown?.Clear();

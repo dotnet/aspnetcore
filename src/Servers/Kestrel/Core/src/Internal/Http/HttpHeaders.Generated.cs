@@ -7102,9 +7102,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return true;
         }
         
-        internal void ClearPsuedoRequestHeaders()
+        internal void ClearPseudoRequestHeaders()
         {
-            _psuedoBits = _bits & 240;
+            _pseudoBits = _bits & 240;
             _bits &= ~240;
         }
         

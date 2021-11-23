@@ -39,7 +39,7 @@ public class KnownHeaders
             HeaderNames.DNT,
         };
 
-    public static readonly string[] PsuedoHeaderNames = new[]
+    public static readonly string[] PseudoHeaderNames = new[]
     {
             "Authority", // :authority
             "Method", // :method
@@ -50,7 +50,7 @@ public class KnownHeaders
 
     public static readonly string[] NonApiHeaders =
         ObsoleteHeaderNames
-        .Concat(PsuedoHeaderNames)
+        .Concat(PseudoHeaderNames)
         .ToArray();
 
     public static readonly string[] ApiHeaderNames =
@@ -59,7 +59,7 @@ public class KnownHeaders
         .ToArray();
 
     public static readonly long InvalidH2H3ResponseHeadersBits;
-    public static readonly long PsuedoRequestHeadersBits;
+    public static readonly long PseudoRequestHeadersBits;
 
     static KnownHeaders()
     {
@@ -265,8 +265,8 @@ public class KnownHeaders
             .Select(header => 1L << header.Index)
             .Aggregate((a, b) => a | b);
 
-        PsuedoRequestHeadersBits = RequestHeaders
-            .Where(header => PsuedoHeaderNames.Contains(header.Identifier))
+        PseudoRequestHeadersBits = RequestHeaders
+            .Where(header => PseudoHeaderNames.Contains(header.Identifier))
             .Select(header => 1L << header.Index)
             .Aggregate((a, b) => a | b);
     }
@@ -1255,10 +1255,10 @@ $@"        private void Clear(long bitsToClear)
                 }}
             }} while (tempBits != 0);
         }}" : "")}{(loop.ClassName == "HttpRequestHeaders" ? $@"
-        internal void ClearPsuedoRequestHeaders()
+        internal void ClearPseudoRequestHeaders()
         {{
-            _psuedoBits = _bits & {PsuedoRequestHeadersBits};
-            _bits &= ~{PsuedoRequestHeadersBits};
+            _pseudoBits = _bits & {PseudoRequestHeadersBits};
+            _bits &= ~{PseudoRequestHeadersBits};
         }}
         {Each(new string[] { "ushort", "uint", "ulong" }, type => $@"
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

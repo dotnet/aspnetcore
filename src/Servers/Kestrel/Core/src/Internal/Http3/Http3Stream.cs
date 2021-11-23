@@ -756,8 +756,8 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpH
     {
         endConnection = !TryValidatePseudoHeaders();
 
-        // Suppress pseduo headers from the public headers collection.
-        HttpRequestHeaders.ClearPsuedoRequestHeaders();
+        // Suppress pseudo headers from the public headers collection.
+        HttpRequestHeaders.ClearPseudoRequestHeaders();
 
         return true;
     }
