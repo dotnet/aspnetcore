@@ -1,3 +1,4 @@
 #nullable enable
 *REMOVED*abstract Microsoft.AspNetCore.Http.HttpResponse.ContentType.get -> string!
 abstract Microsoft.AspNetCore.Http.HttpResponse.ContentType.get -> string?
+Microsoft.AspNetCore.Http.Metadata.ISkipStatusCodePagesMetadata

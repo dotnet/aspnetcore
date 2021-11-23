@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace Microsoft.AspNetCore.Mvc;
@@ -11,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc;
 /// A filter that prevents execution of the StatusCodePages middleware.
 /// </summary>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-public class SkipStatusCodePagesAttribute : Attribute, IResourceFilter
+public class SkipStatusCodePagesAttribute : Attribute, IResourceFilter, ISkipStatusCodePagesMetadata
 {
     /// <inheritdoc />
     public void OnResourceExecuted(ResourceExecutedContext context)
