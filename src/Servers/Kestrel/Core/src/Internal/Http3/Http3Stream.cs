@@ -640,7 +640,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpH
 
         try
         {
-            QPackDecoder.Decode(payload, handler: this);
+            QPackDecoder.Decode(payload, endHeaders: true, handler: this);
             QPackDecoder.Reset();
         }
         catch (QPackDecodingException ex)
