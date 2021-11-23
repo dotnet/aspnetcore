@@ -148,6 +148,8 @@ internal sealed class Http3HeadersEnumerator : IEnumerator<KeyValuePair<string, 
 
     internal static int GetResponseHeaderStaticTableId(KnownHeaderType responseHeaderType)
     {
+        // Removed from this test are request-only headers, e.g. cookie.
+        //
         // Not every header in the QPACK static table is known.
         // These are missing from this test and the full header name is written.
         // Missing:
@@ -171,28 +173,14 @@ internal sealed class Http3HeadersEnumerator : IEnumerator<KeyValuePair<string, 
                 return H3StaticTable.ContentLength0;
             case KnownHeaderType.Date:
                 return H3StaticTable.Date;
-            case KnownHeaderType.Cookie:
-                return H3StaticTable.Cookie;
             case KnownHeaderType.ETag:
                 return H3StaticTable.ETag;
-            case KnownHeaderType.IfModifiedSince:
-                return H3StaticTable.IfModifiedSince;
-            case KnownHeaderType.IfNoneMatch:
-                return H3StaticTable.IfNoneMatch;
             case KnownHeaderType.LastModified:
                 return H3StaticTable.LastModified;
             case KnownHeaderType.Location:
                 return H3StaticTable.Location;
-            case KnownHeaderType.Referer:
-                return H3StaticTable.Referer;
             case KnownHeaderType.SetCookie:
                 return H3StaticTable.SetCookie;
-            case KnownHeaderType.Method:
-                return H3StaticTable.MethodConnect;
-            case KnownHeaderType.Accept:
-                return H3StaticTable.AcceptAny;
-            case KnownHeaderType.AcceptEncoding:
-                return H3StaticTable.AcceptEncodingGzipDeflateBr;
             case KnownHeaderType.AcceptRanges:
                 return H3StaticTable.AcceptRangesBytes;
             case KnownHeaderType.AccessControlAllowHeaders:
@@ -205,30 +193,16 @@ internal sealed class Http3HeadersEnumerator : IEnumerator<KeyValuePair<string, 
                 return H3StaticTable.ContentEncodingBr;
             case KnownHeaderType.ContentType:
                 return H3StaticTable.ContentTypeApplicationDnsMessage;
-            case KnownHeaderType.Range:
-                return H3StaticTable.RangeBytes0ToAll;
             case KnownHeaderType.Vary:
                 return H3StaticTable.VaryAcceptEncoding;
-            case KnownHeaderType.AcceptLanguage:
-                return H3StaticTable.AcceptLanguage;
             case KnownHeaderType.AccessControlAllowCredentials:
                 return H3StaticTable.AccessControlAllowCredentials;
             case KnownHeaderType.AccessControlAllowMethods:
                 return H3StaticTable.AccessControlAllowMethodsGet;
             case KnownHeaderType.AltSvc:
                 return H3StaticTable.AltSvcClear;
-            case KnownHeaderType.Authorization:
-                return H3StaticTable.Authorization;
-            case KnownHeaderType.IfRange:
-                return H3StaticTable.IfRange;
-            case KnownHeaderType.Origin:
-                return H3StaticTable.Origin;
             case KnownHeaderType.Server:
                 return H3StaticTable.Server;
-            case KnownHeaderType.UpgradeInsecureRequests:
-                return H3StaticTable.UpgradeInsecureRequests1;
-            case KnownHeaderType.UserAgent:
-                return H3StaticTable.UserAgent;
             default:
                 return -1;
         }
