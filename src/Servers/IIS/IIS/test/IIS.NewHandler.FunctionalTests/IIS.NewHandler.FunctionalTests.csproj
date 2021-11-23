@@ -12,8 +12,7 @@
   <Import Project="../FunctionalTest.props" />
 
   <ItemGroup>
-    <Compile Include="..\Common.FunctionalTests\StartupTests.cs" />
-    <Compile Include="..\Common.FunctionalTests\ShutdownTests.cs" />
+    <Compile Include="..\Common.LongTests\**\*.cs" />
     <Compile Include="..\Common.FunctionalTests\Infrastructure\*.cs" />
     <Compile Include="..\IIS.Shared.FunctionalTests\Properties\AssemblyInfo.cs" />
     <Compile Include="$(SharedSourceRoot)Http2cat\**\*.cs" LinkBase="Shared\Http2cat" />

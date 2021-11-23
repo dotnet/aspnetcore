@@ -25,6 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\Common.LongTests\**\*.cs" />
     <Compile Include="..\Common.FunctionalTests\**\*.cs" />
     <Compile Remove="..\Common.FunctionalTests\Infrastructure\RequiresIISAttribute.cs" />
     <Compile Include="$(SharedSourceRoot)Http2cat\**\*.cs" LinkBase="Shared\Http2cat" />
