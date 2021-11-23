@@ -8,24 +8,6 @@ namespace System.Net.Http.QPack
 {
     internal static partial class H3StaticTable
     {
-        private static readonly Dictionary<int, int> s_statusIndex = new Dictionary<int, int>
-        {
-            [103] = 24,
-            [200] = 25,
-            [304] = 26,
-            [404] = 27,
-            [503] = 28,
-            [100] = 63,
-            [204] = 64,
-            [206] = 65,
-            [302] = 66,
-            [400] = 67,
-            [403] = 68,
-            [421] = 69,
-            [425] = 70,
-            [500] = 71,
-        };
-
         private static readonly Dictionary<HttpMethod, int> s_methodIndex = new Dictionary<HttpMethod, int>
         {
             // TODO connect is internal to system.net.http
@@ -37,10 +19,33 @@ namespace System.Net.Http.QPack
             [HttpMethod.Put] = 21,
         };
 
+        public static bool TryGetStatusIndex(int status, out int index)
+        {
+            index = status switch
+            {
+                103 => 24,
+                200 => 25,
+                304 => 26,
+                404 => 27,
+                503 => 28,
+                100 => 63,
+                204 => 64,
+                206 => 65,
+                302 => 66,
+                400 => 67,
+                403 => 68,
+                421 => 69,
+                425 => 70,
+                500 => 71,
+                _ => -1
+            };
+
+            return index != -1;
+        }
+
         public static int Count => s_staticTable.Length;
 
         // TODO: just use Dictionary directly to avoid interface dispatch.
-        public static IReadOnlyDictionary<int, int> StatusIndex => s_statusIndex;
         public static IReadOnlyDictionary<HttpMethod, int> MethodIndex => s_methodIndex;
 
         public static HeaderField GetHeaderFieldAt(int index) => s_staticTable[index];

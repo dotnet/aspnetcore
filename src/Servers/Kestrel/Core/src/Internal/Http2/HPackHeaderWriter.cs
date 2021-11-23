@@ -73,21 +73,16 @@ internal static class HPackHeaderWriter
 
     private static bool EncodeStatusHeader(int statusCode, DynamicHPackEncoder hpackEncoder, Span<byte> buffer, out int length)
     {
-        switch (statusCode)
+        if (H2StaticTable.TryGetStatusIndex(statusCode, out var index))
         {
-            case 200:
-            case 204:
-            case 206:
-            case 304:
-            case 400:
-            case 404:
-            case 500:
-                // Status codes which exist in the HTTP/2 StaticTable.
-                return HPackEncoder.EncodeIndexedHeaderField(H2StaticTable.GetStatusIndex(statusCode), buffer, out length);
-            default:
-                const string name = ":status";
-                var value = StatusCodes.ToStatusString(statusCode);
-                return hpackEncoder.EncodeHeader(buffer, H2StaticTable.Status200, HeaderEncodingHint.Index, name, value, valueEncoding: null, out length);
+            // Status codes which exist in the HTTP/2 StaticTable.
+            return HPackEncoder.EncodeIndexedHeaderField(index, buffer, out length);
+        }
+        else
+        {
+            const string name = ":status";
+            var value = StatusCodes.ToStatusString(statusCode);
+            return hpackEncoder.EncodeHeader(buffer, H2StaticTable.Status200, HeaderEncodingHint.Index, name, value, valueEncoding: null, out length);
         }
     }
 
