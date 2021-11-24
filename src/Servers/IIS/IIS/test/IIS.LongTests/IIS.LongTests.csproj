@@ -2,27 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <TestGroupName>IISNewHandler.FunctionalTests</TestGroupName>
+    <TestGroupName>IIS.LongTests</TestGroupName>
+    <DefineConstants>IIS_FUNCTIONALS</DefineConstants>
     <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
-    <DefineConstants>NEWHANDLER_FUNCTIONALS</DefineConstants>
-    <SkipTests Condition=" '$(SkipIISNewHandlerTests)' == 'true' ">true</SkipTests>
+    <SkipTests Condition=" '$(SkipIISTests)' == 'true' ">true</SkipTests>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <Import Project="../FunctionalTest.props" />
-
-  <ItemGroup>
-    <Compile Include="..\Common.LongTests\**\*.cs" />
-    <Compile Include="..\Common.FunctionalTests\Infrastructure\*.cs" />
-    <Compile Include="..\IIS.Shared.FunctionalTests\Properties\AssemblyInfo.cs" />
-    <Compile Include="$(SharedSourceRoot)Http2cat\**\*.cs" LinkBase="Shared\Http2cat" />
-    <Compile Include="$(SharedSourceRoot)runtime\Http2\**\*.cs" LinkBase="Shared\Http2\" />
-    <Compile Include="$(SharedSourceRoot)runtime\IHttpHeadersHandler.cs" LinkBase="Shared\IHttpHeadersHandler.cs" />
-    <Compile Include="$(SharedSourceRoot)runtime\SR.cs" LinkBase="Shared\SR.cs" />
-    <Compile Include="$(SharedSourceRoot)ServerInfrastructure\**\*.cs" LinkBase="Shared\" Exclude="$(SharedSourceRoot)ServerInfrastructure\DuplexPipe.cs" />
-    <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" LinkBase="Shared\" />
-    <Compile Include="$(SharedSourceRoot)TaskToApm.cs" Link="Shared\TaskToApm.cs" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\testassets\IIS.Common.TestLib\IIS.Common.TestLib.csproj" />
@@ -33,10 +20,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- The versions on these references are hard-coded because we want to ensure we maintain backwards compatibility with ANCM 2.2.0 -->
-    <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModuleV2" Version="2.2.0">
-      <AllowExplicitReference>true</AllowExplicitReference>
-    </PackageReference>
+    <Compile Include="..\Common.FunctionalTests\Infrastructure\**\*.cs" />
+    <Compile Include="..\Common.LongTests\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)Http2cat\**\*.cs" LinkBase="Shared\Http2cat" />
+    <Compile Include="$(SharedSourceRoot)runtime\Http2\**\*.cs" LinkBase="Shared\Http2\" />
+    <Compile Include="$(SharedSourceRoot)runtime\IHttpHeadersHandler.cs" LinkBase="Shared\IHttpHeadersHandler.cs" />
+    <Compile Include="$(SharedSourceRoot)runtime\SR.cs" LinkBase="Shared\SR.cs" />
+    <Compile Include="$(SharedSourceRoot)ServerInfrastructure\**\*.cs" LinkBase="Shared\" Exclude="$(SharedSourceRoot)ServerInfrastructure\DuplexPipe.cs" />
+    <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" LinkBase="Shared\" />
+    <Compile Include="$(SharedSourceRoot)TaskToApm.cs" Link="Shared\TaskToApm.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -57,5 +49,4 @@
       <Generator></Generator>
     </EmbeddedResource>
   </ItemGroup>
-
 </Project>

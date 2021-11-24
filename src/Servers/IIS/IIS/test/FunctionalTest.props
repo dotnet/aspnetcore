@@ -1,9 +1,5 @@
 <Project>
 
-  <PropertyGroup>
-    <HelixTimeout>01:15:00</HelixTimeout>
-  </PropertyGroup>
-
   <ItemGroup>
     <Content Include="..\Common.FunctionalTests\Infrastructure\*.config" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
