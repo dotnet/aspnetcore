@@ -26,7 +26,6 @@
 
   <!-- Override a few properties in innermost (Publish) build for Helix submission. -->
   <PropertyGroup Condition=" '$(HelixTargetQueue)' != '' ">
-    <HelixTimeout Condition="$(HelixTargetQueue.StartsWith('Windows.10.Amd64'))">00:40:00</HelixTimeout>
     <IsArm64HelixQueue Condition="$(HelixTargetQueue.Contains('Arm64'))">true</IsArm64HelixQueue>
     <IsWindowsHelixQueue Condition="$(HelixTargetQueue.Contains('Windows'))">true</IsWindowsHelixQueue>
     <IsMacHelixQueue Condition="$(HelixTargetQueue.Contains('OSX'))">true</IsMacHelixQueue>
