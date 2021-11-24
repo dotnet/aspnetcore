@@ -44,6 +44,8 @@ public class IISExpressDeployer : IISDeployerBase
     {
     }
 
+    protected override string ApplicationHostConfigPath => DeploymentParameters.ServerConfigLocation;
+
     public override async Task<DeploymentResult> DeployAsync()
     {
         using (Logger.BeginScope("Deployment"))
