@@ -1507,14 +1507,13 @@ public class Http2WebSocketTests : Http2TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-            };
+            new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+        };
         await InitializeConnectionAsync(async httpContext =>
         {
             var response = httpContext.Response;
-
 
             var memory = response.BodyWriter.GetMemory(4096);
             var fisrtPartOfResponse = Encoding.ASCII.GetBytes("hello,");

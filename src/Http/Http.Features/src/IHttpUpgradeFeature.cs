@@ -14,12 +14,6 @@ public interface IHttpUpgradeFeature
     bool IsUpgradableRequest { get; }
 
     /// <summary>
-    /// Gets or sets the HTTP/2 :protocol field used with the CONNECT method.
-    /// See https://datatracker.ietf.org/doc/html/rfc8441.
-    /// </summary>
-    string? Protocol => null;
-
-    /// <summary>
     /// Attempt to upgrade the request to an opaque, bidirectional stream. The response status code
     /// and headers need to be set before this is invoked. Check <see cref="IsUpgradableRequest"/>
     /// before invoking.

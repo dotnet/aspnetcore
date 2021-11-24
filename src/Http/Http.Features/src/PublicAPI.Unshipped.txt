@@ -1,4 +1,3 @@
 #nullable enable
 Microsoft.AspNetCore.Http.Features.IHttpRequestFeature.ConnectProtocol.get -> string?
 Microsoft.AspNetCore.Http.Features.IHttpRequestFeature.ConnectProtocol.set -> void
-Microsoft.AspNetCore.Http.Features.IHttpUpgradeFeature.Protocol.get -> string?
