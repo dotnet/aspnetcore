@@ -11,9 +11,8 @@ namespace System.Net.Http.HPack
 
         public static ref readonly HeaderField Get(int index) => ref s_staticDecoderTable[index];
 
-        public static bool TryGetStatusIndex(int status, out int index)
-        {
-            index = status switch
+        public static int GetStatusIndex(int status) =>
+            status switch
             {
                 200 => 8,
                 204 => 9,
@@ -22,11 +21,8 @@ namespace System.Net.Http.HPack
                 400 => 12,
                 404 => 13,
                 500 => 14,
-                _ => -1
+                _ => throw new ArgumentOutOfRangeException(nameof(status))
             };
-
-            return index != -1;
-        }
 
         private static readonly HeaderField[] s_staticDecoderTable = new HeaderField[]
         {
