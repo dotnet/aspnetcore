@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNetCore.Diagnostics;
 
 /// <summary>
-/// Provides an extensiblity point for changing the behavior of the <see cref="DeveloperExceptionPageMiddleware"/>.
+/// Provides an extensibility point for changing the behavior of the <see cref="Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware"/>.
 /// </summary>
 public interface IDeveloperPageExceptionFilter
 {
