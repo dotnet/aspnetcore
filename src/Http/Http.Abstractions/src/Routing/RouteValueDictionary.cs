@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -741,8 +740,6 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
 
     internal class PropertyStorage
     {
-        private static readonly ConcurrentDictionary<Type, PropertyHelper[]> _propertyCache = new ConcurrentDictionary<Type, PropertyHelper[]>();
-
         public readonly object Value;
         public readonly PropertyHelper[] Properties;
 
@@ -753,12 +750,8 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
 
             // Cache the properties so we can know if we've already validated them for duplicates.
             var type = Value.GetType();
-            if (!_propertyCache.TryGetValue(type, out Properties!))
-            {
-                Properties = PropertyHelper.GetVisibleProperties(type);
-                ValidatePropertyNames(type, Properties);
-                _propertyCache.TryAdd(type, Properties);
-            }
+            Properties = PropertyHelper.GetVisibleProperties(type);
+            ValidatePropertyNames(type, Properties);
         }
 
         private static void ValidatePropertyNames(Type type, PropertyHelper[] properties)
