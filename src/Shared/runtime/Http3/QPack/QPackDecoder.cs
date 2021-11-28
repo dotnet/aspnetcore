@@ -180,15 +180,33 @@ namespace System.Net.Http.QPack
         {
             foreach (ReadOnlyMemory<byte> segment in headerBlock)
             {
-                Decode(segment.Span, endHeaders: false, handler);
+                DecodeCore(segment.Span, handler);
             }
+            CheckIncompleteHeaderBlock(endHeaders);
         }
 
         public void Decode(ReadOnlySpan<byte> headerBlock, bool endHeaders, IHttpHeadersHandler handler)
         {
+            DecodeCore(headerBlock, handler);
+            CheckIncompleteHeaderBlock(endHeaders);
+        }
+
+        private void DecodeCore(ReadOnlySpan<byte> headerBlock, IHttpHeadersHandler handler)
+        {
             foreach (byte b in headerBlock)
             {
                 OnByte(b, handler);
+            }
+        }
+
+        private void CheckIncompleteHeaderBlock(bool endHeaders)
+        {
+            if (endHeaders)
+            {
+                if (_state != State.CompressedHeaders)
+                {
+                    throw new QPackDecodingException(SR.net_http_hpack_incomplete_header_block);
+                }
             }
         }
 

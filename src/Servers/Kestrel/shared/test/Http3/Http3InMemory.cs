@@ -718,13 +718,13 @@ internal class Http3RequestStream : Http3StreamBase, IHttpHeadersHandler
 
     public void OnStaticIndexedHeader(int index)
     {
-        var knownHeader = H3StaticTable.GetHeaderFieldAt(index);
+        var knownHeader = H3StaticTable.Get(index);
         _headerHandler.DecodedHeaders[((Span<byte>)knownHeader.Name).GetAsciiStringNonNullCharacters()] = HttpUtilities.GetAsciiOrUTF8StringNonNullCharacters((ReadOnlySpan<byte>)knownHeader.Value);
     }
 
     public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
     {
-        _headerHandler.DecodedHeaders[((Span<byte>)H3StaticTable.GetHeaderFieldAt(index).Name).GetAsciiStringNonNullCharacters()] = value.GetAsciiOrUTF8StringNonNullCharacters();
+        _headerHandler.DecodedHeaders[((Span<byte>)H3StaticTable.Get(index).Name).GetAsciiStringNonNullCharacters()] = value.GetAsciiOrUTF8StringNonNullCharacters();
     }
 
     public void Complete()
