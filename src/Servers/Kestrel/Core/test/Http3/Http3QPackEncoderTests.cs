@@ -108,7 +108,7 @@ public class Http3QPackEncoderTests
 
         var result = buffer.Slice(2, length - 2).ToArray(); // trim prefix
         var hex = BitConverter.ToString(result);
-        Assert.Equal("37-02-74-72-61-6E-73-6C-61-74-65-07-70-72-69-76-61-74-65", hex);
+        Assert.Equal("37-03-6E-65-77-2D-68-65-61-64-65-72-05-76-61-6C-75-65", hex);
     }
 
     [Fact]
