@@ -12,7 +12,6 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Diagnostics" />
   </ItemGroup>
 
 </Project>
