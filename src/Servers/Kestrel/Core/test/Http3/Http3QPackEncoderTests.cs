@@ -148,4 +148,23 @@ public class Http3QPackEncoderTests
         var hex = BitConverter.ToString(result);
         Assert.Equal("5F-1D-12-61-70-70-6C-69-63-61-74-69-6F-6E-2F-63-75-73-74-6F-6D", hex);
     }
+
+    [Fact]
+    public void BeginEncodeHeaders_NonStaticKey_WriteFullNameAndFullValue_CustomHeader()
+    {
+        Span<byte> buffer = new byte[1024 * 16];
+
+        var headers = (IHeaderDictionary)new HttpResponseHeaders();
+        headers["new-header"] = "value";
+
+        var totalHeaderSize = 0;
+        var enumerator = new Http3HeadersEnumerator();
+        enumerator.Initialize(headers);
+
+        Assert.True(QPackHeaderWriter.BeginEncodeHeaders(enumerator, buffer, ref totalHeaderSize, out var length));
+
+        var result = buffer.Slice(2, length - 2).ToArray(); // trim prefix
+        var hex = BitConverter.ToString(result);
+        Assert.Equal("37-02-74-72-61-6E-73-6C-61-74-65-07-70-72-69-76-61-74-65", hex);
+    }
 }
