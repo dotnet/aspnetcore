@@ -136,7 +136,7 @@ public class Http3QPackEncoderTests
         Span<byte> buffer = new byte[1024 * 16];
 
         var headers = (IHeaderDictionary)new HttpResponseHeaders();
-        headers.ContentType = "application/json";
+        headers.ContentType = "application/custom";
 
         var totalHeaderSize = 0;
         var enumerator = new Http3HeadersEnumerator();
@@ -146,6 +146,6 @@ public class Http3QPackEncoderTests
 
         var result = buffer.Slice(2, length - 2).ToArray();
         var hex = BitConverter.ToString(result);
-        Assert.Equal("5F-1D-10-61-70-70-6C-69-63-61-74-69-6F-6E-2F-6A-73-6F-6E", hex);
+        Assert.Equal("5F-1D-12-61-70-70-6C-69-63-61-74-69-6F-6E-2F-63-75-73-74-6F-6D", hex);
     }
 }

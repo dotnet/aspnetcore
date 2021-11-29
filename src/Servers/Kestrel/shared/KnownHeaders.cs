@@ -1431,7 +1431,7 @@ $@"        private void Clear(long bitsToClear)
         var staticHeaders = new (int Index, System.Net.Http.QPack.HeaderField HeaderField)[H3StaticTable.Count];
         for (var i = 0; i < H3StaticTable.Count; i++)
         {
-            staticHeaders[i] = (i, H3StaticTable.GetHeaderFieldAt(i));
+            staticHeaders[i] = (i, H3StaticTable.Get(i));
         }
 
         var groupedHeaders = staticHeaders.GroupBy(h => Encoding.ASCII.GetString(h.HeaderField.Name)).Select(g =>
