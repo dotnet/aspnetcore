@@ -36,6 +36,7 @@ public class JSRootComponentsTest : ServerTestBase<ToggleExecutionModeServerFixt
     [InlineData(false, true)]
     [InlineData(true, false)]
     [InlineData(true, true)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/38613")]
     public void CanAddAndDisposeRootComponents(bool intoBlazorUi, bool attachShadowRoot)
     {
         var message = app.FindElement(By.Id("message"));
