@@ -7,9 +7,11 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
+using Azure.Storage.Blobs.Specialized;
 using Microsoft.Build.Framework;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Blob;
 
 namespace RepoTasks
 {
@@ -58,11 +60,10 @@ namespace RepoTasks
         {
             var connectionString = $"BlobEndpoint=https://{AccountName}.blob.core.windows.net;SharedAccessSignature={SharedAccessToken}";
 
-            var account = CloudStorageAccount.Parse(connectionString);
-            var client = account.CreateCloudBlobClient();
-            var container = client.GetContainerReference(ContainerName);
+            var client = new BlobServiceClient(connectionString);
+            var container = client.GetBlobContainerClient(ContainerName);
+            await container.CreateIfNotExistsAsync();
 
-            var ctx = new OperationContext();
             var tasks = new List<Task>();
 
             using (var throttler = new SemaphoreSlim(MaxParallelism))
@@ -76,7 +77,7 @@ namespace RepoTasks
                         {
                             try
                             {
-                                await PushFileAsync(ctx, container, item, _cts.Token);
+                                await PushFileAsync(container, item, _cts.Token);
                             }
                             finally
                             {
@@ -91,7 +92,7 @@ namespace RepoTasks
             return !Log.HasLoggedErrors;
         }
 
-        private async Task PushFileAsync(OperationContext ctx, CloudBlobContainer container, ITaskItem item, CancellationToken cancellationToken)
+        private async Task PushFileAsync(BlobContainerClient container, ITaskItem item, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -108,27 +109,39 @@ namespace RepoTasks
                 return;
             }
 
-            var blob = container.GetBlockBlobReference(dest);
+            var blob = container.GetBlockBlobClient(dest);
 
+            var headers = new BlobHttpHeaders();
             if (!string.IsNullOrEmpty(cacheControl))
             {
-                blob.Properties.CacheControl = cacheControl;
+                headers.CacheControl = cacheControl;
             }
 
             if (!string.IsNullOrEmpty(contentType))
             {
-                blob.Properties.ContentType = contentType;
+                headers.ContentType = contentType;
             }
 
             Log.LogMessage(MessageImportance.High, $"Beginning push of {item.ItemSpec} to https://{AccountName}.blob.core.windows.net/{ContainerName}/{dest}");
 
             var accessCondition = bool.TryParse(item.GetMetadata("Overwrite"), out var overwrite) && overwrite
-                ? AccessCondition.GenerateEmptyCondition()
-                : AccessCondition.GenerateIfNotExistsCondition();
+                ? null
+                : new BlobRequestConditions
+                {
+                    IfNoneMatch = ETag.All,
+                };
+            var uploadOptions = new BlobUploadOptions
+            {
+                Conditions = accessCondition,
+                HttpHeaders = headers,
+            };
 
             try
             {
-                await blob.UploadFromFileAsync(item.ItemSpec, accessCondition, new BlobRequestOptions(), ctx, cancellationToken);
+                await blob.UploadAsync(
+                    new FileStream(item.ItemSpec, FileMode.Open, FileAccess.Read),
+                    uploadOptions,
+                    cancellationToken);
             }
             catch (Exception ex)
             {

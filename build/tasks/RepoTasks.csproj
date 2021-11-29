@@ -11,9 +11,22 @@
     <PackageReference Include="Microsoft.DotNet.Archive" Version="$(MicrosoftDotNetArchivePackageVersion)" />
     <PackageReference Include="NuGet.Build.Tasks" Version="$(NuGetInMSBuildVersion)" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="$(DevDependency_MicrosoftExtensionsDependencyModelPackageVersion)" />
-    <PackageReference Include="WindowsAzure.Storage" Version="$(DevDependency_WindowsAzureStoragePackageVersion)" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="$(DevDependency_AzureStorageBlobsPackageVersion)" />
     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Feed" Version="$(DevDependency_MicrosoftDotNetBuildTasksFeedPackageVersion)" ExcludeAssets="Build" />
   </ItemGroup>
+
+  <Target Name="DebugRestore" BeforeTargets="Restore">
+    <Message Importance="High" Text="HideWarningsAndErrors:      '$(HideWarningsAndErrors)'" />
+    <Message Importance="High" Text="NuGetInteractive:           '$(NuGetInteractive)'" />
+    <Message Importance="High" Text="RestoreDisableParallel:     '$(RestoreDisableParallel)'" />
+    <Message Importance="High" Text="RestoreForce:               '$(RestoreForce)'" />
+    <Message Importance="High" Text="RestoreForceEvaluate:       '$(RestoreForceEvaluate)'" />
+    <Message Importance="High" Text="RestoreIgnoreFailedSources: '$(RestoreIgnoreFailedSources)'" />
+    <Message Importance="High" Text="RestoreNoCache:             '$(RestoreNoCache)'" />
+    <Message Importance="High" Text="RestoreRecursive:           '$(RestoreRecursive)'" />
+    <Message Importance="High" Text="_RestoreGraphEntry:         @(_RestoreGraphEntry -> '%(Id) %(VersionRange)')"
+      Condition=" '%(_RestoreGraphEntry.Type)' == 'Dependency' AND '%(_RestoreGraphEntry.Id)' != '' " />
+  </Target>
 
   <Import Project="$(RepoTasksSdkPath)\Sdk.targets" Condition="'$(RepoTasksSdkPath)' != '' "/>
 </Project>
