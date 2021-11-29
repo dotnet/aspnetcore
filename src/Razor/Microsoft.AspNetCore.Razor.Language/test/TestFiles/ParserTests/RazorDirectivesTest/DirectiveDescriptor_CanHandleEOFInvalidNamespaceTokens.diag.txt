@@ -1,1 +1,0 @@
-(1,9): Error RZ1014: The 'custom' directive expects a namespace name.

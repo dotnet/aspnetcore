@@ -1,1 +1,0 @@
-x:\dir\subdir\Test\TestComponent.cshtml(1,1): Error RZ10009: The component parameter 'Foo' is used two or more times for this component. Parameters must be unique (case-insensitive).

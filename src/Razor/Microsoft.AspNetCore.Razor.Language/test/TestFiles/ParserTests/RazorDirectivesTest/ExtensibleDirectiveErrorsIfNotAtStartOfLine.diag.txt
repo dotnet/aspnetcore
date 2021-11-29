@@ -1,1 +1,0 @@
-(1,5): Error RZ2005: The 'custom` directive must appear at the start of the line.

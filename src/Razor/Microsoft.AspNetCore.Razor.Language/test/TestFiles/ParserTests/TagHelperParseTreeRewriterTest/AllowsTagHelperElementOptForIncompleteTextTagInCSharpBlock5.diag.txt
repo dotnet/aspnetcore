@@ -1,2 +1,0 @@
-(1,2): Error RZ1006: The code block is missing a closing "}" character.  Make sure you have a matching "}" character for all the "{" characters within this block, and that none of the "}" characters are being interpreted as markup.
-(1,4): Error RZ1024: End of file or an unexpected character was reached before the "!text" tag could be parsed.  Elements inside markup blocks must be complete. They must either be self-closing ("<br />") or have matching end tags ("<p>Hello</p>").  If you intended to display a "<" character, use the "&lt;" HTML entity.

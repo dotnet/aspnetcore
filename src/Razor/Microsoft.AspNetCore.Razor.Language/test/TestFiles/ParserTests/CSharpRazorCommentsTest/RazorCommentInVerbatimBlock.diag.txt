@@ -1,3 +1,0 @@
-(1,2): Error RZ1006: The code block is missing a closing "}" character.  Make sure you have a matching "}" character for all the "{" characters within this block, and that none of the "}" characters are being interpreted as markup.
-(2,6): Error RZ1023: "<text>" and "</text>" tags cannot contain attributes.
-(2,6): Error RZ1025: The "text" element was not closed.  All elements must be either self-closing or have a matching end tag.
