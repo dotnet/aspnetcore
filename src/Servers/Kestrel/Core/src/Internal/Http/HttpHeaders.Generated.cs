@@ -102,6 +102,179 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         WWWAuthenticate,
     }
 
+    internal static class HttpHeadersCompression
+    {
+        internal static (int index, bool matchedValue) MatchKnownHeaderQPack(KnownHeaderType knownHeader, string value)
+        {
+            switch (knownHeader)
+            {
+                case KnownHeaderType.Age:
+                    switch (value)
+                    {
+                        case "0":
+                            return (2, true);
+                        default:
+                            return (2, false);
+                    }
+                case KnownHeaderType.ContentLength:
+                    switch (value)
+                    {
+                        case "0":
+                            return (4, true);
+                        default:
+                            return (4, false);
+                    }
+                case KnownHeaderType.Date:
+                    return (6, false);
+                case KnownHeaderType.ETag:
+                    return (7, false);
+                case KnownHeaderType.LastModified:
+                    return (10, false);
+                case KnownHeaderType.Location:
+                    return (12, false);
+                case KnownHeaderType.SetCookie:
+                    return (14, false);
+                case KnownHeaderType.AcceptRanges:
+                    switch (value)
+                    {
+                        case "bytes":
+                            return (32, true);
+                        default:
+                            return (32, false);
+                    }
+                case KnownHeaderType.AccessControlAllowHeaders:
+                    switch (value)
+                    {
+                        case "cache-control":
+                            return (33, true);
+                        case "content-type":
+                            return (34, true);
+                        case "*":
+                            return (75, true);
+                        default:
+                            return (33, false);
+                    }
+                case KnownHeaderType.AccessControlAllowOrigin:
+                    switch (value)
+                    {
+                        case "*":
+                            return (35, true);
+                        default:
+                            return (35, false);
+                    }
+                case KnownHeaderType.CacheControl:
+                    switch (value)
+                    {
+                        case "max-age=0":
+                            return (36, true);
+                        case "max-age=2592000":
+                            return (37, true);
+                        case "max-age=604800":
+                            return (38, true);
+                        case "no-cache":
+                            return (39, true);
+                        case "no-store":
+                            return (40, true);
+                        case "public, max-age=31536000":
+                            return (41, true);
+                        default:
+                            return (36, false);
+                    }
+                case KnownHeaderType.ContentEncoding:
+                    switch (value)
+                    {
+                        case "br":
+                            return (42, true);
+                        case "gzip":
+                            return (43, true);
+                        default:
+                            return (42, false);
+                    }
+                case KnownHeaderType.ContentType:
+                    switch (value)
+                    {
+                        case "application/dns-message":
+                            return (44, true);
+                        case "application/javascript":
+                            return (45, true);
+                        case "application/json":
+                            return (46, true);
+                        case "application/x-www-form-urlencoded":
+                            return (47, true);
+                        case "image/gif":
+                            return (48, true);
+                        case "image/jpeg":
+                            return (49, true);
+                        case "image/png":
+                            return (50, true);
+                        case "text/css":
+                            return (51, true);
+                        case "text/html; charset=utf-8":
+                            return (52, true);
+                        case "text/plain":
+                            return (53, true);
+                        case "text/plain;charset=utf-8":
+                            return (54, true);
+                        default:
+                            return (44, false);
+                    }
+                case KnownHeaderType.Vary:
+                    switch (value)
+                    {
+                        case "accept-encoding":
+                            return (59, true);
+                        case "origin":
+                            return (60, true);
+                        default:
+                            return (59, false);
+                    }
+                case KnownHeaderType.AccessControlAllowCredentials:
+                    switch (value)
+                    {
+                        case "FALSE":
+                            return (73, true);
+                        case "TRUE":
+                            return (74, true);
+                        default:
+                            return (73, false);
+                    }
+                case KnownHeaderType.AccessControlAllowMethods:
+                    switch (value)
+                    {
+                        case "get":
+                            return (76, true);
+                        case "get, post, options":
+                            return (77, true);
+                        case "options":
+                            return (78, true);
+                        default:
+                            return (76, false);
+                    }
+                case KnownHeaderType.AccessControlExposeHeaders:
+                    switch (value)
+                    {
+                        case "content-length":
+                            return (79, true);
+                        default:
+                            return (79, false);
+                    }
+                case KnownHeaderType.AltSvc:
+                    switch (value)
+                    {
+                        case "clear":
+                            return (83, true);
+                        default:
+                            return (83, false);
+                    }
+                case KnownHeaderType.Server:
+                    return (92, false);
+                
+                default:
+                    return (-1, false);
+            }
+        }
+    }
+
     internal partial class HttpHeaders
     {
         private readonly static HashSet<string> _internedHeaderNames = new HashSet<string>(96, StringComparer.OrdinalIgnoreCase)

@@ -74,6 +74,25 @@ public class Http3QPackEncoderTests
     }
 
     [Fact]
+    public void BeginEncodeHeaders_StaticKeyAndValue_WriteIndex()
+    {
+        Span<byte> buffer = new byte[1024 * 16];
+
+        var headers = (IHeaderDictionary)new HttpResponseHeaders();
+        headers.ContentType = "application/json";
+
+        var totalHeaderSize = 0;
+        var enumerator = new Http3HeadersEnumerator();
+        enumerator.Initialize(headers);
+
+        Assert.True(QPackHeaderWriter.BeginEncodeHeaders(enumerator, buffer, ref totalHeaderSize, out var length));
+
+        var result = buffer.Slice(2, length - 2).ToArray(); // trim prefix
+        var hex = BitConverter.ToString(result);
+        Assert.Equal("EE", hex);
+    }
+
+    [Fact]
     public void BeginEncodeHeaders_NonStaticKey_WriteFullNameAndFullValue()
     {
         Span<byte> buffer = new byte[1024 * 16];
