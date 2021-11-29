@@ -78,7 +78,7 @@ public class SvgTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
     }
 
     [Fact]
-    [Trait("QuarantinedTest", "https://github.com/dotnet/aspnetcore/issues/34941")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34941")]
     public void CanRenderSvgWithLink()
     {
         var appElement = Browser.MountTestComponent<SvgComponent>();

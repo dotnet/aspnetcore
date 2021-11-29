@@ -35,7 +35,7 @@ public class DynamicComponentRenderingTest : ServerTestBase<ToggleExecutionModeS
     }
 
     [Fact]
-    [Trait("QuarantinedTest", "https://github.com/dotnet/aspnetcore/issues/33733")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/33733")]
     public void CanRenderComponentDynamically()
     {
         var hostRenderCountDisplay = app.FindElement(By.Id("outer-rendercount"));

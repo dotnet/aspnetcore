@@ -42,7 +42,7 @@ public class BootResourceCachingTest
     }
 
     [Fact]
-    [Trait("QuarantinedTest", "https://github.com/dotnet/aspnetcore/issues/34941")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34941")]
     public void CachesResourcesAfterFirstLoad()
     {
         // On the first load, we have to fetch everything
