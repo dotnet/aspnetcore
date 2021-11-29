@@ -16,7 +16,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests;
 
-[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/19666")]
+[Trait("QuarantinedTest", "https://github.com/dotnet/aspnetcore/issues/19666")]
 public class ComponentHubInvalidEventTest : IgnitorTest<ServerStartup>
 {
     public ComponentHubInvalidEventTest(BasicTestAppServerSiteFixture<ServerStartup> serverFixture, ITestOutputHelper output)

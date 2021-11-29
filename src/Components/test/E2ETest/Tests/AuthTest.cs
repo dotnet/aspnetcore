@@ -213,7 +213,7 @@ public class AuthTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34941")]
+    [Trait("QuarantinedTest", "https://github.com/dotnet/aspnetcore/issues/34941")]
     public void Router_RequireRole_NotAuthorized()
     {
         SignInAs("Bert", "IrrelevantRole");
