@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 namespace Microsoft.AspNetCore.Mvc.ViewEngines;
 
 /// <summary>
-/// Represents the result of a <see cref="IViewEngine" >view engine</see >.
+/// Represents the result of a <see cref="IViewEngine" />.
 /// </summary>
 public class ViewEngineResult
 {
