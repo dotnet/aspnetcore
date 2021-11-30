@@ -5,6 +5,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting;
 
 public enum RuntimeArchitecture
 {
+    arm64,
     x64,
     x86
 }

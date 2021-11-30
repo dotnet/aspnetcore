@@ -30,7 +30,7 @@ public class DelegateOutOfProcTests : LoggedTest
             applicationPath,
             ServerType.HttpSys,
             RuntimeFlavor.CoreClr,
-            RuntimeArchitecture.x64)
+            RuntimeArchitectures.Current)
         {
             EnvironmentName = "Testing",
             TargetFramework = Tfm.Default,
