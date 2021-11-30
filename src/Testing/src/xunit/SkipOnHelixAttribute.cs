@@ -32,7 +32,7 @@ public class SkipOnHelixAttribute : Attribute, ITestCondition
         }
     }
 
-    // Queues that should be skipped on, i.e. "Windows.10.Amd64.ClientRS4.VS2017.Open;OSX.1012.Amd64.Open"
+    // Queues that should be skipped on, i.e. "Windows.Amd64.Server2022.Open;OSX.1015.Amd64.Open"
     public string Queues { get; set; }
 
     public string SkipReason

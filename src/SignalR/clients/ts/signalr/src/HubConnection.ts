@@ -180,10 +180,8 @@ export class HubConnection {
             await this._startInternal();
 
             if (Platform.isBrowser) {
-                if (document) {
-                    // Log when the browser freezes the tab so users know why their connection unexpectedly stopped working
-                    document.addEventListener("freeze", this._freezeEventListener);
-                }
+                // Log when the browser freezes the tab so users know why their connection unexpectedly stopped working
+                window.document.addEventListener("freeze", this._freezeEventListener);
             }
 
             this._connectionState = HubConnectionState.Connected;
@@ -734,9 +732,7 @@ export class HubConnection {
             this._connectionStarted = false;
 
             if (Platform.isBrowser) {
-                if (document) {
-                    document.removeEventListener("freeze", this._freezeEventListener);
-                }
+                window.document.removeEventListener("freeze", this._freezeEventListener);
             }
 
             try {

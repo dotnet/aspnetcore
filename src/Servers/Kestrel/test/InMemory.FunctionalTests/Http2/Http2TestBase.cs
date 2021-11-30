@@ -182,6 +182,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
             _receivedRequestFields.Scheme = context.Request.Scheme;
             _receivedRequestFields.Path = context.Request.Path.Value;
             _receivedRequestFields.RawTarget = context.Features.Get<IHttpRequestFeature>().RawTarget;
+            _receivedRequestFields.Authority = context.Request.Host.Value;
             foreach (var header in context.Request.Headers)
             {
                 _receivedHeaders[header.Key] = header.Value.ToString();
@@ -1413,5 +1414,6 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         public string Scheme { get; set; }
         public string Path { get; set; }
         public string RawTarget { get; set; }
+        public string Authority { get; set; }
     }
 }

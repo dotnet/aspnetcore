@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Diagnostics;
@@ -41,6 +42,13 @@ public class StatusCodePagesMiddleware
     {
         var statusCodeFeature = new StatusCodePagesFeature();
         context.Features.Set<IStatusCodePagesFeature>(statusCodeFeature);
+        var endpoint = context.GetEndpoint();
+        var skipStatusCodePageMetadata = endpoint?.Metadata.GetMetadata<ISkipStatusCodePagesMetadata>();
+
+        if (skipStatusCodePageMetadata is not null)
+        {
+            statusCodeFeature.Enabled = false;
+        }
 
         await _next(context);
 

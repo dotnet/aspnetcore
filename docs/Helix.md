@@ -2,7 +2,7 @@
 
 Helix is the distributed test platform that we use to run tests.  We build a helix payload that contains the publish directory of every test project that we want to test
 send a job with with this payload to a set of queues for the various combinations of OS that we want to test
-for example: `Windows.10.Amd64.ClientRS4.VS2017.Open`, `OSX.1012.Amd64.Open`, `Ubuntu.1804.Amd64.Open`. Helix takes care of unzipping, running the job, and reporting results.
+for example: `Windows.10.Amd64.ClientRS4.VS2017.Open`, `OSX.1100.Amd64.Open`, `Ubuntu.1804.Amd64.Open`. Helix takes care of unzipping, running the job, and reporting results.
 
 For more info about helix see: [SDK](https://github.com/dotnet/arcade/blob/main/src/Microsoft.DotNet.Helix/Sdk/Readme.md), [JobSender](https://github.com/dotnet/arcade/blob/main/src/Microsoft.DotNet.Helix/Sdk/Readme.md)
 
@@ -19,7 +19,7 @@ This will restore, and then publish all the test project including some bootstra
 ## Overview of the helix usage in our pipelines
 
 - Required queues: Windows10, OSX, Ubuntu1804
-- Full queue matrix: Windows[7, 81, 10], Ubuntu[1804, 2004], Debian9, Redhat7, Arm64 (Win10, Debian9)
+- Full queue matrix: Windows[10, 11], Ubuntu[1804, 2004], Debian11, Redhat7, Arm64 (Win10, Debian11)
 - The queues are defined in [Helix.Common.props](https://github.com/dotnet/aspnetcore/blob/main/eng/targets/Helix.Common.props)
 
 [aspnetcore-ci](https://dev.azure.com/dnceng/public/_build?definitionId=278) runs non quarantined tests against the required helix queues as a required PR check and all builds on all branches.
@@ -55,31 +55,25 @@ An example of how to get the helix payload to inspect the contents of a test job
 There's also a link embedded in the build.cmd log of the Tests: Helix x64 job on Azure Pipelines, near the bottom right that will look something like this:
 
 ``` text
-Uploading payloads for Job on Ubuntu.1604.Amd64.Open...
-  Finished uploading payloads for Job on Ubuntu.1604.Amd64.Open...
-  Sending Job to Ubuntu.1604.Amd64.Open...
-  Sent Helix Job a5cbf405-1363-452f-af4b-de5b2a61c8cf
-  Uploading payloads for Job on Windows.10.Amd64.Open...
-  Finished uploading payloads for Job on Windows.10.Amd64.Open...
-  Sending Job to Windows.10.Amd64.Open...
-  Sent Helix Job cbec3697-c298-412a-953a-e375e49d1fe0
-  Uploading payloads for Job on OSX.1014.Amd64.Open...
-  Finished uploading payloads for Job on OSX.1014.Amd64.Open...
+  Sending Job to Ubuntu.1804.Amd64.Open...
+  Sent Helix Job; see work items at https://helix.dot.net/api/jobs/c1b425c8-0fef-4cba-9dee-29344d7a61b8/workitems?api-version=2019-06-17
+  Sending Job to Windows.11.Amd64.ClientPre.Open...
+  Sent Helix Job; see work items at https://helix.dot.net/api/jobs/1fc117ce-d52a-4ea4-8896-3c289fdf8e17/workitems?api-version=2019-06-17
   Sending Job to OSX.1014.Amd64.Open...
-  Sent Helix Job a54359cf-f74d-4d02-9faf-07e0a8380995
-  Waiting for completion of job cbec3697-c298-412a-953a-e375e49d1fe0
-  Waiting for completion of job a54359cf-f74d-4d02-9faf-07e0a8380995
-  Waiting for completion of job a5cbf405-1363-452f-af4b-de5b2a61c8cf
-  Job a54359cf-f74d-4d02-9faf-07e0a8380995 is completed with 136 finished work items.
-  Job cbec3697-c298-412a-953a-e375e49d1fe0 is completed with 156 finished work items.
-  Job a5cbf405-1363-452f-af4b-de5b2a61c8cf is completed with 136 finished work items.
-  Stopping Azure Pipelines Test Run Ubuntu.1604.Amd64.Open
-  Stopping Azure Pipelines Test Run Windows.10.Amd64.Open
+  Sent Helix Job; see work items at https://helix.dot.net/api/jobs/53e2ca23-9efd-4299-8a8f-d9271265aeaa/workitems?api-version=2019-06-17
+  Waiting for completion of job 1fc117ce-d52a-4ea4-8896-3c289fdf8e17 on Windows.11.Amd64.ClientPre.Open
+  Waiting for completion of job c1b425c8-0fef-4cba-9dee-29344d7a61b8 on Ubuntu.1804.Amd64.Open
+  Waiting for completion of job 53e2ca23-9efd-4299-8a8f-d9271265aeaa on OSX.1014.Amd64.Open
+  Job 53e2ca23-9efd-4299-8a8f-d9271265aeaa on OSX.1014.Amd64.Open is completed with 139 finished work items.
+  Job c1b425c8-0fef-4cba-9dee-29344d7a61b8 on Ubuntu.1804.Amd64.Open is completed with 138 finished work items.
+  Job 1fc117ce-d52a-4ea4-8896-3c289fdf8e17 on Windows.11.Amd64.ClientPre.Open is completed with 170 finished work items.
+  Stopping Azure Pipelines Test Run Ubuntu.1804.Amd64.Open
+  Stopping Azure Pipelines Test Run Windows.11.Amd64.ClientPre.Open
   Stopping Azure Pipelines Test Run OSX.1014.Amd64.Open
-F:\workspace\_work\1\s\.packages\microsoft.dotnet.helix.sdk\5.0.0-beta.20280.1\tools\Microsoft.DotNet.Helix.Sdk.MultiQueue.targets(76,5): error : Work item a5cbf405-1363-452f-af4b-de5b2a61c8cf/Microsoft.AspNetCore.Authentication.Test--net5.0 in job a5cbf405-1363-452f-af4b-de5b2a61c8cf has failed. [F:\workspace\_work\1\s\eng\helix\helix.proj]
-F:\workspace\_work\1\s\.packages\microsoft.dotnet.helix.sdk\5.0.0-beta.20280.1\tools\Microsoft.DotNet.Helix.Sdk.MultiQueue.targets(76,5): error : Failure log: https://helix.dot.net/api/2019-06-17/jobs/a5cbf405-1363-452f-af4b-de5b2a61c8cf/workitems/Microsoft.AspNetCore.Authentication.Test--net5.0/console [F:\workspace\_work\1\s\eng\helix\helix.proj]
-##[error].packages\microsoft.dotnet.helix.sdk\5.0.0-beta.20280.1\tools\Microsoft.DotNet.Helix.Sdk.MultiQueue.targets(76,5): error : (NETCORE_ENGINEERING_TELEMETRY=Test) Work item a5cbf405-1363-452f-af4b-de5b2a61c8cf/Microsoft.AspNetCore.Authentication.Test--net5.0 in job a5cbf405-1363-452f-af4b-de5b2a61c8cf has failed.
-Failure log: https://helix.dot.net/api/2019-06-17/jobs/a5cbf405-1363-452f-af4b-de5b2a61c8cf/workitems/Microsoft.AspNetCore.Authentication.Test--net5.0/console
+D:\a\_work\1\s\.packages\microsoft.dotnet.helix.sdk\7.0.0-beta.21559.3\tools\Microsoft.DotNet.Helix.Sdk.MultiQueue.targets(78,5): error : Work item Microsoft.AspNetCore.Identity.Test--net7.0 in job 53e2ca23-9efd-4299-8a8f-d9271265aeaa has failed. [D:\a\_work\1\s\eng\helix\helix.proj]
+D:\a\_work\1\s\.packages\microsoft.dotnet.helix.sdk\7.0.0-beta.21559.3\tools\Microsoft.DotNet.Helix.Sdk.MultiQueue.targets(78,5): error : Failure log: https://helix.dot.net/api/2019-06-17/jobs/53e2ca23-9efd-4299-8a8f-d9271265aeaa/workitems/Microsoft.AspNetCore.Identity.Test--net7.0/console [D:\a\_work\1\s\eng\helix\helix.proj]
+##[error].packages\microsoft.dotnet.helix.sdk\7.0.0-beta.21559.3\tools\Microsoft.DotNet.Helix.Sdk.MultiQueue.targets(78,5): error : (NETCORE_ENGINEERING_TELEMETRY=Test) Work item Microsoft.AspNetCore.Identity.Test--net7.0 in job 53e2ca23-9efd-4299-8a8f-d9271265aeaa has failed.
+Failure log: https://helix.dot.net/api/2019-06-17/jobs/53e2ca23-9efd-4299-8a8f-d9271265aeaa/workitems/Microsoft.AspNetCore.Identity.Test--net7.0/console
 ```
 
 The https://helix.dot.net/ home page displays information about the available public queues (nothing about the related BYOC pools and queues or the internal Helix queues)

@@ -163,9 +163,6 @@ function InitializeDotNetCli([bool]$install, [bool]$createSdkLocationFile) {
   # Disable telemetry on CI.
   if ($ci) {
     $env:DOTNET_CLI_TELEMETRY_OPTOUT=1
- 
-    # In case of network error, try to log the current IP for reference
-    Try-LogClientIpAddress
   }
 
   # Source Build uses DotNetCoreSdkDir variable
@@ -301,31 +298,44 @@ function InstallDotNet([string] $dotnetRoot,
   if ($skipNonVersionedFiles) { $installParameters.SkipNonVersionedFiles = $skipNonVersionedFiles }
   if ($noPath) { $installParameters.NoPath = $True }
 
-  try {
-    & $installScript @installParameters
-  }
-  catch {
-    if ($runtimeSourceFeed -or $runtimeSourceFeedKey) {
-      Write-Host "Failed to install dotnet from public location. Trying from '$runtimeSourceFeed'"
-      if ($runtimeSourceFeed) { $installParameters.AzureFeed = $runtimeSourceFeed }
+  $variations = @()
+  $variations += @($installParameters)
 
-      if ($runtimeSourceFeedKey) {
-        $decodedBytes = [System.Convert]::FromBase64String($runtimeSourceFeedKey)
-        $decodedString = [System.Text.Encoding]::UTF8.GetString($decodedBytes)
-        $installParameters.FeedCredential = $decodedString
-      }
+  $dotnetBuilds = $installParameters.Clone()
+  $dotnetbuilds.AzureFeed = "https://dotnetbuilds.azureedge.net/public"
+  $variations += @($dotnetBuilds)
 
-      try {
-        & $installScript @installParameters
-      }
-      catch {
-        Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "Failed to install dotnet from custom location '$runtimeSourceFeed'."
-        ExitWithExitCode 1
-      }
-    } else {
-      Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "Failed to install dotnet from public location."
-      ExitWithExitCode 1
+  if ($runtimeSourceFeed) {
+    $runtimeSource = $installParameters.Clone()
+    $runtimeSource.AzureFeed = $runtimeSourceFeed
+    if ($runtimeSourceFeedKey) {
+      $decodedBytes = [System.Convert]::FromBase64String($runtimeSourceFeedKey)
+      $decodedString = [System.Text.Encoding]::UTF8.GetString($decodedBytes)
+      $runtimeSource.FeedCredential = $decodedString
     }
+    $variations += @($runtimeSource)
+  }
+
+  $installSuccess = $false
+  foreach ($variation in $variations) {
+    if ($variation | Get-Member AzureFeed) {
+      $location = $variation.AzureFeed
+    } else {
+      $location = "public location";
+    }
+    Write-Host "Attempting to install dotnet from $location."
+    try {
+      & $installScript @variation
+      $installSuccess = $true
+      break
+    }
+    catch {
+      Write-Host "Failed to install dotnet from $location."
+    }
+  }
+  if (-not $installSuccess) {
+    Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "Failed to install dotnet from any of the specified locations."
+    ExitWithExitCode 1
   }
 }
 
@@ -880,24 +890,6 @@ if (!$disableConfigureToolsetImport) {
       }
     }
   }
-}
-
-function Try-LogClientIpAddress()
-{
-    Write-Host "Attempting to log this client's IP for Azure Package feed telemetry purposes"
-    try
-    {
-        $result = Invoke-WebRequest -Uri "http://co1.msedge.net/fdv2/diagnostics.aspx" -UseBasicParsing
-        $lines = $result.Content.Split([Environment]::NewLine) 
-        $socketIp = $lines | Select-String -Pattern "^Socket IP:.*"
-        Write-Host $socketIp
-        $clientIp = $lines | Select-String -Pattern "^Client IP:.*"
-        Write-Host $clientIp
-    }
-    catch
-    {
-        Write-Host "Unable to get this machine's effective IP address for logging: $_"
-    }
 }
 
 #

@@ -40,11 +40,11 @@ internal static class LdapAdapter
         var retrievedClaims = new List<string>();
 
         var filter = $"(&(objectClass=user)(sAMAccountName={userAccountName}))"; // This is using ldap search query language, it is looking on the server for someUser
-        var searchRequest = new SearchRequest(distinguishedName, filter, SearchScope.Subtree, null);
+        var searchRequest = new SearchRequest(distinguishedName, filter, SearchScope.Subtree);
 
         Debug.Assert(settings.LdapConnection != null);
         var searchResponse = (SearchResponse)await Task<DirectoryResponse>.Factory.FromAsync(
-            settings.LdapConnection.BeginSendRequest,
+            settings.LdapConnection.BeginSendRequest!,
             settings.LdapConnection.EndSendRequest,
             searchRequest,
             PartialResultProcessing.NoPartialResultSupport,
@@ -99,7 +99,7 @@ internal static class LdapAdapter
     private static void GetNestedGroups(LdapConnection connection, ClaimsIdentity principal, string distinguishedName, string groupCN, ILogger logger, IList<string> retrievedClaims)
     {
         var filter = $"(&(objectClass=group)(sAMAccountName={groupCN}))"; // This is using ldap search query language, it is looking on the server for someUser
-        var searchRequest = new SearchRequest(distinguishedName, filter, SearchScope.Subtree, null);
+        var searchRequest = new SearchRequest(distinguishedName, filter, SearchScope.Subtree);
         var searchResponse = (SearchResponse)connection.SendRequest(searchRequest);
 
         if (searchResponse.Entries.Count > 0)

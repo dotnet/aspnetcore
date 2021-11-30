@@ -7,11 +7,13 @@ using System.Globalization;
 using System.IO.Pipelines;
 using System.Linq.Expressions;
 using System.Net;
+using System.Net.Http;
 using System.Net.Sockets;
 using System.Numerics;
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Security.Claims;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -3096,6 +3098,711 @@ public class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(expectedResponse, decodedResponseBody);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task RequestDelegateLogsIOExceptionsForFormAsDebugDoesNotAbortAndNeverThrows(bool throwOnBadRequests)
+    {
+        var invoked = false;
+
+        void TestAction(IFormFile file)
+        {
+            invoked = true;
+        }
+
+        var ioException = new IOException();
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Headers["Content-Type"] = "application/x-www-form-urlencoded";
+        httpContext.Request.Headers["Content-Length"] = "1";
+        httpContext.Request.Body = new ExceptionThrowingRequestBodyStream(ioException);
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction, new() { ThrowOnBadRequest = throwOnBadRequests });
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.False(invoked);
+        Assert.False(httpContext.RequestAborted.IsCancellationRequested);
+
+        var logMessage = Assert.Single(TestSink.Writes);
+        Assert.Equal(new EventId(1, "RequestBodyIOException"), logMessage.EventId);
+        Assert.Equal(LogLevel.Debug, logMessage.LogLevel);
+        Assert.Equal("Reading the request body failed with an IOException.", logMessage.Message);
+        Assert.Same(ioException, logMessage.Exception);
+    }
+
+    [Fact]
+    public async Task RequestDelegateLogsMalformedFormAsDebugAndSets400Response()
+    {
+        var invoked = false;
+
+        void TestAction(IFormFile file)
+        {
+            invoked = true;
+        }
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Headers["Content-Type"] = "application/x-www-form-urlencoded";
+        httpContext.Request.Headers["Content-Length"] = "2049";
+        httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(new string('x', 2049)));
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.False(invoked);
+        Assert.False(httpContext.RequestAborted.IsCancellationRequested);
+        Assert.Equal(400, httpContext.Response.StatusCode);
+        Assert.False(httpContext.Response.HasStarted);
+
+        var logMessage = Assert.Single(TestSink.Writes);
+        Assert.Equal(new EventId(8, "InvalidFormRequestBody"), logMessage.EventId);
+        Assert.Equal(LogLevel.Debug, logMessage.LogLevel);
+        Assert.Equal(@"Failed to read parameter ""IFormFile file"" from the request body as form.", logMessage.Message);
+        Assert.IsType<InvalidDataException>(logMessage.Exception);
+    }
+
+    [Fact]
+    public async Task RequestDelegateThrowsForMalformedFormIfThrowOnBadRequest()
+    {
+        var invoked = false;
+
+        void TestAction(IFormFile file)
+        {
+            invoked = true;
+        }
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Headers["Content-Type"] = "application/x-www-form-urlencoded";
+        httpContext.Request.Headers["Content-Length"] = "2049";
+        httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(new string('x', 2049)));
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction, new() { ThrowOnBadRequest = true });
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        var badHttpRequestException = await Assert.ThrowsAsync<BadHttpRequestException>(() => requestDelegate(httpContext));
+
+        Assert.False(invoked);
+
+        // The httpContext should be untouched.
+        Assert.False(httpContext.RequestAborted.IsCancellationRequested);
+        Assert.Equal(200, httpContext.Response.StatusCode);
+        Assert.False(httpContext.Response.HasStarted);
+
+        // We don't log bad requests when we throw.
+        Assert.Empty(TestSink.Writes);
+
+        Assert.Equal(@"Failed to read parameter ""IFormFile file"" from the request body as form.", badHttpRequestException.Message);
+        Assert.Equal(400, badHttpRequestException.StatusCode);
+        Assert.IsType<InvalidDataException>(badHttpRequestException.InnerException);
+    }
+
+    [Fact]
+    public void BuildRequestDelegateThrowsInvalidOperationExceptionBodyAndFormFileParameters()
+    {
+        void TestFormFileAndJson(IFormFile value1, Todo value2) { }
+        void TestFormFilesAndJson(IFormFile value1, IFormFile value2, Todo value3) { }
+        void TestFormFileCollectionAndJson(IFormFileCollection value1, Todo value2) { }
+        void TestFormFileAndJsonWithAttribute(IFormFile value1, [FromBody] int value2) { }
+        void TestJsonAndFormFile(Todo value1, IFormFile value2) { }
+        void TestJsonAndFormFiles(Todo value1, IFormFile value2, IFormFile value3) { }
+        void TestJsonAndFormFileCollection(Todo value1, IFormFileCollection value2) { }
+        void TestJsonAndFormFileWithAttribute(Todo value1, [FromForm] IFormFile value2) { }
+
+        Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestFormFileAndJson));
+        Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestFormFilesAndJson));
+        Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestFormFileAndJsonWithAttribute));
+        Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestFormFileCollectionAndJson));
+        Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestJsonAndFormFile));
+        Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestJsonAndFormFiles));
+        Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestJsonAndFormFileCollection));
+        Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestJsonAndFormFileWithAttribute));
+    }
+
+    [Fact]
+    public async Task RequestDelegatePopulatesFromIFormFileCollectionParameter()
+    {
+        IFormFileCollection? formFilesArgument = null;
+
+        void TestAction(IFormFileCollection formFiles)
+        {
+            formFilesArgument = formFiles;
+        }
+
+        var fileContent = new StringContent("hello", Encoding.UTF8, "application/octet-stream");
+        var form = new MultipartFormDataContent("some-boundary");
+        form.Add(fileContent, "file", "file.txt");
+
+        var stream = new MemoryStream();
+        await form.CopyToAsync(stream);
+
+        stream.Seek(0, SeekOrigin.Begin);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Body = stream;
+        httpContext.Request.Headers["Content-Type"] = "multipart/form-data;boundary=some-boundary";
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(httpContext.Request.Form.Files, formFilesArgument);
+        Assert.NotNull(formFilesArgument!["file"]);
+
+        var allAcceptsMetadata = factoryResult.EndpointMetadata.OfType<IAcceptsMetadata>();
+        var acceptsMetadata = Assert.Single(allAcceptsMetadata);
+
+        Assert.NotNull(acceptsMetadata);
+        Assert.Equal(new[] { "multipart/form-data" }, acceptsMetadata.ContentTypes);
+    }
+
+    [Fact]
+    public async Task RequestDelegatePopulatesFromIFormFileCollectionParameterWithAttribute()
+    {
+        IFormFileCollection? formFilesArgument = null;
+
+        void TestAction([FromForm] IFormFileCollection formFiles)
+        {
+            formFilesArgument = formFiles;
+        }
+
+        var fileContent = new StringContent("hello", Encoding.UTF8, "application/octet-stream");
+        var form = new MultipartFormDataContent("some-boundary");
+        form.Add(fileContent, "file", "file.txt");
+
+        var stream = new MemoryStream();
+        await form.CopyToAsync(stream);
+
+        stream.Seek(0, SeekOrigin.Begin);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Body = stream;
+        httpContext.Request.Headers["Content-Type"] = "multipart/form-data;boundary=some-boundary";
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(httpContext.Request.Form.Files, formFilesArgument);
+        Assert.NotNull(formFilesArgument!["file"]);
+
+        var allAcceptsMetadata = factoryResult.EndpointMetadata.OfType<IAcceptsMetadata>();
+        var acceptsMetadata = Assert.Single(allAcceptsMetadata);
+
+        Assert.NotNull(acceptsMetadata);
+        Assert.Equal(new[] { "multipart/form-data" }, acceptsMetadata.ContentTypes);
+    }
+
+    [Fact]
+    public void CreateThrowsNotSupportedExceptionIfIFormFileCollectionHasMetadataParameterName()
+    {
+        IFormFileCollection? formFilesArgument = null;
+
+        void TestAction([FromForm(Name = "foo")] IFormFileCollection formFiles)
+        {
+            formFilesArgument = formFiles;
+        }
+
+        var nse = Assert.Throws<NotSupportedException>(() => RequestDelegateFactory.Create(TestAction));
+        Assert.Equal("Assigning a value to the IFromFormMetadata.Name property is not supported for parameters of type IFormFileCollection.", nse.Message);
+    }
+
+    [Fact]
+    public void CreateThrowsNotSupportedExceptionIfFromFormParameterIsNotIFormFileCollectionOrIFormFile()
+    {
+        void TestActionBool([FromForm] bool value) { };
+        void TestActionInt([FromForm] int value) { };
+        void TestActionObject([FromForm] object value) { };
+        void TestActionString([FromForm] string value) { };
+        void TestActionCancellationToken([FromForm] CancellationToken value) { };
+        void TestActionClaimsPrincipal([FromForm] ClaimsPrincipal value) { };
+        void TestActionHttpContext([FromForm] HttpContext value) { };
+        void TestActionIFormCollection([FromForm] IFormCollection value) { };
+
+        AssertNotSupportedExceptionThrown(TestActionBool);
+        AssertNotSupportedExceptionThrown(TestActionInt);
+        AssertNotSupportedExceptionThrown(TestActionObject);
+        AssertNotSupportedExceptionThrown(TestActionString);
+        AssertNotSupportedExceptionThrown(TestActionCancellationToken);
+        AssertNotSupportedExceptionThrown(TestActionClaimsPrincipal);
+        AssertNotSupportedExceptionThrown(TestActionHttpContext);
+        AssertNotSupportedExceptionThrown(TestActionIFormCollection);
+
+        static void AssertNotSupportedExceptionThrown(Delegate handler)
+        {
+            var nse = Assert.Throws<NotSupportedException>(() => RequestDelegateFactory.Create(handler));
+            Assert.Equal("IFromFormMetadata is only supported for parameters of type IFormFileCollection and IFormFile.", nse.Message);
+        }
+    }
+
+    [Fact]
+    public async Task RequestDelegatePopulatesFromIFormFileParameter()
+    {
+        IFormFile? fileArgument = null;
+
+        void TestAction(IFormFile file)
+        {
+            fileArgument = file;
+        }
+
+        var fileContent = new StringContent("hello", Encoding.UTF8, "application/octet-stream");
+        var form = new MultipartFormDataContent("some-boundary");
+        form.Add(fileContent, "file", "file.txt");
+
+        var stream = new MemoryStream();
+        await form.CopyToAsync(stream);
+
+        stream.Seek(0, SeekOrigin.Begin);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Body = stream;
+        httpContext.Request.Headers["Content-Type"] = "multipart/form-data;boundary=some-boundary";
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(httpContext.Request.Form.Files["file"], fileArgument);
+        Assert.Equal("file.txt", fileArgument!.FileName);
+        Assert.Equal("file", fileArgument.Name);
+    }
+
+    [Fact]
+    public async Task RequestDelegatePopulatesFromOptionalIFormFileParameter()
+    {
+        IFormFile? fileArgument = null;
+
+        void TestAction(IFormFile? file)
+        {
+            fileArgument = file;
+        }
+
+        var fileContent = new StringContent("hello", Encoding.UTF8, "application/octet-stream");
+        var form = new MultipartFormDataContent("some-boundary");
+        form.Add(fileContent, "file", "file.txt");
+
+        var stream = new MemoryStream();
+        await form.CopyToAsync(stream);
+
+        stream.Seek(0, SeekOrigin.Begin);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Body = stream;
+        httpContext.Request.Headers["Content-Type"] = "multipart/form-data;boundary=some-boundary";
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(httpContext.Request.Form.Files["file"], fileArgument);
+        Assert.Equal("file.txt", fileArgument!.FileName);
+        Assert.Equal("file", fileArgument.Name);
+    }
+
+    [Fact]
+    public async Task RequestDelegatePopulatesFromMultipleRequiredIFormFileParameters()
+    {
+        IFormFile? file1Argument = null;
+        IFormFile? file2Argument = null;
+
+        void TestAction(IFormFile file1, IFormFile file2)
+        {
+            file1Argument = file1;
+            file2Argument = file2;
+        }
+
+        var fileContent1 = new StringContent("hello", Encoding.UTF8, "application/octet-stream");
+        var fileContent2 = new StringContent("there", Encoding.UTF8, "application/octet-stream");
+        var form = new MultipartFormDataContent("some-boundary");
+        form.Add(fileContent1, "file1", "file1.txt");
+        form.Add(fileContent2, "file2", "file2.txt");
+
+        var stream = new MemoryStream();
+        await form.CopyToAsync(stream);
+
+        stream.Seek(0, SeekOrigin.Begin);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Body = stream;
+        httpContext.Request.Headers["Content-Type"] = "multipart/form-data;boundary=some-boundary";
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(httpContext.Request.Form.Files["file1"], file1Argument);
+        Assert.Equal("file1.txt", file1Argument!.FileName);
+        Assert.Equal("file1", file1Argument.Name);
+
+        Assert.Equal(httpContext.Request.Form.Files["file2"], file2Argument);
+        Assert.Equal("file2.txt", file2Argument!.FileName);
+        Assert.Equal("file2", file2Argument.Name);
+    }
+
+    [Fact]
+    public async Task RequestDelegatePopulatesFromOptionalMissingIFormFileParameter()
+    {
+        IFormFile? file1Argument = null;
+        IFormFile? file2Argument = null;
+
+        void TestAction(IFormFile? file1, IFormFile? file2)
+        {
+            file1Argument = file1;
+            file2Argument = file2;
+        }
+
+        var fileContent = new StringContent("hello", Encoding.UTF8, "application/octet-stream");
+        var form = new MultipartFormDataContent("some-boundary");
+        form.Add(fileContent, "file1", "file.txt");
+
+        var stream = new MemoryStream();
+        await form.CopyToAsync(stream);
+
+        stream.Seek(0, SeekOrigin.Begin);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Body = stream;
+        httpContext.Request.Headers["Content-Type"] = "multipart/form-data;boundary=some-boundary";
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(httpContext.Request.Form.Files["file1"], file1Argument);
+        Assert.NotNull(file1Argument);
+
+        Assert.Equal(httpContext.Request.Form.Files["file2"], file2Argument);
+        Assert.Null(file2Argument);
+
+        var allAcceptsMetadata = factoryResult.EndpointMetadata.OfType<IAcceptsMetadata>();
+        var acceptsMetadata = Assert.Single(allAcceptsMetadata);
+
+        Assert.NotNull(acceptsMetadata);
+        Assert.Equal(new[] { "multipart/form-data" }, acceptsMetadata.ContentTypes);
+    }
+
+    [Fact]
+    public async Task RequestDelegatePopulatesFromIFormFileParameterWithMetadata()
+    {
+        IFormFile? fileArgument = null;
+
+        void TestAction([FromForm(Name = "my_file")] IFormFile file)
+        {
+            fileArgument = file;
+        }
+
+        var fileContent = new StringContent("hello", Encoding.UTF8, "application/octet-stream");
+        var form = new MultipartFormDataContent("some-boundary");
+        form.Add(fileContent, "my_file", "file.txt");
+
+        var stream = new MemoryStream();
+        await form.CopyToAsync(stream);
+
+        stream.Seek(0, SeekOrigin.Begin);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Body = stream;
+        httpContext.Request.Headers["Content-Type"] = "multipart/form-data;boundary=some-boundary";
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(httpContext.Request.Form.Files["my_file"], fileArgument);
+        Assert.Equal("file.txt", fileArgument!.FileName);
+        Assert.Equal("my_file", fileArgument.Name);
+    }
+
+    [Fact]
+    public async Task RequestDelegatePopulatesFromIFormFileAndBoundParameter()
+    {
+        IFormFile? fileArgument = null;
+        TraceIdentifier traceIdArgument = default;
+
+        void TestAction(IFormFile? file, TraceIdentifier traceId)
+        {
+            fileArgument = file;
+            traceIdArgument = traceId;
+        }
+
+        var fileContent = new StringContent("hello", Encoding.UTF8, "application/octet-stream");
+        var form = new MultipartFormDataContent("some-boundary");
+        form.Add(fileContent, "file", "file.txt");
+
+        var stream = new MemoryStream();
+        await form.CopyToAsync(stream);
+
+        stream.Seek(0, SeekOrigin.Begin);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Body = stream;
+        httpContext.Request.Headers["Content-Type"] = "multipart/form-data;boundary=some-boundary";
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+        httpContext.TraceIdentifier = "my-trace-id";
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(httpContext.Request.Form.Files["file"], fileArgument);
+        Assert.Equal("file.txt", fileArgument!.FileName);
+        Assert.Equal("file", fileArgument.Name);
+
+        Assert.Equal("my-trace-id", traceIdArgument.Id);
+    }
+
+    private readonly struct TraceIdentifier
+    {
+        private TraceIdentifier(string id)
+        {
+            Id = id;
+        }
+
+        public string Id { get; }
+
+        public static implicit operator string(TraceIdentifier value) => value.Id;
+
+        public static ValueTask<TraceIdentifier> BindAsync(HttpContext context)
+        {
+            return ValueTask.FromResult(new TraceIdentifier(context.TraceIdentifier));
+        }
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task RequestDelegateRejectsNonFormContent(bool shouldThrow)
+    {
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Headers["Content-Type"] = "application/xml";
+        httpContext.Request.Headers["Content-Length"] = "1";
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddSingleton(LoggerFactory);
+        httpContext.RequestServices = serviceCollection.BuildServiceProvider();
+
+        var factoryResult = RequestDelegateFactory.Create((HttpContext context, IFormFile file) =>
+        {
+        }, new RequestDelegateFactoryOptions() { ThrowOnBadRequest = shouldThrow });
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        var request = requestDelegate(httpContext);
+
+        if (shouldThrow)
+        {
+            var ex = await Assert.ThrowsAsync<BadHttpRequestException>(() => request);
+            Assert.Equal("Expected a supported form media type but got \"application/xml\".", ex.Message);
+            Assert.Equal(StatusCodes.Status415UnsupportedMediaType, ex.StatusCode);
+        }
+        else
+        {
+            await request;
+
+            Assert.Equal(415, httpContext.Response.StatusCode);
+            var logMessage = Assert.Single(TestSink.Writes);
+            Assert.Equal(new EventId(7, "UnexpectedContentType"), logMessage.EventId);
+            Assert.Equal(LogLevel.Debug, logMessage.LogLevel);
+            Assert.Equal("Expected a supported form media type but got \"application/xml\".", logMessage.Message);
+        }
+    }
+
+    [Fact]
+    public async Task RequestDelegateSets400ResponseIfRequiredFileNotSpecified()
+    {
+        var invoked = false;
+
+        void TestAction(IFormFile file)
+        {
+            invoked = true;
+        }
+
+        var fileContent = new StringContent("hello", Encoding.UTF8, "application/octet-stream");
+        var form = new MultipartFormDataContent("some-boundary");
+        form.Add(fileContent, "some-other-file", "file.txt");
+
+        var stream = new MemoryStream();
+        await form.CopyToAsync(stream);
+
+        stream.Seek(0, SeekOrigin.Begin);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Body = stream;
+        httpContext.Request.Headers["Content-Type"] = "multipart/form-data;boundary=some-boundary";
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.False(invoked);
+        Assert.Equal(400, httpContext.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task RequestDelegatePopulatesFromBothFormFileCollectionAndFormFileParameters()
+    {
+        IFormFileCollection? formFilesArgument = null;
+        IFormFile? fileArgument = null;
+
+        void TestAction(IFormFileCollection formFiles, IFormFile file)
+        {
+            formFilesArgument = formFiles;
+            fileArgument = file;
+        }
+
+        var fileContent = new StringContent("hello", Encoding.UTF8, "application/octet-stream");
+        var form = new MultipartFormDataContent("some-boundary");
+        form.Add(fileContent, "file", "file.txt");
+
+        var stream = new MemoryStream();
+        await form.CopyToAsync(stream);
+
+        stream.Seek(0, SeekOrigin.Begin);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Body = stream;
+        httpContext.Request.Headers["Content-Type"] = "multipart/form-data;boundary=some-boundary";
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(httpContext.Request.Form.Files, formFilesArgument);
+        Assert.NotNull(formFilesArgument!["file"]);
+
+        Assert.Equal(httpContext.Request.Form.Files["file"], fileArgument);
+        Assert.Equal("file.txt", fileArgument!.FileName);
+        Assert.Equal("file", fileArgument.Name);
+
+        var allAcceptsMetadata = factoryResult.EndpointMetadata.OfType<IAcceptsMetadata>();
+        var acceptsMetadata = Assert.Single(allAcceptsMetadata);
+
+        Assert.NotNull(acceptsMetadata);
+        Assert.Equal(new[] { "multipart/form-data" }, acceptsMetadata.ContentTypes);
+    }
+
+    [Theory]
+    [InlineData("Authorization", "bearer my-token", "Support for binding parameters from an HTTP request's form is not currently supported if the request contains an \"Authorization\" HTTP request header. Use of an HTTP request form is not currently secure for HTTP requests in scenarios which require authentication.")]
+    [InlineData("Cookie", ".AspNetCore.Auth=abc123", "Support for binding parameters from an HTTP request's form is not currently supported if the request contains a \"Cookie\" HTTP request header. Use of an HTTP request form is not currently secure for HTTP requests in scenarios which require authentication.")]
+    public async Task RequestDelegateThrowsIfRequestUsingFormContainsSecureHeader(
+        string headerName,
+        string headerValue,
+        string expectedMessage)
+    {
+        var invoked = false;
+
+        void TestAction(IFormFile file)
+        {
+            invoked = true;
+        }
+
+        var fileContent = new StringContent("hello", Encoding.UTF8, "application/octet-stream");
+        var form = new MultipartFormDataContent("some-boundary");
+        form.Add(fileContent, "file", "file.txt");
+
+        var stream = new MemoryStream();
+        await form.CopyToAsync(stream);
+
+        stream.Seek(0, SeekOrigin.Begin);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Body = stream;
+        httpContext.Request.Headers[headerName] = headerValue;
+        httpContext.Request.Headers["Content-Type"] = "multipart/form-data;boundary=some-boundary";
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        var badHttpRequestException = await Assert.ThrowsAsync<BadHttpRequestException>(() => requestDelegate(httpContext));
+
+        Assert.False(invoked);
+
+        // The httpContext should be untouched.
+        Assert.False(httpContext.RequestAborted.IsCancellationRequested);
+        Assert.Equal(200, httpContext.Response.StatusCode);
+        Assert.False(httpContext.Response.HasStarted);
+
+        // We don't log bad requests when we throw.
+        Assert.Empty(TestSink.Writes);
+
+        Assert.Equal(expectedMessage, badHttpRequestException.Message);
+        Assert.Equal(400, badHttpRequestException.StatusCode);
+    }
+
+    [Fact]
+    public async Task RequestDelegateThrowsIfRequestUsingFormHasClientCertificate()
+    {
+        var invoked = false;
+
+        void TestAction(IFormFile file)
+        {
+            invoked = true;
+        }
+
+        var fileContent = new StringContent("hello", Encoding.UTF8, "application/octet-stream");
+        var form = new MultipartFormDataContent("some-boundary");
+        form.Add(fileContent, "file", "file.txt");
+
+        var stream = new MemoryStream();
+        await form.CopyToAsync(stream);
+
+        stream.Seek(0, SeekOrigin.Begin);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Body = stream;
+        httpContext.Request.Headers["Content-Type"] = "multipart/form-data;boundary=some-boundary";
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+#pragma warning disable SYSLIB0026 // Type or member is obsolete
+        var clientCertificate = new X509Certificate2();
+#pragma warning restore SYSLIB0026 // Type or member is obsolete
+
+        httpContext.Features.Set<ITlsConnectionFeature>(new TlsConnectionFeature(clientCertificate));
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        var badHttpRequestException = await Assert.ThrowsAsync<BadHttpRequestException>(() => requestDelegate(httpContext));
+
+        Assert.False(invoked);
+
+        // The httpContext should be untouched.
+        Assert.False(httpContext.RequestAborted.IsCancellationRequested);
+        Assert.Equal(200, httpContext.Response.StatusCode);
+        Assert.False(httpContext.Response.HasStarted);
+
+        // We don't log bad requests when we throw.
+        Assert.Empty(TestSink.Writes);
+
+        Assert.Equal("Support for binding parameters from an HTTP request's form is not currently supported if the request is associated with a client certificate. Use of an HTTP request form is not currently secure for HTTP requests in scenarios which require authentication.", badHttpRequestException.Message);
+        Assert.Equal(400, badHttpRequestException.StatusCode);
+    }
+
     private DefaultHttpContext CreateHttpContext()
     {
         var responseFeature = new TestHttpResponseFeature();
@@ -3215,6 +3922,11 @@ public class RequestDelegateFactoryTests : LoggedTest
     private class FromBodyAttribute : Attribute, IFromBodyMetadata
     {
         public bool AllowEmpty { get; set; }
+    }
+
+    private class FromFormAttribute : Attribute, IFromFormMetadata
+    {
+        public string? Name { get; set; }
     }
 
     private class FromServiceAttribute : Attribute, IFromServiceMetadata
@@ -3429,6 +4141,21 @@ public class RequestDelegateFactoryTests : LoggedTest
         }
 
         public bool CanHaveBody { get; }
+    }
+
+    private class TlsConnectionFeature : ITlsConnectionFeature
+    {
+        public TlsConnectionFeature(X509Certificate2 clientCertificate)
+        {
+            ClientCertificate = clientCertificate;
+        }
+
+        public X509Certificate2? ClientCertificate { get; set; }
+
+        public Task<X509Certificate2?> GetClientCertificateAsync(CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
 

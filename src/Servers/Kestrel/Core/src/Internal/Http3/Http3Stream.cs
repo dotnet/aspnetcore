@@ -7,9 +7,11 @@ using System.IO.Pipelines;
 using System.Net.Http;
 using System.Net.Http.QPack;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks.Sources;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
@@ -46,8 +48,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpH
     private int _totalParsedHeaderSize;
     private bool _isMethodConnect;
 
-    // TODO: Change to resetable ValueTask source
-    private TaskCompletionSource? _appCompleted;
+    private readonly ManualResetValueTaskSource<object?> _appCompletedTaskSource = new ManualResetValueTaskSource<object?>();
 
     private StreamCompletionFlags _completionState;
     private readonly object _completionLock = new object();
@@ -69,8 +70,8 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpH
     public long StreamId => _streamIdFeature.StreamId;
 
     public long StreamTimeoutTicks { get; set; }
-    public bool IsReceivingHeader => _appCompleted == null; // TCS is assigned once headers are received
-    public bool IsDraining => _appCompleted?.Task.IsCompleted ?? false; // Draining starts once app is complete
+    public bool IsReceivingHeader => _requestHeaderParsingState <= RequestHeaderParsingState.Headers; // Assigned once headers are received
+    public bool IsDraining => _appCompletedTaskSource.GetStatus() != ValueTaskSourceStatus.Pending; // Draining starts once app is complete
 
     public bool IsRequestStream => true;
 
@@ -86,7 +87,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpH
         _streamIdFeature = _context.ConnectionFeatures.Get<IStreamIdFeature>()!;
         _streamAbortFeature = _context.ConnectionFeatures.Get<IStreamAbortFeature>()!;
 
-        _appCompleted = null;
+        _appCompletedTaskSource.Reset();
         _isClosed = 0;
         _requestHeaderParsingState = default;
         _parsedPseudoHeaderFields = default;
@@ -190,13 +191,13 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpH
 
     public void OnStaticIndexedHeader(int index)
     {
-        var knownHeader = H3StaticTable.GetHeaderFieldAt(index);
+        var knownHeader = H3StaticTable.Get(index);
         OnHeader(knownHeader.Name, knownHeader.Value);
     }
 
     public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
     {
-        var knownHeader = H3StaticTable.GetHeaderFieldAt(index);
+        var knownHeader = H3StaticTable.Get(index);
         OnHeader(knownHeader.Name, value);
     }
 
@@ -402,8 +403,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpH
 
         // Stream will be pooled after app completed.
         // Wait to signal app completed after any potential aborts on the stream.
-        Debug.Assert(_appCompleted != null);
-        _appCompleted.SetResult();
+        _appCompletedTaskSource.SetResult(null);
     }
 
     private bool TryClose()
@@ -491,8 +491,12 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpH
 
             await Input.CompleteAsync();
 
-            var appCompleted = _appCompleted?.Task ?? Task.CompletedTask;
-            if (!appCompleted.IsCompletedSuccessfully)
+            // Once the header is finished being received then the app has started.
+            var appCompletedTask = !IsReceivingHeader
+                ? new ValueTask(_appCompletedTaskSource, _appCompletedTaskSource.Version)
+                : ValueTask.CompletedTask;
+
+            if (!appCompletedTask.IsCompletedSuccessfully)
             {
                 // At this point in the stream's read-side is complete. However, with HTTP/3
                 // the write-side of the stream can still be aborted by the client on request
@@ -528,7 +532,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpH
                 }, this);
 
                 // Make sure application func is completed before completing writer.
-                await appCompleted;
+                await appCompletedTask;
             }
 
             try
@@ -629,14 +633,14 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpH
             throw new Http3ConnectionErrorException(CoreStrings.FormatHttp3StreamErrorFrameReceivedAfterTrailers(Http3Formatting.ToFormattedType(Http3FrameType.Headers)), Http3ErrorCode.UnexpectedFrame);
         }
 
-        if (_requestHeaderParsingState == RequestHeaderParsingState.Headers)
+        if (_requestHeaderParsingState == RequestHeaderParsingState.Body)
         {
             _requestHeaderParsingState = RequestHeaderParsingState.Trailers;
         }
 
         try
         {
-            QPackDecoder.Decode(payload, handler: this);
+            QPackDecoder.Decode(payload, endHeaders: true, handler: this);
             QPackDecoder.Reset();
         }
         catch (QPackDecodingException ex)
@@ -678,7 +682,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpH
             throw new Http3StreamErrorException(CoreStrings.HttpErrorMissingMandatoryPseudoHeaderFields, Http3ErrorCode.MessageError);
         }
 
-        _appCompleted = new TaskCompletionSource();
+        _requestHeaderParsingState = RequestHeaderParsingState.Body;
         StreamTimeoutTicks = default;
         _context.StreamLifetimeHandler.OnStreamHeaderReceived(this);
 
@@ -718,8 +722,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpH
             RequestBodyPipe.Writer.Write(segment.Span);
         }
 
-        // TODO this can be better.
-        return RequestBodyPipe.Writer.FlushAsync().AsTask();
+        return RequestBodyPipe.Writer.FlushAsync().GetAsTask();
     }
 
     protected override void OnReset()
@@ -752,6 +755,10 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpH
     protected override bool TryParseRequest(ReadResult result, out bool endConnection)
     {
         endConnection = !TryValidatePseudoHeaders();
+
+        // Suppress pseudo headers from the public headers collection.
+        HttpRequestHeaders.ClearPseudoRequestHeaders();
+
         return true;
     }
 
@@ -788,7 +795,6 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpH
         // proxy or gateway can translate requests for non - HTTP schemes,
         // enabling the use of HTTP to interact with non - HTTP services.
         var headerScheme = HttpRequestHeaders.HeaderScheme.ToString();
-        HttpRequestHeaders.HeaderScheme = default; // Suppress pseduo headers from the public headers collection.
         if (!ReferenceEquals(headerScheme, Scheme) &&
             !string.Equals(headerScheme, Scheme, StringComparison.OrdinalIgnoreCase))
         {
@@ -805,7 +811,6 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpH
         // :path (and query) - Required
         // Must start with / except may be * for OPTIONS
         var path = HttpRequestHeaders.HeaderPath.ToString();
-        HttpRequestHeaders.HeaderPath = default; // Suppress pseduo headers from the public headers collection.
         RawTarget = path;
 
         // OPTIONS - https://tools.ietf.org/html/rfc7540#section-8.1.2.3
@@ -844,7 +849,6 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpH
     {
         // :method
         _methodText = HttpRequestHeaders.HeaderMethod.ToString();
-        HttpRequestHeaders.HeaderMethod = default; // Suppress pseduo headers from the public headers collection.
         Method = HttpUtilities.GetKnownMethod(_methodText);
 
         if (Method == Http.HttpMethod.None)
@@ -871,7 +875,6 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpH
         // Prefer this over Host
 
         var authority = HttpRequestHeaders.HeaderAuthority;
-        HttpRequestHeaders.HeaderAuthority = default; // Suppress pseduo headers from the public headers collection.
         var host = HttpRequestHeaders.HeaderHost;
         if (!StringValues.IsNullOrEmpty(authority))
         {
@@ -990,6 +993,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpH
         Ready,
         PseudoHeaderFields,
         Headers,
+        Body,
         Trailers
     }
 

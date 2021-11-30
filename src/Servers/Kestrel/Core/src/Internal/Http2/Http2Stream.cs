@@ -208,6 +208,10 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
         // We don't need any of the parameters because we don't implement BeginRead to actually
         // do the reading from a pipeline, nor do we use endConnection to report connection-level errors.
         endConnection = !TryValidatePseudoHeaders();
+
+        // Suppress pseudo headers from the public headers collection.
+        HttpRequestHeaders.ClearPseudoRequestHeaders();
+
         return true;
     }
 
@@ -249,7 +253,6 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
         // enabling the use of HTTP to interact with non - HTTP services.
         // A common example is TLS termination.
         var headerScheme = HttpRequestHeaders.HeaderScheme.ToString();
-        HttpRequestHeaders.HeaderScheme = default; // Suppress pseduo headers from the public headers collection.
         if (!ReferenceEquals(headerScheme, Scheme) &&
             !string.Equals(headerScheme, Scheme, StringComparison.OrdinalIgnoreCase))
         {
@@ -266,7 +269,6 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
         // :path (and query) - Required
         // Must start with / except may be * for OPTIONS
         var path = HttpRequestHeaders.HeaderPath.ToString();
-        HttpRequestHeaders.HeaderPath = default; // Suppress pseduo headers from the public headers collection.
         RawTarget = path;
 
         // OPTIONS - https://tools.ietf.org/html/rfc7540#section-8.1.2.3
@@ -304,7 +306,6 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
     {
         // :method
         _methodText = HttpRequestHeaders.HeaderMethod.ToString();
-        HttpRequestHeaders.HeaderMethod = default; // Suppress pseduo headers from the public headers collection.
         Method = HttpUtilities.GetKnownMethod(_methodText);
 
         if (Method == HttpMethod.None)
@@ -331,7 +332,6 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
         // Prefer this over Host
 
         var authority = HttpRequestHeaders.HeaderAuthority;
-        HttpRequestHeaders.HeaderAuthority = default; // Suppress pseduo headers from the public headers collection.
         var host = HttpRequestHeaders.HeaderHost;
         if (!StringValues.IsNullOrEmpty(authority))
         {
