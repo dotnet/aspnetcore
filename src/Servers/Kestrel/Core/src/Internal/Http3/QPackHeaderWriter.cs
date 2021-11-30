@@ -59,19 +59,39 @@ internal static class QPackHeaderWriter
 
         do
         {
-            var staticTableId = headersEnumerator.QPackStaticTableId;
+            // Match the current header to the QPACK static table. Possible outcomes:
+            // 1. Known header and value. Write index.
+            // 2. Known header with custom value. Write name index and full value.
+            // 3. Unknown header. Write full name and value.
+            var (staticTableId, matchedValue) = headersEnumerator.GetQPackStaticTableId();
             var name = headersEnumerator.Current.Key;
             var value = headersEnumerator.Current.Value;
-            var valueEncoding = ReferenceEquals(headersEnumerator.EncodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector)
-                ? null : headersEnumerator.EncodingSelector(name);
 
-            if (!EncodeHeader(buffer.Slice(length), staticTableId, name, value, valueEncoding, out var headerLength))
+            int headerLength;
+            if (matchedValue)
             {
-                if (length == 0 && throwIfNoneEncoded)
+                if (!QPackEncoder.EncodeStaticIndexedHeaderField(staticTableId, buffer.Slice(length), out headerLength))
                 {
-                    throw new QPackEncodingException("TODO sync with corefx" /* CoreStrings.HPackErrorNotEnoughBuffer */);
+                    if (length == 0 && throwIfNoneEncoded)
+                    {
+                        throw new QPackEncodingException("TODO sync with corefx" /* CoreStrings.HPackErrorNotEnoughBuffer */);
+                    }
+                    return false;
                 }
-                return false;
+            }
+            else
+            {
+                var valueEncoding = ReferenceEquals(headersEnumerator.EncodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector)
+                    ? null : headersEnumerator.EncodingSelector(name);
+
+                if (!EncodeHeader(buffer.Slice(length), staticTableId, name, value, valueEncoding, out headerLength))
+                {
+                    if (length == 0 && throwIfNoneEncoded)
+                    {
+                        throw new QPackEncodingException("TODO sync with corefx" /* CoreStrings.HPackErrorNotEnoughBuffer */);
+                    }
+                    return false;
+                }
             }
 
             // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1.1.3
