@@ -126,7 +126,7 @@ namespace RunTests
                 Console.WriteLine($"Installing Playwright Browsers to {Environment.GetEnvironmentVariable("PLAYWRIGHT_BROWSERS_PATH")}");
 
                 await ProcessUtil.RunAsync($"playwright",
-                    "install",
+                    "install -p /_/src/ProjectTemplates/BlazorTemplates.Tests/BlazorTemplates.Tests.csproj",
                     environmentVariables: EnvironmentVariables,
                     outputDataReceived: Console.WriteLine,
                     errorDataReceived: Console.Error.WriteLine,
