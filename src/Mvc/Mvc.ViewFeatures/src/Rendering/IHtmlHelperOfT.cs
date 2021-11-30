@@ -69,7 +69,9 @@ public interface IHtmlHelper<TModel> : IHtmlHelper
     /// <paramref name="expression"/> result.
     /// </para>
     /// <para>
-    /// Custom templates are found under a <c>DisplayTemplates</c> folder. The folder name is case-sensitive on
+    /// Custom templates are found under a <c>DisplayTemplates</c> folder within the
+    /// <see href="https://docs.microsoft.com/en-us/aspnet/core/tutorials/razor-pages/razor-pages-start#pages-folder-2" >Pages</see > folder.
+    /// The folder name is case-sensitive on
     /// case-sensitive file systems.
     /// </para>
     /// </remarks>
