@@ -276,7 +276,7 @@ function Get-MSBuildPath {
             }
         }
 
-        $installs = & $vswhere -format json -version '[15.0, 16.0)' -latest -products * @vswhereArgs | ConvertFrom-Json
+        $installs = & $vswhere -format json -version '[15.0, 17.0)' -latest -products * @vswhereArgs | ConvertFrom-Json
         if (!$installs) {
             Write-Error "Missing prerequisite: could not find any installations of Visual Studio"
         }
@@ -286,7 +286,10 @@ function Get-MSBuildPath {
         Write-Host "Using $($vs.displayName)"
     }
 
-    $msbuild = Join-Path  $vsInstallDir 'MSBuild/15.0/bin/msbuild.exe'
+    $msbuild = Join-Path $vsInstallDir 'MSBuild/15.0/bin/msbuild.exe'
+    if (!(Test-Path $msbuild)) {
+        $msbuild = Join-Path $vsInstallDir 'MSBuild/Current/bin/msbuild.exe'
+    }
     if (!(Test-Path $msbuild)) {
         Write-Error "Missing prerequisite: could not find msbuild.exe"
     }

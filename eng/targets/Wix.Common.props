@@ -9,7 +9,8 @@
 
   <PropertyGroup>
     <!-- Required to make NuGet happy -->
-    <TargetFramework>net461</TargetFramework>
+    <TargetFrameworkMoniker>Native,Version=v0.0</TargetFrameworkMoniker>
+
     <MSBuildProjectExtensionsPath>$(BaseIntermediateOutputPath)</MSBuildProjectExtensionsPath>
     <MSBuildProjectExtensionsPath Condition="'$(MSBuildProjectExtensionsPath)' == ''">$(MSBuildProjectDir)\obj\</MSBuildProjectExtensionsPath>
     <NuGetRestoreTargets Condition="'$(NuGetRestoreTargets)'==''">$(MSBuildExtensionsPath)\..\Common7\IDE\CommonExtensions\Microsoft\NuGet\NuGet.targets</NuGetRestoreTargets>
