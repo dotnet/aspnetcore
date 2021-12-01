@@ -1,11 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Linq;
-using System.Net.Http.HPack;
-using System.Text;
-using System.Threading.Tasks;
+using System.Net.Http.QPack;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -15,35 +11,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks;
 
 public class QPackDecoderBenchmark
 {
-    // Indexed Header Field Representation - Dynamic Table - Index 62 (first index in dynamic table)
-    private static readonly byte[] _indexedHeaderDynamic = new byte[] { 0xbe };
-
-    private static readonly byte[] _literalHeaderFieldWithoutIndexingNewName = new byte[] { 0x00 };
-
-    private const string _headerNameString = "new-header";
-
-    private static readonly byte[] _headerNameBytes = Encoding.ASCII.GetBytes(_headerNameString);
-
-    private static readonly byte[] _headerName = new byte[] { (byte)_headerNameBytes.Length }
-        .Concat(_headerNameBytes)
-        .ToArray();
-
-    private const string _headerValueString = "value";
-
-    private static readonly byte[] _headerValueBytes = Encoding.ASCII.GetBytes(_headerValueString);
-
-    private static readonly byte[] _headerValue = new byte[] { (byte)_headerValueBytes.Length }
-        .Concat(_headerValueBytes)
-        .ToArray();
-
-    private static readonly byte[] _literalHeaderFieldNeverIndexed_NewName = _literalHeaderFieldWithoutIndexingNewName
-            .Concat(_headerName)
-            .Concat(_headerValue)
-            .ToArray();
-
-    private static readonly byte[] _literalHeaderFieldNeverIndexed_NewName_Large;
-    private static readonly byte[] _literalHeaderFieldNeverIndexed_NewName_Multiple;
-    private static readonly byte[] _indexedHeaderStatic_Multiple;
+    private static readonly byte[] _headerFieldLine_LargeLiteralValue;
+    private static readonly byte[] _headerFieldLine_LargeLiteralValue_Multiple;
+    private static readonly byte[] _headerFieldLine_Static_Multiple;
 
     static QPackDecoderBenchmark()
     {
@@ -51,33 +21,28 @@ public class QPackDecoderBenchmark
 
         var headers = new HttpResponseHeaders();
         var enumerator = new Http3HeadersEnumerator();
+
+        AddLargeHeader(headers, 'a');
         enumerator.Initialize(headers);
-
+        _headerFieldLine_LargeLiteralValue = GenerateHeaderBytes(enumerator);
         headers.Reset();
-        AddLargeHeader(headers, 'a');
-        _literalHeaderFieldNeverIndexed_NewName_Large = GenerateHeaderBytes(enumerator);
 
-        headers.Reset();
         AddLargeHeader(headers, 'a');
         AddLargeHeader(headers, 'b');
         AddLargeHeader(headers, 'c');
         AddLargeHeader(headers, 'd');
         AddLargeHeader(headers, 'e');
-        _literalHeaderFieldNeverIndexed_NewName_Multiple = GenerateHeaderBytes(enumerator);
-
+        enumerator.Initialize(headers);
+        _headerFieldLine_LargeLiteralValue_Multiple = GenerateHeaderBytes(enumerator);
         headers.Reset();
-        AddLargeHeader(headers, 'a');
-        AddLargeHeader(headers, 'b');
-        AddLargeHeader(headers, 'c');
-        AddLargeHeader(headers, 'd');
-        AddLargeHeader(headers, 'e');
 
-        _indexedHeaderStatic_Multiple = _indexedHeaderDynamic
-            .Concat(_indexedHeaderDynamic)
-            .Concat(_indexedHeaderDynamic)
-            .Concat(_indexedHeaderDynamic)
-            .Concat(_indexedHeaderDynamic)
-            .ToArray();
+        ((IHeaderDictionary)headers).ContentLength = 0;
+        ((IHeaderDictionary)headers).ContentType = "application/json";
+        ((IHeaderDictionary)headers).Age = "0";
+        ((IHeaderDictionary)headers).AcceptRanges = "bytes";
+        ((IHeaderDictionary)headers).AccessControlAllowOrigin = "*";
+        enumerator.Initialize(headers);
+        _headerFieldLine_Static_Multiple = GenerateHeaderBytes(enumerator);
 
         static void AddLargeHeader(HttpResponseHeaders headers, char c)
         {
@@ -103,47 +68,35 @@ public class QPackDecoderBenchmark
         }
     }
 
-    private HPackDecoder _decoder;
+    private QPackDecoder _decoder;
     private TestHeadersHandler _testHeadersHandler;
-    private DynamicTable _dynamicTable;
 
     [GlobalSetup]
     public void GlobalSetup()
     {
-        _dynamicTable = new DynamicTable(maxSize: 4096);
-        _dynamicTable.Insert(_headerNameBytes, _headerValueBytes);
-        _decoder = new HPackDecoder(maxDynamicTableSize: 4096, maxHeadersLength: 65536, _dynamicTable);
+        _decoder = new QPackDecoder(maxHeadersLength: 65536);
         _testHeadersHandler = new TestHeadersHandler();
     }
 
     [Benchmark]
-    public void DecodesLiteralHeaderFieldNeverIndexed_NewName()
+    public void DecodeHeaderFieldLine_LargeLiteralValue()
     {
-        _decoder.Decode(_literalHeaderFieldNeverIndexed_NewName, endHeaders: true, handler: _testHeadersHandler);
+        _decoder.Decode(_headerFieldLine_LargeLiteralValue, endHeaders: true, handler: _testHeadersHandler);
+        _decoder.Reset();
     }
 
     [Benchmark]
-    public void DecodesLiteralHeaderFieldNeverIndexed_NewName_Large()
+    public void DecodeHeaderFieldLine_LargeLiteralValue_Multiple()
     {
-        _decoder.Decode(_literalHeaderFieldNeverIndexed_NewName_Large, endHeaders: true, handler: _testHeadersHandler);
+        _decoder.Decode(_headerFieldLine_LargeLiteralValue_Multiple, endHeaders: true, handler: _testHeadersHandler);
+        _decoder.Reset();
     }
 
     [Benchmark]
-    public void DecodesLiteralHeaderFieldNeverIndexed_NewName_Multiple()
+    public void DecodeHeaderFieldLine_Static_Multiple()
     {
-        _decoder.Decode(_literalHeaderFieldNeverIndexed_NewName_Multiple, endHeaders: true, handler: _testHeadersHandler);
-    }
-
-    [Benchmark]
-    public void DecodesIndexedHeaderField_DynamicTable()
-    {
-        _decoder.Decode(_indexedHeaderDynamic, endHeaders: true, handler: _testHeadersHandler);
-    }
-
-    [Benchmark]
-    public void DecodesIndexedHeaderField_DynamicTable_Multiple()
-    {
-        _decoder.Decode(_indexedHeaderDynamic_Multiple, endHeaders: true, handler: _testHeadersHandler);
+        _decoder.Decode(_headerFieldLine_Static_Multiple, endHeaders: true, handler: _testHeadersHandler);
+        _decoder.Reset();
     }
 
     private class TestHeadersHandler : IHttpHeadersHandler
