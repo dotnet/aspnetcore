@@ -113,11 +113,31 @@ namespace RunTests
         {
             try
             {
-                Console.WriteLine($"Installing Microsoft.Playwright");
+                Console.WriteLine($"Installing Microsoft.Playwright.CLI");
 
-                DisplayContents(Options.HELIX_WORKITEM_ROOT);
+                await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
+                    $"tool install Microsoft.Playwright.CLI --tool-path {Options.HELIX_WORKITEM_ROOT}",
+                    environmentVariables: EnvironmentVariables,
+                    outputDataReceived: Console.WriteLine,
+                    errorDataReceived: Console.Error.WriteLine,
+                    throwOnError: false,
+                    cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
 
-                Microsoft.Playwright.Program.Main(new[] { "install" });
+                Console.WriteLine($"Installing Playwright Browsers to {Environment.GetEnvironmentVariable("PLAYWRIGHT_BROWSERS_PATH")}");
+
+                // Workaround https://github.com/microsoft/playwright-dotnet/blob/main/src/Playwright.CLI/Program.cs#L55-L65
+                var tempProjectPath = Path.Combine("Options.HELIX_WORKITEM_ROOT", "TempProj.csproj");
+                File.CreateFile(tempProjectPath);
+
+                await ProcessUtil.RunAsync($"playwright",
+                    "install",
+                    environmentVariables: EnvironmentVariables,
+                    outputDataReceived: Console.WriteLine,
+                    errorDataReceived: Console.Error.WriteLine,
+                    throwOnError: false,
+                    cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
+
+                File.Delete(tempProjectPath);
 
                 DisplayContents(Environment.GetEnvironmentVariable("PLAYWRIGHT_BROWSERS_PATH"));
                 return true;
