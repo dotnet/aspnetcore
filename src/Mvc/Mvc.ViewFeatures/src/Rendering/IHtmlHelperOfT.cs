@@ -48,7 +48,7 @@ public interface IHtmlHelper<TModel> : IHtmlHelper
     /// <summary>
     /// Returns HTML markup for the <paramref name="expression"/>, using a display template, specified HTML field
     /// name, and additional view data. The template is found using the <paramref name="templateName"/> or the
-    /// <paramref name="expression"/>'s <see cref="ModelBinding.ModelMetadata"/>.
+    /// <paramref name="expression"/>'s <see cref="Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata#TemplateHint"/>.
     /// </summary>
     /// <param name="expression">An expression to be evaluated against the current model.</param>
     /// <param name="templateName">The name of the template used to create the HTML markup.</param>
