@@ -74,6 +74,25 @@ public class Http3QPackEncoderTests
     }
 
     [Fact]
+    public void BeginEncodeHeaders_StaticKeyAndValue_WriteIndex()
+    {
+        Span<byte> buffer = new byte[1024 * 16];
+
+        var headers = (IHeaderDictionary)new HttpResponseHeaders();
+        headers.ContentType = "application/json";
+
+        var totalHeaderSize = 0;
+        var enumerator = new Http3HeadersEnumerator();
+        enumerator.Initialize(headers);
+
+        Assert.True(QPackHeaderWriter.BeginEncodeHeaders(enumerator, buffer, ref totalHeaderSize, out var length));
+
+        var result = buffer.Slice(2, length - 2).ToArray(); // trim prefix
+        var hex = BitConverter.ToString(result);
+        Assert.Equal("EE", hex);
+    }
+
+    [Fact]
     public void BeginEncodeHeaders_NonStaticKey_WriteFullNameAndFullValue()
     {
         Span<byte> buffer = new byte[1024 * 16];
@@ -93,12 +112,31 @@ public class Http3QPackEncoderTests
     }
 
     [Fact]
-    public void BeginEncodeHeaders_NoStatus_NonStaticKey_WriteFullNameAndFullValue()
+    public void BeginEncodeHeaders_NonStaticKey_WriteFullNameAndFullValue_CustomHeader()
     {
         Span<byte> buffer = new byte[1024 * 16];
 
         var headers = (IHeaderDictionary)new HttpResponseHeaders();
-        headers.Translate = "private";
+        headers["new-header"] = "value";
+
+        var totalHeaderSize = 0;
+        var enumerator = new Http3HeadersEnumerator();
+        enumerator.Initialize(headers);
+
+        Assert.True(QPackHeaderWriter.BeginEncodeHeaders(enumerator, buffer, ref totalHeaderSize, out var length));
+
+        var result = buffer.Slice(2, length - 2).ToArray(); // trim prefix
+        var hex = BitConverter.ToString(result);
+        Assert.Equal("37-03-6E-65-77-2D-68-65-61-64-65-72-05-76-61-6C-75-65", hex);
+    }
+
+    [Fact]
+    public void BeginEncodeHeaders_StaticKey_WriteStaticNameAndFullValue()
+    {
+        Span<byte> buffer = new byte[1024 * 16];
+
+        var headers = (IHeaderDictionary)new HttpResponseHeaders();
+        headers.ContentType = "application/custom";
 
         var totalHeaderSize = 0;
         var enumerator = new Http3HeadersEnumerator();
@@ -108,6 +146,6 @@ public class Http3QPackEncoderTests
 
         var result = buffer.Slice(2, length - 2).ToArray();
         var hex = BitConverter.ToString(result);
-        Assert.Equal("37-02-74-72-61-6E-73-6C-61-74-65-07-70-72-69-76-61-74-65", hex);
+        Assert.Equal("5F-1D-12-61-70-70-6C-69-63-61-74-69-6F-6E-2F-63-75-73-74-6F-6D", hex);
     }
 }

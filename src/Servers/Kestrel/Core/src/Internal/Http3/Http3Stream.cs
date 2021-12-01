@@ -191,13 +191,13 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpH
 
     public void OnStaticIndexedHeader(int index)
     {
-        var knownHeader = H3StaticTable.GetHeaderFieldAt(index);
+        var knownHeader = H3StaticTable.Get(index);
         OnHeader(knownHeader.Name, knownHeader.Value);
     }
 
     public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
     {
-        var knownHeader = H3StaticTable.GetHeaderFieldAt(index);
+        var knownHeader = H3StaticTable.Get(index);
         OnHeader(knownHeader.Name, value);
     }
 

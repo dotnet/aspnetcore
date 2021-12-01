@@ -29,7 +29,7 @@ internal sealed class Http3HeadersEnumerator : IEnumerator<KeyValuePair<string, 
 
     public Func<string, Encoding?> EncodingSelector { get; set; } = KestrelServerOptions.DefaultHeaderEncodingSelector;
 
-    public int QPackStaticTableId => GetResponseHeaderStaticTableId(_knownHeaderType);
+    public (int index, bool matchedValue) GetQPackStaticTableId() => HttpHeadersCompression.MatchKnownHeaderQPack(_knownHeaderType, Current.Value);
     public KeyValuePair<string, string> Current { get; private set; }
     object IEnumerator.Current => Current;
 
@@ -144,67 +144,5 @@ internal sealed class Http3HeadersEnumerator : IEnumerator<KeyValuePair<string, 
 
     public void Dispose()
     {
-    }
-
-    internal static int GetResponseHeaderStaticTableId(KnownHeaderType responseHeaderType)
-    {
-        // Removed from this test are request-only headers, e.g. cookie.
-        //
-        // Not every header in the QPACK static table is known.
-        // These are missing from this test and the full header name is written.
-        // Missing:
-        // - link
-        // - location
-        // - strict-transport-security
-        // - x-content-type-options
-        // - x-xss-protection
-        // - content-security-policy
-        // - early-data
-        // - expect-ct
-        // - purpose
-        // - timing-allow-origin
-        // - x-forwarded-for
-        // - x-frame-options
-        switch (responseHeaderType)
-        {
-            case KnownHeaderType.Age:
-                return H3StaticTable.Age0;
-            case KnownHeaderType.ContentLength:
-                return H3StaticTable.ContentLength0;
-            case KnownHeaderType.Date:
-                return H3StaticTable.Date;
-            case KnownHeaderType.ETag:
-                return H3StaticTable.ETag;
-            case KnownHeaderType.LastModified:
-                return H3StaticTable.LastModified;
-            case KnownHeaderType.Location:
-                return H3StaticTable.Location;
-            case KnownHeaderType.SetCookie:
-                return H3StaticTable.SetCookie;
-            case KnownHeaderType.AcceptRanges:
-                return H3StaticTable.AcceptRangesBytes;
-            case KnownHeaderType.AccessControlAllowHeaders:
-                return H3StaticTable.AccessControlAllowHeadersCacheControl;
-            case KnownHeaderType.AccessControlAllowOrigin:
-                return H3StaticTable.AccessControlAllowOriginAny;
-            case KnownHeaderType.CacheControl:
-                return H3StaticTable.CacheControlMaxAge0;
-            case KnownHeaderType.ContentEncoding:
-                return H3StaticTable.ContentEncodingBr;
-            case KnownHeaderType.ContentType:
-                return H3StaticTable.ContentTypeApplicationDnsMessage;
-            case KnownHeaderType.Vary:
-                return H3StaticTable.VaryAcceptEncoding;
-            case KnownHeaderType.AccessControlAllowCredentials:
-                return H3StaticTable.AccessControlAllowCredentials;
-            case KnownHeaderType.AccessControlAllowMethods:
-                return H3StaticTable.AccessControlAllowMethodsGet;
-            case KnownHeaderType.AltSvc:
-                return H3StaticTable.AltSvcClear;
-            case KnownHeaderType.Server:
-                return H3StaticTable.Server;
-            default:
-                return -1;
-        }
     }
 }
