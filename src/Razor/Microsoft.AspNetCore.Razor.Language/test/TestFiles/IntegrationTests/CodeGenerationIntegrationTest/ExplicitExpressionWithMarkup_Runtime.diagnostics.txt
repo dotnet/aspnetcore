@@ -1,2 +1,0 @@
-TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ExplicitExpressionWithMarkup.cshtml(1,7): Error RZ1006: The explicit expression block is missing a closing ")" character.  Make sure you have a matching ")" character for all the "(" characters within this block, and that none of the ")" characters are being interpreted as markup.
-TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ExplicitExpressionWithMarkup.cshtml(1,11): Error RZ1026: Encountered end tag "div" with no matching start tag.  Are your start/end tags properly balanced?

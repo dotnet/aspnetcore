@@ -1,1 +1,0 @@
-(1,10): Error RZ1015: The 'section' directive expects an identifier.

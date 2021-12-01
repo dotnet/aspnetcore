@@ -1,1 +1,0 @@
-x:\dir\subdir\Test\TestComponent.cshtml(1,48): Error RZ10001: The type of component 'Column' cannot be inferred based on the values provided. Consider specifying the type arguments directly using the following attributes: 'TItem'.

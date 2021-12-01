@@ -1,9 +1,0 @@
-Source Location: (92:3,7 [60] x:\dir\subdir\Test\TestComponent.cshtml)
-|
-    private Action<MouseEventArgs> OnClick { get; set; }
-|
-Generated Location: (1249:37,7 [60] )
-|
-    private Action<MouseEventArgs> OnClick { get; set; }
-|
-

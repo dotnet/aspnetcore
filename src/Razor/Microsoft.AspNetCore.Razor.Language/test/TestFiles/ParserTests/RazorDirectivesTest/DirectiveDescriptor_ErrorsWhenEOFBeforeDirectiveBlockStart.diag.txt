@@ -1,1 +1,0 @@
-(1,16): Error RZ1012: Unexpected end of file following the 'custom' directive. Expected '{'.

@@ -1,5 +1,0 @@
-Source Location: (19:0,19 [23] x:\dir\subdir\Test\TestComponent.cshtml)
-|Array.Empty<DateTime>()|
-Generated Location: (981:26,19 [23] )
-|Array.Empty<DateTime>()|
-

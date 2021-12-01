@@ -1,9 +1,0 @@
-Source Location: (86:1,7 [50] x:\dir\subdir\Test\TestComponent.cshtml)
-|
-    public int ParentValue { get; set; } = 42;
-|
-Generated Location: (1303:33,7 [50] )
-|
-    public int ParentValue { get; set; } = 42;
-|
-

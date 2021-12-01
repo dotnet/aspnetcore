@@ -1,1 +1,0 @@
-(1,13): Error RZ1017: Unexpected literal following the 'section' directive. Expected '{'.
