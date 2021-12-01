@@ -116,7 +116,7 @@ public class SocketTransportOptions
                 listenSocket = new Socket(ip.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
 
                 // Kestrel expects IPv6Any to bind to both IPv6 and IPv4
-                if (ip.Address == IPAddress.IPv6Any)
+                if (ip.Address.Equals(IPAddress.IPv6Any))
                 {
                     listenSocket.DualMode = true;
                 }
