@@ -395,6 +395,7 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
 
     /// <summary>
     /// Gets a string used by the templating system to discover display-templates and editor-templates.
+    /// Use <see cref="System.ComponentModel.DataAnnotations.UIHintAttribute" /> to specify.
     /// </summary>
     public abstract string? TemplateHint { get; }
 
