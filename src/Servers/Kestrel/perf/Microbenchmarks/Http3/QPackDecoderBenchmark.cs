@@ -17,8 +17,6 @@ public class QPackDecoderBenchmark
 
     static QPackDecoderBenchmark()
     {
-        string string8193 = new string('a', 8193);
-
         var headers = new HttpResponseHeaders();
         var enumerator = new Http3HeadersEnumerator();
 
