@@ -115,6 +115,8 @@ namespace RunTests
             {
                 Console.WriteLine($"Installing Microsoft.Playwright");
 
+                DisplayContents(Options.HELIX_WORKITEM_ROOT);
+
                 Microsoft.Playwright.Program.Main(new[] { "install" });
 
                 DisplayContents(Environment.GetEnvironmentVariable("PLAYWRIGHT_BROWSERS_PATH"));
