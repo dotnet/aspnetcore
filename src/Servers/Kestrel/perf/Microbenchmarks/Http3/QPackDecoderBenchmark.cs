@@ -64,7 +64,7 @@ public class QPackDecoderBenchmark
                 throw new InvalidOperationException();
             }
 
-            return buffer[0..length].ToArray();
+            return buffer[..length];
         }
     }
 
