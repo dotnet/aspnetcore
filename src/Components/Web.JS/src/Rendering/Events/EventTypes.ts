@@ -66,7 +66,9 @@ registerBuiltInEventType(['drag', 'dragend', 'dragenter', 'dragleave', 'dragover
   createEventArgs: e => parseDragEvent(e as DragEvent)
 });
 
-registerBuiltInEventType(['focus', 'blur', 'focusin', 'focusout'], createBlankEventArgsOptions);
+registerBuiltInEventType(['focus', 'blur', 'focusin', 'focusout'], {
+  createEventArgs: e => parseFocuseEvent(e as FocusEvent)
+});
 
 registerBuiltInEventType(['keydown', 'keyup', 'keypress'], {
   createEventArgs: e => parseKeyboardEvent(e as KeyboardEvent)
@@ -150,6 +152,12 @@ function parseTouchEvent(event: TouchEvent): TouchEventArgs {
     shiftKey: event.shiftKey,
     altKey: event.altKey,
     metaKey: event.metaKey,
+    type: event.type
+  };
+}
+
+function parseFocuseEvent(event: FocusEvent): FocusEventArgs {
+  return {
     type: event.type
   };
 }
@@ -399,4 +407,8 @@ interface WheelEventArgs extends MouseEventArgs {
   deltaY: number;
   deltaZ: number;
   deltaMode: number;
+}
+
+interface FocusEventArgs {
+  type: string;
 }
