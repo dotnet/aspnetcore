@@ -43,49 +43,74 @@
     void OnMouseOver(MouseEventArgs e)
     {
         DumpEvent(e);
-        message += "onmouseover,";
+
+        if (e.Type == "mouseover")
+        {
+            message += "onmouseover,";
+        }
     }
 
     void OnMouseOut(MouseEventArgs e)
     {
         DumpEvent(e);
-        message += "onmouseout,";
+        if (e.Type == "mouseout")
+        {
+            message += "onmouseout,";
+        }
     }
 
     void OnMouseMove(MouseEventArgs e)
     {
         DumpEvent(e);
-        message += "onmousemove,";
+        if (e.Type == "mousemove")
+        {
+            message += "onmousemove,";
+        }
     }
 
     void OnMouseDown(MouseEventArgs e)
     {
         DumpEvent(e);
-        message += "onmousedown,";
+        if (e.Type == "mousedown")
+        {
+            message += "onmousedown,";
+        }
     }
 
     void OnMouseUp(MouseEventArgs e)
     {
         DumpEvent(e);
-        message += "onmouseup,";
+        if (e.Type == "mouseup")
+        {
+            message += "onmouseup,";
+        }
     }
 
     void OnPointerDown(PointerEventArgs e)
     {
         DumpEvent(e);
-        message += "onpointerdown";
+        if (e.Type == "pointerdown")
+        {
+            message += "onpointerdown,";
+        }
     }
 
     void OnDragStart(DragEventArgs e)
     {
         DumpEvent(e);
-        message += "ondragstart,";
+        if (e.Type == "dragstart")
+        {
+            message += "ondragstart,";
+        }
     }
 
     void OnDrop(DragEventArgs e)
     {
         DumpEvent(e);
-        message += "ondrop,";
+        if (e.Type == "drop")
+        {
+            message += "ondrop,";
+        }
     }
 
     void OnPolymorphicEvent(EventArgs e)
