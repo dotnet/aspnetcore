@@ -60,14 +60,16 @@ registerBuiltInEventType(['input', 'change'], {
   createEventArgs: parseChangeEvent
 });
 
-registerBuiltInEventType(['copy', 'cut', 'paste'], createBlankEventArgsOptions);
+registerBuiltInEventType(['copy', 'cut', 'paste'], {
+  createEventArgs: e => parseClipboardEvent(e as ClipboardEvent)
+});
 
 registerBuiltInEventType(['drag', 'dragend', 'dragenter', 'dragleave', 'dragover', 'dragstart', 'drop'], {
   createEventArgs: e => parseDragEvent(e as DragEvent)
 });
 
 registerBuiltInEventType(['focus', 'blur', 'focusin', 'focusout'], {
-  createEventArgs: e => parseFocuseEvent(e as FocusEvent)
+  createEventArgs: e => parseFocusEvent(e as FocusEvent)
 });
 
 registerBuiltInEventType(['keydown', 'keyup', 'keypress'], {
@@ -156,7 +158,13 @@ function parseTouchEvent(event: TouchEvent): TouchEventArgs {
   };
 }
 
-function parseFocuseEvent(event: FocusEvent): FocusEventArgs {
+function parseFocusEvent(event: FocusEvent): FocusEventArgs {
+  return {
+    type: event.type
+  };
+}
+
+function parseClipboardEvent(event: ClipboardEvent): ClipboardEventArgs {
   return {
     type: event.type
   };
@@ -410,5 +418,9 @@ interface WheelEventArgs extends MouseEventArgs {
 }
 
 interface FocusEventArgs {
+  type: string;
+}
+
+interface ClipboardEventArgs {
   type: string;
 }
