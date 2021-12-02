@@ -63,9 +63,20 @@ public class H2SpecTests : LoggedTest
             var dataset = new TheoryData<H2SpecTestCase>();
             var toSkip = new string[] { "http2/6.9.1/2" };
 
+            var testCases = H2SpecCommands.EnumerateTestCases();
+
+            if (testCases == null || !testCases.Any())
+            {
+                dataset.Add(new H2SpecTestCase()
+                {
+                    Skip = "Unable to detect test cases on this platform.",
+                });
+                return dataset;
+            }
+
             var supportsAlpn = Utilities.CurrentPlatformSupportsHTTP2OverTls();
 
-            foreach (var testcase in H2SpecCommands.EnumerateTestCases())
+            foreach (var testcase in testCases)
             {
                 string skip = null;
                 if (toSkip.Contains(testcase.Item1))

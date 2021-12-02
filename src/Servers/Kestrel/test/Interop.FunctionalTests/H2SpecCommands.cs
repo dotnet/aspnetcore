@@ -50,8 +50,14 @@ public static class H2SpecCommands
         {
             return Path.Combine(root, "windows", "h2spec.exe");
         }
-        else if (OperatingSystem.IsLinux() && (RuntimeInformation.OSArchitecture == Architecture.X64))
+        else if (OperatingSystem.IsLinux())
         {
+            if (RuntimeInformation.OSArchitecture != Architecture.X64)
+            {
+                // This is a known, unsupported scenario, no-op.
+                return null;
+            }
+
             var toolPath = Path.Combine(root, "linux", "h2spec");
             chmod755(toolPath);
             return toolPath;
@@ -67,10 +73,17 @@ public static class H2SpecCommands
 
     public static IList<Tuple<string, string>> EnumerateTestCases()
     {
+        // The tool isn't supported on some platforms (arm64), so we can't even enumerate the tests.
+        var toolLocation = GetToolLocation();
+        if (toolLocation == null)
+        {
+            return null;
+        }
+
         var testCases = new List<Tuple<string, string>>();
         var processOptions = new ProcessStartInfo
         {
-            FileName = GetToolLocation(),
+            FileName = toolLocation,
             RedirectStandardOutput = true,
             Arguments = "--strict --dryrun",
             WindowStyle = ProcessWindowStyle.Hidden,
