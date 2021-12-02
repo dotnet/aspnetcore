@@ -28,7 +28,7 @@
 
     void OnTouch(TouchEventArgs e)
     {
-        message += e.Type;
+        message += $"{e.Type},";
         Console.WriteLine(JsonSerializer.Serialize(e));
         StateHasChanged();
     }

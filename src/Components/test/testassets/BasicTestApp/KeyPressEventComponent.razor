@@ -18,7 +18,7 @@ Type here: <input @onkeypress=OnKeyPressed />
 
         if (eventArgs.Type != "keypress")
         {
-            throw new InvalidArgumentException($"Expected 'keypress' event type, got {eventArgs.Type}");
+            throw new ArgumentException($"Expected 'keypress' event type, got {eventArgs.Type}");
         }
     }
 }
