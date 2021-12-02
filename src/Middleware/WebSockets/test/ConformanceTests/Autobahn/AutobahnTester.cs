@@ -138,7 +138,7 @@ public class AutobahnTester : IDisposable
 
         var appPath = Helpers.GetApplicationPath("AutobahnTestApp");
         var configPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "Http.config");
-        var parameters = new DeploymentParameters(appPath, server, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
+        var parameters = new DeploymentParameters(appPath, server, RuntimeFlavor.CoreClr, RuntimeArchitectures.Current)
         {
             Scheme = (ssl ? Uri.UriSchemeHttps : Uri.UriSchemeHttp),
             ApplicationType = ApplicationType.Portable,

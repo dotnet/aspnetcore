@@ -33,10 +33,9 @@ public class LinkedApplicationTests : LoggedTest
                 applicationPath,
                 ServerType.Kestrel,
                 RuntimeFlavor.CoreClr,
-                RuntimeArchitecture.x64)
+                RuntimeArchitectures.Current)
             {
                 TargetFramework = Tfm.Default,
-                RuntimeArchitecture = RuntimeArchitecture.x64,
                 ApplicationType = ApplicationType.Standalone,
                 PublishApplicationBeforeDeployment = true,
                 RestoreDependencies = true,

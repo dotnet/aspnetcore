@@ -53,10 +53,17 @@ public class TestMatrix : IEnumerable<object[]>
         return this;
     }
 
+    /// <summary>
+    /// With all architectures that are compatible with the currently running architecture
+    /// </summary>
+    /// <returns></returns>
     public TestMatrix WithAllArchitectures()
     {
-        Architectures.Add(RuntimeArchitecture.x64);
-        Architectures.Add(RuntimeArchitecture.x86);
+        Architectures.Add(RuntimeArchitectures.Current);
+        if (RuntimeInformation.OSArchitecture == Architecture.X64)
+        {
+            Architectures.Add(RuntimeArchitecture.x86);
+        }
         return this;
     }
 
@@ -122,19 +129,7 @@ public class TestMatrix : IEnumerable<object[]>
     {
         if (!Architectures.Any())
         {
-            switch (RuntimeInformation.OSArchitecture)
-            {
-                case Architecture.Arm:
-                case Architecture.X86:
-                    Architectures.Add(RuntimeArchitecture.x86);
-                    break;
-                case Architecture.Arm64:
-                case Architecture.X64:
-                    Architectures.Add(RuntimeArchitecture.x64);
-                    break;
-                default:
-                    throw new ArgumentException(RuntimeInformation.OSArchitecture.ToString());
-            }
+            Architectures.Add(RuntimeArchitectures.Current);
         }
     }
 

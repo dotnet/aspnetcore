@@ -50,7 +50,7 @@ public static class H2SpecCommands
         {
             return Path.Combine(root, "windows", "h2spec.exe");
         }
-        else if (OperatingSystem.IsLinux())
+        else if (OperatingSystem.IsLinux() && (RuntimeInformation.OSArchitecture == Architecture.X64))
         {
             var toolPath = Path.Combine(root, "linux", "h2spec");
             chmod755(toolPath);

@@ -212,7 +212,7 @@ public class WebHostFunctionalTests : LoggedTest
         bool setTestEnvVars = false,
         string environment = "Development")
     {
-        var deploymentParameters = new DeploymentParameters(Path.Combine(GetTestSitesPath(), applicationName), ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
+        var deploymentParameters = new DeploymentParameters(Path.Combine(GetTestSitesPath(), applicationName), ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitectures.Current)
         {
             TargetFramework = "net7.0",
         };
