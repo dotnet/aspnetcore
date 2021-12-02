@@ -177,7 +177,7 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Equal("dragstart,", () => output.Text);
     }
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/32373")]
+    [Fact]
     public void TouchEvent_CanTrigger()
     {
         Browser.MountTestComponent<TouchEventComponent>();
