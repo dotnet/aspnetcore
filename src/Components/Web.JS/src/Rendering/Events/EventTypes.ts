@@ -159,6 +159,7 @@ function parseProgressEvent(event: ProgressEvent<EventTarget>): ProgressEventArg
     lengthComputable: event.lengthComputable,
     loaded: event.loaded,
     total: event.total,
+    type: event.type,
   };
 }
 
@@ -168,6 +169,7 @@ function parseErrorEvent(event: ErrorEvent): ErrorEventArgs {
     filename: event.filename,
     lineno: event.lineno,
     colno: event.colno,
+    type: event.type,
   };
 }
 
@@ -181,6 +183,7 @@ function parseKeyboardEvent(event: KeyboardEvent): KeyboardEventArgs {
     shiftKey: event.shiftKey,
     altKey: event.altKey,
     metaKey: event.metaKey,
+    type: event.type,
   };
 }
 
@@ -232,6 +235,7 @@ function parseMouseEvent(event: MouseEvent): MouseEventArgs {
     shiftKey: event.shiftKey,
     altKey: event.altKey,
     metaKey: event.metaKey,
+    type: event.type,
   };
 }
 
@@ -313,6 +317,7 @@ interface ErrorEventArgs {
   filename: string;
   lineno: number;
   colno: number;
+  type: string;
 
   // omitting 'error' here since we'd have to serialize it, and it's not clear we will want to
   // do that. https://developer.mozilla.org/en-US/docs/Web/API/ErrorEvent
@@ -327,6 +332,7 @@ interface KeyboardEventArgs {
   shiftKey: boolean;
   altKey: boolean;
   metaKey: boolean;
+  type: string;
 }
 
 interface MouseEventArgs {
@@ -345,6 +351,7 @@ interface MouseEventArgs {
   shiftKey: boolean;
   altKey: boolean;
   metaKey: boolean;
+  type: string;
 }
 
 interface PointerEventArgs extends MouseEventArgs {
@@ -362,6 +369,7 @@ interface ProgressEventArgs {
   lengthComputable: boolean;
   loaded: number;
   total: number;
+  type: string;
 }
 
 interface TouchEventArgs {
