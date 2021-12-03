@@ -115,7 +115,7 @@ public class MaxRequestBufferSizeTests : LoggedTest
     }
     [Theory]
     [MemberData(nameof(LargeUploadData))]
-    [QuarantinedTest("This is inherently flaky and should never be unquarantined.")]
+    // This is inherently flaky and is relying on helix retry to pass consistently
     public async Task LargeUpload(long? maxRequestBufferSize, bool connectionAdapter, bool expectPause)
     {
         // Parameters
