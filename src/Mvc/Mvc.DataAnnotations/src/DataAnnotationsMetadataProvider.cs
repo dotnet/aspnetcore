@@ -386,7 +386,7 @@ internal class DataAnnotationsMetadataProvider :
             else if (context.Key.MetadataKind == ModelMetadataKind.Parameter)
             {
                 // If the default value is assigned we don't need to check the nullabilty
-                // since the parameter will be optional
+                // since the parameter will be optional.
                 if (!context.Key.ParameterInfo!.HasDefaultValue)
                 {
                     addInferredRequiredAttribute = IsNullableReferenceType(
