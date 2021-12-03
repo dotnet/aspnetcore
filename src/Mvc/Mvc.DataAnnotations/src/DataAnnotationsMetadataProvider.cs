@@ -376,7 +376,7 @@ internal class DataAnnotationsMetadataProvider :
                     }
                 }
                 else
-                { 
+                {
                     addInferredRequiredAttribute = IsNullableReferenceType(
                         property.DeclaringType!,
                         member: null,
