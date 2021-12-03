@@ -614,7 +614,7 @@ public class ValidationIntegrationTests
         {
         }
 
-        public static ParameterInfo NoAttributesParameterInfo
+        public static ParameterInfo NonNullableParameterInfo
             = typeof(ParameterInfos)!
                 .GetMethod(nameof(ParameterInfos.Method))!
                 .GetParameters()[0];
@@ -659,7 +659,7 @@ public class ValidationIntegrationTests
         {
             Name = "parameter",
             ParameterType = typeof(string),
-            ParameterInfo = ParameterInfos.NoAttributesParameterInfo
+            ParameterInfo = ParameterInfos.NonNullableParameterInfo
         };
 
         var testContext = ModelBindingTestHelper.GetTestContext();
