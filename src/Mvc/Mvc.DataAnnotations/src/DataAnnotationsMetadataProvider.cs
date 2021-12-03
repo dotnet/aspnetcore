@@ -346,8 +346,7 @@ internal class DataAnnotationsMetadataProvider :
         // must have a non-null value on the model during validation.
         var requiredAttribute = attributes.OfType<RequiredAttribute>().FirstOrDefault();
 
-        // For non-nullable reference types without a default value define,
-        // treat them as-if they had an implicit [Required].
+        // For non-nullable reference types, treat them as-if they had an implicit [Required].
         // This allows the developer to specify [Required] to customize the error message, so
         // if they already have [Required] then there's no need for us to do this check.
         if (!_options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes &&
@@ -386,6 +385,8 @@ internal class DataAnnotationsMetadataProvider :
             }
             else if (context.Key.MetadataKind == ModelMetadataKind.Parameter)
             {
+                // If the default value is assigned we don't need to check the nullabilty
+                // since the parameter will be optional
                 if (!context.Key.ParameterInfo!.HasDefaultValue)
                 {
                     addInferredRequiredAttribute = IsNullableReferenceType(
