@@ -29,6 +29,7 @@ namespace Microsoft.AspNetCore.Components.Web
                 ScreenX = 0.1,
                 ScreenY = 4.4,
                 ShiftKey = false,
+                Type = "type",
             };
             var jsonElement = GetJsonElement(args);
 
