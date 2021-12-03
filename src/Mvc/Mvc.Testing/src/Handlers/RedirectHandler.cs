@@ -101,16 +101,16 @@ public class RedirectHandler : DelegatingHandler
 
     private static void CopyRequestHeaders(
         HttpRequestHeaders originalRequestHeaders,
-        HttpRequestHeaders newRequestHeaders)
+        HttpRequestHeaders redirectRequestHeaders)
     {
         foreach (var header in originalRequestHeaders)
         {
             // Avoid copying the Authorization header to match the behavior
-            // in the built-in HTTP client when processing redirects
+            // in the HTTP client when processing redirects
             // https://github.com/dotnet/runtime/blob/69b5d67d9418d672609aa6e2c418a3d4ae00ad18/src/libraries/System.Net.Http/src/System/Net/Http/SocketsHttpHandler/SocketsHttpHandler.cs#L509-L517
-            if (header.Key != HeaderNames.Authorization)
+            if (!header.Key.Equals(HeaderNames.Authorization, StringComparison.OrdinalIgnoreCase))
             {
-                newRequestHeaders.TryAddWithoutValidation(header.Key, header.Value);
+                redirectRequestHeaders.TryAddWithoutValidation(header.Key, header.Value);
             }
         }
     }
