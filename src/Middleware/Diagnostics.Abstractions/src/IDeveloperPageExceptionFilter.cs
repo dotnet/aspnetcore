@@ -8,8 +8,9 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Diagnostics;
 
+// FIXME: A link is needed for the reference but adding it breaks Intellisense (see pull/38659)
 /// <summary>
-/// Provides an extensiblity point for changing the behavior of the DeveloperExceptionPageMiddleware.
+/// Provides an extensibility point for changing the behavior of the DeveloperExceptionPageMiddleware.
 /// </summary>
 public interface IDeveloperPageExceptionFilter
 {
