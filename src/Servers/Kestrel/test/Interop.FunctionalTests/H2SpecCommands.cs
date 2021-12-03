@@ -45,6 +45,12 @@ public static class H2SpecCommands
 
     private static string GetToolLocation()
     {
+        if (RuntimeInformation.OSArchitecture != Architecture.X64)
+        {
+            // This is a known, unsupported scenario, no-op.
+            return null;
+        }
+
         var root = Path.Combine(Environment.CurrentDirectory, "h2spec");
         if (OperatingSystem.IsWindows())
         {
@@ -52,12 +58,6 @@ public static class H2SpecCommands
         }
         else if (OperatingSystem.IsLinux())
         {
-            if (RuntimeInformation.OSArchitecture != Architecture.X64)
-            {
-                // This is a known, unsupported scenario, no-op.
-                return null;
-            }
-
             var toolPath = Path.Combine(root, "linux", "h2spec");
             chmod755(toolPath);
             return toolPath;
