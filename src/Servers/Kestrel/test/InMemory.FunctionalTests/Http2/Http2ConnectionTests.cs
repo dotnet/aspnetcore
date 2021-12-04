@@ -235,7 +235,6 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/37930")]
     public async Task ResponseTrailers_MultipleStreams_Reset()
     {
         IEnumerable<KeyValuePair<string, string>> requestHeaders = new[]
