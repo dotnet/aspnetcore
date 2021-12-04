@@ -27,6 +27,7 @@
   },
   "postActions": [
     {
+      "id": "openInEditor",
       "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
       "description": "Opens file1.ts in the editor",
       "manualInstructions": [ ],

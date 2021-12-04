@@ -1,0 +1,12 @@
+{
+  "author": "Microsoft",
+  "name": "Razor Class Library",
+  "description": "A project for creating a Razor class library that targets .NET Standard",
+  "symbols/Framework/description": "The target framework for the project.",
+  "symbols/Framework/choices/net7.0/description": "Target net7.0",
+  "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create.",
+  "symbols/SupportPagesAndViews/description": "Whether to support adding traditional Razor pages and Views in addition to components to this library.",
+  "postActions/restore/description": "Restore NuGet packages required by this project.",
+  "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'",
+  "postActions/openInEditor/description": "Opens Areas/MyFeature/Pages/Page1.cshtml in the editor"
+}

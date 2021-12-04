@@ -33,6 +33,7 @@
   },
   "postActions": [
     {
+      "id": "openInEditor",
       "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
       "description": "Opens _ViewImports.cshtml in the editor",
       "manualInstructions": [ ],
