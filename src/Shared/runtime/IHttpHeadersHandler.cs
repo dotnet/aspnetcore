@@ -21,5 +21,12 @@ namespace System.Net.Http
         void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value);
         void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value);
         void OnHeadersComplete(bool endStream);
+
+#if KESTREL
+        public void OnDynamicIndexedHeader(int index, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+        {
+            OnHeader(name, value);
+        }
+#endif
     }
 }

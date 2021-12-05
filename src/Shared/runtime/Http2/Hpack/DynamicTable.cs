@@ -3,8 +3,15 @@
 
 namespace System.Net.Http.HPack
 {
+    internal interface IHeaderValidator
+    {
+        void ValidateHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value);
+    }
+
     internal sealed class DynamicTable
     {
+        private readonly IHeaderValidator _headerValidator;
+
         private HeaderField[] _buffer;
         private int _maxSize;
         private int _size;
@@ -12,10 +19,11 @@ namespace System.Net.Http.HPack
         private int _insertIndex;
         private int _removeIndex;
 
-        public DynamicTable(int maxSize)
+        public DynamicTable(int maxSize, IHeaderValidator headerValidator = null!)
         {
             _buffer = new HeaderField[maxSize / HeaderField.RfcOverhead];
             _maxSize = maxSize;
+            _headerValidator = headerValidator ?? DummyHeaderValidator.Instance;
         }
 
         public int Count => _count;
@@ -45,8 +53,10 @@ namespace System.Net.Http.HPack
             }
         }
 
-        public void Insert(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+        public void Insert(int? staticTableIndex, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
+            _headerValidator.ValidateHeader(name, value);
+
             int entryLength = HeaderField.GetLength(name.Length, value.Length);
             EnsureAvailable(entryLength);
 
@@ -59,7 +69,7 @@ namespace System.Net.Http.HPack
                 return;
             }
 
-            var entry = new HeaderField(name, value);
+            var entry = new HeaderField(staticTableIndex, name, value);
             _buffer[_insertIndex] = entry;
             _insertIndex = (_insertIndex + 1) % _buffer.Length;
             _size += entry.Length;
@@ -100,6 +110,20 @@ namespace System.Net.Http.HPack
 
                 _count--;
                 _removeIndex = (_removeIndex + 1) % _buffer.Length;
+            }
+        }
+
+        private sealed class DummyHeaderValidator : IHeaderValidator
+        {
+            public static readonly DummyHeaderValidator Instance = new DummyHeaderValidator();
+
+            private DummyHeaderValidator()
+            {
+
+            }
+
+            public void ValidateHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+            {
             }
         }
     }

@@ -26,7 +26,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 
-internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpHeadersHandler, IRequestProcessor
+internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpHeadersHandler, IRequestProcessor, IHeaderValidator
 {
     public static ReadOnlySpan<byte> ClientPreface => ClientPrefaceBytes;
 
@@ -109,7 +109,7 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpHeade
         _input = new Pipe(inputOptions);
         _minAllocBufferSize = context.MemoryPool.GetMinimumAllocSize();
 
-        _hpackDecoder = new HPackDecoder(http2Limits.HeaderTableSize, http2Limits.MaxRequestHeaderFieldSize);
+        _hpackDecoder = new HPackDecoder(http2Limits.HeaderTableSize, http2Limits.MaxRequestHeaderFieldSize, headerValidator: this);
 
         var connectionWindow = (uint)http2Limits.InitialConnectionWindowSize;
         _inputFlowControl = new InputFlowControl(connectionWindow, connectionWindow / 2);
@@ -1265,7 +1265,12 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpHeade
 
     public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
     {
-        OnHeaderCore(index: null, indexedValue: false, name, value);
+        OnHeaderCore(HeaderType.NameAndValue, index: null, name, value);
+    }
+
+    public void OnDynamicIndexedHeader(int index, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+    {
+        OnHeaderCore(HeaderType.Dynamic, index, name, value);
     }
 
     public void OnStaticIndexedHeader(int index)
@@ -1273,20 +1278,28 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpHeade
         Debug.Assert(index <= H2StaticTable.Count);
 
         ref readonly var entry = ref H2StaticTable.Get(index - 1);
-        OnHeaderCore(index, indexedValue: true, entry.Name, entry.Value);
+        OnHeaderCore(HeaderType.Static, index, entry.Name, entry.Value);
     }
 
     public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
     {
         Debug.Assert(index <= H2StaticTable.Count);
 
-        OnHeaderCore(index, indexedValue: false, H2StaticTable.Get(index - 1).Name, value);
+        OnHeaderCore(HeaderType.StaticAndValue, index, H2StaticTable.Get(index - 1).Name, value);
+    }
+
+    private enum HeaderType
+    {
+        Static,
+        StaticAndValue,
+        Dynamic,
+        NameAndValue
     }
 
     // We can't throw a Http2StreamErrorException here, it interrupts the header decompression state and may corrupt subsequent header frames on other streams.
     // For now these either need to be connection errors or BadRequests. If we want to downgrade any of them to stream errors later then we need to
     // rework the flow so that the remaining headers are drained and the decompression state is maintained.
-    private void OnHeaderCore(int? index, bool indexedValue, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+    private void OnHeaderCore(HeaderType headerType, int? index, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
     {
         Debug.Assert(_currentHeadersStream != null);
 
@@ -1298,32 +1311,49 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpHeade
             throw new Http2ConnectionErrorException(CoreStrings.BadRequest_HeadersExceedMaxTotalSize, Http2ErrorCode.PROTOCOL_ERROR);
         }
 
-        if (index != null)
-        {
-            ValidateStaticHeader(index.Value, value);
-        }
-        else
-        {
-            ValidateHeader(name, value);
-        }
-
         try
         {
             if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
             {
+                UpdateHeaderParsingState(value, GetPseudoHeaderField(name));
+                ValidateHeaderContent(name, value);
+
                 _currentHeadersStream.OnTrailer(name, value);
             }
             else
             {
                 // Throws BadRequest for header count limit breaches.
                 // Throws InvalidOperation for bad encoding.
-                if (index != null)
+                switch (headerType)
                 {
-                    _currentHeadersStream.OnHeader(index.Value, indexedValue, name, value);
-                }
-                else
-                {
-                    _currentHeadersStream.OnHeader(name, value, checkForNewlineChars : true);
+                    case HeaderType.Static:
+                        ValidateStaticHeader(index.GetValueOrDefault(), value);
+
+                        _currentHeadersStream.OnHeader(index.GetValueOrDefault(), indexedValue: true, name, value);
+                        break;
+                    case HeaderType.StaticAndValue:
+                        ValidateStaticHeader(index.GetValueOrDefault(), value);
+
+                        _currentHeadersStream.OnHeader(index.GetValueOrDefault(), indexedValue: false, name, value);
+                        break;
+                    case HeaderType.Dynamic:
+                        // Clients will normally send pseudo headers as an indexed header.
+                        // Because pseudo headers can still be sent by name we need to check for them.
+                        UpdateHeaderParsingState(value, GetPseudoHeaderField(name));
+
+                        _currentHeadersStream.OnHeader(name, value, checkForNewlineChars: false);
+                        break;
+                    case HeaderType.NameAndValue:
+                        // Clients will normally send pseudo headers as an indexed header.
+                        // Because pseudo headers can still be sent by name we need to check for them.
+                        UpdateHeaderParsingState(value, GetPseudoHeaderField(name));
+                        ValidateHeaderContent(name, value);
+
+                        _currentHeadersStream.OnHeader(name, value, checkForNewlineChars: true);
+                        break;
+                    default:
+                        Debug.Fail($"Unexpected header type: {headerType}");
+                        break;
                 }
             }
         }
@@ -1340,12 +1370,8 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpHeade
     public void OnHeadersComplete(bool endStream)
         => _currentHeadersStream!.OnHeadersComplete();
 
-    private void ValidateHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+    private void ValidateHeaderContent(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
     {
-        // Clients will normally send pseudo headers as an indexed header.
-        // Because pseudo headers can still be sent by name we need to check for them.
-        UpdateHeaderParsingState(value, GetPseudoHeaderField(name));
-
         if (IsConnectionSpecificHeaderField(name, value))
         {
             throw new Http2ConnectionErrorException(CoreStrings.HttpErrorConnectionSpecificHeaderField, Http2ErrorCode.PROTOCOL_ERROR);
@@ -1371,6 +1397,8 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpHeade
 
     private void ValidateStaticHeader(int index, ReadOnlySpan<byte> value)
     {
+        Debug.Assert(index > 0, "Static table starts at 1.");
+
         var headerField = index switch
         {
             1 => PseudoHeaderFields.Authority,
@@ -1569,6 +1597,13 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpHeade
             await _context.Transport.Input.CompleteAsync();
             _input.Writer.Complete(error);
         }
+    }
+
+    void IHeaderValidator.ValidateHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+    {
+        ValidateHeaderContent(name, value);
+
+        _currentHeadersStream!.ValidateHeaderValue(name, value);
     }
 
     private enum RequestHeaderParsingState

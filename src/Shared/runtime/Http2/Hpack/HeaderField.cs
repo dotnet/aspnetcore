@@ -11,8 +11,10 @@ namespace System.Net.Http.HPack
         // http://httpwg.org/specs/rfc7541.html#rfc.section.4.1
         public const int RfcOverhead = 32;
 
-        public HeaderField(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+        public HeaderField(int? staticTableIndex, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
+            StaticTableIndex = staticTableIndex;
+
             Debug.Assert(name.Length > 0);
 
             // TODO: We're allocating here on every new table entry.
@@ -23,6 +25,8 @@ namespace System.Net.Http.HPack
             Name = name.ToArray();
             Value = value.ToArray();
         }
+
+        public int? StaticTableIndex { get; }
 
         public byte[] Name { get; }
 

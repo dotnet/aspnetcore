@@ -101,8 +101,8 @@ namespace System.Net.Http.HPack
         private bool _huffman;
         private bool _headersObserved;
 
-        public HPackDecoder(int maxDynamicTableSize = DefaultHeaderTableSize, int maxHeadersLength = DefaultMaxHeadersLength)
-            : this(maxDynamicTableSize, maxHeadersLength, new DynamicTable(maxDynamicTableSize))
+        public HPackDecoder(int maxDynamicTableSize = DefaultHeaderTableSize, int maxHeadersLength = DefaultMaxHeadersLength, IHeaderValidator headerValidator = null!)
+            : this(maxDynamicTableSize, maxHeadersLength, new DynamicTable(maxDynamicTableSize, headerValidator))
         {
         }
 
@@ -508,7 +508,7 @@ namespace System.Net.Http.HPack
 
                 if (_index)
                 {
-                    _dynamicTable.Insert(H2StaticTable.Get(_headerStaticIndex - 1).Name, headerValueSpan);
+                    _dynamicTable.Insert(_headerStaticIndex, H2StaticTable.Get(_headerStaticIndex - 1).Name, headerValueSpan);
                 }
             }
             else
@@ -521,7 +521,7 @@ namespace System.Net.Http.HPack
 
                 if (_index)
                 {
-                    _dynamicTable.Insert(headerNameSpan, headerValueSpan);
+                    _dynamicTable.Insert(staticTableId: null, headerNameSpan, headerValueSpan);
                 }
             }
 
@@ -548,7 +548,12 @@ namespace System.Net.Http.HPack
             else
             {
                 ref readonly HeaderField header = ref GetDynamicHeader(index);
+#if KESTREL
+                // Kestrel can skip some validation if it knows the header is indexed.
+                handler.OnDynamicIndexedHeader(index, header.Name, header.Value);
+#else
                 handler.OnHeader(header.Name, header.Value);
+#endif
             }
 
             _state = State.Ready;

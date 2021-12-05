@@ -129,7 +129,7 @@ namespace System.Net.Http.Unit.Tests.HPack
         public void DecodesIndexedHeaderField_DynamicTable()
         {
             // Add the header to the dynamic table
-            _dynamicTable.Insert(_headerNameBytes, _headerValueBytes);
+            _dynamicTable.Insert(staticTableIndex: null, _headerNameBytes, _headerValueBytes);
 
             // Index it
             _decoder.Decode(_indexedHeaderDynamic, endHeaders: true, handler: _handler);

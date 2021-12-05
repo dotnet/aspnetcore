@@ -1,1 +1,2 @@
 #nullable enable
+Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpHeadersHandler.OnDynamicIndexedHeader(int index, System.ReadOnlySpan<byte> name, System.ReadOnlySpan<byte> value) -> void

@@ -675,7 +675,9 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
         // HPack append will return false if the index is not a known request header.
         // For example, someone could send the index of "Server" (a response header) in the request.
         // If that happens then fallback to using Append with the name bytes.
-        if (!HttpRequestHeaders.TryHPackAppend(index, value))
+        //
+        // If the value is indexed then we know it doesn't contain new lines and can skip checking.
+        if (!HttpRequestHeaders.TryHPackAppend(index, value, checkForNewlineChars: !indexedValue))
         {
             AppendHeader(name, value);
         }
@@ -693,4 +695,21 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
     }
 
     long IPooledStream.PoolExpirationTicks => DrainExpirationTicks;
+
+    internal void ValidateHeaderValue(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+    {
+        // Validate the value doesn't contain newline characters.
+        // Doing this once when a value is added to the dynamic table avoids the need to repeat it every request.
+        if (ReferenceEquals(KestrelServerOptions.DefaultHeaderEncodingSelector, HttpRequestHeaders.EncodingSelector))
+        {
+            if (value.IndexOfAny((byte)'\r', (byte)'\n') >= 0)
+            {
+                throw new InvalidOperationException("Newline characters (CR/LF) are not allowed in request headers.");
+            }
+        }
+
+        // Errors if invalid new line characters are in header.
+        // Hacky: If a custom encoding selector is present then the name and value are allocated when value is added to dynamic table.
+        _ = value.GetRequestHeaderString(name.GetHeaderName(), HttpRequestHeaders.EncodingSelector, checkForNewlineChars: true);
+    }
 }
