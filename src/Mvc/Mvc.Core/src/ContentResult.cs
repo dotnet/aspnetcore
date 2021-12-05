@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Microsoft.AspNetCore.Mvc;
 
 /// <summary>
-/// A <see cref="ActionResult"/> that when executed will produce a response with content.
+/// An <see cref="ActionResult"/> that when executed will produce a response with content.
 /// </summary>
 public class ContentResult : ActionResult, IStatusCodeActionResult
 {
@@ -19,7 +19,8 @@ public class ContentResult : ActionResult, IStatusCodeActionResult
     public string? Content { get; set; }
 
     /// <summary>
-    /// Gets or sets the Content-Type header for the response.
+    /// Gets or sets the Content-Type header for the response,
+    /// to be used as <see cref="Microsoft.AspNetCore.Http.Headers.ResponseHeaders.ContentType" />.
     /// </summary>
     public string? ContentType { get; set; }
 
