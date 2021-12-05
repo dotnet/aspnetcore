@@ -24,7 +24,7 @@ public class ContentResult : ActionResult, IStatusCodeActionResult
     public string? ContentType { get; set; }
 
     /// <summary>
-    /// Gets or sets the HTTP status code.
+    /// Gets or sets the <see cref="Microsoft.AspNetCore.Http.StatusCodes" >HTTP status code</see >.
     /// </summary>
     public int? StatusCode { get; set; }
 
