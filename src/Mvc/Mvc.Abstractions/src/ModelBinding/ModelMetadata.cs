@@ -363,8 +363,8 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
     public abstract int Order { get; }
 
     /// <summary>
-    /// Gets the text to display as a placeholder value for an editor,
-    /// corresponding to <see cref="System.ComponentModel.DataAnnotations.DisplayAttribute.Prompt" />.
+    /// Gets the text to display as a placeholder value for an editor.
+    /// By default, this is configured using <see cref="System.ComponentModel.DataAnnotations.DisplayAttribute.Prompt" />.
     /// </summary>
     public abstract string? Placeholder { get; }
 
