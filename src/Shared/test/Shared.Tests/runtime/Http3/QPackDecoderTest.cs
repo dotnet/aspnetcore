@@ -223,8 +223,8 @@ namespace System.Net.Http.Unit.Tests.QPack
 
         private static void TestDecode(byte[] encoded, KeyValuePair<string, string>[] expectedValues, bool expectDynamicTableEntry, int? bytesAtATime)
         {
-            var decoder = new QPackDecoder(MaxHeaderFieldSize);
-            var handler = new TestHttpHeadersHandler();
+            QPackDecoder decoder = new QPackDecoder(MaxHeaderFieldSize);
+            TestHttpHeadersHandler handler = new TestHttpHeadersHandler();
 
             // Read past header
             decoder.Decode(new byte[] { 0x00, 0x00 }, endHeaders: false, handler: handler);
@@ -250,7 +250,7 @@ namespace System.Net.Http.Unit.Tests.QPack
                 }
             }
 
-            foreach (var expectedValue in expectedValues)
+            foreach (KeyValuePair<string, string> expectedValue in expectedValues)
             {
                 try
                 {

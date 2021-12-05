@@ -30,7 +30,6 @@ namespace System.Net.Http.QPack
             HeaderValueLength,
             HeaderValueLengthContinue,
             HeaderValue,
-            DynamicTableSizeUpdate,
             PostBaseIndex,
             HeaderNameIndexPostBase
         }
@@ -526,6 +525,7 @@ namespace System.Net.Http.QPack
             if (TryDecodeInteger(data, ref currentIndex, out int intResult))
             {
                 OnRequiredInsertCount(intResult);
+                ParseBase(data, ref currentIndex, handler);
             }
         }
 
@@ -553,6 +553,7 @@ namespace System.Net.Http.QPack
             if (TryDecodeInteger(data, ref currentIndex, out int intResult))
             {
                 OnBase(intResult);
+                ParseCompressedHeaders(data, ref currentIndex, handler);
             }
         }
 
