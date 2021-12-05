@@ -521,7 +521,7 @@ namespace System.Net.Http.HPack
 
                 if (_index)
                 {
-                    _dynamicTable.Insert(staticTableId: null, headerNameSpan, headerValueSpan);
+                    _dynamicTable.Insert(staticTableIndex: null, headerNameSpan, headerValueSpan);
                 }
             }
 
@@ -550,7 +550,7 @@ namespace System.Net.Http.HPack
                 ref readonly HeaderField header = ref GetDynamicHeader(index);
 #if KESTREL
                 // Kestrel can skip some validation if it knows the header is indexed.
-                handler.OnDynamicIndexedHeader(index, header.Name, header.Value);
+                handler.OnDynamicIndexedHeader(header.StaticTableIndex, header.Name, header.Value);
 #else
                 handler.OnHeader(header.Name, header.Value);
 #endif

@@ -1268,7 +1268,7 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpHeade
         OnHeaderCore(HeaderType.NameAndValue, index: null, name, value);
     }
 
-    public void OnDynamicIndexedHeader(int index, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+    public void OnDynamicIndexedHeader(int? index, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
     {
         OnHeaderCore(HeaderType.Dynamic, index, name, value);
     }
@@ -1341,7 +1341,15 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpHeade
                         // Because pseudo headers can still be sent by name we need to check for them.
                         UpdateHeaderParsingState(value, GetPseudoHeaderField(name));
 
-                        _currentHeadersStream.OnHeader(name, value, checkForNewlineChars: false);
+                        if (index != null)
+                        {
+                            // It is faster to set a header using a static table index than a name.
+                            _currentHeadersStream.OnHeader(index.GetValueOrDefault(), indexedValue: true, name, value);
+                        }
+                        else
+                        {
+                            _currentHeadersStream.OnHeader(name, value, checkForNewlineChars: false);
+                        }
                         break;
                     case HeaderType.NameAndValue:
                         // Clients will normally send pseudo headers as an indexed header.

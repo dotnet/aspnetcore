@@ -23,7 +23,7 @@ namespace System.Net.Http
         void OnHeadersComplete(bool endStream);
 
 #if KESTREL
-        public void OnDynamicIndexedHeader(int index, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+        public void OnDynamicIndexedHeader(int? index, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
             OnHeader(name, value);
         }

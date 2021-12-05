@@ -53,6 +53,11 @@ namespace System.Net.Http.HPack
             }
         }
 
+        public void Insert(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+        {
+            Insert(name, value);
+        }
+
         public void Insert(int? staticTableIndex, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
             _headerValidator.ValidateHeader(name, value);
