@@ -1,6 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-
+using System.Net;
 namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
@@ -11,220 +11,219 @@ namespace Microsoft.AspNetCore.Http;
 public static class StatusCodes
 {
     /// <summary>
-    /// HTTP status code 100.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.Continue" />.
     /// </summary>
-    public const int Status100Continue = 100;
+    public const int Status100Continue = (int) HttpStatusCode.Continue;
 
     /// <summary>
-    /// HTTP status code 101.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.SwitchingProtocols" />.
     /// </summary>
-    public const int Status101SwitchingProtocols = 101;
+    public const int Status101SwitchingProtocols = (int) HttpStatusCode.SwitchingProtocols;
 
     /// <summary>
-    /// HTTP status code 102.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.Processing" />.
     /// </summary>
-    public const int Status102Processing = 102;
+    public const int Status102Processing = (int) HttpStatusCode.Processing;
 
     /// <summary>
-    /// HTTP status code 200.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.OK" />.
     /// </summary>
-    public const int Status200OK = 200;
+    public const int Status200OK = (int) HttpStatusCode.OK;
 
     /// <summary>
-    /// HTTP status code 201.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.Created" />.
     /// </summary>
-    public const int Status201Created = 201;
+    public const int Status201Created = (int) HttpStatusCode.Created;
 
     /// <summary>
-    /// HTTP status code 202.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.Accepted" />.
     /// </summary>
-    public const int Status202Accepted = 202;
+    public const int Status202Accepted = (int) HttpStatusCode.Accepted;
 
     /// <summary>
-    /// HTTP status code 203.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.NonAuthoritative" />.
     /// </summary>
-    public const int Status203NonAuthoritative = 203;
+    public const int Status203NonAuthoritative = (int) HttpStatusCode.NonAuthoritative;
 
     /// <summary>
-    /// HTTP status code 204.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.NoContent" />.
     /// </summary>
-    public const int Status204NoContent = 204;
+    public const int Status204NoContent = (int) HttpStatusCode.NoContent;
 
     /// <summary>
-    /// HTTP status code 205.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.ResetContent" />.
     /// </summary>
-    public const int Status205ResetContent = 205;
+    public const int Status205ResetContent = (int) HttpStatusCode.ResetContent;
 
     /// <summary>
-    /// HTTP status code 206.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.PartialContent" />.
     /// </summary>
-    public const int Status206PartialContent = 206;
+    public const int Status206PartialContent = (int) HttpStatusCode.PartialContent;
 
     /// <summary>
-    /// HTTP status code 207.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.MultiStatus" />.
     /// </summary>
-    public const int Status207MultiStatus = 207;
+    public const int Status207MultiStatus = (int) HttpStatusCode.MultiStatus;
 
     /// <summary>
-    /// HTTP status code 208.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.AlreadyReported" />.
     /// </summary>
-    public const int Status208AlreadyReported = 208;
+    public const int Status208AlreadyReported = (int) HttpStatusCode.AlreadyReported;
 
     /// <summary>
-    /// HTTP status code 226.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.IMUsed" />.
     /// </summary>
-    public const int Status226IMUsed = 226;
+    public const int Status226IMUsed = (int) HttpStatusCode.IMUsed;
 
     /// <summary>
-    /// HTTP status code 300.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.MultipleChoices" />.
     /// </summary>
-    public const int Status300MultipleChoices = 300;
+    public const int Status300MultipleChoices = (int) HttpStatusCode.MultipleChoices;
 
     /// <summary>
-    /// HTTP status code 301.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.MovedPermanently" />.
     /// </summary>
-    public const int Status301MovedPermanently = 301;
+    public const int Status301MovedPermanently = (int) HttpStatusCode.MovedPermanently;
 
     /// <summary>
-    /// HTTP status code 302.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.Found" />.
     /// </summary>
-    public const int Status302Found = 302;
+    public const int Status302Found = (int) HttpStatusCode.Found;
 
     /// <summary>
-    /// HTTP status code 303.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.SeeOther" />.
     /// </summary>
-    public const int Status303SeeOther = 303;
+    public const int Status303SeeOther = (int) HttpStatusCode.SeeOther;
 
     /// <summary>
-    /// HTTP status code 304.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.NotModified" />.
     /// </summary>
-    public const int Status304NotModified = 304;
+    public const int Status304NotModified = (int) HttpStatusCode.NotModified;
 
     /// <summary>
-    /// HTTP status code 305.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.UseProxy" />.
     /// </summary>
-    public const int Status305UseProxy = 305;
+    public const int Status305UseProxy = (int) HttpStatusCode.UseProxy;
 
     /// <summary>
-    /// HTTP status code 306.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.Unused" />.
     /// </summary>
-    public const int Status306SwitchProxy = 306; // RFC 2616, removed
+    public const int Status306SwitchProxy = (int) HttpStatusCode.Unused; // RFC 2616, removed
 
     /// <summary>
-    /// HTTP status code 307.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.TemporaryRedirect" />.
     /// </summary>
-    public const int Status307TemporaryRedirect = 307;
+    public const int Status307TemporaryRedirect = (int) HttpStatusCode.TemporaryRedirect;
 
     /// <summary>
-    /// HTTP status code 308.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.PermanentRedirect" />.
     /// </summary>
-    public const int Status308PermanentRedirect = 308;
+    public const int Status308PermanentRedirect = (int) HttpStatusCode.PermanentRedirect;
 
     /// <summary>
-    /// HTTP status code 400.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.BadRequest" />.
     /// </summary>
-
-    public const int Status400BadRequest = 400;
-
-    /// <summary>
-    /// HTTP status code 401.
-    /// </summary>
-    public const int Status401Unauthorized = 401;
+    public const int Status400BadRequest = (int) HttpStatusCode.BadRequest;
 
     /// <summary>
-    /// HTTP status code 402.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.Unauthorized" />.
     /// </summary>
-    public const int Status402PaymentRequired = 402;
+    public const int Status401Unauthorized = (int) HttpStatusCode.Unauthorized;
 
     /// <summary>
-    /// HTTP status code 403.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.PaymentRequired" />.
     /// </summary>
-    public const int Status403Forbidden = 403;
+    public const int Status402PaymentRequired = (int) HttpStatusCode.PaymentRequired;
 
     /// <summary>
-    /// HTTP status code 404.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.Forbidden" />.
     /// </summary>
-    public const int Status404NotFound = 404;
+    public const int Status403Forbidden = (int) HttpStatusCode.Forbidden;
 
     /// <summary>
-    /// HTTP status code 405.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.NotFound" />.
     /// </summary>
-    public const int Status405MethodNotAllowed = 405;
+    public const int Status404NotFound = (int) HttpStatusCode.NotFound;
 
     /// <summary>
-    /// HTTP status code 406.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.MethodNotAllowed" />.
     /// </summary>
-    public const int Status406NotAcceptable = 406;
+    public const int Status405MethodNotAllowed = (int) HttpStatusCode.MethodNotAllowed;
 
     /// <summary>
-    /// HTTP status code 407.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.NotAcceptable" />.
     /// </summary>
-    public const int Status407ProxyAuthenticationRequired = 407;
+    public const int Status406NotAcceptable = (int) HttpStatusCode.NotAcceptable;
 
     /// <summary>
-    /// HTTP status code 408.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.ProxyAuthenticationRequired" />.
     /// </summary>
-    public const int Status408RequestTimeout = 408;
+    public const int Status407ProxyAuthenticationRequired = (int) HttpStatusCode.ProxyAuthenticationRequired;
 
     /// <summary>
-    /// HTTP status code 409.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.RequestTimeout" />.
     /// </summary>
-    public const int Status409Conflict = 409;
+    public const int Status408RequestTimeout = (int) HttpStatusCode.RequestTimeout;
 
     /// <summary>
-    /// HTTP status code 410.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.Conflict" />.
     /// </summary>
-    public const int Status410Gone = 410;
+    public const int Status409Conflict = (int) HttpStatusCode.Conflict;
 
     /// <summary>
-    /// HTTP status code 411.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.Gone" />.
     /// </summary>
-    public const int Status411LengthRequired = 411;
+    public const int Status410Gone = (int) HttpStatusCode.Gone;
 
     /// <summary>
-    /// HTTP status code 412.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.LengthRequired" />.
     /// </summary>
-    public const int Status412PreconditionFailed = 412;
+    public const int Status411LengthRequired = (int) HttpStatusCode.LengthRequired;
 
     /// <summary>
-    /// HTTP status code 413.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.PreconditionFailed" />.
     /// </summary>
-    public const int Status413RequestEntityTooLarge = 413; // RFC 2616, renamed
+    public const int Status412PreconditionFailed = (int) HttpStatusCode.PreconditionFailed;
 
     /// <summary>
-    /// HTTP status code 413.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.RequestEntityTooLarge" />.
     /// </summary>
-    public const int Status413PayloadTooLarge = 413; // RFC 7231
+    public const int Status413RequestEntityTooLarge = (int) HttpStatusCode.RequestEntityTooLarge; // RFC 2616, renamed
 
     /// <summary>
-    /// HTTP status code 414.
+    /// An alias for <see cref="F:StatusCodes.Status413RequestEntityTooLarge" />.
     /// </summary>
-    public const int Status414RequestUriTooLong = 414; // RFC 2616, renamed
+    public const int Status413PayloadTooLarge = Status413RequestEntityTooLarge; // RFC 7231
 
     /// <summary>
-    /// HTTP status code 414.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.RequestUriTooLong" />.
     /// </summary>
-    public const int Status414UriTooLong = 414; // RFC 7231
+    public const int Status414RequestUriTooLong = (int) HttpStatusCode.RequestUriTooLong; // RFC 2616, renamed
 
     /// <summary>
-    /// HTTP status code 415.
+    /// An alias for <see cref="F:StatusCodes.Status414RequestUriTooLong" />.
     /// </summary>
-    public const int Status415UnsupportedMediaType = 415;
+    public const int Status414UriTooLong = Status414RequestUriTooLong; // RFC 7231
 
     /// <summary>
-    /// HTTP status code 416.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.UnsupportedMediaType" />.
     /// </summary>
-    public const int Status416RequestedRangeNotSatisfiable = 416; // RFC 2616, renamed
+    public const int Status415UnsupportedMediaType = (int) HttpStatusCode.UnsupportedMediaType;
 
     /// <summary>
-    /// HTTP status code 416.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.RequestedRangeNotSatisfiable" />.
     /// </summary>
-    public const int Status416RangeNotSatisfiable = 416; // RFC 7233
+    public const int Status416RequestedRangeNotSatisfiable = (int) HttpStatusCode.RequestedRangeNotSatisfiable; // RFC 2616, renamed
 
     /// <summary>
-    /// HTTP status code 417.
+    /// An alias for <see cref="F:StatusCodes.Status416RequestedRangeNotSatisfiable" />.
     /// </summary>
-    public const int Status417ExpectationFailed = 417;
+    public const int Status416RangeNotSatisfiable = Status416RequestedRangeNotSatisfiable; // RFC 7233
+
+    /// <summary>
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.ExpectationFailed" />.
+    /// </summary>
+    public const int Status417ExpectationFailed = (int) HttpStatusCode.ExpectationFailed;
 
     /// <summary>
     /// HTTP status code 418.
@@ -237,103 +236,102 @@ public static class StatusCodes
     public const int Status419AuthenticationTimeout = 419; // Not defined in any RFC
 
     /// <summary>
-    /// HTTP status code 422.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.MisdirectedRequest" />.
     /// </summary>
-    public const int Status421MisdirectedRequest = 421;
+    public const int Status421MisdirectedRequest = (int) HttpStatusCode.MisdirectedRequest;
 
     /// <summary>
-    /// HTTP status code 422.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.UnprocessableEntity" />.
     /// </summary>
-    public const int Status422UnprocessableEntity = 422;
+    public const int Status422UnprocessableEntity = (int) HttpStatusCode.UnprocessableEntity;
 
     /// <summary>
-    /// HTTP status code 423.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.Locked" />.
     /// </summary>
-    public const int Status423Locked = 423;
+    public const int Status423Locked = (int) HttpStatusCode.Locked;
 
     /// <summary>
-    /// HTTP status code 424.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.FailedDependency" />.
     /// </summary>
-    public const int Status424FailedDependency = 424;
+    public const int Status424FailedDependency = (int) HttpStatusCode.FailedDependency;
 
     /// <summary>
-    /// HTTP status code 426.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.UpgradeRequired" />.
     /// </summary>
-    public const int Status426UpgradeRequired = 426;
+    public const int Status426UpgradeRequired = (int) HttpStatusCode.UpgradeRequired;
 
     /// <summary>
-    /// HTTP status code 428.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.PreconditionRequired" />.
     /// </summary>
-    public const int Status428PreconditionRequired = 428;
+    public const int Status428PreconditionRequired = (int) HttpStatusCode.PreconditionRequired;
 
     /// <summary>
-    /// HTTP status code 429.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.TooManyRequests" />.
     /// </summary>
-    public const int Status429TooManyRequests = 429;
+    public const int Status429TooManyRequests = (int) HttpStatusCode.TooManyRequests;
 
     /// <summary>
-    /// HTTP status code 431.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.RequestHeaderFieldsTooLarge" />.
     /// </summary>
-    public const int Status431RequestHeaderFieldsTooLarge = 431;
+    public const int Status431RequestHeaderFieldsTooLarge = (int) HttpStatusCode.RequestHeaderFieldsTooLarge;
 
     /// <summary>
-    /// HTTP status code 451.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.UnavailableForLegalReasons" />.
     /// </summary>
-    public const int Status451UnavailableForLegalReasons = 451;
+    public const int Status451UnavailableForLegalReasons = (int) HttpStatusCode.UnavailableForLegalReasons;
 
     /// <summary>
-    /// HTTP status code 500.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.InternalServerError" />.
     /// </summary>
-
-    public const int Status500InternalServerError = 500;
-
-    /// <summary>
-    /// HTTP status code 501.
-    /// </summary>
-    public const int Status501NotImplemented = 501;
+    public const int Status500InternalServerError = (int) HttpStatusCode.InternalServerError;
 
     /// <summary>
-    /// HTTP status code 502.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.NotImplemented" />.
     /// </summary>
-    public const int Status502BadGateway = 502;
+    public const int Status501NotImplemented = (int) HttpStatusCode.NotImplemented;
 
     /// <summary>
-    /// HTTP status code 503.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.BadGateway" />.
     /// </summary>
-    public const int Status503ServiceUnavailable = 503;
+    public const int Status502BadGateway = (int) HttpStatusCode.BadGateway;
 
     /// <summary>
-    /// HTTP status code 504.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.ServiceUnavailable" />.
     /// </summary>
-    public const int Status504GatewayTimeout = 504;
+    public const int Status503ServiceUnavailable = (int) HttpStatusCode.ServiceUnavailable;
 
     /// <summary>
-    /// HTTP status code 505.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.GatewayTimeout" />.
     /// </summary>
-    public const int Status505HttpVersionNotsupported = 505;
+    public const int Status504GatewayTimeout = (int) HttpStatusCode.GatewayTimeout;
 
     /// <summary>
-    /// HTTP status code 506.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.HttpVersionNotsupported" />.
     /// </summary>
-    public const int Status506VariantAlsoNegotiates = 506;
+    public const int Status505HttpVersionNotsupported = (int) HttpStatusCode.HttpVersionNotsupported;
 
     /// <summary>
-    /// HTTP status code 507.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.VariantAlsoNegotiates" />.
     /// </summary>
-    public const int Status507InsufficientStorage = 507;
+    public const int Status506VariantAlsoNegotiates = (int) HttpStatusCode.VariantAlsoNegotiates;
 
     /// <summary>
-    /// HTTP status code 508.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.InsufficientStorage" />.
     /// </summary>
-    public const int Status508LoopDetected = 508;
+    public const int Status507InsufficientStorage = (int) HttpStatusCode.InsufficientStorage;
 
     /// <summary>
-    /// HTTP status code 510.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.LoopDetected" />.
     /// </summary>
-    public const int Status510NotExtended = 510;
+    public const int Status508LoopDetected = (int) HttpStatusCode.LoopDetected;
 
     /// <summary>
-    /// HTTP status code 511.
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.NotExtended" />.
     /// </summary>
-    public const int Status511NetworkAuthenticationRequired = 511;
+    public const int Status510NotExtended = (int) HttpStatusCode.NotExtended;
+
+    /// <summary>
+    /// The numeric value of <see cref="F:System.Net.HttpStatusCode.NetworkAuthenticationRequired" />.
+    /// </summary>
+    public const int Status511NetworkAuthenticationRequired = (int) HttpStatusCode.NetworkAuthenticationRequired;
 }
