@@ -8,6 +8,7 @@ namespace Microsoft.AspNetCore.Http;
 
 internal sealed class HttpValidationProblemDetailsJsonConverter : JsonConverter<HttpValidationProblemDetails>
 {
+    private const char propertySeparator = '.';
     private static readonly JsonEncodedText Errors = JsonEncodedText.Encode("errors");
 
     public override HttpValidationProblemDetails Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
@@ -60,10 +61,26 @@ internal sealed class HttpValidationProblemDetailsJsonConverter : JsonConverter<
         writer.WriteStartObject();
         ProblemDetailsJsonConverter.WriteProblemDetails(writer, value, options);
 
+        static string ConvertName(string name, JsonSerializerOptions options)
+        {
+            if (string.IsNullOrEmpty(name) || options?.DictionaryKeyPolicy == null)
+            {
+                return name;
+            }
+
+            var tokens = name.Split(propertySeparator);
+            for (var i = 0; i < tokens.Length; i++)
+            {
+                tokens[i] = options!.DictionaryKeyPolicy.ConvertName(tokens[i]);
+            }
+
+            return string.Join(propertySeparator, tokens);
+        }
+
         writer.WriteStartObject(Errors);
         foreach (var kvp in value.Errors)
         {
-            writer.WritePropertyName(kvp.Key);
+            writer.WritePropertyName(ConvertName(kvp.Key, options));
             JsonSerializer.Serialize(writer, kvp.Value, kvp.Value?.GetType() ?? typeof(object), options);
         }
         writer.WriteEndObject();
