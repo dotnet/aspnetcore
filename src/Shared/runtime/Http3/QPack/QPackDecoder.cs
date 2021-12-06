@@ -42,7 +42,7 @@ namespace System.Net.Http.QPack
         //+---+---------------------------+
         //|      Compressed Headers     ...
         private const int RequiredInsertCountPrefix = 8;
-        //private const int BaseMask = 0x80;
+        private const int BaseMask = 0x80;
         private const int BasePrefix = 7;
         //+-------------------------------+
 
@@ -534,8 +534,9 @@ namespace System.Net.Http.QPack
             if (currentIndex < data.Length)
             {
                 byte b = data[currentIndex++];
+                int prefixInt = ~BaseMask & b;
 
-                if (_integerDecoder.BeginTryDecode(b, BasePrefix, out int intResult))
+                if (_integerDecoder.BeginTryDecode((byte)prefixInt, BasePrefix, out int intResult))
                 {
                     OnBase(intResult);
                     ParseCompressedHeaders(data, ref currentIndex, handler);
