@@ -385,10 +385,15 @@ internal class DataAnnotationsMetadataProvider :
             }
             else if (context.Key.MetadataKind == ModelMetadataKind.Parameter)
             {
-                addInferredRequiredAttribute = IsNullableReferenceType(
-                    context.Key.ParameterInfo!.Member.ReflectedType,
-                    context.Key.ParameterInfo.Member,
-                    context.ParameterAttributes!);
+                // If the default value is assigned we don't need to check the nullabilty
+                // since the parameter will be optional.
+                if (!context.Key.ParameterInfo!.HasDefaultValue)
+                {
+                    addInferredRequiredAttribute = IsNullableReferenceType(
+                        context.Key.ParameterInfo!.Member.ReflectedType,
+                        context.Key.ParameterInfo.Member,
+                        context.ParameterAttributes!);
+                }
             }
             else
             {
