@@ -16,8 +16,8 @@ public class StringOutputFormatter : TextOutputFormatter
     /// <summary>
     /// A brand new <see cref="StringOutputFormatter"/>
     /// supports only plain text to be encoded as
-    /// <see cref="F:System.Text.Encoding.UTF8" />
-    /// or <see cref="F:System.Text.Encoding.Unicode" />.
+    /// <see cref="P:System.Text.Encoding.UTF8" />
+    /// or <see cref="P:System.Text.Encoding.Unicode" />.
     /// </summary>
     public StringOutputFormatter()
     {
