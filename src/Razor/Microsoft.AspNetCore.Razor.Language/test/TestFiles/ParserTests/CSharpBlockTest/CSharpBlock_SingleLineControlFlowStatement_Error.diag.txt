@@ -1,4 +1,0 @@
-(3,35): Error RZ1008: Single-statement control-flow statements in Razor documents statements cannot contain markup. Markup should be enclosed in "{" and "}".
-(7,9): Error RZ1008: Single-statement control-flow statements in Razor documents statements cannot contain markup. Markup should be enclosed in "{" and "}".
-(10,9): Error RZ1008: Single-statement control-flow statements in Razor documents statements cannot contain markup. Markup should be enclosed in "{" and "}".
-(12,35): Error RZ1008: Single-statement control-flow statements in Razor documents statements cannot contain markup. Markup should be enclosed in "{" and "}".

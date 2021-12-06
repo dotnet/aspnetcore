@@ -1,1 +1,0 @@
-x:\dir\subdir\Test\TestComponent.cshtml(3,3): Error RZ10008: The attribute 'Value' is used two or more times for this element. Attributes must be unique (case-insensitive). The attribute 'Value' is used by the '@bind' directive attribute.

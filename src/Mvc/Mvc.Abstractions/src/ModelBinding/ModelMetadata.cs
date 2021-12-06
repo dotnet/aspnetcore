@@ -364,6 +364,7 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
 
     /// <summary>
     /// Gets the text to display as a placeholder value for an editor.
+    /// By default, this is configured using <see cref="System.ComponentModel.DataAnnotations.DisplayAttribute.Prompt" />.
     /// </summary>
     public abstract string? Placeholder { get; }
 

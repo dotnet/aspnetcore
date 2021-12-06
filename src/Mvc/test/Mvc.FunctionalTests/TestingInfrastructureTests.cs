@@ -205,6 +205,20 @@ public class TestingInfrastructureTests : IClassFixture<WebApplicationFactory<Ba
         Assert.NotNull(factory.Services.GetService(typeof(IConfiguration)));
     }
 
+    [Fact]
+    public async Task TestingInfrastructure_RedirectHandlerDoesNotCopyAuthorizationHeaders()
+    {
+        // Act
+        var request = new HttpRequestMessage(HttpMethod.Get, "Testing/RedirectHandler/RedirectToAuthorized");
+        var client = Factory.CreateDefaultClient(
+            new RedirectHandler(), new TestHandler());
+        request.Headers.Add("Authorization", "Bearer key");
+        var response = await client.SendAsync(request);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
     private class OverridenService : TestService
     {
         public OverridenService()

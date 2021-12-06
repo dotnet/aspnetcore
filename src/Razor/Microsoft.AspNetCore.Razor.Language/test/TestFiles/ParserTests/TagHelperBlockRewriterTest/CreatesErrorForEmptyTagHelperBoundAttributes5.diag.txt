@@ -1,2 +1,0 @@
-(1,7): Error RZ2008: Attribute 'bound' on tag helper element 'myth' requires a value. Tag helper bound attributes of type 'System.Boolean' cannot be empty or contain only whitespace.
-(1,18): Error RZ2008: Attribute 'bound' on tag helper element 'myth' requires a value. Tag helper bound attributes of type 'System.Boolean' cannot be empty or contain only whitespace.

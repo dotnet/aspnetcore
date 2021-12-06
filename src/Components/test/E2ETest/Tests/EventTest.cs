@@ -41,13 +41,13 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         // Focus the target, verify onfocusin is fired
         input.Click();
 
-        Browser.Equal("onfocus,onfocusin,", () => output.Text);
+        Browser.Equal("focus,focusin,", () => output.Text);
 
         // Focus something else, verify onfocusout is also fired
         var other = Browser.Exists(By.Id("other"));
         other.Click();
 
-        Browser.Equal("onfocus,onfocusin,onblur,onfocusout,", () => output.Text);
+        Browser.Equal("focus,focusin,blur,focusout,", () => output.Text);
     }
 
     [Fact]
@@ -79,7 +79,7 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
             .MoveToElement(other);
 
         actions.Perform();
-        Browser.Equal("onmouseover,onmouseout,", () => output.Text);
+        Browser.Equal("mouseover,mouseout,", () => output.Text);
     }
 
     [Fact]
@@ -98,7 +98,7 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
             .MoveToElement(input, 10, 10);
 
         actions.Perform();
-        Browser.Contains("onmousemove,", () => output.Text);
+        Browser.Contains("mousemove,", () => output.Text);
     }
 
     [Fact]
@@ -117,12 +117,12 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var actions = new Actions(Browser).ClickAndHold(input);
 
         actions.Perform();
-        Browser.Equal("onmousedown,", () => output.Text);
+        Browser.Equal("mousedown,", () => output.Text);
 
         actions = new Actions(Browser).Release(input);
 
         actions.Perform();
-        Browser.Equal("onmousedown,onmouseup,", () => output.Text);
+        Browser.Equal("mousedown,mouseup,", () => output.Text);
     }
 
 
@@ -156,7 +156,7 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var actions = new Actions(Browser).ClickAndHold(input);
 
         actions.Perform();
-        Browser.Equal("onpointerdown", () => output.Text);
+        Browser.Equal("pointerdown,", () => output.Text);
     }
 
     [Fact]
@@ -174,10 +174,11 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
 
         actions.Perform();
         // drop doesn't seem to trigger in Selenium. But it's sufficient to determine "any" drag event works
-        Browser.Equal("ondragstart,", () => output.Text);
+        Browser.Equal("dragstart,", () => output.Text);
     }
 
-    [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/32373")]
+    [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/32373")]
     public void TouchEvent_CanTrigger()
     {
         Browser.MountTestComponent<TouchEventComponent>();
@@ -190,7 +191,7 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var actions = new TouchActions(Browser).SingleTap(input);
 
         actions.Perform();
-        Browser.Equal("touchstarttouchend,", () => output.Text);
+        Browser.Equal("touchstart,touchend,", () => output.Text);
     }
 
     [Fact]

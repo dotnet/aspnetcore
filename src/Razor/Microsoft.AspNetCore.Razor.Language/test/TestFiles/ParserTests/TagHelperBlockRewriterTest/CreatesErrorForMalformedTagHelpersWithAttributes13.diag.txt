@@ -1,1 +1,0 @@
-(1,4): Error RZ1031: The tag helper 'p' must not have C# in the element's attribute declaration area.

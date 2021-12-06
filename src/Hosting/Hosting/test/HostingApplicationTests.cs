@@ -132,6 +132,7 @@ public class HostingApplicationTests
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/38736")]
     public void IHttpActivityFeatureIsAssignedToIfItExists()
     {
         var testSource = new ActivitySource(Path.GetRandomFileName());
