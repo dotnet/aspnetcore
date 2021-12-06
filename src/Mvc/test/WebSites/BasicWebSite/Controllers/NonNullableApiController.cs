@@ -6,8 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BasicWebSite.Controllers;
 
-#nullable enable
-
 [ApiController]
 [Route("api/NonNullable")]
 public class NonNullableApiController : ControllerBase
@@ -19,5 +17,3 @@ public class NonNullableApiController : ControllerBase
         return language;
     }
 }
-
-#nullable restore
