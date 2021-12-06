@@ -74,16 +74,25 @@ internal class AuthorizationApplicationModelProvider : IApplicationModelProvider
 
     public static AuthorizeFilter GetFilter(IAuthorizationPolicyProvider policyProvider, IEnumerable<IAuthorizeData> authData)
     {
-        // The default policy provider will make the same policy for given input, so make it only once.
-        // This will always execute synchronously.
-        if (policyProvider.GetType() == typeof(DefaultAuthorizationPolicyProvider))
+        if (GetPolicyIfDefaultProvider(policyProvider, authData) is AuthorizationPolicy policy)
         {
-            var policy = AuthorizationPolicy.CombineAsync(policyProvider, authData).GetAwaiter().GetResult()!;
             return new AuthorizeFilter(policy);
         }
         else
         {
             return new AuthorizeFilter(policyProvider, authData);
         }
+    }
+
+    // The default policy provider will make the same policy for given input, so make it only once.
+    // This will always execute synchronously.
+    public static AuthorizationPolicy? GetPolicyIfDefaultProvider(IAuthorizationPolicyProvider policyProvider, IEnumerable<IAuthorizeData> authData)
+    {
+        if (policyProvider.GetType() != typeof(DefaultAuthorizationPolicyProvider))
+        {
+            return null;
+        }
+
+        return AuthorizationPolicy.CombineAsync(policyProvider, authData).GetAwaiter().GetResult();
     }
 }
