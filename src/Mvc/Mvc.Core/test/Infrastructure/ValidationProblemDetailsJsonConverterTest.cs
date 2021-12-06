@@ -146,7 +146,6 @@ public class ValidationProblemDetailsJsonConverterTest
             Status = 400
         };
 
-
         var converter = new ValidationProblemDetailsJsonConverter();
         using MemoryStream stream = new();
         using Utf8JsonWriter writer = new(stream);
@@ -157,7 +156,6 @@ public class ValidationProblemDetailsJsonConverterTest
         writer.Flush();
         var json = Encoding.UTF8.GetString(stream.ToArray());
 
-
         var expectedJSON = $"{{\"title\":\"{problemDetails.Title}\",\"status\":{problemDetails.Status}," +
             "\"errors\":{\"Property\":[\"error0\"]}}";
         Assert.NotNull(json);
@@ -167,7 +165,6 @@ public class ValidationProblemDetailsJsonConverterTest
     [Fact]
     public void WriteUsingJsonSerializerOptionsWorks()
     {
-
         var errors = new Dictionary<string, string[]>()
         {
             { "Property",  new string[]{ "error0" } },
@@ -197,6 +194,5 @@ public class ValidationProblemDetailsJsonConverterTest
             "\"errors\":{\"property\":[\"error0\"],\"twoWords\":[\"error1\"],\"topLevelProperty.propertyName\":[\"error2\"]}}";
         Assert.NotNull(json);
         Assert.Equal(expectedJSON, json);
-
     }
 }
