@@ -101,8 +101,8 @@ namespace System.Net.Http.HPack
         private bool _huffman;
         private bool _headersObserved;
 
-        public HPackDecoder(int maxDynamicTableSize = DefaultHeaderTableSize, int maxHeadersLength = DefaultMaxHeadersLength, IHeaderValidator headerValidator = null!)
-            : this(maxDynamicTableSize, maxHeadersLength, new DynamicTable(maxDynamicTableSize, headerValidator))
+        public HPackDecoder(int maxDynamicTableSize = DefaultHeaderTableSize, int maxHeadersLength = DefaultMaxHeadersLength)
+            : this(maxDynamicTableSize, maxHeadersLength, new DynamicTable(maxDynamicTableSize))
         {
         }
 
@@ -521,7 +521,7 @@ namespace System.Net.Http.HPack
 
                 if (_index)
                 {
-                    _dynamicTable.Insert(staticTableIndex: null, headerNameSpan, headerValueSpan);
+                    _dynamicTable.Insert(headerNameSpan, headerValueSpan);
                 }
             }
 

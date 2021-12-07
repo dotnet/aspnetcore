@@ -26,7 +26,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 
-internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpHeadersHandler, IRequestProcessor, IHeaderValidator
+internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpHeadersHandler, IRequestProcessor
 {
     public static ReadOnlySpan<byte> ClientPreface => ClientPrefaceBytes;
 
@@ -109,7 +109,7 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpHeade
         _input = new Pipe(inputOptions);
         _minAllocBufferSize = context.MemoryPool.GetMinimumAllocSize();
 
-        _hpackDecoder = new HPackDecoder(http2Limits.HeaderTableSize, http2Limits.MaxRequestHeaderFieldSize, headerValidator: this);
+        _hpackDecoder = new HPackDecoder(http2Limits.HeaderTableSize, http2Limits.MaxRequestHeaderFieldSize);
 
         var connectionWindow = (uint)http2Limits.InitialConnectionWindowSize;
         _inputFlowControl = new InputFlowControl(connectionWindow, connectionWindow / 2);
@@ -1329,36 +1329,36 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpHeade
                 switch (headerType)
                 {
                     case HeaderType.Static:
-                        ValidateStaticHeader(staticTableIndex.GetValueOrDefault(), value);
+                        UpdateHeaderParsingState(value, GetPseudoHeaderField(staticTableIndex.GetValueOrDefault()));
 
                         _currentHeadersStream.OnHeader(staticTableIndex.GetValueOrDefault(), indexedValue: true, name, value);
                         break;
                     case HeaderType.StaticAndValue:
-                        ValidateStaticHeader(staticTableIndex.GetValueOrDefault(), value);
+                        UpdateHeaderParsingState(value, GetPseudoHeaderField(staticTableIndex.GetValueOrDefault()));
 
+                        // Value is new will get validated (i.e. check value doesn't contain newlines)
                         _currentHeadersStream.OnHeader(staticTableIndex.GetValueOrDefault(), indexedValue: false, name, value);
                         break;
                     case HeaderType.Dynamic:
-                        // Clients will normally send pseudo headers as an indexed header.
-                        // Because pseudo headers can still be sent by name we need to check for them.
-                        UpdateHeaderParsingState(value, GetPseudoHeaderField(name));
-
+                        // It is faster to set a header using a static table index than a name.
                         if (staticTableIndex != null)
                         {
-                            // It is faster to set a header using a static table index than a name.
+                            UpdateHeaderParsingState(value, GetPseudoHeaderField(staticTableIndex.GetValueOrDefault()));
+
                             _currentHeadersStream.OnHeader(staticTableIndex.GetValueOrDefault(), indexedValue: true, name, value);
                         }
                         else
                         {
+                            UpdateHeaderParsingState(value, GetPseudoHeaderField(name));
+
                             _currentHeadersStream.OnHeader(name, value, checkForNewlineChars: false);
                         }
                         break;
                     case HeaderType.NameAndValue:
-                        // Clients will normally send pseudo headers as an indexed header.
-                        // Because pseudo headers can still be sent by name we need to check for them.
                         UpdateHeaderParsingState(value, GetPseudoHeaderField(name));
-                        ValidateHeaderContent(name, value);
 
+                        // Header and value are new and will get validated (i.e. check name is lower-case, check value doesn't contain newlines)
+                        ValidateHeaderContent(name, value);
                         _currentHeadersStream.OnHeader(name, value, checkForNewlineChars: true);
                         break;
                     default:
@@ -1403,35 +1403,6 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpHeade
                 }
             }
         }
-    }
-
-    private void ValidateStaticHeader(int index, ReadOnlySpan<byte> value)
-    {
-        Debug.Assert(index > 0, "Static table starts at 1.");
-
-        var headerField = index switch
-        {
-            1 => PseudoHeaderFields.Authority,
-            2 => PseudoHeaderFields.Method,
-            3 => PseudoHeaderFields.Method,
-            4 => PseudoHeaderFields.Path,
-            5 => PseudoHeaderFields.Path,
-            6 => PseudoHeaderFields.Scheme,
-            7 => PseudoHeaderFields.Scheme,
-            8 => PseudoHeaderFields.Status,
-            9 => PseudoHeaderFields.Status,
-            10 => PseudoHeaderFields.Status,
-            11 => PseudoHeaderFields.Status,
-            12 => PseudoHeaderFields.Status,
-            13 => PseudoHeaderFields.Status,
-            14 => PseudoHeaderFields.Status,
-            _ => PseudoHeaderFields.None
-        };
-
-        UpdateHeaderParsingState(value, headerField);
-
-        // http://httpwg.org/specs/rfc7540.html#rfc.section.8.1.2
-        // No need to validate if header name if it is specified using a static index.
     }
 
     private void UpdateHeaderParsingState(ReadOnlySpan<byte> value, PseudoHeaderFields headerField)
@@ -1500,6 +1471,32 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpHeade
         {
             _requestHeaderParsingState = RequestHeaderParsingState.Headers;
         }
+    }
+
+    private static PseudoHeaderFields GetPseudoHeaderField(int staticTableIndex)
+    {
+        Debug.Assert(staticTableIndex > 0, "Static table starts at 1.");
+
+        var headerField = staticTableIndex switch
+        {
+            1 => PseudoHeaderFields.Authority,
+            2 => PseudoHeaderFields.Method,
+            3 => PseudoHeaderFields.Method,
+            4 => PseudoHeaderFields.Path,
+            5 => PseudoHeaderFields.Path,
+            6 => PseudoHeaderFields.Scheme,
+            7 => PseudoHeaderFields.Scheme,
+            8 => PseudoHeaderFields.Status,
+            9 => PseudoHeaderFields.Status,
+            10 => PseudoHeaderFields.Status,
+            11 => PseudoHeaderFields.Status,
+            12 => PseudoHeaderFields.Status,
+            13 => PseudoHeaderFields.Status,
+            14 => PseudoHeaderFields.Status,
+            _ => PseudoHeaderFields.None
+        };
+
+        return headerField;
     }
 
     private static PseudoHeaderFields GetPseudoHeaderField(ReadOnlySpan<byte> name)
@@ -1607,13 +1604,6 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpHeade
             await _context.Transport.Input.CompleteAsync();
             _input.Writer.Complete(error);
         }
-    }
-
-    void IHeaderValidator.ValidateHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
-    {
-        ValidateHeaderContent(name, value);
-
-        _currentHeadersStream!.ValidateHeaderValue(name, value);
     }
 
     private enum RequestHeaderParsingState
