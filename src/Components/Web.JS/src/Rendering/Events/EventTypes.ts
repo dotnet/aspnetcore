@@ -60,13 +60,17 @@ registerBuiltInEventType(['input', 'change'], {
   createEventArgs: parseChangeEvent
 });
 
-registerBuiltInEventType(['copy', 'cut', 'paste'], createBlankEventArgsOptions);
+registerBuiltInEventType(['copy', 'cut', 'paste'], {
+  createEventArgs: e => parseClipboardEvent(e as ClipboardEvent)
+});
 
 registerBuiltInEventType(['drag', 'dragend', 'dragenter', 'dragleave', 'dragover', 'dragstart', 'drop'], {
   createEventArgs: e => parseDragEvent(e as DragEvent)
 });
 
-registerBuiltInEventType(['focus', 'blur', 'focusin', 'focusout'], createBlankEventArgsOptions);
+registerBuiltInEventType(['focus', 'blur', 'focusin', 'focusout'], {
+  createEventArgs: e => parseFocusEvent(e as FocusEvent)
+});
 
 registerBuiltInEventType(['keydown', 'keyup', 'keypress'], {
   createEventArgs: e => parseKeyboardEvent(e as KeyboardEvent)
@@ -154,11 +158,24 @@ function parseTouchEvent(event: TouchEvent): TouchEventArgs {
   };
 }
 
+function parseFocusEvent(event: FocusEvent): FocusEventArgs {
+  return {
+    type: event.type
+  };
+}
+
+function parseClipboardEvent(event: ClipboardEvent): ClipboardEventArgs {
+  return {
+    type: event.type
+  };
+}
+
 function parseProgressEvent(event: ProgressEvent<EventTarget>): ProgressEventArgs {
   return {
     lengthComputable: event.lengthComputable,
     loaded: event.loaded,
     total: event.total,
+    type: event.type,
   };
 }
 
@@ -168,6 +185,7 @@ function parseErrorEvent(event: ErrorEvent): ErrorEventArgs {
     filename: event.filename,
     lineno: event.lineno,
     colno: event.colno,
+    type: event.type,
   };
 }
 
@@ -181,6 +199,7 @@ function parseKeyboardEvent(event: KeyboardEvent): KeyboardEventArgs {
     shiftKey: event.shiftKey,
     altKey: event.altKey,
     metaKey: event.metaKey,
+    type: event.type,
   };
 }
 
@@ -232,6 +251,7 @@ function parseMouseEvent(event: MouseEvent): MouseEventArgs {
     shiftKey: event.shiftKey,
     altKey: event.altKey,
     metaKey: event.metaKey,
+    type: event.type,
   };
 }
 
@@ -313,6 +333,7 @@ interface ErrorEventArgs {
   filename: string;
   lineno: number;
   colno: number;
+  type: string;
 
   // omitting 'error' here since we'd have to serialize it, and it's not clear we will want to
   // do that. https://developer.mozilla.org/en-US/docs/Web/API/ErrorEvent
@@ -327,6 +348,7 @@ interface KeyboardEventArgs {
   shiftKey: boolean;
   altKey: boolean;
   metaKey: boolean;
+  type: string;
 }
 
 interface MouseEventArgs {
@@ -345,6 +367,7 @@ interface MouseEventArgs {
   shiftKey: boolean;
   altKey: boolean;
   metaKey: boolean;
+  type: string;
 }
 
 interface PointerEventArgs extends MouseEventArgs {
@@ -362,6 +385,7 @@ interface ProgressEventArgs {
   lengthComputable: boolean;
   loaded: number;
   total: number;
+  type: string;
 }
 
 interface TouchEventArgs {
@@ -391,4 +415,12 @@ interface WheelEventArgs extends MouseEventArgs {
   deltaY: number;
   deltaZ: number;
   deltaMode: number;
+}
+
+interface FocusEventArgs {
+  type: string;
+}
+
+interface ClipboardEventArgs {
+  type: string;
 }
