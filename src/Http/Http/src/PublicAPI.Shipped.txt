@@ -255,7 +255,6 @@ Microsoft.AspNetCore.Http.StreamResponseBodyFeature.Dispose() -> void
 Microsoft.AspNetCore.Http.StreamResponseBodyFeature.PriorFeature.get -> Microsoft.AspNetCore.Http.Features.IHttpResponseBodyFeature?
 Microsoft.AspNetCore.Http.StreamResponseBodyFeature.Stream.get -> System.IO.Stream!
 Microsoft.AspNetCore.Http.StreamResponseBodyFeature.StreamResponseBodyFeature(System.IO.Stream! stream) -> void
-Microsoft.AspNetCore.Http.StreamResponseBodyFeature.StreamResponseBodyFeature(System.IO.Stream! stream, Microsoft.AspNetCore.Http.Features.IHttpResponseBodyFeature! priorFeature) -> void
 Microsoft.AspNetCore.Http.StreamResponseBodyFeature.Writer.get -> System.IO.Pipelines.PipeWriter!
 Microsoft.Extensions.DependencyInjection.HttpServiceCollectionExtensions
 override Microsoft.AspNetCore.Http.BindingAddress.Equals(object? obj) -> bool
