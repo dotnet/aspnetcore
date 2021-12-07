@@ -93,9 +93,10 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             });
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(true)]
         [InlineData(false)]
+        [SkipOnCI]
         public async Task MoveFile(bool usePolling)
         {
             await UsingTempDirectory(async dir =>
