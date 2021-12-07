@@ -13,6 +13,8 @@ namespace System.Net.Http.HPack
 
         public HeaderField(int? staticTableIndex, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
+            // Store the static table index (if there is one) for the header field.
+            // ASP.NET Core has a fast path that sets a header value using the static table index instead of the name.
             StaticTableIndex = staticTableIndex;
 
             Debug.Assert(name.Length > 0);

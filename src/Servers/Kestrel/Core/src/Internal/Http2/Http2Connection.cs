@@ -1265,7 +1265,7 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpHeade
 
     public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
     {
-        OnHeaderCore(HeaderType.NameAndValue, index: null, name, value);
+        OnHeaderCore(HeaderType.NameAndValue, staticTableIndex: null, name, value);
     }
 
     public void OnDynamicIndexedHeader(int? index, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
@@ -1299,7 +1299,7 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpHeade
     // We can't throw a Http2StreamErrorException here, it interrupts the header decompression state and may corrupt subsequent header frames on other streams.
     // For now these either need to be connection errors or BadRequests. If we want to downgrade any of them to stream errors later then we need to
     // rework the flow so that the remaining headers are drained and the decompression state is maintained.
-    private void OnHeaderCore(HeaderType headerType, int? index, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+    private void OnHeaderCore(HeaderType headerType, int? staticTableIndex, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
     {
         Debug.Assert(_currentHeadersStream != null);
 
@@ -1315,6 +1315,8 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpHeade
         {
             if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
             {
+                // Just use name + value bytes and do full validation for request trailers.
+                // Potential performance improvement here to check for indexed headers and optimize validation.
                 UpdateHeaderParsingState(value, GetPseudoHeaderField(name));
                 ValidateHeaderContent(name, value);
 
@@ -1327,24 +1329,24 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpHeade
                 switch (headerType)
                 {
                     case HeaderType.Static:
-                        ValidateStaticHeader(index.GetValueOrDefault(), value);
+                        ValidateStaticHeader(staticTableIndex.GetValueOrDefault(), value);
 
-                        _currentHeadersStream.OnHeader(index.GetValueOrDefault(), indexedValue: true, name, value);
+                        _currentHeadersStream.OnHeader(staticTableIndex.GetValueOrDefault(), indexedValue: true, name, value);
                         break;
                     case HeaderType.StaticAndValue:
-                        ValidateStaticHeader(index.GetValueOrDefault(), value);
+                        ValidateStaticHeader(staticTableIndex.GetValueOrDefault(), value);
 
-                        _currentHeadersStream.OnHeader(index.GetValueOrDefault(), indexedValue: false, name, value);
+                        _currentHeadersStream.OnHeader(staticTableIndex.GetValueOrDefault(), indexedValue: false, name, value);
                         break;
                     case HeaderType.Dynamic:
                         // Clients will normally send pseudo headers as an indexed header.
                         // Because pseudo headers can still be sent by name we need to check for them.
                         UpdateHeaderParsingState(value, GetPseudoHeaderField(name));
 
-                        if (index != null)
+                        if (staticTableIndex != null)
                         {
                             // It is faster to set a header using a static table index than a name.
-                            _currentHeadersStream.OnHeader(index.GetValueOrDefault(), indexedValue: true, name, value);
+                            _currentHeadersStream.OnHeader(staticTableIndex.GetValueOrDefault(), indexedValue: true, name, value);
                         }
                         else
                         {

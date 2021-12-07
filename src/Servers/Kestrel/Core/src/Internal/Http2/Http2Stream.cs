@@ -707,9 +707,11 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
                 throw new InvalidOperationException("Newline characters (CR/LF) are not allowed in request headers.");
             }
         }
-
-        // Errors if invalid new line characters are in header.
-        // Hacky: If a custom encoding selector is present then the name and value are allocated when value is added to dynamic table.
-        _ = value.GetRequestHeaderString(name.GetHeaderName(), HttpRequestHeaders.EncodingSelector, checkForNewlineChars: true);
+        else
+        {
+            // Errors if invalid new line characters are in header.
+            // Hacky: If a custom encoding selector is present then the name and value are allocated when value is added to dynamic table.
+            _ = value.GetRequestHeaderString(name.GetHeaderName(), HttpRequestHeaders.EncodingSelector, checkForNewlineChars: true);
+        }
     }
 }

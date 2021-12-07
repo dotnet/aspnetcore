@@ -548,12 +548,7 @@ namespace System.Net.Http.HPack
             else
             {
                 ref readonly HeaderField header = ref GetDynamicHeader(index);
-#if KESTREL
-                // Kestrel can skip some validation if it knows the header is indexed.
                 handler.OnDynamicIndexedHeader(header.StaticTableIndex, header.Name, header.Value);
-#else
-                handler.OnHeader(header.Name, header.Value);
-#endif
             }
 
             _state = State.Ready;

@@ -55,7 +55,7 @@ namespace System.Net.Http.HPack
 
         public void Insert(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
-            Insert(name, value);
+            Insert(staticTableIndex: null, name, value);
         }
 
         public void Insert(int? staticTableIndex, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
@@ -122,14 +122,9 @@ namespace System.Net.Http.HPack
         {
             public static readonly DummyHeaderValidator Instance = new DummyHeaderValidator();
 
-            private DummyHeaderValidator()
-            {
+            private DummyHeaderValidator() { }
 
-            }
-
-            public void ValidateHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
-            {
-            }
+            public void ValidateHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value) { }
         }
     }
 }
