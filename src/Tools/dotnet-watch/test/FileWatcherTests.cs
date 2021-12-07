@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.DotNet.Watcher.Internal;
 using Xunit;
 using Xunit.Abstractions;
