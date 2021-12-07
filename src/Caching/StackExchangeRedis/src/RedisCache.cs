@@ -22,20 +22,29 @@ public class RedisCache : IDistributedCache, IDisposable
     // ARGV[3] = relative-expiration (long, in seconds, -1 for none) - Min(absolute-expiration - Now, sliding-expiration)
     // ARGV[4] = data - byte[]
     // this order should not change LUA script depends on it
-    private const string SetScript = (@"
+    private const string RegularSetScript = (@"
                 redis.call('HSET', KEYS[1], 'absexp', ARGV[1], 'sldexp', ARGV[2], 'data', ARGV[4])
                 if ARGV[3] ~= '-1' then
                   redis.call('EXPIRE', KEYS[1], ARGV[3])
                 end
                 return 1");
+    private const string DeprecatedSetScript = (@"
+                redis.call('HMSET', KEYS[1], 'absexp', ARGV[1], 'sldexp', ARGV[2], 'data', ARGV[4])
+                if ARGV[3] ~= '-1' then
+                  redis.call('EXPIRE', KEYS[1], ARGV[3])
+                end
+                return 1");
+
     private const string AbsoluteExpirationKey = "absexp";
     private const string SlidingExpirationKey = "sldexp";
     private const string DataKey = "data";
     private const long NotPresent = -1;
+    private readonly Version ServerVersionWithExtendedSetCommand = new Version(4, 0, 0);
 
     private volatile IConnectionMultiplexer _connection;
     private IDatabase _cache;
     private bool _disposed;
+    private string _setScript = RegularSetScript;
 
     private readonly RedisCacheOptions _options;
     private readonly string _instance;
@@ -107,7 +116,7 @@ public class RedisCache : IDistributedCache, IDisposable
 
         var absoluteExpiration = GetAbsoluteExpiration(creationTime, options);
 
-        var result = _cache.ScriptEvaluate(SetScript, new RedisKey[] { _instance + key },
+        var result = _cache.ScriptEvaluate(_setScript, new RedisKey[] { _instance + key },
             new RedisValue[]
             {
                         absoluteExpiration?.Ticks ?? NotPresent,
@@ -143,7 +152,7 @@ public class RedisCache : IDistributedCache, IDisposable
 
         var absoluteExpiration = GetAbsoluteExpiration(creationTime, options);
 
-        await _cache.ScriptEvaluateAsync(SetScript, new RedisKey[] { _instance + key },
+        await _cache.ScriptEvaluateAsync(_setScript, new RedisKey[] { _instance + key },
             new RedisValue[]
             {
                         absoluteExpiration?.Ticks ?? NotPresent,
@@ -206,7 +215,7 @@ public class RedisCache : IDistributedCache, IDisposable
                     _connection = _options.ConnectionMultiplexerFactory().GetAwaiter().GetResult();
                 }
 
-                TryRegisterProfiler();
+                PrepareConnection();
                 _cache = _connection.GetDatabase();
             }
         }
@@ -247,13 +256,36 @@ public class RedisCache : IDistributedCache, IDisposable
                     _connection = await _options.ConnectionMultiplexerFactory();
                 }
 
-                TryRegisterProfiler();
+                PrepareConnection();
                 _cache = _connection.GetDatabase();
             }
         }
         finally
         {
             _connectionLock.Release();
+        }
+    }
+
+    private void PrepareConnection()
+    {
+        ValidateServerFeatures();
+        TryRegisterProfiler();
+    }
+
+    private void ValidateServerFeatures()
+    {
+        if (_connection is null)
+        {
+            return;
+        }
+
+        foreach (var endPoint in _connection.GetEndPoints())
+        {
+            if (_connection.GetServer(endPoint).Version < ServerVersionWithExtendedSetCommand)
+            {
+                _setScript = DeprecatedSetScript;
+                return;
+            }
         }
     }
 
