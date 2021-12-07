@@ -83,7 +83,8 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             await UserStories.LoginExistingUser2FaAsync(newClient, userName, password, twoFactorKey);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task CanLogInWithTwoFactorAuthentication_WithGlobalAuthorizeFilter()
         {
             // Arrange
@@ -178,7 +179,8 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             await Assert.ThrowsAnyAsync<XunitException>(() => UserStories.LoginExistingUserAsync(newClient, userName, password));
         }
 
-        [Fact]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task CannotLogInWithoutRequiredEmailConfirmation_WithGlobalAuthorizeFilter()
         {
             // Arrange
@@ -203,7 +205,8 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             await Assert.ThrowsAnyAsync<XunitException>(() => UserStories.LoginExistingUserAsync(newClient, userName, password));
         }
 
-        [Fact]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task CanLogInAfterConfirmingEmail()
         {
             // Arrange
@@ -258,7 +261,8 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             await UserStories.LoginExistingUserAsync(newClient, userName, password);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task CanLoginWithASocialLoginProvider()
         {
             // Arrange
@@ -331,7 +335,8 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             await UserStories.LoginExistingUserAsync(newClient, userName, newPassword);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task CanResetPassword_WithGlobalAuthorizeFilter()
         {
             // Arrange
@@ -361,7 +366,8 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             await UserStories.LoginExistingUserAsync(newClient, userName, newPassword);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task UserNotLockedOut_AfterMaxFailedAccessAttempts_WithGlobalAuthorizeFilter()
         {
             // Arrange
