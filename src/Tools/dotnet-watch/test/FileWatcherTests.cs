@@ -93,7 +93,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             });
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(true)]
         [InlineData(false)]
         [SkipOnCI]
