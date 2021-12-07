@@ -15,5 +15,10 @@ Type here: <input @onkeypress=OnKeyPressed />
     {
         Console.WriteLine(JsonSerializer.Serialize(eventArgs));
         keysPressed.Add(eventArgs.Key);
+
+        if (eventArgs.Type != "keypress")
+        {
+            throw new ArgumentException($"Expected 'keypress' event type, got {eventArgs.Type}");
+        }
     }
 }
