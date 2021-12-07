@@ -28,7 +28,7 @@ $issue = $issue + '/comments'
 $result = Invoke-RestMethod -Method POST -Headers $Headers -Uri $issue -Body $json
 
 # Check if there's an open PR in AspNetCore or Runtime to resolve this difference.
-$sendPr = $true
+$sendpr = $true
 $Headers = @{ Accept = 'application/vnd.github.v3+json' };
 
 $prsLink = "https://api.github.com/repos/dotnet/aspnetcore/pulls?state=open"
@@ -36,8 +36,8 @@ $result = Invoke-RestMethod -Method GET -Headers $Headers -Uri $prsLink
 
 foreach ($pr in $result) {
   if ($pr.body -And $pr.body.Contains("Fixes #18943")) {
-    $sendPr = $false
-    return $sendPr
+    $sendpr = $false
+    return $sendpr
   }
 }
 
@@ -46,9 +46,9 @@ $result = Invoke-RestMethod -Method GET -Headers $Headers -Uri $prsLink
 
 foreach ($pr in $result) {
   if ($pr.body -And $pr.body.Contains("Fixes https://github.com/dotnet/aspnetcore/issues/18943")) {
-    $sendPr = $false
-    return $sendPr
+    $sendpr = $false
+    return $sendpr
   }
 }
 
-return $sendPr
+return $sendpr
