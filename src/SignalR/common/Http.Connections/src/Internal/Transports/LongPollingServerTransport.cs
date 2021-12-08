@@ -123,17 +123,9 @@ internal class LongPollingServerTransport : IHttpTransport
 
     private static void AddNoCacheHeaders(HttpResponse response)
     {
-        if (response.Headers.CacheControl.Count == 0) {
-            response.Headers.CacheControl = HeaderValueNoCacheNoStoreMustRevalidate;
-        }
-
-        if (response.Headers.Pragma.Count == 0) {
-            response.Headers.Pragma = HeaderValueNoCache;
-        }
-
-        if (response.Headers.Expires.Count == 0) {
-            response.Headers.Expires = HeaderValueEpochDate;
-        }
+        response.Headers.CacheControl = HeaderValueNoCacheNoStoreMustRevalidate;
+        response.Headers.Pragma = HeaderValueNoCache;
+        response.Headers.Expires = HeaderValueEpochDate;
     }
 
     private static class Log
