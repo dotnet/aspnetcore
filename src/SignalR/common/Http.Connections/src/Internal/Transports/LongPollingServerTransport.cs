@@ -35,6 +35,8 @@ internal class LongPollingServerTransport : IHttpTransport
 
     public async Task ProcessRequestAsync(HttpContext context, CancellationToken token)
     {
+        AddNoCacheHeaders(context.Response);
+
         try
         {
             var result = await _application.ReadAsync(token);
@@ -112,6 +114,21 @@ internal class LongPollingServerTransport : IHttpTransport
             context.Response.ContentType = "text/plain";
             context.Response.StatusCode = StatusCodes.Status500InternalServerError;
             throw;
+        }
+    }
+
+    private static void AddNoCacheHeaders(HttpResponse response)
+    {
+        if (response.Headers.CacheControl.Count == 0) {
+            response.Headers.CacheControl = "no-cache, no-store, must-revalidate";
+        }
+
+        if (response.Headers.Pragma.Count == 0) {
+            response.Headers.Pragma = "no-cache";
+        }
+
+        if (response.Headers.Expires.Count == 0) {
+            response.Headers.Expires = "0";
         }
     }
 
