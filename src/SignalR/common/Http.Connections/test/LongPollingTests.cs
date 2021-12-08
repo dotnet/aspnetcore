@@ -125,6 +125,6 @@ public class LongPollingTests : VerifiableLoggedTest
     {
         Assert.Equal("no-cache, no-store, must-revalidate", response.Headers.CacheControl);
         Assert.Equal("no-cache", response.Headers.Pragma);
-        Assert.Equal("0", response.Headers.Expires);
+        Assert.Equal("Thu, 01 Jan 1970 00:00:00 GMT", response.Headers.Expires);
     }
 }
