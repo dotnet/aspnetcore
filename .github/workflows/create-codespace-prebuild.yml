@@ -23,4 +23,4 @@ jobs:
           regions: WestUs2 EastUs WestEurope
           sku_name: premiumLinux
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.EXPERIMENTAL_CODESPACE_CACHE_TOKEN }}
