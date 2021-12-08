@@ -63,7 +63,11 @@ public class MaxRequestBodySizeTests : LoggedTest
     [Fact]
     public async Task RejectsRequestWithBodySizeExceedingPerRequestLimitAndExceptionWasCaughtByApplication()
     {
-        var maxRequestBodySize = 10;
+        var maxRequestBodySize = 3;
+        var requestBody = "client content";
+        var customApplicationResponse = "custom";
+        Assert.True(requestBody.Length > maxRequestBodySize);
+
         await using (var server = new TestServer(async context =>
         {
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -75,26 +79,27 @@ public class MaxRequestBodySizeTests : LoggedTest
                     string body = await stream.ReadToEndAsync();
                 }
             });
-            context.Response.StatusCode = 413;
-            await context.Response.WriteAsync("");
+            context.Response.StatusCode = requestRejectedEx.StatusCode;
+            await context.Response.WriteAsync(customApplicationResponse);
             throw requestRejectedEx;
         },
-        new TestServiceContext(LoggerFactory) { ServerOptions = new KestrelServerOptions { Limits = { MaxRequestBodySize = maxRequestBodySize } } }))
+        new TestServiceContext(LoggerFactory) { ServerOptions = { Limits = { MaxRequestBodySize = maxRequestBodySize } } }))
         {
             using var connection = server.CreateConnection();
             await connection.Send(
                 "POST / HTTP/1.1",
                 "Host:",
-                "Content-Length: " + (maxRequestBodySize + 1),
+                $"Content-Length: {requestBody.Length}",
                 "",
-                new string('a', maxRequestBodySize + 1));
+                requestBody);
             await connection.ReceiveEnd(
                 "HTTP/1.1 413 Payload Too Large",
                 "Connection: close",
                 $"Date: {server.Context.DateHeaderValue}",
-                "Server: Kestrel",
                 "Transfer-Encoding: chunked",
                 "",
+                $"{customApplicationResponse.Length}",
+                customApplicationResponse,
                 "");
         }
     }
@@ -102,8 +107,11 @@ public class MaxRequestBodySizeTests : LoggedTest
     [Fact]
     public async Task RejectsRequestWithChunckedBodySizeExceedingPerRequestLimitAndExceptionWasCaughtByApplication()
     {
-        var maxRequestBodySize = 10;
+        var maxRequestBodySize = 3;
+        var customApplicationResponse = "custom";
         var chunkedPayload = $"5;random chunk extension\r\nHello\r\n6\r\n World\r\n0\r\n";
+        Assert.True(chunkedPayload.Length > maxRequestBodySize);
+
         await using (var server = new TestServer(async context =>
         {
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -115,19 +123,15 @@ public class MaxRequestBodySizeTests : LoggedTest
                     string body = await stream.ReadToEndAsync();
                 }
             });
-            context.Response.StatusCode = 413;
-            await context.Response.WriteAsync("");
+            context.Response.StatusCode = requestRejectedEx.StatusCode;
+            await context.Response.WriteAsync(customApplicationResponse);
             throw requestRejectedEx;
         },
-        new TestServiceContext(LoggerFactory) { ServerOptions = new KestrelServerOptions { Limits = { MaxRequestBodySize = maxRequestBodySize } } }))
+        new TestServiceContext(LoggerFactory) { ServerOptions = { Limits = { MaxRequestBodySize = maxRequestBodySize } } }))
         {
             using var connection = server.CreateConnection();
             await connection.Send(
                 "POST / HTTP/1.1",
-                "Host:",
-                "Transfer-Encoding: chunked",
-                "",
-                chunkedPayload + "POST / HTTP/1.1",
                 "Host:",
                 "Transfer-Encoding: chunked",
                 "",
@@ -136,9 +140,10 @@ public class MaxRequestBodySizeTests : LoggedTest
                 "HTTP/1.1 413 Payload Too Large",
                 "Connection: close",
                 $"Date: {server.Context.DateHeaderValue}",
-                "Server: Kestrel",
                 "Transfer-Encoding: chunked",
                 "",
+                $"{customApplicationResponse.Length}",
+                customApplicationResponse,
                 "");
         }
     }

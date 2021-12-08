@@ -1321,9 +1321,12 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
                 ? target.GetAsciiStringEscaped(Constants.MaxExceptionDetailSize)
                 : string.Empty);
 
-    public void SetKeepAliveToClose()
+    public void DisableHttp1KeepAlive()
     {
-        _keepAlive = false;
+        if (_httpVersion == Http.HttpVersion.Http10 || _httpVersion == Http.HttpVersion.Http11)
+        {
+            _keepAlive = false;
+        }
     }
 
     public void SetBadRequestState(BadHttpRequestException ex)
