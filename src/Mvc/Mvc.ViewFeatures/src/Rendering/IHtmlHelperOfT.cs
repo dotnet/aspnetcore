@@ -48,7 +48,7 @@ public interface IHtmlHelper<TModel> : IHtmlHelper
     /// <summary>
     /// Returns HTML markup for the <paramref name="expression"/>, using a display template, specified HTML field
     /// name, and additional view data. The template name is taken from the <paramref name="templateName"/> or the
-    /// <paramref name="expression"/>’s <see cref="ModelBinding.ModelMetadata"/>.
+    /// <paramref name="expression"/>’s <see cref="Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.TemplateHint"/>.
     /// If the template file is not found, a default template will be used.
     /// </summary>
     /// <param name="expression">An expression to be evaluated against the current model.</param>
@@ -70,7 +70,9 @@ public interface IHtmlHelper<TModel> : IHtmlHelper
     /// <paramref name="expression"/> result.
     /// </para>
     /// <para>
-    /// Custom templates are found under a <c>DisplayTemplates</c> folder. The folder name is case-sensitive on
+    /// Custom templates are found under a <c>DisplayTemplates</c> folder within the
+    /// <see href="https://docs.microsoft.com/en-us/aspnet/core/tutorials/razor-pages/razor-pages-start#pages-folder-2" >Pages</see > folder.
+    /// The folder name is case-sensitive on
     /// case-sensitive file systems.
     /// </para>
     /// </remarks>
