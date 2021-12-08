@@ -190,6 +190,7 @@ internal abstract class MessageBody
         var maxRequestBodySize = _context.MaxRequestBodySize;
         if (_observedBytes > maxRequestBodySize)
         {
+            _context.DisableHttp1KeepAlive();
             KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge, maxRequestBodySize.GetValueOrDefault().ToString(CultureInfo.InvariantCulture));
         }
     }
