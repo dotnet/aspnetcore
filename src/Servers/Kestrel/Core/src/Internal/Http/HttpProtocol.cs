@@ -1321,6 +1321,8 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
                 ? target.GetAsciiStringEscaped(Constants.MaxExceptionDetailSize)
                 : string.Empty);
 
+    // This is called during certain bad requests so the automatic Connection: close header gets sent with custom responses.
+    // If no response is written, SetBadRequestState(BadHttpRequestException) will later also modify the status code.
     public void DisableHttp1KeepAlive()
     {
         if (_httpVersion == Http.HttpVersion.Http10 || _httpVersion == Http.HttpVersion.Http11)
