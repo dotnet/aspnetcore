@@ -17,6 +17,7 @@ Microsoft.AspNetCore.Hosting.Infrastructure.ISupportsStartup.UseStartup<TStartup
 Microsoft.AspNetCore.Hosting.StartupBase<TBuilder>.StartupBase(Microsoft.Extensions.DependencyInjection.IServiceProviderFactory<TBuilder>! factory) -> void
 abstract Microsoft.AspNetCore.Hosting.StartupBase.Configure(Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> void
 override Microsoft.AspNetCore.Hosting.StartupBase<TBuilder>.CreateServiceProvider(Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> System.IServiceProvider!
+static Microsoft.AspNetCore.Hosting.WebHostBuilderExtensions.ConfigureAppendVersion(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder, bool appendVersion) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
 static Microsoft.Extensions.Hosting.GenericHostWebHostBuilderExtensions.ConfigureWebHost(this Microsoft.Extensions.Hosting.IHostBuilder! builder, System.Action<Microsoft.AspNetCore.Hosting.IWebHostBuilder!>! configure) -> Microsoft.Extensions.Hosting.IHostBuilder!
 static Microsoft.Extensions.Hosting.GenericHostWebHostBuilderExtensions.ConfigureWebHost(this Microsoft.Extensions.Hosting.IHostBuilder! builder, System.Action<Microsoft.AspNetCore.Hosting.IWebHostBuilder!>! configure, System.Action<Microsoft.Extensions.Hosting.WebHostBuilderOptions!>! configureWebHostBuilder) -> Microsoft.Extensions.Hosting.IHostBuilder!
 virtual Microsoft.AspNetCore.Hosting.StartupBase.ConfigureServices(Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> void

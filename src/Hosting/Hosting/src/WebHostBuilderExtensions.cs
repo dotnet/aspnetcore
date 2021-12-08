@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Hosting
                     else
                     {
                         services.AddSingleton(typeof(IStartup), sp =>
-                        {
+                        {                            
                             var hostingEnvironment = sp.GetRequiredService<IHostEnvironment>();
                             return new ConventionBasedStartup(StartupLoader.LoadMethods(sp, startupType, hostingEnvironment.EnvironmentName));
                         });
@@ -233,6 +233,17 @@ namespace Microsoft.AspNetCore.Hosting
         public static IWebHostBuilder ConfigureLogging(this IWebHostBuilder hostBuilder, Action<WebHostBuilderContext, ILoggingBuilder> configureLogging)
         {
             return hostBuilder.ConfigureServices((context, collection) => collection.AddLogging(builder => configureLogging(context, builder)));
+        }
+
+        /// <summary>
+        /// Adds a delegate for configuring the <see cref="IWebHostEnvironment.AppendVersion"/>.
+        /// </summary>
+        /// <param name="hostBuilder">The <see cref="IWebHostBuilder" /> to configure.</param>
+        /// <param name="appendVersion">The <see cref="IWebHostEnvironment.AppendVersion"/>.</param>
+        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
+        public static IWebHostBuilder ConfigureAppendVersion(this IWebHostBuilder hostBuilder, bool appendVersion)
+        {
+            return hostBuilder.ConfigureAppConfiguration((context, configBuilder) => context.HostingEnvironment.AppendVersion = appendVersion);
         }
 
         /// <summary>

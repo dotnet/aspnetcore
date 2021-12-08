@@ -272,12 +272,17 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // Retrieve the TagHelperOutput variation of the "href" attribute in case other TagHelpers in the
             // pipeline have touched the value. If the value is already encoded this LinkTagHelper may
             // not function properly.
-            Href = output.Attributes[HrefAttributeName]?.Value as string;
+            Href = output.Attributes[HrefAttributeName]?.Value as string;            
 
             if (!AttributeMatcher.TryDetermineMode(context, ModeDetails, Compare, out var mode))
             {
                 // No attributes matched so we have nothing to do
                 return;
+            }
+
+            if(AppendVersion == null)
+            {
+                AppendVersion = HostingEnvironment.AppendVersion;
             }
 
             if (AppendVersion == true)

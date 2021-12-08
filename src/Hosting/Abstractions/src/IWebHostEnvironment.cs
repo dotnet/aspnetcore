@@ -20,5 +20,13 @@ namespace Microsoft.AspNetCore.Hosting
         /// Gets or sets an <see cref="IFileProvider"/> pointing at <see cref="WebRootPath"/>.
         /// </summary>
         IFileProvider WebRootFileProvider { get; set; }
+
+        /// <summary>
+        /// Value indicating if file version should be appended to the href urls.
+        /// </summary>
+        /// <remarks>
+        /// If <c>true</c> then a query string "v" with the encoded content of the file is added.
+        /// </remarks>
+        bool AppendVersion { get; set; }
     }
 }
