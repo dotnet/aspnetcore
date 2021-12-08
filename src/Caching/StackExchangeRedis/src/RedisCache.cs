@@ -274,10 +274,7 @@ public class RedisCache : IDistributedCache, IDisposable
 
     private void ValidateServerFeatures()
     {
-        if (_connection is null)
-        {
-            return;
-        }
+        _ = _connection ?? throw new InvalidOperationException($"{nameof(_connection)} cannot be null.");
 
         foreach (var endPoint in _connection.GetEndPoints())
         {
@@ -291,7 +288,9 @@ public class RedisCache : IDistributedCache, IDisposable
 
     private void TryRegisterProfiler()
     {
-        if (_connection != null && _options.ProfilingSession != null)
+        _ = _connection ?? throw new InvalidOperationException($"{nameof(_connection)} cannot be null.");
+
+        if (_options.ProfilingSession != null)
         {
             _connection.RegisterProfiler(_options.ProfilingSession);
         }
