@@ -25,8 +25,7 @@ public class StringOutputFormatter : TextOutputFormatter
     }
 
     /// <summary>
-    /// Verifies that the object to be formatted is a <see langword="string" />
-    /// and proceeds with the standard checks of
+    /// Verifies that the object to be formatted is a <see langword="string" /> and proceeds with the standard checks of
     /// <see cref="M:Microsoft.AspNetCore.Mvc.Formatters.OutputFormatter.CanWriteResult(OutputFormatterCanWriteContext)" />.
     /// </summary>
     public override bool CanWriteResult(OutputFormatterCanWriteContext context)
