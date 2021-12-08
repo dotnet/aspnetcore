@@ -26,13 +26,13 @@ public class FormReader : IDisposable
 
     /// <summary>
     /// Gets the default value for <see cref="KeyLengthLimit"/>.
-    /// Defaults to 2,048 bytes‬, which is approximately 2KB.
+    /// Defaults to 2,048 bytes, which is approximately 2KB.
     /// </summary>
     public const int DefaultKeyLengthLimit = 1024 * 2;
 
     /// <summary>
     /// Gets the default value for <see cref="ValueLengthLimit" />.
-    /// Defaults to 4,194,304 bytes‬, which is approximately 4MB.
+    /// Defaults to 4,194,304 bytes, which is approximately 4MB.
     /// </summary>
     public const int DefaultValueLengthLimit = 1024 * 1024 * 4;
 
