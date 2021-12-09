@@ -29,4 +29,4 @@ public interface IWebHostEnvironment : IHostEnvironment
         /// </remarks>
         bool AppendVersion { get; set; }
     }
-}
+
