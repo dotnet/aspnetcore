@@ -8,7 +8,8 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNetCore.Mvc.Formatters;
 
 /// <summary>
-/// Always copies the stream to the response, regardless of requested content type.
+/// Always copies the <see cref="T:System.IO.Stream" /> to the response,
+/// regardless of requested content type.
 /// </summary>
 public class StreamOutputFormatter : IOutputFormatter
 {
