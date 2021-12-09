@@ -29,7 +29,7 @@ public class RedisCache : IDistributedCache, IDisposable
     // ARGV[3] = relative-expiration (long, in seconds, -1 for none) - Min(absolute-expiration - Now, sliding-expiration)
     // ARGV[4] = data - byte[]
     // this order should not change LUA script depends on it
-    private const string LatestSetScript = (@"
+    private const string SetScriptPerExtendedSetCommand = (@"
                 redis.call('HSET', KEYS[1], 'absexp', ARGV[1], 'sldexp', ARGV[2], 'data', ARGV[4])
                 if ARGV[3] ~= '-1' then
                   redis.call('EXPIRE', KEYS[1], ARGV[3])
@@ -51,7 +51,7 @@ public class RedisCache : IDistributedCache, IDisposable
     private volatile IConnectionMultiplexer _connection;
     private IDatabase _cache;
     private bool _disposed;
-    private string _setScript = LatestSetScript;
+    private string _setScript = SetScriptPerExtendedSetCommand;
 
     private readonly RedisCacheOptions _options;
     private readonly string _instance;
