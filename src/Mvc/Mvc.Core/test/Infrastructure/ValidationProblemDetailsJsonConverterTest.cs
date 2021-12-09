@@ -188,7 +188,7 @@ public class ValidationProblemDetailsJsonConverterTest
         var json = Encoding.UTF8.GetString(stream.ToArray());
 
         var expectedJSON = $"{{\"title\":\"{problemDetails.Title}\",\"status\":{problemDetails.Status}," +
-            "\"errors\":{\"property\":[\"error0\"],\"twoWords\":[\"error1\"],\"topLevelProperty.propertyName\":[\"error2\"]}}";
+            "\"errors\":{\"property\":[\"error0\"],\"twoWords\":[\"error1\"],\"topLevelProperty.PropertyName\":[\"error2\"]}}";
         Assert.NotNull(json);
         Assert.Equal(expectedJSON, json);
     }
