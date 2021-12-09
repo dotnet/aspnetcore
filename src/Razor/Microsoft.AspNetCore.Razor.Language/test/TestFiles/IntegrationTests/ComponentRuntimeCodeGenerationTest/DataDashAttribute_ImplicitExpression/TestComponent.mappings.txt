@@ -1,9 +1,0 @@
-Source Location: (2:0,2 [39] x:\dir\subdir\Test\TestComponent.cshtml)
-|
-  var myValue = "Expression value";
-|
-Generated Location: (586:17,2 [39] )
-|
-  var myValue = "Expression value";
-|
-

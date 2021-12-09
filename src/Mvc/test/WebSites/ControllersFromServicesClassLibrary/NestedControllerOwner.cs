@@ -3,17 +3,16 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace ControllersFromServicesClassLibrary
+namespace ControllersFromServicesClassLibrary;
+
+public class NestedControllerOwner
 {
-    public class NestedControllerOwner
+    public class NestedController : Controller
     {
-        public class NestedController : Controller
+        [HttpGet("/not-discovered/nested")]
+        public IActionResult Index()
         {
-            [HttpGet("/not-discovered/nested")]
-            public IActionResult Index()
-            {
-                return new EmptyResult();
-            }
+            return new EmptyResult();
         }
     }
 }

@@ -11,185 +11,184 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.HttpSys.Listener
+namespace Microsoft.AspNetCore.Server.HttpSys.Listener;
+
+public class RequestHeaderTests
 {
-    public class RequestHeaderTests
+
+    [ConditionalFact]
+    public async Task RequestHeaders_ClientSendsUtf8Headers_Success()
     {
-
-        [ConditionalFact]
-        public async Task RequestHeaders_ClientSendsUtf8Headers_Success()
+        string address;
+        using (var server = Utilities.CreateHttpServer(out address))
         {
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
-            {
-                string[] customValues = new string[] { "custom1, and custom测试2", "custom3" };
-                Task responseTask = SendRequestAsync(address, "Custom-Header", customValues, Encoding.UTF8);
+            string[] customValues = new string[] { "custom1, and custom测试2", "custom3" };
+            Task responseTask = SendRequestAsync(address, "Custom-Header", customValues, Encoding.UTF8);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-                var requestHeaders = context.Request.Headers;
-                Assert.Equal(4, requestHeaders.Count);
-                Assert.Equal(new Uri(address).Authority, requestHeaders["Host"]);
-                Assert.Equal(new[] { new Uri(address).Authority }, requestHeaders.GetValues("Host"));
-                Assert.Equal("close", requestHeaders["Connection"]);
-                Assert.Equal(new[] { "close" }, requestHeaders.GetValues("Connection"));
-                // Apparently Http.Sys squashes request headers together.
-                Assert.Equal("custom1, and custom测试2, custom3", requestHeaders["Custom-Header"]);
-                Assert.Equal(new[] { "custom1", "and custom测试2", "custom3" }, requestHeaders.GetValues("Custom-Header"));
-                Assert.Equal("spacervalue, spacervalue", requestHeaders["Spacer-Header"]);
-                Assert.Equal(new[] { "spacervalue", "spacervalue" }, requestHeaders.GetValues("Spacer-Header"));
-                context.Dispose();
+            var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+            var requestHeaders = context.Request.Headers;
+            Assert.Equal(4, requestHeaders.Count);
+            Assert.Equal(new Uri(address).Authority, requestHeaders["Host"]);
+            Assert.Equal(new[] { new Uri(address).Authority }, requestHeaders.GetValues("Host"));
+            Assert.Equal("close", requestHeaders["Connection"]);
+            Assert.Equal(new[] { "close" }, requestHeaders.GetValues("Connection"));
+            // Apparently Http.Sys squashes request headers together.
+            Assert.Equal("custom1, and custom测试2, custom3", requestHeaders["Custom-Header"]);
+            Assert.Equal(new[] { "custom1", "and custom测试2", "custom3" }, requestHeaders.GetValues("Custom-Header"));
+            Assert.Equal("spacervalue, spacervalue", requestHeaders["Spacer-Header"]);
+            Assert.Equal(new[] { "spacervalue", "spacervalue" }, requestHeaders.GetValues("Spacer-Header"));
+            context.Dispose();
 
-                await responseTask;
-            }
+            await responseTask;
         }
+    }
 
-        [ConditionalFact]
-        public async Task RequestHeaders_Latin1Replaced()
+    [ConditionalFact]
+    public async Task RequestHeaders_Latin1Replaced()
+    {
+        string address;
+        using (var server = Utilities.CreateHttpServer(out address))
         {
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
-            {
-                string[] customValues = new string[] { "£" };
-                Task responseTask = SendRequestAsync(address, "Custom-Header", customValues, Encoding.Latin1);
+            string[] customValues = new string[] { "£" };
+            Task responseTask = SendRequestAsync(address, "Custom-Header", customValues, Encoding.Latin1);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-                var requestHeaders = context.Request.Headers;
-                Assert.Equal(4, requestHeaders.Count);
-                Assert.Equal(new Uri(address).Authority, requestHeaders["Host"]);
-                Assert.Equal(new[] { new Uri(address).Authority }, requestHeaders.GetValues("Host"));
-                Assert.Equal("close", requestHeaders["Connection"]);
-                Assert.Equal(new[] { "close" }, requestHeaders.GetValues("Connection"));
-                // Apparently Http.Sys squashes request headers together.
-                Assert.Equal("�", requestHeaders["Custom-Header"]);
-                Assert.Equal(new[] { "�" }, requestHeaders.GetValues("Custom-Header"));
-                Assert.Equal("spacervalue", requestHeaders["Spacer-Header"]);
-                Assert.Equal(new[] { "spacervalue" }, requestHeaders.GetValues("Spacer-Header"));
-                context.Dispose();
+            var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+            var requestHeaders = context.Request.Headers;
+            Assert.Equal(4, requestHeaders.Count);
+            Assert.Equal(new Uri(address).Authority, requestHeaders["Host"]);
+            Assert.Equal(new[] { new Uri(address).Authority }, requestHeaders.GetValues("Host"));
+            Assert.Equal("close", requestHeaders["Connection"]);
+            Assert.Equal(new[] { "close" }, requestHeaders.GetValues("Connection"));
+            // Apparently Http.Sys squashes request headers together.
+            Assert.Equal("�", requestHeaders["Custom-Header"]);
+            Assert.Equal(new[] { "�" }, requestHeaders.GetValues("Custom-Header"));
+            Assert.Equal("spacervalue", requestHeaders["Spacer-Header"]);
+            Assert.Equal(new[] { "spacervalue" }, requestHeaders.GetValues("Spacer-Header"));
+            context.Dispose();
 
-                await responseTask;
-            }
+            await responseTask;
         }
+    }
 
-        [ConditionalFact]
-        public async Task RequestHeaders_ClientSendsLatin1Headers_Success()
+    [ConditionalFact]
+    public async Task RequestHeaders_ClientSendsLatin1Headers_Success()
+    {
+        string address;
+        using (var server = Utilities.CreateHttpServer(out address))
         {
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
-            {
-                server.Options.UseLatin1RequestHeaders = true;
-                string[] customValues = new string[] { "£" };
-                Task responseTask = SendRequestAsync(address, "Custom-Header", customValues, Encoding.Latin1);
+            server.Options.UseLatin1RequestHeaders = true;
+            string[] customValues = new string[] { "£" };
+            Task responseTask = SendRequestAsync(address, "Custom-Header", customValues, Encoding.Latin1);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-                var requestHeaders = context.Request.Headers;
-                Assert.Equal(4, requestHeaders.Count);
-                Assert.Equal(new Uri(address).Authority, requestHeaders["Host"]);
-                Assert.Equal(new[] { new Uri(address).Authority }, requestHeaders.GetValues("Host"));
-                Assert.Equal("close", requestHeaders["Connection"]);
-                Assert.Equal(new[] { "close" }, requestHeaders.GetValues("Connection"));
-                // Apparently Http.Sys squashes request headers together.
-                Assert.Equal("£", requestHeaders["Custom-Header"]);
-                Assert.Equal(new[] { "£" }, requestHeaders.GetValues("Custom-Header"));
-                Assert.Equal("spacervalue", requestHeaders["Spacer-Header"]);
-                Assert.Equal(new[] { "spacervalue" }, requestHeaders.GetValues("Spacer-Header"));
-                context.Dispose();
+            var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+            var requestHeaders = context.Request.Headers;
+            Assert.Equal(4, requestHeaders.Count);
+            Assert.Equal(new Uri(address).Authority, requestHeaders["Host"]);
+            Assert.Equal(new[] { new Uri(address).Authority }, requestHeaders.GetValues("Host"));
+            Assert.Equal("close", requestHeaders["Connection"]);
+            Assert.Equal(new[] { "close" }, requestHeaders.GetValues("Connection"));
+            // Apparently Http.Sys squashes request headers together.
+            Assert.Equal("£", requestHeaders["Custom-Header"]);
+            Assert.Equal(new[] { "£" }, requestHeaders.GetValues("Custom-Header"));
+            Assert.Equal("spacervalue", requestHeaders["Spacer-Header"]);
+            Assert.Equal(new[] { "spacervalue" }, requestHeaders.GetValues("Spacer-Header"));
+            context.Dispose();
 
-                await responseTask;
-            }
+            await responseTask;
         }
+    }
 
-        [ConditionalFact]
-        public async Task RequestHeaders_ClientSendsBadLatin1Headers_Rejected()
+    [ConditionalFact]
+    public async Task RequestHeaders_ClientSendsBadLatin1Headers_Rejected()
+    {
+        string address;
+        using (var server = Utilities.CreateHttpServer(out address))
         {
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
-            {
-                server.Options.UseLatin1RequestHeaders = true;
-                string[] customValues = new string[] { "£\0a" };
-                var responseTask = SendRequestAsync(address, "Custom-Header", customValues, Encoding.Latin1);
-                var response = await responseTask;
-                Assert.StartsWith("400", response.Substring(9));
-            }
+            server.Options.UseLatin1RequestHeaders = true;
+            string[] customValues = new string[] { "£\0a" };
+            var responseTask = SendRequestAsync(address, "Custom-Header", customValues, Encoding.Latin1);
+            var response = await responseTask;
+            Assert.StartsWith("400", response.Substring(9));
         }
+    }
 
-        [ConditionalFact]
-        public async Task RequestHeaders_ClientSendsKnownHeaderWithNoValue_Success()
+    [ConditionalFact]
+    public async Task RequestHeaders_ClientSendsKnownHeaderWithNoValue_Success()
+    {
+        string address;
+        using (var server = Utilities.CreateHttpServer(out address))
         {
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
-            {
-                string[] customValues = new string[] { "" };
-                Task responseTask = SendRequestAsync(address, "If-None-Match", customValues, Encoding.UTF8);
+            string[] customValues = new string[] { "" };
+            Task responseTask = SendRequestAsync(address, "If-None-Match", customValues, Encoding.UTF8);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-                var requestHeaders = context.Request.Headers;
-                Assert.Equal(3, requestHeaders.Count);
-                Assert.Equal(new Uri(address).Authority, requestHeaders["Host"]);
-                Assert.Equal(new[] { new Uri(address).Authority }, requestHeaders.GetValues("Host"));
-                Assert.Equal("close", requestHeaders["Connection"]);
-                Assert.Equal(new[] { "close" }, requestHeaders.GetValues("Connection"));
-                Assert.Equal(StringValues.Empty, requestHeaders["If-None-Match"]);
-                Assert.Empty(requestHeaders.GetValues("If-None-Match"));
-                Assert.Equal("spacervalue", requestHeaders["Spacer-Header"]);
-                context.Dispose();
+            var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+            var requestHeaders = context.Request.Headers;
+            Assert.Equal(3, requestHeaders.Count);
+            Assert.Equal(new Uri(address).Authority, requestHeaders["Host"]);
+            Assert.Equal(new[] { new Uri(address).Authority }, requestHeaders.GetValues("Host"));
+            Assert.Equal("close", requestHeaders["Connection"]);
+            Assert.Equal(new[] { "close" }, requestHeaders.GetValues("Connection"));
+            Assert.Equal(StringValues.Empty, requestHeaders["If-None-Match"]);
+            Assert.Empty(requestHeaders.GetValues("If-None-Match"));
+            Assert.Equal("spacervalue", requestHeaders["Spacer-Header"]);
+            context.Dispose();
 
-                await responseTask;
-            }
+            await responseTask;
         }
+    }
 
-        [ConditionalFact]
-        public async Task RequestHeaders_ClientSendsUnknownHeaderWithNoValue_Success()
+    [ConditionalFact]
+    public async Task RequestHeaders_ClientSendsUnknownHeaderWithNoValue_Success()
+    {
+        string address;
+        using (var server = Utilities.CreateHttpServer(out address))
         {
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
-            {
-                string[] customValues = new string[] { "" };
-                Task responseTask = SendRequestAsync(address, "Custom-Header", customValues, Encoding.UTF8);
+            string[] customValues = new string[] { "" };
+            Task responseTask = SendRequestAsync(address, "Custom-Header", customValues, Encoding.UTF8);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-                var requestHeaders = context.Request.Headers;
-                Assert.Equal(4, requestHeaders.Count);
-                Assert.Equal(new Uri(address).Authority, requestHeaders["Host"]);
-                Assert.Equal(new[] { new Uri(address).Authority }, requestHeaders.GetValues("Host"));
-                Assert.Equal("close", requestHeaders["Connection"]);
-                Assert.Equal(new[] { "close" }, requestHeaders.GetValues("Connection"));
-                Assert.Equal("", requestHeaders["Custom-Header"]);
-                Assert.Empty(requestHeaders.GetValues("Custom-Header"));
-                Assert.Equal("spacervalue", requestHeaders["Spacer-Header"]);
-                context.Dispose();
+            var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+            var requestHeaders = context.Request.Headers;
+            Assert.Equal(4, requestHeaders.Count);
+            Assert.Equal(new Uri(address).Authority, requestHeaders["Host"]);
+            Assert.Equal(new[] { new Uri(address).Authority }, requestHeaders.GetValues("Host"));
+            Assert.Equal("close", requestHeaders["Connection"]);
+            Assert.Equal(new[] { "close" }, requestHeaders.GetValues("Connection"));
+            Assert.Equal("", requestHeaders["Custom-Header"]);
+            Assert.Empty(requestHeaders.GetValues("Custom-Header"));
+            Assert.Equal("spacervalue", requestHeaders["Spacer-Header"]);
+            context.Dispose();
 
-                await responseTask;
-            }
+            await responseTask;
         }
+    }
 
-        private async Task<string> SendRequestAsync(string address, string customHeader, string[] customValues, Encoding encoding)
+    private async Task<string> SendRequestAsync(string address, string customHeader, string[] customValues, Encoding encoding)
+    {
+        var uri = new Uri(address);
+        StringBuilder builder = new StringBuilder();
+        builder.AppendLine("GET / HTTP/1.1");
+        builder.AppendLine("Connection: close");
+        builder.Append("HOST: ");
+        builder.AppendLine(uri.Authority);
+        foreach (string value in customValues)
         {
-            var uri = new Uri(address);
-            StringBuilder builder = new StringBuilder();
-            builder.AppendLine("GET / HTTP/1.1");
-            builder.AppendLine("Connection: close");
-            builder.Append("HOST: ");
-            builder.AppendLine(uri.Authority);
-            foreach (string value in customValues)
-            {
-                builder.Append(customHeader);
-                builder.Append(": ");
-                builder.AppendLine(value);
-                builder.AppendLine("Spacer-Header: spacervalue");
-            }
-            builder.AppendLine();
-
-            byte[] request = encoding.GetBytes(builder.ToString());
-
-            Socket socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
-            socket.Connect(uri.Host, uri.Port);
-
-            socket.Send(request);
-
-            byte[] response = new byte[1024 * 5];
-            await Task.Run(() => socket.Receive(response));
-            socket.Dispose();
-            return encoding.GetString(response);
+            builder.Append(customHeader);
+            builder.Append(": ");
+            builder.AppendLine(value);
+            builder.AppendLine("Spacer-Header: spacervalue");
         }
+        builder.AppendLine();
+
+        byte[] request = encoding.GetBytes(builder.ToString());
+
+        Socket socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
+        socket.Connect(uri.Host, uri.Port);
+
+        socket.Send(request);
+
+        byte[] response = new byte[1024 * 5];
+        await Task.Run(() => socket.Receive(response));
+        socket.Dispose();
+        return encoding.GetString(response);
     }
 }

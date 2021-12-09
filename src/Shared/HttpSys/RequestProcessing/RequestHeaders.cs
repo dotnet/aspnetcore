@@ -10,230 +10,229 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.HttpSys.Internal
+namespace Microsoft.AspNetCore.HttpSys.Internal;
+
+internal partial class RequestHeaders : IHeaderDictionary
 {
-    internal partial class RequestHeaders : IHeaderDictionary
+    private IDictionary<string, StringValues>? _extra;
+    private readonly NativeRequestContext _requestMemoryBlob;
+    private long? _contentLength;
+    private StringValues _contentLengthText;
+
+    internal RequestHeaders(NativeRequestContext requestMemoryBlob)
     {
-        private IDictionary<string, StringValues>? _extra;
-        private readonly NativeRequestContext _requestMemoryBlob;
-        private long? _contentLength;
-        private StringValues _contentLengthText;
+        _requestMemoryBlob = requestMemoryBlob;
+    }
 
-        internal RequestHeaders(NativeRequestContext requestMemoryBlob)
+    public bool IsReadOnly { get; internal set; }
+
+    private IDictionary<string, StringValues> Extra
+    {
+        get
         {
-            _requestMemoryBlob = requestMemoryBlob;
-        }
-
-        public bool IsReadOnly { get; internal set; }
-
-        private IDictionary<string, StringValues> Extra
-        {
-            get
+            if (_extra == null)
             {
-                if (_extra == null)
-                {
-                    var newDict = new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase);
-                    GetUnknownHeaders(newDict);
-                    Interlocked.CompareExchange(ref _extra, newDict, null);
-                }
-                return _extra;
+                var newDict = new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase);
+                GetUnknownHeaders(newDict);
+                Interlocked.CompareExchange(ref _extra, newDict, null);
             }
+            return _extra;
         }
+    }
 
-        StringValues IDictionary<string, StringValues>.this[string key]
+    StringValues IDictionary<string, StringValues>.this[string key]
+    {
+        get
         {
-            get
-            {
-                StringValues value;
-                return PropertiesTryGetValue(key, out value) ? value : Extra[key];
-            }
-            set
-            {
-                ThrowIfReadOnly();
-                if (!PropertiesTrySetValue(key, value))
-                {
-                    Extra[key] = value;
-                }
-            }
+            StringValues value;
+            return PropertiesTryGetValue(key, out value) ? value : Extra[key];
         }
-
-        private string? GetKnownHeader(HttpSysRequestHeader header)
+        set
         {
-            return _requestMemoryBlob.GetKnownHeader(header);
-        }
-
-        private void GetUnknownHeaders(IDictionary<string, StringValues> extra)
-        {
-            _requestMemoryBlob.GetUnknownHeaders(extra);
-        }
-
-        void IDictionary<string, StringValues>.Add(string key, StringValues value)
-        {
+            ThrowIfReadOnly();
             if (!PropertiesTrySetValue(key, value))
             {
-                Extra.Add(key, value);
+                Extra[key] = value;
             }
         }
+    }
 
-        public bool ContainsKey(string key)
+    private string? GetKnownHeader(HttpSysRequestHeader header)
+    {
+        return _requestMemoryBlob.GetKnownHeader(header);
+    }
+
+    private void GetUnknownHeaders(IDictionary<string, StringValues> extra)
+    {
+        _requestMemoryBlob.GetUnknownHeaders(extra);
+    }
+
+    void IDictionary<string, StringValues>.Add(string key, StringValues value)
+    {
+        if (!PropertiesTrySetValue(key, value))
         {
-            return PropertiesContainsKey(key) || Extra.ContainsKey(key);
+            Extra.Add(key, value);
         }
+    }
 
-        public ICollection<string> Keys
+    public bool ContainsKey(string key)
+    {
+        return PropertiesContainsKey(key) || Extra.ContainsKey(key);
+    }
+
+    public ICollection<string> Keys
+    {
+        get { return PropertiesKeys().Concat(Extra.Keys).ToArray(); }
+    }
+
+    ICollection<StringValues> IDictionary<string, StringValues>.Values
+    {
+        get { return PropertiesValues().Concat(Extra.Values).ToArray(); }
+    }
+
+    public int Count
+    {
+        get { return PropertiesKeys().Count() + Extra.Count; }
+    }
+
+    public bool Remove(string key)
+    {
+        // Although this is a mutating operation, Extra is used instead of StrongExtra,
+        // because if a real dictionary has not been allocated the default behavior of the
+        // nil dictionary is perfectly fine.
+        return PropertiesTryRemove(key) || Extra.Remove(key);
+    }
+
+    public bool TryGetValue(string key, out StringValues value)
+    {
+        return PropertiesTryGetValue(key, out value) || Extra.TryGetValue(key, out value);
+    }
+
+    void ICollection<KeyValuePair<string, StringValues>>.Add(KeyValuePair<string, StringValues> item)
+    {
+        ((IDictionary<string, StringValues>)this).Add(item.Key, item.Value);
+    }
+
+    void ICollection<KeyValuePair<string, StringValues>>.Clear()
+    {
+        foreach (var key in PropertiesKeys())
         {
-            get { return PropertiesKeys().Concat(Extra.Keys).ToArray(); }
+            PropertiesTryRemove(key);
         }
+        Extra.Clear();
+    }
 
-        ICollection<StringValues> IDictionary<string, StringValues>.Values
-        {
-            get { return PropertiesValues().Concat(Extra.Values).ToArray(); }
-        }
+    bool ICollection<KeyValuePair<string, StringValues>>.Contains(KeyValuePair<string, StringValues> item)
+    {
+        return ((IDictionary<string, StringValues>)this).TryGetValue(item.Key, out var value) && Equals(value, item.Value);
+    }
 
-        public int Count
-        {
-            get { return PropertiesKeys().Count() + Extra.Count; }
-        }
+    void ICollection<KeyValuePair<string, StringValues>>.CopyTo(KeyValuePair<string, StringValues>[] array, int arrayIndex)
+    {
+        PropertiesEnumerable().Concat(Extra).ToArray().CopyTo(array, arrayIndex);
+    }
 
-        public bool Remove(string key)
-        {
-            // Although this is a mutating operation, Extra is used instead of StrongExtra,
-            // because if a real dictionary has not been allocated the default behavior of the
-            // nil dictionary is perfectly fine.
-            return PropertiesTryRemove(key) || Extra.Remove(key);
-        }
+    bool ICollection<KeyValuePair<string, StringValues>>.IsReadOnly
+    {
+        get { return false; }
+    }
 
-        public bool TryGetValue(string key, out StringValues value)
+    long? IHeaderDictionary.ContentLength
+    {
+        get
         {
-            return PropertiesTryGetValue(key, out value) || Extra.TryGetValue(key, out value);
-        }
+            long value;
+            var rawValue = this[HeaderNames.ContentLength];
 
-        void ICollection<KeyValuePair<string, StringValues>>.Add(KeyValuePair<string, StringValues> item)
-        {
-            ((IDictionary<string, StringValues>)this).Add(item.Key,item.Value);
-        }
-
-        void ICollection<KeyValuePair<string, StringValues>>.Clear()
-        {
-            foreach (var key in PropertiesKeys())
+            if (_contentLengthText.Equals(rawValue))
             {
-                PropertiesTryRemove(key);
+                return _contentLength;
             }
-            Extra.Clear();
-        }
 
-        bool ICollection<KeyValuePair<string, StringValues>>.Contains(KeyValuePair<string, StringValues> item)
-        {
-            return ((IDictionary<string, StringValues>)this).TryGetValue(item.Key, out var value) && Equals(value, item.Value);
-        }
-
-        void ICollection<KeyValuePair<string, StringValues>>.CopyTo(KeyValuePair<string, StringValues>[] array, int arrayIndex)
-        {
-            PropertiesEnumerable().Concat(Extra).ToArray().CopyTo(array, arrayIndex);
-        }
-
-        bool ICollection<KeyValuePair<string, StringValues>>.IsReadOnly
-        {
-            get { return false; }
-        }
-
-        long? IHeaderDictionary.ContentLength
-        {
-            get
+            if (rawValue.Count == 1 &&
+                !string.IsNullOrWhiteSpace(rawValue[0]) &&
+                HeaderUtilities.TryParseNonNegativeInt64(new StringSegment(rawValue[0]).Trim(), out value))
             {
-                long value;
-                var rawValue = this[HeaderNames.ContentLength];
+                _contentLengthText = rawValue;
+                _contentLength = value;
+                return value;
+            }
 
-                if (_contentLengthText.Equals(rawValue))
+            return null;
+        }
+        set
+        {
+            ThrowIfReadOnly();
+
+            if (value.HasValue)
+            {
+                if (value.Value < 0)
                 {
-                    return _contentLength;
+                    throw new ArgumentOutOfRangeException(nameof(value), value.Value, "Cannot be negative.");
                 }
-
-                if (rawValue.Count == 1 &&
-                    !string.IsNullOrWhiteSpace(rawValue[0]) &&
-                    HeaderUtilities.TryParseNonNegativeInt64(new StringSegment(rawValue[0]).Trim(), out value))
-                {
-                    _contentLengthText = rawValue;
-                    _contentLength = value;
-                    return value;
-                }
-
-                return null;
+                _contentLengthText = HeaderUtilities.FormatNonNegativeInt64(value.Value);
+                this[HeaderNames.ContentLength] = _contentLengthText;
+                _contentLength = value;
             }
-            set
+            else
             {
-                ThrowIfReadOnly();
-
-                if (value.HasValue)
-                {
-                    if (value.Value < 0)
-                    {
-                        throw new ArgumentOutOfRangeException(nameof(value), value.Value, "Cannot be negative.");
-                    }
-                    _contentLengthText = HeaderUtilities.FormatNonNegativeInt64(value.Value);
-                    this[HeaderNames.ContentLength] = _contentLengthText;
-                    _contentLength = value;
-                }
-                else
-                {
-                    Remove(HeaderNames.ContentLength);
-                    _contentLengthText = StringValues.Empty;
-                    _contentLength = null;
-                }
+                Remove(HeaderNames.ContentLength);
+                _contentLengthText = StringValues.Empty;
+                _contentLength = null;
             }
         }
+    }
 
-        public StringValues this[string key]
+    public StringValues this[string key]
+    {
+        get
         {
-            get
+            return TryGetValue(key, out var values) ? values : StringValues.Empty;
+        }
+        set
+        {
+            if (StringValues.IsNullOrEmpty(value))
             {
-                return TryGetValue(key, out var values) ? values : StringValues.Empty;
+                Remove(key);
             }
-            set
+            else if (!PropertiesTrySetValue(key, value))
             {
-                if (StringValues.IsNullOrEmpty(value))
-                {
-                    Remove(key);
-                }
-                else if (!PropertiesTrySetValue(key, value))
-                {
-                    Extra[key] = value;
-                }
+                Extra[key] = value;
             }
         }
+    }
 
-        bool ICollection<KeyValuePair<string, StringValues>>.Remove(KeyValuePair<string, StringValues> item)
-        {
-            return ((IDictionary<string, StringValues>)this).Contains(item) &&
-                ((IDictionary<string, StringValues>)this).Remove(item.Key);
-        }
+    bool ICollection<KeyValuePair<string, StringValues>>.Remove(KeyValuePair<string, StringValues> item)
+    {
+        return ((IDictionary<string, StringValues>)this).Contains(item) &&
+            ((IDictionary<string, StringValues>)this).Remove(item.Key);
+    }
 
-        IEnumerator<KeyValuePair<string, StringValues>> IEnumerable<KeyValuePair<string, StringValues>>.GetEnumerator()
-        {
-            return PropertiesEnumerable().Concat(Extra).GetEnumerator();
-        }
+    IEnumerator<KeyValuePair<string, StringValues>> IEnumerable<KeyValuePair<string, StringValues>>.GetEnumerator()
+    {
+        return PropertiesEnumerable().Concat(Extra).GetEnumerator();
+    }
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return ((IDictionary<string, StringValues>)this).GetEnumerator();
-        }
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return ((IDictionary<string, StringValues>)this).GetEnumerator();
+    }
 
-        private void ThrowIfReadOnly()
+    private void ThrowIfReadOnly()
+    {
+        if (IsReadOnly)
         {
-            if (IsReadOnly)
-            {
-                throw new InvalidOperationException("The response headers cannot be modified because the response has already started.");
-            }
+            throw new InvalidOperationException("The response headers cannot be modified because the response has already started.");
         }
+    }
 
-        public IEnumerable<string> GetValues(string key)
+    public IEnumerable<string> GetValues(string key)
+    {
+        StringValues values;
+        if (TryGetValue(key, out values))
         {
-            StringValues values;
-            if (TryGetValue(key, out values))
-            {
-                return HeaderParser.SplitValues(values);
-            }
-            return HeaderParser.Empty;
+            return HeaderParser.SplitValues(values);
         }
+        return HeaderParser.Empty;
     }
 }

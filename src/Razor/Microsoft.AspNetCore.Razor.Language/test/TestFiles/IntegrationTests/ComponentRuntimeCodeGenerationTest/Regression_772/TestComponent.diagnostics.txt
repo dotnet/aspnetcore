@@ -1,2 +1,0 @@
-x:\dir\subdir\Test\TestComponent.cshtml(7,2): Error RZ1035: Missing close angle for tag helper 'SurveyPrompt'.
-x:\dir\subdir\Test\TestComponent.cshtml(7,2): Error RZ1034: Found a malformed 'SurveyPrompt' tag helper. Tag helpers must have a start and end tag or be self closing.

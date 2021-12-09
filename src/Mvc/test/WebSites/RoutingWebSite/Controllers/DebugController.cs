@@ -6,26 +6,25 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Internal;
 
-namespace RoutingWebSite
+namespace RoutingWebSite;
+
+// This controller is reachable via traditional routing.
+public class DebugController : Controller
 {
-    // This controller is reachable via traditional routing.
-    public class DebugController : Controller
+    private readonly DfaGraphWriter _graphWriter;
+    private readonly EndpointDataSource _endpointDataSource;
+
+    public DebugController(DfaGraphWriter graphWriter, EndpointDataSource endpointDataSource)
     {
-        private readonly DfaGraphWriter _graphWriter;
-        private readonly EndpointDataSource _endpointDataSource;
+        _graphWriter = graphWriter;
+        _endpointDataSource = endpointDataSource;
+    }
 
-        public DebugController(DfaGraphWriter graphWriter, EndpointDataSource endpointDataSource)
-        {
-            _graphWriter = graphWriter;
-            _endpointDataSource = endpointDataSource;
-        }
+    public IActionResult Graph()
+    {
+        var sw = new StringWriter();
+        _graphWriter.Write(_endpointDataSource, sw);
 
-        public IActionResult Graph()
-        {
-            var sw = new StringWriter();
-            _graphWriter.Write(_endpointDataSource, sw);
-
-            return Content(sw.ToString());
-        }
+        return Content(sw.ToString());
     }
 }

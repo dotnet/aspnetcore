@@ -1,2 +1,1 @@
 #nullable enable
-~virtual Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.TryConvertValue(object originalValue, System.Type listTypeArgument, string segment, Newtonsoft.Json.Serialization.IContractResolver contractResolver, out object convertedValue, out string errorMessage) -> bool

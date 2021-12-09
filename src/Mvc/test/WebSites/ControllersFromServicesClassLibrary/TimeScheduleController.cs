@@ -3,14 +3,13 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace ControllersFromServicesClassLibrary
+namespace ControllersFromServicesClassLibrary;
+
+public class TimeScheduleController
 {
-    public class TimeScheduleController
+    [HttpGet("/schedule/{id:int}")]
+    public IActionResult GetSchedule(int id)
     {
-        [HttpGet("/schedule/{id:int}")]
-        public IActionResult GetSchedule(int id)
-        {
-            return new ContentResult { Content = "No schedules available for " + id };
-        }
+        return new ContentResult { Content = "No schedules available for " + id };
     }
 }

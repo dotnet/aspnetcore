@@ -1,5 +1,0 @@
-Source Location: (54:0,54 [26] x:\dir\subdir\Test\TestComponent.cshtml)
-|context.ToLowerInvariant()|
-Generated Location: (1080:26,54 [26] )
-|context.ToLowerInvariant()|
-

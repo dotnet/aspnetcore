@@ -1,3 +1,0 @@
-MetaCode span at (7:0,7 [1] ) (Accepts:Any) - Parent: Tag block at (0:0,0 [35] )
-MetaCode span at (17:0,17 [1] ) (Accepts:Any) - Parent: Tag block at (0:0,0 [35] )
-MetaCode span at (26:0,26 [1] ) (Accepts:Any) - Parent: Tag block at (0:0,0 [35] )

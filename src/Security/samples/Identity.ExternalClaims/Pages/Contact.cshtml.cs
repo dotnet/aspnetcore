@@ -7,15 +7,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace Identity.ExternalClaims.Pages
-{
-    public class ContactModel : PageModel
-    {
-        public string Message { get; set; }
+namespace Identity.ExternalClaims.Pages;
 
-        public void OnGet()
-        {
-            Message = "Your contact page.";
-        }
+public class ContactModel : PageModel
+{
+    public string Message { get; set; }
+
+    public void OnGet()
+    {
+        Message = "Your contact page.";
     }
 }

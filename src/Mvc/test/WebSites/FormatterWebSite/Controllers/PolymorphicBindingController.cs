@@ -4,29 +4,28 @@
 using FormatterWebSite.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace FormatterWebSite.Controllers
+namespace FormatterWebSite.Controllers;
+
+public class PolymorphicBindingController : ControllerBase
 {
-    public class PolymorphicBindingController : ControllerBase
+    public IActionResult ModelBound([ModelBinder(typeof(PolymorphicBinder))] BaseModel person)
     {
-        public IActionResult ModelBound([ModelBinder(typeof(PolymorphicBinder))] BaseModel person)
+        if (!ModelState.IsValid)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            return Ok(person);
+            return BadRequest(ModelState);
         }
 
-        [HttpPost]
-        public IActionResult InputFormatted([FromBody] IModel person)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+        return Ok(person);
+    }
 
-            return Ok(person);
+    [HttpPost]
+    public IActionResult InputFormatted([FromBody] IModel person)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
         }
+
+        return Ok(person);
     }
 }

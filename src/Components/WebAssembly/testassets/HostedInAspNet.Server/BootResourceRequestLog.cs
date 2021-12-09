@@ -5,22 +5,21 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 
-namespace HostedInAspNet.Server
+namespace HostedInAspNet.Server;
+
+public class BootResourceRequestLog
 {
-    public class BootResourceRequestLog
+    private readonly ConcurrentBag<string> _requestPaths = new ConcurrentBag<string>();
+
+    public IReadOnlyCollection<string> RequestPaths => _requestPaths;
+
+    public void AddRequest(HttpRequest request)
     {
-        private readonly ConcurrentBag<string> _requestPaths = new ConcurrentBag<string>();
+        _requestPaths.Add(request.Path);
+    }
 
-        public IReadOnlyCollection<string> RequestPaths => _requestPaths;
-
-        public void AddRequest(HttpRequest request)
-        {
-            _requestPaths.Add(request.Path);
-        }
-
-        public void Clear()
-        {
-            _requestPaths.Clear();
-        }
+    public void Clear()
+    {
+        _requestPaths.Clear();
     }
 }

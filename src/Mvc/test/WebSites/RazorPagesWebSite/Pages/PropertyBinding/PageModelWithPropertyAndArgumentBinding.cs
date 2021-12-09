@@ -4,23 +4,22 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace RazorPagesWebSite
+namespace RazorPagesWebSite;
+
+public class PageModelWithPropertyAndArgumentBinding : PageModel
 {
-    public class PageModelWithPropertyAndArgumentBinding : PageModel
+    [ModelBinder]
+    public UserModel UserModel { get; set; }
+
+    public int Id { get; set; }
+
+    public void OnGet(int id)
     {
-        [ModelBinder]
-        public UserModel UserModel { get; set; }
+        Id = id;
+    }
 
-        public int Id { get; set; }
-
-        public void OnGet(int id)
-        {
-            Id = id;
-        }
-
-        public void OnPost(int id)
-        {
-            Id = id;
-        }
+    public void OnPost(int id)
+    {
+        Id = id;
     }
 }

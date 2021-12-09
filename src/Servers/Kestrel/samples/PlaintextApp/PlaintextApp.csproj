@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
   </ItemGroup>
 

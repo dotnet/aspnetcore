@@ -3,15 +3,14 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Mvc
+namespace Microsoft.AspNetCore.Mvc;
+
+/// <summary>
+/// Specifies that a controller property should be set with the current
+/// <see cref="ActionContext"/> when creating the controller. The property must have a public
+/// set method.
+/// </summary>
+[AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
+public class ActionContextAttribute : Attribute
 {
-    /// <summary>
-    /// Specifies that a controller property should be set with the current
-    /// <see cref="ActionContext"/> when creating the controller. The property must have a public
-    /// set method.
-    /// </summary>
-    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-    public class ActionContextAttribute : Attribute
-    {
-    }
 }

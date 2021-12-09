@@ -20,7 +20,7 @@ export class WebAssemblyConfigLoader {
       const response = await fetch(file, {
         method: 'GET',
         credentials: 'include',
-        cache: 'no-cache'
+        cache: 'no-cache',
       });
 
       return new Uint8Array(await response.arrayBuffer());

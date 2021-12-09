@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using System.Globalization;
 using System.Net.Http;
 using System.Security.Claims;
@@ -9,80 +8,77 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Authentication.Facebook
+namespace Microsoft.AspNetCore.Authentication.Facebook;
+
+/// <summary>
+/// Authentication handler for Facebook's OAuth based authentication.
+/// </summary>
+public class FacebookHandler : OAuthHandler<FacebookOptions>
 {
     /// <summary>
-    /// Authentication handler for Facebook's OAuth based authentication.
+    /// Initializes a new instance of <see cref="FacebookHandler"/>.
     /// </summary>
-    public class FacebookHandler : OAuthHandler<FacebookOptions>
+    /// <inheritdoc />
+    public FacebookHandler(IOptionsMonitor<FacebookOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
+        : base(options, logger, encoder, clock)
+    { }
+
+    /// <inheritdoc />
+    protected override async Task<AuthenticationTicket> CreateTicketAsync(ClaimsIdentity identity, AuthenticationProperties properties, OAuthTokenResponse tokens)
     {
-        /// <summary>
-        /// Initializes a new instance of <see cref="FacebookHandler"/>.
-        /// </summary>
-        /// <inheritdoc />
-        public FacebookHandler(IOptionsMonitor<FacebookOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
-            : base(options, logger, encoder, clock)
-        { }
-
-        /// <inheritdoc />
-        protected override async Task<AuthenticationTicket> CreateTicketAsync(ClaimsIdentity identity, AuthenticationProperties properties, OAuthTokenResponse tokens)
+        var endpoint = QueryHelpers.AddQueryString(Options.UserInformationEndpoint, "access_token", tokens.AccessToken!);
+        if (Options.SendAppSecretProof)
         {
-            var endpoint = QueryHelpers.AddQueryString(Options.UserInformationEndpoint, "access_token", tokens.AccessToken!);
-            if (Options.SendAppSecretProof)
-            {
-                endpoint = QueryHelpers.AddQueryString(endpoint, "appsecret_proof", GenerateAppSecretProof(tokens.AccessToken!));
-            }
-            if (Options.Fields.Count > 0)
-            {
-                endpoint = QueryHelpers.AddQueryString(endpoint, "fields", string.Join(",", Options.Fields));
-            }
-
-            var response = await Backchannel.GetAsync(endpoint, Context.RequestAborted);
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new HttpRequestException($"An error occurred when retrieving Facebook user information ({response.StatusCode}). Please check if the authentication information is correct and the corresponding Facebook Graph API is enabled.");
-            }
-
-            using (var payload = JsonDocument.Parse(await response.Content.ReadAsStringAsync(Context.RequestAborted)))
-            {
-                var context = new OAuthCreatingTicketContext(new ClaimsPrincipal(identity), properties, Context, Scheme, Options, Backchannel, tokens, payload.RootElement);
-                context.RunClaimActions();
-                await Events.CreatingTicket(context);
-                return new AuthenticationTicket(context.Principal!, context.Properties, Scheme.Name);
-            }
+            endpoint = QueryHelpers.AddQueryString(endpoint, "appsecret_proof", GenerateAppSecretProof(tokens.AccessToken!));
+        }
+        if (Options.Fields.Count > 0)
+        {
+            endpoint = QueryHelpers.AddQueryString(endpoint, "fields", string.Join(",", Options.Fields));
         }
 
-        private string GenerateAppSecretProof(string accessToken)
+        var response = await Backchannel.GetAsync(endpoint, Context.RequestAborted);
+        if (!response.IsSuccessStatusCode)
         {
-            using (var algorithm = new HMACSHA256(Encoding.ASCII.GetBytes(Options.AppSecret)))
-            {
-                var hash = algorithm.ComputeHash(Encoding.ASCII.GetBytes(accessToken));
-                var builder = new StringBuilder();
-                for (int i = 0; i < hash.Length; i++)
-                {
-                    builder.Append(hash[i].ToString("x2", CultureInfo.InvariantCulture));
-                }
-                return builder.ToString();
-            }
+            throw new HttpRequestException($"An error occurred when retrieving Facebook user information ({response.StatusCode}). Please check if the authentication information is correct and the corresponding Facebook Graph API is enabled.");
         }
 
-        /// <inheritdoc />
-        protected override string FormatScope(IEnumerable<string> scopes)
+        using (var payload = JsonDocument.Parse(await response.Content.ReadAsStringAsync(Context.RequestAborted)))
         {
-            // Facebook deviates from the OAuth spec here. They require comma separated instead of space separated.
-            // https://developers.facebook.com/docs/reference/dialogs/oauth
-            // http://tools.ietf.org/html/rfc6749#section-3.3
-            return string.Join(",", scopes);
+            var context = new OAuthCreatingTicketContext(new ClaimsPrincipal(identity), properties, Context, Scheme, Options, Backchannel, tokens, payload.RootElement);
+            context.RunClaimActions();
+            await Events.CreatingTicket(context);
+            return new AuthenticationTicket(context.Principal!, context.Properties, Scheme.Name);
         }
-
-        /// <inheritdoc />
-        protected override string FormatScope()
-            => base.FormatScope();
     }
+
+    private string GenerateAppSecretProof(string accessToken)
+    {
+        var key = Encoding.ASCII.GetBytes(Options.AppSecret);
+        var tokenBytes = Encoding.ASCII.GetBytes(accessToken);
+        var hash = HMACSHA256.HashData(key, tokenBytes);
+        var builder = new StringBuilder();
+        for (int i = 0; i < hash.Length; i++)
+        {
+            builder.Append(hash[i].ToString("x2", CultureInfo.InvariantCulture));
+        }
+        return builder.ToString();
+    }
+
+    /// <inheritdoc />
+    protected override string FormatScope(IEnumerable<string> scopes)
+    {
+        // Facebook deviates from the OAuth spec here. They require comma separated instead of space separated.
+        // https://developers.facebook.com/docs/reference/dialogs/oauth
+        // http://tools.ietf.org/html/rfc6749#section-3.3
+        return string.Join(",", scopes);
+    }
+
+    /// <inheritdoc />
+    protected override string FormatScope()
+        => base.FormatScope();
 }

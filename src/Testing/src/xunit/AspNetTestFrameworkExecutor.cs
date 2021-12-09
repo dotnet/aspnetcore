@@ -6,21 +6,20 @@ using System.Reflection;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace Microsoft.AspNetCore.Testing
-{
-    public class AspNetTestFrameworkExecutor : XunitTestFrameworkExecutor
-    {
-        public AspNetTestFrameworkExecutor(AssemblyName assemblyName, ISourceInformationProvider sourceInformationProvider, IMessageSink diagnosticMessageSink)
-            : base(assemblyName, sourceInformationProvider, diagnosticMessageSink)
-        {
-        }
+namespace Microsoft.AspNetCore.Testing;
 
-        protected override async void RunTestCases(IEnumerable<IXunitTestCase> testCases, IMessageSink executionMessageSink, ITestFrameworkExecutionOptions executionOptions)
+public class AspNetTestFrameworkExecutor : XunitTestFrameworkExecutor
+{
+    public AspNetTestFrameworkExecutor(AssemblyName assemblyName, ISourceInformationProvider sourceInformationProvider, IMessageSink diagnosticMessageSink)
+        : base(assemblyName, sourceInformationProvider, diagnosticMessageSink)
+    {
+    }
+
+    protected override async void RunTestCases(IEnumerable<IXunitTestCase> testCases, IMessageSink executionMessageSink, ITestFrameworkExecutionOptions executionOptions)
+    {
+        using (var assemblyRunner = new AspNetTestAssemblyRunner(TestAssembly, testCases, DiagnosticMessageSink, executionMessageSink, executionOptions))
         {
-            using (var assemblyRunner = new AspNetTestAssemblyRunner(TestAssembly, testCases, DiagnosticMessageSink, executionMessageSink, executionOptions))
-            {
-                await assemblyRunner.RunAsync();
-            }
+            await assemblyRunner.RunAsync();
         }
     }
 }

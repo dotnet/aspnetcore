@@ -22,6 +22,11 @@ $RetryWaitTimeInSeconds = 30
 # Wait time between check for system load
 $SecondsBetweenLoadChecks = 10
 
+if (!$InputPath -or !(Test-Path $InputPath)){
+  Write-Host "No files to validate."
+  ExitWithExitCode 0
+}
+
 $ValidatePackage = {
   param( 
     [string] $PackagePath                                 # Full path to a Symbols.NuGet package
@@ -107,8 +112,12 @@ $ValidatePackage = {
                         try {
                           $Uri = $Link -as [System.URI]
                         
-                          # Only GitHub links are valid
-                          if ($Uri.AbsoluteURI -ne $null -and ($Uri.Host -match 'github' -or $Uri.Host -match 'githubusercontent')) {
+                          if ($Link -match "submodules") {
+                            # Skip submodule links until sourcelink properly handles submodules
+                            $Status = 200
+                          }
+                          elseif ($Uri.AbsoluteURI -ne $null -and ($Uri.Host -match 'github' -or $Uri.Host -match 'githubusercontent')) {
+                            # Only GitHub links are valid
                             $Status = (Invoke-WebRequest -Uri $Link -UseBasicParsing -Method HEAD -TimeoutSec 5).StatusCode
                           }
                           else {

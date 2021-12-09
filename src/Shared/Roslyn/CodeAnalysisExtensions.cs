@@ -6,118 +6,107 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace Microsoft.CodeAnalysis
+namespace Microsoft.CodeAnalysis;
+
+internal static class CodeAnalysisExtensions
 {
-    internal static class CodeAnalysisExtensions
+    public static bool HasAttribute(this ITypeSymbol typeSymbol, ITypeSymbol attribute, bool inherit)
+        => GetAttributes(typeSymbol, attribute, inherit).Any();
+
+    public static bool HasAttribute(this IMethodSymbol methodSymbol, ITypeSymbol attribute, bool inherit)
+        => GetAttributes(methodSymbol, attribute, inherit).Any();
+
+    public static IEnumerable<AttributeData> GetAttributes(this ISymbol symbol, ITypeSymbol attribute)
     {
-        public static bool HasAttribute(this ITypeSymbol typeSymbol, ITypeSymbol attribute, bool inherit)
-            => GetAttributes(typeSymbol, attribute, inherit).Any();
-
-        public static bool HasAttribute(this IMethodSymbol methodSymbol, ITypeSymbol attribute, bool inherit)
-            => GetAttributes(methodSymbol, attribute, inherit).Any();
-
-        public static IEnumerable<AttributeData> GetAttributes(this ISymbol symbol, ITypeSymbol attribute)
+        foreach (var declaredAttribute in symbol.GetAttributes())
         {
-            foreach (var declaredAttribute in symbol.GetAttributes())
+            if (attribute.IsAssignableFrom(declaredAttribute.AttributeClass))
             {
-                if (attribute.IsAssignableFrom(declaredAttribute.AttributeClass))
-                {
-                    yield return declaredAttribute;
-                }
+                yield return declaredAttribute;
             }
         }
+    }
 
-        public static IEnumerable<AttributeData> GetAttributes(this IMethodSymbol methodSymbol, ITypeSymbol attribute, bool inherit)
+    public static IEnumerable<AttributeData> GetAttributes(this IMethodSymbol methodSymbol, ITypeSymbol attribute, bool inherit)
+    {
+        Debug.Assert(methodSymbol != null);
+        attribute = attribute ?? throw new ArgumentNullException(nameof(attribute));
+
+        IMethodSymbol? current = methodSymbol;
+        while (current != null)
         {
-            Debug.Assert(methodSymbol != null);
-            attribute = attribute ?? throw new ArgumentNullException(nameof(attribute));
-
-            IMethodSymbol? current = methodSymbol;
-            while (current != null)
+            foreach (var attributeData in GetAttributes(current, attribute))
             {
-                foreach (var attributeData in GetAttributes(current, attribute))
-                {
-                    yield return attributeData;
-                }
-
-                if (!inherit)
-                {
-                    break;
-                }
-
-                current = current.IsOverride ? current.OverriddenMethod : null;
+                yield return attributeData;
             }
-        }
-
-        public static IEnumerable<AttributeData> GetAttributes(this ITypeSymbol typeSymbol, ITypeSymbol attribute, bool inherit)
-        {
-            typeSymbol = typeSymbol ?? throw new ArgumentNullException(nameof(typeSymbol));
-            attribute = attribute ?? throw new ArgumentNullException(nameof(attribute));
-
-            foreach (var type in GetTypeHierarchy(typeSymbol))
-            {
-                foreach (var attributeData in GetAttributes(type, attribute))
-                {
-                    yield return attributeData;
-                }
-
-                if (!inherit)
-                {
-                    break;
-                }
-            }
-        }
-
-        public static bool HasAttribute(this IPropertySymbol propertySymbol, ITypeSymbol attribute, bool inherit)
-        {
-            propertySymbol = propertySymbol ?? throw new ArgumentNullException(nameof(propertySymbol));
-            attribute = attribute ?? throw new ArgumentNullException(nameof(attribute));
 
             if (!inherit)
             {
-                return HasAttribute(propertySymbol, attribute);
+                break;
             }
 
-            IPropertySymbol? current = propertySymbol;
-            while (current != null)
+            current = current.IsOverride ? current.OverriddenMethod : null;
+        }
+    }
+
+    public static IEnumerable<AttributeData> GetAttributes(this ITypeSymbol typeSymbol, ITypeSymbol attribute, bool inherit)
+    {
+        typeSymbol = typeSymbol ?? throw new ArgumentNullException(nameof(typeSymbol));
+        attribute = attribute ?? throw new ArgumentNullException(nameof(attribute));
+
+        foreach (var type in GetTypeHierarchy(typeSymbol))
+        {
+            foreach (var attributeData in GetAttributes(type, attribute))
             {
-                if (current.HasAttribute(attribute))
-                {
-                    return true;
-                }
-
-                current = current.IsOverride ? current.OverriddenProperty : null;
+                yield return attributeData;
             }
 
-            return false;
+            if (!inherit)
+            {
+                break;
+            }
+        }
+    }
+
+    public static bool HasAttribute(this IPropertySymbol propertySymbol, ITypeSymbol attribute, bool inherit)
+    {
+        propertySymbol = propertySymbol ?? throw new ArgumentNullException(nameof(propertySymbol));
+        attribute = attribute ?? throw new ArgumentNullException(nameof(attribute));
+
+        if (!inherit)
+        {
+            return HasAttribute(propertySymbol, attribute);
         }
 
-        public static bool IsAssignableFrom(this ITypeSymbol source, ITypeSymbol target)
+        IPropertySymbol? current = propertySymbol;
+        while (current != null)
         {
-            source = source ?? throw new ArgumentNullException(nameof(source));
-            target = target ?? throw new ArgumentNullException(nameof(target));
-
-            if (SymbolEqualityComparer.Default.Equals(source, target))
+            if (current.HasAttribute(attribute))
             {
                 return true;
             }
 
-            if (source.TypeKind == TypeKind.Interface)
-            {
-                foreach (var @interface in target.AllInterfaces)
-                {
-                    if (SymbolEqualityComparer.Default.Equals(source, @interface))
-                    {
-                        return true;
-                    }
-                }
+            current = current.IsOverride ? current.OverriddenProperty : null;
+        }
 
-                return false;
-            }
+        return false;
+    }
 
-            foreach (var type in target.GetTypeHierarchy())
+    public static bool IsAssignableFrom(this ITypeSymbol source, ITypeSymbol target)
+    {
+        source = source ?? throw new ArgumentNullException(nameof(source));
+        target = target ?? throw new ArgumentNullException(nameof(target));
+
+        if (SymbolEqualityComparer.Default.Equals(source, target))
+        {
+            return true;
+        }
+
+        if (source.TypeKind == TypeKind.Interface)
+        {
+            foreach (var @interface in target.AllInterfaces)
             {
-                if (SymbolEqualityComparer.Default.Equals(source, type))
+                if (SymbolEqualityComparer.Default.Equals(source, @interface))
                 {
                     return true;
                 }
@@ -126,27 +115,58 @@ namespace Microsoft.CodeAnalysis
             return false;
         }
 
-        public static bool HasAttribute(this ISymbol symbol, ITypeSymbol attribute)
+        foreach (var type in target.GetTypeHierarchy())
         {
-            foreach (var declaredAttribute in symbol.GetAttributes())
+            if (SymbolEqualityComparer.Default.Equals(source, type))
             {
-                if (attribute.IsAssignableFrom(declaredAttribute.AttributeClass))
-                {
-                    return true;
-                }
+                return true;
             }
-
-            return false;
         }
 
-        private static IEnumerable<ITypeSymbol> GetTypeHierarchy(this ITypeSymbol? typeSymbol)
-        {
-            while (typeSymbol != null)
-            {
-                yield return typeSymbol;
+        return false;
+    }
 
-                typeSymbol = typeSymbol.BaseType;
+    public static bool HasAttribute(this ISymbol symbol, ITypeSymbol attribute)
+    {
+        foreach (var declaredAttribute in symbol.GetAttributes())
+        {
+            if (attribute.IsAssignableFrom(declaredAttribute.AttributeClass))
+            {
+                return true;
             }
+        }
+
+        return false;
+    }
+
+    private static IEnumerable<ITypeSymbol> GetTypeHierarchy(this ITypeSymbol? typeSymbol)
+    {
+        while (typeSymbol != null)
+        {
+            yield return typeSymbol;
+
+            typeSymbol = typeSymbol.BaseType;
+        }
+    }
+
+    // Adapted from https://github.com/dotnet/roslyn/blob/929272/src/Workspaces/Core/Portable/Shared/Extensions/IMethodSymbolExtensions.cs#L61
+    public static IEnumerable<IMethodSymbol> GetAllMethodSymbolsOfPartialParts(this IMethodSymbol method)
+    {
+        if (method.PartialDefinitionPart != null)
+        {
+            Debug.Assert(method.PartialImplementationPart == null && !SymbolEqualityComparer.Default.Equals(method.PartialDefinitionPart, method));
+            yield return method;
+            yield return method.PartialDefinitionPart;
+        }
+        else if (method.PartialImplementationPart != null)
+        {
+            Debug.Assert(!SymbolEqualityComparer.Default.Equals(method.PartialImplementationPart, method));
+            yield return method.PartialImplementationPart;
+            yield return method;
+        }
+        else
+        {
+            yield return method;
         }
     }
 }

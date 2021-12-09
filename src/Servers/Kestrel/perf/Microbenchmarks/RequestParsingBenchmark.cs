@@ -11,133 +11,164 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
+namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks;
+
+public class RequestParsingBenchmark
 {
-    public class RequestParsingBenchmark
+    private MemoryPool<byte> _memoryPool;
+
+    public Pipe Pipe { get; set; }
+
+    internal Http1Connection Http1Connection { get; set; }
+
+    [IterationSetup]
+    public void Setup()
     {
-        private MemoryPool<byte> _memoryPool;
+        _memoryPool = PinnedBlockMemoryPoolFactory.Create();
+        var options = new PipeOptions(_memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
+        var pair = DuplexPipe.CreateConnectionPair(options, options);
 
-        public Pipe Pipe { get; set; }
+        var serviceContext = TestContextFactory.CreateServiceContext(
+            serverOptions: new KestrelServerOptions(),
+            httpParser: new HttpParser<Http1ParsingHandler>(),
+            dateHeaderValueManager: new DateHeaderValueManager());
 
-        internal Http1Connection Http1Connection { get; set; }
+        var connectionContext = TestContextFactory.CreateHttpConnectionContext(
+            serviceContext: serviceContext,
+            connectionContext: null,
+            transport: pair.Transport,
+            memoryPool: _memoryPool,
+            connectionFeatures: new FeatureCollection(),
+            timeoutControl: new TimeoutControl(timeoutHandler: null));
 
-        [IterationSetup]
-        public void Setup()
+        var http1Connection = new Http1Connection(connectionContext);
+
+        http1Connection.Reset();
+
+        Http1Connection = http1Connection;
+        Pipe = new Pipe(new PipeOptions(_memoryPool));
+    }
+
+    [Benchmark(Baseline = true, OperationsPerInvoke = RequestParsingData.InnerLoopCount)]
+    public void PlaintextTechEmpower()
+    {
+        for (var i = 0; i < RequestParsingData.InnerLoopCount; i++)
         {
-            _memoryPool = PinnedBlockMemoryPoolFactory.Create();
-            var options = new PipeOptions(_memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
-            var pair = DuplexPipe.CreateConnectionPair(options, options);
+            InsertData(RequestParsingData.PlaintextTechEmpowerRequest);
+            ParseData();
+        }
+    }
 
-            var serviceContext = TestContextFactory.CreateServiceContext(
-                serverOptions: new KestrelServerOptions(),
-                httpParser: new HttpParser<Http1ParsingHandler>(),
-                dateHeaderValueManager: new DateHeaderValueManager(),
-                log: new MockTrace());
+    [Benchmark(OperationsPerInvoke = RequestParsingData.InnerLoopCount)]
+    public void PlaintextAbsoluteUri()
+    {
+        for (var i = 0; i < RequestParsingData.InnerLoopCount; i++)
+        {
+            InsertData(RequestParsingData.PlaintextAbsoluteUriRequest);
+            ParseData();
+        }
+    }
 
-            var connectionContext = TestContextFactory.CreateHttpConnectionContext(
-                serviceContext: serviceContext,
-                connectionContext: null,
-                transport: pair.Transport,
-                memoryPool: _memoryPool,
-                connectionFeatures: new FeatureCollection(),
-                timeoutControl: new TimeoutControl(timeoutHandler: null));
+    [Benchmark(OperationsPerInvoke = RequestParsingData.InnerLoopCount * RequestParsingData.Pipelining)]
+    public void PipelinedPlaintextTechEmpower()
+    {
+        for (var i = 0; i < RequestParsingData.InnerLoopCount; i++)
+        {
+            InsertData(RequestParsingData.PlaintextTechEmpowerPipelinedRequests);
+            ParseData();
+        }
+    }
 
-            var http1Connection = new Http1Connection(connectionContext);
+    [Benchmark(OperationsPerInvoke = RequestParsingData.InnerLoopCount * RequestParsingData.Pipelining)]
+    public void PipelinedPlaintextTechEmpowerDrainBuffer()
+    {
+        for (var i = 0; i < RequestParsingData.InnerLoopCount; i++)
+        {
+            InsertData(RequestParsingData.PlaintextTechEmpowerPipelinedRequests);
+            ParseDataDrainBuffer();
+        }
+    }
 
-            http1Connection.Reset();
+    [Benchmark(OperationsPerInvoke = RequestParsingData.InnerLoopCount)]
+    public void LiveAspNet()
+    {
+        for (var i = 0; i < RequestParsingData.InnerLoopCount; i++)
+        {
+            InsertData(RequestParsingData.LiveaspnetRequest);
+            ParseData();
+        }
+    }
 
-            Http1Connection = http1Connection;
-            Pipe = new Pipe(new PipeOptions(_memoryPool));
+    [Benchmark(OperationsPerInvoke = RequestParsingData.InnerLoopCount * RequestParsingData.Pipelining)]
+    public void PipelinedLiveAspNet()
+    {
+        for (var i = 0; i < RequestParsingData.InnerLoopCount; i++)
+        {
+            InsertData(RequestParsingData.LiveaspnetPipelinedRequests);
+            ParseData();
+        }
+    }
+
+    [Benchmark(OperationsPerInvoke = RequestParsingData.InnerLoopCount)]
+    public void Unicode()
+    {
+        for (var i = 0; i < RequestParsingData.InnerLoopCount; i++)
+        {
+            InsertData(RequestParsingData.UnicodeRequest);
+            ParseData();
+        }
+    }
+
+    [Benchmark(OperationsPerInvoke = RequestParsingData.InnerLoopCount * RequestParsingData.Pipelining)]
+    public void UnicodePipelined()
+    {
+        for (var i = 0; i < RequestParsingData.InnerLoopCount; i++)
+        {
+            InsertData(RequestParsingData.UnicodePipelinedRequests);
+            ParseData();
+        }
+    }
+
+    private void InsertData(byte[] bytes)
+    {
+        Pipe.Writer.Write(bytes);
+        // There should not be any backpressure and task completes immediately
+        Pipe.Writer.FlushAsync().GetAwaiter().GetResult();
+    }
+
+    private void ParseDataDrainBuffer()
+    {
+        var awaitable = Pipe.Reader.ReadAsync();
+        if (!awaitable.IsCompleted)
+        {
+            // No more data
+            return;
         }
 
-        [Benchmark(Baseline = true, OperationsPerInvoke = RequestParsingData.InnerLoopCount)]
-        public void PlaintextTechEmpower()
+        var readableBuffer = awaitable.GetAwaiter().GetResult().Buffer;
+        var reader = new SequenceReader<byte>(readableBuffer);
+        do
         {
-            for (var i = 0; i < RequestParsingData.InnerLoopCount; i++)
+            Http1Connection.Reset();
+
+            if (!Http1Connection.TakeStartLine(ref reader))
             {
-                InsertData(RequestParsingData.PlaintextTechEmpowerRequest);
-                ParseData();
+                ErrorUtilities.ThrowInvalidRequestLine();
+            }
+
+            if (!Http1Connection.TakeMessageHeaders(ref reader, trailers: false))
+            {
+                ErrorUtilities.ThrowInvalidRequestHeaders();
             }
         }
+        while (!reader.End);
 
-        [Benchmark(OperationsPerInvoke = RequestParsingData.InnerLoopCount)]
-        public void PlaintextAbsoluteUri()
-        {
-            for (var i = 0; i < RequestParsingData.InnerLoopCount; i++)
-            {
-                InsertData(RequestParsingData.PlaintextAbsoluteUriRequest);
-                ParseData();
-            }
-        }
+        Pipe.Reader.AdvanceTo(readableBuffer.End);
+    }
 
-        [Benchmark(OperationsPerInvoke = RequestParsingData.InnerLoopCount * RequestParsingData.Pipelining)]
-        public void PipelinedPlaintextTechEmpower()
-        {
-            for (var i = 0; i < RequestParsingData.InnerLoopCount; i++)
-            {
-                InsertData(RequestParsingData.PlaintextTechEmpowerPipelinedRequests);
-                ParseData();
-            }
-        }
-
-        [Benchmark(OperationsPerInvoke = RequestParsingData.InnerLoopCount * RequestParsingData.Pipelining)]
-        public void PipelinedPlaintextTechEmpowerDrainBuffer()
-        {
-            for (var i = 0; i < RequestParsingData.InnerLoopCount; i++)
-            {
-                InsertData(RequestParsingData.PlaintextTechEmpowerPipelinedRequests);
-                ParseDataDrainBuffer();
-            }
-        }
-
-        [Benchmark(OperationsPerInvoke = RequestParsingData.InnerLoopCount)]
-        public void LiveAspNet()
-        {
-            for (var i = 0; i < RequestParsingData.InnerLoopCount; i++)
-            {
-                InsertData(RequestParsingData.LiveaspnetRequest);
-                ParseData();
-            }
-        }
-
-        [Benchmark(OperationsPerInvoke = RequestParsingData.InnerLoopCount * RequestParsingData.Pipelining)]
-        public void PipelinedLiveAspNet()
-        {
-            for (var i = 0; i < RequestParsingData.InnerLoopCount; i++)
-            {
-                InsertData(RequestParsingData.LiveaspnetPipelinedRequests);
-                ParseData();
-            }
-        }
-
-        [Benchmark(OperationsPerInvoke = RequestParsingData.InnerLoopCount)]
-        public void Unicode()
-        {
-            for (var i = 0; i < RequestParsingData.InnerLoopCount; i++)
-            {
-                InsertData(RequestParsingData.UnicodeRequest);
-                ParseData();
-            }
-        }
-
-        [Benchmark(OperationsPerInvoke = RequestParsingData.InnerLoopCount * RequestParsingData.Pipelining)]
-        public void UnicodePipelined()
-        {
-            for (var i = 0; i < RequestParsingData.InnerLoopCount; i++)
-            {
-                InsertData(RequestParsingData.UnicodePipelinedRequests);
-                ParseData();
-            }
-        }
-
-        private void InsertData(byte[] bytes)
-        {
-            Pipe.Writer.Write(bytes);
-            // There should not be any backpressure and task completes immediately
-            Pipe.Writer.FlushAsync().GetAwaiter().GetResult();
-        }
-
-        private void ParseDataDrainBuffer()
+    private void ParseData()
+    {
+        do
         {
             var awaitable = Pipe.Reader.ReadAsync();
             if (!awaitable.IsCompleted)
@@ -146,68 +177,35 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
                 return;
             }
 
-            var readableBuffer = awaitable.GetAwaiter().GetResult().Buffer;
+            var result = awaitable.GetAwaiter().GetResult();
+            var readableBuffer = result.Buffer;
             var reader = new SequenceReader<byte>(readableBuffer);
-            do
+
+            Http1Connection.Reset();
+
+            if (!Http1Connection.TakeStartLine(ref reader))
             {
-                Http1Connection.Reset();
-
-                if (!Http1Connection.TakeStartLine(ref reader))
-                {
-                    ErrorUtilities.ThrowInvalidRequestLine();
-                }
-
-                if (!Http1Connection.TakeMessageHeaders(ref reader, trailers: false))
-                {
-                    ErrorUtilities.ThrowInvalidRequestHeaders();
-                }
+                ErrorUtilities.ThrowInvalidRequestLine();
             }
-            while (!reader.End);
+            Pipe.Reader.AdvanceTo(reader.Position, reader.Position);
 
-            Pipe.Reader.AdvanceTo(readableBuffer.End);
-        }
+            result = Pipe.Reader.ReadAsync().GetAwaiter().GetResult();
+            readableBuffer = result.Buffer;
+            reader = new SequenceReader<byte>(readableBuffer);
 
-        private void ParseData()
-        {
-            do
+            if (!Http1Connection.TakeMessageHeaders(ref reader, trailers: false))
             {
-                var awaitable = Pipe.Reader.ReadAsync();
-                if (!awaitable.IsCompleted)
-                {
-                    // No more data
-                    return;
-                }
-
-                var result = awaitable.GetAwaiter().GetResult();
-                var readableBuffer = result.Buffer;
-                var reader = new SequenceReader<byte>(readableBuffer);
-
-                Http1Connection.Reset();
-
-                if (!Http1Connection.TakeStartLine(ref reader))
-                {
-                    ErrorUtilities.ThrowInvalidRequestLine();
-                }
-                Pipe.Reader.AdvanceTo(reader.Position, reader.Position);
-
-                result = Pipe.Reader.ReadAsync().GetAwaiter().GetResult();
-                readableBuffer = result.Buffer;
-                reader = new SequenceReader<byte>(readableBuffer);
-
-                if (!Http1Connection.TakeMessageHeaders(ref reader, trailers: false))
-                {
-                    ErrorUtilities.ThrowInvalidRequestHeaders();
-                }
-                Pipe.Reader.AdvanceTo(reader.Position, reader.Position);
+                ErrorUtilities.ThrowInvalidRequestHeaders();
             }
-            while (true);
+            Pipe.Reader.AdvanceTo(reader.Position, reader.Position);
         }
+        while (true);
+    }
 
 
-        [IterationCleanup]
-        public void Cleanup()
-        {
-            _memoryPool.Dispose();
-        }
+    [IterationCleanup]
+    public void Cleanup()
+    {
+        _memoryPool.Dispose();
     }
 }

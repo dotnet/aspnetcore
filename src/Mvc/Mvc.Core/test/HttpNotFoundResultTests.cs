@@ -4,18 +4,17 @@
 using Microsoft.AspNetCore.Http;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc
-{
-    public class HttpNotFoundResultTests
-    {
-        [Fact]
-        public void HttpNotFoundResult_InitializesStatusCode()
-        {
-            // Arrange & act
-            var notFound = new NotFoundResult();
+namespace Microsoft.AspNetCore.Mvc;
 
-            // Assert
-            Assert.Equal(StatusCodes.Status404NotFound, notFound.StatusCode);
-        }
+public class HttpNotFoundResultTests
+{
+    [Fact]
+    public void HttpNotFoundResult_InitializesStatusCode()
+    {
+        // Arrange & act
+        var notFound = new NotFoundResult();
+
+        // Assert
+        Assert.Equal(StatusCodes.Status404NotFound, notFound.StatusCode);
     }
 }

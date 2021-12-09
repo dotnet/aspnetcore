@@ -4,22 +4,21 @@
 using System;
 using System.Diagnostics;
 
-namespace Microsoft.AspNetCore.Mvc
+namespace Microsoft.AspNetCore.Mvc;
+
+public class ActivityReplacer : IDisposable
 {
-    public class ActivityReplacer : IDisposable
+    private readonly Activity _activity;
+
+    public ActivityReplacer()
     {
-        private readonly Activity _activity;
+        _activity = new Activity("Test");
+        _activity.Start();
+    }
 
-        public ActivityReplacer()
-        {
-            _activity = new Activity("Test");
-            _activity.Start();
-        }
-
-        public void Dispose()
-        {
-            Debug.Assert(Activity.Current == _activity);
-            _activity.Stop();
-        }
+    public void Dispose()
+    {
+        Debug.Assert(Activity.Current == _activity);
+        _activity.Stop();
     }
 }

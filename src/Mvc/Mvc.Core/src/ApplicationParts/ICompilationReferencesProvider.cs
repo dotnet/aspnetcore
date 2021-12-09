@@ -3,16 +3,15 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Mvc.ApplicationParts
+namespace Microsoft.AspNetCore.Mvc.ApplicationParts;
+
+/// <summary>
+/// Exposes one or more reference paths from an <see cref="ApplicationPart"/>.
+/// </summary>
+public interface ICompilationReferencesProvider
 {
     /// <summary>
-    /// Exposes one or more reference paths from an <see cref="ApplicationPart"/>.
+    /// Gets reference paths used to perform runtime compilation.
     /// </summary>
-    public interface ICompilationReferencesProvider
-    {
-        /// <summary>
-        /// Gets reference paths used to perform runtime compilation.
-        /// </summary>
-        IEnumerable<string> GetReferencePaths();
-    }
+    IEnumerable<string> GetReferencePaths();
 }

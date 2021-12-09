@@ -1,2 +1,0 @@
-TestFiles/IntegrationTests/CodeGenerationIntegrationTest/SingleLineControlFlowStatements.cshtml(97,12): Error RZ1008: Single-statement control-flow statements in Razor documents statements cannot contain markup. Markup should be enclosed in "{" and "}".
-TestFiles/IntegrationTests/CodeGenerationIntegrationTest/SingleLineControlFlowStatements.cshtml(100,5): Error RZ1008: Single-statement control-flow statements in Razor documents statements cannot contain markup. Markup should be enclosed in "{" and "}".

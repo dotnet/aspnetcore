@@ -59,7 +59,9 @@ ASPNET_CORE_GLOBAL_MODULE::OnGlobalConfigurationChange(
         _wcsicmp(pwszChangePath, L"MACHINE") != 0 &&
         _wcsicmp(pwszChangePath, L"MACHINE/WEBROOT") != 0)
     {
-        if (m_pApplicationManager)
+        // Configuration change recycling behavior can be turned off via setting disallowRotationOnConfigChange=true on the handler settings section.
+        // We need this duplicate setting because the global module is unable to read the app settings disallowRotationOnConfigChange value.
+        if (m_pApplicationManager && m_pApplicationManager->ShouldRecycleOnConfigChange())
         {
             m_pApplicationManager->RecycleApplicationFromManager(pwszChangePath);   
         }

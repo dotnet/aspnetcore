@@ -4,22 +4,21 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Hosting.Fakes
+namespace Microsoft.AspNetCore.Hosting.Fakes;
+
+public class StartupPrivateConfigure
 {
-    public class StartupPrivateConfigure
+    public StartupPrivateConfigure()
     {
-        public StartupPrivateConfigure()
-        {
-        }
+    }
 
-        public void ConfigureServices(IServiceCollection services)
-        {
+    public void ConfigureServices(IServiceCollection services)
+    {
 
-        }
+    }
 
-        private void Configure(IApplicationBuilder builder)
-        {
+    private void Configure(IApplicationBuilder builder)
+    {
 
-        }
     }
 }

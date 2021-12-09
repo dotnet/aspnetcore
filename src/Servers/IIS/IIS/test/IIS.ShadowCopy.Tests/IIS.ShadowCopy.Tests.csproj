@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <TestGroupName>IIS.ShadowCopy.Tests</TestGroupName>
+    <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
+    <SkipTests Condition=" '$(SkipIISTests)' == 'true' ">true</SkipTests>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <Import Project="../FunctionalTest.props" />
+
+  <ItemGroup>
+    <ProjectReference Include="..\testassets\IIS.Common.TestLib\IIS.Common.TestLib.csproj" />
+    <ProjectReference Include="..\testassets\InProcessWebSite\InProcessWebSite.csproj"
+      Private="false"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Common.FunctionalTests\Infrastructure\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)runtime\SR.cs" LinkBase="Shared\SR.cs" />
+    <Compile Include="$(SharedSourceRoot)ServerInfrastructure\**\*.cs" LinkBase="Shared\" Exclude="$(SharedSourceRoot)ServerInfrastructure\DuplexPipe.cs" />
+    <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" LinkBase="Shared\" />
+    <Compile Include="$(SharedSourceRoot)TaskToApm.cs" Link="Shared\TaskToApm.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Hosting" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
+    <Reference Include="Microsoft.Extensions.Logging" />
+    <Reference Include="System.Diagnostics.EventLog" />
+    <Reference Include="System.Net.Http.WinHttpHandler" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="$(SharedSourceRoot)ServerInfrastructure\SharedStrings.resx" Link="Shared\SharedStrings.resx">
+      <ManifestResourceName>Microsoft.AspNetCore.Server.SharedStrings</ManifestResourceName>
+      <Generator></Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="$(SharedSourceRoot)runtime\SR.resx" Link="Shared\runtime\SR.resx">
+      <ManifestResourceName>System.Net.Http.SR</ManifestResourceName>
+      <Generator></Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+</Project>

@@ -1,24 +1,24 @@
 #nullable enable
 Microsoft.AspNetCore.Mvc.ApplicationParts.AssemblyPartExtensions
 Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.FileProviderRazorProjectItem
+Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.FileProviderRazorProjectItem.FileInfo.get -> Microsoft.Extensions.FileProviders.IFileInfo!
+Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.FileProviderRazorProjectItem.FileProviderRazorProjectItem(Microsoft.Extensions.FileProviders.IFileInfo! fileInfo, string! basePath, string! filePath, string! root) -> void
+Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.FileProviderRazorProjectItem.FileProviderRazorProjectItem(Microsoft.Extensions.FileProviders.IFileInfo! fileInfo, string! basePath, string! filePath, string! root, string? fileKind) -> void
 Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.MvcRazorRuntimeCompilationOptions
+Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.MvcRazorRuntimeCompilationOptions.AdditionalReferencePaths.get -> System.Collections.Generic.IList<string!>!
+Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.MvcRazorRuntimeCompilationOptions.FileProviders.get -> System.Collections.Generic.IList<Microsoft.Extensions.FileProviders.IFileProvider!>!
 Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.MvcRazorRuntimeCompilationOptions.MvcRazorRuntimeCompilationOptions() -> void
 Microsoft.Extensions.DependencyInjection.RazorRuntimeCompilationMvcBuilderExtensions
 Microsoft.Extensions.DependencyInjection.RazorRuntimeCompilationMvcCoreBuilderExtensions
+override Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.FileProviderRazorProjectItem.BasePath.get -> string!
 override Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.FileProviderRazorProjectItem.Exists.get -> bool
-~Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.FileProviderRazorProjectItem.FileInfo.get -> Microsoft.Extensions.FileProviders.IFileInfo
-~Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.FileProviderRazorProjectItem.FileProviderRazorProjectItem(Microsoft.Extensions.FileProviders.IFileInfo fileInfo, string basePath, string filePath, string root) -> void
-~Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.FileProviderRazorProjectItem.FileProviderRazorProjectItem(Microsoft.Extensions.FileProviders.IFileInfo fileInfo, string basePath, string filePath, string root, string fileKind) -> void
-~Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.MvcRazorRuntimeCompilationOptions.AdditionalReferencePaths.get -> System.Collections.Generic.IList<string>
-~Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.MvcRazorRuntimeCompilationOptions.FileProviders.get -> System.Collections.Generic.IList<Microsoft.Extensions.FileProviders.IFileProvider>
-~override Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.FileProviderRazorProjectItem.BasePath.get -> string
-~override Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.FileProviderRazorProjectItem.FileKind.get -> string
-~override Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.FileProviderRazorProjectItem.FilePath.get -> string
-~override Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.FileProviderRazorProjectItem.PhysicalPath.get -> string
-~override Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.FileProviderRazorProjectItem.Read() -> System.IO.Stream
-~override Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.FileProviderRazorProjectItem.RelativePhysicalPath.get -> string
-~static Microsoft.AspNetCore.Mvc.ApplicationParts.AssemblyPartExtensions.GetReferencePaths(this Microsoft.AspNetCore.Mvc.ApplicationParts.AssemblyPart assemblyPart) -> System.Collections.Generic.IEnumerable<string>
-~static Microsoft.Extensions.DependencyInjection.RazorRuntimeCompilationMvcBuilderExtensions.AddRazorRuntimeCompilation(this Microsoft.Extensions.DependencyInjection.IMvcBuilder builder) -> Microsoft.Extensions.DependencyInjection.IMvcBuilder
-~static Microsoft.Extensions.DependencyInjection.RazorRuntimeCompilationMvcBuilderExtensions.AddRazorRuntimeCompilation(this Microsoft.Extensions.DependencyInjection.IMvcBuilder builder, System.Action<Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.MvcRazorRuntimeCompilationOptions> setupAction) -> Microsoft.Extensions.DependencyInjection.IMvcBuilder
-~static Microsoft.Extensions.DependencyInjection.RazorRuntimeCompilationMvcCoreBuilderExtensions.AddRazorRuntimeCompilation(this Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder builder) -> Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder
-~static Microsoft.Extensions.DependencyInjection.RazorRuntimeCompilationMvcCoreBuilderExtensions.AddRazorRuntimeCompilation(this Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder builder, System.Action<Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.MvcRazorRuntimeCompilationOptions> setupAction) -> Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder
+override Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.FileProviderRazorProjectItem.FileKind.get -> string!
+override Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.FileProviderRazorProjectItem.FilePath.get -> string!
+override Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.FileProviderRazorProjectItem.PhysicalPath.get -> string!
+override Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.FileProviderRazorProjectItem.Read() -> System.IO.Stream!
+override Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.FileProviderRazorProjectItem.RelativePhysicalPath.get -> string?
+static Microsoft.AspNetCore.Mvc.ApplicationParts.AssemblyPartExtensions.GetReferencePaths(this Microsoft.AspNetCore.Mvc.ApplicationParts.AssemblyPart! assemblyPart) -> System.Collections.Generic.IEnumerable<string!>!
+static Microsoft.Extensions.DependencyInjection.RazorRuntimeCompilationMvcBuilderExtensions.AddRazorRuntimeCompilation(this Microsoft.Extensions.DependencyInjection.IMvcBuilder! builder) -> Microsoft.Extensions.DependencyInjection.IMvcBuilder!
+static Microsoft.Extensions.DependencyInjection.RazorRuntimeCompilationMvcBuilderExtensions.AddRazorRuntimeCompilation(this Microsoft.Extensions.DependencyInjection.IMvcBuilder! builder, System.Action<Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.MvcRazorRuntimeCompilationOptions!>! setupAction) -> Microsoft.Extensions.DependencyInjection.IMvcBuilder!
+static Microsoft.Extensions.DependencyInjection.RazorRuntimeCompilationMvcCoreBuilderExtensions.AddRazorRuntimeCompilation(this Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder! builder) -> Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder!
+static Microsoft.Extensions.DependencyInjection.RazorRuntimeCompilationMvcCoreBuilderExtensions.AddRazorRuntimeCompilation(this Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder! builder, System.Action<Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.MvcRazorRuntimeCompilationOptions!>! setupAction) -> Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder!

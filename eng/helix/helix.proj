@@ -24,6 +24,7 @@
     <IsExternal>true</IsExternal>
     <MaxRetryCount Condition="'$(MaxRetryCount)' == ''">2</MaxRetryCount>
     <HelixAccessToken Condition="'$(_UseHelixOpenQueues)' != 'true'">$(HelixApiAccessToken)</HelixAccessToken>
+    <HelixTestConfigurationFilePath>$(RepoRoot)eng/test-configuration.json</HelixTestConfigurationFilePath>
     <IncludeDotNetCli>true</IncludeDotNetCli>
     <DotNetCliPackageType>sdk</DotNetCliPackageType>
     <DotNetCliVersion>$(NETCoreSdkVersion)</DotNetCliVersion>
@@ -47,7 +48,7 @@
     <HelixType>ci</HelixType>
     <!-- Creator is not valid for internal queues -->
     <Creator Condition="'$(_UseHelixOpenQueues)' == 'true'">aspnetcore</Creator>
-    <HelixBuild>$(BUILD_BUILDNUMBER).$(TargetArchitecture).$(SYSTEM_JOBATTEMPT)</HelixBuild>
+    <HelixBuild>$(BUILD_BUILDNUMBER).$(SYSTEM_JOBATTEMPT)</HelixBuild>
     <WaitForWorkItemCompletion>true</WaitForWorkItemCompletion>
     <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
     <EnableXUnitReporter>true</EnableXUnitReporter>
@@ -74,13 +75,16 @@
     <HelixProperties Condition="'$(RunQuarantinedTests)' != 'true'" Include="runType" Value="unquarantined" />
   </ItemGroup>
 
+  <ItemGroup Condition="Exists('$(HelixTestConfigurationFilePath)')">
+    <HelixCorrelationPayload Include="$(HelixTestConfigurationFilePath)" AsArchive="false" />
+  </ItemGroup>
+
   <Target Name="IncludeAspNetRuntime" BeforeTargets="Gather"
     Condition="'$(DoNotRequireSharedFxHelix)' != 'true' OR
     EXISTS('$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\Microsoft.AspNetCore.App.Runtime.$(TargetRuntimeIdentifier).$(SharedFxVersion).nupkg')">
     <MSBuild Projects="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
         Properties="DisableYarnCheck=true;ExcludeFromBuild=false"
-        Targets="_GetPackageVersionInfo"
-        SkipNonexistentProjects="false">
+        Targets="_GetPackageVersionInfo">
       <Output TaskParameter="TargetOutputs" ItemName="_ResolvedProductVersionInfo" />
     </MSBuild>
 

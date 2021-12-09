@@ -1,2 +1,0 @@
-(1,2): Error RZ1006: The foreach block is missing a closing "}" character.  Make sure you have a matching "}" character for all the "{" characters within this block, and that none of the "}" characters are being interpreted as markup.
-(1,26): Error RZ1001: End of file was reached before the end of the block comment.  All comments started with "/*" sequence must be terminated with a matching "*/" sequence.

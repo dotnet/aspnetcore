@@ -2,15 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 
-namespace Microsoft.AspNetCore.Mvc.Routing
-{
-    internal class ControllerEndpointDataSourceIdMetadata
-    {
-        public ControllerEndpointDataSourceIdMetadata(int id)
-        {
-            Id = id;
-        }
+namespace Microsoft.AspNetCore.Mvc.Routing;
 
-        public int Id { get; }
+internal class ControllerEndpointDataSourceIdMetadata
+{
+    public ControllerEndpointDataSourceIdMetadata(int id)
+    {
+        Id = id;
     }
+
+    public int Id { get; }
 }

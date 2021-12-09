@@ -4,12 +4,11 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 
-namespace FilesWebSite.Models
-{
-    public class Product
-    {
-        public string Name { get; set; }
+namespace FilesWebSite.Models;
 
-        public IDictionary<string, IEnumerable<IFormFile>> Specs { get; set; }
-    }
+public class Product
+{
+    public string Name { get; set; }
+
+    public IDictionary<string, IEnumerable<IFormFile>> Specs { get; set; }
 }

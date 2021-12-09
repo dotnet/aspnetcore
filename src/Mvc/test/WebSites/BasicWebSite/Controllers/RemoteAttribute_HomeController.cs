@@ -4,34 +4,33 @@
 using BasicWebSite.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace BasicWebSite.Controllers
+namespace BasicWebSite.Controllers;
+
+[Route("[controller]/[action]")]
+public class RemoteAttribute_HomeController : Controller
 {
-    [Route("[controller]/[action]")]
-    public class RemoteAttribute_HomeController : Controller
+    private static RemoteAttributeUser _user;
+
+    [HttpGet]
+    public IActionResult Create()
     {
-        private static RemoteAttributeUser _user;
+        return View();
+    }
 
-        [HttpGet]
-        public IActionResult Create()
+    [HttpPost]
+    public IActionResult Create(RemoteAttributeUser user)
+    {
+        if (!ModelState.IsValid)
         {
-            return View();
+            return View(user);
         }
 
-        [HttpPost]
-        public IActionResult Create(RemoteAttributeUser user)
-        {
-            if (!ModelState.IsValid)
-            {
-                return View(user);
-            }
+        _user = user;
+        return RedirectToAction(nameof(Details));
+    }
 
-            _user = user;
-            return RedirectToAction(nameof(Details));
-        }
-
-        public IActionResult Details()
-        {
-            return View(_user);
-        }
+    public IActionResult Details()
+    {
+        return View(_user);
     }
 }

@@ -4,17 +4,16 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 
-namespace Microsoft.AspNetCore.Analyzers
+namespace Microsoft.AspNetCore.Analyzers;
+
+internal class MiddlewareItem
 {
-    internal class MiddlewareItem
+    public MiddlewareItem(IInvocationOperation operation)
     {
-        public MiddlewareItem(IInvocationOperation operation)
-        {
-            Operation = operation;
-        }
-
-        public IInvocationOperation Operation { get; }
-
-        public IMethodSymbol UseMethod => Operation.TargetMethod;
+        Operation = operation;
     }
+
+    public IInvocationOperation Operation { get; }
+
+    public IMethodSymbol UseMethod => Operation.TargetMethod;
 }

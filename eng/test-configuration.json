@@ -1,0 +1,18 @@
+{
+  "version" : 1,
+  "defaultOnFailure": "fail",
+  "localRerunCount" : 3,
+  "retryOnRules": [
+    {"testName": {"contains": "AppOfflineDroppedWhileSiteStarting_SiteShutsDown_InProcess"}},
+    {"testName": {"contains": "CheckFrebDisconnect"}},
+    {"testName": {"contains": "CheckStdoutWithLargeWrites"}},
+    {"testName": {"contains": "ServerShutsDownWhenMainExitsStress" }},
+    {"testName": {"contains": "AddressRegistrationTests" }},
+    {"testName": {"contains": "MaxRequestBufferSizeTests.LargeUpload" }},
+    {"failureMessage": "network disconnected" }
+  ],
+  "failOnRules": [
+  ],
+  "quarantineRules": [
+  ]
+}

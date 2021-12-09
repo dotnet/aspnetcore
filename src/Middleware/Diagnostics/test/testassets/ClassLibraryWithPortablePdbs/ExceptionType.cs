@@ -3,18 +3,17 @@
 
 using System;
 
-namespace ClassLibraryWithPortablePdbs
-{
-    public class ExceptionType
-    {
-        public static void StaticMethodThatThrows()
-        {
-            throw new Exception();
-        }
+namespace ClassLibraryWithPortablePdbs;
 
-        public void MethodThatThrows()
-        {
-            throw new Exception();
-        }
+public class ExceptionType
+{
+    public static void StaticMethodThatThrows()
+    {
+        throw new Exception();
+    }
+
+    public void MethodThatThrows()
+    {
+        throw new Exception();
     }
 }

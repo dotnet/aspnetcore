@@ -6,14 +6,13 @@ using Microsoft.Extensions.Hosting;
 using DevServerProgram = Microsoft.AspNetCore.Components.WebAssembly.DevServer.Server.Program;
 
 
-namespace Microsoft.AspNetCore.Components.WebAssembly.DevServer
+namespace Microsoft.AspNetCore.Components.WebAssembly.DevServer;
+
+internal class Program
 {
-    internal class Program
+    static int Main(string[] args)
     {
-        static int Main(string[] args)
-        {
-            DevServerProgram.BuildWebHost(args).Run();
-            return 0;
-        }
+        DevServerProgram.BuildWebHost(args).Run();
+        return 0;
     }
 }

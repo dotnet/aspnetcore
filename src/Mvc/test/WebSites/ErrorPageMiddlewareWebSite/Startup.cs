@@ -7,41 +7,40 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace ErrorPageMiddlewareWebSite
+namespace ErrorPageMiddlewareWebSite;
+
+public class Startup
 {
-    public class Startup
+    // Set up application services
+    public void ConfigureServices(IServiceCollection services)
     {
-        // Set up application services
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services.AddControllersWithViews()
-                .AddRazorRuntimeCompilation();
-        }
-
-        public void Configure(IApplicationBuilder app)
-        {
-            app.UseDeveloperExceptionPage();
-            app.UseRouting();
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-            });
-        }
-
-        public static void Main(string[] args)
-        {
-            var host = CreateWebHostBuilder(args)
-                .Build();
-
-            host.Run();
-        }
-
-        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-            new WebHostBuilder()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseStartup<Startup>()
-                .UseKestrel()
-                .UseIISIntegration();
+        services.AddControllersWithViews()
+            .AddRazorRuntimeCompilation();
     }
+
+    public void Configure(IApplicationBuilder app)
+    {
+        app.UseDeveloperExceptionPage();
+        app.UseRouting();
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapControllers();
+        });
+    }
+
+    public static void Main(string[] args)
+    {
+        var host = CreateWebHostBuilder(args)
+            .Build();
+
+        host.Run();
+    }
+
+    public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
+        new WebHostBuilder()
+            .UseContentRoot(Directory.GetCurrentDirectory())
+            .UseStartup<Startup>()
+            .UseKestrel()
+            .UseIISIntegration();
 }
 

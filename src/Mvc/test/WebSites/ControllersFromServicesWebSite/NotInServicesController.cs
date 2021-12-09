@@ -3,14 +3,13 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace ControllersFromServicesWebSite
+namespace ControllersFromServicesWebSite;
+
+public class NotInServicesController : Controller
 {
-    public class NotInServicesController : Controller
+    [HttpGet("/not-discovered/not-in-services")]
+    public IActionResult Index()
     {
-        [HttpGet("/not-discovered/not-in-services")]
-        public IActionResult Index()
-        {
-            return View();
-        }
+        return View();
     }
 }

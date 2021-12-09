@@ -45,9 +45,6 @@
     -->
     <IsStableBuild>false</IsStableBuild>
     <IsStableBuild Condition=" '$(DotNetFinalVersionKind)' == 'release' ">true</IsStableBuild>
-
-    <!-- Workaround issue with ComponentsAnalyzer throwing for interfaces -->
-    <DisableImplicitComponentsAnalyzers>true</DisableImplicitComponentsAnalyzers>
   </PropertyGroup>
 
   <!-- Disable logging of some task parameters or metadata to reduce binlog size.
@@ -104,7 +101,7 @@
     <NuspecBasePath>$(MSBuildProjectDirectory)</NuspecBasePath>
 
     <IncludeSymbols>true</IncludeSymbols>
-    <DefaultNetFxTargetFramework>net461</DefaultNetFxTargetFramework>
+    <DefaultNetFxTargetFramework>net462</DefaultNetFxTargetFramework>
   </PropertyGroup>
 
   <!-- Warnings and errors -->
@@ -142,7 +139,6 @@
     <TargetingPackInstallerBaseName>aspnetcore-targeting-pack</TargetingPackInstallerBaseName>
 
     <!-- This is used to produce targeting pack installers/packages once per major.minor. -->
-    <IsTargetingPackBuilding Condition=" '$(DotNetBuildFromSource)' == 'true' ">false</IsTargetingPackBuilding>
     <IsTargetingPackBuilding
         Condition=" '$(IsTargetingPackBuilding)' == '' AND '$(AspNetCorePatchVersion)' != '0' ">false</IsTargetingPackBuilding>
     <IsTargetingPackBuilding Condition=" '$(IsTargetingPackBuilding)' == '' ">true</IsTargetingPackBuilding>
@@ -176,6 +172,10 @@
       freebsd-x64
     </SupportedRuntimeIdentifiers>
 
+    <!-- Playwright provides binaries for Windows (x86 and x64), macOS (x64) and Linux (x64, non musl). We can't use it on other architectures. -->
+    <IsPlaywrightAvailable Condition="'$(TargetOsName)' == 'linux-musl' OR ('$(TargetArchitecture)' != 'x86' AND '$(TargetArchitecture)' != 'x64')">false</IsPlaywrightAvailable>
+    <IsPlaywrightAvailable Condition="'$(IsPlaywrightAvailable)' == ''">true</IsPlaywrightAvailable>
+
     <!-- Make error messages clickable in VS Code's console -->
     <GenerateFullPaths Condition="'$(VSCODE_CWD)' != '' OR '$(TERM_PROGRAM)' == 'vscode'">true</GenerateFullPaths>
 
@@ -198,8 +198,18 @@
   <!-- The location of the local installation of the .NET Core shared framework. -->
   <PropertyGroup>
     <LocalDotNetRoot>$(RepoRoot).dotnet\</LocalDotNetRoot>
-    <!-- Override the SDK default and point to local .dotnet folder. -->
-    <NetCoreTargetingPackRoot>$(LocalDotNetRoot)packs\</NetCoreTargetingPackRoot>
+    <!--
+      Override the SDK default and point to local .dotnet folder. This is done to work around
+      limitations in the way the .NET SDK finds shared frameworks and targeting packs. It allows
+      tests to use the shared frameworks and targeting packs that were just built.
+
+      However, source-build needs this to not happen while building projects that rely on the
+      AppHost framework pack. Source-build installs an SDK in a custom location outside this
+      repository, and setting NetCoreTargetingPackRoot to a different location causes source-build
+      to restore the AppHost pack as a prebuilt rather than using the one that's present in the SDK.
+      Source-build doesn't run tests, so the property is simply conditioned out.
+    -->
+    <NetCoreTargetingPackRoot Condition="'$(DotNetBuildFromSource)' != 'true'">$(LocalDotNetRoot)packs\</NetCoreTargetingPackRoot>
   </PropertyGroup>
 
   <Import Project="eng\tools\RepoTasks\RepoTasks.tasks" Condition="'$(MSBuildProjectName)' != 'RepoTasks' AND '$(DesignTimeBuild)' != 'true'" />

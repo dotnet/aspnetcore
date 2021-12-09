@@ -13,11 +13,11 @@ using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
+namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
+
+public class HttpConnectionManagerTests : LoggedTest
 {
-    public class HttpConnectionManagerTests : LoggedTest
-    {
-        // This test causes MemoryPoolBlocks to be finalized which in turn causes an assert failure in debug builds.
+    // This test causes MemoryPoolBlocks to be finalized which in turn causes an assert failure in debug builds.
 #if !DEBUG
         [ConditionalFact]
         [NoDebuggerCondition]
@@ -31,15 +31,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var logWh = new SemaphoreSlim(0);
             var appStartedWh = new SemaphoreSlim(0);
 
-            var mockTrace = new Mock<KestrelTrace>(LoggerFactory) { CallBase = true };
-            mockTrace
-                .Setup(trace => trace.ApplicationNeverCompleted(It.IsAny<string>()))
-                .Callback(() =>
-                {
-                    logWh.Release();
-                });
+            var factory = new LoggerFactory();
 
-            var testContext = new TestServiceContext(new LoggerFactory(), mockTrace.Object);
+            // Use a custom logger for callback instead of TestSink because TestSink keeps references
+            // to types when logging, prevents garbage collection, and makes the test fail.
+            factory.AddProvider(new CallbackLoggerProvider(eventId =>
+            {
+                if (eventId.Name == "ApplicationNeverCompleted")
+                {
+                    Logger.LogInformation("Releasing ApplicationNeverCompleted log wait handle.");
+                    logWh.Release();
+                }
+            }));
+
+            var testContext = new TestServiceContext(factory);
             testContext.InitializeHeartbeat();
 
             await using (var server = new TestServer(context =>
@@ -70,12 +75,45 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 Assert.True(logWaitAttempts < 10);
             }
         }
+
+        private class CallbackLoggerProvider : ILoggerProvider
+        {
+            private readonly Action<EventId> _logAction;
+
+            public CallbackLoggerProvider(Action<EventId> logAction)
+            {
+                _logAction = logAction;
+            }
+
+            public ILogger CreateLogger(string categoryName) => new CallbackLogger(_logAction);
+
+            public void Dispose()
+            {
+            }
+
+            private class CallbackLogger : ILogger
+            {
+                private readonly Action<EventId> _logAction;
+
+                public CallbackLogger(Action<EventId> logAction)
+                {
+                    _logAction = logAction;
+                }
+
+                public IDisposable BeginScope<TState>(TState state) => null;
+                public bool IsEnabled(LogLevel logLevel) => true;
+
+                public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+                {
+                    _logAction(eventId);
+                }
+            }
+        }
 #endif
 
-        private class NoDebuggerConditionAttribute : Attribute, ITestCondition
-        {
-            public bool IsMet => !Debugger.IsAttached;
-            public string SkipReason => "A debugger is attached.";
-        }
+    private class NoDebuggerConditionAttribute : Attribute, ITestCondition
+    {
+        public bool IsMet => !Debugger.IsAttached;
+        public string SkipReason => "A debugger is attached.";
     }
 }

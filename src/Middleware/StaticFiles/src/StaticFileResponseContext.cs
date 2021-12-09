@@ -5,32 +5,31 @@ using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.FileProviders;
 
-namespace Microsoft.AspNetCore.StaticFiles
+namespace Microsoft.AspNetCore.StaticFiles;
+
+/// <summary>
+/// Contains information about the request and the file that will be served in response.
+/// </summary>
+public class StaticFileResponseContext
 {
     /// <summary>
-    /// Contains information about the request and the file that will be served in response.
+    /// Constructs the <see cref="StaticFileResponseContext"/>.
     /// </summary>
-    public class StaticFileResponseContext
+    /// <param name="context">The request and response information.</param>
+    /// <param name="file">The file to be served.</param>
+    public StaticFileResponseContext(HttpContext context, IFileInfo file)
     {
-        /// <summary>
-        /// Constructs the <see cref="StaticFileResponseContext"/>.
-        /// </summary>
-        /// <param name="context">The request and response information.</param>
-        /// <param name="file">The file to be served.</param>
-        public StaticFileResponseContext(HttpContext context, IFileInfo file)
-        {
-            Context = context ?? throw new ArgumentNullException(nameof(context));
-            File = file ?? throw new ArgumentNullException(nameof(file));
-        }
-
-        /// <summary>
-        /// The request and response information.
-        /// </summary>
-        public HttpContext Context { get; }
-
-        /// <summary>
-        /// The file to be served.
-        /// </summary>
-        public IFileInfo File { get; }
+        Context = context ?? throw new ArgumentNullException(nameof(context));
+        File = file ?? throw new ArgumentNullException(nameof(file));
     }
+
+    /// <summary>
+    /// The request and response information.
+    /// </summary>
+    public HttpContext Context { get; }
+
+    /// <summary>
+    /// The file to be served.
+    /// </summary>
+    public IFileInfo File { get; }
 }

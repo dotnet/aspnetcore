@@ -3,16 +3,15 @@
 
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Routing
+namespace Microsoft.AspNetCore.Routing;
+
+/// <summary>
+/// Defines a contract used to specify an endpoint group name in <see cref="Endpoint.Metadata"/>.
+/// </summary>
+public interface IEndpointGroupNameMetadata
 {
     /// <summary>
-    /// Defines a contract used to specify an endpoint group name in <see cref="Endpoint.Metadata"/>.
+    /// Gets the endpoint group name.
     /// </summary>
-    public interface IEndpointGroupNameMetadata
-    {
-        /// <summary>
-        /// Gets the endpoint group name.
-        /// </summary>
-        string EndpointGroupName { get; }
-    }
+    string EndpointGroupName { get; }
 }

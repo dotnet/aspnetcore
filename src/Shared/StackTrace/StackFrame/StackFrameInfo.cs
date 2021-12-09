@@ -4,24 +4,23 @@
 using System.Diagnostics;
 #nullable enable
 
-namespace Microsoft.Extensions.StackTrace.Sources
+namespace Microsoft.Extensions.StackTrace.Sources;
+
+internal class StackFrameInfo
 {
-    internal class StackFrameInfo
+    public StackFrameInfo(int lineNumber, string? filePath, StackFrame? stackFrame, MethodDisplayInfo? methodDisplayInfo)
     {
-        public StackFrameInfo(int lineNumber, string? filePath, StackFrame? stackFrame, MethodDisplayInfo? methodDisplayInfo)
-        {
-            LineNumber = lineNumber;
-            FilePath = filePath;
-            StackFrame = stackFrame;
-            MethodDisplayInfo = methodDisplayInfo;
-        }
-
-        public int LineNumber { get; }
-
-        public string? FilePath { get; }
-
-        public StackFrame? StackFrame { get; }
-
-        public MethodDisplayInfo? MethodDisplayInfo { get; }
+        LineNumber = lineNumber;
+        FilePath = filePath;
+        StackFrame = stackFrame;
+        MethodDisplayInfo = methodDisplayInfo;
     }
+
+    public int LineNumber { get; }
+
+    public string? FilePath { get; }
+
+    public StackFrame? StackFrame { get; }
+
+    public MethodDisplayInfo? MethodDisplayInfo { get; }
 }

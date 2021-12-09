@@ -3,15 +3,14 @@
 
 using Microsoft.AspNetCore.Http.Features;
 
-namespace Microsoft.AspNetCore.TestHost
-{
-    internal class RequestBodyDetectionFeature : IHttpRequestBodyDetectionFeature
-    {
-        public RequestBodyDetectionFeature(bool canHaveBody)
-        {
-            CanHaveBody = canHaveBody;
-        }
+namespace Microsoft.AspNetCore.TestHost;
 
-        public bool CanHaveBody { get; }
+internal class RequestBodyDetectionFeature : IHttpRequestBodyDetectionFeature
+{
+    public RequestBodyDetectionFeature(bool canHaveBody)
+    {
+        CanHaveBody = canHaveBody;
     }
+
+    public bool CanHaveBody { get; }
 }

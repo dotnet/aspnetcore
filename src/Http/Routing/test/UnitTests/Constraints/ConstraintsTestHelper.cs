@@ -6,16 +6,15 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using Moq;
 
-namespace Microsoft.AspNetCore.Routing.Tests
+namespace Microsoft.AspNetCore.Routing.Tests;
+
+public class ConstraintsTestHelper
 {
-    public class ConstraintsTestHelper
+    public static bool TestConstraint(IRouteConstraint constraint, object value)
     {
-        public static bool TestConstraint(IRouteConstraint constraint, object value)
-        {
-            var parameterName = "fake";
-            var values = new RouteValueDictionary() { { parameterName, value } };
-            var routeDirection = RouteDirection.IncomingRequest;
-            return constraint.Match(httpContext: null, route: null, parameterName, values, routeDirection);
-        }
+        var parameterName = "fake";
+        var values = new RouteValueDictionary() { { parameterName, value } };
+        var routeDirection = RouteDirection.IncomingRequest;
+        return constraint.Match(httpContext: null, route: null, parameterName, values, routeDirection);
     }
 }

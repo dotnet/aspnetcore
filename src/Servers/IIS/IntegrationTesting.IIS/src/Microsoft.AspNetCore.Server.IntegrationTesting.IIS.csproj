@@ -55,11 +55,15 @@
   </Target>
 
   <ItemGroup>
-    <ProjectReference Include="$(RepoRoot)src\Servers\IIS\IIS\test\testassets\TestTasks\TestTasks.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="$(RepoRoot)src\Servers\IIS\IIS\test\testassets\TestTasks\TestTasks.csproj"
+      Private="false"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true" />
     <ProjectReference Include="$(RepoRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
 
     <Reference Include="Microsoft.NETCore.Windows.ApiSets" />
     <Reference Include="Microsoft.Web.Administration" />
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.ServiceProcess.ServiceController" />
   </ItemGroup>
 

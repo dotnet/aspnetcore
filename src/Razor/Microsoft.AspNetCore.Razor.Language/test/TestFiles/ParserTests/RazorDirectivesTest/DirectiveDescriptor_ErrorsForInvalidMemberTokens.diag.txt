@@ -1,1 +1,0 @@
-(1,9): Error RZ1015: The 'custom' directive expects an identifier.

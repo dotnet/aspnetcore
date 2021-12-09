@@ -324,6 +324,9 @@ function returnJSObjectReference() {
     identity: function (value) {
       return value;
     },
+    getWindow: function() {
+      return window;
+    },
     nonFunction: 123,
     nested: {
       add: function (a, b) {

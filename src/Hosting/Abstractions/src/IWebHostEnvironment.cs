@@ -4,17 +4,17 @@
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 
-namespace Microsoft.AspNetCore.Hosting
+namespace Microsoft.AspNetCore.Hosting;
+
+/// <summary>
+/// Provides information about the web hosting environment an application is running in.
+/// </summary>
+public interface IWebHostEnvironment : IHostEnvironment
 {
     /// <summary>
-    /// Provides information about the web hosting environment an application is running in.
+    /// Gets or sets the absolute path to the directory that contains the web-servable application content files.
     /// </summary>
-    public interface IWebHostEnvironment : IHostEnvironment
-    {
-        /// <summary>
-        /// Gets or sets the absolute path to the directory that contains the web-servable application content files.
-        /// </summary>
-        string WebRootPath { get; set; }
+    string WebRootPath { get; set; }
 
         /// <summary>
         /// Gets or sets an <see cref="IFileProvider"/> pointing at <see cref="WebRootPath"/>.

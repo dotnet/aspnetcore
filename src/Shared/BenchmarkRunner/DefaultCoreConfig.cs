@@ -12,22 +12,22 @@ using BenchmarkDotNet.Toolchains.CsProj;
 using BenchmarkDotNet.Toolchains.DotNetCli;
 using BenchmarkDotNet.Validators;
 
-namespace BenchmarkDotNet.Attributes
+namespace BenchmarkDotNet.Attributes;
+
+internal class DefaultCoreConfig : ManualConfig
 {
-    internal class DefaultCoreConfig : ManualConfig
+    public DefaultCoreConfig()
     {
-        public DefaultCoreConfig()
-        {
-            AddLogger(ConsoleLogger.Default);
-            AddExporter(MarkdownExporter.GitHub);
+        AddLogger(ConsoleLogger.Default);
+        AddExporter(MarkdownExporter.GitHub);
 
-            AddDiagnoser(MemoryDiagnoser.Default);
-            AddColumn(StatisticColumn.OperationsPerSecond);
-            AddColumnProvider(DefaultColumnProviders.Instance);
+        AddDiagnoser(MemoryDiagnoser.Default);
+        AddColumn(StatisticColumn.OperationsPerSecond);
+        AddColumnProvider(DefaultColumnProviders.Instance);
 
-            AddValidator(JitOptimizationsValidator.FailOnError);
+        AddValidator(JitOptimizationsValidator.FailOnError);
 
-            AddJob(Job.Default
+        AddJob(Job.Default
 #if NETCOREAPP2_1
                 .WithToolchain(CsProjCoreToolchain.From(NetCoreAppSettings.NetCoreApp21))
 #elif NETCOREAPP3_0
@@ -38,11 +38,12 @@ namespace BenchmarkDotNet.Attributes
                 .WithToolchain(CsProjCoreToolchain.From(new NetCoreAppSettings("net5.0", null, ".NET Core 5.0")))
 #elif NET6_0
                 .WithToolchain(CsProjCoreToolchain.From(new NetCoreAppSettings("net6.0", null, ".NET Core 6.0")))
+#elif NET7_0
+                .WithToolchain(CsProjCoreToolchain.From(new NetCoreAppSettings("net7.0", null, ".NET Core 7.0")))
 #else
 #error Target frameworks need to be updated.
 #endif
                 .WithGcMode(new GcMode { Server = true })
-                .WithStrategy(RunStrategy.Throughput));
-        }
+            .WithStrategy(RunStrategy.Throughput));
     }
 }

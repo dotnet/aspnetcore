@@ -14,93 +14,92 @@ using Microsoft.AspNetCore.DataProtection.Cng;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
+namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
+
+/// <summary>
+/// An <see cref="IAuthenticatedEncryptorFactory"/> for <see cref="CngGcmAuthenticatedEncryptor"/>.
+/// </summary>
+public sealed class CngGcmAuthenticatedEncryptorFactory : IAuthenticatedEncryptorFactory
 {
+    private readonly ILogger _logger;
+
     /// <summary>
-    /// An <see cref="IAuthenticatedEncryptorFactory"/> for <see cref="CngGcmAuthenticatedEncryptor"/>.
+    /// Initializes a new instance of <see cref="CngCbcAuthenticatedEncryptorFactory"/>.
     /// </summary>
-    public sealed class CngGcmAuthenticatedEncryptorFactory : IAuthenticatedEncryptorFactory
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+    public CngGcmAuthenticatedEncryptorFactory(ILoggerFactory loggerFactory)
     {
-        private readonly ILogger _logger;
+        _logger = loggerFactory.CreateLogger<CngGcmAuthenticatedEncryptorFactory>();
+    }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="CngCbcAuthenticatedEncryptorFactory"/>.
-        /// </summary>
-        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
-        public CngGcmAuthenticatedEncryptorFactory(ILoggerFactory loggerFactory)
+    /// <inheritdoc />
+    public IAuthenticatedEncryptor? CreateEncryptorInstance(IKey key)
+    {
+        var descriptor = key.Descriptor as CngGcmAuthenticatedEncryptorDescriptor;
+        if (descriptor == null)
         {
-            _logger = loggerFactory.CreateLogger<CngGcmAuthenticatedEncryptorFactory>();
+            return null;
         }
 
-        /// <inheritdoc />
-        public IAuthenticatedEncryptor? CreateEncryptorInstance(IKey key)
+        Debug.Assert(RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
+
+        return CreateAuthenticatedEncryptorInstance(descriptor.MasterKey, descriptor.Configuration);
+    }
+
+    [SupportedOSPlatform("windows")]
+    [return: NotNullIfNotNull("configuration")]
+    internal CngGcmAuthenticatedEncryptor? CreateAuthenticatedEncryptorInstance(
+        ISecret secret,
+        CngGcmAuthenticatedEncryptorConfiguration configuration)
+    {
+        if (configuration == null)
         {
-            var descriptor = key.Descriptor as CngGcmAuthenticatedEncryptorDescriptor;
-            if (descriptor == null)
-            {
-                return null;
-            }
-
-            Debug.Assert(RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
-
-            return CreateAuthenticatedEncryptorInstance(descriptor.MasterKey, descriptor.Configuration);
+            return null;
         }
 
-        [SupportedOSPlatform("windows")]
-        [return: NotNullIfNotNull("configuration")]
-        internal CngGcmAuthenticatedEncryptor? CreateAuthenticatedEncryptorInstance(
-            ISecret secret,
-            CngGcmAuthenticatedEncryptorConfiguration configuration)
-        {
-            if (configuration == null)
-            {
-                return null;
-            }
+        return new CngGcmAuthenticatedEncryptor(
+            keyDerivationKey: new Secret(secret),
+            symmetricAlgorithmHandle: GetSymmetricBlockCipherAlgorithmHandle(configuration),
+            symmetricAlgorithmKeySizeInBytes: (uint)(configuration.EncryptionAlgorithmKeySize / 8));
+    }
 
-            return new CngGcmAuthenticatedEncryptor(
-                keyDerivationKey: new Secret(secret),
-                symmetricAlgorithmHandle: GetSymmetricBlockCipherAlgorithmHandle(configuration),
-                symmetricAlgorithmKeySizeInBytes: (uint)(configuration.EncryptionAlgorithmKeySize / 8));
+    [SupportedOSPlatform("windows")]
+    private BCryptAlgorithmHandle GetSymmetricBlockCipherAlgorithmHandle(CngGcmAuthenticatedEncryptorConfiguration configuration)
+    {
+        // basic argument checking
+        if (String.IsNullOrEmpty(configuration.EncryptionAlgorithm))
+        {
+            throw Error.Common_PropertyCannotBeNullOrEmpty(nameof(EncryptionAlgorithm));
+        }
+        if (configuration.EncryptionAlgorithmKeySize < 0)
+        {
+            throw Error.Common_PropertyMustBeNonNegative(nameof(configuration.EncryptionAlgorithmKeySize));
         }
 
-        [SupportedOSPlatform("windows")]
-        private BCryptAlgorithmHandle GetSymmetricBlockCipherAlgorithmHandle(CngGcmAuthenticatedEncryptorConfiguration configuration)
+        BCryptAlgorithmHandle? algorithmHandle = null;
+
+        _logger.OpeningCNGAlgorithmFromProviderWithChainingModeGCM(configuration.EncryptionAlgorithm, configuration.EncryptionAlgorithmProvider);
+        // Special-case cached providers
+        if (configuration.EncryptionAlgorithmProvider == null)
         {
-            // basic argument checking
-            if (String.IsNullOrEmpty(configuration.EncryptionAlgorithm))
-            {
-                throw Error.Common_PropertyCannotBeNullOrEmpty(nameof(EncryptionAlgorithm));
-            }
-            if (configuration.EncryptionAlgorithmKeySize < 0)
-            {
-                throw Error.Common_PropertyMustBeNonNegative(nameof(configuration.EncryptionAlgorithmKeySize));
-            }
-
-            BCryptAlgorithmHandle? algorithmHandle = null;
-
-            _logger.OpeningCNGAlgorithmFromProviderWithChainingModeGCM(configuration.EncryptionAlgorithm, configuration.EncryptionAlgorithmProvider);
-            // Special-case cached providers
-            if (configuration.EncryptionAlgorithmProvider == null)
-            {
-                if (configuration.EncryptionAlgorithm == Constants.BCRYPT_AES_ALGORITHM) { algorithmHandle = CachedAlgorithmHandles.AES_GCM; }
-            }
-
-            // Look up the provider dynamically if we couldn't fetch a cached instance
-            if (algorithmHandle == null)
-            {
-                algorithmHandle = BCryptAlgorithmHandle.OpenAlgorithmHandle(configuration.EncryptionAlgorithm, configuration.EncryptionAlgorithmProvider);
-                algorithmHandle.SetChainingMode(Constants.BCRYPT_CHAIN_MODE_GCM);
-            }
-
-            // make sure we're using a block cipher with an appropriate key size & block size
-            CryptoUtil.Assert(algorithmHandle.GetCipherBlockLength() == 128 / 8, "GCM requires a block cipher algorithm with a 128-bit block size.");
-            AlgorithmAssert.IsAllowableSymmetricAlgorithmKeySize(checked((uint)configuration.EncryptionAlgorithmKeySize));
-
-            // make sure the provided key length is valid
-            algorithmHandle.GetSupportedKeyLengths().EnsureValidKeyLength((uint)configuration.EncryptionAlgorithmKeySize);
-
-            // all good!
-            return algorithmHandle;
+            if (configuration.EncryptionAlgorithm == Constants.BCRYPT_AES_ALGORITHM) { algorithmHandle = CachedAlgorithmHandles.AES_GCM; }
         }
+
+        // Look up the provider dynamically if we couldn't fetch a cached instance
+        if (algorithmHandle == null)
+        {
+            algorithmHandle = BCryptAlgorithmHandle.OpenAlgorithmHandle(configuration.EncryptionAlgorithm, configuration.EncryptionAlgorithmProvider);
+            algorithmHandle.SetChainingMode(Constants.BCRYPT_CHAIN_MODE_GCM);
+        }
+
+        // make sure we're using a block cipher with an appropriate key size & block size
+        CryptoUtil.Assert(algorithmHandle.GetCipherBlockLength() == 128 / 8, "GCM requires a block cipher algorithm with a 128-bit block size.");
+        AlgorithmAssert.IsAllowableSymmetricAlgorithmKeySize(checked((uint)configuration.EncryptionAlgorithmKeySize));
+
+        // make sure the provided key length is valid
+        algorithmHandle.GetSupportedKeyLengths().EnsureValidKeyLength((uint)configuration.EncryptionAlgorithmKeySize);
+
+        // all good!
+        return algorithmHandle;
     }
 }

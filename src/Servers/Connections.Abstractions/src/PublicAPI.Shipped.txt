@@ -1,4 +1,16 @@
 #nullable enable
+abstract Microsoft.AspNetCore.Connections.BaseConnectionContext.Abort() -> void
+abstract Microsoft.AspNetCore.Connections.BaseConnectionContext.Abort(Microsoft.AspNetCore.Connections.ConnectionAbortedException! abortReason) -> void
+abstract Microsoft.AspNetCore.Connections.BaseConnectionContext.ConnectionId.get -> string!
+abstract Microsoft.AspNetCore.Connections.BaseConnectionContext.ConnectionId.set -> void
+abstract Microsoft.AspNetCore.Connections.BaseConnectionContext.Features.get -> Microsoft.AspNetCore.Http.Features.IFeatureCollection!
+abstract Microsoft.AspNetCore.Connections.BaseConnectionContext.Items.get -> System.Collections.Generic.IDictionary<object!, object?>!
+abstract Microsoft.AspNetCore.Connections.BaseConnectionContext.Items.set -> void
+abstract Microsoft.AspNetCore.Connections.ConnectionContext.Transport.get -> System.IO.Pipelines.IDuplexPipe!
+abstract Microsoft.AspNetCore.Connections.ConnectionContext.Transport.set -> void
+abstract Microsoft.AspNetCore.Connections.ConnectionHandler.OnConnectedAsync(Microsoft.AspNetCore.Connections.ConnectionContext! connection) -> System.Threading.Tasks.Task!
+abstract Microsoft.AspNetCore.Connections.MultiplexedConnectionContext.AcceptAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext?>
+abstract Microsoft.AspNetCore.Connections.MultiplexedConnectionContext.ConnectAsync(Microsoft.AspNetCore.Http.Features.IFeatureCollection? features = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext!>
 Microsoft.AspNetCore.Connections.AddressInUseException
 Microsoft.AspNetCore.Connections.AddressInUseException.AddressInUseException(string! message) -> void
 Microsoft.AspNetCore.Connections.AddressInUseException.AddressInUseException(string! message, System.Exception! inner) -> void
@@ -59,6 +71,8 @@ Microsoft.AspNetCore.Connections.Features.IConnectionLifetimeNotificationFeature
 Microsoft.AspNetCore.Connections.Features.IConnectionLifetimeNotificationFeature.ConnectionClosedRequested.get -> System.Threading.CancellationToken
 Microsoft.AspNetCore.Connections.Features.IConnectionLifetimeNotificationFeature.ConnectionClosedRequested.set -> void
 Microsoft.AspNetCore.Connections.Features.IConnectionLifetimeNotificationFeature.RequestClose() -> void
+Microsoft.AspNetCore.Connections.Features.IConnectionSocketFeature
+Microsoft.AspNetCore.Connections.Features.IConnectionSocketFeature.Socket.get -> System.Net.Sockets.Socket!
 Microsoft.AspNetCore.Connections.Features.IConnectionTransportFeature
 Microsoft.AspNetCore.Connections.Features.IConnectionTransportFeature.Transport.get -> System.IO.Pipelines.IDuplexPipe!
 Microsoft.AspNetCore.Connections.Features.IConnectionTransportFeature.Transport.set -> void
@@ -67,9 +81,14 @@ Microsoft.AspNetCore.Connections.Features.IConnectionUserFeature.User.get -> Sys
 Microsoft.AspNetCore.Connections.Features.IConnectionUserFeature.User.set -> void
 Microsoft.AspNetCore.Connections.Features.IMemoryPoolFeature
 Microsoft.AspNetCore.Connections.Features.IMemoryPoolFeature.MemoryPool.get -> System.Buffers.MemoryPool<byte>!
+Microsoft.AspNetCore.Connections.Features.IPersistentStateFeature
+Microsoft.AspNetCore.Connections.Features.IPersistentStateFeature.State.get -> System.Collections.Generic.IDictionary<object!, object?>!
 Microsoft.AspNetCore.Connections.Features.IProtocolErrorCodeFeature
 Microsoft.AspNetCore.Connections.Features.IProtocolErrorCodeFeature.Error.get -> long
 Microsoft.AspNetCore.Connections.Features.IProtocolErrorCodeFeature.Error.set -> void
+Microsoft.AspNetCore.Connections.Features.IStreamAbortFeature
+Microsoft.AspNetCore.Connections.Features.IStreamAbortFeature.AbortRead(long errorCode, Microsoft.AspNetCore.Connections.ConnectionAbortedException! abortReason) -> void
+Microsoft.AspNetCore.Connections.Features.IStreamAbortFeature.AbortWrite(long errorCode, Microsoft.AspNetCore.Connections.ConnectionAbortedException! abortReason) -> void
 Microsoft.AspNetCore.Connections.Features.IStreamDirectionFeature
 Microsoft.AspNetCore.Connections.Features.IStreamDirectionFeature.CanRead.get -> bool
 Microsoft.AspNetCore.Connections.Features.IStreamDirectionFeature.CanWrite.get -> bool
@@ -102,27 +121,37 @@ Microsoft.AspNetCore.Connections.IConnectionBuilder.Use(System.Func<Microsoft.As
 Microsoft.AspNetCore.Connections.IConnectionFactory
 Microsoft.AspNetCore.Connections.IConnectionFactory.ConnectAsync(System.Net.EndPoint! endpoint, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext!>
 Microsoft.AspNetCore.Connections.IConnectionListener
-Microsoft.AspNetCore.Connections.IConnectionListener.AcceptAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext!>
+Microsoft.AspNetCore.Connections.IConnectionListener.AcceptAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext?>
 Microsoft.AspNetCore.Connections.IConnectionListener.EndPoint.get -> System.Net.EndPoint!
 Microsoft.AspNetCore.Connections.IConnectionListener.UnbindAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Connections.IConnectionListenerFactory
 Microsoft.AspNetCore.Connections.IConnectionListenerFactory.BindAsync(System.Net.EndPoint! endpoint, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.IConnectionListener!>
+Microsoft.AspNetCore.Connections.IMultiplexedConnectionBuilder
+Microsoft.AspNetCore.Connections.IMultiplexedConnectionBuilder.ApplicationServices.get -> System.IServiceProvider!
+Microsoft.AspNetCore.Connections.IMultiplexedConnectionBuilder.Build() -> Microsoft.AspNetCore.Connections.MultiplexedConnectionDelegate!
+Microsoft.AspNetCore.Connections.IMultiplexedConnectionBuilder.Use(System.Func<Microsoft.AspNetCore.Connections.MultiplexedConnectionDelegate!, Microsoft.AspNetCore.Connections.MultiplexedConnectionDelegate!>! middleware) -> Microsoft.AspNetCore.Connections.IMultiplexedConnectionBuilder!
+Microsoft.AspNetCore.Connections.IMultiplexedConnectionFactory
+Microsoft.AspNetCore.Connections.IMultiplexedConnectionFactory.ConnectAsync(System.Net.EndPoint! endpoint, Microsoft.AspNetCore.Http.Features.IFeatureCollection? features = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.MultiplexedConnectionContext!>
+Microsoft.AspNetCore.Connections.IMultiplexedConnectionListener
+Microsoft.AspNetCore.Connections.IMultiplexedConnectionListener.AcceptAsync(Microsoft.AspNetCore.Http.Features.IFeatureCollection? features = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.MultiplexedConnectionContext?>
+Microsoft.AspNetCore.Connections.IMultiplexedConnectionListener.EndPoint.get -> System.Net.EndPoint!
+Microsoft.AspNetCore.Connections.IMultiplexedConnectionListener.UnbindAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Connections.IMultiplexedConnectionListenerFactory
+Microsoft.AspNetCore.Connections.IMultiplexedConnectionListenerFactory.BindAsync(System.Net.EndPoint! endpoint, Microsoft.AspNetCore.Http.Features.IFeatureCollection? features = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.IMultiplexedConnectionListener!>
+Microsoft.AspNetCore.Connections.MultiplexedConnectionBuilder
+Microsoft.AspNetCore.Connections.MultiplexedConnectionBuilder.ApplicationServices.get -> System.IServiceProvider!
+Microsoft.AspNetCore.Connections.MultiplexedConnectionBuilder.Build() -> Microsoft.AspNetCore.Connections.MultiplexedConnectionDelegate!
+Microsoft.AspNetCore.Connections.MultiplexedConnectionBuilder.MultiplexedConnectionBuilder(System.IServiceProvider! applicationServices) -> void
+Microsoft.AspNetCore.Connections.MultiplexedConnectionBuilder.Use(System.Func<Microsoft.AspNetCore.Connections.MultiplexedConnectionDelegate!, Microsoft.AspNetCore.Connections.MultiplexedConnectionDelegate!>! middleware) -> Microsoft.AspNetCore.Connections.IMultiplexedConnectionBuilder!
+Microsoft.AspNetCore.Connections.MultiplexedConnectionContext
+Microsoft.AspNetCore.Connections.MultiplexedConnectionContext.MultiplexedConnectionContext() -> void
+Microsoft.AspNetCore.Connections.MultiplexedConnectionDelegate
 Microsoft.AspNetCore.Connections.TransferFormat
 Microsoft.AspNetCore.Connections.TransferFormat.Binary = 1 -> Microsoft.AspNetCore.Connections.TransferFormat
 Microsoft.AspNetCore.Connections.TransferFormat.Text = 2 -> Microsoft.AspNetCore.Connections.TransferFormat
 Microsoft.AspNetCore.Connections.UriEndPoint
 Microsoft.AspNetCore.Connections.UriEndPoint.Uri.get -> System.Uri!
 Microsoft.AspNetCore.Connections.UriEndPoint.UriEndPoint(System.Uri! uri) -> void
-abstract Microsoft.AspNetCore.Connections.BaseConnectionContext.Abort() -> void
-abstract Microsoft.AspNetCore.Connections.BaseConnectionContext.Abort(Microsoft.AspNetCore.Connections.ConnectionAbortedException! abortReason) -> void
-abstract Microsoft.AspNetCore.Connections.BaseConnectionContext.ConnectionId.get -> string!
-abstract Microsoft.AspNetCore.Connections.BaseConnectionContext.ConnectionId.set -> void
-abstract Microsoft.AspNetCore.Connections.BaseConnectionContext.Features.get -> Microsoft.AspNetCore.Http.Features.IFeatureCollection!
-abstract Microsoft.AspNetCore.Connections.BaseConnectionContext.Items.get -> System.Collections.Generic.IDictionary<object!, object?>!
-abstract Microsoft.AspNetCore.Connections.BaseConnectionContext.Items.set -> void
-abstract Microsoft.AspNetCore.Connections.ConnectionContext.Transport.get -> System.IO.Pipelines.IDuplexPipe!
-abstract Microsoft.AspNetCore.Connections.ConnectionContext.Transport.set -> void
-abstract Microsoft.AspNetCore.Connections.ConnectionHandler.OnConnectedAsync(Microsoft.AspNetCore.Connections.ConnectionContext! connection) -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Connections.ConnectionContext.Abort() -> void
 override Microsoft.AspNetCore.Connections.ConnectionContext.Abort(Microsoft.AspNetCore.Connections.ConnectionAbortedException! abortReason) -> void
 override Microsoft.AspNetCore.Connections.DefaultConnectionContext.Abort(Microsoft.AspNetCore.Connections.ConnectionAbortedException! abortReason) -> void

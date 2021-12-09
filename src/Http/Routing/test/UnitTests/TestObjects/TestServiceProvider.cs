@@ -3,13 +3,12 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Routing.TestObjects
+namespace Microsoft.AspNetCore.Routing.TestObjects;
+
+internal class TestServiceProvider : IServiceProvider
 {
-    internal class TestServiceProvider : IServiceProvider
+    public object GetService(Type serviceType)
     {
-        public object GetService(Type serviceType)
-        {
-            throw new NotImplementedException();
-        }
+        throw new NotImplementedException();
     }
 }

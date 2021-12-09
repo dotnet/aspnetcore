@@ -4,20 +4,23 @@
     <HelixPreCommand Condition="'$(IsWindowsHelixQueue)' != 'true' AND '$(IsMacHelixQueue)' != 'true'" Include="./installjdk.sh 10.0.2 x64 &amp;&amp; if [ &quot;%24JAVA_HOME&quot; = &quot;&quot; ]%3B then export JAVA_HOME=%24PWD/java%3B fi" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TestDependsOnMssql)' == 'true' AND '$(IsWindowsHelixQueue)' == 'true' AND '$(TargetArchitecture)' != 'arm64'">
+  <ItemGroup Condition="'$(TestDependsOnMssql)' == 'true' AND '$(IsWindowsHelixQueue)' == 'true' AND '$(IsArm64HelixQueue)' != 'true'">
     <HelixPreCommand Include="call RunPowershell.cmd mssql\InstallSqlServerLocalDB.ps1 || exit /b 1" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <_TestingArchitecture>x64</_TestingArchitecture>
+    <_TestingArchitecture Condition=" '$(IsArm64HelixQueue)' == 'true' ">arm64</_TestingArchitecture>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(TestDependsOnPlaywright)' == 'true'">
     <SkipHelixQueues>
-      (Alpine.312.Amd64.Open)Ubuntu.1804.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.12-helix-20200908125345-56c6673;
-      (Fedora.34.Amd64.Open)ubuntu.1604.amd64.open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-34-helix-20210728124700-4f64125;
-      (Mariner)Ubuntu.1804.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-1.0-helix-20210528192219-92bf620;
-      Debian.9.Amd64.Open;
+      $(HelixQueueAlpine314);
+      $(HelixQueueDebian11);
+      $(HelixQueueFedora34);
+      $(HelixQueueMariner);
       Redhat.7.Amd64.Open;
       Ubuntu.2004.Amd64.Open;
-      Windows.7.Amd64.Open;
-      Windows.81.Amd64.Open;
     </SkipHelixQueues>
     <SkipHelixArm>true</SkipHelixArm>
   </PropertyGroup>
@@ -37,7 +40,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TestDependsOnNode)' == 'true' AND '$(IsWindowsHelixQueue)' == 'false'">
-    <HelixPreCommand Include="./installnode.sh $(NodeVersion) $(TargetArchitecture)" />
+    <HelixPreCommand Include="./installnode.sh $(NodeVersion) $(_TestingArchitecture)" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TestDependsOnNode)' == 'true' AND '$(IsWindowsHelixQueue)' == 'true'">
@@ -63,10 +66,10 @@
 
   <!-- Item group has to be defined here because Helix.props is evaluated before xunit.runner.console.props  -->
   <ItemGroup Condition="$(BuildHelixPayload)">
-    <Content Include="@(HelixContent)" />
-    <Content Include="$(RepoRoot)eng\scripts\Download.ps1" />
-    <Content Include="$(RepoRoot)NuGet.config" />
-    <Content Include="$(RepoRoot)global.json" />
+    <Content Include="@(HelixContent)" Visible="false" />
+    <Content Include="$(RepoRoot)eng\scripts\Download.ps1" Visible="false" />
+    <Content Include="$(RepoRoot)NuGet.config" Visible="false"  />
+    <Content Include="$(RepoRoot)global.json" Visible="false"  />
     <ContentWithTargetPath Include="
         $(RepoRoot)eng\common\pipeline-logging-functions.*;
         $(RepoRoot)eng\common\tools.*">
@@ -125,7 +128,7 @@
 
     <PropertyGroup>
       <BuildHelixPayload Condition="'@(_HelixApplicableTargetQueue->Count())' == '0'">false</BuildHelixPayload>
-      <BuildHelixPayload Condition="'$(TargetArchitecture)' == 'arm64' AND '$(SkipHelixArm)' == 'true'">false</BuildHelixPayload>
+      <BuildHelixPayload Condition="'$(IsArm64HelixQueue)' == 'true' AND '$(SkipHelixArm)' == 'true'">false</BuildHelixPayload>
       <BuildHelixPayload Condition="$(HelixTargetQueue.StartsWith('%28Alpine.')) AND '$(SkipHelixAlpine)' == 'true'">false</BuildHelixPayload>
       <BuildHelixPayload Condition="$(SkipHelixQueues.Contains('$(HelixTargetQueue)'))">false</BuildHelixPayload>
     </PropertyGroup>
@@ -190,8 +193,8 @@
           When the targeting pack builds, it has exactly the same version as the shared framework. Passing
           SharedFxVersion because that's needed even when the targeting pack isn't building.
         -->
-        <Command Condition="$(IsWindowsHelixQueue)">call runtests.cmd $(TargetFileName) $(SharedFxVersion) $(_HelixFriendlyNameTargetQueue) $(TargetArchitecture) $(RunQuarantinedTests) $(DotnetEfVersion) $(HelixTimeout) $(TestDependsOnPlaywright)</Command>
-        <Command Condition="!$(IsWindowsHelixQueue)">./runtests.sh $(TargetFileName) $(SharedFxVersion) $(_HelixFriendlyNameTargetQueue) $(TargetArchitecture) $(RunQuarantinedTests) $(DotnetEfVersion) $(HelixTimeout) $(TestDependsOnPlaywright)</Command>
+        <Command Condition="$(IsWindowsHelixQueue)">call runtests.cmd $(TargetFileName) $(SharedFxVersion) $(_HelixFriendlyNameTargetQueue) $(_TestingArchitecture) $(RunQuarantinedTests) $(DotnetEfVersion) $(HelixTimeout) $(TestDependsOnPlaywright)</Command>
+        <Command Condition="!$(IsWindowsHelixQueue)">./runtests.sh $(TargetFileName) $(SharedFxVersion) $(_HelixFriendlyNameTargetQueue) $(_TestingArchitecture) $(RunQuarantinedTests) $(DotnetEfVersion) $(HelixTimeout) $(TestDependsOnPlaywright)</Command>
         <Command Condition="$(HelixCommand) != ''">$(HelixCommand)</Command>
         <Timeout>$(HelixTimeout)</Timeout>
       </HelixWorkItem>

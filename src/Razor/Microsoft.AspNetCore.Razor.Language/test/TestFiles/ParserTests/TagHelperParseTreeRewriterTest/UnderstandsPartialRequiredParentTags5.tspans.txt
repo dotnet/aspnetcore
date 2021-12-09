@@ -1,2 +1,0 @@
-TagHelper span at (1:0,1 [36] ) - PTagHelper - CatchALlTagHelper
-TagHelper span at (5:0,5 [19] ) - StrongTagHelper - CatchALlTagHelper

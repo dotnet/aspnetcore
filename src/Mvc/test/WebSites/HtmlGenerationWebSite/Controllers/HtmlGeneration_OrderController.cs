@@ -5,13 +5,12 @@ using System;
 using HtmlGenerationWebSite.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace HtmlGenerationWebSite.Controllers
+namespace HtmlGenerationWebSite.Controllers;
+
+public class HtmlGeneration_OrderController : Controller
 {
-    public class HtmlGeneration_OrderController : Controller
+    public IActionResult Submit(Order order)
     {
-        public IActionResult Submit(Order order)
-        {
-            throw new NotImplementedException();
-        }
+        throw new NotImplementedException();
     }
 }

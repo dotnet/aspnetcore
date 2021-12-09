@@ -1,2 +1,0 @@
-(1,5): Error RZ1027: An opening "(" is missing the corresponding closing ")".
-(1,6): Error RZ1028: End of file was reached before the end of the block comment.  All comments that start with the "@*" sequence must be terminated with a matching "*@" sequence.

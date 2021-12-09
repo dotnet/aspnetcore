@@ -7,35 +7,34 @@ using AngleSharp.Dom.Html;
 using Microsoft.AspNetCore.Identity.FunctionalTests.Account;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Identity.FunctionalTests
+namespace Microsoft.AspNetCore.Identity.FunctionalTests;
+
+public class RegisterConfirmation : DefaultUIPage
 {
-    public class RegisterConfirmation : DefaultUIPage
+    private readonly IHtmlAnchorElement _confirmLink;
+    public static readonly string Path = "/Identity/Account/RegisterConfirmation";
+
+    public RegisterConfirmation(
+        HttpClient client,
+        IHtmlDocument register,
+        DefaultUIContext context)
+        : base(client, register, context)
     {
-        private readonly IHtmlAnchorElement _confirmLink;
-        public static readonly string Path = "/Identity/Account/RegisterConfirmation";
-
-        public RegisterConfirmation(
-            HttpClient client,
-            IHtmlDocument register,
-            DefaultUIContext context)
-            : base(client, register, context)
+        if (Context.HasRealEmailSender)
         {
-            if (Context.HasRealEmailSender)
-            {
-                Assert.Empty(Document.QuerySelectorAll("#confirm-link"));
-            }
-            else
-            {
-                _confirmLink = HtmlAssert.HasLink("#confirm-link", Document);
-            }
+            Assert.Empty(Document.QuerySelectorAll("#confirm-link"));
         }
-
-        public async Task<ConfirmEmail> ClickConfirmLinkAsync()
+        else
         {
-            var goToConfirm = await Client.GetAsync(_confirmLink.Href);
-            var confirm = await ResponseAssert.IsHtmlDocumentAsync(goToConfirm);
-
-            return await ConfirmEmail.Create(_confirmLink, Client, Context);
+            _confirmLink = HtmlAssert.HasLink("#confirm-link", Document);
         }
+    }
+
+    public async Task<ConfirmEmail> ClickConfirmLinkAsync()
+    {
+        var goToConfirm = await Client.GetAsync(_confirmLink.Href);
+        var confirm = await ResponseAssert.IsHtmlDocumentAsync(goToConfirm);
+
+        return await ConfirmEmail.Create(_confirmLink, Client, Context);
     }
 }

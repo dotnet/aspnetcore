@@ -8,6 +8,11 @@ on:
     # Once per day at midnight PST (8 UTC)
     - cron: '0 8 * * *'
 
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
 jobs:
   compare_repos:
     # Comment out this line to test the scripts in a fork
@@ -54,10 +59,10 @@ jobs:
       run: |
         # Test this script using an issue in the local forked repo
         $issue = 'https://api.github.com/repos/dotnet/aspnetcore/issues/18943'
-        $changed = .\aspnetcore\.github\workflows\ReportDiff.ps1
-        echo "::set-output name=changed::$changed"
+        $sendpr = .\aspnetcore\.github\workflows\ReportDiff.ps1
+        echo "::set-output name=sendpr::$sendpr"
     - name: Send PR
-      if: steps.check.outputs.changed == 'true'
+      if: steps.check.outputs.sendpr == 'true'
       # https://github.com/marketplace/actions/create-pull-request
       uses: dotnet/actions-create-pull-request@v3
       with:

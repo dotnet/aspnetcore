@@ -6,29 +6,28 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore
+namespace Microsoft.AspNetCore;
+
+internal sealed class ForwardedHeadersOptionsSetup : IConfigureOptions<ForwardedHeadersOptions>
 {
-    internal class ForwardedHeadersOptionsSetup : IConfigureOptions<ForwardedHeadersOptions>
+    private readonly IConfiguration _configuration;
+
+    public ForwardedHeadersOptionsSetup(IConfiguration configuration)
     {
-        private readonly IConfiguration _configuration;
+        _configuration = configuration;
+    }
 
-        public ForwardedHeadersOptionsSetup(IConfiguration configuration)
+    public void Configure(ForwardedHeadersOptions options)
+    {
+        if (!string.Equals("true", _configuration["ForwardedHeaders_Enabled"], StringComparison.OrdinalIgnoreCase))
         {
-            _configuration = configuration;
+            return;
         }
 
-        public void Configure(ForwardedHeadersOptions options)
-        {
-            if (!string.Equals("true", _configuration["ForwardedHeaders_Enabled"], StringComparison.OrdinalIgnoreCase))
-            {
-                return;
-            }
-
-            options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-            // Only loopback proxies are allowed by default. Clear that restriction because forwarders are
-            // being enabled by explicit configuration.
-            options.KnownNetworks.Clear();
-            options.KnownProxies.Clear();
-        }
+        options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+        // Only loopback proxies are allowed by default. Clear that restriction because forwarders are
+        // being enabled by explicit configuration.
+        options.KnownNetworks.Clear();
+        options.KnownProxies.Clear();
     }
 }

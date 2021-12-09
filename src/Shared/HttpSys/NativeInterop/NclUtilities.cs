@@ -3,17 +3,16 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.HttpSys.Internal
+namespace Microsoft.AspNetCore.HttpSys.Internal;
+
+internal static class NclUtilities
 {
-    internal static class NclUtilities
+    internal static bool HasShutdownStarted
     {
-        internal static bool HasShutdownStarted
+        get
         {
-            get
-            {
-                return Environment.HasShutdownStarted
-                    || AppDomain.CurrentDomain.IsFinalizingForUnload();
-            }
+            return Environment.HasShutdownStarted
+                || AppDomain.CurrentDomain.IsFinalizingForUnload();
         }
     }
 }

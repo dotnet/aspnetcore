@@ -9,90 +9,89 @@ using Microsoft.AspNetCore.BrowserTesting;
 using Templates.Test.Helpers;
 using Xunit;
 
-namespace Templates.Test
+namespace BlazorTemplates.Tests;
+
+public abstract class BlazorTemplateTest : BrowserTestBase
 {
-    public abstract class BlazorTemplateTest : BrowserTestBase
+    public const int BUILDCREATEPUBLISH_PRIORITY = -1000;
+
+    public BlazorTemplateTest(ProjectFactoryFixture projectFactory)
     {
-        public const int BUILDCREATEPUBLISH_PRIORITY = -1000;
+        ProjectFactory = projectFactory;
+    }
 
-        public BlazorTemplateTest(ProjectFactoryFixture projectFactory)
+    public ProjectFactoryFixture ProjectFactory { get; set; }
+
+    public abstract string ProjectType { get; }
+
+    protected async Task<Project> CreateBuildPublishAsync(string projectName, string auth = null, string[] args = null, string targetFramework = null, bool serverProject = false, bool onlyCreate = false)
+    {
+        // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
+        Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
+
+        var project = await ProjectFactory.GetOrCreateProject(projectName, Output);
+        if (targetFramework != null)
         {
-            ProjectFactory = projectFactory;
+            project.TargetFramework = targetFramework;
         }
 
-        public ProjectFactoryFixture ProjectFactory { get; set; }
-        
-        public abstract string ProjectType { get; }
+        var createResult = await project.RunDotNetNewAsync(ProjectType, auth: auth, args: args);
+        Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
 
-        protected async Task<Project> CreateBuildPublishAsync(string projectName, string auth = null, string[] args = null, string targetFramework = null, bool serverProject = false, bool onlyCreate = false)
+        if (!onlyCreate)
         {
-            // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
-            Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
-
-            var project = await ProjectFactory.GetOrCreateProject(projectName, Output);
-            if (targetFramework != null)
+            var targetProject = project;
+            if (serverProject)
             {
-                project.TargetFramework = targetFramework;
+                targetProject = GetSubProject(project, "Server", $"{project.ProjectName}.Server");
             }
 
-            var createResult = await project.RunDotNetNewAsync(ProjectType, auth: auth, args: args);
-            Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
+            var publishResult = await targetProject.RunDotNetPublishAsync(noRestore: false);
+            Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", targetProject, publishResult));
 
-            if (!onlyCreate)
-            {
-                var targetProject = project;
-                if (serverProject)
-                {
-                    targetProject = GetSubProject(project, "Server", $"{project.ProjectName}.Server");
-                }
+            // Run dotnet build after publish. The reason is that one uses Config = Debug and the other uses Config = Release
+            // The output from publish will go into bin/Release/netcoreappX.Y/publish and won't be affected by calling build
+            // later, while the opposite is not true.
 
-                var publishResult = await targetProject.RunDotNetPublishAsync(noRestore: false);
-                Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", targetProject, publishResult));
-                
-                // Run dotnet build after publish. The reason is that one uses Config = Debug and the other uses Config = Release
-                // The output from publish will go into bin/Release/netcoreappX.Y/publish and won't be affected by calling build
-                // later, while the opposite is not true.
-
-                var buildResult = await targetProject.RunDotNetBuildAsync();
-                Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", targetProject, buildResult));                
-            }
-
-            return project;
+            var buildResult = await targetProject.RunDotNetBuildAsync();
+            Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", targetProject, buildResult));
         }
 
-        protected static Project GetSubProject(Project project, string projectDirectory, string projectName)
+        return project;
+    }
+
+    protected static Project GetSubProject(Project project, string projectDirectory, string projectName)
+    {
+        var subProjectDirectory = Path.Combine(project.TemplateOutputDir, projectDirectory);
+        if (!Directory.Exists(subProjectDirectory))
         {
-            var subProjectDirectory = Path.Combine(project.TemplateOutputDir, projectDirectory);
-            if (!Directory.Exists(subProjectDirectory))
-            {
-                throw new DirectoryNotFoundException($"Directory {subProjectDirectory} was not found.");
-            }
-
-            var subProject = new Project
-            {
-                Output = project.Output,
-                DiagnosticsMessageSink = project.DiagnosticsMessageSink,
-                ProjectName = projectName,
-                TemplateOutputDir = subProjectDirectory,
-            };
-
-            return subProject;
+            throw new DirectoryNotFoundException($"Directory {subProjectDirectory} was not found.");
         }
 
-        public static bool TryValidateBrowserRequired(BrowserKind browserKind, bool isRequired, out string error)
+        var subProject = new Project
         {
-            error = !isRequired ? null : $"Browser '{browserKind}' is required but not configured on '{RuntimeInformation.OSDescription}'";
-            return isRequired;
-        }
+            Output = project.Output,
+            DiagnosticsMessageSink = project.DiagnosticsMessageSink,
+            ProjectName = projectName,
+            TemplateOutputDir = subProjectDirectory,
+        };
 
-        protected void EnsureBrowserAvailable(BrowserKind browserKind)
-        {
-            Assert.False(
-                TryValidateBrowserRequired(
-                    browserKind,
-                    isRequired: !BrowserManager.IsExplicitlyDisabled(browserKind),
-                    out var errorMessage),
-                errorMessage);
-        }
+        return subProject;
+    }
+
+    public static bool TryValidateBrowserRequired(BrowserKind browserKind, bool isRequired, out string error)
+    {
+        error = !isRequired ? null : $"Browser '{browserKind}' is required but not configured on '{RuntimeInformation.OSDescription}'";
+        return isRequired;
+    }
+
+    protected void EnsureBrowserAvailable(BrowserKind browserKind)
+    {
+        Assert.False(
+            TryValidateBrowserRequired(
+                browserKind,
+                isRequired: !BrowserManager.IsExplicitlyDisabled(browserKind),
+                out var errorMessage),
+            errorMessage);
     }
 }

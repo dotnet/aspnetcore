@@ -3,14 +3,13 @@
 
 using Microsoft.AspNetCore.Razor.TagHelpers;
 
-namespace TagHelpersWebSite.TagHelpers
+namespace TagHelpersWebSite.TagHelpers;
+
+[HtmlTargetElement("root")]
+public class RootViewStartTagHelper : TagHelper
 {
-    [HtmlTargetElement("root")]
-    public class RootViewStartTagHelper : TagHelper
+    public override void Process(TagHelperContext context, TagHelperOutput output)
     {
-        public override void Process(TagHelperContext context, TagHelperOutput output)
-        {
-            output.Content.AppendHtml("root-content");
-        }
+        output.Content.AppendHtml("root-content");
     }
 }

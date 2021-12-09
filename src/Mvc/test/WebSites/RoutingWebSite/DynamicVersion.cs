@@ -1,10 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace RoutingWebSite
+namespace RoutingWebSite;
+
+public class DynamicVersion
 {
-    public class DynamicVersion
-    {
-        public string Version { get; set; }
-    }
+    public string Version { get; set; }
 }

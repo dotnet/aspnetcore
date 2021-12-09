@@ -430,6 +430,11 @@ namespace System.Net.Http.HPack
                 currentIndex += count;
 
                 _state = State.HeaderValueLength;
+                ParseHeaderValueLength(data, ref currentIndex, handler);
+            }
+            else if (count == 0)
+            {
+                // no-op
             }
             else
             {

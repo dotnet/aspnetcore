@@ -1,9 +1,0 @@
-Source Location: (127:4,12 [35] x:\dir\subdir\Test\TestComponent.cshtml)
-|
-    private string text = "hi";
-|
-Generated Location: (1598:43,12 [35] )
-|
-    private string text = "hi";
-|
-

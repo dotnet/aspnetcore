@@ -10,54 +10,53 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.Hosting;
 
-namespace DeveloperExceptionPageSample
+namespace DeveloperExceptionPageSample;
+
+public class Startup
 {
-    public class Startup
+    public void Configure(IApplicationBuilder app)
     {
-        public void Configure(IApplicationBuilder app)
+        app.Use((context, next) =>
         {
-            app.Use((context, next) =>
+            context.Request.RouteValues = new RouteValueDictionary(new
             {
-                context.Request.RouteValues = new RouteValueDictionary(new
-                {
-                    routeValue1 = "Value1",
-                    routeValue2 = "Value2",
-                });
-
-                var endpoint = new RouteEndpoint(
-                    c => null,
-                    RoutePatternFactory.Parse("/"),
-                    0,
-                    new EndpointMetadataCollection(new HttpMethodMetadata(new[] { "GET", "POST" })),
-                    "Endpoint display name");
-
-                context.SetEndpoint(endpoint);
-                return next(context);
+                routeValue1 = "Value1",
+                routeValue2 = "Value2",
             });
-            app.UseDeveloperExceptionPage();
-            app.Run(context =>
-            {
-                throw new Exception(string.Concat(
-                    "Demonstration exception. The list:", "\r\n",
-                    "New Line 1", "\n",
-                    "New Line 2", Environment.NewLine,
-                    "New Line 3"));
-            });
-        }
 
-        public static Task Main(string[] args)
+            var endpoint = new RouteEndpoint(
+                c => null,
+                RoutePatternFactory.Parse("/"),
+                0,
+                new EndpointMetadataCollection(new HttpMethodMetadata(new[] { "GET", "POST" })),
+                "Endpoint display name");
+
+            context.SetEndpoint(endpoint);
+            return next(context);
+        });
+        app.UseDeveloperExceptionPage();
+        app.Run(context =>
         {
-            var host = new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
-                {
-                    webHostBuilder
-                    .UseKestrel()
-                    .UseIISIntegration()
-                    .UseStartup<Startup>();
-                })
-                .Build();
+            throw new Exception(string.Concat(
+                "Demonstration exception. The list:", "\r\n",
+                "New Line 1", "\n",
+                "New Line 2", Environment.NewLine,
+                "New Line 3"));
+        });
+    }
 
-            return host.RunAsync();
-        }
+    public static Task Main(string[] args)
+    {
+        var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseKestrel()
+                .UseIISIntegration()
+                .UseStartup<Startup>();
+            })
+            .Build();
+
+        return host.RunAsync();
     }
 }

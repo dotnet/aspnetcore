@@ -4,10 +4,9 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Routing
+namespace Microsoft.AspNetCore.Routing;
+
+public static class TestConstants
 {
-    public static class TestConstants
-    {
-        internal static readonly RequestDelegate EmptyRequestDelegate = (context) => Task.CompletedTask;
-    }
+    internal static readonly RequestDelegate EmptyRequestDelegate = (context) => Task.CompletedTask;
 }

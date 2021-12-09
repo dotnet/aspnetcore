@@ -9,32 +9,31 @@ using Microsoft.Extensions.Hosting;
 
 // Note that this sample will not run. It is only here to illustrate usage patterns.
 
-namespace SampleStartups
+namespace SampleStartups;
+
+public class StartupHelloWorld : StartupBase
 {
-    public class StartupHelloWorld : StartupBase
+    // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+    public override void Configure(IApplicationBuilder app)
     {
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public override void Configure(IApplicationBuilder app)
+        app.Run(async (context) =>
         {
-            app.Run(async (context) =>
+            await context.Response.WriteAsync("Hello World!");
+        });
+    }
+
+    // Entry point for the application.
+    public static Task Main(string[] args)
+    {
+        var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
             {
-                await context.Response.WriteAsync("Hello World!");
-            });
-        }
+                webHostBuilder
+                    .UseKestrel()
+                    .UseStartup<StartupHelloWorld>();
+            })
+            .Build();
 
-        // Entry point for the application.
-        public static Task Main(string[] args)
-        {
-            var host = new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
-                {
-                    webHostBuilder
-                        .UseKestrel()
-                        .UseStartup<StartupHelloWorld>();
-                })
-                .Build();
-
-            return host.RunAsync();
-        }
+        return host.RunAsync();
     }
 }

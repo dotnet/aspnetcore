@@ -1,12 +1,12 @@
 #nullable enable
 Microsoft.AspNetCore.Mvc.Cors.CorsAuthorizationFilter
+Microsoft.AspNetCore.Mvc.Cors.CorsAuthorizationFilter.CorsAuthorizationFilter(Microsoft.AspNetCore.Cors.Infrastructure.ICorsService! corsService, Microsoft.AspNetCore.Cors.Infrastructure.ICorsPolicyProvider! policyProvider) -> void
+Microsoft.AspNetCore.Mvc.Cors.CorsAuthorizationFilter.CorsAuthorizationFilter(Microsoft.AspNetCore.Cors.Infrastructure.ICorsService! corsService, Microsoft.AspNetCore.Cors.Infrastructure.ICorsPolicyProvider! policyProvider, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
+Microsoft.AspNetCore.Mvc.Cors.CorsAuthorizationFilter.OnAuthorizationAsync(Microsoft.AspNetCore.Mvc.Filters.AuthorizationFilterContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Mvc.Cors.CorsAuthorizationFilter.Order.get -> int
+Microsoft.AspNetCore.Mvc.Cors.CorsAuthorizationFilter.PolicyName.get -> string?
+Microsoft.AspNetCore.Mvc.Cors.CorsAuthorizationFilter.PolicyName.set -> void
 Microsoft.Extensions.DependencyInjection.MvcCorsMvcCoreBuilderExtensions
-~Microsoft.AspNetCore.Mvc.Cors.CorsAuthorizationFilter.CorsAuthorizationFilter(Microsoft.AspNetCore.Cors.Infrastructure.ICorsService corsService, Microsoft.AspNetCore.Cors.Infrastructure.ICorsPolicyProvider policyProvider) -> void
-~Microsoft.AspNetCore.Mvc.Cors.CorsAuthorizationFilter.CorsAuthorizationFilter(Microsoft.AspNetCore.Cors.Infrastructure.ICorsService corsService, Microsoft.AspNetCore.Cors.Infrastructure.ICorsPolicyProvider policyProvider, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) -> void
-~Microsoft.AspNetCore.Mvc.Cors.CorsAuthorizationFilter.OnAuthorizationAsync(Microsoft.AspNetCore.Mvc.Filters.AuthorizationFilterContext context) -> System.Threading.Tasks.Task
-~Microsoft.AspNetCore.Mvc.Cors.CorsAuthorizationFilter.PolicyName.get -> string
-~Microsoft.AspNetCore.Mvc.Cors.CorsAuthorizationFilter.PolicyName.set -> void
-~static Microsoft.Extensions.DependencyInjection.MvcCorsMvcCoreBuilderExtensions.AddCors(this Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder builder) -> Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder
-~static Microsoft.Extensions.DependencyInjection.MvcCorsMvcCoreBuilderExtensions.AddCors(this Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder builder, System.Action<Microsoft.AspNetCore.Cors.Infrastructure.CorsOptions> setupAction) -> Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder
-~static Microsoft.Extensions.DependencyInjection.MvcCorsMvcCoreBuilderExtensions.ConfigureCors(this Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder builder, System.Action<Microsoft.AspNetCore.Cors.Infrastructure.CorsOptions> setupAction) -> Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder
+static Microsoft.Extensions.DependencyInjection.MvcCorsMvcCoreBuilderExtensions.AddCors(this Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder! builder) -> Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder!
+static Microsoft.Extensions.DependencyInjection.MvcCorsMvcCoreBuilderExtensions.AddCors(this Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder! builder, System.Action<Microsoft.AspNetCore.Cors.Infrastructure.CorsOptions!>! setupAction) -> Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder!
+static Microsoft.Extensions.DependencyInjection.MvcCorsMvcCoreBuilderExtensions.ConfigureCors(this Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder! builder, System.Action<Microsoft.AspNetCore.Cors.Infrastructure.CorsOptions!>! setupAction) -> Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder!

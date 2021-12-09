@@ -3,11 +3,10 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace RazorPagesWebSite
+namespace RazorPagesWebSite;
+
+public class ClientValidationDisabledController : Controller
 {
-    public class ClientValidationDisabledController : Controller
-    {
-        [HttpGet("/Controller/ClientValidationDisabled")]
-        public IActionResult ValidationDisabled() => View();
-    }
+    [HttpGet("/Controller/ClientValidationDisabled")]
+    public IActionResult ValidationDisabled() => View();
 }

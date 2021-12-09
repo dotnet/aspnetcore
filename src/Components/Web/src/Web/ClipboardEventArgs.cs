@@ -3,16 +3,15 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Components.Web
+namespace Microsoft.AspNetCore.Components.Web;
+
+/// <summary>
+/// Supplies information about an clipboard event that is being raised.
+/// </summary>
+public class ClipboardEventArgs : EventArgs
 {
     /// <summary>
-    /// Supplies information about an clipboard event that is being raised.
+    /// Gets or sets the type of the event.
     /// </summary>
-    public class ClipboardEventArgs : EventArgs
-    {
-        /// <summary>
-        /// Gets or sets the type of the event.
-        /// </summary>
-        public string Type { get; set; } = default!;
-    }
+    public string Type { get; set; } = default!;
 }

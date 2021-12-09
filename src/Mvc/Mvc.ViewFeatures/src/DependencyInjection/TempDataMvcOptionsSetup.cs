@@ -5,16 +5,15 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.Extensions.DependencyInjection
+namespace Microsoft.Extensions.DependencyInjection;
+
+/// <summary>
+/// Sets up default options for <see cref="MvcOptions"/>.
+/// </summary>
+internal class TempDataMvcOptionsSetup : IConfigureOptions<MvcOptions>
 {
-    /// <summary>
-    /// Sets up default options for <see cref="MvcOptions"/>.
-    /// </summary>
-    internal class TempDataMvcOptionsSetup : IConfigureOptions<MvcOptions>
+    public void Configure(MvcOptions options)
     {
-        public void Configure(MvcOptions options)
-        {
-            options.Filters.Add(new SaveTempDataAttribute());
-        }
+        options.Filters.Add(new SaveTempDataAttribute());
     }
 }

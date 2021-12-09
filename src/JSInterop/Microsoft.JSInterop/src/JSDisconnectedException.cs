@@ -3,19 +3,18 @@
 
 using System;
 
-namespace Microsoft.JSInterop
+namespace Microsoft.JSInterop;
+
+/// <summary>
+/// Represents errors that occur during an interop call from .NET to JavaScript when the JavaScript runtime becomes disconnected.
+/// </summary>
+public sealed class JSDisconnectedException : Exception
 {
     /// <summary>
-    /// Represents errors that occur during an interop call from .NET to JavaScript when the JavaScript runtime becomes disconnected.
+    /// Constructs an instance of <see cref="JSDisconnectedException"/>.
     /// </summary>
-    public sealed class JSDisconnectedException : Exception
+    /// <param name="message">The exception message.</param>
+    public JSDisconnectedException(string message) : base(message)
     {
-        /// <summary>
-        /// Constructs an instance of <see cref="JSDisconnectedException"/>.
-        /// </summary>
-        /// <param name="message">The exception message.</param>
-        public JSDisconnectedException(string message) : base(message)
-        {
-        }
     }
 }

@@ -5,38 +5,37 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
+namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks;
+
+public class MockHttpContextFactory : IHttpContextFactory
 {
-    public class MockHttpContextFactory : IHttpContextFactory
+    private readonly object _lock = new object();
+    private readonly Queue<DefaultHttpContext> _cache = new Queue<DefaultHttpContext>();
+
+    public HttpContext Create(IFeatureCollection featureCollection)
     {
-        private readonly object _lock = new object();
-        private readonly Queue<DefaultHttpContext> _cache = new Queue<DefaultHttpContext>();
+        DefaultHttpContext httpContext;
 
-        public HttpContext Create(IFeatureCollection featureCollection)
+        lock (_lock)
         {
-            DefaultHttpContext httpContext;
-
-            lock (_lock)
+            if (!_cache.TryDequeue(out httpContext))
             {
-                if (!_cache.TryDequeue(out httpContext))
-                {
-                    httpContext = new DefaultHttpContext();
-                }
+                httpContext = new DefaultHttpContext();
             }
-
-            httpContext.Initialize(featureCollection);
-            return httpContext;
         }
 
-        public void Dispose(HttpContext httpContext)
-        {
-            lock (_lock)
-            {
-                var defaultHttpContext = (DefaultHttpContext)httpContext;
+        httpContext.Initialize(featureCollection);
+        return httpContext;
+    }
 
-                defaultHttpContext.Uninitialize();
-                _cache.Enqueue(defaultHttpContext);
-            }
+    public void Dispose(HttpContext httpContext)
+    {
+        lock (_lock)
+        {
+            var defaultHttpContext = (DefaultHttpContext)httpContext;
+
+            defaultHttpContext.Uninitialize();
+            _cache.Enqueue(defaultHttpContext);
         }
     }
 }

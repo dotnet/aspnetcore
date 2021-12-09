@@ -5,26 +5,25 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.AspNetCore.Razor.Hosting
+namespace Microsoft.AspNetCore.Razor.Hosting;
+
+/// <summary>
+/// Extension methods for <see cref="RazorCompiledItem"/>.
+/// </summary>
+public static class RazorCompiledItemExtensions
 {
     /// <summary>
-    /// Extension methods for <see cref="RazorCompiledItem"/>.
+    /// Gets the list of <see cref="IRazorSourceChecksumMetadata"/> associated with <paramref name="item"/>.
     /// </summary>
-    public static class RazorCompiledItemExtensions
+    /// <param name="item">The <see cref="RazorCompiledItem"/>.</param>
+    /// <returns>A list of <see cref="IRazorSourceChecksumMetadata"/>.</returns>
+    public static IReadOnlyList<IRazorSourceChecksumMetadata> GetChecksumMetadata(this RazorCompiledItem item)
     {
-        /// <summary>
-        /// Gets the list of <see cref="IRazorSourceChecksumMetadata"/> associated with <paramref name="item"/>.
-        /// </summary>
-        /// <param name="item">The <see cref="RazorCompiledItem"/>.</param>
-        /// <returns>A list of <see cref="IRazorSourceChecksumMetadata"/>.</returns>
-        public static IReadOnlyList<IRazorSourceChecksumMetadata> GetChecksumMetadata(this RazorCompiledItem item)
+        if (item == null)
         {
-            if (item == null)
-            {
-                throw new ArgumentNullException(nameof(item));
-            }
-
-            return item.Metadata.OfType<IRazorSourceChecksumMetadata>().ToArray();
+            throw new ArgumentNullException(nameof(item));
         }
+
+        return item.Metadata.OfType<IRazorSourceChecksumMetadata>().ToArray();
     }
 }
