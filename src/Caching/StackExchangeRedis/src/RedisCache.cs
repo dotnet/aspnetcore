@@ -16,6 +16,13 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis;
 /// </summary>
 public class RedisCache : IDistributedCache, IDisposable
 {
+    // -- Explanation of why two kinds of SetScript are used --
+    // * Redis 2.0 had HSET key field value for setting individual hash fields,
+    // and HMSET key field value [field value ...] for setting multiple hash fields (against the same key)
+    // * Redis 4.0 observes this redundancy, and adds HSET key field value [field value ...],
+    // and also marks HMSET as deprecated, although it still works fine.
+    // But HSET doesn't allows multiple field/value pairs for Redis prior 4.0.
+
     // KEYS[1] = = key
     // ARGV[1] = absolute-expiration - ticks as long (-1 for none)
     // ARGV[2] = sliding-expiration - ticks as long (-1 for none)
