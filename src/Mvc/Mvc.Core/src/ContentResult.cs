@@ -20,7 +20,7 @@ public class ContentResult : ActionResult, IStatusCodeActionResult
 
     /// <summary>
     /// Gets or sets the Content-Type header for the response,
-    /// to be used as <see cref="Microsoft.AspNetCore.Http.Headers.ResponseHeaders.ContentType" />.
+    /// which may be handled using <see cref="T:Microsoft.Net.Http.Headers.MediaTypeHeaderValue" />.
     /// </summary>
     public string? ContentType { get; set; }
 
