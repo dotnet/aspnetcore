@@ -101,39 +101,6 @@ namespace System.Net.Http.Unit.Tests.QPack
         }
 
         [Fact]
-        public void DecodesAuthority_Value()
-        {
-            byte[] encoded = Convert.FromBase64String("AADR11AOMTI3LjAuMC4xOjUwMDHBNwFhbHQtdXNlZA4xMjcuMC4wLjE6NTAwMQ==");
-
-            KeyValuePair<string, string>[] expectedValues = new[]
-            {
-                new KeyValuePair<string, string>(":method", "GET"),
-                new KeyValuePair<string, string>(":scheme", "https"),
-                new KeyValuePair<string, string>(":authority", "127.0.0.1:5001"),
-                new KeyValuePair<string, string>(":path", "/"),
-                new KeyValuePair<string, string>("alt-used", "127.0.0.1:5001"),
-            };
-
-            TestDecodeWithoutIndexing(encoded[2..], expectedValues);
-        }
-
-        [Fact]
-        public void DecodesAuthority_Empty()
-        {
-            byte[] encoded = Convert.FromBase64String("AAA3ADptZXRob2QDR0VUNTpwYXRoAS83ADpzY2hlbWUEaHR0cDcDOmF1dGhvcml0eQA=");
-
-            KeyValuePair<string, string>[] expectedValues = new[]
-            {
-                new KeyValuePair<string, string>(":method", "GET"),
-                new KeyValuePair<string, string>(":scheme", "http"),
-                new KeyValuePair<string, string>(":authority", ""),
-                new KeyValuePair<string, string>(":path", "/"),
-            };
-
-            TestDecodeWithoutIndexing(encoded[2..], expectedValues);
-        }
-
-        [Fact]
         public void DecodesLiteralFieldLineWithLiteralName_HuffmanEncodedValue()
         {
             byte[] encoded = _literalFieldLineWithLiteralName
@@ -151,26 +118,6 @@ namespace System.Net.Http.Unit.Tests.QPack
                 .ToArray();
 
             TestDecodeWithoutIndexing(encoded, _headerNameString, _headerValueString);
-        }
-
-        [Fact]
-        public void DecodesLiteralFieldLineWithLiteralName_LargeValues()
-        {
-            int length = 0;
-            Span<byte> buffer = new byte[1024 * 1024];
-            QPackEncoder.EncodeLiteralHeaderFieldWithoutNameReference(":method", new string('A', 8192 / 2), buffer.Slice(length), out int bytesWritten);
-            length += bytesWritten;
-            QPackEncoder.EncodeLiteralHeaderFieldWithoutNameReference(":path", new string('A', 8192 / 2), buffer.Slice(length), out bytesWritten);
-            length += bytesWritten;
-            QPackEncoder.EncodeLiteralHeaderFieldWithoutNameReference(":scheme", "http", buffer.Slice(length), out bytesWritten);
-            length += bytesWritten;
-
-            TestDecodeWithoutIndexing(buffer.Slice(0, length).ToArray(), new[]
-            {
-                new KeyValuePair<string, string>(":method", new string('A', 8192 / 2)),
-                new KeyValuePair<string, string>(":path", new string('A', 8192 / 2)),
-                new KeyValuePair<string, string>(":scheme", "http")
-            });
         }
 
         public static readonly TheoryData<byte[]> _incompleteHeaderBlockData = new TheoryData<byte[]>
@@ -199,68 +146,35 @@ namespace System.Net.Http.Unit.Tests.QPack
 
         private static void TestDecodeWithoutIndexing(byte[] encoded, string expectedHeaderName, string expectedHeaderValue)
         {
-            KeyValuePair<string, string>[] expectedValues = new[] { new KeyValuePair<string, string>(expectedHeaderName, expectedHeaderValue) };
-
-            TestDecodeWithoutIndexing(encoded, expectedValues);
+            TestDecode(encoded, expectedHeaderName, expectedHeaderValue, expectDynamicTableEntry: false, byteAtATime: false);
+            TestDecode(encoded, expectedHeaderName, expectedHeaderValue, expectDynamicTableEntry: false, byteAtATime: true);
         }
 
-        private static void TestDecodeWithoutIndexing(byte[] encoded, KeyValuePair<string, string>[] expectedValues)
+        private static void TestDecode(byte[] encoded, string expectedHeaderName, string expectedHeaderValue, bool expectDynamicTableEntry, bool byteAtATime)
         {
-            TestDecode(encoded, expectedValues, expectDynamicTableEntry: false, bytesAtATime: null);
-
-            for (int i = 1; i <= 20; i++)
-            {
-                try
-                {
-                    TestDecode(encoded, expectedValues, expectDynamicTableEntry: false, bytesAtATime: i);
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception($"Error when decoding with chunk size {i}.", ex);
-                }
-            }
-        }
-
-        private static void TestDecode(byte[] encoded, KeyValuePair<string, string>[] expectedValues, bool expectDynamicTableEntry, int? bytesAtATime)
-        {
-            QPackDecoder decoder = new QPackDecoder(MaxHeaderFieldSize);
-            TestHttpHeadersHandler handler = new TestHttpHeadersHandler();
+            var decoder = new QPackDecoder(MaxHeaderFieldSize);
+            var handler = new TestHttpHeadersHandler();
 
             // Read past header
             decoder.Decode(new byte[] { 0x00, 0x00 }, endHeaders: false, handler: handler);
 
-            if (bytesAtATime == null)
+            if (!byteAtATime)
             {
                 decoder.Decode(encoded, endHeaders: true, handler: handler);
             }
             else
             {
-                int chunkSize = bytesAtATime.Value;
-                
-                // Parse data in chunks, separated by empty chunks
-                for (int i = 0; i < encoded.Length; i += chunkSize)
+                // Parse data in 1 byte chunks, separated by empty chunks
+                for (int i = 0; i < encoded.Length; i++)
                 {
-                    int resolvedSize = Math.Min(encoded.Length - i, chunkSize);
-                    bool end = i + resolvedSize == encoded.Length;
-
-                    Span<byte> chunk = encoded.AsSpan(i, resolvedSize);
+                    bool end = i + 1 == encoded.Length;
 
                     decoder.Decode(Array.Empty<byte>(), endHeaders: false, handler: handler);
-                    decoder.Decode(chunk, endHeaders: end, handler: handler);
+                    decoder.Decode(new byte[] { encoded[i] }, endHeaders: end, handler: handler);
                 }
             }
 
-            foreach (KeyValuePair<string, string> expectedValue in expectedValues)
-            {
-                try
-                {
-                    Assert.Equal(expectedValue.Value, handler.DecodedHeaders[expectedValue.Key]);
-                }
-                catch (Exception ex)
-                {
-                    throw new InvalidOperationException($"Error when checking header '{expectedValue.Key}'.", ex);
-                }
-            }
+            Assert.Equal(expectedHeaderValue, handler.DecodedHeaders[expectedHeaderName]);
         }
     }
 
@@ -271,11 +185,6 @@ namespace System.Net.Http.Unit.Tests.QPack
 
         void IHttpHeadersHandler.OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
-            if (name.Length == 0)
-            {
-                throw new InvalidOperationException("Header with length zero.");
-            }
-
             string headerName = Encoding.ASCII.GetString(name);
             string headerValue = Encoding.ASCII.GetString(value);
 
