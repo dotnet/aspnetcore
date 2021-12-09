@@ -308,7 +308,7 @@ namespace System.Net.Http.QPack
                 // Copy string to temporary buffer.
                 EnsureStringCapacity(ref _stringOctets, _stringIndex + count, existingLength: _stringIndex);
                 data.Slice(currentIndex, count).CopyTo(_stringOctets.AsSpan(_stringIndex));
-                
+
                 _stringIndex += count;
                 currentIndex += count;
 
