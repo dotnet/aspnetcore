@@ -465,6 +465,12 @@ public class LinkTagHelper : UrlResolutionTagHelper
             Debug.Assert(fallbackHrefs[i] != null);
 
             var valueToWrite = fallbackHrefs[i];
+
+            if (AppendVersion == null)
+            {
+                AppendVersion = HostingEnvironment.AppendVersion;
+            }
+
             if (AppendVersion == true)
             {
                 valueToWrite = FileVersionProvider.AddFileVersionToPath(ViewContext.HttpContext.Request.PathBase, fallbackHrefs[i]);
@@ -535,6 +541,11 @@ public class LinkTagHelper : UrlResolutionTagHelper
 
     private void AppendVersionedHref(string hrefName, string hrefValue, TagHelperContent builder)
     {
+        if (AppendVersion == null)
+        {
+            AppendVersion = HostingEnvironment.AppendVersion;
+        }
+
         if (AppendVersion == true)
         {
             hrefValue = FileVersionProvider.AddFileVersionToPath(ViewContext.HttpContext.Request.PathBase, hrefValue);
