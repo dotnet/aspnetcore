@@ -71,7 +71,7 @@ public interface IHtmlHelper<TModel> : IHtmlHelper
     /// </para>
     /// <para>
     /// Custom templates are found under a <c>DisplayTemplates</c> folder within the
-    /// <see href="https://docs.microsoft.com/aspnet/core/tutorials/razor-pages/razor-pages-start#pages-folder-2" >Pages</see > folder.
+    /// <see href="https://aka.ms/aspnet/7.0/razorpages-pages-folder">Pages</see> folder.
     /// The folder name is case-sensitive on case-sensitive file systems.
     /// </para>
     /// </remarks>
