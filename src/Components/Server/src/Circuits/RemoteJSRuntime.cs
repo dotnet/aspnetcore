@@ -40,8 +40,9 @@ internal partial class RemoteJSRuntime : JSRuntime
         ILogger<RemoteJSRuntime> logger)
     {
         _options = circuitOptions.Value;
-
-        _maximumIncomingBytes = hubOptions.Value.MaximumReceiveMessageSize ?? globalHubOptions.Value.MaximumReceiveMessageSize ?? long.MaxValue;
+        _maximumIncomingBytes = hubOptions.Value.MaximumReceiveMessageSize ??
+            globalHubOptions.Value.MaximumReceiveMessageSize ??
+            long.MaxValue;
         _logger = logger;
         DefaultAsyncTimeout = _options.JSInteropDefaultCallTimeout;
         ElementReferenceContext = new WebElementReferenceContext(this);
