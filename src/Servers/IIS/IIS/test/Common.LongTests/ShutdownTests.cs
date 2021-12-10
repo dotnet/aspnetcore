@@ -194,6 +194,7 @@ public class ShutdownTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/38951")]
     public async Task GracefulShutdownWorksWithMultipleRequestsInFlight_InProcess()
     {
         // The goal of this test is to have multiple requests currently in progress
@@ -490,6 +491,7 @@ public class ShutdownTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/38951")]
     public async Task ConfigurationTouchedStress_InProcess()
     {
         await ConfigurationTouchedStress(HostingModel.InProcess);
