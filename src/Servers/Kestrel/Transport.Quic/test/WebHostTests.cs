@@ -17,6 +17,7 @@ public class WebHostTests : LoggedTest
 {
     [ConditionalFact]
     [MsQuicSupported]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/38954")]
     public async Task UseUrls_HelloWorld_ClientSuccess()
     {
         // Arrange
