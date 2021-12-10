@@ -1656,6 +1656,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DelegationSite", "src\Serve
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.HttpSys.NonHelixTests", "src\Servers\HttpSys\test\NonHelixTests\Microsoft.AspNetCore.Server.HttpSys.NonHelixTests.csproj", "{8EB0B983-8851-4565-B92F-366F1B126E61}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IIS.ShadowCopy.Tests", "src\Servers\IIS\IIS\test\IIS.ShadowCopy.Tests\IIS.ShadowCopy.Tests.csproj", "{93D3CC76-9FA9-4198-B49D-54BA918105EE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -9932,6 +9934,22 @@ Global
 		{8EB0B983-8851-4565-B92F-366F1B126E61}.Release|x64.Build.0 = Release|Any CPU
 		{8EB0B983-8851-4565-B92F-366F1B126E61}.Release|x86.ActiveCfg = Release|Any CPU
 		{8EB0B983-8851-4565-B92F-366F1B126E61}.Release|x86.Build.0 = Release|Any CPU
+		{93D3CC76-9FA9-4198-B49D-54BA918105EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{93D3CC76-9FA9-4198-B49D-54BA918105EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{93D3CC76-9FA9-4198-B49D-54BA918105EE}.Debug|arm64.ActiveCfg = Debug|Any CPU
+		{93D3CC76-9FA9-4198-B49D-54BA918105EE}.Debug|arm64.Build.0 = Debug|Any CPU
+		{93D3CC76-9FA9-4198-B49D-54BA918105EE}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{93D3CC76-9FA9-4198-B49D-54BA918105EE}.Debug|x64.Build.0 = Debug|Any CPU
+		{93D3CC76-9FA9-4198-B49D-54BA918105EE}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{93D3CC76-9FA9-4198-B49D-54BA918105EE}.Debug|x86.Build.0 = Debug|Any CPU
+		{93D3CC76-9FA9-4198-B49D-54BA918105EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{93D3CC76-9FA9-4198-B49D-54BA918105EE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{93D3CC76-9FA9-4198-B49D-54BA918105EE}.Release|arm64.ActiveCfg = Release|Any CPU
+		{93D3CC76-9FA9-4198-B49D-54BA918105EE}.Release|arm64.Build.0 = Release|Any CPU
+		{93D3CC76-9FA9-4198-B49D-54BA918105EE}.Release|x64.ActiveCfg = Release|Any CPU
+		{93D3CC76-9FA9-4198-B49D-54BA918105EE}.Release|x64.Build.0 = Release|Any CPU
+		{93D3CC76-9FA9-4198-B49D-54BA918105EE}.Release|x86.ActiveCfg = Release|Any CPU
+		{93D3CC76-9FA9-4198-B49D-54BA918105EE}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -10751,6 +10769,7 @@ Global
 		{56DFE643-7F0F-40C8-9F7F-8EA5357781EF} = {3CBC4802-E9B8-48B7-BC8C-B0AFB9EEC643}
 		{E0BE6B86-F8DB-405D-AC05-78C8C9D3857D} = {C3722C5D-E159-4AB3-AF60-769185B31B47}
 		{8EB0B983-8851-4565-B92F-366F1B126E61} = {C3722C5D-E159-4AB3-AF60-769185B31B47}
+		{93D3CC76-9FA9-4198-B49D-54BA918105EE} = {41BB7BA4-AC08-4E9A-83EA-6D587A5B951C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3E8720B3-DBDD-498C-B383-2CC32A054E8F}
