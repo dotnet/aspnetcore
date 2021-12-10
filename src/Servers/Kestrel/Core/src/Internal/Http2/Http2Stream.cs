@@ -675,7 +675,9 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
         // HPack append will return false if the index is not a known request header.
         // For example, someone could send the index of "Server" (a response header) in the request.
         // If that happens then fallback to using Append with the name bytes.
-        if (!HttpRequestHeaders.TryHPackAppend(index, value))
+        //
+        // If the value is indexed then we know it doesn't contain new lines and can skip checking.
+        if (!HttpRequestHeaders.TryHPackAppend(index, value, checkForNewlineChars: !indexedValue))
         {
             AppendHeader(name, value);
         }
