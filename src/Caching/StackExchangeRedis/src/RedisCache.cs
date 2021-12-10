@@ -18,10 +18,11 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
     {
         // -- Explanation of why two kinds of SetScript are used --
         // * Redis 2.0 had HSET key field value for setting individual hash fields,
-        // and HMSET key field value [field value ...] for setting multiple hash fields (against the same key)
-        // * Redis 4.0 observes this redundancy, and adds HSET key field value [field value ...],
-        // and also marks HMSET as deprecated, although it still works fine.
-        // But HSET doesn't allows multiple field/value pairs for Redis prior 4.0.
+        // and HMSET key field value [field value ...] for setting multiple hash fields (against the same key).
+        // * Redis 4.0 added HSET key field value [field value ...] and deprecated HMSET.
+        //
+        // On Redis versions that don't have the newer HSET variant, we use SetScriptPreExtendedSetCommand
+        // which uses the (now deprecated) HMSET.
 
         // KEYS[1] = = key
         // ARGV[1] = absolute-expiration - ticks as long (-1 for none)
@@ -29,13 +30,13 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
         // ARGV[3] = relative-expiration (long, in seconds, -1 for none) - Min(absolute-expiration - Now, sliding-expiration)
         // ARGV[4] = data - byte[]
         // this order should not change LUA script depends on it
-        private const string SetScriptPerExtendedSetCommand = (@"
+        private const string SetScript = (@"
                 redis.call('HSET', KEYS[1], 'absexp', ARGV[1], 'sldexp', ARGV[2], 'data', ARGV[4])
                 if ARGV[3] ~= '-1' then
                   redis.call('EXPIRE', KEYS[1], ARGV[3])
                 end
                 return 1");
-        private const string DeprecatedSetScript = (@"
+        private const string SetScriptPreExtendedSetCommand = (@"
                 redis.call('HMSET', KEYS[1], 'absexp', ARGV[1], 'sldexp', ARGV[2], 'data', ARGV[4])
                 if ARGV[3] ~= '-1' then
                   redis.call('EXPIRE', KEYS[1], ARGV[3])
@@ -50,7 +51,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
         private volatile IConnectionMultiplexer _connection;
         private IDatabase _cache;
         private bool _disposed;
-        private string _setScript = SetScriptPerExtendedSetCommand;
+        private string _setScript = SetScript;
 
         private readonly RedisCacheOptions _options;
         private readonly string _instance;
@@ -286,7 +287,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
             {
                 if (_connection.GetServer(endPoint).Version < ServerVersionWithExtendedSetCommand)
                 {
-                    _setScript = DeprecatedSetScript;
+                    _setScript = SetScriptPreExtendedSetCommand;
                     return;
                 }
             }
