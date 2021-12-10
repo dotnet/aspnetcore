@@ -60,13 +60,8 @@ internal sealed class HttpValidationProblemDetailsJsonConverter : JsonConverter<
         writer.WriteStartObject();
         ProblemDetailsJsonConverter.WriteProblemDetails(writer, value, options);
 
-        writer.WriteStartObject(Errors);
-        foreach (var kvp in value.Errors)
-        {
-            writer.WritePropertyName(kvp.Key);
-            JsonSerializer.Serialize(writer, kvp.Value, kvp.Value?.GetType() ?? typeof(object), options);
-        }
-        writer.WriteEndObject();
+        writer.WritePropertyName(Errors);
+        JsonSerializer.Serialize(writer, value.Errors, options);
 
         writer.WriteEndObject();
     }
