@@ -16,26 +16,42 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis;
 /// </summary>
 public class RedisCache : IDistributedCache, IDisposable
 {
+    // -- Explanation of why two kinds of SetScript are used --
+    // * Redis 2.0 had HSET key field value for setting individual hash fields,
+    // and HMSET key field value [field value ...] for setting multiple hash fields (against the same key)
+    // * Redis 4.0 observes this redundancy, and adds HSET key field value [field value ...],
+    // and also marks HMSET as deprecated, although it still works fine.
+    // But HSET doesn't allows multiple field/value pairs for Redis prior 4.0.
+
     // KEYS[1] = = key
     // ARGV[1] = absolute-expiration - ticks as long (-1 for none)
     // ARGV[2] = sliding-expiration - ticks as long (-1 for none)
     // ARGV[3] = relative-expiration (long, in seconds, -1 for none) - Min(absolute-expiration - Now, sliding-expiration)
     // ARGV[4] = data - byte[]
     // this order should not change LUA script depends on it
-    private const string SetScript = (@"
+    private const string SetScriptPerExtendedSetCommand = (@"
                 redis.call('HSET', KEYS[1], 'absexp', ARGV[1], 'sldexp', ARGV[2], 'data', ARGV[4])
                 if ARGV[3] ~= '-1' then
                   redis.call('EXPIRE', KEYS[1], ARGV[3])
                 end
                 return 1");
+    private const string DeprecatedSetScript = (@"
+                redis.call('HMSET', KEYS[1], 'absexp', ARGV[1], 'sldexp', ARGV[2], 'data', ARGV[4])
+                if ARGV[3] ~= '-1' then
+                  redis.call('EXPIRE', KEYS[1], ARGV[3])
+                end
+                return 1");
+
     private const string AbsoluteExpirationKey = "absexp";
     private const string SlidingExpirationKey = "sldexp";
     private const string DataKey = "data";
     private const long NotPresent = -1;
+    private static readonly Version ServerVersionWithExtendedSetCommand = new Version(4, 0, 0);
 
     private volatile IConnectionMultiplexer _connection;
     private IDatabase _cache;
     private bool _disposed;
+    private string _setScript = SetScriptPerExtendedSetCommand;
 
     private readonly RedisCacheOptions _options;
     private readonly string _instance;
@@ -107,7 +123,7 @@ public class RedisCache : IDistributedCache, IDisposable
 
         var absoluteExpiration = GetAbsoluteExpiration(creationTime, options);
 
-        var result = _cache.ScriptEvaluate(SetScript, new RedisKey[] { _instance + key },
+        var result = _cache.ScriptEvaluate(_setScript, new RedisKey[] { _instance + key },
             new RedisValue[]
             {
                         absoluteExpiration?.Ticks ?? NotPresent,
@@ -143,7 +159,7 @@ public class RedisCache : IDistributedCache, IDisposable
 
         var absoluteExpiration = GetAbsoluteExpiration(creationTime, options);
 
-        await _cache.ScriptEvaluateAsync(SetScript, new RedisKey[] { _instance + key },
+        await _cache.ScriptEvaluateAsync(_setScript, new RedisKey[] { _instance + key },
             new RedisValue[]
             {
                         absoluteExpiration?.Ticks ?? NotPresent,
@@ -206,7 +222,7 @@ public class RedisCache : IDistributedCache, IDisposable
                     _connection = _options.ConnectionMultiplexerFactory().GetAwaiter().GetResult();
                 }
 
-                TryRegisterProfiler();
+                PrepareConnection();
                 _cache = _connection.GetDatabase();
             }
         }
@@ -247,7 +263,7 @@ public class RedisCache : IDistributedCache, IDisposable
                     _connection = await _options.ConnectionMultiplexerFactory();
                 }
 
-                TryRegisterProfiler();
+                PrepareConnection();
                 _cache = _connection.GetDatabase();
             }
         }
@@ -257,9 +273,31 @@ public class RedisCache : IDistributedCache, IDisposable
         }
     }
 
+    private void PrepareConnection()
+    {
+        ValidateServerFeatures();
+        TryRegisterProfiler();
+    }
+
+    private void ValidateServerFeatures()
+    {
+        _ = _connection ?? throw new InvalidOperationException($"{nameof(_connection)} cannot be null.");
+
+        foreach (var endPoint in _connection.GetEndPoints())
+        {
+            if (_connection.GetServer(endPoint).Version < ServerVersionWithExtendedSetCommand)
+            {
+                _setScript = DeprecatedSetScript;
+                return;
+            }
+        }
+    }
+
     private void TryRegisterProfiler()
     {
-        if (_connection != null && _options.ProfilingSession != null)
+        _ = _connection ?? throw new InvalidOperationException($"{nameof(_connection)} cannot be null.");
+
+        if (_options.ProfilingSession != null)
         {
             _connection.RegisterProfiler(_options.ProfilingSession);
         }

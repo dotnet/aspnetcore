@@ -21,5 +21,11 @@ namespace System.Net.Http
         void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value);
         void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value);
         void OnHeadersComplete(bool endStream);
+
+        // DIM to avoid breaking change on public interface (for Kestrel).
+        public void OnDynamicIndexedHeader(int? index, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+        {
+            OnHeader(name, value);
+        }
     }
 }
