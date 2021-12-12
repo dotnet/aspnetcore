@@ -748,7 +748,6 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
             Debug.Assert(value != null);
             Value = value;
 
-            // Cache the properties so we can know if we've already validated them for duplicates.
             var type = Value.GetType();
             Properties = PropertyHelper.GetVisibleProperties(type);
             ValidatePropertyNames(type, Properties);
