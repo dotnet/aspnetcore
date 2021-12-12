@@ -55,7 +55,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     private IJSRuntime JSRuntime { get; set; } = default!;
 
     /// <summary>
-    /// Gets or sets the item template for the list.
+    /// Gets or sets the child content for the list.
     /// </summary>
     [Parameter]
     public RenderFragment<TItem>? ChildContent { get; set; }
@@ -65,6 +65,12 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     /// </summary>
     [Parameter]
     public RenderFragment<TItem>? ItemContent { get; set; }
+
+    /// <summary>
+    /// Gets or sets the empty content.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? EmptyContent { get; set; }
 
     /// <summary>
     /// Gets or sets the template for items that have not yet been loaded in memory.
@@ -192,6 +198,11 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         var placeholdersBeforeCount = Math.Min(_loadedItemsStartIndex, lastItemIndex);
 
         builder.OpenRegion(3);
+
+        if (EmptyContent is not null && _itemCount == 0)
+        {
+            EmptyContent(builder);
+        }
 
         // Render placeholders before the loaded items.
         for (; renderIndex < placeholdersBeforeCount; renderIndex++)
