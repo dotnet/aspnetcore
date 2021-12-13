@@ -1,5 +1,4 @@
 <Project>
-
   <PropertyGroup>
     <LangVersion>8.0</LangVersion>
 
@@ -36,6 +35,4 @@
   </ItemDefinitionGroup>
 
   <Import Project="CSharp.ReferenceAssembly.props" Condition="'$(IsReferenceAssemblyProject)' == 'true'" />
-  <Import Project="Helix.props" Condition="'$(IsTestProject)' == 'true'" />
-
 </Project>

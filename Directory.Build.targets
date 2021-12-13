@@ -1,5 +1,4 @@
 <Project>
-
   <PropertyGroup>
     <!-- Only build Microsoft.AspNetCore.App and ref/ assemblies in source build. -->
     <!-- Analyzer package are needed in source build for WebSDK -->
@@ -96,8 +95,6 @@
 
     <IsPackable Condition="'$(IsPackable)' == '' AND ('$(IsImplementationProject)' == 'true' OR '$(IsAnalyzersProject)' == 'true') ">true</IsPackable>
     <IsPackable Condition="'$(IsPackable)' == '' ">false</IsPackable>
-
-    <BuildHelixPayload Condition="'$(BuildHelixPayload)' == '' AND '$(IsTestProject)' == 'true'">true</BuildHelixPayload>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -168,5 +165,4 @@
   <Import Project="eng\targets\Wix.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.wixproj'" />
   <Import Project="eng\targets\Npm.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.npmproj'" />
   <Import Project="eng\targets\ReferenceAssembly.targets" Condition=" $(HasReferenceAssembly) " />
-
 </Project>

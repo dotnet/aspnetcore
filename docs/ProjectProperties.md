@@ -9,4 +9,3 @@ IsPackable         | Set to `true` when the project should produce a package. Th
 IsShipping         | Set to `true` when the project output is intended for use by customers. Defaults to `true` for analyzer, implementation and specification test projects; `false` otherwise.
 IsShippingPackage  | Set to `true` when a package produced from project is intended for use by customers. Defaults to `IsShipping`. Note this may be `true` even for projects with `IsPackable` set to `false`.
 IsAspNetCoreApp    | Set to `true` when the assembly is part of the [Microsoft.AspNetCore.App shared framework](./SharedFramework.md) and is not available as a NuGet package (unless `IsPackable` is also set to `true` -- the default). Defaults to `false`.
-TestDependsOnMssql | Set to `true` when your tests depends on SQL Server. This will ensure distribute tests on Helix install LocalDB ([more information on Helix](./Helix.md)). Defaults to `false`.
