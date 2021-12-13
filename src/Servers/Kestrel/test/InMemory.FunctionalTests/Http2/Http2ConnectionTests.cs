@@ -2151,9 +2151,14 @@ public class Http2ConnectionTests : Http2TestBase
         await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
     }
 
-    private class TestHttpHeadersHandler : IHttpHeadersHandler
+    private class TestHttpHeadersHandler : IHttpStreamHeadersHandler
     {
         public readonly Dictionary<string, StringValues> Headers = new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase);
+
+        public void OnDynamicIndexedHeader(int? index, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+        {
+            OnHeader(name, value);
+        }
 
         public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {

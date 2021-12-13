@@ -20,7 +20,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 
-internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpHeadersHandler, IThreadPoolWorkItem
+internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpStreamHeadersHandler, IThreadPoolWorkItem
 {
     private static ReadOnlySpan<byte> AuthorityBytes => new byte[10] { (byte)':', (byte)'a', (byte)'u', (byte)'t', (byte)'h', (byte)'o', (byte)'r', (byte)'i', (byte)'t', (byte)'y' };
     private static ReadOnlySpan<byte> MethodBytes => new byte[7] { (byte)':', (byte)'m', (byte)'e', (byte)'t', (byte)'h', (byte)'o', (byte)'d' };
@@ -199,6 +199,11 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpH
     {
         var knownHeader = H3StaticTable.Get(index);
         OnHeader(knownHeader.Name, value);
+    }
+
+    public void OnDynamicIndexedHeader(int? index, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+    {
+        OnHeader(name, value);
     }
 
     public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value) => OnHeader(name, value, checkForNewlineChars: true);

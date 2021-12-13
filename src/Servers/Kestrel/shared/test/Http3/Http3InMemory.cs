@@ -596,7 +596,7 @@ internal class Http3RequestHeaderHandler
     public readonly Dictionary<string, string> DecodedHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 }
 
-internal class Http3RequestStream : Http3StreamBase, IHttpHeadersHandler
+internal class Http3RequestStream : Http3StreamBase, IHttpStreamHeadersHandler
 {
     private readonly TestStreamContext _testStreamContext;
     private readonly Http3RequestHeaderHandler _headerHandler;
@@ -730,6 +730,11 @@ internal class Http3RequestStream : Http3StreamBase, IHttpHeadersHandler
     public void Complete()
     {
         _testStreamContext.Complete();
+    }
+
+    public void OnDynamicIndexedHeader(int? index, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+    {
+        _headerHandler.DecodedHeaders[name.GetAsciiStringNonNullCharacters()] = value.GetAsciiOrUTF8StringNonNullCharacters();
     }
 }
 
