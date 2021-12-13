@@ -586,7 +586,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
-    [QuarantinedTests("https://github.com/dotnet/aspnetcore/issues/38998")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/38998")]
     public async Task PersistentState_StreamsReused_StatePersisted()
     {
         // Arrange
