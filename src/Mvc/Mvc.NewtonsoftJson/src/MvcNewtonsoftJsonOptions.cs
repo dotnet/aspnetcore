@@ -58,6 +58,12 @@ public class MvcNewtonsoftJsonOptions : IEnumerable<ICompatibilitySwitch>
     /// The default value is <see langword="false"/>.
     /// </value>
     public bool ReadJsonWithRequestCulture { get; set; }
+    
+    /// <summary>
+    /// Gets or sets the flag which causes the <see cref="ValidationProblemDetails.Errors"/> be produces based on the ModelName
+    /// obtained by the <see cref="JsonPropertyAttribute"/> <c>*/*</c>. <see langword="false"/> by default.
+    /// </summary>
+    public bool RespectModelNameInValidationErrors { get; set; }
 
     /// <summary>
     /// Gets the maximum size to buffer in memory when <see cref="MvcOptions.SuppressOutputFormatterBuffering"/> is not set.

@@ -92,7 +92,7 @@ internal class NewtonsoftJsonMvcOptionsSetup : IConfigureOptions<MvcOptions>
         options.ModelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(IJsonPatchDocument)));
         options.ModelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(JToken)));
 
-        if (options.RespectModelNameInValidationErrors)
+        if (_jsonOptions.RespectModelNameInValidationErrors)
         {
             options.ModelMetadataDetailsProviders.Add(new NewtonsoftJsonMetadataProvider());
         }

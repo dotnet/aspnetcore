@@ -28,6 +28,12 @@ public class JsonOptions
     public bool AllowInputFormatterExceptionMessages { get; set; } = true;
 
     /// <summary>
+    /// Gets or sets the flag which causes the <see cref="ValidationProblemDetails.Errors"/> be produces based on the ModelName
+    /// obtained by the <see cref="JsonProperty.Name"/> <c>*/*</c>. <see langword="false"/> by default.
+    /// </summary>
+    public bool RespectModelNameInValidationErrors { get; set; }
+
+    /// <summary>
     /// Gets the <see cref="System.Text.Json.JsonSerializerOptions"/> used by <see cref="SystemTextJsonInputFormatter"/> and
     /// <see cref="SystemTextJsonOutputFormatter"/>.
     /// </summary>

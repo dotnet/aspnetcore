@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.AspNetCore.Mvc.MvcNewtonsoftJsonOptions.RespectModelNameInValidationErrors.get -> bool
+Microsoft.AspNetCore.Mvc.MvcNewtonsoftJsonOptions.RespectModelNameInValidationErrors.set -> void

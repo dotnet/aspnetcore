@@ -117,7 +117,7 @@ internal class MvcCoreMvcOptionsSetup : IConfigureOptions<MvcOptions>, IPostConf
         // as part of ConfigureOptions.
         options.ModelMetadataDetailsProviders.Add(new HasValidatorsValidationMetadataProvider(options.ModelValidatorProviders));
 
-        if (options.RespectModelNameInValidationErrors)
+        if (_jsonOptions.Value?.RespectModelNameInValidationErrors == true)
         {
             options.ModelMetadataDetailsProviders.Add(new JsonMetadataProvider(_jsonOptions.Value?.JsonSerializerOptions?.PropertyNamingPolicy));
         }        
