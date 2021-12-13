@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests;
@@ -589,6 +590,8 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/38998")]
     public async Task PersistentState_StreamsReused_StatePersisted()
     {
+        using var httpEventSource = new HttpEventSourceListener(LoggerFactory);
+
         // Arrange
         await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
 
@@ -599,9 +602,14 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
 
         // Act
+        Logger.LogInformation("Client starting stream 1");
         var clientStream1 = clientConnection.OpenBidirectionalStream();
         await clientStream1.WriteAsync(TestData, endStream: true).DefaultTimeout();
+
+        Logger.LogInformation("Server accept stream 1");
         var serverStream1 = await serverConnection.AcceptAsync().DefaultTimeout();
+
+        Logger.LogInformation("Server reading stream 1");
         var readResult1 = await serverStream1.Transport.Input.ReadAtLeastAsync(TestData.Length).DefaultTimeout();
         serverStream1.Transport.Input.AdvanceTo(readResult1.Buffer.End);
 
@@ -612,17 +620,24 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         Assert.True(readResult1.IsCompleted);
 
         // Complete reading and writing.
+        Logger.LogInformation("Server complete stream 1");
         await serverStream1.Transport.Input.CompleteAsync();
         await serverStream1.Transport.Output.CompleteAsync();
 
+        Logger.LogInformation("Server disposing stream 1");
         var quicStreamContext1 = Assert.IsType<QuicStreamContext>(serverStream1);
         await quicStreamContext1._processingTask.DefaultTimeout();
         await quicStreamContext1.DisposeAsync();
         quicStreamContext1.Dispose();
 
+        Logger.LogInformation("Client starting stream 2");
         var clientStream2 = clientConnection.OpenBidirectionalStream();
         await clientStream2.WriteAsync(TestData, endStream: true).DefaultTimeout();
+
+        Logger.LogInformation("Server accept stream 2");
         var serverStream2 = await serverConnection.AcceptAsync().DefaultTimeout();
+
+        Logger.LogInformation("Server reading stream 2");
         var readResult2 = await serverStream2.Transport.Input.ReadAtLeastAsync(TestData.Length).DefaultTimeout();
         serverStream2.Transport.Input.AdvanceTo(readResult2.Buffer.End);
 
@@ -633,9 +648,11 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         Assert.True(readResult2.IsCompleted);
 
         // Complete reading and writing.
+        Logger.LogInformation("Server complete stream 2");
         await serverStream2.Transport.Input.CompleteAsync();
         await serverStream2.Transport.Output.CompleteAsync();
 
+        Logger.LogInformation("Server disposing stream 2");
         var quicStreamContext2 = Assert.IsType<QuicStreamContext>(serverStream2);
         await quicStreamContext2._processingTask.DefaultTimeout();
         await quicStreamContext2.DisposeAsync();
