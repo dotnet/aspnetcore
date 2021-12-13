@@ -1,14 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
 
-    <!-- Tests do not work on Helix or when bin/ directory is not in project directory due to undeclared dependency on test content. -->
-    <!-- https://github.com/aspnet/AspNetCore/issues/10424 -->
-    <BuildHelixPayload>false</BuildHelixPayload>
+    <!-- Tests do not work when bin/ directory is not in project directory due to undeclared dependency on test content. -->
     <BaseOutputPath />
     <OutputPath />
-
   </PropertyGroup>
 
   <ItemGroup>

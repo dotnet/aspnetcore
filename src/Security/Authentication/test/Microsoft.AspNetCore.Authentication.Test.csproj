@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFrameworks>$(DefaultNetCoreTargetFramework)</TargetFrameworks>
   </PropertyGroup>
@@ -34,10 +33,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Authentication.Certificate" />
     <Reference Include="Microsoft.AspNetCore.Authentication.Cookies" />
     <Reference Include="Microsoft.AspNetCore.Authentication.Facebook" />
@@ -51,5 +46,4 @@
     <Reference Include="Microsoft.AspNetCore.TestHost" />
     <Reference Include="Microsoft.Net.Http.Headers" />
   </ItemGroup>
-
 </Project>

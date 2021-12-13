@@ -1,11 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
     <Compile Include="$(SharedSourceRoot)EventSource.Testing\TestEventListener.cs" />
     <Compile Include="$(SharedSourceRoot)EventSource.Testing\TestCounterListener.cs" />
     <Content Include="testroot\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
@@ -24,5 +22,4 @@
     <Reference Include="Microsoft.Extensions.Options" />
     <Reference Include="System.Threading.Channels" />
   </ItemGroup>
-
 </Project>

@@ -1,20 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <RootNamespace>Microsoft.AspNetCore.Mvc.Api.Analyzers</RootNamespace>
 
-    <!-- Tests do not work on Helix or when bin/ directory is not in project directory due to undeclared dependency on test content. -->
-    <!-- https://github.com/aspnet/AspNetCore/issues/9431 -->
-    <BuildHelixPayload>false</BuildHelixPayload>
+    <!-- Tests do not work when bin/ directory is not in project directory due to undeclared dependency on test content. -->
     <BaseOutputPath />
     <OutputPath />
-
    </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="..\..\Mvc.Analyzers\test\Infrastructure\MvcDiagnosticAnalyzerRunner.cs" Link="Infrastructure\MvcDiagnosticAnalyzerRunner.cs" />
-    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
     <Content Include="TestFiles\**\*.*" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
@@ -24,5 +19,4 @@
     <Reference Include="Microsoft.AspNetCore.Analyzer.Testing" />
     <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
   </ItemGroup>
-
 </Project>

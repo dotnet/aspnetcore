@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
 
@@ -31,7 +30,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\testassets\StandaloneApp\StandaloneApp.csproj" />
-    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -60,5 +58,4 @@
         MicrosoftNetCompilersToolsetPackageVersion=$(MicrosoftNetCompilersToolsetPackageVersion);
         MicrosoftNETSdkRazorPackageVersion=$(MicrosoftNETSdkRazorPackageVersion)" />
   </Target>
-
 </Project>

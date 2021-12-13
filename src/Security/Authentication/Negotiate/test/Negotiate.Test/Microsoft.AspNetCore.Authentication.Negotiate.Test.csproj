@@ -1,12 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFrameworks>$(DefaultNetCoreTargetFramework)</TargetFrameworks>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
-  </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Authentication.Negotiate" />
@@ -15,5 +10,4 @@
     <Reference Include="Microsoft.AspNetCore.TestHost" />
     <Reference Include="Microsoft.Extensions.Hosting" />
   </ItemGroup>
-
 </Project>
