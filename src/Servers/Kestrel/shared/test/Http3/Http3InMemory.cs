@@ -25,7 +25,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using static System.IO.Pipelines.DuplexPipe;
 using Http3SettingType = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.Http3SettingType;
-using IHttpHeadersHandler = System.Net.Http.IHttpHeadersHandler;
 
 namespace Microsoft.AspNetCore.Testing;
 
@@ -597,7 +596,7 @@ internal class Http3RequestHeaderHandler
     public readonly Dictionary<string, string> DecodedHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 }
 
-internal class Http3RequestStream : Http3StreamBase, IHttpHeadersHandler
+internal class Http3RequestStream : Http3StreamBase, IHttpStreamHeadersHandler
 {
     private readonly TestStreamContext _testStreamContext;
     private readonly Http3RequestHeaderHandler _headerHandler;

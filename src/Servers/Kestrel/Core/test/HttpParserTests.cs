@@ -16,7 +16,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 using HttpMethod = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod;
-using IHttpHeadersHandler = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpHeadersHandler;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 

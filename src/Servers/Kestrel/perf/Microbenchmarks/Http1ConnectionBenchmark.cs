@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using HttpMethod = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod;
-using IHttpHeadersHandler = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpHeadersHandler;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks;
 

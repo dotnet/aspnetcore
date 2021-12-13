@@ -109,7 +109,7 @@ public class HPackDecoderBenchmark
         _decoder.Decode(_indexedHeaderDynamic_Multiple, endHeaders: true, handler: _testHeadersHandler);
     }
 
-    private class TestHeadersHandler : IHttpHeadersHandler
+    private class TestHeadersHandler : IHttpStreamHeadersHandler
     {
         public void OnDynamicIndexedHeader(int? index, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {

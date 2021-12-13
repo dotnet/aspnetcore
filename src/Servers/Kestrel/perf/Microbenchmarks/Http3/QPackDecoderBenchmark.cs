@@ -7,7 +7,6 @@ using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
-using IHttpHeadersHandler = System.Net.Http.IHttpHeadersHandler;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks;
 
@@ -99,7 +98,7 @@ public class QPackDecoderBenchmark
         _decoder.Reset();
     }
 
-    private class TestHeadersHandler : IHttpHeadersHandler
+    private class TestHeadersHandler : IHttpStreamHeadersHandler
     {
         public void OnDynamicIndexedHeader(int? index, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {

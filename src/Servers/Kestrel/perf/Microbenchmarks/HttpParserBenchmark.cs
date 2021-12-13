@@ -4,7 +4,6 @@
 using System.Buffers;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
-using IHttpHeadersHandler = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpHeadersHandler;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks;
 

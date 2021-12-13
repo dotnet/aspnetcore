@@ -3,7 +3,7 @@
 
 namespace System.Net.Http
 {
-    internal interface IHttpHeadersHandler
+    internal interface IHttpStreamHeadersHandler
     {
         void OnStaticIndexedHeader(int index);
         void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value);

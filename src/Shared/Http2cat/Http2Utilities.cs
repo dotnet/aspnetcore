@@ -21,11 +21,10 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
-using IHttpHeadersHandler = System.Net.Http.IHttpHeadersHandler;
 
 namespace Microsoft.AspNetCore.Http2Cat;
 
-internal class Http2Utilities : IHttpHeadersHandler
+internal class Http2Utilities : IHttpStreamHeadersHandler
 {
     public static ReadOnlySpan<byte> ClientPreface => new byte[24] { (byte)'P', (byte)'R', (byte)'I', (byte)' ', (byte)'*', (byte)' ', (byte)'H', (byte)'T', (byte)'T', (byte)'P', (byte)'/', (byte)'2', (byte)'.', (byte)'0', (byte)'\r', (byte)'\n', (byte)'\r', (byte)'\n', (byte)'S', (byte)'M', (byte)'\r', (byte)'\n', (byte)'\r', (byte)'\n' };
     public const int MaxRequestHeaderFieldSize = 16 * 1024;
@@ -142,12 +141,12 @@ internal class Http2Utilities : IHttpHeadersHandler
     public ILogger Logger { get; }
     public CancellationToken StopToken { get; }
 
-    void IHttpHeadersHandler.OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+    void IHttpStreamHeadersHandler.OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
     {
         _decodedHeaders[name.GetAsciiStringNonNullCharacters()] = value.GetAsciiOrUTF8StringNonNullCharacters(HeaderValueEncoding);
     }
 
-    void IHttpHeadersHandler.OnHeadersComplete(bool endStream) { }
+    void IHttpStreamHeadersHandler.OnHeadersComplete(bool endStream) { }
 
     public async Task InitializeConnectionAsync(int expectedSettingsCount = 3)
     {
@@ -967,17 +966,17 @@ internal class Http2Utilities : IHttpHeadersHandler
     public void OnStaticIndexedHeader(int index)
     {
         ref readonly var entry = ref H2StaticTable.Get(index - 1);
-        ((IHttpHeadersHandler)this).OnHeader(entry.Name, entry.Value);
+        ((IHttpStreamHeadersHandler)this).OnHeader(entry.Name, entry.Value);
     }
 
     public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
     {
-        ((IHttpHeadersHandler)this).OnHeader(H2StaticTable.Get(index - 1).Name, value);
+        ((IHttpStreamHeadersHandler)this).OnHeader(H2StaticTable.Get(index - 1).Name, value);
     }
 
     public void OnDynamicIndexedHeader(int? index, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
     {
-        ((IHttpHeadersHandler)this).OnHeader(name, value);
+        ((IHttpStreamHeadersHandler)this).OnHeader(name, value);
     }
 
     internal class Http2FrameWithPayload : Http2Frame
