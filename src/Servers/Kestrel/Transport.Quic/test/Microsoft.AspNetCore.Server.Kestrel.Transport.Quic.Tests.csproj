@@ -9,8 +9,8 @@
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)NullScope.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\*.cs" LinkBase="shared" />
-    <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\IHostPortExtensions.cs" LinkBase="shared\TransportTestHelpers\IHostPortExtensions.cs" />
-    <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\MsQuicSupportedAttribute.cs" LinkBase="shared\TransportTestHelpers\MsQuicSupportedAttribute.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\IHostPortExtensions.cs" Link="shared\TransportTestHelpers\IHostPortExtensions.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\MsQuicSupportedAttribute.cs" Link="shared\TransportTestHelpers\MsQuicSupportedAttribute.cs" />
     <Content Include="$(KestrelSharedSourceRoot)test\TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
