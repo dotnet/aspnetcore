@@ -116,6 +116,11 @@ internal class MvcCoreMvcOptionsSetup : IConfigureOptions<MvcOptions>, IPostConf
         // This should ensure it appears later than all of the details provider registered by MVC and user configured details provider registered
         // as part of ConfigureOptions.
         options.ModelMetadataDetailsProviders.Add(new HasValidatorsValidationMetadataProvider(options.ModelValidatorProviders));
+
+        if (options.RespectModelNameInValidationErrors)
+        {
+            options.ModelMetadataDetailsProviders.Add(new JsonMetadataProvider(_jsonOptions.Value?.JsonSerializerOptions?.PropertyNamingPolicy));
+        }        
     }
 
     internal static void ConfigureAdditionalModelMetadataDetailsProviders(IList<IMetadataDetailsProvider> modelMetadataDetailsProviders)
@@ -146,5 +151,7 @@ internal class MvcCoreMvcOptionsSetup : IConfigureOptions<MvcOptions>, IPostConf
         modelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(IFormCollection)));
         modelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(IFormFileCollection)));
         modelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(Stream)));
+
+
     }
 }

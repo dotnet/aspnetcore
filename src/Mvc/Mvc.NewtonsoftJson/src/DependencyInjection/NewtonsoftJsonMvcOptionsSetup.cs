@@ -3,10 +3,13 @@
 
 using System;
 using System.Buffers;
+using System.Linq;
+
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
@@ -88,5 +91,10 @@ internal class NewtonsoftJsonMvcOptionsSetup : IConfigureOptions<MvcOptions>
 
         options.ModelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(IJsonPatchDocument)));
         options.ModelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(JToken)));
+
+        if (options.RespectModelNameInValidationErrors)
+        {
+            options.ModelMetadataDetailsProviders.Add(new NewtonsoftJsonMetadataProvider());
+        }
     }
 }

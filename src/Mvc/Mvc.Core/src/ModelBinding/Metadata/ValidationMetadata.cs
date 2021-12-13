@@ -53,4 +53,9 @@ public class ValidationMetadata
     /// Gets or sets a value that determines if validators can be constructed using metadata on properties.
     /// </summary>
     internal bool PropertyHasValidators { get; set; }
+
+    /// <summary>
+    /// Gets or sets a model name that will be used in <see cref="ValidationEntry"/>.
+    /// </summary>
+    public string? ValidationModelName { get; set; }
 }

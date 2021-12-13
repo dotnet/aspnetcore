@@ -165,6 +165,12 @@ public class MvcOptions : IEnumerable<ICompatibilitySwitch>
     }
 
     /// <summary>
+    /// Gets or sets the flag which causes the <see cref="ValidationProblemDetails.Errors"/> be produces based on the ModelName
+    /// obttained by XXXX <c>*/*</c>. <see langword="false"/> by default.
+    /// </summary>
+    public bool RespectModelNameInValidationErrors { get; set; }
+
+    /// <summary>
     /// Gets a list of <see cref="IModelBinderProvider"/>s used by this application.
     /// </summary>
     public IList<IModelBinderProvider> ModelBinderProviders { get; }

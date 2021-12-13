@@ -1,1 +1,5 @@
 #nullable enable
+Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ValidationMetadata.ValidationModelName.get -> string?
+Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ValidationMetadata.ValidationModelName.set -> void
+Microsoft.AspNetCore.Mvc.MvcOptions.RespectModelNameInValidationErrors.get -> bool
+Microsoft.AspNetCore.Mvc.MvcOptions.RespectModelNameInValidationErrors.set -> void
