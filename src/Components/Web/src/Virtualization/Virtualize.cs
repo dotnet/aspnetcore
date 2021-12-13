@@ -67,7 +67,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     public RenderFragment<TItem>? ItemContent { get; set; }
 
     /// <summary>
-    /// Gets or sets the empty content.
+    /// Gets or sets the `<see cref="RenderFragment" />` that is used when no items are available.
     /// </summary>
     [Parameter]
     public RenderFragment? EmptyContent { get; set; }
