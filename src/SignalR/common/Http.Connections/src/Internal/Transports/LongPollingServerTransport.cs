@@ -18,10 +18,6 @@ internal class LongPollingServerTransport : IHttpTransport
     private readonly CancellationToken _timeoutToken;
     private readonly HttpConnectionContext? _connection;
 
-    private const string HeaderValueNoCache = "no-cache";
-    private const string HeaderValueNoCacheNoStoreMustRevalidate = "no-cache, no-store, must-revalidate";
-    private const string HeaderValueEpochDate = "Thu, 01 Jan 1970 00:00:00 GMT";
-
     public LongPollingServerTransport(CancellationToken timeoutToken, PipeReader application, ILoggerFactory loggerFactory)
         : this(timeoutToken, application, loggerFactory, connection: null)
     { }
@@ -39,8 +35,6 @@ internal class LongPollingServerTransport : IHttpTransport
 
     public async Task ProcessRequestAsync(HttpContext context, CancellationToken token)
     {
-        AddNoCacheHeaders(context.Response);
-
         try
         {
             var result = await _application.ReadAsync(token);
@@ -119,13 +113,6 @@ internal class LongPollingServerTransport : IHttpTransport
             context.Response.StatusCode = StatusCodes.Status500InternalServerError;
             throw;
         }
-    }
-
-    private static void AddNoCacheHeaders(HttpResponse response)
-    {
-        response.Headers.CacheControl = HeaderValueNoCacheNoStoreMustRevalidate;
-        response.Headers.Pragma = HeaderValueNoCache;
-        response.Headers.Expires = HeaderValueEpochDate;
     }
 
     private static class Log

@@ -34,7 +34,6 @@ public class LongPollingTests : VerifiableLoggedTest
             await poll.ProcessRequestAsync(context, context.RequestAborted).DefaultTimeout();
 
             Assert.Equal(204, context.Response.StatusCode);
-            AssertResponseHasCacheHeaders(context.Response);
         }
     }
 
@@ -56,7 +55,6 @@ public class LongPollingTests : VerifiableLoggedTest
 
                 Assert.Equal(0, context.Response.ContentLength);
                 Assert.Equal(200, context.Response.StatusCode);
-                AssertResponseHasCacheHeaders(context.Response);
             }
         }
     }
@@ -81,7 +79,6 @@ public class LongPollingTests : VerifiableLoggedTest
 
             Assert.Equal(200, context.Response.StatusCode);
             Assert.Equal("Hello World", Encoding.UTF8.GetString(ms.ToArray()));
-            AssertResponseHasCacheHeaders(context.Response);
         }
     }
 
@@ -110,7 +107,6 @@ public class LongPollingTests : VerifiableLoggedTest
 
             var payload = ms.ToArray();
             Assert.Equal("Hello World", Encoding.UTF8.GetString(payload));
-            AssertResponseHasCacheHeaders(context.Response);
         }
     }
 
@@ -119,12 +115,5 @@ public class LongPollingTests : VerifiableLoggedTest
     {
         var options = new HttpConnectionDispatcherOptions();
         Assert.Equal(options.LongPolling.PollTimeout, TimeSpan.FromSeconds(90));
-    }
-
-    private static void AssertResponseHasCacheHeaders(HttpResponse response)
-    {
-        Assert.Equal("no-cache, no-store, must-revalidate", response.Headers.CacheControl);
-        Assert.Equal("no-cache", response.Headers.Pragma);
-        Assert.Equal("Thu, 01 Jan 1970 00:00:00 GMT", response.Headers.Expires);
     }
 }
