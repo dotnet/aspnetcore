@@ -66,10 +66,6 @@ internal class JsonMetadataProvider : IDisplayMetadataProvider, IValidationMetad
         context.ValidationMetadata.ValidationModelName = propertyName;
     }
 
-    private string? ReadPropertyNameFrom(IReadOnlyList<object> attributes)
-    {
-        return attributes == null
-            ? throw new ArgumentNullException(nameof(attributes))
-            : (attributes.OfType<JsonPropertyNameAttribute>().FirstOrDefault()?.Name);
-    }
+    private static string? ReadPropertyNameFrom(IReadOnlyList<object> attributes)
+        => attributes?.OfType<JsonPropertyNameAttribute>().FirstOrDefault()?.Name;
 }
