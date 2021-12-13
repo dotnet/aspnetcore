@@ -166,10 +166,10 @@ namespace Microsoft.AspNetCore.Identity.Test
         {
             var projectPath = typeof(IdentityUIScriptsTest).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
                 .Single(a => a.Key == "Microsoft.AspNetCore.Testing.DefaultUIProjectPath").Value;
-            return Directory.Exists(projectPath) ? projectPath : Path.Combine(FindHelixSlnFileDirectory(), "UI");
+            return Directory.Exists(projectPath) ? projectPath : Path.Combine(FindSlnFileDirectory(), "UI");
         }
 
-        private static string FindHelixSlnFileDirectory()
+        private static string FindSlnFileDirectory()
         {
             var applicationPath = Path.GetDirectoryName(typeof(IdentityUIScriptsTest).Assembly.Location);
             var directoryInfo = new DirectoryInfo(applicationPath);
