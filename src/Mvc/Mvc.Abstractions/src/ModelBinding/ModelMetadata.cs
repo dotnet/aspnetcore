@@ -501,7 +501,7 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
     /// <summary>
     /// Gets the name of a model, if specified explicitly, to be used on <see cref="ValidationEntry"/>
     /// </summary>
-    internal abstract string? ValidationModelName { get; }
+    internal virtual string? ValidationModelName { get; }
 
     /// <summary>
     /// Throws if the ModelMetadata is for a record type with validation on properties.
