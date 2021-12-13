@@ -1,5 +1,4 @@
 <Project>
-
   <!-- For 'legacy' .csproj files, set map TargetFrameworkVersion back to TargetFramework -->
   <PropertyGroup Condition=" '$(TargetFramework)' == '' AND '$(TargetFrameworks)' == '' ">
     <TargetFramework>net$(TargetFrameworkVersion.TrimStart('vV').Replace('.',''))</TargetFramework>
@@ -26,7 +25,7 @@
      <Features Condition="'$(_IsSrcProject)' == 'true'">$(Features);nullablePublicOnly</Features>
 
     <!-- Turn off platform compatibility analyzer warnings in test, test assets, and samples. -->
-    <NoWarn Condition=" '$(IsTestProject)' == 'true' OR
+    <NoWarn Condition=" $(IsTestProject) OR
         '$(IsTestAssetProject)' == 'true' OR
         '$(ISBenchmarkProject)' == 'true' OR
         '$(IsSampleProject)' == 'true' OR
@@ -39,7 +38,7 @@
     <EnforceCodeStyleInBuild Condition="'$(EnforceCodeStyleInBuild)' == ''">true</EnforceCodeStyleInBuild>
 
     <!-- Enable trimming annotation validation in DI. See https://github.com/dotnet/runtime/blob/main/docs/workflow/trimming/feature-switches.md -->
-    <VerifyDependencyInjectionOpenGenericServiceTrimmability Condition="'$(IsTestProject)' == 'true'">true</VerifyDependencyInjectionOpenGenericServiceTrimmability>
+    <VerifyDependencyInjectionOpenGenericServiceTrimmability Condition=" $(IsTestProject) ">true</VerifyDependencyInjectionOpenGenericServiceTrimmability>
   </PropertyGroup>
 
   <!-- Enable implicit usings for projects that target the default TFM -->
@@ -52,7 +51,7 @@
     <Using Remove="System.Linq" Condition="'$(_IsSrcProject)' == 'true'" />
     <!-- System.Net.Http types will frequently conflict with ASP.NET Core types-->
     <Using Remove="System.Net.Http" />
-    <Using Include="Xunit" Condition="'$(IsTestProject)' == 'true' OR '$(IsUnitTestProject)' == 'true'" />
+    <Using Include="Xunit" Condition=" $(IsTestProject) " />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(DotNetBuildFromSource)' != 'true' AND $(AddPublicApiAnalyzers) ">
@@ -143,5 +142,4 @@
 
   <Import Project="Packaging.targets" />
   <Import Project="ResolveReferences.targets" />
-
 </Project>

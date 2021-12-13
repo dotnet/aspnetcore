@@ -10,7 +10,8 @@
 
   <PropertyGroup>
     <HelixTimeout>00:30:00</HelixTimeout>
-    <RunQuarantinedTests>false</RunQuarantinedTests>
+    <!-- Do not attempt to override global property. -->
+    <RunQuarantinedTests Condition=" '$(RunQuarantinedTests)' == '' ">false</RunQuarantinedTests>
 
     <IsArm64HelixQueue>false</IsArm64HelixQueue>
     <IsWindowsHelixQueue>false</IsWindowsHelixQueue>

@@ -24,18 +24,19 @@
         $(RepoRelativeProjectDir.Contains('benchmarkapps')) ">true</IsBenchmarkProject>
     <IsMicrobenchmarksProject Condition=" $(MSBuildProjectName.EndsWith('.Microbenchmarks')) ">true</IsMicrobenchmarksProject>
     <IsSpecificationTestProject Condition="$(MSBuildProjectName.EndsWith('.Specification.Tests'))">true</IsSpecificationTestProject>
-    <IsUnitTestProject Condition=" '$(IsUnitTestProject)' == '' ">false</IsUnitTestProject>
-    <IsUnitTestProject Condition=" '$(IsSpecificationTestProject)' != 'true' AND
+    <IsUnitTestProject Condition=" '$(IsUnitTestProject)' == '' AND
+        '$(IsSpecificationTestProject)' != 'true' AND
         ( $(MSBuildProjectName.EndsWith('Tests')) OR
           $(MSBuildProjectName.EndsWith('.Test')) OR
           $(MSBuildProjectName.EndsWith('.FunctionalTest')) ) ">true</IsUnitTestProject>
+    <IsUnitTestProject Condition=" '$(IsUnitTestProject)' == '' ">false</IsUnitTestProject>
     <IsTestAssetProject Condition=" $(RepoRelativeProjectDir.Contains('testassets')) OR $(MSBuildProjectName.Contains('TestCommon'))">true</IsTestAssetProject>
     <IsSampleProject Condition=" $(RepoRelativeProjectDir.ToUpperInvariant().Contains('SAMPLE')) ">true</IsSampleProject>
     <IsAnalyzersProject Condition="$(MSBuildProjectName.EndsWith('.Analyzers'))">true</IsAnalyzersProject>
     <IsShipping Condition=" '$(IsSampleProject)' == 'true' OR
         '$(IsTestAssetProject)' == 'true' OR
         '$(IsBenchmarkProject)' == 'true' OR
-        '$(IsUnitTestProject)' == 'true'">false</IsShipping>
+        $(IsUnitTestProject) ">false</IsShipping>
 
     <!--
       Following logic mimics core-setup approach as well as
@@ -247,6 +248,5 @@
   <Import Project="eng\targets\Wix.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.wixproj'" />
   <Import Project="eng\targets\Npm.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.npmproj'" />
   <Import Project="eng\targets\Java.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.javaproj'" />
-  <Import Project="eng\targets\Helix.props" Condition="'$(IsTestProject)' == 'true'" />
-
+  <Import Project="eng\targets\Helix.props" Condition=" $(IsTestProject) " />
 </Project>

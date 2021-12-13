@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <UseSharedCompilation>false</UseSharedCompilation>
@@ -14,5 +13,4 @@
 
     <Reference Include="Microsoft.Extensions.Logging" />
   </ItemGroup>
-
 </Project>
