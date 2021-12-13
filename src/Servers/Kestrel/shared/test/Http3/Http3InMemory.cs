@@ -25,6 +25,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using static System.IO.Pipelines.DuplexPipe;
 using Http3SettingType = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.Http3SettingType;
+using IHttpHeadersHandler = System.Net.Http.IHttpHeadersHandler;
 
 namespace Microsoft.AspNetCore.Testing;
 
@@ -730,6 +731,11 @@ internal class Http3RequestStream : Http3StreamBase, IHttpHeadersHandler
     public void Complete()
     {
         _testStreamContext.Complete();
+    }
+
+    public void OnDynamicIndexedHeader(int? index, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+    {
+        _headerHandler.DecodedHeaders[name.GetAsciiStringNonNullCharacters()] = value.GetAsciiOrUTF8StringNonNullCharacters();
     }
 }
 

@@ -747,5 +747,13 @@ namespace System.Net.Http.Unit.Tests.HPack
         }
 
         void IHttpHeadersHandler.OnHeadersComplete(bool endStream) { }
+
+        void IHttpHeadersHandler.OnDynamicIndexedHeader(int? index, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+        {
+            string headerName = Encoding.ASCII.GetString(name);
+            string headerValue = Encoding.ASCII.GetString(value);
+
+            DecodedHeaders[headerName] = headerValue;
+        }
     }
 }

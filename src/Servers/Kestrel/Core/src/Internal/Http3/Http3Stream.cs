@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
+using IHttpHeadersHandler = System.Net.Http.IHttpHeadersHandler;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 
@@ -199,6 +200,11 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpH
     {
         var knownHeader = H3StaticTable.Get(index);
         OnHeader(knownHeader.Name, value);
+    }
+
+    public void OnDynamicIndexedHeader(int? index, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+    {
+        OnHeader(name, value);
     }
 
     public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value) => OnHeader(name, value, checkForNewlineChars: true);

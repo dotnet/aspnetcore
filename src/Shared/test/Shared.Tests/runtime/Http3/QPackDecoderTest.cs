@@ -297,5 +297,13 @@ namespace System.Net.Http.Unit.Tests.QPack
         }
 
         void IHttpHeadersHandler.OnHeadersComplete(bool endStream) { }
+
+        public void OnDynamicIndexedHeader(int? index, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+        {
+            string headerName = Encoding.ASCII.GetString(name);
+            string headerValue = Encoding.ASCII.GetString(value);
+
+            DecodedHeaders[headerName] = headerValue;
+        }
     }
 }

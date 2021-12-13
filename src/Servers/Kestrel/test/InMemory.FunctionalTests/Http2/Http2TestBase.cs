@@ -25,6 +25,7 @@ using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit.Abstractions;
+using IHttpHeadersHandler = System.Net.Http.IHttpHeadersHandler;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
@@ -435,6 +436,11 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
     }
 
     void IHttpHeadersHandler.OnHeadersComplete(bool endStream) { }
+
+    void IHttpHeadersHandler.OnDynamicIndexedHeader(int? index, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+    {
+        ((IHttpHeadersHandler)this).OnHeader(name, value);
+    }
 
     protected void CreateConnection()
     {

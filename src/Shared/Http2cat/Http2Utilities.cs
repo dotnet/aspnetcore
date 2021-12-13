@@ -975,6 +975,11 @@ internal class Http2Utilities : IHttpHeadersHandler
         ((IHttpHeadersHandler)this).OnHeader(H2StaticTable.Get(index - 1).Name, value);
     }
 
+    public void OnDynamicIndexedHeader(int? index, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+    {
+        ((IHttpHeadersHandler)this).OnHeader(name, value);
+    }
+
     internal class Http2FrameWithPayload : Http2Frame
     {
         public Http2FrameWithPayload() : base()
