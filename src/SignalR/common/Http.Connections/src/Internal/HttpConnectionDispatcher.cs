@@ -51,6 +51,7 @@ internal partial class HttpConnectionDispatcher
     private readonly ILogger _logger;
     private const int _protocolVersion = 1;
 
+    // This should be kept in sync with CookieAuthenticationHandler
     private const string HeaderValueNoCache = "no-cache";
     private const string HeaderValueNoCacheNoStore = "no-cache, no-store";
     private const string HeaderValueEpochDate = "Thu, 01 Jan 1970 00:00:00 GMT";
