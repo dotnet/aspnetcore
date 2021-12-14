@@ -176,40 +176,4 @@ public class MiddlewareTests
         Assert.Equal(0, concurrent);
         Assert.Equal(0, testQueue.QueuedRequests);
     }
-
-    [Fact]
-    public async Task MiddlewareOnlyCallsGetResultOnce()
-    {
-        var flag = false;
-
-        var queue = new TestQueueForResettableBoolean();
-        var middleware = TestUtils.CreateTestMiddleware(
-            queue,
-            next: async context =>
-            {
-                await Task.CompletedTask;
-                flag = true;
-            });
-
-        queue.Source.Complete(true);
-        await middleware.Invoke(new DefaultHttpContext());
-
-        Assert.True(flag);
-    }
-
-    private class TestQueueForResettableBoolean : IQueuePolicy
-    {
-        public ResettableBooleanCompletionSource Source;
-        public TestQueueForResettableBoolean()
-        {
-            Source = new ResettableBooleanCompletionSource(TestUtils.CreateStackPolicy(1));
-        }
-
-        public ValueTask<bool> TryEnterAsync()
-        {
-            return Source.GetValueTask();
-        }
-
-        public void OnExit() { }
-    }
 }
