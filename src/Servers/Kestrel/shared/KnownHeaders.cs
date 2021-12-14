@@ -296,6 +296,13 @@ public class KnownHeaders
                     {AppendHPackSwitchSection(header)}")}
             }}";
 
+    static string AppendQPackSwitch(IEnumerable<QPackGroup> values) =>
+         $@"switch (index)
+            {{{Each(values, header => $@"{Each(header.QPackStaticTableFields, fields => $@"
+                case {fields.Index}:")}
+                    {AppendQPackSwitchSection(header)}")}
+            }}";
+
     static string AppendValue(bool returnTrue = false) =>
          $@"// Matched a known header
                 if ((_previousBits & flag) != 0)
@@ -334,6 +341,32 @@ public class KnownHeaders
                 }}";
 
     static string AppendHPackSwitchSection(HPackGroup group)
+    {
+        var header = group.Header;
+        if (header.Name == HeaderNames.ContentLength)
+        {
+            return $@"var customEncoding = ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector)
+                        ? null : EncodingSelector(HeaderNames.ContentLength);
+                    if (customEncoding == null)
+                    {{
+                        AppendContentLength(value);
+                    }}
+                    else
+                    {{
+                        AppendContentLengthCustomEncoding(value, customEncoding);
+                    }}
+                    return true;";
+        }
+        else
+        {
+            return $@"flag = {header.FlagBit()};
+                    values = ref _headers._{header.Identifier};
+                    nameStr = HeaderNames.{header.Identifier};
+                    break;";
+        }
+    }
+
+    static string AppendQPackSwitchSection(QPackGroup group)
     {
         var header = group.Header;
         if (header.Name == HeaderNames.ContentLength)
@@ -1311,6 +1344,27 @@ $@"        private void Clear(long bitsToClear)
 
             // Does the HPack static index match any ""known"" headers
             {AppendHPackSwitch(GroupHPack(loop.Headers))}
+
+            if (flag != 0)
+            {{
+                {AppendValue(returnTrue: true)}
+                return true;
+            }}
+            else
+            {{
+                return false;
+            }}
+        }}
+
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        public unsafe bool TryQPackAppend(int index, ReadOnlySpan<byte> value, bool checkForNewlineChars)
+        {{
+            ref StringValues values = ref Unsafe.AsRef<StringValues>(null);
+            var nameStr = string.Empty;
+            var flag = 0L;
+
+            // Does the QPack static index match any ""known"" headers
+            {AppendQPackSwitch(GroupQPack(loop.Headers))}
 
             if (flag != 0)
             {{

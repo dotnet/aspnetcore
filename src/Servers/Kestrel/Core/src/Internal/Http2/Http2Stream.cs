@@ -644,11 +644,11 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
         Aborted = 4,
     }
 
-    public override void OnHeader(int index, bool indexedValue, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+    public override void OnHeader(int index, bool indexOnly, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
     {
-        base.OnHeader(index, indexedValue, name, value);
+        base.OnHeader(index, indexOnly, name, value);
 
-        if (indexedValue)
+        if (indexOnly)
         {
             // Special case setting headers when the value is indexed for performance.
             switch (index)
@@ -677,7 +677,7 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
         // If that happens then fallback to using Append with the name bytes.
         //
         // If the value is indexed then we know it doesn't contain new lines and can skip checking.
-        if (!HttpRequestHeaders.TryHPackAppend(index, value, checkForNewlineChars: !indexedValue))
+        if (!HttpRequestHeaders.TryHPackAppend(index, value, checkForNewlineChars: !indexOnly))
         {
             AppendHeader(name, value);
         }
