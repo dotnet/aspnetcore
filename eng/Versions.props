@@ -69,9 +69,9 @@
     <MicrosoftNetCompilersToolsetPackageVersion>3.4.1-beta4-20127-10</MicrosoftNetCompilersToolsetPackageVersion>
     <!-- Packages from dotnet/core-setup -->
     <MicrosoftExtensionsDependencyModelPackageVersion>3.1.6</MicrosoftExtensionsDependencyModelPackageVersion>
-    <MicrosoftNETCoreAppInternalPackageVersion>3.1.21-servicing.21522.1</MicrosoftNETCoreAppInternalPackageVersion>
+    <MicrosoftNETCoreAppInternalPackageVersion>3.1.22-servicing.21571.3</MicrosoftNETCoreAppInternalPackageVersion>
     <MicrosoftNETCoreAppRefPackageVersion>3.1.0</MicrosoftNETCoreAppRefPackageVersion>
-    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>3.1.21</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
+    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>3.1.22</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
     <NETStandardLibraryRefPackageVersion>2.1.0</NETStandardLibraryRefPackageVersion>
     <!-- Packages from dotnet/corefx -->
     <MicrosoftBclAsyncInterfacesPackageVersion>1.1.1</MicrosoftBclAsyncInterfacesPackageVersion>
@@ -102,79 +102,79 @@
     <!-- Packages from aspnet/Blazor -->
     <MicrosoftAspNetCoreComponentsWebAssemblyRuntimePackageVersion>3.2.0</MicrosoftAspNetCoreComponentsWebAssemblyRuntimePackageVersion>
     <!-- Packages from aspnet/Extensions -->
-    <InternalAspNetCoreAnalyzersPackageVersion>3.1.21-servicing.21522.3</InternalAspNetCoreAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreAnalyzerTestingPackageVersion>3.1.21-servicing.21522.3</MicrosoftAspNetCoreAnalyzerTestingPackageVersion>
-    <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>3.1.21-servicing.21522.3</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
-    <MicrosoftAspNetCoreTestingPackageVersion>3.1.21-servicing.21522.3</MicrosoftAspNetCoreTestingPackageVersion>
-    <MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>3.1.21-servicing.21522.3</MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>
-    <MicrosoftExtensionsCachingAbstractionsPackageVersion>3.1.21</MicrosoftExtensionsCachingAbstractionsPackageVersion>
-    <MicrosoftExtensionsCachingMemoryPackageVersion>3.1.21</MicrosoftExtensionsCachingMemoryPackageVersion>
-    <MicrosoftExtensionsCachingSqlServerPackageVersion>3.1.21</MicrosoftExtensionsCachingSqlServerPackageVersion>
-    <MicrosoftExtensionsCachingStackExchangeRedisPackageVersion>3.1.21</MicrosoftExtensionsCachingStackExchangeRedisPackageVersion>
-    <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>3.1.21-servicing.21522.3</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
-    <MicrosoftExtensionsConfigurationAbstractionsPackageVersion>3.1.21</MicrosoftExtensionsConfigurationAbstractionsPackageVersion>
-    <MicrosoftExtensionsConfigurationAzureKeyVaultPackageVersion>3.1.21</MicrosoftExtensionsConfigurationAzureKeyVaultPackageVersion>
-    <MicrosoftExtensionsConfigurationBinderPackageVersion>3.1.21</MicrosoftExtensionsConfigurationBinderPackageVersion>
-    <MicrosoftExtensionsConfigurationCommandLinePackageVersion>3.1.21</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
-    <MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>3.1.21</MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>
-    <MicrosoftExtensionsConfigurationFileExtensionsPackageVersion>3.1.21</MicrosoftExtensionsConfigurationFileExtensionsPackageVersion>
-    <MicrosoftExtensionsConfigurationIniPackageVersion>3.1.21</MicrosoftExtensionsConfigurationIniPackageVersion>
-    <MicrosoftExtensionsConfigurationJsonPackageVersion>3.1.21</MicrosoftExtensionsConfigurationJsonPackageVersion>
-    <MicrosoftExtensionsConfigurationKeyPerFilePackageVersion>3.1.21</MicrosoftExtensionsConfigurationKeyPerFilePackageVersion>
-    <MicrosoftExtensionsConfigurationPackageVersion>3.1.21</MicrosoftExtensionsConfigurationPackageVersion>
-    <MicrosoftExtensionsConfigurationUserSecretsPackageVersion>3.1.21</MicrosoftExtensionsConfigurationUserSecretsPackageVersion>
-    <MicrosoftExtensionsConfigurationXmlPackageVersion>3.1.21</MicrosoftExtensionsConfigurationXmlPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>3.1.21</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionPackageVersion>3.1.21</MicrosoftExtensionsDependencyInjectionPackageVersion>
-    <MicrosoftExtensionsDiagnosticAdapterPackageVersion>3.1.21</MicrosoftExtensionsDiagnosticAdapterPackageVersion>
-    <MicrosoftExtensionsDiagnosticsHealthChecksAbstractionsPackageVersion>3.1.21</MicrosoftExtensionsDiagnosticsHealthChecksAbstractionsPackageVersion>
-    <MicrosoftExtensionsDiagnosticsHealthChecksPackageVersion>3.1.21</MicrosoftExtensionsDiagnosticsHealthChecksPackageVersion>
-    <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>3.1.21</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
-    <MicrosoftExtensionsFileProvidersCompositePackageVersion>3.1.21</MicrosoftExtensionsFileProvidersCompositePackageVersion>
-    <MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>3.1.21</MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>
-    <MicrosoftExtensionsFileProvidersPhysicalPackageVersion>3.1.21</MicrosoftExtensionsFileProvidersPhysicalPackageVersion>
-    <MicrosoftExtensionsFileSystemGlobbingPackageVersion>3.1.21</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
-    <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>3.1.21-servicing.21522.3</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
-    <MicrosoftExtensionsHostingAbstractionsPackageVersion>3.1.21</MicrosoftExtensionsHostingAbstractionsPackageVersion>
-    <MicrosoftExtensionsHostingPackageVersion>3.1.21</MicrosoftExtensionsHostingPackageVersion>
-    <MicrosoftExtensionsHostFactoryResolverSourcesPackageVersion>3.1.21-servicing.21522.3</MicrosoftExtensionsHostFactoryResolverSourcesPackageVersion>
-    <MicrosoftExtensionsHttpPackageVersion>3.1.21</MicrosoftExtensionsHttpPackageVersion>
-    <MicrosoftExtensionsLocalizationAbstractionsPackageVersion>3.1.21</MicrosoftExtensionsLocalizationAbstractionsPackageVersion>
-    <MicrosoftExtensionsLocalizationPackageVersion>3.1.21</MicrosoftExtensionsLocalizationPackageVersion>
-    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>3.1.21</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
-    <MicrosoftExtensionsLoggingAzureAppServicesPackageVersion>3.1.21</MicrosoftExtensionsLoggingAzureAppServicesPackageVersion>
-    <MicrosoftExtensionsLoggingConfigurationPackageVersion>3.1.21</MicrosoftExtensionsLoggingConfigurationPackageVersion>
-    <MicrosoftExtensionsLoggingConsolePackageVersion>3.1.21</MicrosoftExtensionsLoggingConsolePackageVersion>
-    <MicrosoftExtensionsLoggingDebugPackageVersion>3.1.21</MicrosoftExtensionsLoggingDebugPackageVersion>
-    <MicrosoftExtensionsLoggingEventSourcePackageVersion>3.1.21</MicrosoftExtensionsLoggingEventSourcePackageVersion>
-    <MicrosoftExtensionsLoggingEventLogPackageVersion>3.1.21</MicrosoftExtensionsLoggingEventLogPackageVersion>
-    <MicrosoftExtensionsLoggingPackageVersion>3.1.21</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftExtensionsLoggingTestingPackageVersion>3.1.21-servicing.21522.3</MicrosoftExtensionsLoggingTestingPackageVersion>
-    <MicrosoftExtensionsLoggingTraceSourcePackageVersion>3.1.21</MicrosoftExtensionsLoggingTraceSourcePackageVersion>
-    <MicrosoftExtensionsObjectPoolPackageVersion>3.1.21</MicrosoftExtensionsObjectPoolPackageVersion>
-    <MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>3.1.21</MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>
-    <MicrosoftExtensionsOptionsDataAnnotationsPackageVersion>3.1.21</MicrosoftExtensionsOptionsDataAnnotationsPackageVersion>
-    <MicrosoftExtensionsOptionsPackageVersion>3.1.21</MicrosoftExtensionsOptionsPackageVersion>
-    <MicrosoftExtensionsParameterDefaultValueSourcesPackageVersion>3.1.21-servicing.21522.3</MicrosoftExtensionsParameterDefaultValueSourcesPackageVersion>
-    <MicrosoftExtensionsPrimitivesPackageVersion>3.1.21</MicrosoftExtensionsPrimitivesPackageVersion>
-    <MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>3.1.21-servicing.21522.3</MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>
-    <MicrosoftExtensionsValueStopwatchSourcesPackageVersion>3.1.21-servicing.21522.3</MicrosoftExtensionsValueStopwatchSourcesPackageVersion>
-    <MicrosoftExtensionsWebEncodersPackageVersion>3.1.21</MicrosoftExtensionsWebEncodersPackageVersion>
+    <InternalAspNetCoreAnalyzersPackageVersion>3.1.22-servicing.21571.3</InternalAspNetCoreAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreAnalyzerTestingPackageVersion>3.1.22-servicing.21571.3</MicrosoftAspNetCoreAnalyzerTestingPackageVersion>
+    <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>3.1.22-servicing.21571.3</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
+    <MicrosoftAspNetCoreTestingPackageVersion>3.1.22-servicing.21571.3</MicrosoftAspNetCoreTestingPackageVersion>
+    <MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>3.1.22-servicing.21571.3</MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>
+    <MicrosoftExtensionsCachingAbstractionsPackageVersion>3.1.22</MicrosoftExtensionsCachingAbstractionsPackageVersion>
+    <MicrosoftExtensionsCachingMemoryPackageVersion>3.1.22</MicrosoftExtensionsCachingMemoryPackageVersion>
+    <MicrosoftExtensionsCachingSqlServerPackageVersion>3.1.22</MicrosoftExtensionsCachingSqlServerPackageVersion>
+    <MicrosoftExtensionsCachingStackExchangeRedisPackageVersion>3.1.22</MicrosoftExtensionsCachingStackExchangeRedisPackageVersion>
+    <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>3.1.22-servicing.21571.3</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
+    <MicrosoftExtensionsConfigurationAbstractionsPackageVersion>3.1.22</MicrosoftExtensionsConfigurationAbstractionsPackageVersion>
+    <MicrosoftExtensionsConfigurationAzureKeyVaultPackageVersion>3.1.22</MicrosoftExtensionsConfigurationAzureKeyVaultPackageVersion>
+    <MicrosoftExtensionsConfigurationBinderPackageVersion>3.1.22</MicrosoftExtensionsConfigurationBinderPackageVersion>
+    <MicrosoftExtensionsConfigurationCommandLinePackageVersion>3.1.22</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
+    <MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>3.1.22</MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>
+    <MicrosoftExtensionsConfigurationFileExtensionsPackageVersion>3.1.22</MicrosoftExtensionsConfigurationFileExtensionsPackageVersion>
+    <MicrosoftExtensionsConfigurationIniPackageVersion>3.1.22</MicrosoftExtensionsConfigurationIniPackageVersion>
+    <MicrosoftExtensionsConfigurationJsonPackageVersion>3.1.22</MicrosoftExtensionsConfigurationJsonPackageVersion>
+    <MicrosoftExtensionsConfigurationKeyPerFilePackageVersion>3.1.22</MicrosoftExtensionsConfigurationKeyPerFilePackageVersion>
+    <MicrosoftExtensionsConfigurationPackageVersion>3.1.22</MicrosoftExtensionsConfigurationPackageVersion>
+    <MicrosoftExtensionsConfigurationUserSecretsPackageVersion>3.1.22</MicrosoftExtensionsConfigurationUserSecretsPackageVersion>
+    <MicrosoftExtensionsConfigurationXmlPackageVersion>3.1.22</MicrosoftExtensionsConfigurationXmlPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>3.1.22</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionPackageVersion>3.1.22</MicrosoftExtensionsDependencyInjectionPackageVersion>
+    <MicrosoftExtensionsDiagnosticAdapterPackageVersion>3.1.22</MicrosoftExtensionsDiagnosticAdapterPackageVersion>
+    <MicrosoftExtensionsDiagnosticsHealthChecksAbstractionsPackageVersion>3.1.22</MicrosoftExtensionsDiagnosticsHealthChecksAbstractionsPackageVersion>
+    <MicrosoftExtensionsDiagnosticsHealthChecksPackageVersion>3.1.22</MicrosoftExtensionsDiagnosticsHealthChecksPackageVersion>
+    <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>3.1.22</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
+    <MicrosoftExtensionsFileProvidersCompositePackageVersion>3.1.22</MicrosoftExtensionsFileProvidersCompositePackageVersion>
+    <MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>3.1.22</MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>
+    <MicrosoftExtensionsFileProvidersPhysicalPackageVersion>3.1.22</MicrosoftExtensionsFileProvidersPhysicalPackageVersion>
+    <MicrosoftExtensionsFileSystemGlobbingPackageVersion>3.1.22</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
+    <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>3.1.22-servicing.21571.3</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
+    <MicrosoftExtensionsHostingAbstractionsPackageVersion>3.1.22</MicrosoftExtensionsHostingAbstractionsPackageVersion>
+    <MicrosoftExtensionsHostingPackageVersion>3.1.22</MicrosoftExtensionsHostingPackageVersion>
+    <MicrosoftExtensionsHostFactoryResolverSourcesPackageVersion>3.1.22-servicing.21571.3</MicrosoftExtensionsHostFactoryResolverSourcesPackageVersion>
+    <MicrosoftExtensionsHttpPackageVersion>3.1.22</MicrosoftExtensionsHttpPackageVersion>
+    <MicrosoftExtensionsLocalizationAbstractionsPackageVersion>3.1.22</MicrosoftExtensionsLocalizationAbstractionsPackageVersion>
+    <MicrosoftExtensionsLocalizationPackageVersion>3.1.22</MicrosoftExtensionsLocalizationPackageVersion>
+    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>3.1.22</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
+    <MicrosoftExtensionsLoggingAzureAppServicesPackageVersion>3.1.22</MicrosoftExtensionsLoggingAzureAppServicesPackageVersion>
+    <MicrosoftExtensionsLoggingConfigurationPackageVersion>3.1.22</MicrosoftExtensionsLoggingConfigurationPackageVersion>
+    <MicrosoftExtensionsLoggingConsolePackageVersion>3.1.22</MicrosoftExtensionsLoggingConsolePackageVersion>
+    <MicrosoftExtensionsLoggingDebugPackageVersion>3.1.22</MicrosoftExtensionsLoggingDebugPackageVersion>
+    <MicrosoftExtensionsLoggingEventSourcePackageVersion>3.1.22</MicrosoftExtensionsLoggingEventSourcePackageVersion>
+    <MicrosoftExtensionsLoggingEventLogPackageVersion>3.1.22</MicrosoftExtensionsLoggingEventLogPackageVersion>
+    <MicrosoftExtensionsLoggingPackageVersion>3.1.22</MicrosoftExtensionsLoggingPackageVersion>
+    <MicrosoftExtensionsLoggingTestingPackageVersion>3.1.22-servicing.21571.3</MicrosoftExtensionsLoggingTestingPackageVersion>
+    <MicrosoftExtensionsLoggingTraceSourcePackageVersion>3.1.22</MicrosoftExtensionsLoggingTraceSourcePackageVersion>
+    <MicrosoftExtensionsObjectPoolPackageVersion>3.1.22</MicrosoftExtensionsObjectPoolPackageVersion>
+    <MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>3.1.22</MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>
+    <MicrosoftExtensionsOptionsDataAnnotationsPackageVersion>3.1.22</MicrosoftExtensionsOptionsDataAnnotationsPackageVersion>
+    <MicrosoftExtensionsOptionsPackageVersion>3.1.22</MicrosoftExtensionsOptionsPackageVersion>
+    <MicrosoftExtensionsParameterDefaultValueSourcesPackageVersion>3.1.22-servicing.21571.3</MicrosoftExtensionsParameterDefaultValueSourcesPackageVersion>
+    <MicrosoftExtensionsPrimitivesPackageVersion>3.1.22</MicrosoftExtensionsPrimitivesPackageVersion>
+    <MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>3.1.22-servicing.21571.3</MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>
+    <MicrosoftExtensionsValueStopwatchSourcesPackageVersion>3.1.22-servicing.21571.3</MicrosoftExtensionsValueStopwatchSourcesPackageVersion>
+    <MicrosoftExtensionsWebEncodersPackageVersion>3.1.22</MicrosoftExtensionsWebEncodersPackageVersion>
     <MicrosoftInternalExtensionsRefsPackageVersion>3.1.8-servicing.20420.4</MicrosoftInternalExtensionsRefsPackageVersion>
-    <MicrosoftJSInteropPackageVersion>3.1.21</MicrosoftJSInteropPackageVersion>
+    <MicrosoftJSInteropPackageVersion>3.1.22</MicrosoftJSInteropPackageVersion>
     <!-- Packages from aspnet/EntityFrameworkCore -->
-    <dotnetefPackageVersion>3.1.21</dotnetefPackageVersion>
-    <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>3.1.21</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>
-    <MicrosoftEntityFrameworkCoreRelationalPackageVersion>3.1.21</MicrosoftEntityFrameworkCoreRelationalPackageVersion>
-    <MicrosoftEntityFrameworkCoreSqlitePackageVersion>3.1.21</MicrosoftEntityFrameworkCoreSqlitePackageVersion>
-    <MicrosoftEntityFrameworkCoreSqlServerPackageVersion>3.1.21</MicrosoftEntityFrameworkCoreSqlServerPackageVersion>
-    <MicrosoftEntityFrameworkCoreToolsPackageVersion>3.1.21</MicrosoftEntityFrameworkCoreToolsPackageVersion>
-    <MicrosoftEntityFrameworkCorePackageVersion>3.1.21</MicrosoftEntityFrameworkCorePackageVersion>
+    <dotnetefPackageVersion>3.1.22</dotnetefPackageVersion>
+    <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>3.1.22</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>
+    <MicrosoftEntityFrameworkCoreRelationalPackageVersion>3.1.22</MicrosoftEntityFrameworkCoreRelationalPackageVersion>
+    <MicrosoftEntityFrameworkCoreSqlitePackageVersion>3.1.22</MicrosoftEntityFrameworkCoreSqlitePackageVersion>
+    <MicrosoftEntityFrameworkCoreSqlServerPackageVersion>3.1.22</MicrosoftEntityFrameworkCoreSqlServerPackageVersion>
+    <MicrosoftEntityFrameworkCoreToolsPackageVersion>3.1.22</MicrosoftEntityFrameworkCoreToolsPackageVersion>
+    <MicrosoftEntityFrameworkCorePackageVersion>3.1.22</MicrosoftEntityFrameworkCorePackageVersion>
     <!-- Packages from aspnet/AspNetCore-Tooling -->
-    <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>3.1.21</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
-    <MicrosoftAspNetCoreRazorLanguagePackageVersion>3.1.21</MicrosoftAspNetCoreRazorLanguagePackageVersion>
-    <MicrosoftCodeAnalysisRazorPackageVersion>3.1.21</MicrosoftCodeAnalysisRazorPackageVersion>
-    <MicrosoftNETSdkRazorPackageVersion>3.1.21</MicrosoftNETSdkRazorPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>3.1.22</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
+    <MicrosoftAspNetCoreRazorLanguagePackageVersion>3.1.22</MicrosoftAspNetCoreRazorLanguagePackageVersion>
+    <MicrosoftCodeAnalysisRazorPackageVersion>3.1.22</MicrosoftCodeAnalysisRazorPackageVersion>
+    <MicrosoftNETSdkRazorPackageVersion>3.1.22</MicrosoftNETSdkRazorPackageVersion>
   </PropertyGroup>
   <!--
 
