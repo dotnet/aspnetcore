@@ -752,7 +752,6 @@ internal partial class HttpConnectionDispatcher
 
     private static void AddNoCacheHeaders(HttpResponse response)
     {
-        // Similar to: https://github.com/dotnet/aspnetcore/blob/d84666f43f0f27381e607778d3308bf67715c507/src/Security/Authentication/Cookies/src/CookieAuthenticationHandler.cs#L409-L411
         response.Headers.CacheControl = HeaderValueNoCacheNoStore;
         response.Headers.Pragma = HeaderValueNoCache;
         response.Headers.Expires = HeaderValueEpochDate;
