@@ -293,14 +293,14 @@ public class KnownHeaders
          $@"switch (index)
             {{{Each(values, header => $@"{Each(header.HPackStaticTableIndexes, index => $@"
                 case {index}:")}
-                    {AppendHPackSwitchSection(header)}")}
+                    {AppendIndexedSwitchSection(header.Header)}")}
             }}";
 
     static string AppendQPackSwitch(IEnumerable<QPackGroup> values) =>
          $@"switch (index)
             {{{Each(values, header => $@"{Each(header.QPackStaticTableFields, fields => $@"
                 case {fields.Index}:")}
-                    {AppendQPackSwitchSection(header)}")}
+                    {AppendIndexedSwitchSection(header.Header)}")}
             }}";
 
     static string AppendValue(bool returnTrue = false) =>
@@ -340,35 +340,9 @@ public class KnownHeaders
                     values = AppendValue(values, valueStr);
                 }}";
 
-    static string AppendHPackSwitchSection(HPackGroup group)
-    {
-        var header = group.Header;
-        if (header.Name == HeaderNames.ContentLength)
-        {
-            return $@"var customEncoding = ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector)
-                        ? null : EncodingSelector(HeaderNames.ContentLength);
-                    if (customEncoding == null)
-                    {{
-                        AppendContentLength(value);
-                    }}
-                    else
-                    {{
-                        AppendContentLengthCustomEncoding(value, customEncoding);
-                    }}
-                    return true;";
-        }
-        else
-        {
-            return $@"flag = {header.FlagBit()};
-                    values = ref _headers._{header.Identifier};
-                    nameStr = HeaderNames.{header.Identifier};
-                    break;";
-        }
-    }
 
-    static string AppendQPackSwitchSection(QPackGroup group)
+    static string AppendIndexedSwitchSection(KnownHeader header)
     {
-        var header = group.Header;
         if (header.Name == HeaderNames.ContentLength)
         {
             return $@"var customEncoding = ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector)
