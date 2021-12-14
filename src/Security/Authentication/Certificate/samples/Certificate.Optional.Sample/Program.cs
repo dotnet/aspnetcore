@@ -12,8 +12,8 @@ namespace Certificate.Optional.Sample;
 
 public class Program
 {
-    public const string HostWithoutCert = "example.com";
-    public const string HostWithCert = "cert.example.com";
+    public const string HostWithoutCert = "127.0.0.1";
+    public const string HostWithCert = "127.0.0.2";
 
     public static void Main(string[] args)
     {
@@ -24,9 +24,10 @@ public class Program
         Host.CreateDefaultBuilder(args)
             .ConfigureWebHostDefaults(webBuilder =>
             {
-                // the certificate is issued for example.com and cert.example.com domains
+                // load the self-signed certificate issued for 127.0.0.1 and 127.0.0.2 domains
+                // https://docs.microsoft.com/en-us/dotnet/core/additional-tools/self-signed-certificates-guide
                 var serverCertificate = CertificateLoader.LoadFromStoreCert(
-                    "example.com", "My", StoreLocation.CurrentUser,
+                    "localhost", "My", StoreLocation.CurrentUser,
                     allowInvalid: true);
 
                 webBuilder.UseStartup<Startup>();
@@ -48,7 +49,7 @@ public class Program
                                     });
                                 }
 
-                                // require a client certificate to access cert.example.com
+                                // require a client certificate to access 127.0.0.2
                                 return new ValueTask<SslServerAuthenticationOptions>(new SslServerAuthenticationOptions()
                                 {
                                     ClientCertificateRequired = true,
