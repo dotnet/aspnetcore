@@ -47,6 +47,7 @@
     <PlatformToolset>$(PlatformToolsetVersion)</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <IsTestProject>true</IsTestProject>
+    <IsTestProject Condition=" '$(Platform)' == 'arm64' ">false</IsTestProject>
     <DisableArcadeTestFramework>true</DisableArcadeTestFramework>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
