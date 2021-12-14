@@ -293,7 +293,14 @@ public class KnownHeaders
          $@"switch (index)
             {{{Each(values, header => $@"{Each(header.HPackStaticTableIndexes, index => $@"
                 case {index}:")}
-                    {AppendHPackSwitchSection(header)}")}
+                    {AppendIndexedSwitchSection(header.Header)}")}
+            }}";
+
+    static string AppendQPackSwitch(IEnumerable<QPackGroup> values) =>
+         $@"switch (index)
+            {{{Each(values, header => $@"{Each(header.QPackStaticTableFields, fields => $@"
+                case {fields.Index}:")}
+                    {AppendIndexedSwitchSection(header.Header)}")}
             }}";
 
     static string AppendValue(bool returnTrue = false) =>
@@ -333,9 +340,9 @@ public class KnownHeaders
                     values = AppendValue(values, valueStr);
                 }}";
 
-    static string AppendHPackSwitchSection(HPackGroup group)
+
+    static string AppendIndexedSwitchSection(KnownHeader header)
     {
-        var header = group.Header;
         if (header.Name == HeaderNames.ContentLength)
         {
             return $@"var customEncoding = ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector)
@@ -1311,6 +1318,27 @@ $@"        private void Clear(long bitsToClear)
 
             // Does the HPack static index match any ""known"" headers
             {AppendHPackSwitch(GroupHPack(loop.Headers))}
+
+            if (flag != 0)
+            {{
+                {AppendValue(returnTrue: true)}
+                return true;
+            }}
+            else
+            {{
+                return false;
+            }}
+        }}
+
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        public unsafe bool TryQPackAppend(int index, ReadOnlySpan<byte> value, bool checkForNewlineChars)
+        {{
+            ref StringValues values = ref Unsafe.AsRef<StringValues>(null);
+            var nameStr = string.Empty;
+            var flag = 0L;
+
+            // Does the QPack static index match any ""known"" headers
+            {AppendQPackSwitch(GroupQPack(loop.Headers))}
 
             if (flag != 0)
             {{
