@@ -12,6 +12,7 @@ parameters:
   SourcesDirectory: $(Build.SourcesDirectory)
   CreatePr: true
   AutoCompletePr: false
+  ReusePr: true
   UseLfLineEndings: true
   UseCheckedInLocProjectJson: false
   LanguageSet: VS_Main_Languages
@@ -64,6 +65,8 @@ jobs:
         ${{ if eq(parameters.CreatePr, true) }}:
           isAutoCompletePrSelected: ${{ parameters.AutoCompletePr }}
           isUseLfLineEndingsSelected: ${{ parameters.UseLfLineEndings }}
+          ${{ if eq(parameters.RepoType, 'gitHub') }}:
+            isShouldReusePrSelected: ${{ parameters.ReusePr }}
         packageSourceAuth: patAuth
         patVariable: ${{ parameters.CeapexPat }}
         ${{ if eq(parameters.RepoType, 'gitHub') }}:
