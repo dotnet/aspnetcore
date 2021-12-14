@@ -241,6 +241,10 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>78f4a7de7e89ddefa88f9e9da7604ecb5c58d3b7</Sha>
     </Dependency>
+    <Dependency Name="System.Threading.RateLimiting" Version="7.0.0-alpha.1.21612.5">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>78f4a7de7e89ddefa88f9e9da7604ecb5c58d3b7</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.Extensions.DependencyModel" Version="7.0.0-alpha.1.21612.5">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>78f4a7de7e89ddefa88f9e9da7604ecb5c58d3b7</Sha>
