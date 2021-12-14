@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies;
 /// </summary>
 public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAuthenticationOptions>
 {
+    // This should be kept in sync with HttpConnectionDispatcher
     private const string HeaderValueNoCache = "no-cache";
     private const string HeaderValueNoCacheNoStore = "no-cache,no-store";
     private const string HeaderValueEpocDate = "Thu, 01 Jan 1970 00:00:00 GMT";
