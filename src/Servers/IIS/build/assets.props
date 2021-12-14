@@ -6,7 +6,6 @@
         <PackNativeAssets Condition="'$(BuildIisNativeProjects)' != 'true'">false</PackNativeAssets>
         <NativePlatform Condition="'$(TargetArchitecture)' == 'AnyCPU'">x64</NativePlatform>
         <NativePlatform Condition="'$(NativePlatform)' == ''">$(TargetArchitecture)</NativePlatform>
-        <NativePlatform Condition="'$(NativePlatform)' == ''">$(Platform)</NativePlatform>
         <NativeVCPlatform Condition="'$(NativePlatform)' == 'x86'">Win32</NativeVCPlatform>
         <NativeVCPlatform Condition="'$(NativeVCPlatform)' == ''">$(NativePlatform)</NativeVCPlatform>
     </PropertyGroup>
