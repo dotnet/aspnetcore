@@ -214,10 +214,10 @@
     <!-- Packages from 2.1, 3.1, and 5.0 branches used for site extension build. -->
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension21Version>2.1.1</MicrosoftAspNetCoreAzureAppServicesSiteExtension21Version>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension22Version>2.2.0</MicrosoftAspNetCoreAzureAppServicesSiteExtension22Version>
-    <MicrosoftAspNetCoreAzureAppServicesSiteExtension31Version>3.1.21-servicing-21523-9</MicrosoftAspNetCoreAzureAppServicesSiteExtension31Version>
+    <MicrosoftAspNetCoreAzureAppServicesSiteExtension31Version>3.1.22-servicing-21579-4</MicrosoftAspNetCoreAzureAppServicesSiteExtension31Version>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension31x64Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension31Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension31x64Version>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension31x86Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension31Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension31x86Version>
-    <MicrosoftAspNetCoreAzureAppServicesSiteExtension50Version>5.0.12-servicing-21524-1</MicrosoftAspNetCoreAzureAppServicesSiteExtension50Version>
+    <MicrosoftAspNetCoreAzureAppServicesSiteExtension50Version>5.0.13-servicing-21572-2</MicrosoftAspNetCoreAzureAppServicesSiteExtension50Version>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension50x64Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension50Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension50x64Version>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension50x86Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension50Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension50x86Version>
     <!-- 3rd party dependencies -->
