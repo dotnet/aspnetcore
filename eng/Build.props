@@ -108,6 +108,8 @@
       </ItemGroup>
 
       <ItemGroup Condition=" '$(TargetOsName)' == 'win' AND '$(TargetArchitecture)' == 'arm64' ">
+        <NativeProjects Include="$(RepoRoot)src\**\*.vcxproj" Exclude="@(ProjectToExclude)" AdditionalProperties="Platform=x64" />
+        <NativeProjects Include="$(RepoRoot)src\**\*.vcxproj" Exclude="@(ProjectToExclude)" AdditionalProperties="Platform=Win32" />
         <NativeProjects Include="$(RepoRoot)src\**\*.vcxproj" Exclude="@(ProjectToExclude)" AdditionalProperties="Platform=arm64" />
       </ItemGroup>
       
