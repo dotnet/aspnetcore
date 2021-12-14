@@ -486,8 +486,9 @@ SERVER_PROCESS::SetupCommandLine(
             pszPath = pszFullPath;
         }
     }
-    if (FAILED_LOG(hr = pstrCommandLine->Copy(pszPath)) ||
-        FAILED_LOG(hr = pstrCommandLine->Append(L" ")) ||
+    if (FAILED_LOG(hr = pstrCommandLine->Copy(L"\"")) ||
+        FAILED_LOG(hr = pstrCommandLine->Append(pszPath)) ||
+        FAILED_LOG(hr = pstrCommandLine->Append(L"\" ")) ||
         FAILED_LOG(hr = pstrCommandLine->Append(m_Arguments.QueryStr())))
     {
         goto Finished;
