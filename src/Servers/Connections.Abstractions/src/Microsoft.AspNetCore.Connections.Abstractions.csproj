@@ -12,7 +12,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <SuppressBaselineReference Include="Microsoft.AspNetCore.Http.Features" />
     <Reference Include="Microsoft.Extensions.Features" />
     <Reference Include="System.IO.Pipelines" />
 
