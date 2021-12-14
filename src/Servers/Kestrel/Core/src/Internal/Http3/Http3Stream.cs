@@ -252,7 +252,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             }
         }
 
-        // HPack append will return false if the index is not a known request header.
+        // QPack append will return false if the index is not a known request header.
         // For example, someone could send the index of "Server" (a response header) in the request.
         // If that happens then fallback to using Append with the name bytes.
         //
