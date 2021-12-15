@@ -1,11 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsSampleProject>false</IsSampleProject>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <!-- Test asset publishing not working on arm64 https://github.com/aspnet/AspNetCore/issues/11205 -->
-    <SkipHelixArm>true</SkipHelixArm>
   </PropertyGroup>
 
   <Import Project="$(MvcTestingTargets)" Condition="'$(MvcTestingTargets)' != ''" />
@@ -78,5 +75,4 @@
         Overwrite="true"
         Encoding="Unicode" />
   </Target>
-
 </Project>

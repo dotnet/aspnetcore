@@ -424,8 +424,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [ConditionalTheory]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1950", FlakyOn.Helix.All)]
+        [Theory]
         [InlineData(ClientCertificateMode.AllowCertificate)]
         [InlineData(ClientCertificateMode.RequireCertificate)]
         public async Task ValidationFailureRejectsConnection(ClientCertificateMode mode)
@@ -594,7 +593,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [InlineData(HttpProtocols.Http2)]
         [InlineData(HttpProtocols.Http1AndHttp2)]
         [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing SslStream ALPN support: https://github.com/dotnet/corefx/issues/30492")]
-        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/10428", Queues = "Debian.8.Amd64.Open")] // Debian 8 uses OpenSSL 1.0.1 which does not support HTTP/2
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win81)]
         public async Task ListenOptionsProtolsCanBeSetAfterUseHttps(HttpProtocols httpProtocols)
         {

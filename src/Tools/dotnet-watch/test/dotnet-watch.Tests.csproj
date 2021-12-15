@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <AssemblyName>Microsoft.DotNet.Watcher.Tools.Tests</AssemblyName>
@@ -9,7 +8,6 @@
 
   <ItemGroup>
     <Compile Include="$(ToolSharedSourceRoot)TestHelpers\**\*.cs" />
-    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
     <Content Include="TestProjects\**\*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
@@ -41,5 +39,4 @@
       Targets="Publish"
       Properties="PublishDir=$(PublishDir)\tool\;Configuration=$(Configuration)" />
   </Target>
-
 </Project>

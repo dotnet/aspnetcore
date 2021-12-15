@@ -96,14 +96,14 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             var path = typeof(ServerFactory<,>).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
                     .Single(a => a.Key == "Microsoft.AspNetCore.Testing.IdentityUIProjectPath").Value;
 
-            path = Directory.Exists(path) ? Path.Combine(path, "wwwroot") : Path.Combine(FindHelixSlnFileDirectory(), "UI", "wwwroot");
+            path = Directory.Exists(path) ? Path.Combine(path, "wwwroot") : Path.Combine(FindSlnFileDirectory(), "UI", "wwwroot");
 
             var updatedContent = content.Replace("{TEST_PLACEHOLDER}", path);
 
             File.WriteAllText(versionedPath, updatedContent);
         }
 
-        private string FindHelixSlnFileDirectory()
+        private string FindSlnFileDirectory()
         {
             var applicationPath = Path.GetDirectoryName(typeof(ServerFactory<,>).Assembly.Location);
             var directoryInfo = new DirectoryInfo(applicationPath);
