@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Http;
@@ -16,16 +17,21 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
     {
         private readonly MemoryCache _cache;
         private readonly CertificateValidationCacheOptions _options;
+        private readonly ISystemClock _clock;
+
+        internal CertificateValidationCache(IOptions<CertificateValidationCacheOptions> options, ISystemClock clock)
+        {
+            _options = options.Value;
+            _cache = new MemoryCache(new MemoryCacheOptions { SizeLimit = _options.CacheSize, Clock = new CachingClock(clock) });
+            _clock = clock;
+        }
 
         /// <summary>
         /// Initializes a new instance of <see cref="CertificateValidationCache"/>.
         /// </summary>
         /// <param name="options">An accessor to <see cref="CertificateValidationCacheOptions"/></param>
-        public CertificateValidationCache(IOptions<CertificateValidationCacheOptions> options)
-        {
-            _options = options.Value;
-            _cache = new MemoryCache(new MemoryCacheOptions { SizeLimit = _options.CacheSize });
-        }
+        public CertificateValidationCache(IOptions<CertificateValidationCacheOptions> options) : this(options, new SystemClock())
+        { }
 
         /// <summary>
         /// Get the <see cref="AuthenticateResult"/> for the connection and certificate.
@@ -43,10 +49,29 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
         /// <param name="certificate">The certificate.</param>
         /// <param name="result">the <see cref="AuthenticateResult"/></param>
         public void Put(HttpContext context, X509Certificate2 certificate, AuthenticateResult result)
-            => _cache.Set(ComputeKey(certificate), result.Clone(), new MemoryCacheEntryOptions()
-                .SetSize(1).SetSlidingExpiration(_options.CacheEntryExpiration).SetAbsoluteExpiration(certificate.NotAfter));
+        {
+            // Never cache longer than 30 minutes
+            var absoluteExpiration = _clock.UtcNow.Add(TimeSpan.FromMinutes(30));
+            var notAfter = certificate.NotAfter.ToUniversalTime();
+            if (notAfter < absoluteExpiration)
+            {
+                absoluteExpiration = notAfter;
+            }
+            _cache.Set(ComputeKey(certificate), result.Clone(), new MemoryCacheEntryOptions()
+                .SetSize(1)
+                .SetSlidingExpiration(_options.CacheEntryExpiration)
+                .SetAbsoluteExpiration(absoluteExpiration));
+        }
 
         private string ComputeKey(X509Certificate2 certificate)
             => certificate.GetCertHashString(HashAlgorithmName.SHA256);
+
+        private class CachingClock : Extensions.Internal.ISystemClock
+        {
+            private readonly ISystemClock _clock;
+            public CachingClock(ISystemClock clock) => _clock = clock;
+
+            public DateTimeOffset UtcNow => _clock.UtcNow;
+        }
     }
 }
