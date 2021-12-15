@@ -315,7 +315,7 @@ public class DotNetDispatcherTest
     }
 
     [Fact]
-    public void EndInvoke_DoesNotThrowJSONExceptionIfTaskCancelled()
+    public void EndInvokeJS_DoesNotThrowJSONExceptionIfTaskCancelled()
     {
         // Arrange
         var jsRuntime = new TestJSRuntime();
