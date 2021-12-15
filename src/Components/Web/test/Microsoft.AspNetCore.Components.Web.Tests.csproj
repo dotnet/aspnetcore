@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <RootNamespace>Microsoft.AspNetCore.Components</RootNamespace>
@@ -13,7 +12,5 @@
 
   <ItemGroup>
     <Compile Include="$(ComponentsSharedSourceRoot)test\**\*.cs" LinkBase="Helpers" />
-    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
   </ItemGroup>
-
 </Project>

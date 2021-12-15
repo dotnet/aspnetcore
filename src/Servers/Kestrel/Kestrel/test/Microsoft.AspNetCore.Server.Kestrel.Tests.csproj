@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
   </PropertyGroup>
@@ -7,7 +6,6 @@
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)NullScope.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\*.cs" LinkBase="shared" />
-    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
     <Content Include="$(KestrelSharedSourceRoot)test\TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="$(KestrelRoot)Core\src\Internal\Http\HttpHeaders.Generated.cs" LinkBase="shared\GeneratedContent" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="$(KestrelRoot)Core\src\Internal\Http\HttpProtocol.Generated.cs" LinkBase="shared\GeneratedContent" CopyToOutputDirectory="PreserveNewest" />
@@ -23,5 +21,4 @@
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
   </ItemGroup>
-
 </Project>

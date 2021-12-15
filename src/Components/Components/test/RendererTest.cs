@@ -2810,8 +2810,7 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.Equal(10, component.OnAfterRenderCallCount);
         }
 
-        [ConditionalFact]
-        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/7487")]
+        [Fact]
         public async Task CanTriggerEventHandlerDisposedInEarlierPendingBatchAsync()
         {
             // This represents the scenario where the same event handler is being triggered

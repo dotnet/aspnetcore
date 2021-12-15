@@ -1,12 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-  	<Reference Include="Microsoft.AspNetCore.DeveloperCertificates.XPlat" />
-    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
+    <Reference Include="Microsoft.AspNetCore.DeveloperCertificates.XPlat" />
   </ItemGroup>
-
 </Project>
