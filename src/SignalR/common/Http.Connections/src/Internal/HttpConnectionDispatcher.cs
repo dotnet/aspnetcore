@@ -51,6 +51,11 @@ internal partial class HttpConnectionDispatcher
     private readonly ILogger _logger;
     private const int _protocolVersion = 1;
 
+    // This should be kept in sync with CookieAuthenticationHandler
+    private const string HeaderValueNoCache = "no-cache";
+    private const string HeaderValueNoCacheNoStore = "no-cache, no-store";
+    private const string HeaderValueEpochDate = "Thu, 01 Jan 1970 00:00:00 GMT";
+
     public HttpConnectionDispatcher(HttpConnectionManager manager, ILoggerFactory loggerFactory)
     {
         _manager = manager;
@@ -183,6 +188,8 @@ internal partial class HttpConnectionDispatcher
         else
         {
             // GET /{path} maps to long polling
+
+            AddNoCacheHeaders(context.Response);
 
             // Connection must already exist
             var connection = await GetConnectionAsync(context);
@@ -741,6 +748,13 @@ internal partial class HttpConnectionDispatcher
     private HttpConnectionContext CreateConnection(HttpConnectionDispatcherOptions options, int clientProtocolVersion = 0)
     {
         return _manager.CreateConnection(options, clientProtocolVersion);
+    }
+
+    private static void AddNoCacheHeaders(HttpResponse response)
+    {
+        response.Headers.CacheControl = HeaderValueNoCacheNoStore;
+        response.Headers.Pragma = HeaderValueNoCache;
+        response.Headers.Expires = HeaderValueEpochDate;
     }
 
     private class EmptyServiceProvider : IServiceProvider

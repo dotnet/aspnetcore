@@ -122,6 +122,7 @@
     <SystemTextEncodingsWebVersion>7.0.0-alpha.1.21613.9</SystemTextEncodingsWebVersion>
     <SystemTextJsonVersion>7.0.0-alpha.1.21613.9</SystemTextJsonVersion>
     <SystemThreadingChannelsVersion>7.0.0-alpha.1.21613.9</SystemThreadingChannelsVersion>
+    <SystemThreadingRateLimitingVersion>7.0.0-alpha.1.21613.9</SystemThreadingRateLimitingVersion>
     <!-- Only listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
     <MicrosoftNETCorePlatformsVersion>7.0.0-alpha.1.21613.9</MicrosoftNETCorePlatformsVersion>
     <!-- Packages from dotnet/efcore -->

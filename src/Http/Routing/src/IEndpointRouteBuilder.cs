@@ -20,7 +20,7 @@ public interface IEndpointRouteBuilder
     IApplicationBuilder CreateApplicationBuilder();
 
     /// <summary>
-    /// Gets the sets the <see cref="IServiceProvider"/> used to resolve services for routes.
+    /// Gets the <see cref="IServiceProvider"/> used to resolve services for routes.
     /// </summary>
     IServiceProvider ServiceProvider { get; }
 
