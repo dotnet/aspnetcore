@@ -263,7 +263,7 @@ public class DotNetDispatcherTest
     }
 
     [Fact]
-    public void EndInvoke_WithSuccessValue()
+    public void EndInvokeJS_WithSuccessValue()
     {
         // Arrange
         var jsRuntime = new TestJSRuntime();
@@ -282,7 +282,7 @@ public class DotNetDispatcherTest
     }
 
     [Fact]
-    public async Task EndInvoke_WithErrorString()
+    public async Task EndInvokeJS_WithErrorString()
     {
         // Arrange
         var jsRuntime = new TestJSRuntime();
@@ -299,7 +299,7 @@ public class DotNetDispatcherTest
     }
 
     [Fact]
-    public async Task EndInvoke_WithNullError()
+    public async Task EndInvokeJS_WithNullError()
     {
         // Arrange
         var jsRuntime = new TestJSRuntime();
@@ -312,6 +312,27 @@ public class DotNetDispatcherTest
         // Assert
         var ex = await Assert.ThrowsAsync<JSException>(async () => await task);
         Assert.Empty(ex.Message);
+    }
+
+    [Fact]
+    public void EndInvoke_DoesNotThrowJSONExceptionIfTaskCancelled()
+    {
+        // Arrange
+        var jsRuntime = new TestJSRuntime();
+        var testDTO = new TestDTO { StringVal = "Hello", IntVal = 4 };
+        var cts = new CancellationTokenSource();
+        var argsJson = JsonSerializer.Serialize(new object[] { jsRuntime.LastInvocationAsyncHandle, true, testDTO }, jsRuntime.JsonSerializerOptions);
+
+        // Act
+        var task = jsRuntime.InvokeAsync<TestDTO>("unimportant", cts.Token);
+
+        cts.Cancel();
+
+        DotNetDispatcher.EndInvokeJS(jsRuntime, argsJson);
+
+        // Assert
+        Assert.False(task.IsCompletedSuccessfully);
+        Assert.True(task.IsCanceled);
     }
 
     [Fact]
