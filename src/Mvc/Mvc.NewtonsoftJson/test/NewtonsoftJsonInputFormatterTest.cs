@@ -206,7 +206,7 @@ public class NewtonsoftJsonInputFormatterTest : JsonInputFormatterTestBase
         return base.JsonFormatter_EscapedKeys_Bracket();
     }
 
-    [Fact(Skip = "Expected: [0]['It\\'s a key'], Actual: [0]['It\\'s a key'].It's a key")]
+    [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/39069")]
     public override Task JsonFormatter_EscapedKeys_SingleQuote()
     {
         return base.JsonFormatter_EscapedKeys_SingleQuote();
