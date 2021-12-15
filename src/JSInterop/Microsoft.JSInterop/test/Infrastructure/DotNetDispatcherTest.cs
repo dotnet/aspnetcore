@@ -380,6 +380,25 @@ public class DotNetDispatcherTest
     }
 
     [Fact]
+    public void EndInvokeJS_DoesNotThrowJSONExceptionIfTaskCancelled_WithMoreThan3Arguments()
+    {
+        // Arrange
+        var jsRuntime = new TestJSRuntime();
+        var cts = new CancellationTokenSource();
+
+        // Act
+        var task = jsRuntime.InvokeAsync<TestDTO>("unimportant", cts.Token);
+
+        cts.Cancel();
+
+        DotNetDispatcher.EndInvokeJS(jsRuntime, $"[{jsRuntime.LastInvocationAsyncHandle}, false, \"Hello\", 5]");
+
+        // Assert
+        Assert.False(task.IsCompletedSuccessfully);
+        Assert.True(task.IsCanceled);
+    }
+
+    [Fact]
     public void EndInvokeJS_Works()
     {
         // Arrange
