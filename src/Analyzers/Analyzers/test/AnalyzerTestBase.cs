@@ -49,14 +49,7 @@ namespace Microsoft.AspNetCore.Analyzers
 
         private static string GetProjectDirectory()
         {
-            // On helix we use the published test files
-            if (SkipOnHelixAttribute.OnHelix())
-            {
-                return AppContext.BaseDirectory;
-            }
-
-// This test code needs to be updated to support distributed testing.
-// See https://github.com/aspnet/AspNetCore/issues/10422
+            // This test code needs to be updated to support distributed testing.
 #pragma warning disable 0618
             var solutionDirectory = TestPathUtilities.GetSolutionRootDirectory("Analyzers");
 #pragma warning restore 0618
