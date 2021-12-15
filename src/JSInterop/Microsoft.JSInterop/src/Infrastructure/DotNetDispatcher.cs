@@ -306,9 +306,9 @@ public static class DotNetDispatcher
         var success = reader.GetBoolean();
 
         reader.Read();
-        jsRuntime.EndInvokeJS(taskId, success, ref reader);
+        var completed = jsRuntime.EndInvokeJS(taskId, success, ref reader);
 
-        if (!reader.Read() || reader.TokenType != JsonTokenType.EndArray)
+        if (!reader.Read() || (completed && reader.TokenType != JsonTokenType.EndArray))
         {
             throw new JsonException("Invalid JSON");
         }
