@@ -1,16 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters;
 
@@ -57,6 +52,12 @@ public class SystemTextJsonInputFormatterTest : JsonInputFormatterTestBase
     public override Task JsonFormatter_EscapedKeys_Bracket()
     {
         return base.JsonFormatter_EscapedKeys_Bracket();
+    }
+
+    [Fact]
+    public override Task JsonFormatter_EscapedKeys_SingleQuote()
+    {
+        return base.JsonFormatter_EscapedKeys_SingleQuote();
     }
 
     [Fact]
@@ -195,6 +196,8 @@ public class SystemTextJsonInputFormatterTest : JsonInputFormatterTestBase
 
     internal override string JsonFormatter_EscapedKeys_Bracket_Expected => "$[0]['It[s a key']";
 
+    internal override string JsonFormatter_EscapedKeys_SingleQuote_Expected => "$[0]['It's a key']";
+
     internal override string ReadAsync_ArrayOfObjects_HasCorrectKey_Expected => "$[2].Age";
 
     internal override string ReadAsync_InvalidArray_AddsOverflowErrorsToModelState_Expected => "$[2]";
@@ -202,6 +205,8 @@ public class SystemTextJsonInputFormatterTest : JsonInputFormatterTestBase
     internal override string ReadAsync_InvalidComplexArray_AddsOverflowErrorsToModelState_Expected => "$[1].Small";
 
     internal override string ReadAsync_ComplexPoco_Expected => "$.Person.Numbers[2]";
+
+    internal override string ReadAsync_NestedParseError_Expected => "$.b.c.d";
 
     private class TypeWithBadConverters
     {
