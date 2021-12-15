@@ -1,9 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <!-- Test asset publishing not working on arm64 https://github.com/aspnet/AspNetCore/issues/11205 -->
-    <SkipHelixArm>true</SkipHelixArm>
     <!-- Avoid CS1705 errors due to mix of assemblies brought in transitively. -->
     <CompileUsingReferenceAssemblies>false</CompileUsingReferenceAssemblies>
    </PropertyGroup>
@@ -55,11 +52,6 @@
         <_Parameter1>Microsoft.AspNetCore.Testing.IdentityUIProjectPath</_Parameter1>
         <_Parameter2>$([System.IO.Path]::GetDirectoryName('%(_IdentitUIProjectPath.MSBuildSourceProjectFile)'))</_Parameter2>
       </AssemblyAttribute>
-
-      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(HelixType)' == 'ci'">
-        <_Parameter1>Microsoft.AspNetCore.Testing.IsHelixCI</_Parameter1>
-        <_Parameter2>true</_Parameter2>
-      </AssemblyAttribute>
     </ItemGroup>
   </Target>
 
@@ -81,5 +73,4 @@
     <!-- Drop a dummy sln to specify content root location -->
     <WriteLinesToFile File="$(PublishDir)\contentroot.sln" Lines="Ignored" Overwrite="true" Encoding="Unicode" />
   </Target>
-
 </Project>

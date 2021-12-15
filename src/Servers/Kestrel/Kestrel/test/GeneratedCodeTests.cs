@@ -12,8 +12,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
     public class GeneratedCodeTests
     {
-        [ConditionalFact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2223", FlakyOn.Helix.All)]
+        [Fact]
         public void GeneratedCodeIsUpToDate()
         {
             var httpHeadersGeneratedPath = Path.Combine(AppContext.BaseDirectory,"shared", "GeneratedContent", "HttpHeaders.Generated.cs");

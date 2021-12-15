@@ -85,8 +85,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             await _app.HasRestarted();
         }
 
-        [ConditionalFact]
-        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/8267")]
+        [Fact]
         public async Task ChangeExcludedFile()
         {
             await _app.StartWatcherAsync();
@@ -99,8 +98,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             Assert.NotSame(restart, finished);
         }
 
-        [ConditionalFact]
-        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/8267")]
+        [Fact]
         public async Task ListsFiles()
         {
             await _app.PrepareAsync();

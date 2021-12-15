@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
   </PropertyGroup>
@@ -7,7 +6,6 @@
   <ItemGroup>
     <Compile Include="..\..\shared\test\*.cs" />
     <Content Include="TestFiles\**\*" CopyToOutputDirectory="PreserveNewest" />
-    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -15,5 +13,4 @@
     <Reference Include="Microsoft.AspNetCore.DataProtection.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.DataProtection.Extensions" />
   </ItemGroup>
-
 </Project>

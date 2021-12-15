@@ -1,10 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <RootNamespace>Microsoft.AspNetCore</RootNamespace>
-    <!-- https://github.com/aspnet/AspNetCore/issues/7939: This unit test requires the shared framework be available in Helix. -->
-    <BuildHelixPayload>false</BuildHelixPayload>
     <VerifyAncmBinary Condition="'$(TargetOsName)' == 'win' AND '$(TargetArchitecture)' != 'arm'">true</VerifyAncmBinary>
   </PropertyGroup>
 
@@ -105,5 +102,4 @@
       </AssemblyAttribute>
     </ItemGroup>
   </Target>
-
 </Project>

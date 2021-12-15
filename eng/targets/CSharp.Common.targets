@@ -1,5 +1,4 @@
 <Project>
-
   <!-- For 'legacy' .csproj files, set map TargetFrameworkVersion back to TargetFramework -->
   <PropertyGroup Condition=" '$(TargetFramework)' == '' AND '$(TargetFrameworks)' == '' ">
     <TargetFramework>net$(TargetFrameworkVersion.Substring(1).Replace('.',''))</TargetFramework>
@@ -30,5 +29,4 @@
 
   <Import Project="Packaging.targets" />
   <Import Project="ResolveReferences.targets" />
-  <Import Project="Helix.targets" Condition="'$(IsTestProject)' == 'true'" />
 </Project>
