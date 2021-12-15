@@ -12,7 +12,10 @@
   <Target Name="Restore" />
   <Target Name="ResolveNuGetPackageAssets" />
   <Target Name="Test" Condition=" $(IsTestProject) " >
-    <Warning Condition="'$(TestProjectSkipReason)' != ''" Text="Skipped $(MSBuildProjectFileName): $(TestProjectSkipReason)" />
+    <PropertyGroup>
+        <TestProjectSkipReason Condition="'$(TestProjectSkipReason)' == '' AND '$(Platform)' == 'arm64' AND '$(TargetArchitecture)' != 'arm64'">Skipping arm64 test on non arm64.</TestProjectSkipReason>
+    </PropertyGroup>
+    <Message Condition="'$(TestProjectSkipReason)' != ''" Text="Skipped $(MSBuildProjectFileName): $(TestProjectSkipReason)" />
     <Exec Condition="'$(TestProjectSkipReason)' == ''" Command="&quot;$(TargetPath)&quot;" />
   </Target>
 </Project>
