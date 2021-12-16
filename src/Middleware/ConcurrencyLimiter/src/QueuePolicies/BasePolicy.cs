@@ -4,12 +4,14 @@
 using System.Collections.Concurrent;
 using System.Threading.RateLimiting;
 using Microsoft.Extensions.Options;
+using Limiter = System.Threading.RateLimiting.ConcurrencyLimiter;
+using LimiterOptions = System.Threading.RateLimiting.ConcurrencyLimiterOptions;
 
 namespace Microsoft.AspNetCore.ConcurrencyLimiter;
 
 internal class BasePolicy : IQueuePolicy, IDisposable
 {
-    private readonly System.Threading.RateLimiting.ConcurrencyLimiter _limiter;
+    private readonly Limiter _limiter;
     private readonly ConcurrentQueue<RateLimitLease> _leases = new ConcurrentQueue<RateLimitLease>();
 
     public int TotalRequests => _leases.Count;
@@ -30,9 +32,7 @@ internal class BasePolicy : IQueuePolicy, IDisposable
             throw new ArgumentException("The RequestQueueLimit cannot be a negative number.", nameof(options));
         }
 
-        _limiter = new System.Threading.RateLimiting.ConcurrencyLimiter(
-            new System.Threading.RateLimiting.ConcurrencyLimiterOptions(
-                permitLimit: maxConcurrentRequests, order, queueLimit: requestQueueLimit));
+        _limiter = new Limiter(new LimiterOptions(permitLimit: maxConcurrentRequests, order, queueLimit: requestQueueLimit));
     }
 
     public ValueTask<bool> TryEnterAsync()
