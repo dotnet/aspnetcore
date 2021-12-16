@@ -1797,7 +1797,8 @@ namespace Microsoft.AspNetCore.Identity.Test
         /// Test.
         /// </summary>
         /// <returns>Task</returns>
-        [Fact]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task ChangeEmailFailsWithEmail()
         {
             if (ShouldSkipDbTests())
