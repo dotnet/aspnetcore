@@ -943,7 +943,7 @@ public abstract class UserManagerSpecificationTestBase<TUser, TKey>
                 IdentityResultAssert.IsSuccess(await mgr.CreateAsync(u));
             }
             Assert.Equal(users.Count, mgr.Users.Count(UserNameStartsWithPredicate("CanFindUsersViaUserQueryable")));
-            Assert.Null(mgr.Users.FirstOrDefault(UserNameEqualsPredicate("bogus")));
+            Assert.Empty(mgr.Users.Where(UserNameEqualsPredicate("bogus")));
         }
     }
 

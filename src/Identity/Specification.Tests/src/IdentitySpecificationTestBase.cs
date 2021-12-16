@@ -320,7 +320,7 @@ public abstract class IdentitySpecificationTestBase<TUser, TRole, TKey> : UserMa
     /// </summary>
     /// <returns>Task</returns>
     [Fact]
-    public async Task CanQueryableRoles()
+    public virtual async Task CanQueryableRoles()
     {
         var manager = CreateRoleManager();
         if (manager.SupportsQueryableRoles)
@@ -333,7 +333,7 @@ public abstract class IdentitySpecificationTestBase<TUser, TRole, TKey> : UserMa
             Expression<Func<TRole, bool>> func = RoleNameStartsWithPredicate("CanQueryableRolesTest");
             Assert.Equal(roles.Count, manager.Roles.Count(func));
             func = RoleNameEqualsPredicate("bogus");
-            Assert.Null(manager.Roles.FirstOrDefault(func));
+            Assert.Empty(manager.Roles.Where(func));
 
         }
     }
