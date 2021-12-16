@@ -306,7 +306,10 @@ public static class DotNetDispatcher
         var success = reader.GetBoolean();
 
         reader.Read();
-        jsRuntime.EndInvokeJS(taskId, success, ref reader);
+        if (!jsRuntime.EndInvokeJS(taskId, success, ref reader))
+        {
+            return;
+        }
 
         if (!reader.Read() || reader.TokenType != JsonTokenType.EndArray)
         {
