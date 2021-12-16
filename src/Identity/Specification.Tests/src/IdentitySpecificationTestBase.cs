@@ -325,12 +325,12 @@ public abstract class IdentitySpecificationTestBase<TUser, TRole, TKey> : UserMa
         var manager = CreateRoleManager();
         if (manager.SupportsQueryableRoles)
         {
-            var roles = GenerateRoles("CanQuerableRolesTest", 4);
+            var roles = GenerateRoles("CanQueryableRolesTest", 4);
             foreach (var r in roles)
             {
                 IdentityResultAssert.IsSuccess(await manager.CreateAsync(r));
             }
-            Expression<Func<TRole, bool>> func = RoleNameStartsWithPredicate("CanQuerableRolesTest");
+            Expression<Func<TRole, bool>> func = RoleNameStartsWithPredicate("CanQueryableRolesTest");
             Assert.Equal(roles.Count, manager.Roles.Count(func));
             func = RoleNameEqualsPredicate("bogus");
             Assert.Null(manager.Roles.FirstOrDefault(func));
