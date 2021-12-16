@@ -130,6 +130,7 @@ $content = @"
     <PropertyGroup>
         <PackNativeAssets Condition="'`$(BuildIisNativeProjects)' == 'true'">true</PackNativeAssets>
         <NativePlatform Condition="'`$(Platform)' == 'AnyCPU'">x64</NativePlatform>
+        <NativePlatform Condition="'`$(Platform)' == 'arm64'">arm64</NativePlatform>
         <NativePlatform Condition="'`$(NativePlatform)' == ''">`$(Platform)</NativePlatform>
         <NativeVCPlatform Condition="'`$(NativePlatform)' == 'x86'">Win32</NativeVCPlatform>
         <NativeVCPlatform Condition="'`$(NativeVCPlatform)' == ''">`$(NativePlatform)</NativeVCPlatform>
