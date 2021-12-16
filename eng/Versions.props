@@ -271,7 +271,7 @@
   <!-- Restore feeds -->
   <PropertyGroup Label="Restore feeds">
     <!-- In an orchestrated build, this may be overridden to other Azure feeds. -->
-    <DotNetAssetRootUrl Condition="'$(DotNetAssetRootUrl)'==''">https://dotnetbuilds.azureedge.net/public/</DotNetAssetRootUrl>
+    <DotNetAssetRootUrl Condition="'$(DotNetAssetRootUrl)'==''">https://dotnetcli.azureedge.net/dotnet/</DotNetAssetRootUrl>
     <DotNetPrivateAssetRootUrl Condition="'$(DotNetPrivateAssetRootUrl)'==''">https://dotnetclimsrc.blob.core.windows.net/dotnet/</DotNetPrivateAssetRootUrl>
   </PropertyGroup>
 </Project>
