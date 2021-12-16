@@ -762,6 +762,20 @@ namespace Microsoft.JSInterop.Infrastructure
         }
 
         [Fact]
+        public void ParseArguments_Throws_WithIncorrectDotNetObjectRefUsage()
+        {
+            // Arrange
+            var method = "SomeMethod";
+            var arguments = "[4, {\"__dotNetObject\": 7}]";
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() => DotNetDispatcher.ParseArguments(new TestJSRuntime(), method, arguments, new[] { typeof(int), typeof(TestDTO), }));
+
+            // Assert
+            Assert.Equal($"In call to '{method}', parameter of type '{nameof(TestDTO)}' at index 2 must be declared as type 'DotNetObjectRef<TestDTO>' to receive the incoming value.", ex.Message);
+        }
+
+        [Fact]
         public void ReceiveByteArray_Works()
         {
             // Arrange
