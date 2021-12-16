@@ -263,7 +263,7 @@ namespace Microsoft.JSInterop.Infrastructure
         }
 
         [Fact]
-        public void EndInvoke_WithSuccessValue()
+        public void EndInvokeJS_WithSuccessValue()
         {
             // Arrange
             var jsRuntime = new TestJSRuntime();
@@ -282,7 +282,7 @@ namespace Microsoft.JSInterop.Infrastructure
         }
 
         [Fact]
-        public async Task EndInvoke_WithErrorString()
+        public async Task EndInvokeJS_WithErrorString()
         {
             // Arrange
             var jsRuntime = new TestJSRuntime();
@@ -299,7 +299,7 @@ namespace Microsoft.JSInterop.Infrastructure
         }
 
         [Fact]
-        public async Task EndInvoke_WithNullError()
+        public async Task EndInvokeJS_WithNullError()
         {
             // Arrange
             var jsRuntime = new TestJSRuntime();
@@ -312,6 +312,129 @@ namespace Microsoft.JSInterop.Infrastructure
             // Assert
             var ex = await Assert.ThrowsAsync<JSException>(async () => await task);
             Assert.Empty(ex.Message);
+        }
+
+        [Fact]
+        public void EndInvokeJS_DoesNotThrowJSONExceptionIfTaskCancelled()
+        {
+            // Arrange
+            var jsRuntime = new TestJSRuntime();
+            var testDTO = new TestDTO { StringVal = "Hello", IntVal = 4 };
+            var cts = new CancellationTokenSource();
+            var argsJson = JsonSerializer.Serialize(new object[] { jsRuntime.LastInvocationAsyncHandle, true, testDTO }, jsRuntime.JsonSerializerOptions);
+
+            // Act
+            var task = jsRuntime.InvokeAsync<TestDTO>("unimportant", cts.Token);
+
+            cts.Cancel();
+
+            DotNetDispatcher.EndInvokeJS(jsRuntime, argsJson);
+
+            // Assert
+            Assert.False(task.IsCompletedSuccessfully);
+            Assert.True(task.IsCanceled);
+        }
+
+        [Fact]
+        public void EndInvokeJS_ThrowsIfJsonIsEmptyString()
+        {
+            // Arrange
+            var jsRuntime = new TestJSRuntime();
+            var task = jsRuntime.InvokeAsync<TestDTO>("somemethod");
+
+            // Act & Assert
+            Assert.ThrowsAny<JsonException>(() => DotNetDispatcher.EndInvokeJS(jsRuntime, ""));
+        }
+
+        [Fact]
+        public void EndInvokeJS_ThrowsIfJsonIsNotArray()
+        {
+            // Arrange
+            var jsRuntime = new TestJSRuntime();
+            var task = jsRuntime.InvokeAsync<TestDTO>("somemethod");
+
+            // Act & Assert
+            Assert.ThrowsAny<JsonException>(() => DotNetDispatcher.EndInvokeJS(jsRuntime, $"{{\"key\": \"{jsRuntime.LastInvocationAsyncHandle}\"}}"));
+        }
+
+        [Fact]
+        public void EndInvokeJS_ThrowsIfJsonArrayIsInComplete()
+        {
+            // Arrange
+            var jsRuntime = new TestJSRuntime();
+            var task = jsRuntime.InvokeAsync<TestDTO>("somemethod");
+
+            // Act & Assert
+            Assert.ThrowsAny<JsonException>(() => DotNetDispatcher.EndInvokeJS(jsRuntime, $"[{jsRuntime.LastInvocationAsyncHandle}, false"));
+        }
+
+        [Fact]
+        public void EndInvokeJS_ThrowsIfJsonArrayHasMoreThan3Arguments()
+        {
+            // Arrange
+            var jsRuntime = new TestJSRuntime();
+            var task = jsRuntime.InvokeAsync<TestDTO>("somemethod");
+
+            // Act & Assert
+            Assert.ThrowsAny<JsonException>(() => DotNetDispatcher.EndInvokeJS(jsRuntime, $"[{jsRuntime.LastInvocationAsyncHandle}, false, \"Hello\", 5]"));
+        }
+
+        [Fact]
+        public void EndInvokeJS_DoesNotThrowJSONExceptionIfTaskCancelled_WithMoreThan3Arguments()
+        {
+            // Arrange
+            var jsRuntime = new TestJSRuntime();
+            var cts = new CancellationTokenSource();
+
+            // Act
+            var task = jsRuntime.InvokeAsync<TestDTO>("unimportant", cts.Token);
+
+            cts.Cancel();
+
+            DotNetDispatcher.EndInvokeJS(jsRuntime, $"[{jsRuntime.LastInvocationAsyncHandle}, false, \"Hello\", 5]");
+
+            // Assert
+            Assert.False(task.IsCompletedSuccessfully);
+            Assert.True(task.IsCanceled);
+        }
+
+        [Fact]
+        public void EndInvokeJS_Works()
+        {
+            // Arrange
+            var jsRuntime = new TestJSRuntime();
+            var task = jsRuntime.InvokeAsync<TestDTO>("somemethod");
+
+            // Act
+            DotNetDispatcher.EndInvokeJS(jsRuntime, $"[{jsRuntime.LastInvocationAsyncHandle}, true, {{\"intVal\": 7}}]");
+
+            // Assert
+            Assert.True(task.IsCompletedSuccessfully);
+            Assert.Equal(7, task.Result.IntVal);
+        }
+
+        [Fact]
+        public void EndInvokeJS_WithArrayValue()
+        {
+            var jsRuntime = new TestJSRuntime();
+            var task = jsRuntime.InvokeAsync<int[]>("somemethod");
+
+            DotNetDispatcher.EndInvokeJS(jsRuntime, $"[{jsRuntime.LastInvocationAsyncHandle}, true, [1, 2, 3]]");
+
+            Assert.True(task.IsCompletedSuccessfully);
+            Assert.Equal(new[] { 1, 2, 3 }, task.Result);
+        }
+
+        [Fact]
+        public void EndInvokeJS_WithNullValue()
+        {
+            var jsRuntime = new TestJSRuntime();
+            var task = jsRuntime.InvokeAsync<TestDTO>("somemethod");
+
+            DotNetDispatcher.EndInvokeJS(jsRuntime, $"[{jsRuntime.LastInvocationAsyncHandle}, true, null]");
+
+            Assert.True(task.IsCompletedSuccessfully);
+            Assert.Null(task.Result);
         }
 
         [Fact]
@@ -636,80 +759,6 @@ namespace Microsoft.JSInterop.Infrastructure
                 result,
                 v => Assert.Equal(4, v),
                 v => Assert.Null(v));
-        }
-
-        [Fact]
-        public void ParseArguments_Throws_WithIncorrectDotNetObjectRefUsage()
-        {
-            // Arrange
-            var method = "SomeMethod";
-            var arguments = "[4, {\"__dotNetObject\": 7}]";
-
-            // Act
-            var ex = Assert.Throws<InvalidOperationException>(() => DotNetDispatcher.ParseArguments(new TestJSRuntime(), method, arguments, new[] { typeof(int), typeof(TestDTO), }));
-
-            // Assert
-            Assert.Equal($"In call to '{method}', parameter of type '{nameof(TestDTO)}' at index 2 must be declared as type 'DotNetObjectRef<TestDTO>' to receive the incoming value.", ex.Message);
-        }
-
-        [Fact]
-        public void EndInvokeJS_ThrowsIfJsonIsEmptyString()
-        {
-            Assert.ThrowsAny<JsonException>(() => DotNetDispatcher.EndInvokeJS(new TestJSRuntime(), ""));
-        }
-
-        [Fact]
-        public void EndInvokeJS_ThrowsIfJsonIsNotArray()
-        {
-            Assert.ThrowsAny<JsonException>(() => DotNetDispatcher.EndInvokeJS(new TestJSRuntime(), "{\"key\": \"value\"}"));
-        }
-
-        [Fact]
-        public void EndInvokeJS_ThrowsIfJsonArrayIsInComplete()
-        {
-            Assert.ThrowsAny<JsonException>(() => DotNetDispatcher.EndInvokeJS(new TestJSRuntime(), "[7, false"));
-        }
-
-        [Fact]
-        public void EndInvokeJS_ThrowsIfJsonArrayHasMoreThan3Arguments()
-        {
-            Assert.ThrowsAny<JsonException>(() => DotNetDispatcher.EndInvokeJS(new TestJSRuntime(), "[7, false, \"Hello\", 5]"));
-        }
-
-        [Fact]
-        public void EndInvokeJS_Works()
-        {
-            var jsRuntime = new TestJSRuntime();
-            var task = jsRuntime.InvokeAsync<TestDTO>("somemethod");
-
-            DotNetDispatcher.EndInvokeJS(jsRuntime, $"[{jsRuntime.LastInvocationAsyncHandle}, true, {{\"intVal\": 7}}]");
-
-            Assert.True(task.IsCompletedSuccessfully);
-            Assert.Equal(7, task.Result.IntVal);
-        }
-
-        [Fact]
-        public void EndInvokeJS_WithArrayValue()
-        {
-            var jsRuntime = new TestJSRuntime();
-            var task = jsRuntime.InvokeAsync<int[]>("somemethod");
-
-            DotNetDispatcher.EndInvokeJS(jsRuntime, $"[{jsRuntime.LastInvocationAsyncHandle}, true, [1, 2, 3]]");
-
-            Assert.True(task.IsCompletedSuccessfully);
-            Assert.Equal(new[] { 1, 2, 3 }, task.Result);
-        }
-
-        [Fact]
-        public void EndInvokeJS_WithNullValue()
-        {
-            var jsRuntime = new TestJSRuntime();
-            var task = jsRuntime.InvokeAsync<TestDTO>("somemethod");
-
-            DotNetDispatcher.EndInvokeJS(jsRuntime, $"[{jsRuntime.LastInvocationAsyncHandle}, true, null]");
-
-            Assert.True(task.IsCompletedSuccessfully);
-            Assert.Null(task.Result);
         }
 
         [Fact]

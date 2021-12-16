@@ -225,13 +225,13 @@ namespace Microsoft.JSInterop
         }
 
         [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2072:RequiresUnreferencedCode", Justification = "We enforce trimmer attributes for JSON deserialized types on InvokeAsync.")]
-        internal void EndInvokeJS(long taskId, bool succeeded, ref Utf8JsonReader jsonReader)
+        internal bool EndInvokeJS(long taskId, bool succeeded, ref Utf8JsonReader jsonReader)
         {
             if (!_pendingTasks.TryRemove(taskId, out var tcs))
             {
                 // We should simply return if we can't find an id for the invocation.
                 // This likely means that the method that initiated the call defined a timeout and stopped waiting.
-                return;
+                return false;
             }
 
             CleanupTasksAndRegistrations(taskId);
@@ -251,11 +251,14 @@ namespace Microsoft.JSInterop
                     var exceptionText = jsonReader.GetString() ?? string.Empty;
                     TaskGenericsUtil.SetTaskCompletionSourceException(tcs, new JSException(exceptionText));
                 }
+
+                return true;
             }
             catch (Exception exception)
             {
                 var message = $"An exception occurred executing JS interop: {exception.Message}. See InnerException for more details.";
                 TaskGenericsUtil.SetTaskCompletionSourceException(tcs, new JSException(message, exception));
+                return false;
             }
         }
 
