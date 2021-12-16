@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
@@ -41,6 +42,8 @@ public sealed class CompiledPageActionDescriptorProvider : IActionDescriptorProv
         _pageActionDescriptorProvider = new PageActionDescriptorProvider(pageRouteModelProviders, mvcOptions, pageOptions);
         _applicationPartManager = applicationPartManager;
         _compiledPageActionDescriptorFactory = new CompiledPageActionDescriptorFactory(applicationModelProviders, mvcOptions.Value, pageOptions.Value);
+
+        EnsureApplicationPartsPopulated(applicationPartManager, pageOptions.Value);
     }
 
     /// <inheritdoc/>
@@ -83,5 +86,22 @@ public sealed class CompiledPageActionDescriptorProvider : IActionDescriptorProv
     /// <inheritdoc/>
     public void OnProvidersExecuted(ActionDescriptorProviderContext context)
     {
+    }
+
+    private static void EnsureApplicationPartsPopulated(ApplicationPartManager applicationPartManager, RazorPagesOptions options)
+    {
+        if (options?.EntryAssembly != null)
+        {
+            applicationPartManager.PopulateParts(options.EntryAssembly);
+        }
+
+        if (!applicationPartManager.ApplicationParts!.Any(part => part is IRazorCompiledItemProvider))
+        {
+            throw new InvalidOperationException(
+                Resources.FormatRazorCompiledItemProvider_NoApplicationParts(typeof(IRazorCompiledItemProvider),
+                        $"{nameof(ApplicationPartManager)}.{nameof(ApplicationPartManager.ApplicationParts)}",
+                        typeof(Hosting.IWebHostEnvironment),
+                        $"{nameof(RazorPagesOptions)}.{nameof(RazorPagesOptions.EntryAssembly)}"));
+        }
     }
 }

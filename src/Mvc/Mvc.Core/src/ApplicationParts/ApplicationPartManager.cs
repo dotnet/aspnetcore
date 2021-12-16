@@ -50,10 +50,12 @@ public class ApplicationPartManager
         }
     }
 
-    internal void PopulateDefaultParts(string entryAssemblyName)
-    {
-        var assemblies = GetApplicationPartAssemblies(entryAssemblyName);
+    internal void PopulateDefaultParts(string entryAssemblyName) =>
+        PopulateParts(Assembly.Load(new AssemblyName(entryAssemblyName)));
 
+    internal void PopulateParts(Assembly entryAssembly)
+    {
+        var assemblies = GetApplicationPartAssemblies(entryAssembly);
         var seenAssemblies = new HashSet<Assembly>();
 
         foreach (var assembly in assemblies)
@@ -74,10 +76,8 @@ public class ApplicationPartManager
         }
     }
 
-    private static IEnumerable<Assembly> GetApplicationPartAssemblies(string entryAssemblyName)
+    private static IEnumerable<Assembly> GetApplicationPartAssemblies(Assembly entryAssembly)
     {
-        var entryAssembly = Assembly.Load(new AssemblyName(entryAssemblyName));
-
         // Use ApplicationPartAttribute to get the closure of direct or transitive dependencies
         // that reference MVC.
         var assembliesFromAttributes = entryAssembly.GetCustomAttributes<ApplicationPartAttribute>()

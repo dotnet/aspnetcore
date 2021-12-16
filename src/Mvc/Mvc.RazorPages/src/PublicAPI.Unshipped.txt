@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.AspNetCore.Mvc.RazorPages.RazorPagesOptions.EntryAssembly.get -> System.Reflection.Assembly?
+Microsoft.AspNetCore.Mvc.RazorPages.RazorPagesOptions.EntryAssembly.set -> void

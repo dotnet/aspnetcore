@@ -4,6 +4,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
+
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 
@@ -45,6 +47,12 @@ public class RazorPagesOptions : IEnumerable<ICompatibilitySwitch>
             _root = value;
         }
     }
+
+    /// <summary>
+    /// Application entry assembly used for <see cref="ApplicationParts.ApplicationPart"/> discovering
+    /// requires when the <see cref="Hosting.IWebHostEnvironment"/> is not available
+    /// </summary>
+    public Assembly? EntryAssembly { get; set; }
 
     IEnumerator<ICompatibilitySwitch> IEnumerable<ICompatibilitySwitch>.GetEnumerator() => _switches.GetEnumerator();
 
