@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Threading.Tasks.Sources;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Testing;
 
@@ -175,5 +176,62 @@ public class MiddlewareTests
         Assert.True(thirdRequest.IsCompletedSuccessfully);
         Assert.Equal(0, concurrent);
         Assert.Equal(0, testQueue.QueuedRequests);
+    }
+
+    [Fact]
+    public async Task MiddlewareOnlyCallsGetResultOnce()
+    {
+        var flag = false;
+
+        var queue = new TestQueueForValueTask();
+        var middleware = TestUtils.CreateTestMiddleware(
+            queue,
+            next: async context =>
+            {
+                await Task.CompletedTask;
+                flag = true;
+            });
+
+        await middleware.Invoke(new DefaultHttpContext());
+
+        Assert.True(flag);
+    }
+
+    private class TestQueueForValueTask : IQueuePolicy
+    {
+        public TestValueResult Source;
+        public TestQueueForValueTask()
+        {
+            Source = new TestValueResult();
+        }
+
+        public ValueTask<bool> TryEnterAsync()
+        {
+            return new ValueTask<bool>(Source, 0);
+        }
+
+        public void OnExit() { }
+    }
+
+    private class TestValueResult : IValueTaskSource<bool>
+    {
+        private bool _getResultCalled;
+
+        public bool GetResult(short token)
+        {
+            Assert.False(_getResultCalled);
+            _getResultCalled = true;
+            return true;
+        }
+
+        public ValueTaskSourceStatus GetStatus(short token)
+        {
+            return ValueTaskSourceStatus.Succeeded;
+        }
+
+        public void OnCompleted(Action<object> continuation, object state, short token, ValueTaskSourceOnCompletedFlags flags)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
