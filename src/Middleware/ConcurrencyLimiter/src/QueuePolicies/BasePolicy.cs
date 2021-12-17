@@ -44,7 +44,7 @@ internal class BasePolicy : IQueuePolicy, IDisposable
         if (lease.IsAcquired)
         {
             _leases.Enqueue(lease);
-            return new ValueTask<bool>(true);
+            return ValueTask.FromResult(true);
         }
 
         var task = _limiter.WaitAsync();
@@ -54,10 +54,10 @@ internal class BasePolicy : IQueuePolicy, IDisposable
             if (lease.IsAcquired)
             {
                 _leases.Enqueue(lease);
-                return new ValueTask<bool>(true);
+                return ValueTask.FromResult(true);
             }
 
-            return new ValueTask<bool>(false);
+            return ValueTask.FromResult(false);
         }
 
         return Awaited(task);
