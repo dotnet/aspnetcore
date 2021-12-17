@@ -932,7 +932,7 @@ public abstract class UserManagerSpecificationTestBase<TUser, TKey>
     /// </summary>
     /// <returns>Task</returns>
     [Fact]
-    public virtual async Task CanFindUsersViaUserQuerable()
+    public virtual async Task CanFindUsersViaUserQueryable()
     {
         var mgr = CreateManager();
         if (mgr.SupportsQueryableUsers)
