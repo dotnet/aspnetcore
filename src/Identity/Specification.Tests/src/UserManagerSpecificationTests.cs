@@ -1793,6 +1793,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Equal(stamp, await manager.GetSecurityStampAsync(user));
         }
 
+        /*
         /// <summary>
         /// Test.
         /// </summary>
@@ -1800,7 +1801,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task ChangeEmailFailsWithEmail()
         {
-            /* if (ShouldSkipDbTests())
+            if (ShouldSkipDbTests())
             {
                 return;
             }
@@ -1818,10 +1819,11 @@ namespace Microsoft.AspNetCore.Identity.Test
             IdentityResultAssert.VerifyLogMessage(manager.Logger, $"VerifyUserTokenAsync() failed with purpose: ChangeEmail:oops@foo.boop for user { await manager.GetUserIdAsync(user)}.");
             Assert.False(await manager.IsEmailConfirmedAsync(user));
             Assert.Equal(await manager.GetEmailAsync(user), oldEmail);
-            Assert.Equal(stamp, await manager.GetSecurityStampAsync(user)); */
+            Assert.Equal(stamp, await manager.GetSecurityStampAsync(user));
 
             return;
         }
+        */
 
         /// <summary>
         /// Test.
