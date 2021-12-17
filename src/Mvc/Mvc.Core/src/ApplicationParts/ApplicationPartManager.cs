@@ -30,6 +30,8 @@ public class ApplicationPartManager
     /// </summary>
     public IList<ApplicationPart> ApplicationParts { get; } = new List<ApplicationPart>();
 
+    internal Assembly? EntryAssembly { get; private set; }
+
     /// <summary>
     /// Populates the given <paramref name="feature"/> using the list of
     /// <see cref="IApplicationFeatureProvider{TFeature}"/>s configured on the
@@ -51,10 +53,12 @@ public class ApplicationPartManager
     }
 
     internal void PopulateDefaultParts(string entryAssemblyName) =>
-        PopulateParts(Assembly.Load(new AssemblyName(entryAssemblyName)));
+        PopulateEntryAssemblyParts(Assembly.Load(new AssemblyName(entryAssemblyName)));
 
-    internal void PopulateParts(Assembly entryAssembly)
+    internal void PopulateEntryAssemblyParts(Assembly entryAssembly)
     {
+        EntryAssembly = entryAssembly;
+
         var assemblies = GetApplicationPartAssemblies(entryAssembly);
         var seenAssemblies = new HashSet<Assembly>();
 

@@ -92,10 +92,10 @@ public sealed class CompiledPageActionDescriptorProvider : IActionDescriptorProv
     {
         if (options?.EntryAssembly != null)
         {
-            applicationPartManager.PopulateParts(options.EntryAssembly);
+            applicationPartManager.PopulateEntryAssemblyParts(options.EntryAssembly);
         }
 
-        if (!applicationPartManager.ApplicationParts!.Any(part => part is IRazorCompiledItemProvider))
+        if (applicationPartManager.EntryAssembly == null && !applicationPartManager.ApplicationParts!.Any(part => part is IRazorCompiledItemProvider))
         {
             throw new InvalidOperationException(
                 Resources.FormatRazorCompiledItemProvider_NoApplicationParts(typeof(IRazorCompiledItemProvider),
