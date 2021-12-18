@@ -48,7 +48,7 @@
     <HelixType>ci</HelixType>
     <!-- Creator is not valid for internal queues -->
     <Creator Condition="'$(_UseHelixOpenQueues)' == 'true'">aspnetcore</Creator>
-    <HelixBuild>$(BUILD_BUILDNUMBER).$(TargetArchitecture).$(SYSTEM_JOBATTEMPT)</HelixBuild>
+    <HelixBuild>$(BUILD_BUILDNUMBER).$(SYSTEM_JOBATTEMPT)</HelixBuild>
     <WaitForWorkItemCompletion>true</WaitForWorkItemCompletion>
     <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
     <EnableXUnitReporter>true</EnableXUnitReporter>
@@ -78,7 +78,7 @@
   <ItemGroup Condition="Exists('$(HelixTestConfigurationFilePath)')">
     <HelixCorrelationPayload Include="$(HelixTestConfigurationFilePath)" AsArchive="false" />
   </ItemGroup>
-  
+
   <Target Name="IncludeAspNetRuntime" BeforeTargets="Gather"
     Condition="'$(DoNotRequireSharedFxHelix)' != 'true' OR
     EXISTS('$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\Microsoft.AspNetCore.App.Runtime.$(TargetRuntimeIdentifier).$(SharedFxVersion).nupkg')">

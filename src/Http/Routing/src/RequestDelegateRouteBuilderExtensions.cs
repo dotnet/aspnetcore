@@ -104,7 +104,7 @@ public static class RequestDelegateRouteBuilderExtensions
     /// <returns>A reference to the <paramref name="builder"/> after this operation has completed.</returns>
     public static IRouteBuilder MapGet(this IRouteBuilder builder, string template, RequestDelegate handler)
     {
-        return builder.MapVerb("GET", template, handler);
+        return builder.MapVerb(HttpMethods.Get, template, handler);
     }
 
     /// <summary>
@@ -117,7 +117,7 @@ public static class RequestDelegateRouteBuilderExtensions
     /// <returns>A reference to the <paramref name="builder"/> after this operation has completed.</returns>
     public static IRouteBuilder MapMiddlewareGet(this IRouteBuilder builder, string template, Action<IApplicationBuilder> action)
     {
-        return builder.MapMiddlewareVerb("GET", template, action);
+        return builder.MapMiddlewareVerb(HttpMethods.Get, template, action);
     }
 
     /// <summary>
@@ -133,7 +133,7 @@ public static class RequestDelegateRouteBuilderExtensions
         string template,
         Func<HttpRequest, HttpResponse, RouteData, Task> handler)
     {
-        return builder.MapVerb("GET", template, handler);
+        return builder.MapVerb(HttpMethods.Get, template, handler);
     }
 
     /// <summary>
@@ -146,7 +146,7 @@ public static class RequestDelegateRouteBuilderExtensions
     /// <returns>A reference to the <paramref name="builder"/> after this operation has completed.</returns>
     public static IRouteBuilder MapPost(this IRouteBuilder builder, string template, RequestDelegate handler)
     {
-        return builder.MapVerb("POST", template, handler);
+        return builder.MapVerb(HttpMethods.Post, template, handler);
     }
 
     /// <summary>
@@ -159,7 +159,7 @@ public static class RequestDelegateRouteBuilderExtensions
     /// <returns>A reference to the <paramref name="builder"/> after this operation has completed.</returns>
     public static IRouteBuilder MapMiddlewarePost(this IRouteBuilder builder, string template, Action<IApplicationBuilder> action)
     {
-        return builder.MapMiddlewareVerb("POST", template, action);
+        return builder.MapMiddlewareVerb(HttpMethods.Post, template, action);
     }
 
     /// <summary>
@@ -175,7 +175,7 @@ public static class RequestDelegateRouteBuilderExtensions
         string template,
         Func<HttpRequest, HttpResponse, RouteData, Task> handler)
     {
-        return builder.MapVerb("POST", template, handler);
+        return builder.MapVerb(HttpMethods.Post, template, handler);
     }
 
     /// <summary>
@@ -188,7 +188,7 @@ public static class RequestDelegateRouteBuilderExtensions
     /// <returns>A reference to the <paramref name="builder"/> after this operation has completed.</returns>
     public static IRouteBuilder MapPut(this IRouteBuilder builder, string template, RequestDelegate handler)
     {
-        return builder.MapVerb("PUT", template, handler);
+        return builder.MapVerb(HttpMethods.Put, template, handler);
     }
 
     /// <summary>
@@ -201,7 +201,7 @@ public static class RequestDelegateRouteBuilderExtensions
     /// <returns>A reference to the <paramref name="builder"/> after this operation has completed.</returns>
     public static IRouteBuilder MapMiddlewarePut(this IRouteBuilder builder, string template, Action<IApplicationBuilder> action)
     {
-        return builder.MapMiddlewareVerb("PUT", template, action);
+        return builder.MapMiddlewareVerb(HttpMethods.Put, template, action);
     }
 
     /// <summary>
@@ -217,7 +217,7 @@ public static class RequestDelegateRouteBuilderExtensions
         string template,
         Func<HttpRequest, HttpResponse, RouteData, Task> handler)
     {
-        return builder.MapVerb("PUT", template, handler);
+        return builder.MapVerb(HttpMethods.Put, template, handler);
     }
 
     /// <summary>

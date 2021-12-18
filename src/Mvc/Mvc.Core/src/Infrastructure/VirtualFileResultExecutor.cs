@@ -25,7 +25,7 @@ public class VirtualFileResultExecutor : FileResultExecutorBase, IActionResultEx
     /// Initializes a new instance of <see cref="VirtualFileResultExecutor"/>.
     /// </summary>
     /// <param name="loggerFactory">The factory used to create loggers.</param>
-    /// <param name="hostingEnvironment">The hosting enviornment</param>
+    /// <param name="hostingEnvironment">The hosting environment</param>
     public VirtualFileResultExecutor(ILoggerFactory loggerFactory, IWebHostEnvironment hostingEnvironment)
         : base(CreateLogger<VirtualFileResultExecutor>(loggerFactory))
     {

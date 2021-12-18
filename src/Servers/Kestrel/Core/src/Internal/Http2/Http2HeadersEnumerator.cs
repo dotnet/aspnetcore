@@ -148,6 +148,7 @@ internal sealed class Http2HeadersEnumerator : IEnumerator<KeyValuePair<string, 
 
     internal static int GetResponseHeaderStaticTableId(KnownHeaderType responseHeaderType)
     {
+        // Removed from this test are request-only headers, e.g. cookie.
         switch (responseHeaderType)
         {
             case KnownHeaderType.CacheControl:

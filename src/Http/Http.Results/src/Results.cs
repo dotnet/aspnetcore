@@ -139,7 +139,7 @@ public static class Results
     /// Creates a <see cref="IResult"/> that serializes the specified <paramref name="data"/> object to JSON.
     /// </summary>
     /// <param name="data">The object to write as JSON.</param>
-    /// <param name="options">The serializer options use when serializing the value.</param>
+    /// <param name="options">The serializer options to use when serializing the value.</param>
     /// <param name="contentType">The content-type to set on the response.</param>
     /// <param name="statusCode">The status code to set on the response.</param>
     /// <returns>The created <see cref="JsonResult"/> that serializes the specified <paramref name="data"/>

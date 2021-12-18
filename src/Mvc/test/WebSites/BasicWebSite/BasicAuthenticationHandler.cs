@@ -20,6 +20,11 @@ public class BasicAuthenticationHandler : AuthenticationHandler<AuthenticationSc
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
+        if (!Request.Headers.ContainsKey("Authorization"))
+        {
+            return Task.FromResult(AuthenticateResult.NoResult());
+        }
+
         var principal = new ClaimsPrincipal();
         principal.AddIdentity(new ClaimsIdentity(
             new[]

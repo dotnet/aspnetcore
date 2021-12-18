@@ -58,7 +58,7 @@ public class ShutdownTests : LoggedTest
                 applicationPath,
                 ServerType.Kestrel,
                 RuntimeFlavor.CoreClr,
-                RuntimeArchitecture.x64)
+                RuntimeArchitectures.Current)
             {
                 EnvironmentName = "Shutdown",
                 TargetFramework = Tfm.Default,

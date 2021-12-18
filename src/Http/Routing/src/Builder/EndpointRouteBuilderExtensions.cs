@@ -19,11 +19,12 @@ namespace Microsoft.AspNetCore.Builder;
 public static class EndpointRouteBuilderExtensions
 {
     // Avoid creating a new array every call
-    private static readonly string[] GetVerb = new[] { "GET" };
-    private static readonly string[] PostVerb = new[] { "POST" };
-    private static readonly string[] PutVerb = new[] { "PUT" };
-    private static readonly string[] DeleteVerb = new[] { "DELETE" };
-    private static readonly string[] PatchVerb = new[] { "PATCH" };
+    private static readonly string[] GetVerb = new[] { HttpMethods.Get };
+    private static readonly string[] PostVerb = new[] { HttpMethods.Post };
+    private static readonly string[] PutVerb = new[] { HttpMethods.Put };
+    private static readonly string[] DeleteVerb = new[] { HttpMethods.Delete };
+    private static readonly string[] PatchVerb = new[] {  HttpMethods.Patch  };
+
     /// <summary>
     /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP GET requests
     /// for the specified pattern.

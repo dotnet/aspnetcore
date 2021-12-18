@@ -295,31 +295,27 @@ public class AuthorizeViewTest
 
     [Fact]
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/31854")]
-    public void RendersAuthorizingUntilAuthorizationCompletedAsync()
+    public async Task RendersAuthorizingUntilAuthorizationCompletedAsync()
     {
         // Covers https://github.com/dotnet/aspnetcore/pull/31794
         // Arrange
-        var @event = new ManualResetEventSlim();
         var authorizationService = new TestAsyncAuthorizationService();
         authorizationService.NextResult = AuthorizationResult.Success();
         var renderer = CreateTestRenderer(authorizationService);
-        renderer.OnUpdateDisplayComplete = () => { @event.Set(); };
+        renderer.OnUpdateDisplayComplete = () => { };
         var rootComponent = WrapInAuthorizeView(
             authorizing: builder => builder.AddContent(0, "Auth pending..."),
             authorized: context => builder => builder.AddContent(0, $"Hello, {context.User.Identity.Name}!"));
 
         var authTcs = new TaskCompletionSource<AuthenticationState>();
-        // Complete the authentication beforehand
-        authTcs.SetResult(CreateAuthenticationState("Monsieur").Result);
-
         rootComponent.AuthenticationState = authTcs.Task;
 
         // Act/Assert 1: Auth pending
         renderer.AssignRootComponentId(rootComponent);
         rootComponent.TriggerRender();
-        var batch1 = renderer.Batches.Single();
-        var authorizeViewComponentId = batch1.GetComponentFrames<AuthorizeView>().Single().ComponentId;
-        var diff1 = batch1.DiffsByComponentId[authorizeViewComponentId].Single();
+        var batch1 = Assert.Single(renderer.Batches);
+        var authorizeViewComponentId = Assert.Single(batch1.GetComponentFrames<AuthorizeView>()).ComponentId;
+        var diff1 = Assert.Single(batch1.DiffsByComponentId[authorizeViewComponentId]);
         Assert.Collection(diff1.Edits, edit =>
         {
             Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
@@ -328,15 +324,16 @@ public class AuthorizeViewTest
                 "Auth pending...");
         });
 
-        // Act/Assert 2: Auth process completes asynchronously
-        @event.Reset();
+        // We need to do this because the continuation from the TCS might run asynchronously
+        // (This wouldn't happen under the sync context or in wasm)
+        var renderTcs = new TaskCompletionSource();
+        renderer.OnUpdateDisplayComplete = () => renderTcs.SetResult();
+        authTcs.SetResult(CreateAuthenticationState("Monsieur").Result);
 
-        // Wait for authorization to complete asynchronously
-        @event.Wait(Timeout);
-
+        await renderTcs.Task;
         Assert.Equal(2, renderer.Batches.Count);
         var batch2 = renderer.Batches[1];
-        var diff2 = batch2.DiffsByComponentId[authorizeViewComponentId].Single();
+        var diff2 = Assert.Single(batch2.DiffsByComponentId[authorizeViewComponentId]);
         Assert.Collection(diff2.Edits, edit =>
         {
             Assert.Equal(RenderTreeEditType.UpdateText, edit.Type);

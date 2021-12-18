@@ -533,7 +533,7 @@ export class HttpConnection implements IConnection {
             return url;
         }
 
-        if (!Platform.isBrowser || !window.document) {
+        if (!Platform.isBrowser) {
             throw new Error(`Cannot resolve '${url}'.`);
         }
 

@@ -195,6 +195,7 @@ public class LoggingTests : IISFunctionalTestBase
 
     [ConditionalTheory]
     [MemberData(nameof(InprocessTestVariants))]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/38957")]
     public async Task CheckUTF8File(TestVariant variant)
     {
         var path = "CheckConsoleFunctions";

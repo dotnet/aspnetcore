@@ -2,6 +2,7 @@
 #
 # This file detects the C/C++ compiler and exports it to the CC/CXX environment variables
 #
+# NOTE: some scripts source this file and rely on stdout being empty, make sure to not output anything here! 
 
 if [[ "$#" -lt 3 ]]; then
   echo "Usage..."
@@ -111,12 +112,10 @@ if [[ -z "$CC" ]]; then
     exit 1
 fi
 
-if [[ "$compiler" == "clang" ]]; then
-    if command -v "lld$desired_version" > /dev/null; then
-        # Only lld version >= 9 can be considered stable
-        if [[ "$majorVersion" -ge 9 ]]; then
-            LDFLAGS="-fuse-ld=lld"
-        fi
+# Only lld version >= 9 can be considered stable
+if [[ "$compiler" == "clang" && "$majorVersion" -ge 9 ]]; then
+    if "$CC" -fuse-ld=lld -Wl,--version >/dev/null 2>&1; then
+        LDFLAGS="-fuse-ld=lld"
     fi
 fi
 

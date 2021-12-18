@@ -29,10 +29,13 @@ public class IISDeployer : IISDeployerBase
     private readonly CancellationTokenSource _hostShutdownToken = new CancellationTokenSource();
 
     private string _configPath;
+    private string _applicationHostConfig;
     private string _debugLogFile;
     private bool _disposed;
 
     public Process HostProcess { get; set; }
+
+    protected override string ApplicationHostConfigPath => _applicationHostConfig;
 
     public IISDeployer(DeploymentParameters deploymentParameters, ILoggerFactory loggerFactory)
         : base(new IISDeploymentParameters(deploymentParameters), loggerFactory)
@@ -286,13 +289,13 @@ public class IISDeployer : IISDeployerBase
     private void AddTemporaryAppHostConfig(string contentRoot, int port)
     {
         _configPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("D"));
-        var appHostConfigPath = Path.Combine(_configPath, "applicationHost.config");
+        _applicationHostConfig = Path.Combine(_configPath, "applicationHost.config");
         Directory.CreateDirectory(_configPath);
         var config = XDocument.Parse(DeploymentParameters.ServerConfigTemplateContent ?? File.ReadAllText("IIS.config"));
 
         ConfigureAppHostConfig(config.Root, contentRoot, port);
 
-        config.Save(appHostConfigPath);
+        config.Save(_applicationHostConfig);
 
         RetryServerManagerAction(serverManager =>
         {

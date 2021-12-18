@@ -322,7 +322,7 @@ internal class EncoderStreamReader
     {
         try
         {
-            return _s ? H3StaticTable.GetHeaderFieldAt(index) : _dynamicTable[index];
+            return _s ? H3StaticTable.Get(index) : _dynamicTable[index];
         }
         catch (IndexOutOfRangeException ex)
         {

@@ -13,8 +13,8 @@ namespace System.Net.Http.Unit.Tests.HPack
 {
     public class DynamicTableTest
     {
-        private readonly HeaderField _header1 = new HeaderField(Encoding.ASCII.GetBytes("header-1"), Encoding.ASCII.GetBytes("value1"));
-        private readonly HeaderField _header2 = new HeaderField(Encoding.ASCII.GetBytes("header-02"), Encoding.ASCII.GetBytes("value_2"));
+        private readonly HeaderField _header1 = new HeaderField(staticTableIndex: null, Encoding.ASCII.GetBytes("header-1"), Encoding.ASCII.GetBytes("value1"));
+        private readonly HeaderField _header2 = new HeaderField(staticTableIndex: null, Encoding.ASCII.GetBytes("header-02"), Encoding.ASCII.GetBytes("value_2"));
 
         [Fact]
         public void DynamicTable_IsInitiallyEmpty()

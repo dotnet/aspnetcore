@@ -4,12 +4,13 @@
 using System;
 using System.Diagnostics;
 using System.Net.Http.QPack;
+using System.Text;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 
 internal static class QPackHeaderWriter
 {
-    public static bool BeginEncode(Http3HeadersEnumerator enumerator, Span<byte> buffer, ref int totalHeaderSize, out int length)
+    public static bool BeginEncodeHeaders(Http3HeadersEnumerator enumerator, Span<byte> buffer, ref int totalHeaderSize, out int length)
     {
         bool hasValue = enumerator.MoveNext();
         Debug.Assert(hasValue == true);
@@ -24,10 +25,9 @@ internal static class QPackHeaderWriter
         return doneEncode;
     }
 
-    public static bool BeginEncode(int statusCode, Http3HeadersEnumerator enumerator, Span<byte> buffer, ref int totalHeaderSize, out int length)
+    public static bool BeginEncodeHeaders(int statusCode, Http3HeadersEnumerator headersEnumerator, Span<byte> buffer, ref int totalHeaderSize, out int length)
     {
-        bool hasValue = enumerator.MoveNext();
-        Debug.Assert(hasValue == true);
+        length = 0;
 
         // https://quicwg.org/base-drafts/draft-ietf-quic-qpack.html#header-prefix
         buffer[0] = 0;
@@ -35,69 +35,99 @@ internal static class QPackHeaderWriter
 
         int statusCodeLength = EncodeStatusCode(statusCode, buffer.Slice(2));
         totalHeaderSize += 42; // name (:status) + value (xxx) + overhead (32)
+        length += statusCodeLength + 2;
 
-        bool done = Encode(enumerator, buffer.Slice(statusCodeLength + 2), throwIfNoneEncoded: false, ref totalHeaderSize, out int headersLength);
-        length = statusCodeLength + headersLength + 2;
+        if (!headersEnumerator.MoveNext())
+        {
+            return true;
+        }
+
+        bool done = Encode(headersEnumerator, buffer.Slice(statusCodeLength + 2), throwIfNoneEncoded: false, ref totalHeaderSize, out int headersLength);
+        length += headersLength;
 
         return done;
     }
 
-    public static bool Encode(Http3HeadersEnumerator enumerator, Span<byte> buffer, ref int totalHeaderSize, out int length)
+    public static bool Encode(Http3HeadersEnumerator headersEnumerator, Span<byte> buffer, ref int totalHeaderSize, out int length)
     {
-        return Encode(enumerator, buffer, throwIfNoneEncoded: true, ref totalHeaderSize, out length);
+        return Encode(headersEnumerator, buffer, throwIfNoneEncoded: true, ref totalHeaderSize, out length);
     }
 
-    private static bool Encode(Http3HeadersEnumerator enumerator, Span<byte> buffer, bool throwIfNoneEncoded, ref int totalHeaderSize, out int length)
+    private static bool Encode(Http3HeadersEnumerator headersEnumerator, Span<byte> buffer, bool throwIfNoneEncoded, ref int totalHeaderSize, out int length)
     {
         length = 0;
 
         do
         {
-            var current = enumerator.Current;
-            var valueEncoding = ReferenceEquals(enumerator.EncodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector)
-                ? null : enumerator.EncodingSelector(current.Key);
+            // Match the current header to the QPACK static table. Possible outcomes:
+            // 1. Known header and value. Write index.
+            // 2. Known header with custom value. Write name index and full value.
+            // 3. Unknown header. Write full name and value.
+            var (staticTableId, matchedValue) = headersEnumerator.GetQPackStaticTableId();
+            var name = headersEnumerator.Current.Key;
+            var value = headersEnumerator.Current.Value;
 
-            if (!QPackEncoder.EncodeLiteralHeaderFieldWithoutNameReference(current.Key, current.Value, valueEncoding, buffer.Slice(length), out int headerLength))
+            int headerLength;
+            if (matchedValue)
             {
-                if (length == 0 && throwIfNoneEncoded)
+                if (!QPackEncoder.EncodeStaticIndexedHeaderField(staticTableId, buffer.Slice(length), out headerLength))
                 {
-                    throw new QPackEncodingException("TODO sync with corefx" /* CoreStrings.HPackErrorNotEnoughBuffer */);
+                    if (length == 0 && throwIfNoneEncoded)
+                    {
+                        throw new QPackEncodingException("TODO sync with corefx" /* CoreStrings.HPackErrorNotEnoughBuffer */);
+                    }
+                    return false;
                 }
-                return false;
+            }
+            else
+            {
+                var valueEncoding = ReferenceEquals(headersEnumerator.EncodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector)
+                    ? null : headersEnumerator.EncodingSelector(name);
+
+                if (!EncodeHeader(buffer.Slice(length), staticTableId, name, value, valueEncoding, out headerLength))
+                {
+                    if (length == 0 && throwIfNoneEncoded)
+                    {
+                        throw new QPackEncodingException("TODO sync with corefx" /* CoreStrings.HPackErrorNotEnoughBuffer */);
+                    }
+                    return false;
+                }
             }
 
             // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1.1.3
-            totalHeaderSize += HeaderField.GetLength(current.Key.Length, current.Value.Length);
+            totalHeaderSize += HeaderField.GetLength(name.Length, value.Length);
             length += headerLength;
-        } while (enumerator.MoveNext());
+        } while (headersEnumerator.MoveNext());
 
         return true;
     }
 
+    private static bool EncodeHeader(Span<byte> buffer, int staticTableId, string name, string value, Encoding? valueEncoding, out int headerLength)
+    {
+        return staticTableId == -1
+            ? QPackEncoder.EncodeLiteralHeaderFieldWithoutNameReference(name, value, valueEncoding, buffer, out headerLength)
+            : QPackEncoder.EncodeLiteralHeaderFieldWithStaticNameReference(staticTableId, value, valueEncoding, buffer, out headerLength);
+    }
+
     private static int EncodeStatusCode(int statusCode, Span<byte> buffer)
     {
-        switch (statusCode)
+        if (H3StaticTable.TryGetStatusIndex(statusCode, out var index))
         {
-            case 200:
-            case 204:
-            case 206:
-            case 304:
-            case 400:
-            case 404:
-            case 500:
-                QPackEncoder.EncodeStaticIndexedHeaderField(H3StaticTable.StatusIndex[statusCode], buffer, out var bytesWritten);
-                return bytesWritten;
-            default:
-                // https://tools.ietf.org/html/draft-ietf-quic-qpack-21#section-4.5.4
-                // Index is 63 - :status
-                buffer[0] = 0b01011111;
-                buffer[1] = 0b00110000;
+            QPackEncoder.EncodeStaticIndexedHeaderField(index, buffer, out var bytesWritten);
+            return bytesWritten;
+        }
+        else
+        {
+            // https://tools.ietf.org/html/draft-ietf-quic-qpack-21#section-4.5.4
+            // Index is 63 - :status
+            buffer[0] = 0b01011111;
+            buffer[1] = 0b00110000;
 
-                ReadOnlySpan<byte> statusBytes = System.Net.Http.HPack.StatusCodes.ToStatusBytes(statusCode);
-                buffer[2] = (byte)statusBytes.Length;
-                statusBytes.CopyTo(buffer.Slice(3));
+            ReadOnlySpan<byte> statusBytes = System.Net.Http.HPack.StatusCodes.ToStatusBytes(statusCode);
+            buffer[2] = (byte)statusBytes.Length;
+            statusBytes.CopyTo(buffer.Slice(3));
 
-                return 3 + statusBytes.Length;
+            return 3 + statusBytes.Length;
         }
     }
 }

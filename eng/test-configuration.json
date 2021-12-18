@@ -8,6 +8,7 @@
     {"testName": {"contains": "CheckStdoutWithLargeWrites"}},
     {"testName": {"contains": "ServerShutsDownWhenMainExitsStress" }},
     {"testName": {"contains": "AddressRegistrationTests" }},
+    {"testName": {"contains": "MaxRequestBufferSizeTests.LargeUpload" }},
     {"failureMessage": "network disconnected" }
   ],
   "failOnRules": [

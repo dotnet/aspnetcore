@@ -210,7 +210,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
         var ex = Assert.Throws<InvalidOperationException>(() => builder.MapGet("/", (Todo todo) => { }));
         Assert.Contains("Body was inferred but the method does not allow inferred body parameters.", ex.Message);
-        Assert.Contains("Did you mean to register the \"Body (Inferred)\" parameter(s) as a Service or apply the [FromService] or [FromBody] attribute?", ex.Message);
+        Assert.Contains("Did you mean to register the \"Body (Inferred)\" parameter(s) as a Service or apply the [FromServices] or [FromBody] attribute?", ex.Message);
     }
 
     [Fact]
@@ -219,7 +219,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
         var ex = Assert.Throws<InvalidOperationException>(() => builder.MapDelete("/", (Todo todo) => { }));
         Assert.Contains("Body was inferred but the method does not allow inferred body parameters.", ex.Message);
-        Assert.Contains("Did you mean to register the \"Body (Inferred)\" parameter(s) as a Service or apply the [FromService] or [FromBody] attribute?", ex.Message);
+        Assert.Contains("Did you mean to register the \"Body (Inferred)\" parameter(s) as a Service or apply the [FromServices] or [FromBody] attribute?", ex.Message);
     }
 
     public static object[][] NonImplicitFromBodyMethods
@@ -245,7 +245,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
         var ex = Assert.Throws<InvalidOperationException>(() => builder.MapMethods("/", new[] { method }, (Todo todo) => { }));
         Assert.Contains("Body was inferred but the method does not allow inferred body parameters.", ex.Message);
-        Assert.Contains("Did you mean to register the \"Body (Inferred)\" parameter(s) as a Service or apply the [FromService] or [FromBody] attribute?", ex.Message);
+        Assert.Contains("Did you mean to register the \"Body (Inferred)\" parameter(s) as a Service or apply the [FromServices] or [FromBody] attribute?", ex.Message);
     }
 
     [Fact]

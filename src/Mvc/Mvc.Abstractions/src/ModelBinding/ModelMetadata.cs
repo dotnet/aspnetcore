@@ -364,6 +364,7 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
 
     /// <summary>
     /// Gets the text to display as a placeholder value for an editor.
+    /// By default, this is configured using <see cref="System.ComponentModel.DataAnnotations.DisplayAttribute.Prompt" />.
     /// </summary>
     public abstract string? Placeholder { get; }
 
@@ -395,6 +396,7 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
 
     /// <summary>
     /// Gets a string used by the templating system to discover display-templates and editor-templates.
+    /// Use <see cref="System.ComponentModel.DataAnnotations.UIHintAttribute" /> to specify.
     /// </summary>
     public abstract string? TemplateHint { get; }
 
@@ -411,7 +413,7 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
     public abstract bool ValidateChildren { get; }
 
     /// <summary>
-    /// Gets a value that indicates if the model, or one of it's properties, or elements has associated validators.
+    /// Gets a value that indicates if the model, or one of its properties or elements, has associated validators.
     /// </summary>
     /// <remarks>
     /// When <see langword="false"/>, validation can be assume that the model is valid (<see cref="ModelValidationState.Valid"/>) without

@@ -25,6 +25,7 @@ Microsoft.AspNetCore.Http.HttpResponse</Description>
     <Compile Include="$(SharedSourceRoot)ParameterDefaultValue\*.cs" />
     <Compile Include="$(SharedSourceRoot)PropertyHelper\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)\UrlDecoder\UrlDecoder.cs" Link="UrlDecoder.cs" />
+    <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>

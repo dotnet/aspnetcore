@@ -105,7 +105,7 @@ public class DeploymentParameters
 
     public RuntimeFlavor RuntimeFlavor { get; set; }
 
-    public RuntimeArchitecture RuntimeArchitecture { get; set; } = RuntimeArchitecture.x64;
+    public RuntimeArchitecture RuntimeArchitecture { get; set; } = RuntimeArchitectures.Current;
 
     /// <summary>
     /// Suggested base url for the deployed application. The final deployed url could be

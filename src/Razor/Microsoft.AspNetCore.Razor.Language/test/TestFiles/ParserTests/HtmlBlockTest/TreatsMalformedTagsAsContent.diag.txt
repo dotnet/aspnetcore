@@ -1,2 +1,0 @@
-(1,4): Error RZ1025: The "foo" element was not closed.  All elements must be either self-closing or have a matching end tag.
-(1,23): Error RZ1026: Encountered end tag "foo" with no matching start tag.  Are your start/end tags properly balanced?

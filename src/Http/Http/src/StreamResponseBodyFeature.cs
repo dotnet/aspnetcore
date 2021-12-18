@@ -34,7 +34,7 @@ public class StreamResponseBodyFeature : IHttpResponseBodyFeature
     /// </summary>
     /// <param name="stream"></param>
     /// <param name="priorFeature"></param>
-    public StreamResponseBodyFeature(Stream stream, IHttpResponseBodyFeature priorFeature)
+    public StreamResponseBodyFeature(Stream stream, IHttpResponseBodyFeature? priorFeature)
     {
         Stream = stream ?? throw new ArgumentNullException(nameof(stream));
         PriorFeature = priorFeature;

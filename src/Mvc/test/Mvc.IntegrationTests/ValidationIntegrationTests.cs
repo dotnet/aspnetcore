@@ -605,6 +605,78 @@ public class ValidationIntegrationTests
         AssertRequiredError("ProductId", error);
     }
 
+#nullable enable
+    private class ParameterInfos
+    {
+        public void Method(
+            string param1,
+            string param2 = "sample_data")
+        {
+        }
+
+        public static ParameterInfo NonNullableParameterInfo
+            = typeof(ParameterInfos)!
+                .GetMethod(nameof(ParameterInfos.Method))!
+                .GetParameters()[0];
+
+        public static ParameterInfo DefaultValueParameterInfo
+            = typeof(ParameterInfos)!
+                .GetMethod(nameof(ParameterInfos.Method))!
+                .GetParameters()[1];
+    }
+#nullable restore
+
+    [Fact]
+    public async Task Validation_RequiredAttribute_OnActionParameter_WithDefaultValue()
+    {
+        // Arrange
+        var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+        var parameter = new ControllerParameterDescriptor()
+        {
+            Name = "parameter",
+            ParameterType = typeof(string),
+            ParameterInfo = ParameterInfos.DefaultValueParameterInfo
+        };
+
+        var testContext = ModelBindingTestHelper.GetTestContext();
+
+        var modelState = testContext.ModelState;
+
+        // Act
+        _ = await parameterBinder.BindModelAsync(parameter, testContext);
+
+        // Assert
+        Assert.True(modelState.IsValid);
+        Assert.Equal(0, modelState.ErrorCount);
+    }
+
+    [Fact]
+    public async Task Validation_RequiredAttribute_OnActionParameter_Invalid()
+    {
+        // Arrange
+        var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+        var parameter = new ControllerParameterDescriptor()
+        {
+            Name = "parameter",
+            ParameterType = typeof(string),
+            ParameterInfo = ParameterInfos.NonNullableParameterInfo
+        };
+
+        var testContext = ModelBindingTestHelper.GetTestContext();
+
+        var modelState = testContext.ModelState;
+
+        // Act
+        _ = await parameterBinder.BindModelAsync(parameter, testContext);
+
+        // Assert
+        Assert.False(modelState.IsValid);
+        Assert.Equal(1, modelState.ErrorCount);
+
+        var entry = Assert.Single(modelState, e => e.Key == "parameter").Value;
+        Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
+    }
+
     private class Order6
     {
         [StringLength(5, ErrorMessage = "Too Long.")]

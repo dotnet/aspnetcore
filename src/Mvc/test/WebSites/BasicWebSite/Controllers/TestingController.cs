@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BasicWebSite.Controllers;
@@ -52,6 +53,19 @@ public class TestingController : Controller
         {
             return RedirectToAction(nameof(RedirectHandlerHeadersRedirect));
         }
+    }
+
+    [HttpGet("Testing/RedirectHandler/RedirectToAuthorized")]
+    public IActionResult RedirectHandlerToAuth()
+    {
+        return RedirectToAction(nameof(AuthorizedRoute));
+    }
+
+    [HttpGet("Testing/RedirectHandler/Authorized")]
+    [Authorize("Api")]
+    public string AuthorizedRoute()
+    {
+        return "Hello World!";
     }
 
     [HttpGet("Testing/RedirectHandler/Headers/Redirect")]

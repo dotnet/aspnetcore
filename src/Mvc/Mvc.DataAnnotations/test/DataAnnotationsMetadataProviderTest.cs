@@ -7,6 +7,8 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
+
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
@@ -1385,6 +1387,48 @@ public class DataAnnotationsMetadataProviderTest
     }
 
     [Fact]
+    public void CreateValidationMetadata_DoesNotInfersRequiredAttribute_ReferenceTypeParameterWithDefaultValue()
+    {
+        // Arrange
+        var provider = CreateProvider();
+
+        // Arrange
+        var type = typeof(NullableReferenceTypes);
+        var method = type.GetMethod(nameof(NullableReferenceTypes.MethodWithDefault));
+        var parameter = method.GetParameters().Where(p => p.Name == "defaultValueParameter").Single();
+        var key = ModelMetadataIdentity.ForParameter(parameter);
+        var context = new ValidationMetadataProviderContext(key, ModelAttributes.GetAttributesForParameter(parameter));
+
+        // Act
+        provider.CreateValidationMetadata(context);
+
+        // Assert
+        Assert.Null(context.ValidationMetadata.IsRequired);
+        Assert.DoesNotContain(context.ValidationMetadata.ValidatorMetadata, m => m is RequiredAttribute);
+    }
+
+    [Fact]
+    public void CreateValidationMetadata_InfersRequiredAttribute_NonNullableReferenceTypeParameter()
+    {
+        // Arrange
+        var provider = CreateProvider();
+
+        // Arrange
+        var type = typeof(NullableReferenceTypes);
+        var method = type.GetMethod(nameof(NullableReferenceTypes.MethodWithDefault));
+        var parameter = method.GetParameters().Where(p => p.Name == "nonNullableParameter").Single();
+        var key = ModelMetadataIdentity.ForParameter(parameter);
+        var context = new ValidationMetadataProviderContext(key, ModelAttributes.GetAttributesForParameter(parameter));
+
+        // Act
+        provider.CreateValidationMetadata(context);
+
+        // Assert
+        Assert.True(context.ValidationMetadata.IsRequired);
+        Assert.Contains(context.ValidationMetadata.ValidatorMetadata, m => m is RequiredAttribute);
+    }
+
+    [Fact]
     public void CreateValidationMetadata_WithOldModelIdentity_DoesNotInferValueBasedOnContext()
     {
         // Arrange
@@ -1871,6 +1915,10 @@ public class DataAnnotationsMetadataProviderTest
         public string? NullableReferenceType { get; set; } = default!;
 
         public void Method(string nonNullableParameter, string? nullableParameter)
+        {
+        }
+
+        public void MethodWithDefault(string nonNullableParameter, string defaultValueParameter = "sample_data")
         {
         }
     }

@@ -1,1 +1,0 @@
-(2,1): Error RZ2001: The 'custom' directive may only occur once per document.

@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -105,5 +105,19 @@ public class NonNullableReferenceTypesTest : IClassFixture<MvcTestFixture<BasicW
         //
         // Redirect means there were no validation errors.
         await response.AssertStatusCodeAsync(HttpStatusCode.Redirect);
+    }
+
+    [Fact]
+    public async Task CanUseNonNullableReferenceType_WithController_DefaultValueParameter_NoError()
+    {
+        // Act 1
+        var response = await Client.GetAsync("http://localhost/api/NonNullable");
+
+        // Assert 1
+        _ = await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+        var content = await response.Content.ReadAsStringAsync();
+
+        // Assert 2
+        Assert.NotNull(content);
     }
 }

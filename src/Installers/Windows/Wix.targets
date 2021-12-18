@@ -22,7 +22,7 @@
 
   <PropertyGroup Condition="'$(OutputType)' == 'package'">
     <InstallDir>$(ProductName)</InstallDir>
-    <DepProviderKey>Microsoft.$(ProductNameShort)_$(Platform)_$(Lang),v$(PackageVersion)</DepProviderKey>
+    <DepProviderKey>Microsoft.$(ProductNameShort)_$(Platform)_$(Lang),v$(_GeneratedPackageVersion)</DepProviderKey>
     <DefineConstants>$(DefineConstants);DepProviderKey=$(DepProviderKey)</DefineConstants>
   </PropertyGroup>
 

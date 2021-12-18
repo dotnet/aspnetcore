@@ -1,9 +1,0 @@
-Source Location: (69:2,7 [102] x:\dir\subdir\Test\TestComponent.cshtml)
-|
-    private IReadOnlyDictionary<string, string> someAttributes = new Dictionary<string, string>();
-|
-Generated Location: (1076:36,7 [102] )
-|
-    private IReadOnlyDictionary<string, string> someAttributes = new Dictionary<string, string>();
-|
-

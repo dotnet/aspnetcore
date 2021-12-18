@@ -1,1 +1,0 @@
-x:\dir\subdir\Test\TestComponent.cshtml(4,1): Warning RZ10012: Found markup element with unexpected name 'SomeComponent'. If this is intended to be a component, add a @using directive for its namespace.

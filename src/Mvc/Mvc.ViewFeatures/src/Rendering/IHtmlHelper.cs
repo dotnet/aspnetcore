@@ -375,7 +375,9 @@ public interface IHtmlHelper
     /// <typeparam name="TEnum">Type to generate a select list for.</typeparam>
     /// <returns>
     /// An <see cref="IEnumerable{SelectListItem}"/> containing the select list for the given
-    /// <typeparamref name="TEnum"/>.
+    /// <typeparamref name="TEnum"/>,
+    /// with a decimal representation of the ordinal as <see cref="SelectListItem.Value"/>
+    /// and the display name as <see cref="SelectListItem.Text"/>.
     /// </returns>
     /// <exception cref="ArgumentException">
     /// Thrown if <typeparamref name="TEnum"/> is not an <see cref="Enum"/> or if it has a

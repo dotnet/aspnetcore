@@ -26,6 +26,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
 public class Http2StreamTests : Http2TestBase
 {
+    [Theory]
+    [InlineData("\r")]
+    [InlineData("\n")]
+    [InlineData("\r\n")]
+    public async Task HEADERS_Received_NewLineCharactersInValue_ConnectionError(string headerValue)
+    {
+        var headers = new[]
+        {
+            new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            new KeyValuePair<string, string>("TestHeader", headerValue),
+        };
+        await InitializeConnectionAsync(_noopApplication);
+
+        await StartStreamAsync(1, headers, endStream: true);
+
+        await WaitForConnectionErrorAsync<Exception>(ignoreNonGoAwayFrames: false, 1, Http2ErrorCode.PROTOCOL_ERROR, "Malformed request: invalid headers.");
+    }
+
     [Fact]
     public async Task HEADERS_Received_EmptyMethod_Reset()
     {

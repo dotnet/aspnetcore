@@ -7,6 +7,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO.Pipelines;
+using System.Net.Http;
 using System.Net.Http.HPack;
 using System.Reflection;
 using System.Text;
@@ -28,7 +29,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
-public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, IHttpHeadersHandler
+public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, IHttpStreamHeadersHandler
 {
     protected static readonly int MaxRequestHeaderFieldSize = 16 * 1024;
     protected static readonly string _4kHeaderValue = new string('a', 4096);
@@ -182,6 +183,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
             _receivedRequestFields.Scheme = context.Request.Scheme;
             _receivedRequestFields.Path = context.Request.Path.Value;
             _receivedRequestFields.RawTarget = context.Features.Get<IHttpRequestFeature>().RawTarget;
+            _receivedRequestFields.Authority = context.Request.Host.Value;
             foreach (var header in context.Request.Headers)
             {
                 _receivedHeaders[header.Key] = header.Value.ToString();
@@ -412,7 +414,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         base.Dispose();
     }
 
-    void IHttpHeadersHandler.OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+    void IHttpStreamHeadersHandler.OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
     {
         var nameStr = name.GetHeaderName();
         _decodedHeaders[nameStr] = value.GetRequestHeaderString(nameStr, _serviceContext.ServerOptions.RequestHeaderEncodingSelector, checkForNewlineChars: true);
@@ -423,17 +425,22 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         Debug.Assert(index <= H2StaticTable.Count);
 
         ref readonly var entry = ref H2StaticTable.Get(index - 1);
-        ((IHttpHeadersHandler)this).OnHeader(entry.Name, entry.Value);
+        ((IHttpStreamHeadersHandler)this).OnHeader(entry.Name, entry.Value);
     }
 
     public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
     {
         Debug.Assert(index <= H2StaticTable.Count);
 
-        ((IHttpHeadersHandler)this).OnHeader(H2StaticTable.Get(index - 1).Name, value);
+        ((IHttpStreamHeadersHandler)this).OnHeader(H2StaticTable.Get(index - 1).Name, value);
     }
 
-    void IHttpHeadersHandler.OnHeadersComplete(bool endStream) { }
+    void IHttpStreamHeadersHandler.OnHeadersComplete(bool endStream) { }
+
+    void IHttpStreamHeadersHandler.OnDynamicIndexedHeader(int? index, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+    {
+        ((IHttpStreamHeadersHandler)this).OnHeader(name, value);
+    }
 
     protected void CreateConnection()
     {
@@ -1413,5 +1420,6 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         public string Scheme { get; set; }
         public string Path { get; set; }
         public string RawTarget { get; set; }
+        public string Authority { get; set; }
     }
 }

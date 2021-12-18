@@ -115,7 +115,6 @@ public class FileLoggerProcessorTests
         }
     }
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34284")]
     [Fact]
     public async Task RollsTextFilesBasedOnSize()
     {

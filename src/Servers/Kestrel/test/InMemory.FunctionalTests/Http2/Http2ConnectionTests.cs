@@ -179,6 +179,8 @@ public class Http2ConnectionTests : Http2TestBase
             withStreamId: 1);
 
         var contentType1 = _receivedHeaders["Content-Type"];
+        var authority1 = _receivedRequestFields.Authority;
+        var path1 = _receivedRequestFields.Path;
 
         // TriggerTick will trigger the stream to be returned to the pool so we can assert it
         TriggerTick();
@@ -194,8 +196,12 @@ public class Http2ConnectionTests : Http2TestBase
             withStreamId: 3);
 
         var contentType2 = _receivedHeaders["Content-Type"];
+        var authority2 = _receivedRequestFields.Authority;
+        var path2 = _receivedRequestFields.Path;
 
         Assert.Same(contentType1, contentType2);
+        Assert.Same(authority1, authority2);
+        Assert.Same(path1, path2);
 
         await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
     }
@@ -229,7 +235,6 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/37930")]
     public async Task ResponseTrailers_MultipleStreams_Reset()
     {
         IEnumerable<KeyValuePair<string, string>> requestHeaders = new[]
@@ -2146,9 +2151,14 @@ public class Http2ConnectionTests : Http2TestBase
         await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
     }
 
-    private class TestHttpHeadersHandler : IHttpHeadersHandler
+    private class TestHttpHeadersHandler : IHttpStreamHeadersHandler
     {
         public readonly Dictionary<string, StringValues> Headers = new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase);
+
+        public void OnDynamicIndexedHeader(int? index, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+        {
+            OnHeader(name, value);
+        }
 
         public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {

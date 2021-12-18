@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -20,6 +21,8 @@ namespace Interop.FunctionalTests;
 
 public class H2SpecTests : LoggedTest
 {
+
+    [SkipOnArchitecture(Architecture.Arm64, Architecture.X86)] // The h2spec executable is an x64-binary
     [ConditionalTheory]
     [MemberData(nameof(H2SpecTestCases))]
     public async Task RunIndividualTestCase(H2SpecTestCase testCase)
@@ -60,9 +63,20 @@ public class H2SpecTests : LoggedTest
             var dataset = new TheoryData<H2SpecTestCase>();
             var toSkip = new string[] { "http2/6.9.1/2" };
 
+            var testCases = H2SpecCommands.EnumerateTestCases();
+
+            if (testCases == null || !testCases.Any())
+            {
+                dataset.Add(new H2SpecTestCase()
+                {
+                    Skip = "Unable to detect test cases on this platform.",
+                });
+                return dataset;
+            }
+
             var supportsAlpn = Utilities.CurrentPlatformSupportsHTTP2OverTls();
 
-            foreach (var testcase in H2SpecCommands.EnumerateTestCases())
+            foreach (var testcase in testCases)
             {
                 string skip = null;
                 if (toSkip.Contains(testcase.Item1))

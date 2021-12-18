@@ -336,6 +336,42 @@ public class Http3ConnectionTests : Http3TestBase
         Assert.Same(streamContext1, streamContext2);
     }
 
+    [Fact]
+    public async Task StreamPool_MultipleStreamsInSequence_KnownHeaderReused()
+    {
+        var headers = new[]
+        {
+            new KeyValuePair<string, string>(HeaderNames.Method, "Custom"),
+            new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            new KeyValuePair<string, string>(HeaderNames.ContentType, "application/json"),
+        };
+
+        string contentType = null;
+        string authority = null;
+        await Http3Api.InitializeConnectionAsync(async context =>
+        {
+            contentType = context.Request.ContentType;
+            authority = context.Request.Host.Value;
+            await _echoApplication(context);
+        });
+
+        var streamContext1 = await MakeRequestAsync(0, headers, sendData: true, waitForServerDispose: true);
+        var contentType1 = contentType;
+        var authority1 = authority;
+
+        var streamContext2 = await MakeRequestAsync(1, headers, sendData: true, waitForServerDispose: true);
+        var contentType2 = contentType;
+        var authority2 = authority;
+
+        Assert.NotNull(contentType1);
+        Assert.NotNull(authority1);
+
+        Assert.Same(contentType1, contentType2);
+        Assert.Same(authority1, authority2);
+    }
+
     [Theory]
     [InlineData(10)]
     [InlineData(100)]

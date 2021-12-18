@@ -43,7 +43,7 @@ public static class HttpRequestJsonExtensions
     /// </summary>
     /// <typeparam name="TValue">The type of object to read.</typeparam>
     /// <param name="request">The request to read from.</param>
-    /// <param name="options">The serializer options use when deserializing the content.</param>
+    /// <param name="options">The serializer options to use when deserializing the content.</param>
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> used to cancel the operation.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]

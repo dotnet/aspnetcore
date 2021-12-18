@@ -1,6 +1,0 @@
-Code span at (13:0,13 [4] ) (Accepts:AnyExceptNewline) - Parent: Markup block at (13:0,13 [11] )
-Code span at (17:0,17 [1] ) (Accepts:AnyExceptNewline) - Parent: Expression block at (17:0,17 [7] )
-Code span at (18:0,18 [1] ) (Accepts:AnyExceptNewline) - Parent: Expression block at (17:0,17 [7] )
-Code span at (19:0,19 [4] ) (Accepts:AnyExceptNewline) - Parent: Expression block at (17:0,17 [7] )
-Code span at (23:0,23 [1] ) (Accepts:AnyExceptNewline) - Parent: Expression block at (17:0,17 [7] )
-Code span at (24:0,24 [2] ) (Accepts:AnyExceptNewline) - Parent: Markup block at (13:0,13 [13] )

@@ -178,7 +178,7 @@ function InstallDotNetSdk {
   if [[ $# -ge 3 ]]; then
     architecture=$3
   fi
-  InstallDotNet "$root" "$version" $architecture 'sdk' 'false' $runtime_source_feed $runtime_source_feed_key
+  InstallDotNet "$root" "$version" $architecture 'sdk' 'true' $runtime_source_feed $runtime_source_feed_key
 }
 
 function InstallDotNet {
@@ -188,28 +188,29 @@ function InstallDotNet {
   GetDotNetInstallScript "$root"
   local install_script=$_GetDotNetInstallScript
 
-  local archArg=''
+  local installParameters=(--version $version --install-dir "$root")
+
   if [[ -n "${3:-}" ]] && [ "$3" != 'unset' ]; then
-    archArg="--architecture $3"
+    installParameters+=(--architecture $3)
   fi
-  local runtimeArg=''
   if [[ -n "${4:-}" ]] && [ "$4" != 'sdk' ]; then
-    runtimeArg="--runtime $4"
+    installParameters+=(--runtime $4)
   fi
-  local skipNonVersionedFilesArg=""
   if [[ "$#" -ge "5" ]] && [[ "$5" != 'false' ]]; then
-    skipNonVersionedFilesArg="--skip-non-versioned-files"
+    installParameters+=(--skip-non-versioned-files)
   fi
-  bash "$install_script" --version $version --install-dir "$root" $archArg $runtimeArg $skipNonVersionedFilesArg || {
-    local exit_code=$?
-    echo "Failed to install dotnet SDK from public location (exit code '$exit_code')."
 
-    local runtimeSourceFeed=''
-    if [[ -n "${6:-}" ]]; then
-      runtimeSourceFeed="--azure-feed $6"
-    fi
+  local variations=() # list of variable names with parameter arrays in them
 
-    local runtimeSourceFeedKey=''
+  local public_location=("${installParameters[@]}")
+  variations+=(public_location)
+
+  local dotnetbuilds=("${installParameters[@]}" --azure-feed "https://dotnetbuilds.azureedge.net/public")
+  variations+=(dotnetbuilds)
+
+  if [[ -n "${6:-}" ]]; then
+    variations+=(private_feed)
+    local private_feed=("${installParameters[@]}" --azure-feed $6)
     if [[ -n "${7:-}" ]]; then
       # The 'base64' binary on alpine uses '-d' and doesn't support '--decode'
       # '-d'. To work around this, do a simple detection and switch the parameter
@@ -219,22 +220,27 @@ function InstallDotNet {
           decodeArg="-d"
       fi
       decodedFeedKey=`echo $7 | base64 $decodeArg`
-      runtimeSourceFeedKey="--feed-credential $decodedFeedKey"
+      private_feed+=(--feed-credential $decodedFeedKey)
+    fi
+  fi
+
+  local installSuccess=0
+  for variationName in "${variations[@]}"; do
+    local name="$variationName[@]"
+    local variation=("${!name}")
+    echo "Attempting to install dotnet from $variationName."
+    bash "$install_script" "${variation[@]}" && installSuccess=1
+    if [[ "$installSuccess" -eq 1 ]]; then
+      break
     fi
 
-    if [[ -n "$runtimeSourceFeed" || -n "$runtimeSourceFeedKey" ]]; then
-      bash "$install_script" --version $version --install-dir "$root" $archArg $runtimeArg $skipNonVersionedFilesArg $runtimeSourceFeed $runtimeSourceFeedKey || {
-        local exit_code=$?
-        Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to install dotnet SDK from custom location '$runtimeSourceFeed' (exit code '$exit_code')."
-        ExitWithExitCode $exit_code
-      }
-    else
-      if [[ $exit_code != 0 ]]; then
-        Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to install dotnet SDK from public location (exit code '$exit_code')."
-      fi
-      ExitWithExitCode $exit_code
-    fi
-  }
+    echo "Failed to install dotnet from $variationName."
+  done
+
+  if [[ "$installSuccess" -eq 0 ]]; then
+    Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to install dotnet SDK from any of the specified locations."
+    ExitWithExitCode 1
+  fi
 }
 
 function with_retries {
@@ -397,13 +403,6 @@ function StopProcesses {
   pkill -9 "dotnet" || true
   pkill -9 "vbcscompiler" || true
   return 0
-}
-
-function TryLogClientIpAddress () {
-  echo 'Attempting to log this client''s IP for Azure Package feed telemetry purposes'
-  if command -v curl > /dev/null; then
-    curl -s 'http://co1.msedge.net/fdv2/diagnostics.aspx' | grep ' IP: ' || true
-  fi
 }
 
 function MSBuild {

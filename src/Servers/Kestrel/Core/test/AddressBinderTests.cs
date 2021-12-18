@@ -226,13 +226,13 @@ public class AddressBinderTests
             logger,
             endpoint =>
             {
-                if (endpoint.IPEndPoint.Address == IPAddress.IPv6Any)
+                if (endpoint.IPEndPoint.Address.Equals(IPAddress.IPv6Any))
                 {
                     ipV6Attempt = true;
                     throw new InvalidOperationException("EAFNOSUPPORT");
                 }
 
-                if (endpoint.IPEndPoint.Address == IPAddress.Any)
+                if (endpoint.IPEndPoint.Address.Equals(IPAddress.Any))
                 {
                     ipV4Attempt = true;
                 }

@@ -19,13 +19,13 @@ public class MultipartReader
 {
     /// <summary>
     /// Gets the default value for <see cref="HeadersCountLimit"/>.
-    /// Defaults to 16‬.
+    /// Defaults to 16.
     /// </summary>
     public const int DefaultHeadersCountLimit = 16;
 
     /// <summary>
     /// Gets the default value for <see cref="HeadersLengthLimit"/>.
-    /// Defaults to 16,384‬ bytes‬, which is approximately 16KB.
+    /// Defaults to 16,384 bytes, which is approximately 16KB.
     /// </summary>
     public const int DefaultHeadersLengthLimit = 1024 * 16;
     private const int DefaultBufferSize = 1024 * 4;
