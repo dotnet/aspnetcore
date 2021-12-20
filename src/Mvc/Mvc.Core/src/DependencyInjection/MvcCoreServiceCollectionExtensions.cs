@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.Metadata;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -67,6 +68,47 @@ public static class MvcCoreServiceCollectionExtensions
         return builder;
     }
 
+    /// <summary>
+    /// Adds the minimum essential MVC services to the specified <see cref="IServiceCollection" />. Additional services
+    /// including MVC's support for authorization, formatters, and validation must be added separately using the
+    /// <see cref="IMvcCoreBuilder"/> returned from this method.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
+    /// <param name="entryAssembly">Application entry assembly used for <see cref="ApplicationPart"/> discovering.</param>
+    /// <returns>An <see cref="IMvcCoreBuilder"/> that can be used to further configure the MVC services.</returns>
+    /// <remarks>
+    /// The <see cref="MvcCoreServiceCollectionExtensions.AddMvcCore(IServiceCollection)"/> approach for configuring
+    /// MVC is provided for experienced MVC developers who wish to have full control over the set of default services
+    /// registered. <see cref="MvcCoreServiceCollectionExtensions.AddMvcCore(IServiceCollection)"/> will register
+    /// the minimum set of services necessary to route requests and invoke controllers. It is not expected that any
+    /// application will satisfy its requirements with just a call to
+    /// <see cref="MvcCoreServiceCollectionExtensions.AddMvcCore(IServiceCollection)"/>. Additional configuration using the
+    /// <see cref="IMvcCoreBuilder"/> will be required.
+    /// </remarks>
+    public static IMvcCoreBuilder AddMvcCore(this IServiceCollection services, Assembly entryAssembly)
+    {
+        if (services == null)
+        {
+            throw new ArgumentNullException(nameof(services));
+        }
+
+        if (entryAssembly == null)
+        {
+            throw new ArgumentNullException(nameof(entryAssembly));
+        }
+
+        var partManager = GetApplicationPartManager(services, entryAssembly);
+        services.TryAddSingleton(partManager);
+
+        ConfigureDefaultFeatureProviders(partManager);
+        ConfigureDefaultServices(services);
+        AddMvcCoreServices(services);
+
+        var builder = new MvcCoreBuilder(services, partManager);
+
+        return builder;
+    }
+
     private static void ConfigureDefaultFeatureProviders(ApplicationPartManager manager)
     {
         if (!manager.FeatureProviders.OfType<ControllerFeatureProvider>().Any())
@@ -89,6 +131,18 @@ public static class MvcCoreServiceCollectionExtensions
             }
 
             manager.PopulateDefaultParts(entryAssemblyName);
+        }
+
+        return manager;
+    }
+
+    private static ApplicationPartManager GetApplicationPartManager(IServiceCollection services, Assembly entryAssembly)
+    {
+        var manager = GetServiceFromCollection<ApplicationPartManager>(services);
+        if (manager == null)
+        {
+            manager = new ApplicationPartManager();
+            manager.PopulateDefaultParts(entryAssembly);
         }
 
         return manager;

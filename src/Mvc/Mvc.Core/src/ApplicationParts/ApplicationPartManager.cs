@@ -55,7 +55,10 @@ public class ApplicationPartManager
     internal void PopulateDefaultParts(string entryAssemblyName) =>
         PopulateEntryAssemblyParts(Assembly.Load(new AssemblyName(entryAssemblyName)));
 
-    internal void PopulateEntryAssemblyParts(Assembly entryAssembly)
+    internal void PopulateDefaultParts(Assembly entryAssembly) =>
+        PopulateEntryAssemblyParts(entryAssembly);
+
+    private void PopulateEntryAssemblyParts(Assembly entryAssembly)
     {
         EntryAssembly = entryAssembly;
 

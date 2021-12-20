@@ -1,1 +1,2 @@
 #nullable enable
+static Microsoft.Extensions.DependencyInjection.MvcCoreServiceCollectionExtensions.AddMvcCore(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Reflection.Assembly! entryAssembly) -> Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder!

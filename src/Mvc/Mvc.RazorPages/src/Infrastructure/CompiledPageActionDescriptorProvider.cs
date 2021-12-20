@@ -43,7 +43,7 @@ public sealed class CompiledPageActionDescriptorProvider : IActionDescriptorProv
         _applicationPartManager = applicationPartManager;
         _compiledPageActionDescriptorFactory = new CompiledPageActionDescriptorFactory(applicationModelProviders, mvcOptions.Value, pageOptions.Value);
 
-        EnsureApplicationPartsPopulated(applicationPartManager, pageOptions.Value);
+        EnsureApplicationPartsPopulated(applicationPartManager);
     }
 
     /// <inheritdoc/>
@@ -88,20 +88,15 @@ public sealed class CompiledPageActionDescriptorProvider : IActionDescriptorProv
     {
     }
 
-    private static void EnsureApplicationPartsPopulated(ApplicationPartManager applicationPartManager, RazorPagesOptions options)
+    private static void EnsureApplicationPartsPopulated(ApplicationPartManager applicationPartManager)
     {
-        if (options?.EntryAssembly != null)
-        {
-            applicationPartManager.PopulateEntryAssemblyParts(options.EntryAssembly);
-        }
-
         if (applicationPartManager.EntryAssembly == null && !applicationPartManager.ApplicationParts!.Any(part => part is IRazorCompiledItemProvider))
         {
             throw new InvalidOperationException(
                 Resources.FormatRazorCompiledItemProvider_NoApplicationParts(typeof(IRazorCompiledItemProvider),
                         $"{nameof(ApplicationPartManager)}.{nameof(ApplicationPartManager.ApplicationParts)}",
                         typeof(Hosting.IWebHostEnvironment),
-                        $"{nameof(RazorPagesOptions)}.{nameof(RazorPagesOptions.EntryAssembly)}"));
+                        typeof(System.Reflection.Assembly)));
         }
     }
 }

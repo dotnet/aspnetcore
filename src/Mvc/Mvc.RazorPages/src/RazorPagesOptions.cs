@@ -48,12 +48,6 @@ public class RazorPagesOptions : IEnumerable<ICompatibilitySwitch>
         }
     }
 
-    /// <summary>
-    /// Application entry assembly used for <see cref="ApplicationParts.ApplicationPart"/> discovering
-    /// requires when the <see cref="Hosting.IWebHostEnvironment"/> is not available
-    /// </summary>
-    public Assembly? EntryAssembly { get; set; }
-
     IEnumerator<ICompatibilitySwitch> IEnumerable<ICompatibilitySwitch>.GetEnumerator() => _switches.GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator() => _switches.GetEnumerator();
