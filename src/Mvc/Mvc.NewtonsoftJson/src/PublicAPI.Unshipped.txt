@@ -3,4 +3,4 @@ Microsoft.AspNetCore.Mvc.NewtonsoftJson.NewtonsoftJsonMetadataProvider
 Microsoft.AspNetCore.Mvc.NewtonsoftJson.NewtonsoftJsonMetadataProvider.CreateDisplayMetadata(Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DisplayMetadataProviderContext! context) -> void
 Microsoft.AspNetCore.Mvc.NewtonsoftJson.NewtonsoftJsonMetadataProvider.CreateValidationMetadata(Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ValidationMetadataProviderContext! context) -> void
 Microsoft.AspNetCore.Mvc.NewtonsoftJson.NewtonsoftJsonMetadataProvider.NewtonsoftJsonMetadataProvider() -> void
-Microsoft.AspNetCore.Mvc.NewtonsoftJson.NewtonsoftJsonMetadataProvider.NewtonsoftJsonMetadataProvider(Microsoft.AspNetCore.Mvc.MvcNewtonsoftJsonOptions! jsonOptions) -> void
+Microsoft.AspNetCore.Mvc.NewtonsoftJson.NewtonsoftJsonMetadataProvider.NewtonsoftJsonMetadataProvider(Newtonsoft.Json.Serialization.NamingStrategy! namingStrategy) -> void

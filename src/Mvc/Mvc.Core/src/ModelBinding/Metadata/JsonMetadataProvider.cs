@@ -15,29 +15,27 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 /// </summary>
 public class JsonMetadataProvider : IDisplayMetadataProvider, IValidationMetadataProvider
 {
-    private readonly JsonNamingPolicy _jsonNamingPolicy = JsonNamingPolicy.CamelCase;
+    private readonly JsonNamingPolicy _jsonNamingPolicy;
 
     /// <summary>
     /// Creates a new <see cref="JsonMetadataProvider"/> with the default <see cref="JsonNamingPolicy.CamelCase"/>
     /// </summary>
     public JsonMetadataProvider()
+        : this(JsonNamingPolicy.CamelCase)
     { }
 
     /// <summary>
-    /// Creates a new <see cref="JsonMetadataProvider"/> with an optional <see cref="JsonOptions"/>
+    /// Creates a new <see cref="JsonMetadataProvider"/> with an optional <see cref="JsonNamingPolicy"/>
     /// </summary>
-    /// <param name="jsonOptions">The <see cref="JsonOptions"/> to be used to configure the metadata provider.</param>
-    public JsonMetadataProvider(JsonOptions jsonOptions)
+    /// <param name="namingPolicy">The <see cref="JsonNamingPolicy"/> to be used to configure the metadata provider.</param>
+    public JsonMetadataProvider(JsonNamingPolicy namingPolicy)
     {
-        if (jsonOptions == null)
+        if (namingPolicy == null)
         {
-            throw new ArgumentNullException(nameof(jsonOptions));
+            throw new ArgumentNullException(nameof(namingPolicy));
         }
 
-        if (jsonOptions.JsonSerializerOptions?.PropertyNamingPolicy != null)
-        {
-            _jsonNamingPolicy = jsonOptions.JsonSerializerOptions.PropertyNamingPolicy;
-        }
+        _jsonNamingPolicy = namingPolicy;
     }
 
     /// <inheritdoc />
