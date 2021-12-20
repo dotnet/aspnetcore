@@ -2,8 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
+
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
+
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 
@@ -11,13 +14,33 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 /// An implementation of <see cref="IDisplayMetadataProvider"/> and <see cref="IValidationMetadataProvider"/> for
 /// the Newtonsoft.Json attribute classes.
 /// </summary>
-internal class NewtonsoftJsonMetadataProvider : IDisplayMetadataProvider, IValidationMetadataProvider
+public class NewtonsoftJsonMetadataProvider : IDisplayMetadataProvider, IValidationMetadataProvider
 {
+    private readonly NamingStrategy _jsonNamingPolicy = new CamelCaseNamingStrategy();
+
     /// <summary>
-    /// Initializes a new instance of <see cref="NewtonsoftJsonMetadataProvider"/>.
+    /// Creates a new <see cref="JsonMetadataProvider"/> with the default <see cref="CamelCaseNamingStrategy"/>
     /// </summary>
     public NewtonsoftJsonMetadataProvider()
     { }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="NewtonsoftJsonMetadataProvider"/> with an optional <see cref="MvcNewtonsoftJsonOptions"/>
+    /// </summary>
+    /// <param name="jsonOptions">The <see cref="MvcNewtonsoftJsonOptions"/> to be used to configure the metadata provider.</param>
+    public NewtonsoftJsonMetadataProvider(MvcNewtonsoftJsonOptions jsonOptions)
+    {
+        if (jsonOptions == null)
+        {
+            throw new ArgumentNullException(nameof(jsonOptions));
+        }
+
+        var contractResolver = jsonOptions.SerializerSettings?.ContractResolver as DefaultContractResolver;
+        if (contractResolver?.NamingStrategy != null)
+        {
+            _jsonNamingPolicy = contractResolver.NamingStrategy;
+        }
+    }
 
     /// <inheritdoc />
     public void CreateDisplayMetadata(DisplayMetadataProviderContext context)
@@ -47,7 +70,7 @@ internal class NewtonsoftJsonMetadataProvider : IDisplayMetadataProvider, IValid
 
         if (string.IsNullOrEmpty(propertyName))
         {
-            propertyName = context.Key.Name;
+            propertyName = _jsonNamingPolicy.GetPropertyName(context.Key.Name!, false);
         }
 
         context.ValidationMetadata.ValidationModelName = propertyName!;

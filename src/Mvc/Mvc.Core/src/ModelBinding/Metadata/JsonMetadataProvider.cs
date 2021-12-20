@@ -13,24 +13,32 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 /// An implementation of <see cref="IDisplayMetadataProvider"/> and <see cref="IValidationMetadataProvider"/> for
 /// the System.Text.Json.Serialization attribute classes.
 /// </summary>
-internal class JsonMetadataProvider : IDisplayMetadataProvider, IValidationMetadataProvider
+public class JsonMetadataProvider : IDisplayMetadataProvider, IValidationMetadataProvider
 {
-    private readonly JsonNamingPolicy? _jsonNamingPolicy;
+    private readonly JsonNamingPolicy _jsonNamingPolicy = JsonNamingPolicy.CamelCase;
 
     /// <summary>
-    /// Creates a new <see cref="JsonMetadataProvider"/>.
+    /// Creates a new <see cref="JsonMetadataProvider"/> with the default <see cref="JsonNamingPolicy.CamelCase"/>
     /// </summary>
     public JsonMetadataProvider()
-        : this(JsonNamingPolicy.CamelCase)
-    {
-    }
+    { }
 
     /// <summary>
-    /// Creates a new <see cref="JsonMetadataProvider"/> with an optional <see cref="JsonNamingPolicy"/>
+    /// Creates a new <see cref="JsonMetadataProvider"/> with an optional <see cref="JsonOptions"/>
     /// </summary>
-    /// <param name="jsonNamingPolicy">The <see cref="JsonNamingPolicy"/> to be used to convert the property name</param>
-    public JsonMetadataProvider(JsonNamingPolicy? jsonNamingPolicy)
-        => _jsonNamingPolicy = jsonNamingPolicy;
+    /// <param name="jsonOptions">The <see cref="JsonOptions"/> to be used to configure the metadata provider.</param>
+    public JsonMetadataProvider(JsonOptions jsonOptions)
+    {
+        if (jsonOptions == null)
+        {
+            throw new ArgumentNullException(nameof(jsonOptions));
+        }
+
+        if (jsonOptions.JsonSerializerOptions?.PropertyNamingPolicy != null)
+        {
+            _jsonNamingPolicy = jsonOptions.JsonSerializerOptions.PropertyNamingPolicy;
+        }
+    }
 
     /// <inheritdoc />
     public void CreateDisplayMetadata(DisplayMetadataProviderContext context)
@@ -60,7 +68,7 @@ internal class JsonMetadataProvider : IDisplayMetadataProvider, IValidationMetad
 
         if (string.IsNullOrEmpty(propertyName))
         {
-            propertyName = _jsonNamingPolicy?.ConvertName(context.Key.Name!) ?? context.Key.Name;
+            propertyName = _jsonNamingPolicy.ConvertName(context.Key.Name!);
         }
 
         context.ValidationMetadata.ValidationModelName = propertyName;
