@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
+using System.Globalization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
@@ -217,13 +217,25 @@ public static class UrlHelperExtensions
 
         return helper.Action(new UrlActionContext()
         {
-            Action = action,
+            Action = action is null ? null : TrimAsyncSuffix(action),
             Controller = controller,
             Host = host,
             Values = values,
             Protocol = protocol,
             Fragment = fragment
         });
+    }
+
+
+
+    private static string TrimAsyncSuffix(string actionName)
+    {
+        const string suffix = "Async";
+        if (actionName.EndsWith(suffix, false, CultureInfo.InvariantCulture))
+        {
+            actionName = actionName[..^suffix.Length];
+        }
+        return actionName;
     }
 
     /// <summary>
