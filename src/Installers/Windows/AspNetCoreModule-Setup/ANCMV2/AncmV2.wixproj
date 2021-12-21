@@ -60,7 +60,7 @@
     <ProductNameShort>ASP.NET Core Module V2</ProductNameShort>
   </PropertyGroup>
 
-  <Target Name="CreateSharedFrameworkNugetPackage" AfterTargets="CopyToArtifactsDirectory;Build">
+  <Target Name="CreateANCMNugetPackage" AfterTargets="CopyToArtifactsDirectory;Build">
     <PropertyGroup>
       <MsiFullPath>$(InstallersOutputPath)$(PackageFileName)</MsiFullPath>
     </PropertyGroup>
