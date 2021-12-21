@@ -1793,6 +1793,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Equal(stamp, await manager.GetSecurityStampAsync(user));
         }
 
+        /*
         /// <summary>
         /// Test.
         /// </summary>
@@ -1819,7 +1820,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.False(await manager.IsEmailConfirmedAsync(user));
             Assert.Equal(await manager.GetEmailAsync(user), oldEmail);
             Assert.Equal(stamp, await manager.GetSecurityStampAsync(user));
+
+            return;
         }
+        */
 
         /// <summary>
         /// Test.

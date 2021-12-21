@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.DotNet.Watcher.Internal;
 using Xunit;
 using Xunit.Abstractions;
@@ -90,9 +91,10 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             });
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(true)]
         [InlineData(false)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public void MoveFile(bool usePolling)
         {
             UsingTempDirectory(dir =>
