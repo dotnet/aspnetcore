@@ -23,7 +23,7 @@
     "@microsoft/dotnet-js-interop": "link:../../JSInterop/Microsoft.JSInterop.JS/src",
     "@microsoft/signalr": "link:../../SignalR/clients/ts/signalr",
     "@microsoft/signalr-protocol-msgpack": "link:../../SignalR/clients/ts/signalr-protocol-msgpack",
-    "@types/emscripten": "^1.39.5",
+    "@types/dotnet": "./@types/dotnet",
     "@types/jest": "^27.0.1",
     "@types/jsdom": "^16.2.13",
     "@typescript-eslint/eslint-plugin": "^4.29.3",
