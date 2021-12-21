@@ -68,6 +68,9 @@
                       $(RepositoryRoot)src\SignalR\clients\cpp\**\*.*proj;
                       $(RepositoryRoot)src\SignalR\clients\ts\**\node_modules\**\*.*proj;
                       " />
+
+    <!-- Temporary: Avoid F# until VS 2019 build issues are resolved. -->
+    <ProjectToExclude Include="$(RepositoryRoot)src\Mvc\test\WebSites\FSharpWebSite\FSharpWebSite.fsproj" />
   </ItemGroup>
 
   <Choose>
