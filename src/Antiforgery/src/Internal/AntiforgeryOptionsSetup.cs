@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.DataProtection;
@@ -21,10 +20,7 @@ internal class AntiforgeryOptionsSetup : IConfigureOptions<AntiforgeryOptions>
 
     public void Configure(AntiforgeryOptions options)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options, nameof(options));
 
         if (options.Cookie.Name == null)
         {

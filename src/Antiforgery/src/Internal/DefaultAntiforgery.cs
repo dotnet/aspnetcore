@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
@@ -41,10 +40,7 @@ internal class DefaultAntiforgery : IAntiforgery
     /// <inheritdoc />
     public AntiforgeryTokenSet GetAndStoreTokens(HttpContext httpContext)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         CheckSSLConfig(httpContext);
 
@@ -81,10 +77,7 @@ internal class DefaultAntiforgery : IAntiforgery
     /// <inheritdoc />
     public AntiforgeryTokenSet GetTokens(HttpContext httpContext)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         CheckSSLConfig(httpContext);
 
@@ -95,10 +88,7 @@ internal class DefaultAntiforgery : IAntiforgery
     /// <inheritdoc />
     public async Task<bool> IsRequestValidAsync(HttpContext httpContext)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         CheckSSLConfig(httpContext);
 
@@ -153,10 +143,7 @@ internal class DefaultAntiforgery : IAntiforgery
     /// <inheritdoc />
     public async Task ValidateRequestAsync(HttpContext httpContext)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         CheckSSLConfig(httpContext);
 
@@ -199,14 +186,11 @@ internal class DefaultAntiforgery : IAntiforgery
         Debug.Assert(!string.IsNullOrEmpty(antiforgeryTokenSet.RequestToken));
 
         // Extract cookie & request tokens
-        AntiforgeryToken deserializedCookieToken;
-        AntiforgeryToken deserializedRequestToken;
-
         DeserializeTokens(
             httpContext,
             antiforgeryTokenSet,
-            out deserializedCookieToken,
-            out deserializedRequestToken);
+            out var deserializedCookieToken,
+            out var deserializedRequestToken);
 
         // Validate
         if (!_tokenGenerator.TryValidateTokenSet(
@@ -222,10 +206,7 @@ internal class DefaultAntiforgery : IAntiforgery
     /// <inheritdoc />
     public void SetCookieTokenAndHeader(HttpContext httpContext)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         CheckSSLConfig(httpContext);
 

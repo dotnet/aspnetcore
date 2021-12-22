@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 using System.Security.Principal;
@@ -38,15 +36,8 @@ internal class DefaultAntiforgeryTokenGenerator : IAntiforgeryTokenGenerator
         HttpContext httpContext,
         AntiforgeryToken cookieToken)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
-
-        if (cookieToken == null)
-        {
-            throw new ArgumentNullException(nameof(cookieToken));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
+        ArgumentNullException.ThrowIfNull(cookieToken);
 
         if (!IsCookieTokenValid(cookieToken))
         {
@@ -114,10 +105,7 @@ internal class DefaultAntiforgeryTokenGenerator : IAntiforgeryTokenGenerator
         AntiforgeryToken requestToken,
         [NotNullWhen(false)] out string? message)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         if (cookieToken == null)
         {
@@ -211,8 +199,7 @@ internal class DefaultAntiforgeryTokenGenerator : IAntiforgeryTokenGenerator
             return null;
         }
 
-        var identitiesList = claimsPrincipal.Identities as List<ClaimsIdentity>;
-        if (identitiesList != null)
+        if (claimsPrincipal.Identities is List<ClaimsIdentity> identitiesList)
         {
             for (var i = 0; i < identitiesList.Count; i++)
             {
