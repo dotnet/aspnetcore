@@ -92,10 +92,7 @@ public readonly struct FragmentString : IEquatable<FragmentString>
     /// <returns>The resulting FragmentString</returns>
     public static FragmentString FromUriComponent(Uri uri)
     {
-        if (uri == null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(uri);
 
         string fragmentValue = uri.GetComponents(UriComponents.Fragment, UriFormat.UriEscaped);
         if (!string.IsNullOrEmpty(fragmentValue))

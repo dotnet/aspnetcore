@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Net.Http.Headers;
 
@@ -19,10 +17,7 @@ public class ResponseHeaders
     /// <param name="headers">The request headers.</param>
     public ResponseHeaders(IHeaderDictionary headers)
     {
-        if (headers == null)
-        {
-            throw new ArgumentNullException(nameof(headers));
-        }
+        ArgumentNullException.ThrowIfNull(headers);
 
         Headers = headers;
     }
@@ -234,10 +229,7 @@ public class ResponseHeaders
     /// <param name="value">The header value.</param>
     public void Set(string name, object? value)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
         Headers.Set(name, value);
     }
@@ -250,10 +242,7 @@ public class ResponseHeaders
     /// <param name="values">The sequence of header values.</param>
     public void SetList<T>(string name, IList<T>? values)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
         Headers.SetList<T>(name, values);
     }
@@ -265,15 +254,8 @@ public class ResponseHeaders
     /// <param name="value">The header value.</param>
     public void Append(string name, object value)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
-
-        if (value == null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
+        ArgumentNullException.ThrowIfNull(name);
+        ArgumentNullException.ThrowIfNull(value);
 
         Headers.Append(name, value.ToString());
     }

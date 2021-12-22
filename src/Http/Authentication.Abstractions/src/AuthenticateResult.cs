@@ -77,10 +77,7 @@ public class AuthenticateResult
     /// <returns>The result.</returns>
     public static AuthenticateResult Success(AuthenticationTicket ticket)
     {
-        if (ticket == null)
-        {
-            throw new ArgumentNullException(nameof(ticket));
-        }
+        ArgumentNullException.ThrowIfNull(ticket);
         return new AuthenticateResult() { Ticket = ticket, Properties = ticket.Properties };
     }
 

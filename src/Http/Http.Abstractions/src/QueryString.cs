@@ -89,10 +89,7 @@ public readonly struct QueryString : IEquatable<QueryString>
     /// <returns>The resulting QueryString</returns>
     public static QueryString FromUriComponent(Uri uri)
     {
-        if (uri == null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(uri);
 
         string queryValue = uri.GetComponents(UriComponents.Query, UriFormat.UriEscaped);
         if (!string.IsNullOrEmpty(queryValue))
@@ -110,10 +107,7 @@ public readonly struct QueryString : IEquatable<QueryString>
     /// <returns>The resulting QueryString</returns>
     public static QueryString Create(string name, string value)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
         if (!string.IsNullOrEmpty(value))
         {
@@ -199,10 +193,7 @@ public readonly struct QueryString : IEquatable<QueryString>
     /// <returns>The concatenated <see cref="QueryString"/>.</returns>
     public QueryString Add(string name, string value)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
         if (!HasValue || Value!.Equals("?", StringComparison.Ordinal))
         {

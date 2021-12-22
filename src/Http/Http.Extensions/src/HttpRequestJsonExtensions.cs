@@ -52,10 +52,7 @@ public static class HttpRequestJsonExtensions
         JsonSerializerOptions? options,
         CancellationToken cancellationToken = default)
     {
-        if (request == null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
+        ArgumentNullException.ThrowIfNull(request);
 
         if (!request.HasJsonContentType(out var charset))
         {
@@ -113,14 +110,8 @@ public static class HttpRequestJsonExtensions
         JsonSerializerOptions? options,
         CancellationToken cancellationToken = default)
     {
-        if (request == null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
-        if (type == null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(type);
 
         if (!request.HasJsonContentType(out var charset))
         {
@@ -156,10 +147,7 @@ public static class HttpRequestJsonExtensions
 
     private static bool HasJsonContentType(this HttpRequest request, out StringSegment charset)
     {
-        if (request == null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
+        ArgumentNullException.ThrowIfNull(request);
 
         if (!MediaTypeHeaderValue.TryParse(request.ContentType, out var mt))
         {

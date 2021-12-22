@@ -23,10 +23,7 @@ internal sealed class FileStreamResult : FileResult, IResult
     public FileStreamResult(Stream fileStream, string? contentType)
         : base(contentType)
     {
-        if (fileStream == null)
-        {
-            throw new ArgumentNullException(nameof(fileStream));
-        }
+        ArgumentNullException.ThrowIfNull(fileStream);
 
         FileStream = fileStream;
     }

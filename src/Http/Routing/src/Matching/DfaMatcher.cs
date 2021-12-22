@@ -31,10 +31,7 @@ internal sealed partial class DfaMatcher : Matcher
     [SkipLocalsInit]
     public sealed override Task MatchAsync(HttpContext httpContext)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         // All of the logging we do here is at level debug, so we can get away with doing a single check.
         var log = _logger.IsEnabled(LogLevel.Debug);

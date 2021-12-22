@@ -79,10 +79,7 @@ public class RouteOptions
         }
         set
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(ConstraintMap));
-            }
+            ArgumentNullException.ThrowIfNull(ConstraintMap);
 
             _constraintTypeMap = value;
         }

@@ -74,10 +74,7 @@ public static partial class HttpResponseJsonExtensions
         string? contentType,
         CancellationToken cancellationToken = default)
     {
-        if (response == null)
-        {
-            throw new ArgumentNullException(nameof(response));
-        }
+        ArgumentNullException.ThrowIfNull(response);
 
         options ??= ResolveSerializerOptions(response.HttpContext);
 
@@ -164,14 +161,8 @@ public static partial class HttpResponseJsonExtensions
         string? contentType,
         CancellationToken cancellationToken = default)
     {
-        if (response == null)
-        {
-            throw new ArgumentNullException(nameof(response));
-        }
-        if (type == null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
+        ArgumentNullException.ThrowIfNull(response);
+        ArgumentNullException.ThrowIfNull(type);
 
         options ??= ResolveSerializerOptions(response.HttpContext);
 

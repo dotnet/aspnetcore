@@ -70,20 +70,9 @@ public class TemplateBinder
         IEnumerable<string>? requiredKeys,
         IEnumerable<(string parameterName, IParameterPolicy policy)>? parameterPolicies)
     {
-        if (urlEncoder == null)
-        {
-            throw new ArgumentNullException(nameof(urlEncoder));
-        }
-
-        if (pool == null)
-        {
-            throw new ArgumentNullException(nameof(pool));
-        }
-
-        if (pattern == null)
-        {
-            throw new ArgumentNullException(nameof(pattern));
-        }
+        ArgumentNullException.ThrowIfNull(urlEncoder);
+        ArgumentNullException.ThrowIfNull(pool);
+        ArgumentNullException.ThrowIfNull(pattern);
 
         _urlEncoder = urlEncoder;
         _pool = pool;
@@ -118,20 +107,9 @@ public class TemplateBinder
         RoutePattern pattern,
         IEnumerable<(string parameterName, IParameterPolicy policy)> parameterPolicies)
     {
-        if (urlEncoder == null)
-        {
-            throw new ArgumentNullException(nameof(urlEncoder));
-        }
-
-        if (pool == null)
-        {
-            throw new ArgumentNullException(nameof(pool));
-        }
-
-        if (pattern == null)
-        {
-            throw new ArgumentNullException(nameof(pattern));
-        }
+        ArgumentNullException.ThrowIfNull(urlEncoder);
+        ArgumentNullException.ThrowIfNull(pool);
+        ArgumentNullException.ThrowIfNull(pattern);
 
         // Parameter policies can be null.
 

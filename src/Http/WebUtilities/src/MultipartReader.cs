@@ -52,15 +52,8 @@ public class MultipartReader
     /// <param name="bufferSize">The minimum buffer size to use.</param>
     public MultipartReader(string boundary, Stream stream, int bufferSize)
     {
-        if (boundary == null)
-        {
-            throw new ArgumentNullException(nameof(boundary));
-        }
-
-        if (stream == null)
-        {
-            throw new ArgumentNullException(nameof(stream));
-        }
+        ArgumentNullException.ThrowIfNull(stream);
+        ArgumentNullException.ThrowIfNull(boundary);
 
         if (bufferSize < boundary.Length + 8) // Size of the boundary + leading and trailing CRLF + leading and trailing '--' markers.
         {

@@ -1,11 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.FileProviders;
@@ -28,14 +24,8 @@ public static class SendFileResponseExtensions
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
     public static Task SendFileAsync(this HttpResponse response, IFileInfo file, CancellationToken cancellationToken = default)
     {
-        if (response == null)
-        {
-            throw new ArgumentNullException(nameof(response));
-        }
-        if (file == null)
-        {
-            throw new ArgumentNullException(nameof(file));
-        }
+        ArgumentNullException.ThrowIfNull(response);
+        ArgumentNullException.ThrowIfNull(file);
 
         return SendFileAsyncCore(response, file, 0, null, cancellationToken);
     }
@@ -52,14 +42,8 @@ public static class SendFileResponseExtensions
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
     public static Task SendFileAsync(this HttpResponse response, IFileInfo file, long offset, long? count, CancellationToken cancellationToken = default)
     {
-        if (response == null)
-        {
-            throw new ArgumentNullException(nameof(response));
-        }
-        if (file == null)
-        {
-            throw new ArgumentNullException(nameof(file));
-        }
+        ArgumentNullException.ThrowIfNull(response);
+        ArgumentNullException.ThrowIfNull(file);
 
         return SendFileAsyncCore(response, file, offset, count, cancellationToken);
     }
@@ -74,15 +58,8 @@ public static class SendFileResponseExtensions
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
     public static Task SendFileAsync(this HttpResponse response, string fileName, CancellationToken cancellationToken = default)
     {
-        if (response == null)
-        {
-            throw new ArgumentNullException(nameof(response));
-        }
-
-        if (fileName == null)
-        {
-            throw new ArgumentNullException(nameof(fileName));
-        }
+        ArgumentNullException.ThrowIfNull(response);
+        ArgumentNullException.ThrowIfNull(fileName);
 
         return SendFileAsyncCore(response, fileName, 0, null, cancellationToken);
     }
@@ -99,15 +76,8 @@ public static class SendFileResponseExtensions
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
     public static Task SendFileAsync(this HttpResponse response, string fileName, long offset, long? count, CancellationToken cancellationToken = default)
     {
-        if (response == null)
-        {
-            throw new ArgumentNullException(nameof(response));
-        }
-
-        if (fileName == null)
-        {
-            throw new ArgumentNullException(nameof(fileName));
-        }
+        ArgumentNullException.ThrowIfNull(response);
+        ArgumentNullException.ThrowIfNull(fileName);
 
         return SendFileAsyncCore(response, fileName, offset, count, cancellationToken);
     }

@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Linq;
 using Microsoft.Extensions.Primitives;
 
@@ -11,8 +10,7 @@ internal static class ParsingHelpers
 {
     public static StringValues GetHeader(IHeaderDictionary headers, string key)
     {
-        StringValues value;
-        return headers.TryGetValue(key, out value) ? value : StringValues.Empty;
+        return headers.TryGetValue(key, out var value) ? value : StringValues.Empty;
     }
 
     public static StringValues GetHeaderSplit(IHeaderDictionary headers, string key)
@@ -38,26 +36,20 @@ internal static class ParsingHelpers
 
     public static StringValues GetHeaderUnmodified(IHeaderDictionary headers, string key)
     {
-        if (headers == null)
-        {
-            throw new ArgumentNullException(nameof(headers));
-        }
+        ArgumentNullException.ThrowIfNull(headers);
 
-        StringValues values;
-        return headers.TryGetValue(key, out values) ? values : StringValues.Empty;
+        return headers.TryGetValue(key, out var values) ? values : StringValues.Empty;
     }
 
     public static void SetHeaderJoined(IHeaderDictionary headers, string key, StringValues value)
     {
-        if (headers == null)
-        {
-            throw new ArgumentNullException(nameof(headers));
-        }
+        ArgumentNullException.ThrowIfNull(headers);
 
         if (string.IsNullOrEmpty(key))
         {
-            throw new ArgumentNullException(nameof(key));
+            ArgumentNullException.ThrowIfNull(key);
         }
+
         if (StringValues.IsNullOrEmpty(value))
         {
             headers.Remove(key);
@@ -73,7 +65,7 @@ internal static class ParsingHelpers
     {
         if (!string.IsNullOrEmpty(value) &&
             value.Contains(',') &&
-            (value[0] != '"' || value[value.Length - 1] != '"'))
+            (value[0] != '"' || value[^1] != '"'))
         {
             return $"\"{value}\"";
         }
@@ -85,7 +77,7 @@ internal static class ParsingHelpers
         if (!string.IsNullOrEmpty(value) &&
             (value.Length > 1 && value[0] == '"' && value[value.Length - 1] == '"'))
         {
-            value = value.Substring(1, value.Length - 2);
+            value = value[1..^1];
         }
 
         return value;
@@ -93,15 +85,9 @@ internal static class ParsingHelpers
 
     public static void SetHeaderUnmodified(IHeaderDictionary headers, string key, StringValues? values)
     {
-        if (headers == null)
-        {
-            throw new ArgumentNullException(nameof(headers));
-        }
+        ArgumentNullException.ThrowIfNull(headers);
+        ArgumentNullException.ThrowIfNull(key);
 
-        if (string.IsNullOrEmpty(key))
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
         if (!values.HasValue || StringValues.IsNullOrEmpty(values.GetValueOrDefault()))
         {
             headers.Remove(key);
@@ -114,15 +100,8 @@ internal static class ParsingHelpers
 
     public static void AppendHeaderJoined(IHeaderDictionary headers, string key, params string[] values)
     {
-        if (headers == null)
-        {
-            throw new ArgumentNullException(nameof(headers));
-        }
-
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(headers);
+        ArgumentNullException.ThrowIfNull(key);
 
         if (values == null || values.Length == 0)
         {
@@ -142,15 +121,8 @@ internal static class ParsingHelpers
 
     public static void AppendHeaderUnmodified(IHeaderDictionary headers, string key, StringValues values)
     {
-        if (headers == null)
-        {
-            throw new ArgumentNullException(nameof(headers));
-        }
-
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(headers);
+        ArgumentNullException.ThrowIfNull(key);
 
         if (values.Count == 0)
         {

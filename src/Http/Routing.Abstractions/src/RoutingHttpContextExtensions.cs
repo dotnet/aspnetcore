@@ -3,7 +3,6 @@
 
 #nullable enable
 
-using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 
@@ -21,10 +20,7 @@ public static class RoutingHttpContextExtensions
     /// <returns>The <see cref="RouteData"/>.</returns>
     public static RouteData GetRouteData(this HttpContext httpContext)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         var routingFeature = httpContext.Features.Get<IRoutingFeature>();
         return routingFeature?.RouteData ?? new RouteData(httpContext.Request.RouteValues);
@@ -39,15 +35,8 @@ public static class RoutingHttpContextExtensions
     /// <returns>The corresponding route value, or null.</returns>
     public static object? GetRouteValue(this HttpContext httpContext, string key)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
-
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
+        ArgumentNullException.ThrowIfNull(key);
 
         return httpContext.Features.Get<IRouteValuesFeature>()?.RouteValues[key];
     }

@@ -32,10 +32,7 @@ public class RouteData
     /// <param name="other">The other <see cref="RouteData"/> instance to copy.</param>
     public RouteData(RouteData other)
     {
-        if (other == null)
-        {
-            throw new ArgumentNullException(nameof(other));
-        }
+        ArgumentNullException.ThrowIfNull(other);
 
         // Perf: Avoid allocating collections unless we need to make a copy.
         if (other._routers != null)
@@ -60,10 +57,7 @@ public class RouteData
     /// <param name="values">The <see cref="RouteValueDictionary"/> values.</param>
     public RouteData(RouteValueDictionary values)
     {
-        if (values == null)
-        {
-            throw new ArgumentNullException(nameof(values));
-        }
+        ArgumentNullException.ThrowIfNull(values);
 
         _values = values;
     }
@@ -214,10 +208,7 @@ public class RouteData
             IList<IRouter>? routers,
             RouteValueDictionary? values)
         {
-            if (routeData == null)
-            {
-                throw new ArgumentNullException(nameof(routeData));
-            }
+            ArgumentNullException.ThrowIfNull(routeData);
 
             _routeData = routeData;
             _dataTokens = dataTokens;

@@ -25,15 +25,8 @@ internal static class ParameterPolicyActivator
         // IServiceProvider could be null
         // DefaultInlineConstraintResolver can be created without an IServiceProvider and then call this method
 
-        if (inlineParameterPolicyMap == null)
-        {
-            throw new ArgumentNullException(nameof(inlineParameterPolicyMap));
-        }
-
-        if (inlineParameterPolicy == null)
-        {
-            throw new ArgumentNullException(nameof(inlineParameterPolicy));
-        }
+        ArgumentNullException.ThrowIfNull(inlineParameterPolicyMap);
+        ArgumentNullException.ThrowIfNull(inlineParameterPolicy);
 
         string argumentString;
         var indexOfFirstOpenParens = inlineParameterPolicy.IndexOf('(');

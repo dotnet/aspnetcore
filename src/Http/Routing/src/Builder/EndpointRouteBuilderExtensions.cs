@@ -120,10 +120,7 @@ public static class EndpointRouteBuilderExtensions
        IEnumerable<string> httpMethods,
        RequestDelegate requestDelegate)
     {
-        if (httpMethods == null)
-        {
-            throw new ArgumentNullException(nameof(httpMethods));
-        }
+        ArgumentNullException.ThrowIfNull(httpMethods);
 
         var builder = endpoints.Map(RoutePatternFactory.Parse(pattern), requestDelegate);
         builder.WithDisplayName($"{pattern} HTTP: {string.Join(", ", httpMethods)}");
@@ -160,20 +157,9 @@ public static class EndpointRouteBuilderExtensions
         RoutePattern pattern,
         RequestDelegate requestDelegate)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
-
-        if (pattern == null)
-        {
-            throw new ArgumentNullException(nameof(pattern));
-        }
-
-        if (requestDelegate == null)
-        {
-            throw new ArgumentNullException(nameof(requestDelegate));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
+        ArgumentNullException.ThrowIfNull(pattern);
+        ArgumentNullException.ThrowIfNull(requestDelegate);
 
         const int defaultOrder = 0;
 
@@ -304,10 +290,7 @@ public static class EndpointRouteBuilderExtensions
        IEnumerable<string> httpMethods,
        Delegate handler)
     {
-        if (httpMethods is null)
-        {
-            throw new ArgumentNullException(nameof(httpMethods));
-        }
+        ArgumentNullException.ThrowIfNull(httpMethods);
 
         var disableInferredBody = false;
         foreach (var method in httpMethods)
@@ -390,15 +373,8 @@ public static class EndpointRouteBuilderExtensions
     /// </remarks>
     public static RouteHandlerBuilder MapFallback(this IEndpointRouteBuilder endpoints, Delegate handler)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
-
-        if (handler == null)
-        {
-            throw new ArgumentNullException(nameof(handler));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
+        ArgumentNullException.ThrowIfNull(handler);
 
         return endpoints.MapFallback("{*path:nonfile}", handler);
     }
@@ -429,20 +405,9 @@ public static class EndpointRouteBuilderExtensions
         string pattern,
         Delegate handler)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
-
-        if (pattern == null)
-        {
-            throw new ArgumentNullException(nameof(pattern));
-        }
-
-        if (handler == null)
-        {
-            throw new ArgumentNullException(nameof(handler));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
+        ArgumentNullException.ThrowIfNull(pattern);
+        ArgumentNullException.ThrowIfNull(handler);
 
         var conventionBuilder = endpoints.Map(pattern, handler);
         conventionBuilder.WithDisplayName("Fallback " + pattern);
@@ -456,20 +421,9 @@ public static class EndpointRouteBuilderExtensions
         Delegate handler,
         bool disableInferBodyFromParameters)
     {
-        if (endpoints is null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
-
-        if (pattern is null)
-        {
-            throw new ArgumentNullException(nameof(pattern));
-        }
-
-        if (handler is null)
-        {
-            throw new ArgumentNullException(nameof(handler));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
+        ArgumentNullException.ThrowIfNull(pattern);
+        ArgumentNullException.ThrowIfNull(handler);
 
         const int defaultOrder = 0;
 

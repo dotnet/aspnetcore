@@ -28,10 +28,7 @@ internal sealed class CreatedResult : ObjectResult
     public CreatedResult(Uri location, object? value)
         : base(value, StatusCodes.Status201Created)
     {
-        if (location == null)
-        {
-            throw new ArgumentNullException(nameof(location));
-        }
+        ArgumentNullException.ThrowIfNull(location);
 
         if (location.IsAbsoluteUri)
         {

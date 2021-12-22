@@ -37,10 +37,7 @@ public sealed class HttpMethodMetadata : IHttpMethodMetadata
     /// <param name="acceptCorsPreflight">A value indicating whether routing accepts CORS preflight requests.</param>
     public HttpMethodMetadata(IEnumerable<string> httpMethods, bool acceptCorsPreflight)
     {
-        if (httpMethods == null)
-        {
-            throw new ArgumentNullException(nameof(httpMethods));
-        }
+        ArgumentNullException.ThrowIfNull(httpMethods);
 
         HttpMethods = httpMethods.Select(GetCanonicalizedValue).ToArray();
         AcceptCorsPreflight = acceptCorsPreflight;

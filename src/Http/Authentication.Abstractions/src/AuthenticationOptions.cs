@@ -33,14 +33,9 @@ public class AuthenticationOptions
     /// <param name="configureBuilder">Configures the scheme.</param>
     public void AddScheme(string name, Action<AuthenticationSchemeBuilder> configureBuilder)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
-        if (configureBuilder == null)
-        {
-            throw new ArgumentNullException(nameof(configureBuilder));
-        }
+        ArgumentNullException.ThrowIfNull(name);
+        ArgumentNullException.ThrowIfNull(configureBuilder);
+
         if (SchemeMap.ContainsKey(name))
         {
             throw new InvalidOperationException("Scheme already exists: " + name);

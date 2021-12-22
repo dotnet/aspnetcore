@@ -22,10 +22,7 @@ public sealed class EndpointNameAttribute : Attribute, IEndpointNameMetadata
     /// <param name="endpointName">The endpoint name.</param>
     public EndpointNameAttribute(string endpointName)
     {
-        if (endpointName == null)
-        {
-            throw new ArgumentNullException(nameof(endpointName));
-        }
+        ArgumentNullException.ThrowIfNull(endpointName);
 
         EndpointName = endpointName;
     }

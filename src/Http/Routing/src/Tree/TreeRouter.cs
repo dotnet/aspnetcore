@@ -51,35 +51,12 @@ public partial class TreeRouter : IRouter
         ILogger constraintLogger,
         int version)
     {
-        if (trees == null)
-        {
-            throw new ArgumentNullException(nameof(trees));
-        }
-
-        if (linkGenerationEntries == null)
-        {
-            throw new ArgumentNullException(nameof(linkGenerationEntries));
-        }
-
-        if (urlEncoder == null)
-        {
-            throw new ArgumentNullException(nameof(urlEncoder));
-        }
-
-        if (objectPool == null)
-        {
-            throw new ArgumentNullException(nameof(objectPool));
-        }
-
-        if (routeLogger == null)
-        {
-            throw new ArgumentNullException(nameof(routeLogger));
-        }
-
-        if (constraintLogger == null)
-        {
-            throw new ArgumentNullException(nameof(constraintLogger));
-        }
+        ArgumentNullException.ThrowIfNull(trees);
+        ArgumentNullException.ThrowIfNull(linkGenerationEntries);
+        ArgumentNullException.ThrowIfNull(urlEncoder);
+        ArgumentNullException.ThrowIfNull(objectPool);
+        ArgumentNullException.ThrowIfNull(routeLogger);
+        ArgumentNullException.ThrowIfNull(constraintLogger);
 
         _trees = trees;
         _logger = routeLogger;
@@ -137,10 +114,7 @@ public partial class TreeRouter : IRouter
     /// <inheritdoc />
     public VirtualPathData GetVirtualPath(VirtualPathContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         // If it's a named route we will try to generate a link directly and
         // if we can't, we will not try to generate it using an unnamed route.

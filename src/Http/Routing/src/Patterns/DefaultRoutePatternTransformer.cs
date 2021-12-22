@@ -3,9 +3,6 @@
 
 #nullable disable
 
-using System;
-using System.Collections.Generic;
-
 namespace Microsoft.AspNetCore.Routing.Patterns;
 
 internal class DefaultRoutePatternTransformer : RoutePatternTransformer
@@ -14,20 +11,14 @@ internal class DefaultRoutePatternTransformer : RoutePatternTransformer
 
     public DefaultRoutePatternTransformer(ParameterPolicyFactory policyFactory)
     {
-        if (policyFactory == null)
-        {
-            throw new ArgumentNullException(nameof(policyFactory));
-        }
+        ArgumentNullException.ThrowIfNull(policyFactory);
 
         _policyFactory = policyFactory;
     }
 
     public override RoutePattern SubstituteRequiredValues(RoutePattern original, object requiredValues)
     {
-        if (original == null)
-        {
-            throw new ArgumentNullException(nameof(original));
-        }
+        ArgumentNullException.ThrowIfNull(original);
 
         return SubstituteRequiredValuesCore(original, new RouteValueDictionary(requiredValues));
     }

@@ -25,10 +25,7 @@ public class RouteTemplate
     /// <param name="other">A <see cref="RoutePattern"/> instance.</param>
     public RouteTemplate(RoutePattern other)
     {
-        if (other == null)
-        {
-            throw new ArgumentNullException(nameof(other));
-        }
+        ArgumentNullException.ThrowIfNull(other);
 
         // RequiredValues will be ignored. RouteTemplate doesn't support them.
 
@@ -57,10 +54,7 @@ public class RouteTemplate
     /// <param name="segments">A list of <see cref="TemplateSegment"/>.</param>
     public RouteTemplate(string template, List<TemplateSegment> segments)
     {
-        if (segments == null)
-        {
-            throw new ArgumentNullException(nameof(segments));
-        }
+        ArgumentNullException.ThrowIfNull(segments);
 
         TemplateText = template;
 

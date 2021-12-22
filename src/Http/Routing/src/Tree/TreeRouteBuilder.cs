@@ -35,20 +35,9 @@ public class TreeRouteBuilder
         ObjectPool<UriBuildingContext> objectPool,
         IInlineConstraintResolver constraintResolver)
     {
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
-
-        if (objectPool == null)
-        {
-            throw new ArgumentNullException(nameof(objectPool));
-        }
-
-        if (constraintResolver == null)
-        {
-            throw new ArgumentNullException(nameof(constraintResolver));
-        }
+        ArgumentNullException.ThrowIfNull(loggerFactory);
+        ArgumentNullException.ThrowIfNull(objectPool);
+        ArgumentNullException.ThrowIfNull(constraintResolver);
 
         _urlEncoder = UrlEncoder.Default;
         _objectPool = objectPool;
@@ -72,15 +61,8 @@ public class TreeRouteBuilder
         string routeName,
         int order)
     {
-        if (handler == null)
-        {
-            throw new ArgumentNullException(nameof(handler));
-        }
-
-        if (routeTemplate == null)
-        {
-            throw new ArgumentNullException(nameof(routeTemplate));
-        }
+        ArgumentNullException.ThrowIfNull(handler);
+        ArgumentNullException.ThrowIfNull(routeTemplate);
 
         var entry = new InboundRouteEntry()
         {
@@ -139,20 +121,9 @@ public class TreeRouteBuilder
         string routeName,
         int order)
     {
-        if (handler == null)
-        {
-            throw new ArgumentNullException(nameof(handler));
-        }
-
-        if (routeTemplate == null)
-        {
-            throw new ArgumentNullException(nameof(routeTemplate));
-        }
-
-        if (requiredLinkValues == null)
-        {
-            throw new ArgumentNullException(nameof(requiredLinkValues));
-        }
+        ArgumentNullException.ThrowIfNull(handler);
+        ArgumentNullException.ThrowIfNull(routeTemplate);
+        ArgumentNullException.ThrowIfNull(requiredLinkValues);
 
         var entry = new OutboundRouteEntry()
         {

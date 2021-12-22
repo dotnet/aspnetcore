@@ -20,10 +20,7 @@ internal sealed class AcceptsMatcherPolicy : MatcherPolicy, IEndpointComparerPol
 
     bool INodeBuilderPolicy.AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
 
         if (ContainsDynamicEndpoints(endpoints))
         {
@@ -35,10 +32,7 @@ internal sealed class AcceptsMatcherPolicy : MatcherPolicy, IEndpointComparerPol
 
     bool IEndpointSelectorPolicy.AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
 
         // When the node contains dynamic endpoints we can't make any assumptions.
         return ContainsDynamicEndpoints(endpoints);
@@ -51,15 +45,8 @@ internal sealed class AcceptsMatcherPolicy : MatcherPolicy, IEndpointComparerPol
 
     public Task ApplyAsync(HttpContext httpContext, CandidateSet candidates)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
-
-        if (candidates == null)
-        {
-            throw new ArgumentNullException(nameof(candidates));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
+        ArgumentNullException.ThrowIfNull(candidates);
 
         // We want to return a 415 if we eliminated ALL of the currently valid endpoints due to content type
         // mismatch.
@@ -149,10 +136,7 @@ internal sealed class AcceptsMatcherPolicy : MatcherPolicy, IEndpointComparerPol
 
     public IReadOnlyList<PolicyNodeEdge> GetEdges(IReadOnlyList<Endpoint> endpoints)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
 
         // The algorithm here is designed to be preserve the order of the endpoints
         // while also being relatively simple. Preserving order is important.
@@ -271,10 +255,7 @@ internal sealed class AcceptsMatcherPolicy : MatcherPolicy, IEndpointComparerPol
 
     public PolicyJumpTable BuildJumpTable(int exitDestination, IReadOnlyList<PolicyJumpTableEdge> edges)
     {
-        if (edges == null)
-        {
-            throw new ArgumentNullException(nameof(edges));
-        }
+        ArgumentNullException.ThrowIfNull(edges);
 
         // Since our 'edges' can have wildcards, we do a sort based on how wildcard-ey they
         // are then then execute them in linear order.

@@ -22,10 +22,7 @@ public class RegexRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatch
     /// <param name="regex">A <see cref="Regex"/> instance to use as a constraint.</param>
     public RegexRouteConstraint(Regex regex)
     {
-        if (regex == null)
-        {
-            throw new ArgumentNullException(nameof(regex));
-        }
+        ArgumentNullException.ThrowIfNull(regex);
 
         Constraint = regex;
     }
@@ -36,10 +33,7 @@ public class RegexRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatch
     /// <param name="regexPattern">A string containing the regex pattern.</param>
     public RegexRouteConstraint(string regexPattern)
     {
-        if (regexPattern == null)
-        {
-            throw new ArgumentNullException(nameof(regexPattern));
-        }
+        ArgumentNullException.ThrowIfNull(regexPattern);
 
         Constraint = new Regex(
             regexPattern,
@@ -60,15 +54,8 @@ public class RegexRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatch
         RouteValueDictionary values,
         RouteDirection routeDirection)
     {
-        if (routeKey == null)
-        {
-            throw new ArgumentNullException(nameof(routeKey));
-        }
-
-        if (values == null)
-        {
-            throw new ArgumentNullException(nameof(values));
-        }
+        ArgumentNullException.ThrowIfNull(routeKey);
+        ArgumentNullException.ThrowIfNull(values);
 
         if (values.TryGetValue(routeKey, out var routeValue)
             && routeValue != null)

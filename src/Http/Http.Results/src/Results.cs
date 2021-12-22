@@ -570,10 +570,7 @@ public static class Results
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult Created(string uri, object? value)
     {
-        if (uri == null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(uri);
 
         return new CreatedResult(uri, value);
     }
@@ -586,10 +583,7 @@ public static class Results
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult Created(Uri uri, object? value)
     {
-        if (uri == null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(uri);
 
         return new CreatedResult(uri, value);
     }

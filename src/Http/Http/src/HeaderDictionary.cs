@@ -79,10 +79,7 @@ public class HeaderDictionary : IHeaderDictionary
         }
         set
         {
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
+            ArgumentNullException.ThrowIfNull(key);
             ThrowIfReadOnly();
 
             if (value.Count == 0)
@@ -201,10 +198,7 @@ public class HeaderDictionary : IHeaderDictionary
     /// <param name="value">The header values.</param>
     public void Add(string key, StringValues value)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(key);
         ThrowIfReadOnly();
         EnsureStore(1);
         Store.Add(key, value);

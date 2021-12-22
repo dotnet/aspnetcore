@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Builder.Extensions;
@@ -22,10 +20,7 @@ public class UsePathBaseMiddleware
     /// <param name="pathBase">The path base to extract.</param>
     public UsePathBaseMiddleware(RequestDelegate next, PathString pathBase)
     {
-        if (next == null)
-        {
-            throw new ArgumentNullException(nameof(next));
-        }
+        ArgumentNullException.ThrowIfNull(next);
 
         if (!pathBase.HasValue)
         {
@@ -43,10 +38,7 @@ public class UsePathBaseMiddleware
     /// <returns>A task that represents the execution of this middleware.</returns>
     public Task Invoke(HttpContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         if (context.Request.Path.StartsWithSegments(_pathBase, out var matchedPath, out var remainingPath))
         {

@@ -26,15 +26,8 @@ public class DefaultInlineConstraintResolver : IInlineConstraintResolver
     /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to get service arguments from.</param>
     public DefaultInlineConstraintResolver(IOptions<RouteOptions> routeOptions, IServiceProvider serviceProvider)
     {
-        if (routeOptions == null)
-        {
-            throw new ArgumentNullException(nameof(routeOptions));
-        }
-
-        if (serviceProvider == null)
-        {
-            throw new ArgumentNullException(nameof(serviceProvider));
-        }
+        ArgumentNullException.ThrowIfNull(routeOptions);
+        ArgumentNullException.ThrowIfNull(serviceProvider);
 
         _inlineConstraintMap = routeOptions.Value.ConstraintMap;
         _serviceProvider = serviceProvider;
@@ -50,10 +43,7 @@ public class DefaultInlineConstraintResolver : IInlineConstraintResolver
     /// </example>
     public virtual IRouteConstraint? ResolveConstraint(string inlineConstraint)
     {
-        if (inlineConstraint == null)
-        {
-            throw new ArgumentNullException(nameof(inlineConstraint));
-        }
+        ArgumentNullException.ThrowIfNull(inlineConstraint);
 
         // This will return null if the text resolves to a non-IRouteConstraint
         return ParameterPolicyActivator.ResolveParameterPolicy<IRouteConstraint>(

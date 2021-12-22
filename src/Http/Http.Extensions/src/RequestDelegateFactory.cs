@@ -81,10 +81,7 @@ public static partial class RequestDelegateFactory
     public static RequestDelegateResult Create(Delegate handler, RequestDelegateFactoryOptions? options = null)
 #pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
     {
-        if (handler is null)
-        {
-            throw new ArgumentNullException(nameof(handler));
-        }
+        ArgumentNullException.ThrowIfNull(handler);
 
         var targetExpression = handler.Target switch
         {
@@ -109,10 +106,7 @@ public static partial class RequestDelegateFactory
     public static RequestDelegateResult Create(MethodInfo methodInfo, Func<HttpContext, object>? targetFactory = null, RequestDelegateFactoryOptions? options = null)
 #pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
     {
-        if (methodInfo is null)
-        {
-            throw new ArgumentNullException(nameof(methodInfo));
-        }
+        ArgumentNullException.ThrowIfNull(methodInfo);
 
         if (methodInfo.DeclaringType is null)
         {

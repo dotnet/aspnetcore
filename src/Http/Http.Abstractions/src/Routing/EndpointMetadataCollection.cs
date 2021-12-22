@@ -1,10 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
@@ -34,10 +32,7 @@ public sealed class EndpointMetadataCollection : IReadOnlyList<object>
     /// <param name="items">The metadata items.</param>
     public EndpointMetadataCollection(IEnumerable<object> items)
     {
-        if (items == null)
-        {
-            throw new ArgumentNullException(nameof(items));
-        }
+        ArgumentNullException.ThrowIfNull(items);
 
         _items = items.ToArray();
         _cache = new ConcurrentDictionary<Type, object[]>();

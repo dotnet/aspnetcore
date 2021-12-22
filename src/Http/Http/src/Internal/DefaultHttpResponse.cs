@@ -126,20 +126,14 @@ internal sealed class DefaultHttpResponse : HttpResponse
 
     public override void OnStarting(Func<object, Task> callback, object state)
     {
-        if (callback == null)
-        {
-            throw new ArgumentNullException(nameof(callback));
-        }
+        ArgumentNullException.ThrowIfNull(callback);
 
         HttpResponseFeature.OnStarting(callback, state);
     }
 
     public override void OnCompleted(Func<object, Task> callback, object state)
     {
-        if (callback == null)
-        {
-            throw new ArgumentNullException(nameof(callback));
-        }
+        ArgumentNullException.ThrowIfNull(callback);
 
         HttpResponseFeature.OnCompleted(callback, state);
     }

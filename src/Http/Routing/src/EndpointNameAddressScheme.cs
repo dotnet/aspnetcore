@@ -23,10 +23,7 @@ internal sealed class EndpointNameAddressScheme : IEndpointAddressScheme<string>
 
     public IEnumerable<Endpoint> FindEndpoints(string address)
     {
-        if (address == null)
-        {
-            throw new ArgumentNullException(nameof(address));
-        }
+        ArgumentNullException.ThrowIfNull(address);
 
         // Capture the current value of the cache
         var entries = Entries;

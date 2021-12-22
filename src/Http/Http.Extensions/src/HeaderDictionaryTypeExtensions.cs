@@ -42,30 +42,16 @@ public static class HeaderDictionaryTypeExtensions
 
     internal static DateTimeOffset? GetDate(this IHeaderDictionary headers, string name)
     {
-        if (headers == null)
-        {
-            throw new ArgumentNullException(nameof(headers));
-        }
-
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(headers);
+        ArgumentNullException.ThrowIfNull(name);
 
         return headers.Get<DateTimeOffset?>(name);
     }
 
     internal static void Set(this IHeaderDictionary headers, string name, object? value)
     {
-        if (headers == null)
-        {
-            throw new ArgumentNullException(nameof(headers));
-        }
-
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(headers);
+        ArgumentNullException.ThrowIfNull(name);
 
         if (value == null)
         {
@@ -79,15 +65,8 @@ public static class HeaderDictionaryTypeExtensions
 
     internal static void SetList<T>(this IHeaderDictionary headers, string name, IList<T>? values)
     {
-        if (headers == null)
-        {
-            throw new ArgumentNullException(nameof(headers));
-        }
-
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(headers);
+        ArgumentNullException.ThrowIfNull(name);
 
         if (values == null || values.Count == 0)
         {
@@ -117,15 +96,8 @@ public static class HeaderDictionaryTypeExtensions
     /// <param name="values">The values to append.</param>
     public static void AppendList<T>(this IHeaderDictionary Headers, string name, IList<T> values)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
-
-        if (values == null)
-        {
-            throw new ArgumentNullException(nameof(values));
-        }
+        ArgumentNullException.ThrowIfNull(values);
+        ArgumentNullException.ThrowIfNull(name);
 
         switch (values.Count)
         {
@@ -148,15 +120,8 @@ public static class HeaderDictionaryTypeExtensions
 
     internal static void SetDate(this IHeaderDictionary headers, string name, DateTimeOffset? value)
     {
-        if (headers == null)
-        {
-            throw new ArgumentNullException(nameof(headers));
-        }
-
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(headers);
+        ArgumentNullException.ThrowIfNull(name);
 
         if (value.HasValue)
         {
@@ -192,16 +157,13 @@ public static class HeaderDictionaryTypeExtensions
 
     internal static T? Get<T>(this IHeaderDictionary headers, string name)
     {
-        if (headers == null)
-        {
-            throw new ArgumentNullException(nameof(headers));
-        }
+        ArgumentNullException.ThrowIfNull(headers);
 
         var value = headers[name];
 
         if (StringValues.IsNullOrEmpty(value))
         {
-            return default(T);
+            return default;
         }
 
         if (KnownParsers.TryGetValue(typeof(T), out var temp))
@@ -215,10 +177,7 @@ public static class HeaderDictionaryTypeExtensions
 
     internal static IList<T> GetList<T>(this IHeaderDictionary headers, string name)
     {
-        if (headers == null)
-        {
-            throw new ArgumentNullException(nameof(headers));
-        }
+        ArgumentNullException.ThrowIfNull(headers);
 
         var values = headers[name];
 

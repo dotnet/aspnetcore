@@ -39,15 +39,8 @@ internal sealed class MultipartReaderStream : Stream
     /// <param name="bytePool">The ArrayPool pool to use for temporary byte arrays.</param>
     public MultipartReaderStream(BufferedReadStream stream, MultipartBoundary boundary, ArrayPool<byte> bytePool)
     {
-        if (stream == null)
-        {
-            throw new ArgumentNullException(nameof(stream));
-        }
-
-        if (boundary == null)
-        {
-            throw new ArgumentNullException(nameof(boundary));
-        }
+        ArgumentNullException.ThrowIfNull(stream);
+        ArgumentNullException.ThrowIfNull(boundary);
 
         _bytePool = bytePool;
         _innerStream = stream;

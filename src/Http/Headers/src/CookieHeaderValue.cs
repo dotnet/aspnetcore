@@ -34,10 +34,7 @@ public class CookieHeaderValue
     public CookieHeaderValue(StringSegment name)
         : this(name, StringSegment.Empty)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
     }
 
     /// <summary>
@@ -47,15 +44,8 @@ public class CookieHeaderValue
     /// <param name="value">The cookie value.</param>
     public CookieHeaderValue(StringSegment name, StringSegment value)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
-
-        if (value == null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
+        ArgumentNullException.ThrowIfNull(name);
+        ArgumentNullException.ThrowIfNull(value);
 
         Name = name;
         Value = value;
@@ -167,10 +157,7 @@ public class CookieHeaderValue
 
     internal static void CheckNameFormat(StringSegment name, string parameterName)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
         if (HttpRuleParser.GetTokenLength(name, 0) != name.Length)
         {
@@ -180,10 +167,7 @@ public class CookieHeaderValue
 
     internal static void CheckValueFormat(StringSegment value, string parameterName)
     {
-        if (value == null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
+        ArgumentNullException.ThrowIfNull(value);
 
         var offset = 0;
         var result = CookieHeaderParserShared.GetCookieValue(value, ref offset);
@@ -196,9 +180,7 @@ public class CookieHeaderValue
     /// <inheritdoc />
     public override bool Equals(object? obj)
     {
-        var other = obj as CookieHeaderValue;
-
-        if (other == null)
+        if (obj is not CookieHeaderValue other)
         {
             return false;
         }

@@ -1,11 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
@@ -22,10 +17,7 @@ internal sealed class ReferenceReadStream : Stream
 
     public ReferenceReadStream(Stream inner, long offset, long length)
     {
-        if (inner == null)
-        {
-            throw new ArgumentNullException(nameof(inner));
-        }
+        ArgumentNullException.ThrowIfNull(inner);
 
         _inner = inner;
         _innerOffset = offset;

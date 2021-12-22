@@ -1,10 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.WebUtilities;
@@ -21,10 +18,7 @@ public static class MultipartSectionStreamExtensions
     /// <returns>The body steam as string</returns>
     public static async Task<string> ReadAsStringAsync(this MultipartSection section)
     {
-        if (section == null)
-        {
-            throw new ArgumentNullException(nameof(section));
-        }
+        ArgumentNullException.ThrowIfNull(section);
 
         if (section.Body is null)
         {
@@ -40,14 +34,12 @@ public static class MultipartSectionStreamExtensions
             streamEncoding = Encoding.UTF8;
         }
 
-        using (var reader = new StreamReader(
+        using var reader = new StreamReader(
             section.Body,
             streamEncoding,
             detectEncodingFromByteOrderMarks: true,
             bufferSize: 1024,
-            leaveOpen: true))
-        {
-            return await reader.ReadToEndAsync();
-        }
+            leaveOpen: true);
+        return await reader.ReadToEndAsync();
     }
 }

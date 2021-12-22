@@ -1,11 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 
@@ -166,10 +163,7 @@ public class AuthenticationService : IAuthenticationService
     /// <returns>A task.</returns>
     public virtual async Task SignInAsync(HttpContext context, string? scheme, ClaimsPrincipal principal, AuthenticationProperties? properties)
     {
-        if (principal == null)
-        {
-            throw new ArgumentNullException(nameof(principal));
-        }
+        ArgumentNullException.ThrowIfNull(principal);
 
         if (Options.RequireAuthenticatedSignIn)
         {
@@ -233,8 +227,7 @@ public class AuthenticationService : IAuthenticationService
             throw await CreateMissingSignOutHandlerException(scheme);
         }
 
-        var signOutHandler = handler as IAuthenticationSignOutHandler;
-        if (signOutHandler == null)
+        if (handler is not IAuthenticationSignOutHandler signOutHandler)
         {
             throw await CreateMismatchedSignOutHandlerException(scheme, handler);
         }

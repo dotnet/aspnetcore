@@ -21,10 +21,7 @@ public class EndpointNameMetadata : IEndpointNameMetadata
     /// <param name="endpointName">The endpoint name.</param>
     public EndpointNameMetadata(string endpointName)
     {
-        if (endpointName == null)
-        {
-            throw new ArgumentNullException(nameof(endpointName));
-        }
+        ArgumentNullException.ThrowIfNull(endpointName);
 
         EndpointName = endpointName;
     }

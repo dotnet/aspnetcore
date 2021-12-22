@@ -291,10 +291,7 @@ public sealed class FileBufferingWriteStream : Stream
 
     private static void ThrowArgumentException(byte[] buffer, int offset, int count)
     {
-        if (buffer == null)
-        {
-            throw new ArgumentNullException(nameof(buffer));
-        }
+        ArgumentNullException.ThrowIfNull(buffer);
 
         if (offset < 0)
         {

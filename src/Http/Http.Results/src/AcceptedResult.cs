@@ -37,10 +37,7 @@ internal sealed class AcceptedResult : ObjectResult
     public AcceptedResult(Uri locationUri, object? value)
         : base(value, StatusCodes.Status202Accepted)
     {
-        if (locationUri == null)
-        {
-            throw new ArgumentNullException(nameof(locationUri));
-        }
+        ArgumentNullException.ThrowIfNull(locationUri);
 
         if (locationUri.IsAbsoluteUri)
         {

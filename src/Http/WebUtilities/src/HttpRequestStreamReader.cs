@@ -165,10 +165,7 @@ public class HttpRequestStreamReader : TextReader
     /// <inheritdoc />
     public override int Read(char[] buffer, int index, int count)
     {
-        if (buffer == null)
-        {
-            throw new ArgumentNullException(nameof(buffer));
-        }
+        ArgumentNullException.ThrowIfNull(buffer);
 
         if (index < 0)
         {
@@ -241,10 +238,7 @@ public class HttpRequestStreamReader : TextReader
     /// <inheritdoc />
     public override Task<int> ReadAsync(char[] buffer, int index, int count)
     {
-        if (buffer == null)
-        {
-            throw new ArgumentNullException(nameof(buffer));
-        }
+        ArgumentNullException.ThrowIfNull(buffer);
 
         if (index < 0)
         {

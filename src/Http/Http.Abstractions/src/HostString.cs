@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.AspNetCore.Http.Abstractions;
 using Microsoft.Extensions.Primitives;
@@ -34,10 +32,7 @@ public readonly struct HostString : IEquatable<HostString>
     /// <param name="port">A positive, greater than 0 value representing the port in the host string.</param>
     public HostString(string host, int port)
     {
-        if (host == null)
-        {
-            throw new ArgumentNullException(nameof(host));
-        }
+        ArgumentNullException.ThrowIfNull(host);
 
         if (port <= 0)
         {
@@ -45,7 +40,7 @@ public readonly struct HostString : IEquatable<HostString>
         }
 
         int index;
-        if (host.IndexOf('[') == -1
+        if (!host.Contains('[')
             && (index = host.IndexOf(':')) >= 0
             && index < host.Length - 1
             && host.IndexOf(':', index + 1) >= 0)
@@ -202,10 +197,7 @@ public readonly struct HostString : IEquatable<HostString>
     /// <returns>The <see cref="HostString"/> that was created.</returns>
     public static HostString FromUriComponent(Uri uri)
     {
-        if (uri == null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(uri);
 
         return new HostString(uri.GetComponents(
             UriComponents.NormalizedHost | // Always convert punycode to Unicode.
@@ -229,14 +221,8 @@ public readonly struct HostString : IEquatable<HostString>
     /// <returns><see langword="true" /> if <paramref name="value"/> matches any of the patterns.</returns>
     public static bool MatchesAny(StringSegment value, IList<StringSegment> patterns)
     {
-        if (value == null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
-        if (patterns == null)
-        {
-            throw new ArgumentNullException(nameof(patterns));
-        }
+        ArgumentNullException.ThrowIfNull(value);
+        ArgumentNullException.ThrowIfNull(patterns);
 
         // Drop the port
         GetParts(value, out var host, out var port);

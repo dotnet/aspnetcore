@@ -23,10 +23,7 @@ public class RequestBodyPipeFeature : IRequestBodyPipeFeature
     /// <param name="context"></param>
     public RequestBodyPipeFeature(HttpContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
         _context = context;
     }
 

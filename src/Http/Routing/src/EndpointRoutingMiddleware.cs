@@ -31,10 +31,7 @@ internal sealed partial class EndpointRoutingMiddleware
         DiagnosticListener diagnosticListener,
         RequestDelegate next)
     {
-        if (endpointRouteBuilder == null)
-        {
-            throw new ArgumentNullException(nameof(endpointRouteBuilder));
-        }
+        ArgumentNullException.ThrowIfNull(endpointRouteBuilder);
 
         _matcherFactory = matcherFactory ?? throw new ArgumentNullException(nameof(matcherFactory));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));

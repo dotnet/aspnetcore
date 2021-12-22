@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Routing;
@@ -46,10 +45,7 @@ public class RouteContext
         }
         set
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(RouteData));
-            }
+            ArgumentNullException.ThrowIfNull(RouteData);
 
             _routeData = value;
         }

@@ -21,15 +21,8 @@ public class FloatRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatch
         RouteValueDictionary values,
         RouteDirection routeDirection)
     {
-        if (routeKey == null)
-        {
-            throw new ArgumentNullException(nameof(routeKey));
-        }
-
-        if (values == null)
-        {
-            throw new ArgumentNullException(nameof(values));
-        }
+        ArgumentNullException.ThrowIfNull(values);
+        ArgumentNullException.ThrowIfNull(routeKey);
 
         if (values.TryGetValue(routeKey, out var value) && value != null)
         {

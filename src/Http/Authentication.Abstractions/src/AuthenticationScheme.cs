@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Authentication;
@@ -20,14 +19,9 @@ public class AuthenticationScheme
     /// <param name="handlerType">The <see cref="IAuthenticationHandler"/> type that handles this scheme.</param>
     public AuthenticationScheme(string name, string? displayName, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type handlerType)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
-        if (handlerType == null)
-        {
-            throw new ArgumentNullException(nameof(handlerType));
-        }
+        ArgumentNullException.ThrowIfNull(name);
+        ArgumentNullException.ThrowIfNull(handlerType);
+
         if (!typeof(IAuthenticationHandler).IsAssignableFrom(handlerType))
         {
             throw new ArgumentException("handlerType must implement IAuthenticationHandler.");

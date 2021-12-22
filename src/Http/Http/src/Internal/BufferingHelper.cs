@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.WebUtilities;
 
@@ -13,10 +12,7 @@ internal static class BufferingHelper
 
     public static HttpRequest EnableRewind(this HttpRequest request, int bufferThreshold = DefaultBufferThreshold, long? bufferLimit = null)
     {
-        if (request == null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
+        ArgumentNullException.ThrowIfNull(request);
 
         var body = request.Body;
         if (!body.CanSeek)
@@ -31,14 +27,8 @@ internal static class BufferingHelper
     public static MultipartSection EnableRewind(this MultipartSection section, Action<IDisposable> registerForDispose,
         int bufferThreshold = DefaultBufferThreshold, long? bufferLimit = null)
     {
-        if (section == null)
-        {
-            throw new ArgumentNullException(nameof(section));
-        }
-        if (registerForDispose == null)
-        {
-            throw new ArgumentNullException(nameof(registerForDispose));
-        }
+        ArgumentNullException.ThrowIfNull(section);
+        ArgumentNullException.ThrowIfNull(registerForDispose);
 
         var body = section.Body;
         if (!body.CanSeek)

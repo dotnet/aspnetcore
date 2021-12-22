@@ -87,10 +87,7 @@ public class TemplatePart
         object? defaultValue,
         IEnumerable<InlineConstraint>? inlineConstraints)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
         return new TemplatePart()
         {

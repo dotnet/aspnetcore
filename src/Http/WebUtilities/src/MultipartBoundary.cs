@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Text;
 
 namespace Microsoft.AspNetCore.WebUtilities;
@@ -14,10 +13,7 @@ internal class MultipartBoundary
 
     public MultipartBoundary(string boundary, bool expectLeadingCrlf = true)
     {
-        if (boundary == null)
-        {
-            throw new ArgumentNullException(nameof(boundary));
-        }
+        ArgumentNullException.ThrowIfNull(boundary);
 
         _boundary = boundary;
         _expectLeadingCrlf = expectLeadingCrlf;

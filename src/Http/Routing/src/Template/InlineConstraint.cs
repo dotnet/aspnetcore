@@ -17,10 +17,7 @@ public class InlineConstraint
     /// <param name="constraint">The constraint text.</param>
     public InlineConstraint(string constraint)
     {
-        if (constraint == null)
-        {
-            throw new ArgumentNullException(nameof(constraint));
-        }
+        ArgumentNullException.ThrowIfNull(constraint);
 
         Constraint = constraint;
     }
@@ -31,10 +28,7 @@ public class InlineConstraint
     /// <param name="other">A <see cref="RoutePatternParameterPolicyReference"/> instance.</param>
     public InlineConstraint(RoutePatternParameterPolicyReference other)
     {
-        if (other == null)
-        {
-            throw new ArgumentNullException(nameof(other));
-        }
+        ArgumentNullException.ThrowIfNull(other);
 
         Constraint = other.Content!;
     }
