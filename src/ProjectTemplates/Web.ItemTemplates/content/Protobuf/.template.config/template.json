@@ -36,6 +36,7 @@
   },
   "postActions": [
     {
+      "id": "openInEditor",
       "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
       "description": "Opens protobuf.proto in the editor",
       "manualInstructions": [],
