@@ -7,40 +7,39 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace ComponentsApp.Server
+namespace ComponentsApp.Server;
+
+public class Startup
 {
-    public class Startup
+    public void ConfigureServices(IServiceCollection services)
     {
-        public void ConfigureServices(IServiceCollection services)
+        services.AddMvc();
+        services.AddSingleton<CircuitHandler, LoggingCircuitHandler>();
+        services.AddServerSideBlazor(options =>
         {
-            services.AddMvc();
-            services.AddSingleton<CircuitHandler, LoggingCircuitHandler>();
-            services.AddServerSideBlazor(options =>
-            {
-                options.DetailedErrors = true;
-            });
+            options.DetailedErrors = true;
+        });
 
-            services.AddSingleton<WeatherForecastService, DefaultWeatherForecastService>();
+        services.AddSingleton<WeatherForecastService, DefaultWeatherForecastService>();
+    }
+
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    {
+        if (env.IsDevelopment())
+        {
+            app.UseDeveloperExceptionPage();
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        app.UseStaticFiles();
+
+        app.UseRouting();
+
+        app.UseEndpoints(endpoints =>
         {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-
-            app.UseStaticFiles();
-
-            app.UseRouting();
-
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapRazorPages();
-                endpoints.MapControllers();
-                endpoints.MapBlazorHub();
-                endpoints.MapFallbackToPage("/_Host");
-            });
-        }
+            endpoints.MapRazorPages();
+            endpoints.MapControllers();
+            endpoints.MapBlazorHub();
+            endpoints.MapFallbackToPage("/_Host");
+        });
     }
 }

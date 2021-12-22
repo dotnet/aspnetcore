@@ -7,17 +7,16 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace BasicWebSite
+namespace BasicWebSite;
+
+public class ManagerHandler : AuthorizationHandler<OperationAuthorizationRequirement>
 {
-    public class ManagerHandler : AuthorizationHandler<OperationAuthorizationRequirement>
+    protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, OperationAuthorizationRequirement requirement)
     {
-        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, OperationAuthorizationRequirement requirement)
+        if (context.User.HasClaim("Manager", "yes"))
         {
-            if (context.User.HasClaim("Manager", "yes"))
-            {
-                context.Succeed(requirement);
-            }
-            return Task.FromResult(0);
+            context.Succeed(requirement);
         }
+        return Task.FromResult(0);
     }
 }

@@ -5,22 +5,21 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Rewrite.PatternSegments;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Rewrite.Tests.PatternSegments
-{
-    public class RemotePortSegmentTests
-    {
-        [Fact]
-        public void RemotePort_AssertSegmentIsCorrect()
-        {
-            // Arrange
-            var segement = new RemotePortSegment();
-            var context = new RewriteContext { HttpContext = new DefaultHttpContext() };
-            context.HttpContext.Connection.RemotePort = 800;
-            // Act
-            var results = segement.Evaluate(context, null, null);
+namespace Microsoft.AspNetCore.Rewrite.Tests.PatternSegments;
 
-            // Assert
-            Assert.Equal("800", results);
-        }
+public class RemotePortSegmentTests
+{
+    [Fact]
+    public void RemotePort_AssertSegmentIsCorrect()
+    {
+        // Arrange
+        var segement = new RemotePortSegment();
+        var context = new RewriteContext { HttpContext = new DefaultHttpContext() };
+        context.HttpContext.Connection.RemotePort = 800;
+        // Act
+        var results = segement.Evaluate(context, null, null);
+
+        // Assert
+        Assert.Equal("800", results);
     }
 }

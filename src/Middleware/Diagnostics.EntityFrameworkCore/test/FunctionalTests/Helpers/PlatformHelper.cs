@@ -3,16 +3,15 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.FunctionalTests.Helpers
+namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.FunctionalTests.Helpers;
+
+public class PlatformHelper
 {
-    public class PlatformHelper
+    public static bool IsMono
     {
-        public static bool IsMono
+        get
         {
-            get
-            {
-                return Type.GetType("Mono.Runtime") != null;
-            }
+            return Type.GetType("Mono.Runtime") != null;
         }
     }
 }

@@ -64,8 +64,9 @@
           Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftAspNetCoreAppRuntimeVersion}</LatestRuntimeFrameworkVersion>
       <RuntimePackRuntimeIdentifiers
           Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${SupportedRuntimeIdentifiers}</RuntimePackRuntimeIdentifiers>
+      <!-- Do not update %(TargetingPackVersion) until X.Y.0 versions have been released. -->
       <TargetingPackVersion
-          Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftAspNetCoreAppRefVersion}</TargetingPackVersion>
+          Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' AND '${AspNetCorePatchVersion}' != '1' ">${MicrosoftAspNetCoreAppRefVersion}</TargetingPackVersion>
       <DefaultRuntimeFrameworkVersion Condition=" '$(IsServicingBuild)' != 'true' AND
           '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftAspNetCoreAppRuntimeVersion}</DefaultRuntimeFrameworkVersion>
     </KnownFrameworkReference>

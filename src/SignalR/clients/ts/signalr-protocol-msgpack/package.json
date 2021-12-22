@@ -13,9 +13,9 @@
   },
   "sideEffects": false,
   "scripts": {
-    "preclean": "cd ../common && yarn install --mutex network",
+    "preclean": "cd ../common && yarn install --mutex network --frozen-lockfile",
     "clean": "node ../common/node_modules/rimraf/bin.js ./dist",
-    "prebuild": "yarn run clean && yarn install --mutex network",
+    "prebuild": "yarn run clean && yarn install --mutex network --frozen-lockfile",
     "build": "yarn run build:lint && yarn run build:esm && yarn run build:cjs && yarn run build:browser && yarn run build:uglify",
     "build:lint": "node ../common/node_modules/eslint/bin/eslint ./src --ext .ts --resolve-plugins-relative-to ../common",
     "build:esm": "node ../common/node_modules/typescript/bin/tsc --project ./tsconfig.json --module es2015 --outDir ./dist/esm -d",

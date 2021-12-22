@@ -7,32 +7,31 @@ using Microsoft.AspNetCore.DataProtection.XmlEncryption;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace CustomEncryptorSample
+namespace CustomEncryptorSample;
+
+public class CustomXmlEncryptor : IXmlEncryptor
 {
-    public class CustomXmlEncryptor : IXmlEncryptor
+    private readonly ILogger _logger;
+
+    public CustomXmlEncryptor(IServiceProvider services)
     {
-        private readonly ILogger _logger;
+        _logger = services.GetRequiredService<ILoggerFactory>().CreateLogger<CustomXmlEncryptor>();
+    }
 
-        public CustomXmlEncryptor(IServiceProvider services)
+    public EncryptedXmlInfo Encrypt(XElement plaintextElement)
+    {
+        if (plaintextElement == null)
         {
-            _logger = services.GetRequiredService<ILoggerFactory>().CreateLogger<CustomXmlEncryptor>();
+            throw new ArgumentNullException(nameof(plaintextElement));
         }
 
-        public EncryptedXmlInfo Encrypt(XElement plaintextElement)
-        {
-            if (plaintextElement == null)
-            {
-                throw new ArgumentNullException(nameof(plaintextElement));
-            }
+        _logger.LogInformation("Not encrypting key");
 
-            _logger.LogInformation("Not encrypting key");
+        var newElement = new XElement("unencryptedKey",
+            new XComment(" This key is not encrypted. "),
+            new XElement(plaintextElement));
+        var encryptedTextElement = new EncryptedXmlInfo(newElement, typeof(CustomXmlDecryptor));
 
-            var newElement = new XElement("unencryptedKey",
-                new XComment(" This key is not encrypted. "),
-                new XElement(plaintextElement));
-            var encryptedTextElement = new EncryptedXmlInfo(newElement, typeof(CustomXmlDecryptor));
-
-            return encryptedTextElement;
-        }
+        return encryptedTextElement;
     }
 }

@@ -6,44 +6,43 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace BasicWebSite
+namespace BasicWebSite;
+
+public class Startup
 {
-    public class Startup
+    // Set up application services
+    public void ConfigureServices(IServiceCollection services)
     {
-        // Set up application services
-        public void ConfigureServices(IServiceCollection services)
+        services.AddMvc()
+            .AddNewtonsoftJson()
+            .AddXmlDataContractSerializerFormatters();
+
+        services.ConfigureBaseWebSiteAuthPolicies();
+
+        services.AddHttpContextAccessor();
+        services.AddScoped<RequestIdService>();
+        services.AddScoped<TestResponseGenerator>();
+        services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+    }
+
+    public void Configure(IApplicationBuilder app)
+    {
+        app.UseDeveloperExceptionPage();
+
+        // Initializes the RequestId service for each request
+        app.UseMiddleware<RequestIdMiddleware>();
+
+        app.UseRouting();
+        app.UseEndpoints(endpoints =>
         {
-            services.AddMvc()
-                .AddNewtonsoftJson()
-                .AddXmlDataContractSerializerFormatters();
+            endpoints.MapControllerRoute(
+                name: "ActionAsMethod",
+                pattern: "{controller}/{action}",
+                defaults: new { controller = "Home", action = "Index" });
 
-            services.ConfigureBaseWebSiteAuthPolicies();
-
-            services.AddHttpContextAccessor();
-            services.AddScoped<RequestIdService>();
-            services.AddScoped<TestResponseGenerator>();
-            services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
-        }
-
-        public void Configure(IApplicationBuilder app)
-        {
-            app.UseDeveloperExceptionPage();
-
-            // Initializes the RequestId service for each request
-            app.UseMiddleware<RequestIdMiddleware>();
-
-            app.UseRouting();
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllerRoute(
-                    name: "ActionAsMethod",
-                    pattern: "{controller}/{action}",
-                    defaults: new { controller = "Home", action = "Index" });
-
-                endpoints.MapControllerRoute(
-                    name: "PageRoute",
-                    pattern: "{controller}/{action}/{page}");
-            });
-        }
+            endpoints.MapControllerRoute(
+                name: "PageRoute",
+                pattern: "{controller}/{action}/{page}");
+        });
     }
 }

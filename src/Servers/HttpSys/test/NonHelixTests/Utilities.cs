@@ -8,51 +8,50 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Server.HttpSys
+namespace Microsoft.AspNetCore.Server.HttpSys;
+
+internal static class Utilities
 {
-    internal static class Utilities
+    internal static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(15);
+    internal static readonly int WriteRetryLimit = 1000;
+
+    // Minimum support for Windows 7 is assumed.
+    internal static readonly bool IsWin8orLater;
+
+    static Utilities()
     {
-        internal static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(15);
-        internal static readonly int WriteRetryLimit = 1000;
+        var win8Version = new Version(6, 2);
+        IsWin8orLater = (Environment.OSVersion.Version >= win8Version);
+    }
 
-        // Minimum support for Windows 7 is assumed.
-        internal static readonly bool IsWin8orLater;
+    internal static IServer CreateHttpServer(out string baseAddress, RequestDelegate app)
+    {
+        string root;
+        return CreateDynamicHttpServer(string.Empty, out root, out baseAddress, options => { }, app);
+    }
 
-        static Utilities()
-        {
-            var win8Version = new Version(6, 2);
-            IsWin8orLater = (Environment.OSVersion.Version >= win8Version);
-        }
+    internal static MessagePump CreatePump(ILoggerFactory loggerFactory = null)
+        => new MessagePump(Options.Create(new HttpSysOptions()), loggerFactory ?? new LoggerFactory(), new AuthenticationSchemeProvider(Options.Create(new AuthenticationOptions())));
 
-        internal static IServer CreateHttpServer(out string baseAddress, RequestDelegate app)
-        {
-            string root;
-            return CreateDynamicHttpServer(string.Empty, out root, out baseAddress, options => { }, app);
-        }
+    internal static MessagePump CreatePump(Action<HttpSysOptions> configureOptions, ILoggerFactory loggerFactory = null)
+    {
+        var options = new HttpSysOptions();
+        configureOptions(options);
+        return new MessagePump(Options.Create(options), loggerFactory ?? new LoggerFactory(), new AuthenticationSchemeProvider(Options.Create(new AuthenticationOptions())));
+    }
 
-        internal static MessagePump CreatePump(ILoggerFactory loggerFactory = null)
-            => new MessagePump(Options.Create(new HttpSysOptions()), loggerFactory ?? new LoggerFactory(), new AuthenticationSchemeProvider(Options.Create(new AuthenticationOptions())));
+    internal static IServer CreateDynamicHttpServer(string basePath, out string root, out string baseAddress, Action<HttpSysOptions> configureOptions, RequestDelegate app)
+    {
+        var prefix = UrlPrefix.Create("http", "localhost", "0", basePath);
 
-        internal static MessagePump CreatePump(Action<HttpSysOptions> configureOptions, ILoggerFactory loggerFactory = null)
-        {
-            var options = new HttpSysOptions();
-            configureOptions(options);
-            return new MessagePump(Options.Create(options), loggerFactory ?? new LoggerFactory(), new AuthenticationSchemeProvider(Options.Create(new AuthenticationOptions())));
-        }
+        var server = CreatePump(configureOptions);
+        server.Features.Get<IServerAddressesFeature>().Addresses.Add(prefix.ToString());
+        server.StartAsync(new DummyApplication(app), CancellationToken.None).Wait();
 
-        internal static IServer CreateDynamicHttpServer(string basePath, out string root, out string baseAddress, Action<HttpSysOptions> configureOptions, RequestDelegate app)
-        {
-            var prefix = UrlPrefix.Create("http", "localhost", "0", basePath);
+        prefix = server.Listener.Options.UrlPrefixes.First(); // Has new port
+        root = prefix.Scheme + "://" + prefix.Host + ":" + prefix.Port;
+        baseAddress = prefix.ToString();
 
-            var server = CreatePump(configureOptions);
-            server.Features.Get<IServerAddressesFeature>().Addresses.Add(prefix.ToString());
-            server.StartAsync(new DummyApplication(app), CancellationToken.None).Wait();
-
-            prefix = server.Listener.Options.UrlPrefixes.First(); // Has new port
-            root = prefix.Scheme + "://" + prefix.Host + ":" + prefix.Port;
-            baseAddress = prefix.ToString();
-
-            return server;
-        }
+        return server;
     }
 }

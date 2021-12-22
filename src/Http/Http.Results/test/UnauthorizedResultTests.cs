@@ -3,18 +3,17 @@
 
 using Xunit;
 
-namespace Microsoft.AspNetCore.Http.Result
-{
-    public class UnauthorizedResultTests
-    {
-        [Fact]
-        public void UnauthorizedResult_InitializesStatusCode()
-        {
-            // Arrange & act
-            var result = new UnauthorizedResult();
+namespace Microsoft.AspNetCore.Http.Result;
 
-            // Assert
-            Assert.Equal(StatusCodes.Status401Unauthorized, result.StatusCode);
-        }
+public class UnauthorizedResultTests
+{
+    [Fact]
+    public void UnauthorizedResult_InitializesStatusCode()
+    {
+        // Arrange & act
+        var result = new UnauthorizedResult();
+
+        // Assert
+        Assert.Equal(StatusCodes.Status401Unauthorized, result.StatusCode);
     }
 }

@@ -3,34 +3,33 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.ResponseCaching
-{
-    /// Default implementation for <see cref="IResponseCachingFeature" />
-    public class ResponseCachingFeature : IResponseCachingFeature
-    {
-        private string[]? _varyByQueryKeys;
+namespace Microsoft.AspNetCore.ResponseCaching;
 
-        /// <inheritdoc />
-        public string[]? VaryByQueryKeys
+/// Default implementation for <see cref="IResponseCachingFeature" />
+public class ResponseCachingFeature : IResponseCachingFeature
+{
+    private string[]? _varyByQueryKeys;
+
+    /// <inheritdoc />
+    public string[]? VaryByQueryKeys
+    {
+        get
         {
-            get
+            return _varyByQueryKeys;
+        }
+        set
+        {
+            if (value?.Length > 1)
             {
-                return _varyByQueryKeys;
-            }
-            set
-            {
-                if (value?.Length > 1)
+                for (var i = 0; i < value.Length; i++)
                 {
-                    for (var i = 0; i < value.Length; i++)
+                    if (string.IsNullOrEmpty(value[i]))
                     {
-                        if (string.IsNullOrEmpty(value[i]))
-                        {
-                            throw new ArgumentException($"When {nameof(value)} contains more than one value, it cannot contain a null or empty value.", nameof(value));
-                        }
+                        throw new ArgumentException($"When {nameof(value)} contains more than one value, it cannot contain a null or empty value.", nameof(value));
                     }
                 }
-                _varyByQueryKeys = value;
             }
+            _varyByQueryKeys = value;
         }
     }
 }

@@ -3,27 +3,26 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+
+/// <summary>
+/// Abstracts the system clock to facilitate testing.
+/// </summary>
+internal interface ISystemClock
 {
     /// <summary>
-    /// Abstracts the system clock to facilitate testing.
+    /// Retrieves the current UTC system time.
     /// </summary>
-    internal interface ISystemClock
-    {
-        /// <summary>
-        /// Retrieves the current UTC system time.
-        /// </summary>
-        DateTimeOffset UtcNow { get; }
+    DateTimeOffset UtcNow { get; }
 
-        /// <summary>
-        /// Retrieves ticks for the current UTC system time.
-        /// </summary>
-        long UtcNowTicks { get; }
+    /// <summary>
+    /// Retrieves ticks for the current UTC system time.
+    /// </summary>
+    long UtcNowTicks { get; }
 
-        /// <summary>
-        /// Retrieves the current UTC system time.
-        /// This is only safe to use from code called by the <see cref="Heartbeat"/>.
-        /// </summary>
-        DateTimeOffset UtcNowUnsynchronized { get; }
-    }
+    /// <summary>
+    /// Retrieves the current UTC system time.
+    /// This is only safe to use from code called by the <see cref="Heartbeat"/>.
+    /// </summary>
+    DateTimeOffset UtcNowUnsynchronized { get; }
 }

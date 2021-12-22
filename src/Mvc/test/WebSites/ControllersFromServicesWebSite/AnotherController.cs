@@ -3,27 +3,26 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace ControllersFromServicesWebSite
+namespace ControllersFromServicesWebSite;
+
+[Route("/[controller]")]
+public class AnotherController : Controller
 {
-    [Route("/[controller]")]
-    public class AnotherController : Controller
+    [HttpGet]
+    public IActionResult Get()
     {
-        [HttpGet]
-        public IActionResult Get()
-        {
-            return new ContentResult { Content = "1" };
-        }
+        return new ContentResult { Content = "1" };
+    }
 
-        [HttpGet("InServicesViewComponent")]
-        public IActionResult ViewComponentAction()
-        {
-            return ViewComponent("ComponentFromServices");
-        }
+    [HttpGet("InServicesViewComponent")]
+    public IActionResult ViewComponentAction()
+    {
+        return ViewComponent("ComponentFromServices");
+    }
 
-        [HttpGet("InServicesTagHelper")]
-        public IActionResult InServicesTagHelper()
-        {
-            return View();
-        }
+    [HttpGet("InServicesTagHelper")]
+    public IActionResult InServicesTagHelper()
+    {
+        return View();
     }
 }

@@ -3,10 +3,9 @@
 
 using System.Threading;
 
-namespace ApiExplorerWebSite
+namespace ApiExplorerWebSite;
+
+public class WellKnownChangeToken
 {
-    public class WellKnownChangeToken
-    {
-       public CancellationTokenSource TokenSource { get; } = new CancellationTokenSource();
-    }
+    public CancellationTokenSource TokenSource { get; } = new CancellationTokenSource();
 }

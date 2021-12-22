@@ -291,7 +291,7 @@
       "type": "parameter",
       "datatype": "bool",
       "defaultValue": "false",
-      "description": "Whether to use mininmal APIs instead of controllers."
+      "description": "Whether to use minimal APIs instead of controllers."
     },
     "Framework": {
       "type": "parameter",
@@ -374,6 +374,7 @@
   "defaultName": "WebApplication",
   "postActions": [
     {
+      "id": "restore",
       "condition": "(!skipRestore)",
       "description": "Restore NuGet packages required by this project.",
       "manualInstructions": [

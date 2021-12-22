@@ -4,34 +4,33 @@
 using System;
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Routing
+namespace Microsoft.AspNetCore.Routing;
+
+/// <summary>
+/// Specifies an endpoint name in <see cref="Endpoint.Metadata"/>.
+/// </summary>
+/// <remarks>
+/// Endpoint names must be unique within an application, and can be used to unambiguously
+/// identify a desired endpoint for URI generation using <see cref="LinkGenerator"/>.
+/// </remarks>
+public class EndpointNameMetadata : IEndpointNameMetadata
 {
     /// <summary>
-    /// Specifies an endpoint name in <see cref="Endpoint.Metadata"/>.
+    /// Creates a new instance of <see cref="EndpointNameMetadata"/> with the provided endpoint name.
     /// </summary>
-    /// <remarks>
-    /// Endpoint names must be unique within an application, and can be used to unambiguously
-    /// identify a desired endpoint for URI generation using <see cref="LinkGenerator"/>.
-    /// </remarks>
-    public class EndpointNameMetadata : IEndpointNameMetadata
+    /// <param name="endpointName">The endpoint name.</param>
+    public EndpointNameMetadata(string endpointName)
     {
-        /// <summary>
-        /// Creates a new instance of <see cref="EndpointNameMetadata"/> with the provided endpoint name.
-        /// </summary>
-        /// <param name="endpointName">The endpoint name.</param>
-        public EndpointNameMetadata(string endpointName)
+        if (endpointName == null)
         {
-            if (endpointName == null)
-            {
-                throw new ArgumentNullException(nameof(endpointName));
-            }
-
-            EndpointName = endpointName;
+            throw new ArgumentNullException(nameof(endpointName));
         }
 
-        /// <summary>
-        /// Gets the endpoint name.
-        /// </summary>
-        public string EndpointName { get; }
+        EndpointName = endpointName;
     }
+
+    /// <summary>
+    /// Gets the endpoint name.
+    /// </summary>
+    public string EndpointName { get; }
 }

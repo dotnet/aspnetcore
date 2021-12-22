@@ -3,33 +3,32 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Razor.Hosting
+namespace Microsoft.AspNetCore.Razor.Hosting;
+
+/// <summary>
+/// Defines a key/value metadata pair for the decorated Razor type.
+/// </summary>
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
+public sealed class RazorCompiledItemMetadataAttribute : Attribute
 {
     /// <summary>
-    /// Defines a key/value metadata pair for the decorated Razor type.
+    /// Creates a new <see cref="RazorCompiledItemMetadataAttribute"/>.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
-    public sealed class RazorCompiledItemMetadataAttribute : Attribute
+    /// <param name="key">The key.</param>
+    /// <param name="value">The value.</param>
+    public RazorCompiledItemMetadataAttribute(string key, string value)
     {
-        /// <summary>
-        /// Creates a new <see cref="RazorCompiledItemMetadataAttribute"/>.
-        /// </summary>
-        /// <param name="key">The key.</param>
-        /// <param name="value">The value.</param>
-        public RazorCompiledItemMetadataAttribute(string key, string value)
-        {
-            Key = key;
-            Value = value;
-        }
-
-        /// <summary>
-        /// Gets the key.
-        /// </summary>
-        public string Key { get; }
-
-        /// <summary>
-        /// Gets the value.
-        /// </summary>
-        public string Value { get; }
+        Key = key;
+        Value = value;
     }
+
+    /// <summary>
+    /// Gets the key.
+    /// </summary>
+    public string Key { get; }
+
+    /// <summary>
+    /// Gets the value.
+    /// </summary>
+    public string Value { get; }
 }

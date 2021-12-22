@@ -3,16 +3,15 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Authentication
+namespace Microsoft.AspNetCore.Authentication;
+
+/// <summary>
+/// Abstracts the system clock to facilitate testing.
+/// </summary>
+public interface ISystemClock
 {
     /// <summary>
-    /// Abstracts the system clock to facilitate testing.
+    /// Retrieves the current system time in UTC.
     /// </summary>
-    public interface ISystemClock
-    {
-        /// <summary>
-        /// Retrieves the current system time in UTC.
-        /// </summary>
-        DateTimeOffset UtcNow { get; }
-    }
+    DateTimeOffset UtcNow { get; }
 }

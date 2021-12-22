@@ -6,17 +6,16 @@ using System.Globalization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNetCore.Mvc.ModelBinding
+namespace Microsoft.AspNetCore.Mvc.ModelBinding;
+
+public class FormValueProviderTest : EnumerableValueProviderTest
 {
-    public class FormValueProviderTest : EnumerableValueProviderTest
+    protected override IEnumerableValueProvider GetEnumerableValueProvider(
+        BindingSource bindingSource,
+        Dictionary<string, StringValues> values,
+        CultureInfo culture)
     {
-        protected override IEnumerableValueProvider GetEnumerableValueProvider(
-            BindingSource bindingSource,
-            Dictionary<string, StringValues> values,
-            CultureInfo culture)
-        {
-            var backingStore = new FormCollection(values);
-            return new FormValueProvider(bindingSource, backingStore, culture);
-        }
+        var backingStore = new FormCollection(values);
+        return new FormValueProvider(bindingSource, backingStore, culture);
     }
 }

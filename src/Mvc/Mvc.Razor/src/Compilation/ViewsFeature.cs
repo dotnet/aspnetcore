@@ -3,16 +3,15 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
+namespace Microsoft.AspNetCore.Mvc.Razor.Compilation;
+
+/// <summary>
+/// A feature that contains view descriptors.
+/// </summary>
+public class ViewsFeature
 {
     /// <summary>
-    /// A feature that contains view descriptors.
+    /// A list of <see cref="CompiledViewDescriptor"/>.
     /// </summary>
-    public class ViewsFeature
-    {
-        /// <summary>
-        /// A list of <see cref="CompiledViewDescriptor"/>.
-        /// </summary>
-        public IList<CompiledViewDescriptor> ViewDescriptors { get; } = new List<CompiledViewDescriptor>();
-    }
+    public IList<CompiledViewDescriptor> ViewDescriptors { get; } = new List<CompiledViewDescriptor>();
 }

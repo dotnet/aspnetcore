@@ -4,28 +4,27 @@
 using System;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.Net.Http.Headers
+namespace Microsoft.Net.Http.Headers;
+
+internal sealed class GenericHeaderParser<T> : BaseHeaderParser<T>
 {
-    internal sealed class GenericHeaderParser<T> : BaseHeaderParser<T>
+    internal delegate int GetParsedValueLengthDelegate(StringSegment value, int startIndex, out T? parsedValue);
+
+    private readonly GetParsedValueLengthDelegate _getParsedValueLength;
+
+    internal GenericHeaderParser(bool supportsMultipleValues, GetParsedValueLengthDelegate getParsedValueLength)
+        : base(supportsMultipleValues)
     {
-        internal delegate int GetParsedValueLengthDelegate(StringSegment value, int startIndex, out T? parsedValue);
-
-        private readonly GetParsedValueLengthDelegate _getParsedValueLength;
-
-        internal GenericHeaderParser(bool supportsMultipleValues, GetParsedValueLengthDelegate getParsedValueLength)
-            : base(supportsMultipleValues)
+        if (getParsedValueLength == null)
         {
-            if (getParsedValueLength == null)
-            {
-                throw new ArgumentNullException(nameof(getParsedValueLength));
-            }
-
-            _getParsedValueLength = getParsedValueLength;
+            throw new ArgumentNullException(nameof(getParsedValueLength));
         }
 
-        protected override int GetParsedValueLength(StringSegment value, int startIndex, out T? parsedValue)
-        {
-            return _getParsedValueLength(value, startIndex, out parsedValue);
-        }
+        _getParsedValueLength = getParsedValueLength;
+    }
+
+    protected override int GetParsedValueLength(StringSegment value, int startIndex, out T? parsedValue)
+    {
+        return _getParsedValueLength(value, startIndex, out parsedValue);
     }
 }

@@ -3,20 +3,19 @@
 
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Components.Authorization
+namespace Microsoft.AspNetCore.Components.Authorization;
+
+public class TestAuthenticationStateProvider : AuthenticationStateProvider
 {
-    public class TestAuthenticationStateProvider : AuthenticationStateProvider
+    public Task<AuthenticationState> CurrentAuthStateTask { get; set; }
+
+    public override Task<AuthenticationState> GetAuthenticationStateAsync()
     {
-        public Task<AuthenticationState> CurrentAuthStateTask { get; set; }
+        return CurrentAuthStateTask;
+    }
 
-        public override Task<AuthenticationState> GetAuthenticationStateAsync()
-        {
-            return CurrentAuthStateTask;
-        }
-
-        internal void TriggerAuthenticationStateChanged(Task<AuthenticationState> authState)
-        {
-            NotifyAuthenticationStateChanged(authState);
-        }
+    internal void TriggerAuthenticationStateChanged(Task<AuthenticationState> authState)
+    {
+        NotifyAuthenticationStateChanged(authState);
     }
 }

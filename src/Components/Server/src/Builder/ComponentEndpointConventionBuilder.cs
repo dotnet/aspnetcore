@@ -3,33 +3,32 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Builder
+namespace Microsoft.AspNetCore.Builder;
+
+/// <summary>
+/// Builds conventions that will be used for customization of ComponentHub <see cref="EndpointBuilder"/> instances.
+/// </summary>
+public sealed class ComponentEndpointConventionBuilder : IHubEndpointConventionBuilder
 {
-    /// <summary>
-    /// Builds conventions that will be used for customization of ComponentHub <see cref="EndpointBuilder"/> instances.
-    /// </summary>
-    public sealed class ComponentEndpointConventionBuilder : IHubEndpointConventionBuilder
+    private readonly IEndpointConventionBuilder _hubEndpoint;
+    private readonly IEndpointConventionBuilder _disconnectEndpoint;
+    private readonly IEndpointConventionBuilder _jsInitializersEndpoint;
+
+    internal ComponentEndpointConventionBuilder(IEndpointConventionBuilder hubEndpoint, IEndpointConventionBuilder disconnectEndpoint, IEndpointConventionBuilder jsInitializersEndpoint)
     {
-        private readonly IEndpointConventionBuilder _hubEndpoint;
-        private readonly IEndpointConventionBuilder _disconnectEndpoint;
-        private readonly IEndpointConventionBuilder _jsInitializersEndpoint;
+        _hubEndpoint = hubEndpoint;
+        _disconnectEndpoint = disconnectEndpoint;
+        _jsInitializersEndpoint = jsInitializersEndpoint;
+    }
 
-        internal ComponentEndpointConventionBuilder(IEndpointConventionBuilder hubEndpoint, IEndpointConventionBuilder disconnectEndpoint, IEndpointConventionBuilder jsInitializersEndpoint)
-        {
-            _hubEndpoint = hubEndpoint;
-            _disconnectEndpoint = disconnectEndpoint;
-            _jsInitializersEndpoint = jsInitializersEndpoint;
-        }
-
-        /// <summary>
-        /// Adds the specified convention to the builder. Conventions are used to customize <see cref="EndpointBuilder"/> instances.
-        /// </summary>
-        /// <param name="convention">The convention to add to the builder.</param>
-        public void Add(Action<EndpointBuilder> convention)
-        {
-            _hubEndpoint.Add(convention);
-            _disconnectEndpoint.Add(convention);
-            _jsInitializersEndpoint.Add(convention);
-        }
+    /// <summary>
+    /// Adds the specified convention to the builder. Conventions are used to customize <see cref="EndpointBuilder"/> instances.
+    /// </summary>
+    /// <param name="convention">The convention to add to the builder.</param>
+    public void Add(Action<EndpointBuilder> convention)
+    {
+        _hubEndpoint.Add(convention);
+        _disconnectEndpoint.Add(convention);
+        _jsInitializersEndpoint.Add(convention);
     }
 }

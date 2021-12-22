@@ -5,35 +5,34 @@ using System.Diagnostics;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace Microsoft.AspNetCore.Analyzers
+namespace Microsoft.AspNetCore.Analyzers;
+
+internal class BuildServiceProviderAnalyzer
 {
-    internal class BuildServiceProviderAnalyzer
+    private readonly StartupAnalysis _context;
+
+    public BuildServiceProviderAnalyzer(StartupAnalysis context)
     {
-        private readonly StartupAnalysis _context;
+        _context = context;
+    }
 
-        public BuildServiceProviderAnalyzer(StartupAnalysis context)
+    public void AnalyzeSymbol(SymbolAnalysisContext context)
+    {
+        Debug.Assert(context.Symbol.Kind == SymbolKind.NamedType);
+
+        var type = (INamedTypeSymbol)context.Symbol;
+
+        foreach (var serviceAnalysis in _context.GetRelatedAnalyses<ServicesAnalysis>(type))
         {
-            _context = context;
-        }
-
-        public void AnalyzeSymbol(SymbolAnalysisContext context)
-        {
-            Debug.Assert(context.Symbol.Kind == SymbolKind.NamedType);
-
-            var type = (INamedTypeSymbol)context.Symbol;
-
-            foreach (var serviceAnalysis in _context.GetRelatedAnalyses<ServicesAnalysis>(type))
+            foreach (var serviceItem in serviceAnalysis.Services)
             {
-                foreach (var serviceItem in serviceAnalysis.Services)
+                if (serviceItem.UseMethod.Name == "BuildServiceProvider")
                 {
-                    if (serviceItem.UseMethod.Name == "BuildServiceProvider")
-                    {
-                        context.ReportDiagnostic(Diagnostic.Create(
-                            StartupAnalyzer.Diagnostics.BuildServiceProviderShouldNotCalledInConfigureServicesMethod,
-                            serviceItem.Operation.Syntax.GetLocation(),
-                            serviceItem.UseMethod.Name,
-                            serviceAnalysis.ConfigureServicesMethod.Name));
-                    }
+                    context.ReportDiagnostic(Diagnostic.Create(
+                        StartupAnalyzer.Diagnostics.BuildServiceProviderShouldNotCalledInConfigureServicesMethod,
+                        serviceItem.Operation.Syntax.GetLocation(),
+                        serviceItem.UseMethod.Name,
+                        serviceAnalysis.ConfigureServicesMethod.Name));
                 }
             }
         }

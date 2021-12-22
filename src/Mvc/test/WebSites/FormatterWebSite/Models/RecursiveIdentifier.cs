@@ -6,24 +6,23 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
-namespace FormatterWebSite
+namespace FormatterWebSite;
+
+// A System.Security.Principal.SecurityIdentifier like type that works on xplat
+public class RecursiveIdentifier : IValidatableObject
 {
-    // A System.Security.Principal.SecurityIdentifier like type that works on xplat
-    public class RecursiveIdentifier : IValidatableObject
+    public RecursiveIdentifier(string identifier)
     {
-        public RecursiveIdentifier(string identifier)
-        {
-            Value = identifier;
-        }
+        Value = identifier;
+    }
 
-        [Required]
-        public string Value { get; }
+    [Required]
+    public string Value { get; }
 
-        public RecursiveIdentifier AccountIdentifier => new RecursiveIdentifier(Value);
+    public RecursiveIdentifier AccountIdentifier => new RecursiveIdentifier(Value);
 
-        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-        {
-            return Enumerable.Empty<ValidationResult>();
-        }
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        return Enumerable.Empty<ValidationResult>();
     }
 }

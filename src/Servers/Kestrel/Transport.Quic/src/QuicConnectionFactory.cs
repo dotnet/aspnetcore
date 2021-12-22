@@ -14,37 +14,36 @@ using Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic;
+
+// Not used anywhere. Remove?
+internal class QuicConnectionFactory : IMultiplexedConnectionFactory
 {
-    // Not used anywhere. Remove?
-    internal class QuicConnectionFactory : IMultiplexedConnectionFactory
+    private readonly QuicTransportContext _transportContext;
+
+    public QuicConnectionFactory(IOptions<QuicTransportOptions> options, ILoggerFactory loggerFactory)
     {
-        private readonly QuicTransportContext _transportContext;
-
-        public QuicConnectionFactory(IOptions<QuicTransportOptions> options, ILoggerFactory loggerFactory)
+        if (options == null)
         {
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
-
-            var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Client");
-
-            _transportContext = new QuicTransportContext(logger, options.Value);
+            throw new ArgumentNullException(nameof(options));
         }
 
-        public async ValueTask<MultiplexedConnectionContext> ConnectAsync(EndPoint endPoint, IFeatureCollection? features = null, CancellationToken cancellationToken = default)
+        var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Client");
+
+        _transportContext = new QuicTransportContext(logger, options.Value);
+    }
+
+    public async ValueTask<MultiplexedConnectionContext> ConnectAsync(EndPoint endPoint, IFeatureCollection? features = null, CancellationToken cancellationToken = default)
+    {
+        if (endPoint is not IPEndPoint)
         {
-            if (endPoint is not IPEndPoint)
-            {
-                throw new NotSupportedException($"{endPoint} is not supported");
-            }
-
-            var sslOptions = features?.Get<SslClientAuthenticationOptions>();
-            var connection = new QuicConnection(QuicImplementationProviders.MsQuic, (IPEndPoint)endPoint, sslOptions);
-
-            await connection.ConnectAsync(cancellationToken);
-            return new QuicConnectionContext(connection, _transportContext);
+            throw new NotSupportedException($"{endPoint} is not supported");
         }
+
+        var sslOptions = features?.Get<SslClientAuthenticationOptions>();
+        var connection = new QuicConnection(QuicImplementationProviders.MsQuic, (IPEndPoint)endPoint, sslOptions);
+
+        await connection.ConnectAsync(cancellationToken);
+        return new QuicConnectionContext(connection, _transportContext);
     }
 }

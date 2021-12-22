@@ -4,14 +4,13 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace RazorPagesWebSite
+namespace RazorPagesWebSite;
+
+public class SetTempDataOnPageModelAndRedirect : PageModel
 {
-    public class SetTempDataOnPageModelAndRedirect : PageModel
+    public IActionResult OnGet(string message)
     {
-        public IActionResult OnGet(string message)
-        {
-            TempData["Message"] = message;
-            return Redirect("~/TempData/ShowMessage");
-        }
+        TempData["Message"] = message;
+        return Redirect("~/TempData/ShowMessage");
     }
 }

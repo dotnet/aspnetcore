@@ -9,32 +9,31 @@ using Microsoft.AspNetCore.Routing.Constraints;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Routing.Tests
+namespace Microsoft.AspNetCore.Routing.Tests;
+
+public class BoolRouteConstraintTests
 {
-    public class BoolRouteConstraintTests
+    [Theory]
+    [InlineData("true", true)]
+    [InlineData("TruE", true)]
+    [InlineData("false", true)]
+    [InlineData("FalSe", true)]
+    [InlineData(" FalSe", true)]
+    [InlineData("True ", true)]
+    [InlineData(" False ", true)]
+    [InlineData(true, true)]
+    [InlineData(false, true)]
+    [InlineData(1, false)]
+    [InlineData("not-parseable-as-bool", false)]
+    public void BoolRouteConstraint(object parameterValue, bool expected)
     {
-        [Theory]
-        [InlineData("true", true)]
-        [InlineData("TruE", true)]
-        [InlineData("false", true)]
-        [InlineData("FalSe", true)]
-        [InlineData(" FalSe", true)]
-        [InlineData("True ", true)]
-        [InlineData(" False ", true)]
-        [InlineData(true, true)]
-        [InlineData(false, true)]
-        [InlineData(1, false)]
-        [InlineData("not-parseable-as-bool", false)]
-        public void BoolRouteConstraint(object parameterValue, bool expected)
-        {
-            // Arrange
-            var constraint = new BoolRouteConstraint();
+        // Arrange
+        var constraint = new BoolRouteConstraint();
 
-            // Act
-            var actual = ConstraintsTestHelper.TestConstraint(constraint, parameterValue);
+        // Act
+        var actual = ConstraintsTestHelper.TestConstraint(constraint, parameterValue);
 
-            // Assert
-            Assert.Equal(expected, actual);
-        }
+        // Assert
+        Assert.Equal(expected, actual);
     }
 }

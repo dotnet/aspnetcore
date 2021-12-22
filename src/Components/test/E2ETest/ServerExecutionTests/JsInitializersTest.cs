@@ -9,16 +9,15 @@ using OpenQA.Selenium;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
+namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests;
+
+public class ServerJsInitializersTest : JsInitializersTest
 {
-    public class ServerJsInitializersTest : JsInitializersTest
+    public ServerJsInitializersTest(
+        BrowserFixture browserFixture,
+        ToggleExecutionModeServerFixture<Program> serverFixture,
+        ITestOutputHelper output)
+        : base(browserFixture, serverFixture.WithServerExecution(), output)
     {
-        public ServerJsInitializersTest(
-            BrowserFixture browserFixture,
-            ToggleExecutionModeServerFixture<Program> serverFixture,
-            ITestOutputHelper output)
-            : base(browserFixture, serverFixture.WithServerExecution(), output)
-        {
-        }
     }
 }

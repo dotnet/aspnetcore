@@ -6,74 +6,73 @@ using System.Threading;
 using System.Threading.Tasks;
 
 #nullable enable
-namespace Ignitor
+namespace Ignitor;
+
+internal class CancellableOperation<TResult>
 {
-    internal class CancellableOperation<TResult>
+    public CancellableOperation(TimeSpan? timeout, CancellationToken cancellationToken)
     {
-        public CancellableOperation(TimeSpan? timeout, CancellationToken cancellationToken)
-        {
-            Timeout = timeout;
+        Timeout = timeout;
 
-            Completion = new TaskCompletionSource<TResult>(TaskCreationOptions.RunContinuationsAsynchronously);
-            Completion.Task.ContinueWith(
-                (task, state) =>
-                {
-                    var operation = (CancellableOperation<TResult>)state!;
-                    operation.Dispose();
-                },
-                this,
-                cancellationToken,
-                TaskContinuationOptions.ExecuteSynchronously, // We need to execute synchronously to clean-up before anything else continues
-                TaskScheduler.Default);
-
-            Cancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-
-            if (Timeout != null && Timeout != System.Threading.Timeout.InfiniteTimeSpan && Timeout != TimeSpan.MaxValue)
+        Completion = new TaskCompletionSource<TResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+        Completion.Task.ContinueWith(
+            (task, state) =>
             {
-                Cancellation.CancelAfter(Timeout.Value);
-            }
+                var operation = (CancellableOperation<TResult>)state!;
+                operation.Dispose();
+            },
+            this,
+            cancellationToken,
+            TaskContinuationOptions.ExecuteSynchronously, // We need to execute synchronously to clean-up before anything else continues
+            TaskScheduler.Default);
 
-            CancellationRegistration = Cancellation.Token.Register(
-                (self) =>
+        Cancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+
+        if (Timeout != null && Timeout != System.Threading.Timeout.InfiniteTimeSpan && Timeout != TimeSpan.MaxValue)
+        {
+            Cancellation.CancelAfter(Timeout.Value);
+        }
+
+        CancellationRegistration = Cancellation.Token.Register(
+            (self) =>
+            {
+                var operation = (CancellableOperation<TResult>)self!;
+
+                if (cancellationToken.IsCancellationRequested)
                 {
-                    var operation = (CancellableOperation<TResult>)self!;
-
-                    if (cancellationToken.IsCancellationRequested)
-                    {
                         // The operation was externally canceled before it timed out.
                         Dispose();
-                        return;
-                    }
+                    return;
+                }
 
-                    operation.Completion.TrySetException(new TimeoutException($"The operation timed out after {Timeout}."));
-                    operation.Cancellation?.Dispose();
-                    operation.CancellationRegistration.Dispose();
-                },
-                this);
-        }
+                operation.Completion.TrySetException(new TimeoutException($"The operation timed out after {Timeout}."));
+                operation.Cancellation?.Dispose();
+                operation.CancellationRegistration.Dispose();
+            },
+            this);
+    }
 
-        public TimeSpan? Timeout { get; }
+    public TimeSpan? Timeout { get; }
 
-        public TaskCompletionSource<TResult> Completion { get; }
+    public TaskCompletionSource<TResult> Completion { get; }
 
-        public CancellationTokenSource Cancellation { get; }
+    public CancellationTokenSource Cancellation { get; }
 
-        public CancellationTokenRegistration CancellationRegistration { get; }
+    public CancellationTokenRegistration CancellationRegistration { get; }
 
-        public bool Disposed { get; private set; }
+    public bool Disposed { get; private set; }
 
-        private void Dispose()
+    private void Dispose()
+    {
+        if (Disposed)
         {
-            if (Disposed)
-            {
-                return;
-            }
-
-            Disposed = true;
-            Completion.TrySetCanceled(Cancellation.Token);
-            Cancellation.Dispose();
-            CancellationRegistration.Dispose();
+            return;
         }
+
+        Disposed = true;
+        Completion.TrySetCanceled(Cancellation.Token);
+        Cancellation.Dispose();
+        CancellationRegistration.Dispose();
     }
 }
 #nullable restore

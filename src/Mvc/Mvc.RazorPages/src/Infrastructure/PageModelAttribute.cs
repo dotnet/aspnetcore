@@ -3,14 +3,13 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
+namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
+
+/// <summary>
+/// An attribute for base classes for page models. Applying this attribute to a type
+/// marks all subclasses of that type as page model types.
+/// </summary>
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
+public class PageModelAttribute : Attribute
 {
-    /// <summary>
-    /// An attribute for base classes for page models. Applying this attribute to a type
-    /// marks all subclasses of that type as page model types.
-    /// </summary>
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
-    public class PageModelAttribute : Attribute
-    {
-    }
 }

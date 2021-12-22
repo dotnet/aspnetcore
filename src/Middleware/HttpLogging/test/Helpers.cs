@@ -3,23 +3,22 @@
 
 using System.IO;
 
-namespace Microsoft.AspNetCore.HttpLogging
+namespace Microsoft.AspNetCore.HttpLogging;
+
+public class Helpers
 {
-    public class Helpers
+    public static void DisposeDirectory(string path)
     {
-        public static void DisposeDirectory(string path)
+        try
         {
-            try
+            if (Directory.Exists(path))
             {
-                if (Directory.Exists(path))
-                {
-                    Directory.Delete(path, true);
-                }
+                Directory.Delete(path, true);
             }
-            catch
-            {
-                // ignored
-            }
+        }
+        catch
+        {
+            // ignored
         }
     }
 }

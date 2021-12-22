@@ -4,26 +4,25 @@
 using System.Buffers;
 using Xunit;
 
-namespace Microsoft.Extensions.Internal.Test
+namespace Microsoft.Extensions.Internal.Test;
+
+public class PinnedBlockMemoryPoolTests : MemoryPoolTests
 {
-    public  class PinnedBlockMemoryPoolTests: MemoryPoolTests
+    protected override MemoryPool<byte> CreatePool() => new PinnedBlockMemoryPool();
+
+    [Fact]
+    public void DoubleDisposeWorks()
     {
-        protected override MemoryPool<byte> CreatePool() => new PinnedBlockMemoryPool();
+        var memoryPool = CreatePool();
+        memoryPool.Dispose();
+        memoryPool.Dispose();
+    }
 
-        [Fact]
-        public void DoubleDisposeWorks()
-        {
-            var memoryPool = CreatePool();
-            memoryPool.Dispose();
-            memoryPool.Dispose();
-        }
-
-        [Fact]
-        public void DisposeWithActiveBlocksWorks()
-        {
-            var memoryPool = CreatePool();
-            var block = memoryPool.Rent();
-            memoryPool.Dispose();
-        }
+    [Fact]
+    public void DisposeWithActiveBlocksWorks()
+    {
+        var memoryPool = CreatePool();
+        var block = memoryPool.Rent();
+        memoryPool.Dispose();
     }
 }

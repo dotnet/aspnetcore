@@ -14,8 +14,9 @@
     <SkipTests Condition="'$(SeleniumE2ETestsSupported)' != 'true'">true</SkipTests>
     <SkipTests Condition="'$(SeleniumE2ETestsSupported)' == 'true'">false</SkipTests>
 
-    <!-- Until we resolve reliability issues, we're disabling these E2E tests in the main CI job -->
-    <SkipTests Condition="'$(SkipComponentsE2ETests)' == 'true'">true</SkipTests>
+    <!-- Skip building and running the Components E2E tests in CI unless explicitly configured otherwise via EXECUTE_COMPONENTS_E2E_TESTS -->
+    <ExcludeFromBuild Condition="'$(ContinuousIntegrationBuild)' == 'true' and '$(EXECUTE_COMPONENTS_E2E_TESTS)' != 'true'">true</ExcludeFromBuild>
+    <SkipTests Condition="'$(ContinuousIntegrationBuild)' == 'true' and '$(EXECUTE_COMPONENTS_E2E_TESTS)' != 'true'">true</SkipTests>
 
     <!-- Tests do not work on Helix or when bin/ directory is not in project directory due to undeclared dependency on test content. -->
     <BaseOutputPath />

@@ -1,8 +1,0 @@
-RazorDocument - [0..4)::4 - [<!p>]
-    MarkupBlock - [0..4)::4
-        MarkupElement - [0..4)::4
-            MarkupStartTag - [0..4)::4 - [<!p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                OpenAngle;[<];
-                Bang;[!];
-                Text;[p];
-                CloseAngle;[>];

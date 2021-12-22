@@ -3,29 +3,28 @@
 
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
+namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
+
+public class BindingSourceMetadataProviderTests
 {
-    public class BindingSourceMetadataProviderTests
+    [Fact]
+    public void CreateBindingMetadata_ForMatchingType_SetsBindingSource()
     {
-        [Fact]
-        public void CreateBindingMetadata_ForMatchingType_SetsBindingSource()
-        {
-            // Arrange
-            var provider = new BindingSourceMetadataProvider(typeof(Test), BindingSource.Special);
+        // Arrange
+        var provider = new BindingSourceMetadataProvider(typeof(Test), BindingSource.Special);
 
-            var key = ModelMetadataIdentity.ForType(typeof(Test));
+        var key = ModelMetadataIdentity.ForType(typeof(Test));
 
-            var context = new BindingMetadataProviderContext(key, new ModelAttributes(new object[0], new object[0], null));
+        var context = new BindingMetadataProviderContext(key, new ModelAttributes(new object[0], new object[0], null));
 
-            // Act
-            provider.CreateBindingMetadata(context);
+        // Act
+        provider.CreateBindingMetadata(context);
 
-            // Assert
-            Assert.Equal(BindingSource.Special, context.BindingMetadata.BindingSource);
-        }
+        // Assert
+        Assert.Equal(BindingSource.Special, context.BindingMetadata.BindingSource);
+    }
 
-        private class Test
-        {
-        }
+    private class Test
+    {
     }
 }

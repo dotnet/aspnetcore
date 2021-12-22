@@ -3,14 +3,13 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace FormatterWebSite.Controllers
+namespace FormatterWebSite.Controllers;
+
+public class RespectBrowserAcceptHeaderController : Controller
 {
-    public class RespectBrowserAcceptHeaderController : Controller
+    [HttpGet]
+    public string ReturnString()
     {
-        [HttpGet]
-        public string ReturnString()
-        {
-            return "Hello World!";
-        }
+        return "Hello World!";
     }
 }

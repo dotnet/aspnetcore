@@ -13,82 +13,81 @@ using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.IIS.IISExpress.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.IISExpress.FunctionalTests;
+
+[Collection(PublishedSitesCollection.Name)]
+public class IISExpressShutdownTests : IISFunctionalTestBase
 {
-    [Collection(PublishedSitesCollection.Name)]
-    public class IISExpressShutdownTests : IISFunctionalTestBase
+
+    public IISExpressShutdownTests(PublishedSitesFixture fixture) : base(fixture)
     {
+    }
 
-        public IISExpressShutdownTests(PublishedSitesFixture fixture) : base(fixture)
+    [ConditionalFact]
+    public async Task ServerShutsDownWhenMainExits()
+    {
+        var parameters = Fixture.GetBaseDeploymentParameters();
+        var deploymentResult = await DeployAsync(parameters);
+        try
         {
+            await deploymentResult.HttpClient.GetAsync("/Shutdown");
+        }
+        catch (HttpRequestException ex) when (ex.InnerException is IOException)
+        {
+            // Server might close a connection before request completes
         }
 
-        [ConditionalFact]
-        public async Task ServerShutsDownWhenMainExits()
-        {
-            var parameters = Fixture.GetBaseDeploymentParameters();
-            var deploymentResult = await DeployAsync(parameters);
-            try
-            {
-                await deploymentResult.HttpClient.GetAsync("/Shutdown");
-            }
-            catch (HttpRequestException ex) when (ex.InnerException is IOException)
-            {
-                // Server might close a connection before request completes
-            }
+        deploymentResult.AssertWorkerProcessStop();
+    }
 
-            deploymentResult.AssertWorkerProcessStop();
+
+    [ConditionalFact]
+    public async Task ServerShutsDownWhenMainExitsStress()
+    {
+        var parameters = Fixture.GetBaseDeploymentParameters();
+        var deploymentResult = await StartAsync(parameters);
+
+        var load = Helpers.StressLoad(deploymentResult.HttpClient, "/HelloWorld", response =>
+        {
+            var statusCode = (int)response.StatusCode;
+            Assert.True(statusCode == 200 || statusCode == 503, "Status code was " + statusCode);
+        });
+
+        try
+        {
+            await deploymentResult.HttpClient.GetAsync("/Shutdown");
+            await load;
+        }
+        catch (HttpRequestException ex) when (ex.InnerException is IOException | ex.InnerException is SocketException)
+        {
+            // Server might close a connection before request completes
         }
 
+        deploymentResult.AssertWorkerProcessStop();
+    }
 
-        [ConditionalFact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/28994")]
-        public async Task ServerShutsDownWhenMainExitsStress()
-        {
-            var parameters = Fixture.GetBaseDeploymentParameters();
-            var deploymentResult = await StartAsync(parameters);
+    [ConditionalFact]
+    [SkipNonHelix("https://github.com/dotnet/aspnetcore/issues/25107")]
+    public async Task GracefulShutdown_DoesNotCrashProcess()
+    {
+        var parameters = Fixture.GetBaseDeploymentParameters();
+        var result = await DeployAsync(parameters);
 
-            var load = Helpers.StressLoad(deploymentResult.HttpClient, "/HelloWorld", response => {
-                var statusCode = (int)response.StatusCode;
-                Assert.True(statusCode == 200 || statusCode == 503, "Status code was " + statusCode);
-            });
+        var response = await result.HttpClient.GetAsync("/HelloWorld");
+        response.EnsureSuccessStatusCode();
+        StopServer(gracefulShutdown: true);
+        Assert.True(result.HostProcess.ExitCode == 0);
+    }
 
-            try
-            {
-                await deploymentResult.HttpClient.GetAsync("/Shutdown");
-                await load;
-            }
-            catch (HttpRequestException ex) when (ex.InnerException is IOException | ex.InnerException is SocketException)
-            {
-                // Server might close a connection before request completes
-            }
+    [ConditionalFact]
+    public async Task ForcefulShutdown_DoesCrashProcess()
+    {
+        var parameters = Fixture.GetBaseDeploymentParameters();
+        var result = await DeployAsync(parameters);
 
-            deploymentResult.AssertWorkerProcessStop();
-        }
-
-        [ConditionalFact]
-        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
-        public async Task GracefulShutdown_DoesNotCrashProcess()
-        {
-            var parameters = Fixture.GetBaseDeploymentParameters();
-            var result = await DeployAsync(parameters);
-
-            var response = await result.HttpClient.GetAsync("/HelloWorld");
-            response.EnsureSuccessStatusCode();
-            StopServer(gracefulShutdown: true);
-            Assert.True(result.HostProcess.ExitCode == 0);
-        }
-
-        [ConditionalFact]
-        public async Task ForcefulShutdown_DoesCrashProcess()
-        {
-            var parameters = Fixture.GetBaseDeploymentParameters();
-            var result = await DeployAsync(parameters);
-
-            var response = await result.HttpClient.GetAsync("/HelloWorld");
-            response.EnsureSuccessStatusCode();
-            StopServer(gracefulShutdown: false);
-            Assert.True(result.HostProcess.ExitCode == 1);
-        }
+        var response = await result.HttpClient.GetAsync("/HelloWorld");
+        response.EnsureSuccessStatusCode();
+        StopServer(gracefulShutdown: false);
+        Assert.True(result.HostProcess.ExitCode == 1);
     }
 }

@@ -9,22 +9,21 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.Patterns;
 
-namespace Microsoft.AspNetCore.Builder
+namespace Microsoft.AspNetCore.Builder;
+
+public static class EndpointRouteBuilderExtensions
 {
-    public static class EndpointRouteBuilderExtensions
+    public static IEndpointConventionBuilder MapHello(this IEndpointRouteBuilder endpoints, string template, string greeter)
     {
-        public static IEndpointConventionBuilder MapHello(this IEndpointRouteBuilder endpoints, string template, string greeter)
+        if (endpoints == null)
         {
-            if (endpoints == null)
-            {
-                throw new ArgumentNullException(nameof(endpoints));
-            }
-
-            var pipeline = endpoints.CreateApplicationBuilder()
-               .UseHello(greeter)
-               .Build();
-
-            return endpoints.Map(template, pipeline).WithDisplayName("Hello " + greeter);
+            throw new ArgumentNullException(nameof(endpoints));
         }
+
+        var pipeline = endpoints.CreateApplicationBuilder()
+           .UseHello(greeter)
+           .Build();
+
+        return endpoints.Map(template, pipeline).WithDisplayName("Hello " + greeter);
     }
 }

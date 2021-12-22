@@ -3,14 +3,13 @@
 
 using System.Text.Json;
 
-namespace BasicTestApp
+namespace BasicTestApp;
+
+internal static class TestJsonSerializerOptionsProvider
 {
-    internal static class TestJsonSerializerOptionsProvider
+    public static JsonSerializerOptions Options { get; } = new JsonSerializerOptions
     {
-        public static JsonSerializerOptions Options { get; } = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            PropertyNameCaseInsensitive = true,
-        };
-    }
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        PropertyNameCaseInsensitive = true,
+    };
 }

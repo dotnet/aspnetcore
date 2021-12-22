@@ -5,28 +5,27 @@ using System;
 using Microsoft.AspNetCore.Rewrite.ApacheModRewrite;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
+namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite;
+
+public class RuleRegexParserTest
 {
-    public class RuleRegexParserTest
+    [Fact]
+    public void RuleRegexParser_ShouldThrowOnNull()
     {
-        [Fact]
-        public void RuleRegexParser_ShouldThrowOnNull()
-        {
-            Assert.Throws<FormatException>(() => new RuleRegexParser().ParseRuleRegex(null));
-        }
+        Assert.Throws<FormatException>(() => new RuleRegexParser().ParseRuleRegex(null));
+    }
 
-        [Fact]
-        public void RuleRegexParser_ShouldThrowOnEmpty()
-        {
-            Assert.Throws<FormatException>(() => new RuleRegexParser().ParseRuleRegex(string.Empty));
-        }
+    [Fact]
+    public void RuleRegexParser_ShouldThrowOnEmpty()
+    {
+        Assert.Throws<FormatException>(() => new RuleRegexParser().ParseRuleRegex(string.Empty));
+    }
 
-        [Fact]
-        public void RuleRegexParser_RegularRegexExpression()
-        {
-            var results = new RuleRegexParser().ParseRuleRegex("(.*)");
-            Assert.False(results.Invert);
-            Assert.Equal("(.*)", results.Operand);
-        }
+    [Fact]
+    public void RuleRegexParser_RegularRegexExpression()
+    {
+        var results = new RuleRegexParser().ParseRuleRegex("(.*)");
+        Assert.False(results.Invert);
+        Assert.Equal("(.*)", results.Operand);
     }
 }

@@ -3,23 +3,22 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Components.Forms
+namespace Microsoft.AspNetCore.Components.Forms;
+
+/// <summary>
+/// Provides information about the <see cref="EditContext.OnValidationRequested"/> event.
+/// </summary>
+public sealed class ValidationRequestedEventArgs : EventArgs
 {
     /// <summary>
-    /// Provides information about the <see cref="EditContext.OnValidationRequested"/> event.
+    /// Gets a shared empty instance of <see cref="ValidationRequestedEventArgs"/>.
     /// </summary>
-    public sealed class ValidationRequestedEventArgs : EventArgs
-    {
-        /// <summary>
-        /// Gets a shared empty instance of <see cref="ValidationRequestedEventArgs"/>.
-        /// </summary>
-        public static new readonly ValidationRequestedEventArgs Empty = new ValidationRequestedEventArgs();
+    public static new readonly ValidationRequestedEventArgs Empty = new ValidationRequestedEventArgs();
 
-        /// <summary>
-        /// Creates a new instance of <see cref="ValidationRequestedEventArgs"/>.
-        /// </summary>
-        public ValidationRequestedEventArgs()
-        {
-        }
+    /// <summary>
+    /// Creates a new instance of <see cref="ValidationRequestedEventArgs"/>.
+    /// </summary>
+    public ValidationRequestedEventArgs()
+    {
     }
 }

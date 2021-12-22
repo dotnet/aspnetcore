@@ -3,16 +3,15 @@
 
 using System;
 
-namespace ApplicationModelWebSite
-{
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-    public class CloneActionAttribute : Attribute
-    {
-        public CloneActionAttribute(string newActionName)
-        {
-            ActionName = newActionName;
-        }
+namespace ApplicationModelWebSite;
 
-        public string ActionName { get; private set; }
+[AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
+public class CloneActionAttribute : Attribute
+{
+    public CloneActionAttribute(string newActionName)
+    {
+        ActionName = newActionName;
     }
+
+    public string ActionName { get; private set; }
 }

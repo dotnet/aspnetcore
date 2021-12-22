@@ -5,84 +5,83 @@ using System;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Microsoft.AspNetCore.DataProtection
+namespace Microsoft.AspNetCore.DataProtection;
+
+internal class TypeForwardingActivator : SimpleActivator
 {
-    internal class TypeForwardingActivator : SimpleActivator
+    private const string OldNamespace = "Microsoft.AspNet.DataProtection";
+    private const string CurrentNamespace = "Microsoft.AspNetCore.DataProtection";
+    private readonly ILogger _logger;
+
+    public TypeForwardingActivator(IServiceProvider services)
+        : this(services, NullLoggerFactory.Instance)
     {
-        private const string OldNamespace = "Microsoft.AspNet.DataProtection";
-        private const string CurrentNamespace = "Microsoft.AspNetCore.DataProtection";
-        private readonly ILogger _logger;
+    }
 
-        public TypeForwardingActivator(IServiceProvider services)
-            : this(services, NullLoggerFactory.Instance)
+    public TypeForwardingActivator(IServiceProvider services, ILoggerFactory loggerFactory)
+        : base(services)
+    {
+        _logger = loggerFactory.CreateLogger(typeof(TypeForwardingActivator));
+    }
+
+    public override object CreateInstance(Type expectedBaseType, string originalTypeName)
+        => CreateInstance(expectedBaseType, originalTypeName, out var _);
+
+    // for testing
+    internal object CreateInstance(Type expectedBaseType, string originalTypeName, out bool forwarded)
+    {
+        var forwardedTypeName = originalTypeName;
+        var candidate = false;
+        if (originalTypeName.Contains(OldNamespace))
         {
+            candidate = true;
+            forwardedTypeName = originalTypeName.Replace(OldNamespace, CurrentNamespace);
         }
 
-        public TypeForwardingActivator(IServiceProvider services, ILoggerFactory loggerFactory)
-            : base(services)
+        if (candidate || forwardedTypeName.StartsWith(CurrentNamespace + ".", StringComparison.Ordinal))
         {
-            _logger = loggerFactory.CreateLogger(typeof(TypeForwardingActivator));
+            candidate = true;
+            forwardedTypeName = RemoveVersionFromAssemblyName(forwardedTypeName);
         }
 
-        public override object CreateInstance(Type expectedBaseType, string originalTypeName)
-            => CreateInstance(expectedBaseType, originalTypeName, out var _);
-
-        // for testing
-        internal object CreateInstance(Type expectedBaseType, string originalTypeName, out bool forwarded)
+        if (candidate)
         {
-            var forwardedTypeName = originalTypeName;
-            var candidate = false;
-            if (originalTypeName.Contains(OldNamespace))
+            var type = Type.GetType(forwardedTypeName, false);
+            if (type != null)
             {
-                candidate = true;
-                forwardedTypeName = originalTypeName.Replace(OldNamespace, CurrentNamespace);
+                _logger.LogDebug("Forwarded activator type request from {FromType} to {ToType}",
+                    originalTypeName,
+                    forwardedTypeName);
+                forwarded = true;
+                return base.CreateInstance(expectedBaseType, forwardedTypeName);
             }
-
-            if (candidate || forwardedTypeName.StartsWith(CurrentNamespace + ".", StringComparison.Ordinal))
-            {
-                candidate = true;
-                forwardedTypeName = RemoveVersionFromAssemblyName(forwardedTypeName);
-            }
-
-            if (candidate)
-            {
-                var type = Type.GetType(forwardedTypeName, false);
-                if (type != null)
-                {
-                    _logger.LogDebug("Forwarded activator type request from {FromType} to {ToType}",
-                        originalTypeName,
-                        forwardedTypeName);
-                    forwarded = true;
-                    return base.CreateInstance(expectedBaseType, forwardedTypeName);
-                }
-            }
-
-            forwarded = false;
-            return base.CreateInstance(expectedBaseType, originalTypeName);
         }
 
-        protected static string RemoveVersionFromAssemblyName(string forwardedTypeName)
+        forwarded = false;
+        return base.CreateInstance(expectedBaseType, originalTypeName);
+    }
+
+    protected static string RemoveVersionFromAssemblyName(string forwardedTypeName)
+    {
+        // Type, Assembly, Version={Version}, Culture={Culture}, PublicKeyToken={Token}
+
+        var versionStartIndex = forwardedTypeName.IndexOf(", Version=", StringComparison.Ordinal);
+        while (versionStartIndex != -1)
         {
-            // Type, Assembly, Version={Version}, Culture={Culture}, PublicKeyToken={Token}
+            var versionEndIndex = forwardedTypeName.IndexOf(',', versionStartIndex + ", Version=".Length);
 
-            var versionStartIndex = forwardedTypeName.IndexOf(", Version=", StringComparison.Ordinal);
-            while (versionStartIndex != -1)
+            if (versionEndIndex == -1)
             {
-                var versionEndIndex = forwardedTypeName.IndexOf(',', versionStartIndex + ", Version=".Length);
-
-                if (versionEndIndex == -1)
-                {
-                    // No end index, so are done and can remove the rest
-                    return forwardedTypeName.Substring(0, versionStartIndex);
-                }
-
-                forwardedTypeName = forwardedTypeName.Remove(versionStartIndex, versionEndIndex - versionStartIndex);
-                versionStartIndex = forwardedTypeName.IndexOf(", Version=", StringComparison.Ordinal);
+                // No end index, so are done and can remove the rest
+                return forwardedTypeName.Substring(0, versionStartIndex);
             }
 
-            // No version left
-            return forwardedTypeName;
-
+            forwardedTypeName = forwardedTypeName.Remove(versionStartIndex, versionEndIndex - versionStartIndex);
+            versionStartIndex = forwardedTypeName.IndexOf(", Version=", StringComparison.Ordinal);
         }
+
+        // No version left
+        return forwardedTypeName;
+
     }
 }

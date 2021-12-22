@@ -1,3 +1,0 @@
-#nullable enable
-Microsoft.AspNetCore.Mvc.Razor.Extensions.MvcViewDocumentClassifierPass.MvcViewDocumentClassifierPass(bool useConsolidatedMvcViews) -> void
-Microsoft.AspNetCore.Mvc.Razor.Extensions.RazorPageDocumentClassifierPass.RazorPageDocumentClassifierPass(bool useConsolidatedMvcViews) -> void

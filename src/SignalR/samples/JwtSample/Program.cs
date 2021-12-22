@@ -7,29 +7,28 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace JwtSample
+namespace JwtSample;
+
+public class Program
 {
-    public class Program
+    public static Task Main(string[] args)
     {
-        public static Task Main(string[] args)
-        {
-            return Host.CreateDefaultBuilder(args)
-                .ConfigureWebHost(webHostBuilder =>
+        return Host.CreateDefaultBuilder(args)
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .ConfigureLogging(factory =>
                 {
-                    webHostBuilder
-                    .ConfigureLogging(factory =>
-                    {
-                        factory.AddConsole();
-                        factory.AddFilter("Console", level => level >= LogLevel.Information);
-                        factory.AddDebug();
-                    })
-                    .UseKestrel()
-                    .UseContentRoot(Directory.GetCurrentDirectory())
-                    .UseIISIntegration()
-                    .UseStartup<Startup>();
+                    factory.AddConsole();
+                    factory.AddFilter("Console", level => level >= LogLevel.Information);
+                    factory.AddDebug();
                 })
-                .Build()
-                .RunAsync();
-        }
+                .UseKestrel()
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseIISIntegration()
+                .UseStartup<Startup>();
+            })
+            .Build()
+            .RunAsync();
     }
 }

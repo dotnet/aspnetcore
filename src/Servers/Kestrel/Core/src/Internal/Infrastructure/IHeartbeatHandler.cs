@@ -3,10 +3,9 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+
+internal interface IHeartbeatHandler
 {
-    internal interface IHeartbeatHandler
-    {
-        void OnHeartbeat(DateTimeOffset now);
-    }
+    void OnHeartbeat(DateTimeOffset now);
 }

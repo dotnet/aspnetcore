@@ -5,26 +5,25 @@ using System.Threading;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Primitives;
 
-namespace ApiExplorerWebSite
+namespace ApiExplorerWebSite;
+
+public class ActionDescriptorChangeProvider : IActionDescriptorChangeProvider
 {
-    public class ActionDescriptorChangeProvider : IActionDescriptorChangeProvider
+    public ActionDescriptorChangeProvider(WellKnownChangeToken changeToken)
     {
-        public ActionDescriptorChangeProvider(WellKnownChangeToken changeToken)
+        ChangeToken = changeToken;
+    }
+
+    public WellKnownChangeToken ChangeToken { get; }
+
+    public IChangeToken GetChangeToken()
+    {
+        if (ChangeToken.TokenSource.IsCancellationRequested)
         {
-            ChangeToken = changeToken;
+            var changeTokenSource = new CancellationTokenSource();
+            return new CancellationChangeToken(changeTokenSource.Token);
         }
 
-        public WellKnownChangeToken ChangeToken { get; }
-
-        public IChangeToken GetChangeToken()
-        {
-            if (ChangeToken.TokenSource.IsCancellationRequested)
-            {
-                var changeTokenSource = new CancellationTokenSource();
-                return new CancellationChangeToken(changeTokenSource.Token);
-            }
-
-            return new CancellationChangeToken(ChangeToken.TokenSource.Token);
-        }
+        return new CancellationChangeToken(ChangeToken.TokenSource.Token);
     }
 }

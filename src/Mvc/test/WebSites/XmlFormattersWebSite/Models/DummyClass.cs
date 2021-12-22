@@ -1,10 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace XmlFormattersWebSite
+namespace XmlFormattersWebSite;
+
+public class DummyClass
 {
-    public class DummyClass
-    {
-        public int SampleInt { get; set; }
-    }
+    public int SampleInt { get; set; }
 }

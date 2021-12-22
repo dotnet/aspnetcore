@@ -7,22 +7,21 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
-namespace TestServer
+namespace TestServer;
+
+public class ResourceRequestLog
 {
-    public class ResourceRequestLog
+    private readonly List<string> _requestPaths = new List<string>();
+
+    public IReadOnlyCollection<string> RequestPaths => _requestPaths;
+
+    public void AddRequest(HttpRequest request)
     {
-        private readonly List<string> _requestPaths = new List<string>();
+        _requestPaths.Add(request.Path);
+    }
 
-        public IReadOnlyCollection<string> RequestPaths => _requestPaths;
-
-        public void AddRequest(HttpRequest request)
-        {
-            _requestPaths.Add(request.Path);
-        }
-
-        public void Clear()
-        {
-            _requestPaths.Clear();
-        }
+    public void Clear()
+    {
+        _requestPaths.Clear();
     }
 }

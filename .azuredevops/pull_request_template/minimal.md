@@ -1,7 +1,7 @@
 # {PR title}
 
 <!--
-  Use for tell mode PRs after removing servicing template. Ignoring internal PRs targeting main (extreme corner case).
+  Use for tell mode PRs after removing servicing template.
 -->
 
 Summary of the changes (Less than 80 chars)

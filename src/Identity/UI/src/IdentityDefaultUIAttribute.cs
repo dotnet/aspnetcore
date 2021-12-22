@@ -3,16 +3,15 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Identity.UI
-{
-    [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-    internal sealed class IdentityDefaultUIAttribute : Attribute
-    {
-        public IdentityDefaultUIAttribute(Type implementationTemplate)
-        {
-            Template = implementationTemplate;
-        }
+namespace Microsoft.AspNetCore.Identity.UI;
 
-        public Type Template { get; }
+[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+internal sealed class IdentityDefaultUIAttribute : Attribute
+{
+    public IdentityDefaultUIAttribute(Type implementationTemplate)
+    {
+        Template = implementationTemplate;
     }
+
+    public Type Template { get; }
 }

@@ -3,12 +3,11 @@
 
 using System.Collections.Generic;
 
-namespace FormatterWebSite
-{
-    public class Product
-    {
-        public string Name { get; set; }
+namespace FormatterWebSite;
 
-        public List<Review> Reviews { get; set; } = new List<Review>();
-    }
+public class Product
+{
+    public string Name { get; set; }
+
+    public List<Review> Reviews { get; set; } = new List<Review>();
 }

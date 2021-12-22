@@ -3,10 +3,9 @@
 
 using Microsoft.AspNetCore.SignalR.Protocol;
 
-namespace Ignitor
+namespace Ignitor;
+
+public class IgnitorMessagePackHubProtocol : MessagePackHubProtocol, IHubProtocol
 {
-    public class IgnitorMessagePackHubProtocol : MessagePackHubProtocol, IHubProtocol
-    {
-        string IHubProtocol.Name => "blazorpack";
-    }
+    string IHubProtocol.Name => "blazorpack";
 }

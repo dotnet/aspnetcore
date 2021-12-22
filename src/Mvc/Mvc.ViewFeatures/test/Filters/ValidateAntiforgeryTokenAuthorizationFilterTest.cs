@@ -11,91 +11,90 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters;
+
+public class ValidateAntiforgeryTokenAuthorizationFilterTest
 {
-    public class ValidateAntiforgeryTokenAuthorizationFilterTest
+    [Theory]
+    [InlineData("PUT")]
+    [InlineData("POsT")]
+    [InlineData("DeLETE")]
+    [InlineData("GET")]
+    [InlineData("HEAD")]
+    [InlineData("TracE")]
+    [InlineData("OPTIONs")]
+    public async Task Filter_ValidatesAntiforgery_ForAllMethods(string httpMethod)
     {
-        [Theory]
-        [InlineData("PUT")]
-        [InlineData("POsT")]
-        [InlineData("DeLETE")]
-        [InlineData("GET")]
-        [InlineData("HEAD")]
-        [InlineData("TracE")]
-        [InlineData("OPTIONs")]
-        public async Task Filter_ValidatesAntiforgery_ForAllMethods(string httpMethod)
+        // Arrange
+        var antiforgery = new Mock<IAntiforgery>(MockBehavior.Strict);
+        antiforgery
+            .Setup(a => a.ValidateRequestAsync(It.IsAny<HttpContext>()))
+            .Returns(Task.FromResult(0))
+            .Verifiable();
+
+        var filter = new ValidateAntiforgeryTokenAuthorizationFilter(antiforgery.Object, NullLoggerFactory.Instance);
+
+        var actionContext = new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
+        actionContext.HttpContext.Request.Method = httpMethod;
+
+        var context = new AuthorizationFilterContext(actionContext, new[] { filter });
+
+        // Act
+        await filter.OnAuthorizationAsync(context);
+
+        // Assert
+        antiforgery.Verify();
+    }
+
+    [Fact]
+    public async Task Filter_SkipsAntiforgeryVerification_WhenOverridden()
+    {
+        // Arrange
+        var antiforgery = new Mock<IAntiforgery>(MockBehavior.Strict);
+        antiforgery
+            .Setup(a => a.ValidateRequestAsync(It.IsAny<HttpContext>()))
+            .Returns(Task.FromResult(0))
+            .Verifiable();
+
+        var filter = new ValidateAntiforgeryTokenAuthorizationFilter(antiforgery.Object, NullLoggerFactory.Instance);
+
+        var actionContext = new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
+        actionContext.HttpContext.Request.Method = "POST";
+
+        var context = new AuthorizationFilterContext(actionContext, new IFilterMetadata[]
         {
-            // Arrange
-            var antiforgery = new Mock<IAntiforgery>(MockBehavior.Strict);
-            antiforgery
-                .Setup(a => a.ValidateRequestAsync(It.IsAny<HttpContext>()))
-                .Returns(Task.FromResult(0))
-                .Verifiable();
-
-            var filter = new ValidateAntiforgeryTokenAuthorizationFilter(antiforgery.Object, NullLoggerFactory.Instance);
-
-            var actionContext = new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
-            actionContext.HttpContext.Request.Method = httpMethod;
-
-            var context = new AuthorizationFilterContext(actionContext, new[] { filter });
-
-            // Act
-            await filter.OnAuthorizationAsync(context);
-
-            // Assert
-            antiforgery.Verify();
-        }
-
-        [Fact]
-        public async Task Filter_SkipsAntiforgeryVerification_WhenOverridden()
-        {
-            // Arrange
-            var antiforgery = new Mock<IAntiforgery>(MockBehavior.Strict);
-            antiforgery
-                .Setup(a => a.ValidateRequestAsync(It.IsAny<HttpContext>()))
-                .Returns(Task.FromResult(0))
-                .Verifiable();
-
-            var filter = new ValidateAntiforgeryTokenAuthorizationFilter(antiforgery.Object, NullLoggerFactory.Instance);
-
-            var actionContext = new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
-            actionContext.HttpContext.Request.Method = "POST";
-
-            var context = new AuthorizationFilterContext(actionContext, new IFilterMetadata[]
-            {
                 filter,
                 new IgnoreAntiforgeryTokenAttribute(),
-            });
+        });
 
-            // Act
-            await filter.OnAuthorizationAsync(context);
+        // Act
+        await filter.OnAuthorizationAsync(context);
 
-            // Assert
-            antiforgery.Verify(a => a.ValidateRequestAsync(It.IsAny<HttpContext>()), Times.Never());
-        }
+        // Assert
+        antiforgery.Verify(a => a.ValidateRequestAsync(It.IsAny<HttpContext>()), Times.Never());
+    }
 
-        [Fact]
-        public async Task Filter_SetsFailureResult()
-        {
-            // Arrange
-            var antiforgery = new Mock<IAntiforgery>(MockBehavior.Strict);
-            antiforgery
-                .Setup(a => a.ValidateRequestAsync(It.IsAny<HttpContext>()))
-                .Throws(new AntiforgeryValidationException("Failed"))
-                .Verifiable();
+    [Fact]
+    public async Task Filter_SetsFailureResult()
+    {
+        // Arrange
+        var antiforgery = new Mock<IAntiforgery>(MockBehavior.Strict);
+        antiforgery
+            .Setup(a => a.ValidateRequestAsync(It.IsAny<HttpContext>()))
+            .Throws(new AntiforgeryValidationException("Failed"))
+            .Verifiable();
 
-            var filter = new ValidateAntiforgeryTokenAuthorizationFilter(antiforgery.Object, NullLoggerFactory.Instance);
+        var filter = new ValidateAntiforgeryTokenAuthorizationFilter(antiforgery.Object, NullLoggerFactory.Instance);
 
-            var actionContext = new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
-            actionContext.HttpContext.Request.Method = "POST";
+        var actionContext = new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
+        actionContext.HttpContext.Request.Method = "POST";
 
-            var context = new AuthorizationFilterContext(actionContext, new[] { filter });
+        var context = new AuthorizationFilterContext(actionContext, new[] { filter });
 
-            // Act
-            await filter.OnAuthorizationAsync(context);
+        // Act
+        await filter.OnAuthorizationAsync(context);
 
-            // Assert
-            Assert.IsType<AntiforgeryValidationFailedResult>(context.Result);
-        }
+        // Assert
+        Assert.IsType<AntiforgeryValidationFailedResult>(context.Result);
     }
 }

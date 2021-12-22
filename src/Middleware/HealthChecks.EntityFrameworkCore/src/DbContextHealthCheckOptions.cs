@@ -6,10 +6,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
-namespace Microsoft.Extensions.Diagnostics.HealthChecks
+namespace Microsoft.Extensions.Diagnostics.HealthChecks;
+
+internal sealed class DbContextHealthCheckOptions<TContext> where TContext : DbContext
 {
-    internal sealed class DbContextHealthCheckOptions<TContext> where TContext : DbContext
-    {
-        public Func<TContext, CancellationToken, Task<bool>>? CustomTestQuery { get; set; }
-    }
+    public Func<TContext, CancellationToken, Task<bool>>? CustomTestQuery { get; set; }
 }

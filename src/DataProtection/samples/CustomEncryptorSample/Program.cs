@@ -7,30 +7,29 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace CustomEncryptorSample
+namespace CustomEncryptorSample;
+
+public class Program
 {
-    public class Program
+    public static void Main(string[] args)
     {
-        public static void Main(string[] args)
+        var keysFolder = Path.Combine(Directory.GetCurrentDirectory(), "temp-keys");
+        using (var services = new ServiceCollection()
+            .AddLogging(o => o.AddConsole().SetMinimumLevel(LogLevel.Debug))
+            .AddDataProtection()
+            .PersistKeysToFileSystem(new DirectoryInfo(keysFolder))
+            .UseXmlEncryptor(s => new CustomXmlEncryptor(s))
+            .Services.BuildServiceProvider())
         {
-            var keysFolder = Path.Combine(Directory.GetCurrentDirectory(), "temp-keys");
-            using (var services = new ServiceCollection()
-                .AddLogging(o => o.AddConsole().SetMinimumLevel(LogLevel.Debug))
-                .AddDataProtection()
-                .PersistKeysToFileSystem(new DirectoryInfo(keysFolder))
-                .UseXmlEncryptor(s => new CustomXmlEncryptor(s))
-                .Services.BuildServiceProvider())
-            {
-                var protector = services.GetDataProtector("SamplePurpose");
+            var protector = services.GetDataProtector("SamplePurpose");
 
-                // protect the payload
-                var protectedPayload = protector.Protect("Hello World!");
-                Console.WriteLine($"Protect returned: {protectedPayload}");
+            // protect the payload
+            var protectedPayload = protector.Protect("Hello World!");
+            Console.WriteLine($"Protect returned: {protectedPayload}");
 
-                // unprotect the payload
-                var unprotectedPayload = protector.Unprotect(protectedPayload);
-                Console.WriteLine($"Unprotect returned: {unprotectedPayload}");
-            }
+            // unprotect the payload
+            var unprotectedPayload = protector.Unprotect(protectedPayload);
+            Console.WriteLine($"Unprotect returned: {unprotectedPayload}");
         }
     }
 }

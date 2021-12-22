@@ -11,50 +11,49 @@ using Microsoft.Extensions.Hosting;
 
 // Note that this sample will not run. It is only here to illustrate usage patterns.
 
-namespace SampleStartups
+namespace SampleStartups;
+
+public class StartupExternallyControlled : StartupBase
 {
-    public class StartupExternallyControlled : StartupBase
+    private IHost _host;
+    private readonly List<string> _urls = new List<string>();
+
+    // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+    public override void Configure(IApplicationBuilder app)
     {
-        private IHost _host;
-        private readonly List<string> _urls = new List<string>();
-
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public override void Configure(IApplicationBuilder app)
+        app.Run(async (context) =>
         {
-            app.Run(async (context) =>
+            await context.Response.WriteAsync("Hello World!");
+        });
+    }
+
+    public StartupExternallyControlled()
+    {
+    }
+
+    public void Start()
+    {
+        _host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
             {
-                await context.Response.WriteAsync("Hello World!");
-            });
-        }
+                webHostBuilder
+                    .UseKestrel()
+                    .UseStartup<StartupExternallyControlled>()
+                    .UseUrls(_urls.ToArray());
+            })
+            .Start();
+    }
 
-        public StartupExternallyControlled()
+    public async Task StopAsync()
+    {
+        using (_host)
         {
+            await _host.StopAsync(TimeSpan.FromSeconds(5));
         }
+    }
 
-        public void Start()
-        {
-            _host = new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
-                {
-                    webHostBuilder
-                        .UseKestrel()
-                        .UseStartup<StartupExternallyControlled>()
-                        .UseUrls(_urls.ToArray());
-                })
-                .Start();
-        }
-
-        public async Task StopAsync()
-        {
-            using (_host)
-            {
-                await _host.StopAsync(TimeSpan.FromSeconds(5));
-            }
-        }
-
-        public void AddUrl(string url)
-        {
-            _urls.Add(url);
-        }
+    public void AddUrl(string url)
+    {
+        _urls.Add(url);
     }
 }

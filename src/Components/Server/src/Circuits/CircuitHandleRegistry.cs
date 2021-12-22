@@ -13,33 +13,32 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 
-namespace Microsoft.AspNetCore.Components.Server.Circuits
+namespace Microsoft.AspNetCore.Components.Server.Circuits;
+
+internal sealed class CircuitHandleRegistry : ICircuitHandleRegistry
 {
-    internal sealed class CircuitHandleRegistry : ICircuitHandleRegistry
+    public CircuitHandle GetCircuitHandle(IDictionary<object, object?> circuitHandles, object circuitKey)
     {
-        public CircuitHandle GetCircuitHandle(IDictionary<object, object?> circuitHandles, object circuitKey)
+        if (circuitHandles.TryGetValue(circuitKey, out var circuitHandle))
         {
-            if (circuitHandles.TryGetValue(circuitKey, out var circuitHandle))
-            {
-                return (CircuitHandle)circuitHandle;
-            }
-
-            return null; ;
+            return (CircuitHandle)circuitHandle;
         }
 
-        public CircuitHost GetCircuit(IDictionary<object, object?> circuitHandles, object circuitKey)
-        {
-            if (circuitHandles.TryGetValue(circuitKey, out var circuitHandle))
-            {
-                return ((CircuitHandle)circuitHandle).CircuitHost;
-            }
+        return null; ;
+    }
 
-            return null;
+    public CircuitHost GetCircuit(IDictionary<object, object?> circuitHandles, object circuitKey)
+    {
+        if (circuitHandles.TryGetValue(circuitKey, out var circuitHandle))
+        {
+            return ((CircuitHandle)circuitHandle).CircuitHost;
         }
 
-        public void SetCircuit(IDictionary<object, object?> circuitHandles, object circuitKey, CircuitHost circuitHost)
-        {
-            circuitHandles[circuitKey] = circuitHost?.Handle;
-        }
+        return null;
+    }
+
+    public void SetCircuit(IDictionary<object, object?> circuitHandles, object circuitKey, CircuitHost circuitHost)
+    {
+        circuitHandles[circuitKey] = circuitHost?.Handle;
     }
 }

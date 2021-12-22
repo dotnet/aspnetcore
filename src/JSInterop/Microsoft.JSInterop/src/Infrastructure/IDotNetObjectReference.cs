@@ -3,10 +3,9 @@
 
 using System;
 
-namespace Microsoft.JSInterop.Infrastructure
+namespace Microsoft.JSInterop.Infrastructure;
+
+internal interface IDotNetObjectReference : IDisposable
 {
-    internal interface IDotNetObjectReference : IDisposable
-    {
-        object Value { get; }
-    }
+    object Value { get; }
 }

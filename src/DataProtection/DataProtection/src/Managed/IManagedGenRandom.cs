@@ -3,10 +3,9 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.DataProtection.Managed
+namespace Microsoft.AspNetCore.DataProtection.Managed;
+
+internal interface IManagedGenRandom
 {
-    internal interface IManagedGenRandom
-    {
-        byte[] GenRandom(int numBytes);
-    }
+    byte[] GenRandom(int numBytes);
 }

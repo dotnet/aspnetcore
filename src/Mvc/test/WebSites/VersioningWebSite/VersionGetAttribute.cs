@@ -4,28 +4,27 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Routing;
 
-namespace VersioningWebSite
+namespace VersioningWebSite;
+
+public class VersionGetAttribute : VersionRouteAttribute, IActionHttpMethodProvider
 {
-    public class VersionGetAttribute : VersionRouteAttribute, IActionHttpMethodProvider
+    public VersionGetAttribute(string template)
+        : base(template)
     {
-        public VersionGetAttribute(string template)
-            : base(template)
-        {
-        }
+    }
 
-        public VersionGetAttribute(string template, string versionRange)
-            : base(template, versionRange)
-        {
-        }
+    public VersionGetAttribute(string template, string versionRange)
+        : base(template, versionRange)
+    {
+    }
 
-        private readonly IEnumerable<string> _httpMethods = new[] { "GET" };
+    private readonly IEnumerable<string> _httpMethods = new[] { "GET" };
 
-        public IEnumerable<string> HttpMethods
+    public IEnumerable<string> HttpMethods
+    {
+        get
         {
-            get
-            {
-                return _httpMethods;
-            }
+            return _httpMethods;
         }
     }
 }

@@ -3,16 +3,15 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Http.Connections
+namespace Microsoft.AspNetCore.Http.Connections;
+
+/// <summary>
+/// Options used to change behavior of how connections are handled.
+/// </summary>
+public class ConnectionOptions
 {
     /// <summary>
-    /// Options used to change behavior of how connections are handled.
+    /// Gets or sets the interval used by the server to timeout idle connections.
     /// </summary>
-    public class ConnectionOptions
-    {
-        /// <summary>
-        /// Gets or sets the interval used by the server to timeout idle connections.
-        /// </summary>
-        public TimeSpan? DisconnectTimeout { get; set; }
-    }
+    public TimeSpan? DisconnectTimeout { get; set; }
 }

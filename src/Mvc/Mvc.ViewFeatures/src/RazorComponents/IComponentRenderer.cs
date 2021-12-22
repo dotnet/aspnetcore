@@ -6,14 +6,13 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
-namespace Microsoft.AspNetCore.Mvc.ViewFeatures
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
+
+internal interface IComponentRenderer
 {
-    internal interface IComponentRenderer
-    {
-        Task<IHtmlContent> RenderComponentAsync(
-            ViewContext viewContext,
-            Type componentType,
-            RenderMode renderMode,
-            object parameters);
-    }
+    Task<IHtmlContent> RenderComponentAsync(
+        ViewContext viewContext,
+        Type componentType,
+        RenderMode renderMode,
+        object parameters);
 }

@@ -3,34 +3,33 @@
 
 using Xunit;
 
-namespace Microsoft.AspNetCore.Components.Routing
+namespace Microsoft.AspNetCore.Components.Routing;
+
+public class RouteConstraintTest
 {
-    public class RouteConstraintTest
+    [Fact]
+    public void Parse_CreatesDifferentConstraints_ForDifferentKinds()
     {
-        [Fact]
-        public void Parse_CreatesDifferentConstraints_ForDifferentKinds()
-        {
-            // Arrange
-            var original = RouteConstraint.Parse("ignore", "ignore", "int");
+        // Arrange
+        var original = RouteConstraint.Parse("ignore", "ignore", "int");
 
-            // Act
-            var another = RouteConstraint.Parse("ignore", "ignore", "guid");
+        // Act
+        var another = RouteConstraint.Parse("ignore", "ignore", "guid");
 
-            // Assert
-            Assert.NotSame(original, another);
-        }
+        // Assert
+        Assert.NotSame(original, another);
+    }
 
-        [Fact]
-        public void Parse_CachesCreatedConstraint_ForSameKind()
-        {
-            // Arrange
-            var original = RouteConstraint.Parse("ignore", "ignore", "int");
+    [Fact]
+    public void Parse_CachesCreatedConstraint_ForSameKind()
+    {
+        // Arrange
+        var original = RouteConstraint.Parse("ignore", "ignore", "int");
 
-            // Act
-            var another = RouteConstraint.Parse("ignore", "ignore", "int");
+        // Act
+        var another = RouteConstraint.Parse("ignore", "ignore", "int");
 
-            // Assert
-            Assert.Same(original, another);
-        }
+        // Assert
+        Assert.Same(original, another);
     }
 }

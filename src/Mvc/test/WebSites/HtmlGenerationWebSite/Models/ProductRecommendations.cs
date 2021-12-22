@@ -4,20 +4,19 @@
 using System;
 using System.Collections.Generic;
 
-namespace HtmlGenerationWebSite.Models
-{
-    public class ProductRecommendations
-    {
-        public ProductRecommendations(params Product[] products)
-        {
-            if (products == null)
-            {
-                throw new ArgumentNullException(nameof(products));
-            }
+namespace HtmlGenerationWebSite.Models;
 
-            Products = products;
+public class ProductRecommendations
+{
+    public ProductRecommendations(params Product[] products)
+    {
+        if (products == null)
+        {
+            throw new ArgumentNullException(nameof(products));
         }
 
-        public IEnumerable<Product> Products { get; }
+        Products = products;
     }
+
+    public IEnumerable<Product> Products { get; }
 }

@@ -3,30 +3,29 @@
 
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Authentication.Negotiate
+namespace Microsoft.AspNetCore.Authentication.Negotiate;
+
+/// <summary>
+/// State for the RetrieveLdapClaims event.
+/// </summary>
+public class LdapContext : ResultContext<NegotiateOptions>
 {
     /// <summary>
-    /// State for the RetrieveLdapClaims event.
+    /// Creates a new <see cref="LdapContext"/>.
     /// </summary>
-    public class LdapContext : ResultContext<NegotiateOptions>
+    /// <inheritdoc />
+    public LdapContext(
+        HttpContext context,
+        AuthenticationScheme scheme,
+        NegotiateOptions options,
+        LdapSettings settings)
+        : base(context, scheme, options)
     {
-        /// <summary>
-        /// Creates a new <see cref="LdapContext"/>.
-        /// </summary>
-        /// <inheritdoc />
-        public LdapContext(
-            HttpContext context,
-            AuthenticationScheme scheme,
-            NegotiateOptions options,
-            LdapSettings settings)
-            : base(context, scheme, options)
-        {
-            LdapSettings = settings;
-        }
-
-        /// <summary>
-        /// The LDAP settings to use for the RetrieveLdapClaims event.
-        /// </summary>
-        public LdapSettings LdapSettings { get; }
+        LdapSettings = settings;
     }
+
+    /// <summary>
+    /// The LDAP settings to use for the RetrieveLdapClaims event.
+    /// </summary>
+    public LdapSettings LdapSettings { get; }
 }

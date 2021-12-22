@@ -3,19 +3,18 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
+namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
+
+/// <summary>
+/// Creates a <see cref="CompiledPageActionDescriptor"/> from a <see cref="PageActionDescriptor"/>.
+/// </summary>
+[Obsolete("This type is obsolete. Use " + nameof(PageLoader) + " instead.")]
+public interface IPageLoader
 {
     /// <summary>
-    /// Creates a <see cref="CompiledPageActionDescriptor"/> from a <see cref="PageActionDescriptor"/>.
+    /// Produces a <see cref="CompiledPageActionDescriptor"/> given a <see cref="PageActionDescriptor"/>.
     /// </summary>
-    [Obsolete("This type is obsolete. Use " + nameof(PageLoader) + " instead.")]
-    public interface IPageLoader
-    {
-        /// <summary>
-        /// Produces a <see cref="CompiledPageActionDescriptor"/> given a <see cref="PageActionDescriptor"/>.
-        /// </summary>
-        /// <param name="actionDescriptor">The <see cref="PageActionDescriptor"/>.</param>
-        /// <returns>The <see cref="CompiledPageActionDescriptor"/>.</returns>
-        CompiledPageActionDescriptor Load(PageActionDescriptor actionDescriptor);
-    }
+    /// <param name="actionDescriptor">The <see cref="PageActionDescriptor"/>.</param>
+    /// <returns>The <see cref="CompiledPageActionDescriptor"/>.</returns>
+    CompiledPageActionDescriptor Load(PageActionDescriptor actionDescriptor);
 }

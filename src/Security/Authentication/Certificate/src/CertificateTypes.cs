@@ -3,27 +3,26 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Authentication.Certificate
+namespace Microsoft.AspNetCore.Authentication.Certificate;
+
+/// <summary>
+/// Enum representing certificate types.
+/// </summary>
+[Flags]
+public enum CertificateTypes
 {
     /// <summary>
-    /// Enum representing certificate types.
+    /// Chained certificates.
     /// </summary>
-    [Flags]
-    public enum CertificateTypes
-    {
-        /// <summary>
-        /// Chained certificates.
-        /// </summary>
-        Chained = 1,
+    Chained = 1,
 
-        /// <summary>
-        /// SelfSigned certificates.
-        /// </summary>
-        SelfSigned = 2,
+    /// <summary>
+    /// SelfSigned certificates.
+    /// </summary>
+    SelfSigned = 2,
 
-        /// <summary>
-        /// All certificates.
-        /// </summary>
-        All = Chained | SelfSigned
-    }
+    /// <summary>
+    /// All certificates.
+    /// </summary>
+    All = Chained | SelfSigned
 }

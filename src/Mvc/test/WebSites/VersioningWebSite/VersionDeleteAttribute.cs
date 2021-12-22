@@ -4,28 +4,27 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Routing;
 
-namespace VersioningWebSite
+namespace VersioningWebSite;
+
+public class VersionDeleteAttribute : VersionRouteAttribute, IActionHttpMethodProvider
 {
-    public class VersionDeleteAttribute : VersionRouteAttribute, IActionHttpMethodProvider
+    public VersionDeleteAttribute(string template)
+        : base(template)
     {
-        public VersionDeleteAttribute(string template)
-            : base(template)
-        {
-        }
+    }
 
-        public VersionDeleteAttribute(string template, string versionRange)
-            : base(template, versionRange)
-        {
-        }
+    public VersionDeleteAttribute(string template, string versionRange)
+        : base(template, versionRange)
+    {
+    }
 
-        private readonly IEnumerable<string> _httpMethods = new[] { "DELETE" };
+    private readonly IEnumerable<string> _httpMethods = new[] { "DELETE" };
 
-        public IEnumerable<string> HttpMethods
+    public IEnumerable<string> HttpMethods
+    {
+        get
         {
-            get
-            {
-                return _httpMethods;
-            }
+            return _httpMethods;
         }
     }
 }

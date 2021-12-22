@@ -1,19 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Authentication.Facebook.FacebookHandler.FacebookHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.Facebook.FacebookOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder, Microsoft.AspNetCore.Authentication.ISystemClock! clock) -> void
-Microsoft.AspNetCore.Authentication.Facebook.FacebookOptions.AppId.get -> string!
-Microsoft.AspNetCore.Authentication.Facebook.FacebookOptions.AppId.set -> void
-Microsoft.AspNetCore.Authentication.Facebook.FacebookOptions.AppSecret.get -> string!
-Microsoft.AspNetCore.Authentication.Facebook.FacebookOptions.AppSecret.set -> void
-Microsoft.AspNetCore.Authentication.Facebook.FacebookOptions.Fields.get -> System.Collections.Generic.ICollection<string!>!
-const Microsoft.AspNetCore.Authentication.Facebook.FacebookDefaults.AuthenticationScheme = "Facebook" -> string!
-override Microsoft.AspNetCore.Authentication.Facebook.FacebookHandler.CreateTicketAsync(System.Security.Claims.ClaimsIdentity! identity, Microsoft.AspNetCore.Authentication.AuthenticationProperties! properties, Microsoft.AspNetCore.Authentication.OAuth.OAuthTokenResponse! tokens) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticationTicket!>!
-override Microsoft.AspNetCore.Authentication.Facebook.FacebookHandler.FormatScope() -> string!
-override Microsoft.AspNetCore.Authentication.Facebook.FacebookHandler.FormatScope(System.Collections.Generic.IEnumerable<string!>! scopes) -> string!
-static Microsoft.Extensions.DependencyInjection.FacebookAuthenticationOptionsExtensions.AddFacebook(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
-static Microsoft.Extensions.DependencyInjection.FacebookAuthenticationOptionsExtensions.AddFacebook(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder, System.Action<Microsoft.AspNetCore.Authentication.Facebook.FacebookOptions!>! configureOptions) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
-static Microsoft.Extensions.DependencyInjection.FacebookAuthenticationOptionsExtensions.AddFacebook(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder, string! authenticationScheme, System.Action<Microsoft.AspNetCore.Authentication.Facebook.FacebookOptions!>! configureOptions) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
-static Microsoft.Extensions.DependencyInjection.FacebookAuthenticationOptionsExtensions.AddFacebook(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder, string! authenticationScheme, string! displayName, System.Action<Microsoft.AspNetCore.Authentication.Facebook.FacebookOptions!>! configureOptions) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
-static readonly Microsoft.AspNetCore.Authentication.Facebook.FacebookDefaults.AuthorizationEndpoint -> string!
-static readonly Microsoft.AspNetCore.Authentication.Facebook.FacebookDefaults.DisplayName -> string!
-static readonly Microsoft.AspNetCore.Authentication.Facebook.FacebookDefaults.TokenEndpoint -> string!
-static readonly Microsoft.AspNetCore.Authentication.Facebook.FacebookDefaults.UserInformationEndpoint -> string!

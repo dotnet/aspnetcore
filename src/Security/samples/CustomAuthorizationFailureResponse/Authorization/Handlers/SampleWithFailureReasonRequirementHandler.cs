@@ -5,14 +5,13 @@ using System.Threading.Tasks;
 using CustomAuthorizationFailureResponse.Authorization.Requirements;
 using Microsoft.AspNetCore.Authorization;
 
-namespace CustomAuthorizationFailureResponse.Authorization.Handlers
+namespace CustomAuthorizationFailureResponse.Authorization.Handlers;
+
+public class SampleWithFailureReasonRequirementHandler : AuthorizationHandler<SampleFailReasonRequirement>
 {
-    public class SampleWithFailureReasonRequirementHandler : AuthorizationHandler<SampleFailReasonRequirement>
+    protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, SampleFailReasonRequirement requirement)
     {
-        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, SampleFailReasonRequirement requirement)
-        {
-            context.Fail(new AuthorizationFailureReason(this, "This is a way to provide more failure reasons."));
-            return Task.CompletedTask;
-        }
+        context.Fail(new AuthorizationFailureReason(this, "This is a way to provide more failure reasons."));
+        return Task.CompletedTask;
     }
 }

@@ -4,92 +4,91 @@
 using System;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal;
+
+internal static partial class SocketsLog
 {
-    internal static partial class SocketsLog
+    public static void ConnectionRead(SocketConnection connection, int count)
     {
-        public static void ConnectionRead(SocketConnection connection, int count)
+        // Don't log for now since this could be *too* verbose.
+        // Reserved: Event ID 3
+    }
+
+    [LoggerMessage(6, LogLevel.Debug, @"Connection id ""{ConnectionId}"" received FIN.", EventName = "ConnectionReadFin", SkipEnabledCheck = true)]
+    private static partial void ConnectionReadFinCore(ILogger logger, string connectionId);
+
+    public static void ConnectionReadFin(ILogger logger, SocketConnection connection)
+    {
+        if (logger.IsEnabled(LogLevel.Debug))
         {
-            // Don't log for now since this could be *too* verbose.
-            // Reserved: Event ID 3
+            ConnectionReadFinCore(logger, connection.ConnectionId);
         }
+    }
 
-        [LoggerMessage(6, LogLevel.Debug, @"Connection id ""{ConnectionId}"" received FIN.", EventName = "ConnectionReadFin", SkipEnabledCheck = true)]
-        private static partial void ConnectionReadFinCore(ILogger logger, string connectionId);
+    [LoggerMessage(7, LogLevel.Debug, @"Connection id ""{ConnectionId}"" sending FIN because: ""{Reason}""", EventName = "ConnectionWriteFin", SkipEnabledCheck = true)]
+    private static partial void ConnectionWriteFinCore(ILogger logger, string connectionId, string reason);
 
-        public static void ConnectionReadFin(ILogger logger, SocketConnection connection)
+    public static void ConnectionWriteFin(ILogger logger, SocketConnection connection, string reason)
+    {
+        if (logger.IsEnabled(LogLevel.Debug))
         {
-            if (logger.IsEnabled(LogLevel.Debug))
-            {
-                ConnectionReadFinCore(logger, connection.ConnectionId);
-            }
+            ConnectionWriteFinCore(logger, connection.ConnectionId, reason);
         }
+    }
 
-        [LoggerMessage(7, LogLevel.Debug, @"Connection id ""{ConnectionId}"" sending FIN because: ""{Reason}""", EventName = "ConnectionWriteFin", SkipEnabledCheck = true)]
-        private static partial void ConnectionWriteFinCore(ILogger logger, string connectionId, string reason);
+    public static void ConnectionWrite(SocketConnection connection, int count)
+    {
+        // Don't log for now since this could be *too* verbose.
+        // Reserved: Event ID 11
+    }
 
-        public static void ConnectionWriteFin(ILogger logger, SocketConnection connection, string reason)
+    public static void ConnectionWriteCallback(SocketConnection connection, int status)
+    {
+        // Don't log for now since this could be *too* verbose.
+        // Reserved: Event ID 12
+    }
+
+    [LoggerMessage(14, LogLevel.Debug, @"Connection id ""{ConnectionId}"" communication error.", EventName = "ConnectionError", SkipEnabledCheck = true)]
+    private static partial void ConnectionErrorCore(ILogger logger, string connectionId, Exception ex);
+
+    public static void ConnectionError(ILogger logger, SocketConnection connection, Exception ex)
+    {
+        if (logger.IsEnabled(LogLevel.Debug))
         {
-            if (logger.IsEnabled(LogLevel.Debug))
-            {
-                ConnectionWriteFinCore(logger, connection.ConnectionId, reason);
-            }
+            ConnectionErrorCore(logger, connection.ConnectionId, ex);
         }
+    }
 
-        public static void ConnectionWrite(SocketConnection connection, int count)
+    [LoggerMessage(19, LogLevel.Debug, @"Connection id ""{ConnectionId}"" reset.", EventName = "ConnectionReset", SkipEnabledCheck = true)]
+    public static partial void ConnectionReset(ILogger logger, string connectionId);
+
+    public static void ConnectionReset(ILogger logger, SocketConnection connection)
+    {
+        if (logger.IsEnabled(LogLevel.Debug))
         {
-            // Don't log for now since this could be *too* verbose.
-            // Reserved: Event ID 11
+            ConnectionReset(logger, connection.ConnectionId);
         }
+    }
 
-        public static void ConnectionWriteCallback(SocketConnection connection, int status)
+    [LoggerMessage(4, LogLevel.Debug, @"Connection id ""{ConnectionId}"" paused.", EventName = "ConnectionPause", SkipEnabledCheck = true)]
+    private static partial void ConnectionPauseCore(ILogger logger, string connectionId);
+
+    public static void ConnectionPause(ILogger logger, SocketConnection connection)
+    {
+        if (logger.IsEnabled(LogLevel.Debug))
         {
-            // Don't log for now since this could be *too* verbose.
-            // Reserved: Event ID 12
+            ConnectionPauseCore(logger, connection.ConnectionId);
         }
+    }
 
-        [LoggerMessage(14, LogLevel.Debug, @"Connection id ""{ConnectionId}"" communication error.", EventName = "ConnectionError", SkipEnabledCheck = true)]
-        private static partial void ConnectionErrorCore(ILogger logger, string connectionId, Exception ex);
+    [LoggerMessage(5, LogLevel.Debug, @"Connection id ""{ConnectionId}"" resumed.", EventName = "ConnectionResume", SkipEnabledCheck = true)]
+    private static partial void ConnectionResumeCore(ILogger logger, string connectionId);
 
-        public static void ConnectionError(ILogger logger, SocketConnection connection, Exception ex)
+    public static void ConnectionResume(ILogger logger, SocketConnection connection)
+    {
+        if (logger.IsEnabled(LogLevel.Debug))
         {
-            if (logger.IsEnabled(LogLevel.Debug))
-            {
-                ConnectionErrorCore(logger, connection.ConnectionId, ex);
-            }
-        }
-
-        [LoggerMessage(19, LogLevel.Debug, @"Connection id ""{ConnectionId}"" reset.", EventName = "ConnectionReset", SkipEnabledCheck = true)]
-        public static partial void ConnectionReset(ILogger logger, string connectionId);
-
-        public static void ConnectionReset(ILogger logger, SocketConnection connection)
-        {
-            if (logger.IsEnabled(LogLevel.Debug))
-            {
-                ConnectionReset(logger, connection.ConnectionId);
-            }
-        }
-
-        [LoggerMessage(4, LogLevel.Debug, @"Connection id ""{ConnectionId}"" paused.", EventName = "ConnectionPause", SkipEnabledCheck = true)]
-        private static partial void ConnectionPauseCore(ILogger logger, string connectionId);
-
-        public static void ConnectionPause(ILogger logger, SocketConnection connection)
-        {
-            if (logger.IsEnabled(LogLevel.Debug))
-            {
-                ConnectionPauseCore(logger, connection.ConnectionId);
-            }
-        }
-
-        [LoggerMessage(5, LogLevel.Debug, @"Connection id ""{ConnectionId}"" resumed.", EventName = "ConnectionResume", SkipEnabledCheck = true)]
-        private static partial void ConnectionResumeCore(ILogger logger, string connectionId);
-
-        public static void ConnectionResume(ILogger logger, SocketConnection connection)
-        {
-            if (logger.IsEnabled(LogLevel.Debug))
-            {
-                ConnectionResumeCore(logger, connection.ConnectionId);
-            }
+            ConnectionResumeCore(logger, connection.ConnectionId);
         }
     }
 }

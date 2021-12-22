@@ -4,12 +4,11 @@
 using System.Runtime.Serialization;
 using System.Xml.Serialization;
 
-namespace FormatterWebSite
+namespace FormatterWebSite;
+
+[KnownType(typeof(DerivedDummyClass))]
+[XmlInclude(typeof(DerivedDummyClass))]
+public class DummyClass
 {
-    [KnownType(typeof(DerivedDummyClass))]
-    [XmlInclude(typeof(DerivedDummyClass))]
-    public class DummyClass
-    {
-        public int SampleInt { get; set; }
-    }
+    public int SampleInt { get; set; }
 }

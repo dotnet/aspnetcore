@@ -14,17 +14,17 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace ResponseCompressionSample
+namespace ResponseCompressionSample;
+
+public class Startup
 {
-    public class Startup
+    public void ConfigureServices(IServiceCollection services)
     {
-        public void ConfigureServices(IServiceCollection services)
+        services.Configure<GzipCompressionProviderOptions>(options => options.Level = CompressionLevel.Fastest);
+        services.AddResponseCompression(options =>
         {
-            services.Configure<GzipCompressionProviderOptions>(options => options.Level = CompressionLevel.Fastest);
-            services.AddResponseCompression(options =>
-            {
-                options.Providers.Add<GzipCompressionProvider>();
-                options.Providers.Add<CustomCompressionProvider>();
+            options.Providers.Add<GzipCompressionProvider>();
+            options.Providers.Add<CustomCompressionProvider>();
                 // .Append(TItem) is only available on Core.
                 options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[] { "image/svg+xml" });
 
@@ -33,61 +33,60 @@ namespace ResponseCompressionSample
                 //options.MimeTypes = new[] { "*/*", "image/svg+xml" };
                 //options.ExcludedMimeTypes = new[] { "image/*", "audio/*", "video/*" };
             });
-        }
+    }
 
-        public void Configure(IApplicationBuilder app)
+    public void Configure(IApplicationBuilder app)
+    {
+        app.UseResponseCompression();
+
+        app.Map("/testfile1kb.txt", fileApp =>
         {
-            app.UseResponseCompression();
-
-            app.Map("/testfile1kb.txt", fileApp =>
+            fileApp.Run(context =>
             {
-                fileApp.Run(context =>
-                {
-                    context.Response.ContentType = "text/plain";
-                    return context.Response.SendFileAsync("testfile1kb.txt");
-                });
+                context.Response.ContentType = "text/plain";
+                return context.Response.SendFileAsync("testfile1kb.txt");
             });
+        });
 
-            app.Map("/trickle", trickleApp =>
+        app.Map("/trickle", trickleApp =>
+        {
+            trickleApp.Run(async context =>
             {
-                trickleApp.Run(async context =>
-                {
-                    context.Response.ContentType = "text/plain";
+                context.Response.ContentType = "text/plain";
                     // Disables compression on net451 because that GZipStream does not implement Flush.
                     context.Features.Get<IHttpResponseBodyFeature>().DisableBuffering();
 
-                    for (int i = 0; i < 100; i++)
-                    {
-                        await context.Response.WriteAsync("a");
-                        await context.Response.Body.FlushAsync();
-                        await Task.Delay(TimeSpan.FromSeconds(1));
-                    }
-                });
-            });
-
-            app.Run(async context =>
-            {
-                context.Response.ContentType = "text/plain";
-                await context.Response.WriteAsync(LoremIpsum.Text);
-            });
-        }
-
-        public static Task Main(string[] args)
-        {
-            var host = new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
+                for (int i = 0; i < 100; i++)
                 {
-                    webHostBuilder
-                    .UseKestrel()
-                    .ConfigureLogging(factory =>
-                    {
-                        factory.AddConsole()
-                            .SetMinimumLevel(LogLevel.Debug);
-                    })
-                    .UseStartup<Startup>();
-                }).Build();
+                    await context.Response.WriteAsync("a");
+                    await context.Response.Body.FlushAsync();
+                    await Task.Delay(TimeSpan.FromSeconds(1));
+                }
+            });
+        });
 
-            return host.RunAsync();
-        }
+        app.Run(async context =>
+        {
+            context.Response.ContentType = "text/plain";
+            await context.Response.WriteAsync(LoremIpsum.Text);
+        });
+    }
+
+    public static Task Main(string[] args)
+    {
+        var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseKestrel()
+                .ConfigureLogging(factory =>
+                {
+                    factory.AddConsole()
+                        .SetMinimumLevel(LogLevel.Debug);
+                })
+                .UseStartup<Startup>();
+            }).Build();
+
+        return host.RunAsync();
     }
 }

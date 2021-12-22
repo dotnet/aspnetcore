@@ -5,44 +5,43 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Filters;
 
-namespace Microsoft.AspNetCore.Mvc.Filters
+namespace Microsoft.AspNetCore.Mvc.Filters;
+
+internal sealed class PageViewDataAttributeFilter : IPageFilter, IViewDataValuesProviderFeature
 {
-    internal sealed class PageViewDataAttributeFilter : IPageFilter, IViewDataValuesProviderFeature
+    public PageViewDataAttributeFilter(IReadOnlyList<LifecycleProperty> properties)
     {
-        public PageViewDataAttributeFilter(IReadOnlyList<LifecycleProperty> properties)
+        Properties = properties;
+    }
+
+    public IReadOnlyList<LifecycleProperty> Properties { get; }
+
+    public object? Subject { get; set; }
+
+    public void OnPageHandlerExecuted(PageHandlerExecutedContext context)
+    {
+    }
+
+    public void OnPageHandlerExecuting(PageHandlerExecutingContext context)
+    {
+        Subject = context.HandlerInstance;
+        context.HttpContext.Features.Set<IViewDataValuesProviderFeature>(this);
+    }
+
+    public void OnPageHandlerSelected(PageHandlerSelectedContext context)
+    {
+    }
+
+    public void ProvideViewDataValues(ViewDataDictionary viewData)
+    {
+        for (var i = 0; i < Properties.Count; i++)
         {
-            Properties = properties;
-        }
+            var property = Properties[i];
+            var value = property.GetValue(Subject);
 
-        public IReadOnlyList<LifecycleProperty> Properties { get;  }
-
-        public object? Subject { get; set; }
-
-        public void OnPageHandlerExecuted(PageHandlerExecutedContext context)
-        {
-        }
-
-        public void OnPageHandlerExecuting(PageHandlerExecutingContext context)
-        {
-            Subject = context.HandlerInstance;
-            context.HttpContext.Features.Set<IViewDataValuesProviderFeature>(this);
-        }
-
-        public void OnPageHandlerSelected(PageHandlerSelectedContext context)
-        {
-        }
-
-        public void ProvideViewDataValues(ViewDataDictionary viewData)
-        {
-            for (var i = 0; i < Properties.Count; i++)
+            if (value != null)
             {
-                var property = Properties[i];
-                var value = property.GetValue(Subject);
-
-                if (value != null)
-                {
-                    viewData[property.Key] = value;
-                }
+                viewData[property.Key] = value;
             }
         }
     }

@@ -1,18 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Ignitor
-{
+namespace Ignitor;
 #nullable enable
-    public class ComponentState
+public class ComponentState
+{
+    public ComponentState(int componentId)
     {
-        public ComponentState(int componentId)
-        {
-            ComponentId = componentId;
-        }
-
-        public int ComponentId { get; }
-        public IComponent? Component { get; }
+        ComponentId = componentId;
     }
-#nullable restore
+
+    public int ComponentId { get; }
+    public IComponent? Component { get; }
 }

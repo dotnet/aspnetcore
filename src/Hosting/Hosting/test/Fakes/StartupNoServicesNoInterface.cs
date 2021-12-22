@@ -7,18 +7,17 @@ using System.Text;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Hosting.Fakes
+namespace Microsoft.AspNetCore.Hosting.Fakes;
+
+public class StartupNoServicesNoInterface
 {
-    public class StartupNoServicesNoInterface
+    public void ConfigureServices(IServiceCollection services)
     {
-        public void ConfigureServices(IServiceCollection services)
-        {
 
-        }
+    }
 
-        public void Configure(IApplicationBuilder app)
-        {
+    public void Configure(IApplicationBuilder app)
+    {
 
-        }
     }
 }

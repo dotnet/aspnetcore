@@ -4,15 +4,14 @@
 
 using System.Threading;
 
-namespace Microsoft.AspNetCore.Mvc.Routing
-{
-    internal class ControllerActionEndpointDataSourceIdProvider
-    {
-        private int _nextId = 1;
+namespace Microsoft.AspNetCore.Mvc.Routing;
 
-        internal int CreateId()
-        {
-            return Interlocked.Increment(ref _nextId);
-        }
+internal class ControllerActionEndpointDataSourceIdProvider
+{
+    private int _nextId = 1;
+
+    internal int CreateId()
+    {
+        return Interlocked.Increment(ref _nextId);
     }
 }

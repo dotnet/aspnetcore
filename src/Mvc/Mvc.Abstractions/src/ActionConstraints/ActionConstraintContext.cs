@@ -5,27 +5,26 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Routing;
 
-namespace Microsoft.AspNetCore.Mvc.ActionConstraints
+namespace Microsoft.AspNetCore.Mvc.ActionConstraints;
+
+/// <summary>
+/// Context for <see cref="IActionConstraint"/> execution.
+/// </summary>
+public class ActionConstraintContext
 {
     /// <summary>
-    /// Context for <see cref="IActionConstraint"/> execution.
+    /// The list of <see cref="ActionSelectorCandidate"/>. This includes all actions that are valid for the current
+    /// request, as well as their constraints.
     /// </summary>
-    public class ActionConstraintContext
-    {
-        /// <summary>
-        /// The list of <see cref="ActionSelectorCandidate"/>. This includes all actions that are valid for the current
-        /// request, as well as their constraints.
-        /// </summary>
-        public IReadOnlyList<ActionSelectorCandidate> Candidates { get; set; } = Array.Empty<ActionSelectorCandidate>();
+    public IReadOnlyList<ActionSelectorCandidate> Candidates { get; set; } = Array.Empty<ActionSelectorCandidate>();
 
-        /// <summary>
-        /// The current <see cref="ActionSelectorCandidate"/>.
-        /// </summary>
-        public ActionSelectorCandidate CurrentCandidate { get; set; } = default!;
+    /// <summary>
+    /// The current <see cref="ActionSelectorCandidate"/>.
+    /// </summary>
+    public ActionSelectorCandidate CurrentCandidate { get; set; } = default!;
 
-        /// <summary>
-        /// The <see cref="RouteContext"/>.
-        /// </summary>
-        public RouteContext RouteContext { get; set; } = default!;
-    }
+    /// <summary>
+    /// The <see cref="RouteContext"/>.
+    /// </summary>
+    public RouteContext RouteContext { get; set; } = default!;
 }

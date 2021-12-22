@@ -4,21 +4,20 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.AspNetCore.Components
+namespace Microsoft.AspNetCore.Components;
+
+internal class DefaultComponentActivator : IComponentActivator
 {
-    internal class DefaultComponentActivator : IComponentActivator
+    public static IComponentActivator Instance { get; } = new DefaultComponentActivator();
+
+    /// <inheritdoc />
+    public IComponent CreateInstance([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type componentType)
     {
-        public static IComponentActivator Instance { get; } = new DefaultComponentActivator();
-
-        /// <inheritdoc />
-        public IComponent CreateInstance([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type componentType)
+        if (!typeof(IComponent).IsAssignableFrom(componentType))
         {
-            if (!typeof(IComponent).IsAssignableFrom(componentType))
-            {
-                throw new ArgumentException($"The type {componentType.FullName} does not implement {nameof(IComponent)}.", nameof(componentType));
-            }
-
-            return (IComponent)Activator.CreateInstance(componentType)!;
+            throw new ArgumentException($"The type {componentType.FullName} does not implement {nameof(IComponent)}.", nameof(componentType));
         }
+
+        return (IComponent)Activator.CreateInstance(componentType)!;
     }
 }

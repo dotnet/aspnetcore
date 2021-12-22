@@ -5,33 +5,32 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace BasicWebSite
+namespace BasicWebSite;
+
+public class StartupWithSessionTempDataProvider
 {
-    public class StartupWithSessionTempDataProvider
+    public void ConfigureServices(IServiceCollection services)
     {
-        public void ConfigureServices(IServiceCollection services)
+        // CookieTempDataProvider is the default ITempDataProvider, so we must override it with session.
+        services
+            .AddMvc()
+            .AddSessionStateTempDataProvider();
+        services.AddSession();
+
+        services.ConfigureBaseWebSiteAuthPolicies();
+    }
+
+    public void Configure(IApplicationBuilder app)
+    {
+        app.UseDeveloperExceptionPage();
+        app.UseSession();
+
+        app.UseRouting();
+        app.UseEndpoints(endpoints =>
         {
-            // CookieTempDataProvider is the default ITempDataProvider, so we must override it with session.
-            services
-                .AddMvc()
-                .AddSessionStateTempDataProvider();
-            services.AddSession();
-
-            services.ConfigureBaseWebSiteAuthPolicies();
-        }
-
-        public void Configure(IApplicationBuilder app)
-        {
-            app.UseDeveloperExceptionPage();
-            app.UseSession();
-
-            app.UseRouting();
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapDefaultControllerRoute();
-                endpoints.MapRazorPages();
-            });
-        }
+            endpoints.MapDefaultControllerRoute();
+            endpoints.MapRazorPages();
+        });
     }
 }
 

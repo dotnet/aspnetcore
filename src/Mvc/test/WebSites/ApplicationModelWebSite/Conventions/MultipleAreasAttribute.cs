@@ -4,16 +4,15 @@
 using System;
 using System.Linq;
 
-namespace ApplicationModelWebSite
-{
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
-    public class MultipleAreasAttribute : Attribute
-    {
-        public MultipleAreasAttribute(string area1, string area2, params string[] areaNames)
-        {
-            AreaNames = new string[] { area1, area2 }.Concat(areaNames).ToArray();
-        }
+namespace ApplicationModelWebSite;
 
-        public string[] AreaNames { get; }
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
+public class MultipleAreasAttribute : Attribute
+{
+    public MultipleAreasAttribute(string area1, string area2, params string[] areaNames)
+    {
+        AreaNames = new string[] { area1, area2 }.Concat(areaNames).ToArray();
     }
+
+    public string[] AreaNames { get; }
 }

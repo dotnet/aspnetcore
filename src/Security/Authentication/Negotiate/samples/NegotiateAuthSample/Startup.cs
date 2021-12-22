@@ -10,21 +10,21 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace NegotiateAuthSample
+namespace NegotiateAuthSample;
+
+public class Startup
 {
-    public class Startup
+    public void ConfigureServices(IServiceCollection services)
     {
-        public void ConfigureServices(IServiceCollection services)
+        services.AddAuthorization(options =>
         {
-            services.AddAuthorization(options =>
+            options.FallbackPolicy = options.DefaultPolicy;
+        });
+        services.AddAuthentication(NegotiateDefaults.AuthenticationScheme)
+            .AddNegotiate(options =>
             {
-                options.FallbackPolicy = options.DefaultPolicy;
-            });
-            services.AddAuthentication(NegotiateDefaults.AuthenticationScheme)
-                .AddNegotiate(options =>
+                if (OperatingSystem.IsLinux())
                 {
-                    if (OperatingSystem.IsLinux())
-                    {
                         /*
                         options.EnableLdap("DOMAIN.net");
 
@@ -38,31 +38,30 @@ namespace NegotiateAuthSample
                             settings.IgnoreNestedGroups = true;
                         });
                         */
-                    }
+                }
 
-                    options.Events = new NegotiateEvents()
+                options.Events = new NegotiateEvents()
+                {
+                    OnAuthenticationFailed = context =>
                     {
-                        OnAuthenticationFailed = context =>
-                        {
                             // context.SkipHandler();
                             return Task.CompletedTask;
-                        }
-                    };
-                });
-        }
+                    }
+                };
+            });
+    }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-        {
-            app.UseDeveloperExceptionPage();
-            app.UseAuthentication();
-            app.UseAuthorization();
-            app.Run(HandleRequest);
-        }
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    {
+        app.UseDeveloperExceptionPage();
+        app.UseAuthentication();
+        app.UseAuthorization();
+        app.Run(HandleRequest);
+    }
 
-        public async Task HandleRequest(HttpContext context)
-        {
-            var user = context.User.Identity;
-            await context.Response.WriteAsync($"Authenticated? {user.IsAuthenticated}, Name: {user.Name}, Protocol: {context.Request.Protocol}");
-        }
+    public async Task HandleRequest(HttpContext context)
+    {
+        var user = context.User.Identity;
+        await context.Response.WriteAsync($"Authenticated? {user.IsAuthenticated}, Name: {user.Name}, Protocol: {context.Request.Protocol}");
     }
 }

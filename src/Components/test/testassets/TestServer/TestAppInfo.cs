@@ -3,10 +3,9 @@
 
 using System.Collections.Generic;
 
-namespace TestServer
+namespace TestServer;
+
+internal class TestAppInfo
 {
-    internal class TestAppInfo
-    {
-        public IDictionary<string, string> Scenarios { get; set; }
-    }
+    public IDictionary<string, string> Scenarios { get; set; }
 }

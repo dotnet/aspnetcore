@@ -49,6 +49,9 @@ csharp_new_line_before_finally = true
 csharp_new_line_before_members_in_object_initializers = true
 csharp_new_line_before_members_in_anonymous_types = true
 
+# Namespace settings
+csharp_style_namespace_declarations = file_scoped
+
 [*.{xml,config,*proj,nuspec,props,resx,targets,yml,tasks}]
 indent_size = 2
 
@@ -208,6 +211,9 @@ dotnet_diagnostic.IDE0044.severity = warning
 dotnet_diagnostic.IDE0073.severity = warning
 file_header_template = Licensed to the .NET Foundation under one or more agreements.\nThe .NET Foundation licenses this file to you under the MIT license.
 
+# IDE0161: Convert to file-scoped namespace
+dotnet_diagnostic.IDE0161.severity = warning
+
 [**/{test,samples,perf}/**.{cs,vb}]
 # CA1018: Mark attributes with AttributeUsageAttribute
 dotnet_diagnostic.CA1018.severity = suggestion
@@ -248,6 +254,11 @@ dotnet_diagnostic.CA2012.severity = suggestion
 # IDE0044: Make field readonly
 dotnet_diagnostic.IDE0044.severity = suggestion
 
-
 # CA2016: Forward the 'CancellationToken' parameter to methods that take one
 dotnet_diagnostic.CA2016.severity = suggestion
+
+# Defaults for content in the shared src/ and shared runtime dir
+
+[{**/Shared/runtime/**.{cs,vb},src/Shared/test/Shared.Tests/runtime/**.{cs,vb},**/microsoft.extensions.hostfactoryresolver.sources/**.{cs,vb}}]
+# IDE0161: Convert to file-scoped namespace
+dotnet_diagnostic.IDE0161.severity = silent

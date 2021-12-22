@@ -12,60 +12,59 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace ApiExplorerWebSite
+namespace ApiExplorerWebSite;
+
+public class Startup
 {
-    public class Startup
+    // Set up application services
+    public void ConfigureServices(IServiceCollection services)
     {
-        // Set up application services
-        public void ConfigureServices(IServiceCollection services)
+        services.AddTransient<ILoggerFactory, LoggerFactory>();
+
+        var wellKnownChangeToken = new WellKnownChangeToken();
+        services.AddControllers(options =>
         {
-            services.AddTransient<ILoggerFactory, LoggerFactory>();
+            options.Filters.AddService(typeof(ApiExplorerDataFilter));
 
-            var wellKnownChangeToken = new WellKnownChangeToken();
-            services.AddControllers(options =>
-            {
-                options.Filters.AddService(typeof(ApiExplorerDataFilter));
+            options.Conventions.Add(new ApiExplorerVisibilityEnabledConvention());
+            options.Conventions.Add(new ApiExplorerVisibilityDisabledConvention(
+                typeof(ApiExplorerVisibilityDisabledByConventionController)));
+            options.Conventions.Add(new ApiExplorerInboundOutboundConvention(
+                typeof(ApiExplorerInboundOutBoundController)));
+            options.Conventions.Add(new ApiExplorerRouteChangeConvention(wellKnownChangeToken));
 
-                options.Conventions.Add(new ApiExplorerVisibilityEnabledConvention());
-                options.Conventions.Add(new ApiExplorerVisibilityDisabledConvention(
-                    typeof(ApiExplorerVisibilityDisabledByConventionController)));
-                options.Conventions.Add(new ApiExplorerInboundOutboundConvention(
-                    typeof(ApiExplorerInboundOutBoundController)));
-                options.Conventions.Add(new ApiExplorerRouteChangeConvention(wellKnownChangeToken));
+            options.OutputFormatters.Clear();
+            options.OutputFormatters.Add(new XmlDataContractSerializerOutputFormatter());
+        })
+        .AddNewtonsoftJson();
 
-                options.OutputFormatters.Clear();
-                options.OutputFormatters.Add(new XmlDataContractSerializerOutputFormatter());
-            })
-            .AddNewtonsoftJson();
-
-            services.AddSingleton<ApiExplorerDataFilter>();
-            services.AddSingleton<IActionDescriptorChangeProvider, ActionDescriptorChangeProvider>();
-            services.AddSingleton(wellKnownChangeToken);
-        }
-
-        public void Configure(IApplicationBuilder app)
-        {
-            app.UseRouting();
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapDefaultControllerRoute();
-            });
-        }
-
-        public static void Main(string[] args)
-        {
-            var host = CreateWebHostBuilder(args)
-                .Build();
-
-            host.Run();
-        }
-
-        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-            new WebHostBuilder()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseKestrel()
-                .UseIISIntegration()
-                .UseStartup<Startup>();
+        services.AddSingleton<ApiExplorerDataFilter>();
+        services.AddSingleton<IActionDescriptorChangeProvider, ActionDescriptorChangeProvider>();
+        services.AddSingleton(wellKnownChangeToken);
     }
+
+    public void Configure(IApplicationBuilder app)
+    {
+        app.UseRouting();
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapDefaultControllerRoute();
+        });
+    }
+
+    public static void Main(string[] args)
+    {
+        var host = CreateWebHostBuilder(args)
+            .Build();
+
+        host.Run();
+    }
+
+    public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
+        new WebHostBuilder()
+            .UseContentRoot(Directory.GetCurrentDirectory())
+            .UseKestrel()
+            .UseIISIntegration()
+            .UseStartup<Startup>();
 }
 

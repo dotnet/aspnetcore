@@ -10,42 +10,41 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc
+namespace Microsoft.AspNetCore.Mvc;
+
+public class HttpOkResultTest
 {
-    public class HttpOkResultTest
+    [Fact]
+    public void HttpOkResult_InitializesStatusCode()
     {
-        [Fact]
-        public void HttpOkResult_InitializesStatusCode()
-        {
-            // Arrange & Act
-            var result = new OkResult();
+        // Arrange & Act
+        var result = new OkResult();
 
-            // Assert
-            Assert.Equal(StatusCodes.Status200OK, result.StatusCode);
-        }
+        // Assert
+        Assert.Equal(StatusCodes.Status200OK, result.StatusCode);
+    }
 
-        [Fact]
-        public async Task HttpOkResult_SetsStatusCode()
-        {
-            // Arrange
-            var httpContext = new DefaultHttpContext();
-            httpContext.RequestServices = CreateServices().BuildServiceProvider();
+    [Fact]
+    public async Task HttpOkResult_SetsStatusCode()
+    {
+        // Arrange
+        var httpContext = new DefaultHttpContext();
+        httpContext.RequestServices = CreateServices().BuildServiceProvider();
 
-            var context = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
-            var result = new OkResult();
+        var context = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+        var result = new OkResult();
 
-            // Act
-            await result.ExecuteResultAsync(context);
+        // Act
+        await result.ExecuteResultAsync(context);
 
-            // Assert
-            Assert.Equal(StatusCodes.Status200OK, context.HttpContext.Response.StatusCode);
-        }
+        // Assert
+        Assert.Equal(StatusCodes.Status200OK, context.HttpContext.Response.StatusCode);
+    }
 
-        private static IServiceCollection CreateServices()
-        {
-            var services = new ServiceCollection();
-            services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
-            return services;
-        }
+    private static IServiceCollection CreateServices()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+        return services;
     }
 }

@@ -3,13 +3,12 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace RoutingWebSite
+namespace RoutingWebSite;
+
+public class DataTokensController : Controller
 {
-    public class DataTokensController : Controller
+    public object Index()
     {
-        public object Index()
-        {
-            return RouteData.DataTokens;
-        }
+        return RouteData.DataTokens;
     }
 }

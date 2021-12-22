@@ -4,10 +4,9 @@
 using System;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace BasicWebSite
+namespace BasicWebSite;
+
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
+public class VndErrorAttribute : Attribute, IFilterMetadata
 {
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
-    public class VndErrorAttribute : Attribute, IFilterMetadata
-    {
-    }
 }

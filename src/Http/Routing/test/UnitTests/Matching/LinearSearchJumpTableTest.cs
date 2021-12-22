@@ -2,16 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 
-namespace Microsoft.AspNetCore.Routing.Matching
+namespace Microsoft.AspNetCore.Routing.Matching;
+
+public class LinearSearchJumpTableTest : MultipleEntryJumpTableTest
 {
-    public class LinearSearchJumpTableTest : MultipleEntryJumpTableTest
+    internal override JumpTable CreateTable(
+        int defaultDestination,
+        int existDestination,
+        params (string text, int destination)[] entries)
     {
-        internal override JumpTable CreateTable(
-            int defaultDestination,
-            int existDestination,
-            params (string text, int destination)[] entries)
-        {
-            return new LinearSearchJumpTable(defaultDestination, existDestination, entries);
-        }
+        return new LinearSearchJumpTable(defaultDestination, existDestination, entries);
     }
 }

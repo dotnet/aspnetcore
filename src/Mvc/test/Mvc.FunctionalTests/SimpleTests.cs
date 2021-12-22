@@ -7,31 +7,30 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.FunctionalTests
+namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
+
+public class SimpleTests : IClassFixture<MvcTestFixture<SimpleWebSite.Startup>>
 {
-    public class SimpleTests : IClassFixture<MvcTestFixture<SimpleWebSite.Startup>>
+    public SimpleTests(MvcTestFixture<SimpleWebSite.Startup> fixture)
     {
-        public SimpleTests(MvcTestFixture<SimpleWebSite.Startup> fixture)
-        {
-            Client = fixture.CreateDefaultClient();
-        }
+        Client = fixture.CreateDefaultClient();
+    }
 
-        public HttpClient Client { get; }
+    public HttpClient Client { get; }
 
-        [Fact]
-        public async Task JsonSerializeFormatted()
-        {
-            // Arrange
-            var expected = "{" + Environment.NewLine
-                 + "  \"first\": \"wall\"," + Environment.NewLine
-                 + "  \"second\": \"floor\"" + Environment.NewLine
-                 + "}";
+    [Fact]
+    public async Task JsonSerializeFormatted()
+    {
+        // Arrange
+        var expected = "{" + Environment.NewLine
+             + "  \"first\": \"wall\"," + Environment.NewLine
+             + "  \"second\": \"floor\"" + Environment.NewLine
+             + "}";
 
-            // Act
-            var content = await Client.GetStringAsync("http://localhost/Home/Index");
+        // Act
+        var content = await Client.GetStringAsync("http://localhost/Home/Index");
 
-            // Assert
-            Assert.Equal(expected, content);
-        }
+        // Assert
+        Assert.Equal(expected, content);
     }
 }

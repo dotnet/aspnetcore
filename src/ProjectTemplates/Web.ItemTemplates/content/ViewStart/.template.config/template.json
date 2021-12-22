@@ -10,8 +10,8 @@
     "type": "item"
   },
   "groupIdentity": "Microsoft.AspNetCore.Mvc.ViewStart",
-  "precedence": "100",
-  "identity": "Microsoft.AspNetCore.Mvc.ViewStart",
+  "precedence": "600",
+  "identity": "Microsoft.AspNetCore.Mvc.ViewStart.6.0",
   "shortName": "viewstart",
   "sourceName": "ignoreme",
   "primaryOutputs": [
@@ -28,6 +28,7 @@
   },
   "postActions": [
     {
+      "id": "openInEditor",
       "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
       "description": "Opens _ViewStart.cshtml in the editor",
       "manualInstructions": [ ],

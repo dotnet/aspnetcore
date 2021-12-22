@@ -6,69 +6,68 @@ using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Routing.LinkGeneration
+namespace Microsoft.AspNetCore.Routing.LinkGeneration;
+
+public class SingleRouteRouteValuesAddressSchemeBenchmark : EndpointRoutingBenchmarkBase
 {
-    public class SingleRouteRouteValuesAddressSchemeBenchmark : EndpointRoutingBenchmarkBase
+    private IEndpointAddressScheme<RouteValuesAddress> _implementation;
+    private TestAddressScheme _baseline;
+    private (HttpContext HttpContext, RouteValueDictionary AmbientValues) _requestContext;
+
+    [GlobalSetup]
+    public void Setup()
     {
-        private IEndpointAddressScheme<RouteValuesAddress> _implementation;
-        private TestAddressScheme _baseline;
-        private (HttpContext HttpContext, RouteValueDictionary AmbientValues) _requestContext;
+        var template = "Products/Details";
+        var defaults = new { controller = "Products", action = "Details" };
+        var requiredValues = new { controller = "Products", action = "Details" };
 
-        [GlobalSetup]
-        public void Setup()
+        SetupEndpoints(CreateEndpoint(template, defaults, requiredValues: requiredValues, routeName: "ProductDetails"));
+        var services = CreateServices();
+        _implementation = services.GetRequiredService<IEndpointAddressScheme<RouteValuesAddress>>();
+        _baseline = new TestAddressScheme(Endpoints[0]);
+
+        _requestContext = CreateCurrentRequestContext();
+    }
+
+    [Benchmark(Baseline = true)]
+    public void Baseline()
+    {
+        var actual = _baseline.FindEndpoints(address: 0);
+    }
+
+    [Benchmark]
+    public void RouteValues()
+    {
+        var actual = _implementation.FindEndpoints(new RouteValuesAddress
         {
-            var template = "Products/Details";
-            var defaults = new { controller = "Products", action = "Details" };
-            var requiredValues = new { controller = "Products", action = "Details" };
+            AmbientValues = _requestContext.AmbientValues,
+            ExplicitValues = new RouteValueDictionary(new { controller = "Products", action = "Details" }),
+            RouteName = null
+        });
+    }
 
-            SetupEndpoints(CreateEndpoint(template, defaults, requiredValues: requiredValues, routeName: "ProductDetails"));
-            var services = CreateServices();
-            _implementation = services.GetRequiredService<IEndpointAddressScheme<RouteValuesAddress>>();
-            _baseline = new TestAddressScheme(Endpoints[0]);
+    [Benchmark]
+    public void RouteName()
+    {
+        var actual = _implementation.FindEndpoints(new RouteValuesAddress
+        {
+            AmbientValues = _requestContext.AmbientValues,
+            RouteName = "ProductDetails"
+        });
+    }
 
-            _requestContext = CreateCurrentRequestContext();
+    private class TestAddressScheme : IEndpointAddressScheme<int>
+    {
+        private readonly Endpoint _endpoint;
+
+        public TestAddressScheme(Endpoint endpoint)
+        {
+            _endpoint = endpoint;
         }
 
-        [Benchmark(Baseline = true)]
-        public void Baseline()
+        public IEnumerable<Endpoint> FindEndpoints(int address)
         {
-            var actual = _baseline.FindEndpoints(address: 0);
-        }
-
-        [Benchmark]
-        public void RouteValues()
-        {
-            var actual = _implementation.FindEndpoints(new RouteValuesAddress
-            {
-                AmbientValues = _requestContext.AmbientValues,
-                ExplicitValues = new RouteValueDictionary(new { controller = "Products", action = "Details" }),
-                RouteName = null
-            });
-        }
-
-        [Benchmark]
-        public void RouteName()
-        {
-            var actual = _implementation.FindEndpoints(new RouteValuesAddress
-            {
-                AmbientValues = _requestContext.AmbientValues,
-                RouteName = "ProductDetails"
-            });
-        }
-
-        private class TestAddressScheme : IEndpointAddressScheme<int>
-        {
-            private readonly Endpoint _endpoint;
-
-            public TestAddressScheme(Endpoint endpoint)
-            {
-                _endpoint = endpoint;
-            }
-
-            public IEnumerable<Endpoint> FindEndpoints(int address)
-            {
-                return new[] { _endpoint };
-            }
+            return new[] { _endpoint };
         }
     }
 }

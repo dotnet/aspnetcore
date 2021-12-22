@@ -3,25 +3,24 @@
 
 using Microsoft.Extensions.CommandLineUtils;
 
-namespace Microsoft.Extensions.SecretManager.Tools.Internal
+namespace Microsoft.Extensions.SecretManager.Tools.Internal;
+
+internal class ClearCommand : ICommand
 {
-    internal class ClearCommand : ICommand
+    public static void Configure(CommandLineApplication command, CommandLineOptions options)
     {
-        public static void Configure(CommandLineApplication command, CommandLineOptions options)
-        {
-            command.Description = "Deletes all the application secrets";
-            command.HelpOption();
+        command.Description = "Deletes all the application secrets";
+        command.HelpOption();
 
-            command.OnExecute(() =>
-            {
-                options.Command = new ClearCommand();
-            });
-        }
-
-        public void Execute(CommandContext context)
+        command.OnExecute(() =>
         {
-            context.SecretStore.Clear();
-            context.SecretStore.Save();
-        }
+            options.Command = new ClearCommand();
+        });
+    }
+
+    public void Execute(CommandContext context)
+    {
+        context.SecretStore.Clear();
+        context.SecretStore.Save();
     }
 }

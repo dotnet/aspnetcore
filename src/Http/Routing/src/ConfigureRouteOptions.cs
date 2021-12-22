@@ -7,30 +7,29 @@ using System.Collections.ObjectModel;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.Extensions.DependencyInjection
+namespace Microsoft.Extensions.DependencyInjection;
+
+internal class ConfigureRouteOptions : IConfigureOptions<RouteOptions>
 {
-    internal class ConfigureRouteOptions : IConfigureOptions<RouteOptions>
+    private readonly ICollection<EndpointDataSource> _dataSources;
+
+    public ConfigureRouteOptions(ICollection<EndpointDataSource> dataSources)
     {
-        private readonly ICollection<EndpointDataSource> _dataSources;
-
-        public ConfigureRouteOptions(ICollection<EndpointDataSource> dataSources)
+        if (dataSources == null)
         {
-            if (dataSources == null)
-            {
-                throw new ArgumentNullException(nameof(dataSources));
-            }
-
-            _dataSources = dataSources;
+            throw new ArgumentNullException(nameof(dataSources));
         }
 
-        public void Configure(RouteOptions options)
-        {
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
+        _dataSources = dataSources;
+    }
 
-            options.EndpointDataSources = _dataSources;
+    public void Configure(RouteOptions options)
+    {
+        if (options == null)
+        {
+            throw new ArgumentNullException(nameof(options));
         }
+
+        options.EndpointDataSources = _dataSources;
     }
 }

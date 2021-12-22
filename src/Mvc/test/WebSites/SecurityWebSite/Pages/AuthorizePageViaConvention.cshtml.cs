@@ -4,10 +4,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace SecurityWebSite
+namespace SecurityWebSite;
+
+public class AuthorizePageViaConvention : PageModel
 {
-    public class AuthorizePageViaConvention : PageModel
-    {
-        public IActionResult OnGet() => Page();
-    }
+    public IActionResult OnGet() => Page();
 }

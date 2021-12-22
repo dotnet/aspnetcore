@@ -4,19 +4,18 @@
 using System;
 using Microsoft.AspNetCore.Cryptography.Cng;
 
-namespace Microsoft.AspNetCore.DataProtection.Cng
+namespace Microsoft.AspNetCore.DataProtection.Cng;
+
+internal sealed unsafe class BCryptGenRandomImpl : IBCryptGenRandom
 {
-    internal sealed unsafe class BCryptGenRandomImpl : IBCryptGenRandom
+    public static readonly BCryptGenRandomImpl Instance = new BCryptGenRandomImpl();
+
+    private BCryptGenRandomImpl()
     {
-        public static readonly BCryptGenRandomImpl Instance = new BCryptGenRandomImpl();
+    }
 
-        private BCryptGenRandomImpl()
-        {
-        }
-
-        public void GenRandom(byte* pbBuffer, uint cbBuffer)
-        {
-            BCryptUtil.GenRandom(pbBuffer, cbBuffer);
-        }
+    public void GenRandom(byte* pbBuffer, uint cbBuffer)
+    {
+        BCryptUtil.GenRandom(pbBuffer, cbBuffer);
     }
 }

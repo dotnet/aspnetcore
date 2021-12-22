@@ -5,15 +5,14 @@
 
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Mvc.ModelBinding
-{
-    internal class NoOpBinder : IModelBinder
-    {
-        public static readonly IModelBinder Instance = new NoOpBinder();
+namespace Microsoft.AspNetCore.Mvc.ModelBinding;
 
-        public Task BindModelAsync(ModelBindingContext bindingContext)
-        {
-            return Task.CompletedTask;
-        }
+internal class NoOpBinder : IModelBinder
+{
+    public static readonly IModelBinder Instance = new NoOpBinder();
+
+    public Task BindModelAsync(ModelBindingContext bindingContext)
+    {
+        return Task.CompletedTask;
     }
 }

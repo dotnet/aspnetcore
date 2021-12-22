@@ -11,47 +11,46 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace HostFilteringSample
+namespace HostFilteringSample;
+
+public class Startup
 {
-    public class Startup
+    public IConfiguration Config { get; }
+
+    public Startup(IConfiguration config)
     {
-        public IConfiguration Config { get; }
+        Config = config;
+    }
 
-        public Startup(IConfiguration config)
+    public void ConfigureServices(IServiceCollection services)
+    {
+        services.AddHostFiltering(options =>
         {
-            Config = config;
-        }
 
-        public void ConfigureServices(IServiceCollection services)
+        });
+
+        // Fallback
+        services.PostConfigure<HostFilteringOptions>(options =>
         {
-            services.AddHostFiltering(options =>
+            if (options.AllowedHosts == null || options.AllowedHosts.Count == 0)
             {
-
-            });
-
-            // Fallback
-            services.PostConfigure<HostFilteringOptions>(options =>
-            {
-                if (options.AllowedHosts == null || options.AllowedHosts.Count == 0)
-                {
                     // "AllowedHosts": "localhost;127.0.0.1;[::1]"
                     var hosts = Config["AllowedHosts"]?.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
                     // Fall back to "*" to disable.
                     options.AllowedHosts = (hosts?.Length > 0 ? hosts : new[] { "*" });
-                }
-            });
-            // Change notification
-            services.AddSingleton<IOptionsChangeTokenSource<HostFilteringOptions>>(new ConfigurationChangeTokenSource<HostFilteringOptions>(Config));
-        }
+            }
+        });
+        // Change notification
+        services.AddSingleton<IOptionsChangeTokenSource<HostFilteringOptions>>(new ConfigurationChangeTokenSource<HostFilteringOptions>(Config));
+    }
 
-        public void Configure(IApplicationBuilder app)
+    public void Configure(IApplicationBuilder app)
+    {
+        app.UseHostFiltering();
+
+        app.Run(context =>
         {
-            app.UseHostFiltering();
-
-            app.Run(context =>
-            {
-                return context.Response.WriteAsync("Hello World! " + context.Request.Host);
-            });
-        }
+            return context.Response.WriteAsync("Hello World! " + context.Request.Host);
+        });
     }
 }

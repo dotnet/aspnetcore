@@ -3,24 +3,23 @@
 
 using Microsoft.AspNetCore.Internal;
 
-namespace Templates.Test.Helpers
+namespace Templates.Test.Helpers;
+
+internal class ProcessResult
 {
-    internal class ProcessResult
+    public ProcessResult(ProcessEx process)
     {
-        public ProcessResult(ProcessEx process)
-        {
-            Process = process.Process.StartInfo.FileName + " " + process.Process.StartInfo.Arguments;
-            ExitCode = process.ExitCode;
-            Output = process.Output;
-            Error = process.Error;
-        }
-
-        public string Process { get; }
-
-        public int ExitCode { get; }
-
-        public string Error { get; }
-
-        public string Output { get; }
+        Process = process.Process.StartInfo.FileName + " " + process.Process.StartInfo.Arguments;
+        ExitCode = process.ExitCode;
+        Output = process.Output;
+        Error = process.Error;
     }
+
+    public string Process { get; }
+
+    public int ExitCode { get; set; }
+
+    public string Error { get; }
+
+    public string Output { get; }
 }

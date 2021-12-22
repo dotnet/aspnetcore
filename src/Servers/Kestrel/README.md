@@ -13,7 +13,6 @@ The following contains a description of the sub-directories.
 - [test/](test/): Contains End to End tests for Kestrel.
 - [Transport.Sockets/](Transport.Sockets/):Contains the Sockets transport for connection management.
 - [Transport.Quic/](Transport.Quic/): Contains the QUIC transport for connection management.
-- [Transport.Libuv/](Transport.Libuv/): Contains the obsolete Libuv transport for connection management.
 
 ## Development Setup
 

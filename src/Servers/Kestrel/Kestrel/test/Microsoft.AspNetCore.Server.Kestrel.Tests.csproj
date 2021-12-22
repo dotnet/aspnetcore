@@ -20,7 +20,6 @@
     <Content Include="$(KestrelSharedSourceRoot)\TransportMultiplexedConnection.Generated.cs" LinkBase="shared\GeneratedContent" CopyToOutputDirectory="PreserveNewest" />
 
     <ProjectReference Include="..\..\tools\CodeGenerator\CodeGenerator.csproj" />
-    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
   </ItemGroup>
 

@@ -3,10 +3,9 @@
 
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Components.Forms
+namespace Microsoft.AspNetCore.Components.Forms;
+
+internal interface IInputFileJsCallbacks
 {
-    internal interface IInputFileJsCallbacks
-    {
-        Task NotifyChange(BrowserFile[] files);
-    }
+    Task NotifyChange(BrowserFile[] files);
 }

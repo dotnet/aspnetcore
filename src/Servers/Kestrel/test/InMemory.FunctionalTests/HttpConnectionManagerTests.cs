@@ -13,11 +13,11 @@ using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
+namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
+
+public class HttpConnectionManagerTests : LoggedTest
 {
-    public class HttpConnectionManagerTests : LoggedTest
-    {
-        // This test causes MemoryPoolBlocks to be finalized which in turn causes an assert failure in debug builds.
+    // This test causes MemoryPoolBlocks to be finalized which in turn causes an assert failure in debug builds.
 #if !DEBUG
         [ConditionalFact]
         [NoDebuggerCondition]
@@ -111,10 +111,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 #endif
 
-        private class NoDebuggerConditionAttribute : Attribute, ITestCondition
-        {
-            public bool IsMet => !Debugger.IsAttached;
-            public string SkipReason => "A debugger is attached.";
-        }
+    private class NoDebuggerConditionAttribute : Attribute, ITestCondition
+    {
+        public bool IsMet => !Debugger.IsAttached;
+        public string SkipReason => "A debugger is attached.";
     }
 }

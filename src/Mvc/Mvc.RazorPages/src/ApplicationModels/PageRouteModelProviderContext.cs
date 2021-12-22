@@ -3,16 +3,15 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Mvc.ApplicationModels
+namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
+
+/// <summary>
+/// A context object for <see cref="IPageRouteModelProvider"/>.
+/// </summary>
+public class PageRouteModelProviderContext
 {
     /// <summary>
-    /// A context object for <see cref="IPageRouteModelProvider"/>.
+    /// Gets the <see cref="PageRouteModel"/> instances.
     /// </summary>
-    public class PageRouteModelProviderContext
-    {
-        /// <summary>
-        /// Gets the <see cref="PageRouteModel"/> instances.
-        /// </summary>
-        public IList<PageRouteModel> RouteModels { get; } = new List<PageRouteModel>();
-    }
+    public IList<PageRouteModel> RouteModels { get; } = new List<PageRouteModel>();
 }

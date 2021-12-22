@@ -12,46 +12,45 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 
-namespace LocalizationWebsite
-{
-    public class StartupResourcesAtRootFolder
-    {
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services.AddLocalization();
-        }
+namespace LocalizationWebsite;
 
-        public void Configure(
-            IApplicationBuilder app,
-            ILoggerFactory loggerFactory,
-            IStringLocalizerFactory stringLocalizerFactory,
-            IStringLocalizer<StartupResourcesAtRootFolder> startupStringLocalizer,
-            IStringLocalizer<Customer> customerStringLocalizer)
+public class StartupResourcesAtRootFolder
+{
+    public void ConfigureServices(IServiceCollection services)
+    {
+        services.AddLocalization();
+    }
+
+    public void Configure(
+        IApplicationBuilder app,
+        ILoggerFactory loggerFactory,
+        IStringLocalizerFactory stringLocalizerFactory,
+        IStringLocalizer<StartupResourcesAtRootFolder> startupStringLocalizer,
+        IStringLocalizer<Customer> customerStringLocalizer)
+    {
+        app.UseRequestLocalization(new RequestLocalizationOptions
         {
-            app.UseRequestLocalization(new RequestLocalizationOptions
-            {
-                DefaultRequestCulture = new RequestCulture("en-US"),
-                SupportedCultures = new List<CultureInfo>()
+            DefaultRequestCulture = new RequestCulture("en-US"),
+            SupportedCultures = new List<CultureInfo>()
                 {
                     new CultureInfo("fr-FR")
                 },
-                SupportedUICultures = new List<CultureInfo>()
+            SupportedUICultures = new List<CultureInfo>()
                 {
                     new CultureInfo("fr-FR")
                 }
-            });
+        });
 
-            var location = typeof(LocalizationWebsite.StartupResourcesAtRootFolder).GetTypeInfo().Assembly.GetName().Name;
-            var stringLocalizer = stringLocalizerFactory.Create("Test", location: location);
+        var location = typeof(LocalizationWebsite.StartupResourcesAtRootFolder).GetTypeInfo().Assembly.GetName().Name;
+        var stringLocalizer = stringLocalizerFactory.Create("Test", location: location);
 
-            app.Run(async (context) =>
-            {
-                await context.Response.WriteAsync(startupStringLocalizer["Hello"]);
-                await context.Response.WriteAsync(" ");
-                await context.Response.WriteAsync(stringLocalizer["Hello"]);
-                await context.Response.WriteAsync(" ");
-                await context.Response.WriteAsync(customerStringLocalizer["Hello"]);
-            });
-        }
+        app.Run(async (context) =>
+        {
+            await context.Response.WriteAsync(startupStringLocalizer["Hello"]);
+            await context.Response.WriteAsync(" ");
+            await context.Response.WriteAsync(stringLocalizer["Hello"]);
+            await context.Response.WriteAsync(" ");
+            await context.Response.WriteAsync(customerStringLocalizer["Hello"]);
+        });
     }
 }

@@ -1,9 +1,0 @@
-Source Location: (65:1,7 [59] x:\dir\subdir\Test\TestComponent.cshtml)
-|
-	[Parameter] public RenderFragment Header { get; set; }
-|
-Generated Location: (1054:30,7 [59] )
-|
-	[Parameter] public RenderFragment Header { get; set; }
-|
-

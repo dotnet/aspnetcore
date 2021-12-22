@@ -3,33 +3,32 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Razor.TagHelpers
+namespace Microsoft.AspNetCore.Razor.TagHelpers;
+
+/// <summary>
+/// Provides a hint of the <see cref="ITagHelper"/>'s output element.
+/// </summary>
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
+public sealed class OutputElementHintAttribute : Attribute
 {
     /// <summary>
-    /// Provides a hint of the <see cref="ITagHelper"/>'s output element.
+    /// Instantiates a new instance of the <see cref="OutputElementHintAttribute"/> class.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
-    public sealed class OutputElementHintAttribute : Attribute
+    /// <param name="outputElement">
+    /// The HTML element the <see cref="ITagHelper"/> may output.
+    /// </param>
+    public OutputElementHintAttribute(string outputElement)
     {
-        /// <summary>
-        /// Instantiates a new instance of the <see cref="OutputElementHintAttribute"/> class.
-        /// </summary>
-        /// <param name="outputElement">
-        /// The HTML element the <see cref="ITagHelper"/> may output.
-        /// </param>
-        public OutputElementHintAttribute(string outputElement)
+        if (outputElement == null)
         {
-            if (outputElement == null)
-            {
-                throw new ArgumentNullException(nameof(outputElement));
-            }
-
-            OutputElement = outputElement;
+            throw new ArgumentNullException(nameof(outputElement));
         }
 
-        /// <summary>
-        /// The HTML element the <see cref="ITagHelper"/> may output.
-        /// </summary>
-        public string OutputElement { get; }
+        OutputElement = outputElement;
     }
+
+    /// <summary>
+    /// The HTML element the <see cref="ITagHelper"/> may output.
+    /// </summary>
+    public string OutputElement { get; }
 }

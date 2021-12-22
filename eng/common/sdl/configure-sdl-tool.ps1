@@ -69,13 +69,13 @@ try {
     # For some tools, add default and automatic args.
     if ($tool.Name -eq 'credscan') {
       if ($targetDirectory) {
-        $tool.Args += "TargetDirectory < $TargetDirectory"
+        $tool.Args += "`"TargetDirectory < $TargetDirectory`""
       }
-      $tool.Args += "OutputType < pre"
+      $tool.Args += "`"OutputType < pre`""
       $tool.Args += $CrScanAdditionalRunConfigParams
     } elseif ($tool.Name -eq 'policheck') {
       if ($targetDirectory) {
-        $tool.Args += "Target < $TargetDirectory"
+        $tool.Args += "`"Target < $TargetDirectory`""
       }
       $tool.Args += $PoliCheckAdditionalRunConfigParams
     }

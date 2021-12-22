@@ -7,25 +7,24 @@ using Microsoft.AspNetCore.Components.WebView.Services;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.JSInterop;
 
-namespace Microsoft.Extensions.DependencyInjection
+namespace Microsoft.Extensions.DependencyInjection;
+
+/// <summary>
+/// Extensions for adding component webview services to the <see cref="IServiceCollection"/>.
+/// </summary>
+public static class ComponentsWebViewServiceCollectionExtensions
 {
     /// <summary>
-    /// Extensions for adding component webview services to the <see cref="IServiceCollection"/>.
+    /// Adds component webview services to the <paramref name="services"/> collection.
     /// </summary>
-    public static class ComponentsWebViewServiceCollectionExtensions
+    /// <param name="services">The <see cref="IServiceCollection"/> to add the component webview services to.</param>
+    /// <returns></returns>
+    public static IServiceCollection AddBlazorWebView(this IServiceCollection services)
     {
-        /// <summary>
-        /// Adds component webview services to the <paramref name="services"/> collection.
-        /// </summary>
-        /// <param name="services">The <see cref="IServiceCollection"/> to add the component webview services to.</param>
-        /// <returns></returns>
-        public static IServiceCollection AddBlazorWebView(this IServiceCollection services)
-        {
-            services.AddLogging();
-            services.TryAddScoped<IJSRuntime, WebViewJSRuntime>();
-            services.TryAddScoped<INavigationInterception, WebViewNavigationInterception>();
-            services.TryAddScoped<NavigationManager, WebViewNavigationManager>();
-            return services;
-        }
+        services.AddLogging();
+        services.TryAddScoped<IJSRuntime, WebViewJSRuntime>();
+        services.TryAddScoped<INavigationInterception, WebViewNavigationInterception>();
+        services.TryAddScoped<NavigationManager, WebViewNavigationManager>();
+        return services;
     }
 }

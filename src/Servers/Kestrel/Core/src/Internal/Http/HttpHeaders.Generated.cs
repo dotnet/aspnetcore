@@ -102,6 +102,179 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         WWWAuthenticate,
     }
 
+    internal static class HttpHeadersCompression
+    {
+        internal static (int index, bool matchedValue) MatchKnownHeaderQPack(KnownHeaderType knownHeader, string value)
+        {
+            switch (knownHeader)
+            {
+                case KnownHeaderType.Age:
+                    switch (value)
+                    {
+                        case "0":
+                            return (2, true);
+                        default:
+                            return (2, false);
+                    }
+                case KnownHeaderType.ContentLength:
+                    switch (value)
+                    {
+                        case "0":
+                            return (4, true);
+                        default:
+                            return (4, false);
+                    }
+                case KnownHeaderType.Date:
+                    return (6, false);
+                case KnownHeaderType.ETag:
+                    return (7, false);
+                case KnownHeaderType.LastModified:
+                    return (10, false);
+                case KnownHeaderType.Location:
+                    return (12, false);
+                case KnownHeaderType.SetCookie:
+                    return (14, false);
+                case KnownHeaderType.AcceptRanges:
+                    switch (value)
+                    {
+                        case "bytes":
+                            return (32, true);
+                        default:
+                            return (32, false);
+                    }
+                case KnownHeaderType.AccessControlAllowHeaders:
+                    switch (value)
+                    {
+                        case "cache-control":
+                            return (33, true);
+                        case "content-type":
+                            return (34, true);
+                        case "*":
+                            return (75, true);
+                        default:
+                            return (33, false);
+                    }
+                case KnownHeaderType.AccessControlAllowOrigin:
+                    switch (value)
+                    {
+                        case "*":
+                            return (35, true);
+                        default:
+                            return (35, false);
+                    }
+                case KnownHeaderType.CacheControl:
+                    switch (value)
+                    {
+                        case "max-age=0":
+                            return (36, true);
+                        case "max-age=2592000":
+                            return (37, true);
+                        case "max-age=604800":
+                            return (38, true);
+                        case "no-cache":
+                            return (39, true);
+                        case "no-store":
+                            return (40, true);
+                        case "public, max-age=31536000":
+                            return (41, true);
+                        default:
+                            return (36, false);
+                    }
+                case KnownHeaderType.ContentEncoding:
+                    switch (value)
+                    {
+                        case "br":
+                            return (42, true);
+                        case "gzip":
+                            return (43, true);
+                        default:
+                            return (42, false);
+                    }
+                case KnownHeaderType.ContentType:
+                    switch (value)
+                    {
+                        case "application/dns-message":
+                            return (44, true);
+                        case "application/javascript":
+                            return (45, true);
+                        case "application/json":
+                            return (46, true);
+                        case "application/x-www-form-urlencoded":
+                            return (47, true);
+                        case "image/gif":
+                            return (48, true);
+                        case "image/jpeg":
+                            return (49, true);
+                        case "image/png":
+                            return (50, true);
+                        case "text/css":
+                            return (51, true);
+                        case "text/html; charset=utf-8":
+                            return (52, true);
+                        case "text/plain":
+                            return (53, true);
+                        case "text/plain;charset=utf-8":
+                            return (54, true);
+                        default:
+                            return (44, false);
+                    }
+                case KnownHeaderType.Vary:
+                    switch (value)
+                    {
+                        case "accept-encoding":
+                            return (59, true);
+                        case "origin":
+                            return (60, true);
+                        default:
+                            return (59, false);
+                    }
+                case KnownHeaderType.AccessControlAllowCredentials:
+                    switch (value)
+                    {
+                        case "FALSE":
+                            return (73, true);
+                        case "TRUE":
+                            return (74, true);
+                        default:
+                            return (73, false);
+                    }
+                case KnownHeaderType.AccessControlAllowMethods:
+                    switch (value)
+                    {
+                        case "get":
+                            return (76, true);
+                        case "get, post, options":
+                            return (77, true);
+                        case "options":
+                            return (78, true);
+                        default:
+                            return (76, false);
+                    }
+                case KnownHeaderType.AccessControlExposeHeaders:
+                    switch (value)
+                    {
+                        case "content-length":
+                            return (79, true);
+                        default:
+                            return (79, false);
+                    }
+                case KnownHeaderType.AltSvc:
+                    switch (value)
+                    {
+                        case "clear":
+                            return (83, true);
+                        default:
+                            return (83, false);
+                    }
+                case KnownHeaderType.Server:
+                    return (92, false);
+                
+                default:
+                    return (-1, false);
+            }
+        }
+    }
+
     internal partial class HttpHeaders
     {
         private readonly static HashSet<string> _internedHeaderNames = new HashSet<string>(96, StringComparer.OrdinalIgnoreCase)
@@ -7102,6 +7275,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return true;
         }
         
+        internal void ClearPseudoRequestHeaders()
+        {
+            _pseudoBits = _bits & 240;
+            _bits &= ~240;
+        }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static unsafe ushort ReadUnalignedLittleEndian_ushort(ref byte source)
@@ -7536,12 +7714,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public unsafe bool TryHPackAppend(int index, ReadOnlySpan<byte> value)
+        public unsafe bool TryHPackAppend(int index, ReadOnlySpan<byte> value, bool checkForNewlineChars)
         {
             ref StringValues values = ref Unsafe.AsRef<StringValues>(null);
             var nameStr = string.Empty;
             var flag = 0L;
-            var checkForNewlineChars = true;
 
             // Does the HPack static index match any "known" headers
             switch (index)
@@ -7700,6 +7877,204 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     flag = 0x200000000000L;
                     values = ref _headers._Via;
                     nameStr = HeaderNames.Via;
+                    break;
+            }
+
+            if (flag != 0)
+            {
+                // Matched a known header
+                if ((_previousBits & flag) != 0)
+                {
+                    // Had a previous string for this header, mark it as used so we don't clear it OnHeadersComplete or consider it if we get a second header
+                    _previousBits ^= flag;
+
+                    // We will only reuse this header if there was only one previous header
+                    if (values.Count == 1)
+                    {
+                        var previousValue = values.ToString();
+                        // Check lengths are the same, then if the bytes were converted to an ascii string if they would be the same.
+                        // We do not consider Utf8 headers for reuse.
+                        if (previousValue.Length == value.Length &&
+                            StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, value))
+                        {
+                            // The previous string matches what the bytes would convert to, so we will just use that one.
+                            _bits |= flag;
+                            return true;
+                        }
+                    }
+                }
+
+                // We didn't have a previous matching header value, or have already added a header, so get the string for this value.
+                var valueStr = value.GetRequestHeaderString(nameStr, EncodingSelector, checkForNewlineChars);
+                if ((_bits & flag) == 0)
+                {
+                    // We didn't already have a header set, so add a new one.
+                    _bits |= flag;
+                    values = new StringValues(valueStr);
+                }
+                else
+                {
+                    // We already had a header set, so concatenate the new one.
+                    values = AppendValue(values, valueStr);
+                }
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        public unsafe bool TryQPackAppend(int index, ReadOnlySpan<byte> value, bool checkForNewlineChars)
+        {
+            ref StringValues values = ref Unsafe.AsRef<StringValues>(null);
+            var nameStr = string.Empty;
+            var flag = 0L;
+
+            // Does the QPack static index match any "known" headers
+            switch (index)
+            {
+                case 0:
+                    flag = 0x10L;
+                    values = ref _headers._Authority;
+                    nameStr = HeaderNames.Authority;
+                    break;
+                case 1:
+                    flag = 0x40L;
+                    values = ref _headers._Path;
+                    nameStr = HeaderNames.Path;
+                    break;
+                case 4:
+                    var customEncoding = ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector)
+                        ? null : EncodingSelector(HeaderNames.ContentLength);
+                    if (customEncoding == null)
+                    {
+                        AppendContentLength(value);
+                    }
+                    else
+                    {
+                        AppendContentLengthCustomEncoding(value, customEncoding);
+                    }
+                    return true;
+                case 5:
+                    flag = 0x20000L;
+                    values = ref _headers._Cookie;
+                    nameStr = HeaderNames.Cookie;
+                    break;
+                case 6:
+                    flag = 0x80000L;
+                    values = ref _headers._Date;
+                    nameStr = HeaderNames.Date;
+                    break;
+                case 8:
+                    flag = 0x4000000L;
+                    values = ref _headers._IfModifiedSince;
+                    nameStr = HeaderNames.IfModifiedSince;
+                    break;
+                case 9:
+                    flag = 0x8000000L;
+                    values = ref _headers._IfNoneMatch;
+                    nameStr = HeaderNames.IfNoneMatch;
+                    break;
+                case 13:
+                    flag = 0x1000000000L;
+                    values = ref _headers._Referer;
+                    nameStr = HeaderNames.Referer;
+                    break;
+                case 15:
+                case 16:
+                case 17:
+                case 18:
+                case 19:
+                case 20:
+                case 21:
+                    flag = 0x20L;
+                    values = ref _headers._Method;
+                    nameStr = HeaderNames.Method;
+                    break;
+                case 22:
+                case 23:
+                    flag = 0x80L;
+                    values = ref _headers._Scheme;
+                    nameStr = HeaderNames.Scheme;
+                    break;
+                case 29:
+                case 30:
+                    flag = 0x1L;
+                    values = ref _headers._Accept;
+                    nameStr = HeaderNames.Accept;
+                    break;
+                case 31:
+                    flag = 0x200L;
+                    values = ref _headers._AcceptEncoding;
+                    nameStr = HeaderNames.AcceptEncoding;
+                    break;
+                case 36:
+                case 37:
+                case 38:
+                case 39:
+                case 40:
+                case 41:
+                    flag = 0x8000L;
+                    values = ref _headers._CacheControl;
+                    nameStr = HeaderNames.CacheControl;
+                    break;
+                case 44:
+                case 45:
+                case 46:
+                case 47:
+                case 48:
+                case 49:
+                case 50:
+                case 51:
+                case 52:
+                case 53:
+                case 54:
+                    flag = 0x10000L;
+                    values = ref _headers._ContentType;
+                    nameStr = HeaderNames.ContentType;
+                    break;
+                case 55:
+                    flag = 0x800000000L;
+                    values = ref _headers._Range;
+                    nameStr = HeaderNames.Range;
+                    break;
+                case 72:
+                    flag = 0x400L;
+                    values = ref _headers._AcceptLanguage;
+                    nameStr = HeaderNames.AcceptLanguage;
+                    break;
+                case 80:
+                    flag = 0x800L;
+                    values = ref _headers._AccessControlRequestHeaders;
+                    nameStr = HeaderNames.AccessControlRequestHeaders;
+                    break;
+                case 81:
+                case 82:
+                    flag = 0x1000L;
+                    values = ref _headers._AccessControlRequestMethod;
+                    nameStr = HeaderNames.AccessControlRequestMethod;
+                    break;
+                case 84:
+                    flag = 0x2000L;
+                    values = ref _headers._Authorization;
+                    nameStr = HeaderNames.Authorization;
+                    break;
+                case 89:
+                    flag = 0x10000000L;
+                    values = ref _headers._IfRange;
+                    nameStr = HeaderNames.IfRange;
+                    break;
+                case 90:
+                    flag = 0x100000000L;
+                    values = ref _headers._Origin;
+                    nameStr = HeaderNames.Origin;
+                    break;
+                case 95:
+                    flag = 0x8L;
+                    values = ref _headers._UserAgent;
+                    nameStr = HeaderNames.UserAgent;
                     break;
             }
 

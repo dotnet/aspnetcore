@@ -2,21 +2,20 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 
-namespace Microsoft.AspNetCore.Authentication
+namespace Microsoft.AspNetCore.Authentication;
+
+/// <summary>
+/// Name/Value representing a token.
+/// </summary>
+public class AuthenticationToken
 {
     /// <summary>
-    /// Name/Value representing a token.
+    /// Name.
     /// </summary>
-    public class AuthenticationToken
-    {
-        /// <summary>
-        /// Name.
-        /// </summary>
-        public string Name { get; set; } = default!;
+    public string Name { get; set; } = default!;
 
-        /// <summary>
-        /// Value.
-        /// </summary>
-        public string Value { get; set; } = default!;
-    }
+    /// <summary>
+    /// Value.
+    /// </summary>
+    public string Value { get; set; } = default!;
 }

@@ -7,11 +7,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
 
-namespace Wasm.Performance.TestApp
+namespace Wasm.Performance.TestApp;
+
+public static class WasmMemory
 {
-    public static class WasmMemory
-    {
-        [JSInvokable]
-        public static long GetTotalMemory() => GC.GetTotalMemory(forceFullCollection: true);
-    }
+    [JSInvokable]
+    public static long GetTotalMemory() => GC.GetTotalMemory(forceFullCollection: true);
 }

@@ -7,21 +7,20 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 
-namespace RoutingWebSite
+namespace RoutingWebSite;
+
+[Route("[controller]/[action]", Name = "[controller]_[action]")]
+public class ParameterTransformerController : Controller
 {
-    [Route("[controller]/[action]", Name = "[controller]_[action]")]
-    public class ParameterTransformerController : Controller
+    private readonly TestResponseGenerator _generator;
+
+    public ParameterTransformerController(TestResponseGenerator generator)
     {
-        private readonly TestResponseGenerator _generator;
+        _generator = generator;
+    }
 
-        public ParameterTransformerController(TestResponseGenerator generator)
-        {
-            _generator = generator;
-        }
-
-        public IActionResult MyAction()
-        {
-            return _generator.Generate("/parameter-transformer/my-action");
-        }
+    public IActionResult MyAction()
+    {
+        return _generator.Generate("/parameter-transformer/my-action");
     }
 }

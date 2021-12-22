@@ -4,54 +4,53 @@
 using System.Collections.Generic;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
+namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
+
+public class MetadataDetailsProviderExtensionsTest
 {
-    public class MetadataDetailsProviderExtensionsTest
+    [Fact]
+    public void RemoveType_RemovesAllOfType()
     {
-        [Fact]
-        public void RemoveType_RemovesAllOfType()
-        {
-            // Arrange
-            var list = new List<IMetadataDetailsProvider>
+        // Arrange
+        var list = new List<IMetadataDetailsProvider>
             {
                 new FooMetadataDetailsProvider(),
                 new BarMetadataDetailsProvider(),
                 new FooMetadataDetailsProvider()
             };
 
-            // Act
-            list.RemoveType(typeof(FooMetadataDetailsProvider));
+        // Act
+        list.RemoveType(typeof(FooMetadataDetailsProvider));
 
-            // Assert
-            var provider = Assert.Single(list);
-            Assert.IsType<BarMetadataDetailsProvider>(provider);
-        }
+        // Assert
+        var provider = Assert.Single(list);
+        Assert.IsType<BarMetadataDetailsProvider>(provider);
+    }
 
-        [Fact]
-        public void GenericRemoveType_RemovesAllOfType()
-        {
-            // Arrange
-            var list = new List<IMetadataDetailsProvider>
+    [Fact]
+    public void GenericRemoveType_RemovesAllOfType()
+    {
+        // Arrange
+        var list = new List<IMetadataDetailsProvider>
             {
                 new FooMetadataDetailsProvider(),
                 new BarMetadataDetailsProvider(),
                 new FooMetadataDetailsProvider()
             };
 
-            // Act
-            list.RemoveType<FooMetadataDetailsProvider>();
+        // Act
+        list.RemoveType<FooMetadataDetailsProvider>();
 
-            // Assert
-            var provider = Assert.Single(list);
-            Assert.IsType<BarMetadataDetailsProvider>(provider);
-        }
+        // Assert
+        var provider = Assert.Single(list);
+        Assert.IsType<BarMetadataDetailsProvider>(provider);
+    }
 
-        private class FooMetadataDetailsProvider : IMetadataDetailsProvider
-        {
-        }
+    private class FooMetadataDetailsProvider : IMetadataDetailsProvider
+    {
+    }
 
-        private class BarMetadataDetailsProvider : IMetadataDetailsProvider
-        {
-        }
+    private class BarMetadataDetailsProvider : IMetadataDetailsProvider
+    {
     }
 }

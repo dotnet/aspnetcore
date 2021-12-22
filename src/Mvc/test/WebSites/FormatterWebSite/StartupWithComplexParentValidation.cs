@@ -5,24 +5,23 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace FormatterWebSite
-{
-    public class StartupWithComplexParentValidation
-    {
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services
-                .AddControllers(options => options.ValidateComplexTypesIfChildValidationFails = true)
-                .AddNewtonsoftJson(options => options.SerializerSettings.Converters.Insert(0, new IModelConverter()));
-        }
+namespace FormatterWebSite;
 
-        public void Configure(IApplicationBuilder app)
+public class StartupWithComplexParentValidation
+{
+    public void ConfigureServices(IServiceCollection services)
+    {
+        services
+            .AddControllers(options => options.ValidateComplexTypesIfChildValidationFails = true)
+            .AddNewtonsoftJson(options => options.SerializerSettings.Converters.Insert(0, new IModelConverter()));
+    }
+
+    public void Configure(IApplicationBuilder app)
+    {
+        app.UseRouting();
+        app.UseEndpoints(endpoints =>
         {
-            app.UseRouting();
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapDefaultControllerRoute();
-            });
-        }
+            endpoints.MapDefaultControllerRoute();
+        });
     }
 }

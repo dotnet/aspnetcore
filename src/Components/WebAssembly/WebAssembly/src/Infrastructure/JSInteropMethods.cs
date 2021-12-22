@@ -13,22 +13,21 @@ using Microsoft.AspNetCore.Components.WebAssembly.Rendering;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.JSInterop;
 
-namespace Microsoft.AspNetCore.Components.WebAssembly.Infrastructure
+namespace Microsoft.AspNetCore.Components.WebAssembly.Infrastructure;
+
+/// <summary>
+/// Contains methods called by interop. Intended for framework use only, not supported for use in application
+/// code.
+/// </summary>
+[EditorBrowsable(EditorBrowsableState.Never)]
+public static class JSInteropMethods
 {
     /// <summary>
-    /// Contains methods called by interop. Intended for framework use only, not supported for use in application
-    /// code.
+    /// For framework use only.
     /// </summary>
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public static class JSInteropMethods
+    [JSInvokable(nameof(NotifyLocationChanged))]
+    public static void NotifyLocationChanged(string uri, bool isInterceptedLink)
     {
-        /// <summary>
-        /// For framework use only.
-        /// </summary>
-        [JSInvokable(nameof(NotifyLocationChanged))]
-        public static void NotifyLocationChanged(string uri, bool isInterceptedLink)
-        {
-            WebAssemblyNavigationManager.Instance.SetLocation(uri, isInterceptedLink);
-        }
+        WebAssemblyNavigationManager.Instance.SetLocation(uri, isInterceptedLink);
     }
 }

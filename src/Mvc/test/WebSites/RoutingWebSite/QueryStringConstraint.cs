@@ -4,13 +4,12 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 
-namespace RoutingWebSite
+namespace RoutingWebSite;
+
+public class QueryStringConstraint : IRouteConstraint
 {
-    public class QueryStringConstraint : IRouteConstraint
+    public bool Match(HttpContext httpContext, IRouter route, string routeKey, RouteValueDictionary values, RouteDirection routeDirection)
     {
-        public bool Match(HttpContext httpContext, IRouter route, string routeKey, RouteValueDictionary values, RouteDirection routeDirection)
-        {
-            return httpContext.Request.Query["allowed"].ToString() == "true";
-        }
+        return httpContext.Request.Query["allowed"].ToString() == "true";
     }
 }

@@ -3,11 +3,10 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Identity
-{
-    /// <summary>
-    /// Used to indicate that a something is considered personal data and should be protected.
-    /// </summary>
-    public class ProtectedPersonalDataAttribute : PersonalDataAttribute
-    { }
-}
+namespace Microsoft.AspNetCore.Identity;
+
+/// <summary>
+/// Used to indicate that a something is considered personal data and should be protected.
+/// </summary>
+public class ProtectedPersonalDataAttribute : PersonalDataAttribute
+{ }

@@ -4,44 +4,43 @@
 using System;
 using System.Security.Authentication.ExtendedProtection;
 
-namespace Microsoft.AspNetCore.HttpSys.Internal
+namespace Microsoft.AspNetCore.HttpSys.Internal;
+
+internal class SafeLocalFreeChannelBinding : ChannelBinding
 {
-    internal class SafeLocalFreeChannelBinding : ChannelBinding
+    private const int LMEM_FIXED = 0;
+    private int size;
+
+    public override int Size
     {
-        private const int LMEM_FIXED = 0;
-        private int size;
+        get { return size; }
+    }
 
-        public override int Size
+    public static SafeLocalFreeChannelBinding LocalAlloc(int cb)
+    {
+        SafeLocalFreeChannelBinding result;
+
+        result = UnsafeNclNativeMethods.SafeNetHandles.LocalAllocChannelBinding(LMEM_FIXED, (UIntPtr)cb);
+        if (result.IsInvalid)
         {
-            get { return size; }
+            result.SetHandleAsInvalid();
+            throw new OutOfMemoryException();
         }
 
-        public static SafeLocalFreeChannelBinding LocalAlloc(int cb)
+        result.size = cb;
+        return result;
+    }
+
+    protected override bool ReleaseHandle()
+    {
+        return UnsafeNclNativeMethods.SafeNetHandles.LocalFree(handle) == IntPtr.Zero;
+    }
+
+    public override bool IsInvalid
+    {
+        get
         {
-            SafeLocalFreeChannelBinding result;
-
-            result = UnsafeNclNativeMethods.SafeNetHandles.LocalAllocChannelBinding(LMEM_FIXED, (UIntPtr)cb);
-            if (result.IsInvalid)
-            {
-                result.SetHandleAsInvalid();
-                throw new OutOfMemoryException();
-            }
-
-            result.size = cb;
-            return result;
-        }
-
-        protected override bool ReleaseHandle()
-        {
-            return UnsafeNclNativeMethods.SafeNetHandles.LocalFree(handle) == IntPtr.Zero;
-        }
-
-        public override bool IsInvalid
-        {
-            get
-            {
-                return handle == IntPtr.Zero || handle.ToInt32() == -1;
-            }
+            return handle == IntPtr.Zero || handle.ToInt32() == -1;
         }
     }
 }

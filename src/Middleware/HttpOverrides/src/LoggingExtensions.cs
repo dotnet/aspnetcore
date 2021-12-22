@@ -3,11 +3,10 @@
 
 using System;
 
-namespace Microsoft.Extensions.Logging
+namespace Microsoft.Extensions.Logging;
+
+internal static partial class LoggingExtensions
 {
-    internal static partial class LoggingExtensions
-    {
-        [LoggerMessage(0, LogLevel.Warning, "Could not read certificate from header.", EventName = "NoCertificate")]
-        public static partial void NoCertificate(this ILogger logger, Exception exception);
-    }
+    [LoggerMessage(0, LogLevel.Warning, "Could not read certificate from header.", EventName = "NoCertificate")]
+    public static partial void NoCertificate(this ILogger logger, Exception exception);
 }

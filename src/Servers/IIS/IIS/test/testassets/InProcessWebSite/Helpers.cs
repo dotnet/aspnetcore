@@ -4,17 +4,16 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 
-namespace TestSite
+namespace TestSite;
+
+public static class Helpers
 {
-    public static class Helpers
+    internal static bool? CanHaveBody(this HttpRequest request)
     {
-        internal static bool? CanHaveBody(this HttpRequest request)
-        {
 #if FORWARDCOMPAT
-            return null;
+        return null;
 #else
-            return request.HttpContext.Features.Get<IHttpRequestBodyDetectionFeature>()?.CanHaveBody;
+        return request.HttpContext.Features.Get<IHttpRequestBodyDetectionFeature>()?.CanHaveBody;
 #endif
-        }
     }
 }

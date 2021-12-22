@@ -3,12 +3,11 @@
 
 using System;
 
-namespace Wasm.Performance.Driver
+namespace Wasm.Performance.Driver;
+
+internal class BenchmarkMeasurement
 {
-    internal class BenchmarkMeasurement
-    {
-        public DateTime Timestamp { get; internal set; }
-        public string Name { get; internal set; }
-        public object Value { get; internal set; }
-    }
+    public DateTime Timestamp { get; internal set; }
+    public string Name { get; internal set; }
+    public object Value { get; internal set; }
 }

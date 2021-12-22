@@ -7,24 +7,23 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
 
-namespace TestSite
+namespace TestSite;
+
+public class DummyServer : IServer
 {
-    public class DummyServer : IServer
+    public void Dispose()
     {
-        public void Dispose()
-        {
-        }
-
-        public Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken)
-        {
-            return Task.Delay(TimeSpan.MaxValue);
-        }
-
-        public Task StopAsync(CancellationToken cancellationToken)
-        {
-            return Task.Delay(TimeSpan.MaxValue);
-        }
-
-        public IFeatureCollection Features { get; }
     }
+
+    public Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken)
+    {
+        return Task.Delay(TimeSpan.MaxValue);
+    }
+
+    public Task StopAsync(CancellationToken cancellationToken)
+    {
+        return Task.Delay(TimeSpan.MaxValue);
+    }
+
+    public IFeatureCollection Features { get; }
 }

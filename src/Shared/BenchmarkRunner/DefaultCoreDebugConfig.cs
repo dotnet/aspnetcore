@@ -7,17 +7,16 @@ using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Loggers;
 using BenchmarkDotNet.Validators;
 
-namespace BenchmarkDotNet.Attributes
-{
-    internal class DefaultCoreDebugConfig : ManualConfig
-    {
-        public DefaultCoreDebugConfig()
-        {
-            AddLogger(ConsoleLogger.Default);
-            AddValidator(JitOptimizationsValidator.DontFailOnError);
+namespace BenchmarkDotNet.Attributes;
 
-            AddJob(Job.InProcess
-                .WithStrategy(RunStrategy.Throughput));
-        }
+internal class DefaultCoreDebugConfig : ManualConfig
+{
+    public DefaultCoreDebugConfig()
+    {
+        AddLogger(ConsoleLogger.Default);
+        AddValidator(JitOptimizationsValidator.DontFailOnError);
+
+        AddJob(Job.InProcess
+            .WithStrategy(RunStrategy.Throughput));
     }
 }

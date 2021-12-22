@@ -4,27 +4,26 @@
 using BasicWebSite.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace BasicWebSite.Controllers.ActionConstraints
+namespace BasicWebSite.Controllers.ActionConstraints;
+
+[Route("ConsumesAttribute_PassThrough/[action]")]
+public class ConsumesAttribute_PassThroughController : Controller
 {
-    [Route("ConsumesAttribute_PassThrough/[action]")]
-    public class ConsumesAttribute_PassThroughController : Controller
+    [Consumes("application/json")]
+    public IActionResult CreateProduct(Product_Json jsonInput)
     {
-        [Consumes("application/json")]
-        public IActionResult CreateProduct(Product_Json jsonInput)
-        {
-            return Content("ConsumesAttribute_PassThrough_Product_Json");
-        }
+        return Content("ConsumesAttribute_PassThrough_Product_Json");
+    }
 
-        [Consumes("application/json")]
-        public IActionResult CreateProductMultiple(Product_Json jsonInput)
-        {
-            return Content("ConsumesAttribute_PassThrough_Product_Json");
-        }
+    [Consumes("application/json")]
+    public IActionResult CreateProductMultiple(Product_Json jsonInput)
+    {
+        return Content("ConsumesAttribute_PassThrough_Product_Json");
+    }
 
-        [Consumes("application/xml")]
-        public IActionResult CreateProductMultiple(Product_Xml jsonInput)
-        {
-            return Content("ConsumesAttribute_PassThrough_Product_Xml");
-        }
+    [Consumes("application/xml")]
+    public IActionResult CreateProductMultiple(Product_Xml jsonInput)
+    {
+        return Content("ConsumesAttribute_PassThrough_Product_Xml");
     }
 }

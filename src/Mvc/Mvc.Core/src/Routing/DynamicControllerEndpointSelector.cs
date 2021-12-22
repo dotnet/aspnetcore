@@ -8,44 +8,43 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Routing;
 
-namespace Microsoft.AspNetCore.Mvc.Routing
+namespace Microsoft.AspNetCore.Mvc.Routing;
+
+internal class DynamicControllerEndpointSelector : IDisposable
 {
-    internal class DynamicControllerEndpointSelector : IDisposable
+    private readonly DataSourceDependentCache<ActionSelectionTable<Endpoint>> _cache;
+
+    public DynamicControllerEndpointSelector(EndpointDataSource dataSource)
     {
-        private readonly DataSourceDependentCache<ActionSelectionTable<Endpoint>> _cache;
-
-        public DynamicControllerEndpointSelector(EndpointDataSource dataSource)
+        if (dataSource == null)
         {
-            if (dataSource == null)
-            {
-                throw new ArgumentNullException(nameof(dataSource));
-            }
-
-            _cache = new DataSourceDependentCache<ActionSelectionTable<Endpoint>>(dataSource, Initialize);
+            throw new ArgumentNullException(nameof(dataSource));
         }
 
-        private ActionSelectionTable<Endpoint> Table => _cache.EnsureInitialized();
+        _cache = new DataSourceDependentCache<ActionSelectionTable<Endpoint>>(dataSource, Initialize);
+    }
 
-        public IReadOnlyList<Endpoint> SelectEndpoints(RouteValueDictionary values)
+    private ActionSelectionTable<Endpoint> Table => _cache.EnsureInitialized();
+
+    public IReadOnlyList<Endpoint> SelectEndpoints(RouteValueDictionary values)
+    {
+        if (values == null)
         {
-            if (values == null)
-            {
-                throw new ArgumentNullException(nameof(values));
-            }
-
-            var table = Table;
-            var matches = table.Select(values);
-            return matches;
+            throw new ArgumentNullException(nameof(values));
         }
 
-        private static ActionSelectionTable<Endpoint> Initialize(IReadOnlyList<Endpoint> endpoints)
-        {
-            return ActionSelectionTable<Endpoint>.Create(endpoints);
-        }
+        var table = Table;
+        var matches = table.Select(values);
+        return matches;
+    }
 
-        public void Dispose()
-        {
-            _cache.Dispose();
-        }
+    private static ActionSelectionTable<Endpoint> Initialize(IReadOnlyList<Endpoint> endpoints)
+    {
+        return ActionSelectionTable<Endpoint>.Create(endpoints);
+    }
+
+    public void Dispose()
+    {
+        _cache.Dispose();
     }
 }

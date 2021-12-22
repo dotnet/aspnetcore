@@ -5,14 +5,13 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 
-namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
-{
-    public class BloggingContext : DbContext
-    {
-        public BloggingContext(DbContextOptions options)
-            : base(options)
-        { }
+namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests;
 
-        public DbSet<Blog> Blogs { get; set; }
-    }
+public class BloggingContext : DbContext
+{
+    public BloggingContext(DbContextOptions options)
+        : base(options)
+    { }
+
+    public DbSet<Blog> Blogs { get; set; }
 }

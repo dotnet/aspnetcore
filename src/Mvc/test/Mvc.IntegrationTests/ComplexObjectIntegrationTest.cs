@@ -4,10 +4,9 @@
 using System;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 
-namespace Microsoft.AspNetCore.Mvc.IntegrationTests
+namespace Microsoft.AspNetCore.Mvc.IntegrationTests;
+
+public class ComplexObjectIntegrationTest : ComplexTypeIntegrationTestBase
 {
-    public class ComplexObjectIntegrationTest : ComplexTypeIntegrationTestBase
-    {
-        protected override Type ExpectedModelBinderType => typeof(ComplexObjectModelBinder);
-    }
+    protected override Type ExpectedModelBinderType => typeof(ComplexObjectModelBinder);
 }

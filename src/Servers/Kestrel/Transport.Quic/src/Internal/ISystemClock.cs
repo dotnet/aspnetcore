@@ -3,21 +3,20 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal;
+
+/// <summary>
+/// Abstracts the system clock to facilitate testing.
+/// </summary>
+internal interface ISystemClock
 {
     /// <summary>
-    /// Abstracts the system clock to facilitate testing.
+    /// Retrieves the current system time in UTC.
     /// </summary>
-    internal interface ISystemClock
-    {
-        /// <summary>
-        /// Retrieves the current system time in UTC.
-        /// </summary>
-        DateTimeOffset UtcNow { get; }
-    }
+    DateTimeOffset UtcNow { get; }
+}
 
-    internal class SystemClock : ISystemClock
-    {
-        public DateTimeOffset UtcNow => DateTimeOffset.UtcNow;
-    }
+internal class SystemClock : ISystemClock
+{
+    public DateTimeOffset UtcNow => DateTimeOffset.UtcNow;
 }

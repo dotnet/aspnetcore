@@ -8,43 +8,42 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace EntityFrameworkCoreSample
+namespace EntityFrameworkCoreSample;
+
+class Program
 {
-    class Program
+    static void Main(string[] args)
     {
-        static void Main(string[] args)
-        {
-            // Configure
-            var services = new ServiceCollection()
-                .AddLogging(o => o.AddConsole().SetMinimumLevel(LogLevel.Debug))
-                .AddDbContext<DataProtectionKeyContext>(o =>
-                {
-                    o.UseInMemoryDatabase("DataProtection_EntityFrameworkCore");
+        // Configure
+        var services = new ServiceCollection()
+            .AddLogging(o => o.AddConsole().SetMinimumLevel(LogLevel.Debug))
+            .AddDbContext<DataProtectionKeyContext>(o =>
+            {
+                o.UseInMemoryDatabase("DataProtection_EntityFrameworkCore");
                     // Make sure to create a sql server called DataProtectionApp
                     //o.UseSqlServer(@"Server=(localdb)\mssqllocaldb;Database=DataProtectionApp;Trusted_Connection=True;Connect Timeout=5;ConnectRetryCount=0");
                     o.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
-                    o.EnableSensitiveDataLogging();
-                })
-                .AddDataProtection()
-                .PersistKeysToDbContext<DataProtectionKeyContext>()
-                .SetDefaultKeyLifetime(TimeSpan.FromDays(7))
-                .Services
-                .BuildServiceProvider(validateScopes: true);
+                o.EnableSensitiveDataLogging();
+            })
+            .AddDataProtection()
+            .PersistKeysToDbContext<DataProtectionKeyContext>()
+            .SetDefaultKeyLifetime(TimeSpan.FromDays(7))
+            .Services
+            .BuildServiceProvider(validateScopes: true);
 
-            using (services)
-            {
-                // Run a sample payload
-                var protector = services.GetDataProtector("sample-purpose");
-                var protectedData = protector.Protect("Hello world!");
-                Console.WriteLine(protectedData);
-            }
+        using (services)
+        {
+            // Run a sample payload
+            var protector = services.GetDataProtector("sample-purpose");
+            var protectedData = protector.Protect("Hello world!");
+            Console.WriteLine(protectedData);
         }
     }
+}
 
-    class DataProtectionKeyContext : DbContext, IDataProtectionKeyContext
-    {
-        public DataProtectionKeyContext(DbContextOptions<DataProtectionKeyContext> options) : base(options) { }
+class DataProtectionKeyContext : DbContext, IDataProtectionKeyContext
+{
+    public DataProtectionKeyContext(DbContextOptions<DataProtectionKeyContext> options) : base(options) { }
 
-        public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
-    }
+    public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
 }

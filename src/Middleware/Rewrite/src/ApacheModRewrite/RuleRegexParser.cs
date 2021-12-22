@@ -3,24 +3,23 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite
+namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite;
+
+internal class RuleRegexParser
 {
-    internal class RuleRegexParser
+    public ParsedModRewriteInput ParseRuleRegex(string regex)
     {
-        public ParsedModRewriteInput ParseRuleRegex(string regex)
+        if (string.IsNullOrEmpty(regex))
         {
-            if (string.IsNullOrEmpty(regex))
-            {
-                throw new FormatException("Regex expression is null");
-            }
-            if (regex[0] == '!')
-            {
-                return new ParsedModRewriteInput { Invert = true, Operand = regex.Substring(1) };
-            }
-            else
-            {
-                return new ParsedModRewriteInput { Invert = false, Operand = regex };
-            }
+            throw new FormatException("Regex expression is null");
+        }
+        if (regex[0] == '!')
+        {
+            return new ParsedModRewriteInput { Invert = true, Operand = regex.Substring(1) };
+        }
+        else
+        {
+            return new ParsedModRewriteInput { Invert = false, Operand = regex };
         }
     }
 }

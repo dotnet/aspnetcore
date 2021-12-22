@@ -9,37 +9,36 @@ using System.Threading.Tasks;
 using Xunit.Abstractions;
 using static Microsoft.AspNetCore.Testing.TestApplicationErrorLogger;
 
-namespace Microsoft.AspNetCore.Testing
+namespace Microsoft.AspNetCore.Testing;
+
+public class TestApplicationErrorLoggerLoggedTest : LoggedTest
 {
-    public class TestApplicationErrorLoggerLoggedTest : LoggedTest
+    private TestApplicationErrorLogger TestApplicationErrorLogger { get; set; }
+
+    public ConcurrentQueue<LogMessage> LogMessages => TestApplicationErrorLogger.Messages;
+
+    public bool ThrowOnCriticalErrors
     {
-        private TestApplicationErrorLogger TestApplicationErrorLogger { get; set; }
+        get => TestApplicationErrorLogger.ThrowOnCriticalErrors;
+        set => TestApplicationErrorLogger.ThrowOnCriticalErrors = value;
+    }
 
-        public ConcurrentQueue<LogMessage> LogMessages => TestApplicationErrorLogger.Messages;
+    public bool ThrowOnUngracefulShutdown
+    {
+        get => TestApplicationErrorLogger.ThrowOnUngracefulShutdown;
+        set => TestApplicationErrorLogger.ThrowOnUngracefulShutdown = value;
+    }
 
-        public bool ThrowOnCriticalErrors
-        {
-            get => TestApplicationErrorLogger.ThrowOnCriticalErrors;
-            set => TestApplicationErrorLogger.ThrowOnCriticalErrors = value;
-        }
+    public List<Type> IgnoredCriticalLogExceptions => TestApplicationErrorLogger.IgnoredExceptions;
 
-        public bool ThrowOnUngracefulShutdown
-        {
-            get => TestApplicationErrorLogger.ThrowOnUngracefulShutdown;
-            set => TestApplicationErrorLogger.ThrowOnUngracefulShutdown = value;
-        }
+    public Task<LogMessage> WaitForLogMessage(Func<LogMessage, bool> messageFilter)
+        => TestApplicationErrorLogger.WaitForMessage(messageFilter);
 
-        public List<Type> IgnoredCriticalLogExceptions => TestApplicationErrorLogger.IgnoredExceptions;
+    public override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
+    {
+        base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
 
-        public Task<LogMessage> WaitForLogMessage(Func<LogMessage, bool> messageFilter)
-            => TestApplicationErrorLogger.WaitForMessage(messageFilter);
-
-        public override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
-        {
-            base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
-
-            TestApplicationErrorLogger = new TestApplicationErrorLogger();
-            LoggerFactory.AddProvider(new KestrelTestLoggerProvider(TestApplicationErrorLogger));
-        }
+        TestApplicationErrorLogger = new TestApplicationErrorLogger();
+        LoggerFactory.AddProvider(new KestrelTestLoggerProvider(TestApplicationErrorLogger));
     }
 }

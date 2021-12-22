@@ -6,13 +6,12 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-namespace BasicWebSite
-{
-    [BindProperties(SupportsGet = true)]
-    public class BindPropertiesSupportsGetController : Controller
-    {
-        public string Name { get; set; }
+namespace BasicWebSite;
 
-        public IActionResult Action() => Content(Name);
-    }
+[BindProperties(SupportsGet = true)]
+public class BindPropertiesSupportsGetController : Controller
+{
+    public string Name { get; set; }
+
+    public IActionResult Action() => Content(Name);
 }

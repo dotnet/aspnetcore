@@ -3,19 +3,18 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Razor.TagHelpers
+namespace Microsoft.AspNetCore.Razor.TagHelpers;
+
+/// <summary>
+/// Indicates the associated <see cref="ITagHelper"/> property should not be bound to HTML attributes.
+/// </summary>
+[AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
+public sealed class HtmlAttributeNotBoundAttribute : Attribute
 {
     /// <summary>
-    /// Indicates the associated <see cref="ITagHelper"/> property should not be bound to HTML attributes.
+    /// Instantiates a new instance of the <see cref="HtmlAttributeNotBoundAttribute"/> class.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
-    public sealed class HtmlAttributeNotBoundAttribute : Attribute
+    public HtmlAttributeNotBoundAttribute()
     {
-        /// <summary>
-        /// Instantiates a new instance of the <see cref="HtmlAttributeNotBoundAttribute"/> class.
-        /// </summary>
-        public HtmlAttributeNotBoundAttribute()
-        {
-        }
     }
 }

@@ -8,30 +8,29 @@ using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
+namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+
+public class RootComponentMappingTest
 {
-    public class RootComponentMappingTest
+    [Fact]
+    public void Constructor_ValidatesComponentType_Success()
     {
-        [Fact]
-        public void Constructor_ValidatesComponentType_Success()
-        {
-            // Arrange
-            // Act
-            var mapping = new RootComponentMapping(typeof(Router), "test");
+        // Arrange
+        // Act
+        var mapping = new RootComponentMapping(typeof(Router), "test");
 
-            // Assert (does not throw)
-            GC.KeepAlive(mapping);
-        }
+        // Assert (does not throw)
+        GC.KeepAlive(mapping);
+    }
 
-        [Fact]
-        public void Constructor_ValidatesComponentType_Failure()
-        {
-            // Arrange
-            // Act & Assert
-            ExceptionAssert.ThrowsArgument(
-                () => new RootComponentMapping(typeof(StringBuilder), "test"),
-                "componentType",
-                $"The type '{nameof(StringBuilder)}' must implement IComponent to be used as a root component.");
-        }
+    [Fact]
+    public void Constructor_ValidatesComponentType_Failure()
+    {
+        // Arrange
+        // Act & Assert
+        ExceptionAssert.ThrowsArgument(
+            () => new RootComponentMapping(typeof(StringBuilder), "test"),
+            "componentType",
+            $"The type '{nameof(StringBuilder)}' must implement IComponent to be used as a root component.");
     }
 }

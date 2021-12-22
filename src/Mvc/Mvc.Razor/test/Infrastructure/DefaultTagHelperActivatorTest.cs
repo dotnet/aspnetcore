@@ -14,68 +14,67 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.Razor.Infrastructure
+namespace Microsoft.AspNetCore.Mvc.Razor.Infrastructure;
+
+public class DefaultTagHelperActivatorTest
 {
-    public class DefaultTagHelperActivatorTest
+    [Fact]
+    public void CreateTagHelper_InitializesTagHelpers()
     {
-        [Fact]
-        public void CreateTagHelper_InitializesTagHelpers()
+        // Arrange
+        var httpContext = new DefaultHttpContext()
         {
-            // Arrange
-            var httpContext = new DefaultHttpContext()
-            {
-                RequestServices = new ServiceCollection().BuildServiceProvider()
-            };
-            var viewContext = MakeViewContext(httpContext);
-            var viewDataValue = new object();
-            viewContext.ViewData.Add("TestData", viewDataValue);
-            var activator = new DefaultTagHelperActivator();
+            RequestServices = new ServiceCollection().BuildServiceProvider()
+        };
+        var viewContext = MakeViewContext(httpContext);
+        var viewDataValue = new object();
+        viewContext.ViewData.Add("TestData", viewDataValue);
+        var activator = new DefaultTagHelperActivator();
 
-            // Act
-            var helper = activator.Create<TestTagHelper>(viewContext);
+        // Act
+        var helper = activator.Create<TestTagHelper>(viewContext);
 
-            // Assert
-            Assert.NotNull(helper);
-        }
+        // Assert
+        Assert.NotNull(helper);
+    }
 
-        private static ViewContext MakeViewContext(HttpContext httpContext)
-        {
-            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
-            var metadataProvider = new EmptyModelMetadataProvider();
-            var viewData = new ViewDataDictionary(metadataProvider, new ModelStateDictionary());
-            var viewContext = new ViewContext(
-                actionContext,
-                Mock.Of<IView>(),
-                viewData,
-                Mock.Of<ITempDataDictionary>(),
-                TextWriter.Null,
-                new HtmlHelperOptions());
+    private static ViewContext MakeViewContext(HttpContext httpContext)
+    {
+        var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+        var metadataProvider = new EmptyModelMetadataProvider();
+        var viewData = new ViewDataDictionary(metadataProvider, new ModelStateDictionary());
+        var viewContext = new ViewContext(
+            actionContext,
+            Mock.Of<IView>(),
+            viewData,
+            Mock.Of<ITempDataDictionary>(),
+            TextWriter.Null,
+            new HtmlHelperOptions());
 
-            return viewContext;
-        }
+        return viewContext;
+    }
 
-        private class TestTagHelper : TagHelper
-        {
-            public string Name { get; set; } = "Initial Name";
+    private class TestTagHelper : TagHelper
+    {
+        public string Name { get; set; } = "Initial Name";
 
-            public int Number { get; set; } = 1000;
+        public int Number { get; set; } = 1000;
 
-            public object ViewDataValue { get; set; } = new object();
+        public object ViewDataValue { get; set; } = new object();
 
-            [ViewContext]
-            public ViewContext ViewContext { get; set; }
-        }
+        [ViewContext]
+        public ViewContext ViewContext { get; set; }
+    }
 
-        private class AnotherTestTagHelper : TagHelper
-        {
-            public string Name { get; set; } = "Initial Name";
+    private class AnotherTestTagHelper : TagHelper
+    {
+        public string Name { get; set; } = "Initial Name";
 
-            public int Number { get; set; } = 1000;
+        public int Number { get; set; } = 1000;
 
-            public object ViewDataValue { get; set; } = new object();
+        public object ViewDataValue { get; set; } = new object();
 
-            [ViewContext]
-            public ViewContext ViewContext { get; set; }
-        }
+        [ViewContext]
+        public ViewContext ViewContext { get; set; }
     }
 }

@@ -3,12 +3,12 @@
 
 using System.Diagnostics;
 
-namespace Microsoft.AspNetCore.Server.HttpSys
+namespace Microsoft.AspNetCore.Server.HttpSys;
+
+internal static class HttpReasonPhrase
 {
-    internal static class HttpReasonPhrase
+    private static readonly string?[]?[] HttpReasonPhrases = new string?[]?[]
     {
-        private static readonly string?[]?[] HttpReasonPhrases = new string?[]?[]
-        {
             null,
 
             new string?[]
@@ -84,20 +84,19 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 /* 506 */ null,
                 /* 507 */ "Insufficient Storage"
             }
-        };
+    };
 
-        internal static string? Get(int code)
+    internal static string? Get(int code)
+    {
+        if (code >= 100 && code < 600)
         {
-            if (code >= 100 && code < 600)
+            int i = code / 100;
+            int j = code % 100;
+            if (j < HttpReasonPhrases[i]!.Length)
             {
-                int i = code / 100;
-                int j = code % 100;
-                if (j < HttpReasonPhrases[i]!.Length)
-                {
-                    return HttpReasonPhrases[i]![j];
-                }
+                return HttpReasonPhrases[i]![j];
             }
-            return null;
         }
+        return null;
     }
 }

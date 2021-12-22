@@ -16,20 +16,20 @@
 			"NODE_VERSION": "lts/*"
 		}
 	},
-
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
-		"ms-dotnettools.csharp"
+		"ms-dotnettools.csharp",
+		"EditorConfig.EditorConfig",
+		"k--kato.docomment"
 	],
-
 	"settings": {
 		// Loading projects on demand is better for larger codebases
-		"omnisharp.enableMsBuildLoadProjectsOnDemand": true
+		"omnisharp.enableMsBuildLoadProjectsOnDemand": true,
+		"omnisharp.enableRoslynAnalyzers": true,
+		"omnisharp.enableEditorConfigSupport": true,
 	},
-
 	// Use 'postCreateCommand' to run commands after the container is created.
 	"onCreateCommand": "bash -i ${containerWorkspaceFolder}/.devcontainer/scripts/container-creation.sh",
-
 	// Add the locally installed dotnet to the path to ensure that it is activated
 	// This is needed so that things like the C# extension can resolve the correct SDK version
 	"remoteEnv": {
@@ -37,7 +37,6 @@
 		"DOTNET_MULTILEVEL_LOOKUP": "0",
 		"TARGET": "net7.0"
 	},
-
 	// Comment out connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
 	"remoteUser": "vscode"
 }

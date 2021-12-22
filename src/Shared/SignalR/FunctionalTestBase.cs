@@ -6,40 +6,39 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Testing;
 
-namespace Microsoft.AspNetCore.SignalR.Tests
-{
-    public class FunctionalTestBase : VerifiableLoggedTest
-    {
-        private readonly Func<WriteContext, bool> _globalExpectedErrorsFilter;
+namespace Microsoft.AspNetCore.SignalR.Tests;
 
-        public FunctionalTestBase()
+public class FunctionalTestBase : VerifiableLoggedTest
+{
+    private readonly Func<WriteContext, bool> _globalExpectedErrorsFilter;
+
+    public FunctionalTestBase()
+    {
+        // Suppress errors globally here
+        _globalExpectedErrorsFilter = (writeContext) => false;
+    }
+
+    private Func<WriteContext, bool> ResolveExpectedErrorsFilter(Func<WriteContext, bool> expectedErrorsFilter)
+    {
+        if (expectedErrorsFilter == null)
         {
-            // Suppress errors globally here
-            _globalExpectedErrorsFilter = (writeContext) => false;
+            return _globalExpectedErrorsFilter;
         }
 
-        private Func<WriteContext, bool> ResolveExpectedErrorsFilter(Func<WriteContext, bool> expectedErrorsFilter)
+        return (writeContext) =>
         {
-            if (expectedErrorsFilter == null)
+            if (expectedErrorsFilter(writeContext))
             {
-                return _globalExpectedErrorsFilter;
+                return true;
             }
 
-            return (writeContext) =>
-            {
-                if (expectedErrorsFilter(writeContext))
-                {
-                    return true;
-                }
+            return _globalExpectedErrorsFilter(writeContext);
+        };
+    }
 
-                return _globalExpectedErrorsFilter(writeContext);
-            };
-        }
-
-        public Task<InProcessTestServer<T>> StartServer<T>(Func<WriteContext, bool> expectedErrorsFilter = null) where T : class
-        {
-            var disposable = base.StartVerifiableLog(ResolveExpectedErrorsFilter(expectedErrorsFilter));
-            return InProcessTestServer<T>.StartServer(LoggerFactory, disposable);
-        }
+    public Task<InProcessTestServer<T>> StartServer<T>(Func<WriteContext, bool> expectedErrorsFilter = null) where T : class
+    {
+        var disposable = base.StartVerifiableLog(ResolveExpectedErrorsFilter(expectedErrorsFilter));
+        return InProcessTestServer<T>.StartServer(LoggerFactory, disposable);
     }
 }

@@ -9,23 +9,22 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Routing
+namespace Microsoft.AspNetCore.Routing;
+
+internal sealed class ConfigureRouteHandlerOptions : IConfigureOptions<RouteHandlerOptions>
 {
-    internal sealed class ConfigureRouteHandlerOptions : IConfigureOptions<RouteHandlerOptions>
+    private readonly IHostEnvironment _environment;
+
+    public ConfigureRouteHandlerOptions(IHostEnvironment environment)
     {
-        private readonly IHostEnvironment _environment;
+        _environment = environment;
+    }
 
-        public ConfigureRouteHandlerOptions(IHostEnvironment environment)
+    public void Configure(RouteHandlerOptions options)
+    {
+        if (_environment.IsDevelopment())
         {
-            _environment = environment;
-        }
-
-        public void Configure(RouteHandlerOptions options)
-        {
-            if (_environment.IsDevelopment())
-            {
-                options.ThrowOnBadRequest = true;
-            }
+            options.ThrowOnBadRequest = true;
         }
     }
 }

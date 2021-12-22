@@ -3,14 +3,13 @@
 
 using System.Threading.Tasks;
 
-namespace RazorWebSite
+namespace RazorWebSite;
+
+public class TaskReturningService
 {
-    public class TaskReturningService
+    public async Task<string> GetValueAsync()
     {
-        public async Task<string> GetValueAsync()
-        {
-            await Task.Delay(100);
-            return "Value from TaskReturningString";
-        }
+        await Task.Delay(100);
+        return "Value from TaskReturningString";
     }
 }

@@ -25,6 +25,7 @@
     <Reference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <Reference Include="Microsoft.EntityFrameworkCore.Sqlite" />
     <Reference Include="AngleSharp" />
+    <Reference Include="System.Net.Http" />
   </ItemGroup>
 
   <ItemGroup>

@@ -5,32 +5,31 @@ using System;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Rewrite.UrlMatches;
 
-namespace Microsoft.AspNetCore.Rewrite.IISUrlRewrite
+namespace Microsoft.AspNetCore.Rewrite.IISUrlRewrite;
+
+internal class UriMatchCondition : Condition
 {
-    internal class UriMatchCondition : Condition
+    private static readonly TimeSpan _regexTimeout = TimeSpan.FromSeconds(1);
+
+    public UriMatchCondition(InputParser inputParser, string input, string pattern, UriMatchPart uriMatchPart, bool ignoreCase, bool negate)
+        : base(CreatePattern(inputParser, input, uriMatchPart), CreateRegexMatch(pattern, ignoreCase, negate))
     {
-        private static readonly TimeSpan _regexTimeout = TimeSpan.FromSeconds(1);
+    }
 
-        public UriMatchCondition(InputParser inputParser, string input, string pattern, UriMatchPart uriMatchPart, bool ignoreCase, bool negate)
-            : base(CreatePattern(inputParser, input, uriMatchPart), CreateRegexMatch(pattern, ignoreCase, negate))
-        {
-        }
+    private static Pattern CreatePattern(InputParser inputParser, string input, UriMatchPart uriMatchPart)
+    {
+        return inputParser.ParseInputString(input, uriMatchPart);
+    }
 
-        private static Pattern CreatePattern(InputParser inputParser, string input, UriMatchPart uriMatchPart)
-        {
-            return inputParser.ParseInputString(input, uriMatchPart);
-        }
-
-        private static RegexMatch CreateRegexMatch(string pattern, bool ignoreCase, bool negate)
-        {
-            var regexOptions = RegexOptions.CultureInvariant | RegexOptions.Compiled;
-            regexOptions = ignoreCase ? regexOptions | RegexOptions.IgnoreCase : regexOptions;
-            var regex = new Regex(
-                pattern,
-                regexOptions,
-                _regexTimeout
-            );
-            return new RegexMatch(regex, negate);
-        }
+    private static RegexMatch CreateRegexMatch(string pattern, bool ignoreCase, bool negate)
+    {
+        var regexOptions = RegexOptions.CultureInvariant | RegexOptions.Compiled;
+        regexOptions = ignoreCase ? regexOptions | RegexOptions.IgnoreCase : regexOptions;
+        var regex = new Regex(
+            pattern,
+            regexOptions,
+            _regexTimeout
+        );
+        return new RegexMatch(regex, negate);
     }
 }

@@ -4,39 +4,38 @@
 using System;
 using System.Collections.ObjectModel;
 
-namespace Microsoft.AspNetCore.Mvc.ModelBinding
+namespace Microsoft.AspNetCore.Mvc.ModelBinding;
+
+/// <summary>
+/// A collection of <see cref="ModelError"/> instances.
+/// </summary>
+public class ModelErrorCollection : Collection<ModelError>
 {
     /// <summary>
-    /// A collection of <see cref="ModelError"/> instances.
+    /// Adds the specified <paramref name="exception"/> instance.
     /// </summary>
-    public class ModelErrorCollection : Collection<ModelError>
+    /// <param name="exception">The <see cref="Exception"/></param>
+    public void Add(Exception exception)
     {
-        /// <summary>
-        /// Adds the specified <paramref name="exception"/> instance.
-        /// </summary>
-        /// <param name="exception">The <see cref="Exception"/></param>
-        public void Add(Exception exception)
+        if (exception == null)
         {
-            if (exception == null)
-            {
-                throw new ArgumentNullException(nameof(exception));
-            }
-
-            Add(new ModelError(exception));
+            throw new ArgumentNullException(nameof(exception));
         }
 
-        /// <summary>
-        /// Adds the specified error message.
-        /// </summary>
-        /// <param name="errorMessage">The error message.</param>
-        public void Add(string errorMessage)
-        {
-            if (errorMessage == null)
-            {
-                throw new ArgumentNullException(nameof(errorMessage));
-            }
+        Add(new ModelError(exception));
+    }
 
-            Add(new ModelError(errorMessage));
+    /// <summary>
+    /// Adds the specified error message.
+    /// </summary>
+    /// <param name="errorMessage">The error message.</param>
+    public void Add(string errorMessage)
+    {
+        if (errorMessage == null)
+        {
+            throw new ArgumentNullException(nameof(errorMessage));
         }
+
+        Add(new ModelError(errorMessage));
     }
 }

@@ -3,12 +3,11 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Routing.DecisionTree
-{
-    internal interface IClassifier<TItem>
-    {
-        IDictionary<string, DecisionCriterionValue> GetCriteria(TItem item);
+namespace Microsoft.AspNetCore.Routing.DecisionTree;
 
-        IEqualityComparer<object> ValueComparer { get; }
-    }
+internal interface IClassifier<TItem>
+{
+    IDictionary<string, DecisionCriterionValue> GetCriteria(TItem item);
+
+    IEqualityComparer<object> ValueComparer { get; }
 }

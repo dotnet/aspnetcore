@@ -3,18 +3,17 @@
 
 #nullable enable
 
-namespace Microsoft.AspNetCore.Mvc.ModelBinding
+namespace Microsoft.AspNetCore.Mvc.ModelBinding;
+
+/// <summary>
+/// A factory abstraction for creating <see cref="IModelBinder"/> instances.
+/// </summary>
+public interface IModelBinderFactory
 {
     /// <summary>
-    /// A factory abstraction for creating <see cref="IModelBinder"/> instances.
+    /// Creates a new <see cref="IModelBinder"/>.
     /// </summary>
-    public interface IModelBinderFactory
-    {
-        /// <summary>
-        /// Creates a new <see cref="IModelBinder"/>.
-        /// </summary>
-        /// <param name="context">The <see cref="ModelBinderFactoryContext"/>.</param>
-        /// <returns>An <see cref="IModelBinder"/> instance.</returns>
-        IModelBinder CreateBinder(ModelBinderFactoryContext context);
-    }
+    /// <param name="context">The <see cref="ModelBinderFactoryContext"/>.</param>
+    /// <returns>An <see cref="IModelBinder"/> instance.</returns>
+    IModelBinder CreateBinder(ModelBinderFactoryContext context);
 }

@@ -13,15 +13,15 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc
+namespace Microsoft.AspNetCore.Mvc;
+
+public class HttpOkObjectResultTest
 {
-    public class HttpOkObjectResultTest
+    public static TheoryData<object> ValuesData
     {
-        public static TheoryData<object> ValuesData
+        get
         {
-            get
-            {
-                return new TheoryData<object>
+            return new TheoryData<object>
                 {
                     null,
                     "Test string",
@@ -31,62 +31,61 @@ namespace Microsoft.AspNetCore.Mvc
                         Name = "George",
                     }
                 };
-            }
         }
+    }
 
-        [Theory]
-        [MemberData(nameof(ValuesData))]
-        public void HttpOkObjectResult_InitializesStatusCodeAndValue(object value)
+    [Theory]
+    [MemberData(nameof(ValuesData))]
+    public void HttpOkObjectResult_InitializesStatusCodeAndValue(object value)
+    {
+        // Arrange & Act
+        var result = new OkObjectResult(value);
+
+        // Assert
+        Assert.Equal(StatusCodes.Status200OK, result.StatusCode);
+        Assert.Same(value, result.Value);
+    }
+
+    [Theory]
+    [MemberData(nameof(ValuesData))]
+    public async Task HttpOkObjectResult_SetsStatusCode(object value)
+    {
+        // Arrange
+        var result = new OkObjectResult(value);
+
+        var httpContext = new DefaultHttpContext
         {
-            // Arrange & Act
-            var result = new OkObjectResult(value);
+            RequestServices = CreateServices(),
+        };
+        var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
-            // Assert
-            Assert.Equal(StatusCodes.Status200OK, result.StatusCode);
-            Assert.Same(value, result.Value);
-        }
+        // Act
+        await result.ExecuteResultAsync(actionContext);
 
-        [Theory]
-        [MemberData(nameof(ValuesData))]
-        public async Task HttpOkObjectResult_SetsStatusCode(object value)
-        {
-            // Arrange
-            var result = new OkObjectResult(value);
+        // Assert
+        Assert.Equal(StatusCodes.Status200OK, httpContext.Response.StatusCode);
+    }
 
-            var httpContext = new DefaultHttpContext
-            {
-                RequestServices = CreateServices(),
-            };
-            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+    private static IServiceProvider CreateServices()
+    {
+        var options = Options.Create(new MvcOptions());
+        options.Value.OutputFormatters.Add(new StringOutputFormatter());
+        options.Value.OutputFormatters.Add(SystemTextJsonOutputFormatter.CreateFormatter(new JsonOptions()));
 
-            // Act
-            await result.ExecuteResultAsync(actionContext);
+        var services = new ServiceCollection();
+        services.AddSingleton<IActionResultExecutor<ObjectResult>>(new ObjectResultExecutor(
+            new DefaultOutputFormatterSelector(options, NullLoggerFactory.Instance),
+            new TestHttpResponseStreamWriterFactory(),
+            NullLoggerFactory.Instance,
+            options));
 
-            // Assert
-            Assert.Equal(StatusCodes.Status200OK, httpContext.Response.StatusCode);
-        }
+        return services.BuildServiceProvider();
+    }
 
-        private static IServiceProvider CreateServices()
-        {
-            var options = Options.Create(new MvcOptions());
-            options.Value.OutputFormatters.Add(new StringOutputFormatter());
-            options.Value.OutputFormatters.Add(SystemTextJsonOutputFormatter.CreateFormatter(new JsonOptions()));
+    private class Person
+    {
+        public int Id { get; set; }
 
-            var services = new ServiceCollection();
-            services.AddSingleton<IActionResultExecutor<ObjectResult>>(new ObjectResultExecutor(
-                new DefaultOutputFormatterSelector(options, NullLoggerFactory.Instance),
-                new TestHttpResponseStreamWriterFactory(),
-                NullLoggerFactory.Instance,
-                options));
-
-            return services.BuildServiceProvider();
-        }
-
-        private class Person
-        {
-            public int Id { get; set; }
-
-            public string Name { get; set; }
-        }
+        public string Name { get; set; }
     }
 }

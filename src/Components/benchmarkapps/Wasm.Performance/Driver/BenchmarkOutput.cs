@@ -3,12 +3,11 @@
 
 using System.Collections.Generic;
 
-namespace Wasm.Performance.Driver
-{
-    internal class BenchmarkOutput
-    {
-        public List<BenchmarkMetadata> Metadata { get; } = new List<BenchmarkMetadata>();
+namespace Wasm.Performance.Driver;
 
-        public List<BenchmarkMeasurement> Measurements { get; } = new List<BenchmarkMeasurement>();
-    }
+internal class BenchmarkOutput
+{
+    public List<BenchmarkMetadata> Metadata { get; } = new List<BenchmarkMetadata>();
+
+    public List<BenchmarkMeasurement> Measurements { get; } = new List<BenchmarkMeasurement>();
 }

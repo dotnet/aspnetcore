@@ -3,27 +3,26 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Builder
+namespace Microsoft.AspNetCore.Builder;
+
+/// <summary>
+/// Builds conventions that will be used for customization of Connection <see cref="EndpointBuilder"/> instances.
+/// </summary>
+public sealed class ConnectionEndpointRouteBuilder : IEndpointConventionBuilder
 {
-    /// <summary>
-    /// Builds conventions that will be used for customization of Connection <see cref="EndpointBuilder"/> instances.
-    /// </summary>
-    public sealed class ConnectionEndpointRouteBuilder : IEndpointConventionBuilder
+    private readonly IEndpointConventionBuilder _endpointConventionBuilder;
+
+    internal ConnectionEndpointRouteBuilder(IEndpointConventionBuilder endpointConventionBuilder)
     {
-        private readonly IEndpointConventionBuilder _endpointConventionBuilder;
+        _endpointConventionBuilder = endpointConventionBuilder;
+    }
 
-        internal ConnectionEndpointRouteBuilder(IEndpointConventionBuilder endpointConventionBuilder)
-        {
-            _endpointConventionBuilder = endpointConventionBuilder;
-        }
-
-        /// <summary>
-        /// Adds the specified convention to the builder. Conventions are used to customize <see cref="EndpointBuilder"/> instances.
-        /// </summary>
-        /// <param name="convention">The convention to add to the builder.</param>
-        public void Add(Action<EndpointBuilder> convention)
-        {
-            _endpointConventionBuilder.Add(convention);
-        }
+    /// <summary>
+    /// Adds the specified convention to the builder. Conventions are used to customize <see cref="EndpointBuilder"/> instances.
+    /// </summary>
+    /// <param name="convention">The convention to add to the builder.</param>
+    public void Add(Action<EndpointBuilder> convention)
+    {
+        _endpointConventionBuilder.Add(convention);
     }
 }

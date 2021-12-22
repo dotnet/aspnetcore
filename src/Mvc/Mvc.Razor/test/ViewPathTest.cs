@@ -3,34 +3,33 @@
 
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.Razor
+namespace Microsoft.AspNetCore.Mvc.Razor;
+
+public class ViewPathTest
 {
-    public class ViewPathTest
+    [Theory]
+    [InlineData("/Views/Home/Index.cshtml")]
+    [InlineData("\\Views/Home/Index.cshtml")]
+    [InlineData("\\Views\\Home/Index.cshtml")]
+    [InlineData("\\Views\\Home\\Index.cshtml")]
+    public void NormalizePath_NormalizesSlashes(string input)
     {
-        [Theory]
-        [InlineData("/Views/Home/Index.cshtml")]
-        [InlineData("\\Views/Home/Index.cshtml")]
-        [InlineData("\\Views\\Home/Index.cshtml")]
-        [InlineData("\\Views\\Home\\Index.cshtml")]
-        public void NormalizePath_NormalizesSlashes(string input)
-        {
-            // Act
-            var normalizedPath = ViewPath.NormalizePath(input);
+        // Act
+        var normalizedPath = ViewPath.NormalizePath(input);
 
-            // Assert
-            Assert.Equal("/Views/Home/Index.cshtml", normalizedPath);
-        }
+        // Assert
+        Assert.Equal("/Views/Home/Index.cshtml", normalizedPath);
+    }
 
-        [Theory]
-        [InlineData("Views/Home/Index.cshtml")]
-        [InlineData("Views\\Home\\Index.cshtml")]
-        public void NormalizePath_AppendsLeadingSlash(string input)
-        {
-            // Act
-            var normalizedPath = ViewPath.NormalizePath(input);
+    [Theory]
+    [InlineData("Views/Home/Index.cshtml")]
+    [InlineData("Views\\Home\\Index.cshtml")]
+    public void NormalizePath_AppendsLeadingSlash(string input)
+    {
+        // Act
+        var normalizedPath = ViewPath.NormalizePath(input);
 
-            // Assert
-            Assert.Equal("/Views/Home/Index.cshtml", normalizedPath);
-        }
+        // Assert
+        Assert.Equal("/Views/Home/Index.cshtml", normalizedPath);
     }
 }
