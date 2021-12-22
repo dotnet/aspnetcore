@@ -52,10 +52,20 @@ public class RouteTableFactoryTests
     }
 
     [Fact]
+    public void IgnoresIdenticalTypes()
+    {
+        // Arrange & Act
+        var routes = RouteTableFactory.Create(new RouteKey(GetType().Assembly, new[] { GetType().Assembly }));
+
+        // Assert
+        Assert.Equal(routes.Routes.GroupBy(x => x.Handler).Count(), routes.Routes.Length);
+    }
+
+    [Fact]
     public void CanDiscoverRoute()
     {
         // Arrange & Act
-        var routes = RouteTableFactory.Create(new HashSet<Type> { typeof(MyComponent), });
+        var routes = RouteTableFactory.Create(new List<Type> { typeof(MyComponent), });
 
         // Assert
         Assert.Equal("Test1", Assert.Single(routes.Routes).Template.TemplateText);
@@ -70,23 +80,13 @@ public class RouteTableFactoryTests
     public void CanDiscoverRoutes_WithInheritance()
     {
         // Arrange & Act
-        var routes = RouteTableFactory.Create(new HashSet<Type> { typeof(MyComponent), typeof(MyInheritedComponent), });
+        var routes = RouteTableFactory.Create(new List<Type> { typeof(MyComponent), typeof(MyInheritedComponent), });
 
         // Assert
         Assert.Collection(
             routes.Routes.OrderBy(r => r.Template.TemplateText),
             r => Assert.Equal("Test1", r.Template.TemplateText),
             r => Assert.Equal("Test2", r.Template.TemplateText));
-    }
-
-    [Fact]
-    public void IgnoresIdenticalTypes()
-    {
-        // Arrange & Act
-        var routes = RouteTableFactory.Create(new HashSet<Type> { typeof(MyComponent), typeof(MyComponent), });
-
-        // Assert
-        Assert.Equal("Test1", Assert.Single(routes.Routes).Template.TemplateText);
     }
 
     [Route("Test2")]

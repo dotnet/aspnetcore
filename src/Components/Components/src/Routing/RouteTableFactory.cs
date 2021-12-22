@@ -32,9 +32,9 @@ internal static class RouteTableFactory
 
     public static void ClearCaches() => Cache.Clear();
 
-    private static HashSet<Type> GetRouteableComponents(RouteKey routeKey)
+    private static List<Type> GetRouteableComponents(RouteKey routeKey)
     {
-        var routeableComponents = new HashSet<Type>();
+        var routeableComponents = new List<Type>();
         if (routeKey.AppAssembly is not null)
         {
             GetRouteableComponents(routeableComponents, routeKey.AppAssembly);
@@ -50,19 +50,22 @@ internal static class RouteTableFactory
 
         return routeableComponents;
 
-        static void GetRouteableComponents(HashSet<Type> routeableComponents, Assembly assembly)
+        static void GetRouteableComponents(List<Type> routeableComponents, Assembly assembly)
         {
             foreach (var type in assembly.ExportedTypes)
             {
                 if (typeof(IComponent).IsAssignableFrom(type) && type.IsDefined(typeof(RouteAttribute)))
                 {
-                    routeableComponents.Add(type);
+                    if (!routeableComponents.Contains(type))
+                    {
+                        routeableComponents.Add(type);
+                    }
                 }
             }
         }
     }
 
-    internal static RouteTable Create(HashSet<Type> componentTypes)
+    internal static RouteTable Create(List<Type> componentTypes)
     {
         var templatesByHandler = new Dictionary<Type, string[]>();
         foreach (var componentType in componentTypes)
