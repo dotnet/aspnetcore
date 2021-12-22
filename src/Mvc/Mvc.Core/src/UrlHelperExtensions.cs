@@ -226,8 +226,6 @@ public static class UrlHelperExtensions
         });
     }
 
-
-
     private static string TrimAsyncSuffix(string actionName)
     {
         const string suffix = "Async";
