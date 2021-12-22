@@ -14,7 +14,7 @@
     Windows.10.Amd64.Server20H2.Open
     Windows.81.Amd64.Open
     Windows.7.Amd64.Open
-    OSX.1014.Amd64.Open
+    OSX.1015.Amd64.Open
     Debian.9.Amd64.Open
     Redhat.7.Amd64.Open
 .PARAMETER RunQuarantinedTests
