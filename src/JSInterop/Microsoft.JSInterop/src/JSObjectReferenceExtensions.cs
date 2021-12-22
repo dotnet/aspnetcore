@@ -1,10 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.JSInterop.Infrastructure;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
@@ -24,10 +21,7 @@ public static class JSObjectReferenceExtensions
     /// <returns>A <see cref="ValueTask"/> that represents the asynchronous invocation operation.</returns>
     public static async ValueTask InvokeVoidAsync(this IJSObjectReference jsObjectReference, string identifier, params object?[]? args)
     {
-        if (jsObjectReference is null)
-        {
-            throw new ArgumentNullException(nameof(jsObjectReference));
-        }
+        ArgumentNullException.ThrowIfNull(jsObjectReference);
 
         await jsObjectReference.InvokeAsync<IJSVoidResult>(identifier, args);
     }
@@ -46,10 +40,7 @@ public static class JSObjectReferenceExtensions
     /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
     public static ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSObjectReference jsObjectReference, string identifier, params object?[]? args)
     {
-        if (jsObjectReference is null)
-        {
-            throw new ArgumentNullException(nameof(jsObjectReference));
-        }
+        ArgumentNullException.ThrowIfNull(jsObjectReference);
 
         return jsObjectReference.InvokeAsync<TValue>(identifier, args);
     }
@@ -68,10 +59,7 @@ public static class JSObjectReferenceExtensions
     /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
     public static ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSObjectReference jsObjectReference, string identifier, CancellationToken cancellationToken, params object?[]? args)
     {
-        if (jsObjectReference is null)
-        {
-            throw new ArgumentNullException(nameof(jsObjectReference));
-        }
+        ArgumentNullException.ThrowIfNull(jsObjectReference);
 
         return jsObjectReference.InvokeAsync<TValue>(identifier, cancellationToken, args);
     }
@@ -89,10 +77,7 @@ public static class JSObjectReferenceExtensions
     /// <returns>A <see cref="ValueTask"/> that represents the asynchronous invocation operation.</returns>
     public static async ValueTask InvokeVoidAsync(this IJSObjectReference jsObjectReference, string identifier, CancellationToken cancellationToken, params object?[]? args)
     {
-        if (jsObjectReference is null)
-        {
-            throw new ArgumentNullException(nameof(jsObjectReference));
-        }
+        ArgumentNullException.ThrowIfNull(jsObjectReference);
 
         await jsObjectReference.InvokeAsync<IJSVoidResult>(identifier, cancellationToken, args);
     }
@@ -107,10 +92,7 @@ public static class JSObjectReferenceExtensions
     /// <returns>A <see cref="ValueTask"/> that represents the asynchronous invocation operation.</returns>
     public static async ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSObjectReference jsObjectReference, string identifier, TimeSpan timeout, params object?[]? args)
     {
-        if (jsObjectReference is null)
-        {
-            throw new ArgumentNullException(nameof(jsObjectReference));
-        }
+        ArgumentNullException.ThrowIfNull(jsObjectReference);
 
         using var cancellationTokenSource = timeout == Timeout.InfiniteTimeSpan ? null : new CancellationTokenSource(timeout);
         var cancellationToken = cancellationTokenSource?.Token ?? CancellationToken.None;
@@ -128,10 +110,7 @@ public static class JSObjectReferenceExtensions
     /// <returns>A <see cref="ValueTask"/> that represents the asynchronous invocation operation.</returns>
     public static async ValueTask InvokeVoidAsync(this IJSObjectReference jsObjectReference, string identifier, TimeSpan timeout, params object?[]? args)
     {
-        if (jsObjectReference is null)
-        {
-            throw new ArgumentNullException(nameof(jsObjectReference));
-        }
+        ArgumentNullException.ThrowIfNull(jsObjectReference);
 
         using var cancellationTokenSource = timeout == Timeout.InfiniteTimeSpan ? null : new CancellationTokenSource(timeout);
         var cancellationToken = cancellationTokenSource?.Token ?? CancellationToken.None;
