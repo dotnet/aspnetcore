@@ -44,7 +44,11 @@ internal static class RouteTableFactory
         {
             foreach (var assembly in routeKey.AdditionalAssemblies)
             {
-                GetRouteableComponents(routeableComponents, assembly);
+                // We don't need process the assembly if it's the app assembly.
+                if (assembly != routeKey.AppAssembly)
+                {
+                    GetRouteableComponents(routeableComponents, assembly);
+                }
             }
         }
 
@@ -56,10 +60,7 @@ internal static class RouteTableFactory
             {
                 if (typeof(IComponent).IsAssignableFrom(type) && type.IsDefined(typeof(RouteAttribute)))
                 {
-                    if (!routeableComponents.Contains(type))
-                    {
-                        routeableComponents.Add(type);
-                    }
+                    routeableComponents.Add(type);
                 }
             }
         }
