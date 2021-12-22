@@ -141,6 +141,7 @@ public class TemporaryDirectory : IDisposable
             info = info.Parent;
         }
 
-        return Path.Combine(segments.Reverse());
+        segments.Reverse();
+        return Path.Combine(segments.ToArray());
     }
 }
