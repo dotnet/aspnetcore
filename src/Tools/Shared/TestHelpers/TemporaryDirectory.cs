@@ -18,7 +18,7 @@ public class TemporaryDirectory : IDisposable
 
     public TemporaryDirectory()
     {
-        Root = Path.Combine(Path.GetTempPath(), "dotnet-tool-tests", Guid.NewGuid().ToString("N"));
+        Root = Path.Combine(ResolveLinks(Path.GetTempPath()), "dotnet-tool-tests", Guid.NewGuid().ToString("N"));
     }
 
     private TemporaryDirectory(string path, TemporaryDirectory parent)
@@ -113,5 +113,34 @@ public class TemporaryDirectory : IDisposable
         {
             Console.Error.WriteLine($"Test cleanup failed to delete '{Root}'");
         }
+    }
+
+    private static string ResolveLinks(string path)
+    {
+        if (!Directory.Exists(path))
+        {
+            return path;
+        }
+
+        var info = new DirectoryInfo(path);
+        var segments = new List<string>();
+        while (true)
+        {
+            if (info.LinkTarget is not null)
+            {
+                // Found a link, use it until we reach root. Portions of resolved path may also be links.
+                info = new DirectoryInfo(info.LinkTarget);
+            }
+
+            segments.Add(info.Name);
+            if (info.Parent is null)
+            {
+                break;
+            }
+
+            info = info.Parent;
+        }
+
+        return Path.Combine(segments.Reverse());
     }
 }
