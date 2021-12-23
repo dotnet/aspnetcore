@@ -1,0 +1,6 @@
+{
+  "author": "Microsoft",
+  "name": "SCSS Style Sheet (SASS)",
+  "description": "SCSS is a language that compiles into CSS",
+  "postActions/openInEditor/description": "Opens styleSheet1.scss in the editor"
+}

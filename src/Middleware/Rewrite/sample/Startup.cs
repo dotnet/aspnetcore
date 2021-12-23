@@ -55,8 +55,8 @@ public class Startup
                     options.Listen(IPAddress.Loopback, 5000);
                     options.Listen(IPAddress.Loopback, 5001, listenOptions =>
                     {
-                            // Configure SSL
-                            listenOptions.UseHttps("testCert.pfx", "testPassword");
+                        // Configure SSL
+                        listenOptions.UseHttps("testCert.pfx", "testPassword");
                     });
                 })
                 .UseStartup<Startup>()

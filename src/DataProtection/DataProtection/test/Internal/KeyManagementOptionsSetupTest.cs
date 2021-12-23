@@ -123,8 +123,8 @@ public class KeyManagementOptionsSetupTest
         }
         catch
         {
-                // swallow all failures
-                return null;
+            // swallow all failures
+            return null;
         }
     });
 

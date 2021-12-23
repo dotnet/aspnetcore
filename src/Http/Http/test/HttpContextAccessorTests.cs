@@ -52,8 +52,8 @@ public class HttpContextAccessorTests
 
         ThreadPool.QueueUserWorkItem(async _ =>
         {
-                // The HttpContext flows with the execution context
-                Assert.Same(context, accessor.HttpContext);
+            // The HttpContext flows with the execution context
+            Assert.Same(context, accessor.HttpContext);
 
             checkAsyncFlowTcs.SetResult(null);
 
@@ -97,8 +97,8 @@ public class HttpContextAccessorTests
 
         ThreadPool.QueueUserWorkItem(async _ =>
         {
-                // The HttpContext flows with the execution context
-                Assert.Same(context, accessor.HttpContext);
+            // The HttpContext flows with the execution context
+            Assert.Same(context, accessor.HttpContext);
 
             checkAsyncFlowTcs.SetResult(null);
 
@@ -145,8 +145,8 @@ public class HttpContextAccessorTests
         {
             try
             {
-                    // The HttpContext flows with the execution context
-                    Assert.Null(accessor.HttpContext);
+                // The HttpContext flows with the execution context
+                Assert.Null(accessor.HttpContext);
                 checkAsyncFlowTcs.SetResult(null);
             }
             catch (Exception ex)
@@ -172,8 +172,8 @@ public class HttpContextAccessorTests
         {
             try
             {
-                    // The HttpContext flows with the execution context
-                    Assert.Null(accessor.HttpContext);
+                // The HttpContext flows with the execution context
+                Assert.Null(accessor.HttpContext);
                 checkAsyncFlowTcs.SetResult(null);
             }
             catch (Exception ex)

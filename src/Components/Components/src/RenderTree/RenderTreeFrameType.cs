@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree;
 /// </summary>
 //
 // Describes the type of a <see cref="RenderTreeFrame"/>.
-public enum RenderTreeFrameType: short
+public enum RenderTreeFrameType : short
 {
     /// <summary>
     /// Used only for uninitialized frames.

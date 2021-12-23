@@ -13,8 +13,8 @@ public class ThrowingDisposeComponent : IComponent, IDisposable
     {
         renderHandle.Render(builder =>
         {
-                // Do nothing.
-            });
+            // Do nothing.
+        });
     }
 
     public void Dispose()

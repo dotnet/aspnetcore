@@ -208,8 +208,8 @@ public class HttpsTests
                     tlsCopy = Marshal.PtrToStructure<HttpApiTypes.HTTP_SSL_PROTOCOL_INFO>((IntPtr)handle.Pointer);
                 }
 
-                    // Assert.Equal(tlsFeature.Protocol, tlsCopy.Protocol); // These don't directly match because the native and managed enums use different values.
-                    Assert.Equal(tlsFeature.CipherAlgorithm, tlsCopy.CipherType);
+                // Assert.Equal(tlsFeature.Protocol, tlsCopy.Protocol); // These don't directly match because the native and managed enums use different values.
+                Assert.Equal(tlsFeature.CipherAlgorithm, tlsCopy.CipherType);
                 Assert.Equal(tlsFeature.CipherStrength, (int)tlsCopy.CipherStrength);
                 Assert.Equal(tlsFeature.HashAlgorithm, tlsCopy.HashType);
                 Assert.Equal(tlsFeature.HashStrength, (int)tlsCopy.HashStrength);

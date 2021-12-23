@@ -37,8 +37,8 @@ public class Startup
         {
             if (!context.User.Identities.Any(identity => identity.IsAuthenticated))
             {
-                    // Make a large identity
-                    var claims = new List<Claim>(1001);
+                // Make a large identity
+                var claims = new List<Claim>(1001);
                 claims.Add(new Claim(ClaimTypes.Name, "bob"));
                 for (int i = 0; i < 1000; i++)
                 {

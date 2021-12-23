@@ -47,9 +47,9 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
         {
             config.AddConfiguration(_config);
 
-                // We do this super early but still late enough that we can process the configuration
-                // wired up by calls to UseSetting
-                ExecuteHostingStartups();
+            // We do this super early but still late enough that we can process the configuration
+            // wired up by calls to UseSetting
+            ExecuteHostingStartups();
         });
 
         // IHostingStartup needs to be executed before any direct methods on the builder
@@ -68,24 +68,24 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
             var webhostContext = GetWebHostBuilderContext(context);
             var webHostOptions = (WebHostOptions)context.Properties[typeof(WebHostOptions)];
 
-                // Add the IHostingEnvironment and IApplicationLifetime from Microsoft.AspNetCore.Hosting
-                services.AddSingleton(webhostContext.HostingEnvironment);
+            // Add the IHostingEnvironment and IApplicationLifetime from Microsoft.AspNetCore.Hosting
+            services.AddSingleton(webhostContext.HostingEnvironment);
 #pragma warning disable CS0618 // Type or member is obsolete
-                services.AddSingleton((AspNetCore.Hosting.IHostingEnvironment)webhostContext.HostingEnvironment);
+            services.AddSingleton((AspNetCore.Hosting.IHostingEnvironment)webhostContext.HostingEnvironment);
             services.AddSingleton<IApplicationLifetime, GenericWebHostApplicationLifetime>();
 #pragma warning restore CS0618 // Type or member is obsolete
 
-                services.Configure<GenericWebHostServiceOptions>(options =>
-            {
-                    // Set the options
-                    options.WebHostOptions = webHostOptions;
-                    // Store and forward any startup errors
-                    options.HostingStartupExceptions = _hostingStartupErrors;
-            });
+            services.Configure<GenericWebHostServiceOptions>(options =>
+        {
+            // Set the options
+            options.WebHostOptions = webHostOptions;
+            // Store and forward any startup errors
+            options.HostingStartupExceptions = _hostingStartupErrors;
+        });
 
-                // REVIEW: This is bad since we don't own this type. Anybody could add one of these and it would mess things up
-                // We need to flow this differently
-                services.TryAddSingleton(sp => new DiagnosticListener("Microsoft.AspNetCore"));
+            // REVIEW: This is bad since we don't own this type. Anybody could add one of these and it would mess things up
+            // We need to flow this differently
+            services.TryAddSingleton(sp => new DiagnosticListener("Microsoft.AspNetCore"));
             services.TryAddSingleton<DiagnosticSource>(sp => sp.GetRequiredService<DiagnosticListener>());
             services.TryAddSingleton(sp => new ActivitySource("Microsoft.AspNetCore"));
             services.TryAddSingleton(DistributedContextPropagator.Current);
@@ -94,11 +94,11 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
             services.TryAddScoped<IMiddlewareFactory, MiddlewareFactory>();
             services.TryAddSingleton<IApplicationBuilderFactory, ApplicationBuilderFactory>();
 
-                // IMPORTANT: This needs to run *before* direct calls on the builder (like UseStartup)
-                _hostingStartupWebHostBuilder?.ConfigureServices(webhostContext, services);
+            // IMPORTANT: This needs to run *before* direct calls on the builder (like UseStartup)
+            _hostingStartupWebHostBuilder?.ConfigureServices(webhostContext, services);
 
-                // Support UseStartup(assemblyName)
-                if (!string.IsNullOrEmpty(webHostOptions.StartupAssembly))
+            // Support UseStartup(assemblyName)
+            if (!string.IsNullOrEmpty(webHostOptions.StartupAssembly))
             {
                 try
                 {
@@ -113,8 +113,8 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
                     {
                         options.ConfigureApplication = app =>
                         {
-                                // Throw if there was any errors initializing startup
-                                capture.Throw();
+                            // Throw if there was any errors initializing startup
+                            capture.Throw();
                         };
                     });
                 }
@@ -224,8 +224,8 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
 
         _builder.ConfigureServices((context, services) =>
         {
-                // Run this delegate if the startup type matches
-                if (object.ReferenceEquals(_startupObject, startupType))
+            // Run this delegate if the startup type matches
+            if (object.ReferenceEquals(_startupObject, startupType))
             {
                 UseStartup(startupType, context, services);
             }
@@ -245,8 +245,8 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
 
         _builder.ConfigureServices((context, services) =>
         {
-                // UseStartup can be called multiple times. Only run the last one.
-                if (object.ReferenceEquals(_startupObject, startupFactory))
+            // UseStartup can be called multiple times. Only run the last one.
+            if (object.ReferenceEquals(_startupObject, startupFactory))
             {
                 var webHostBuilderContext = GetWebHostBuilderContext(context);
                 var instance = startupFactory(webHostBuilderContext) ?? throw new InvalidOperationException("The specified factory returned null startup instance.");
@@ -322,11 +322,11 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
         {
             options.ConfigureApplication = app =>
             {
-                    // Throw if there was any errors initializing startup
-                    startupError?.Throw();
+                // Throw if there was any errors initializing startup
+                startupError?.Throw();
 
-                    // Execute Startup.Configure
-                    if (instance != null && configureBuilder != null)
+                // Execute Startup.Configure
+                if (instance != null && configureBuilder != null)
                 {
                     configureBuilder.Build(instance)(app);
                 }

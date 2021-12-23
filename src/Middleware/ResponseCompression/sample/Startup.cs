@@ -25,14 +25,14 @@ public class Startup
         {
             options.Providers.Add<GzipCompressionProvider>();
             options.Providers.Add<CustomCompressionProvider>();
-                // .Append(TItem) is only available on Core.
-                options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[] { "image/svg+xml" });
+            // .Append(TItem) is only available on Core.
+            options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[] { "image/svg+xml" });
 
-                ////Example of using excluded and wildcard MIME types:
-                ////Compress all MIME types except various media types, but do compress SVG images.
-                //options.MimeTypes = new[] { "*/*", "image/svg+xml" };
-                //options.ExcludedMimeTypes = new[] { "image/*", "audio/*", "video/*" };
-            });
+            ////Example of using excluded and wildcard MIME types:
+            ////Compress all MIME types except various media types, but do compress SVG images.
+            //options.MimeTypes = new[] { "*/*", "image/svg+xml" };
+            //options.ExcludedMimeTypes = new[] { "image/*", "audio/*", "video/*" };
+        });
     }
 
     public void Configure(IApplicationBuilder app)
@@ -53,8 +53,8 @@ public class Startup
             trickleApp.Run(async context =>
             {
                 context.Response.ContentType = "text/plain";
-                    // Disables compression on net451 because that GZipStream does not implement Flush.
-                    context.Features.Get<IHttpResponseBodyFeature>().DisableBuffering();
+                // Disables compression on net451 because that GZipStream does not implement Flush.
+                context.Features.Get<IHttpResponseBodyFeature>().DisableBuffering();
 
                 for (int i = 0; i < 100; i++)
                 {

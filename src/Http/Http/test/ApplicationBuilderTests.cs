@@ -57,8 +57,8 @@ public class ApplicationBuilderTests
         var builder = new ApplicationBuilder(null);
         builder.Run(context =>
         {
-                // Do not call next
-                return Task.CompletedTask;
+            // Do not call next
+            return Task.CompletedTask;
         });
         var app = builder.Build();
 

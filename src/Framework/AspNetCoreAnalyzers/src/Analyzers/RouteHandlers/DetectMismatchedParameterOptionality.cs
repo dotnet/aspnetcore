@@ -84,7 +84,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
                 return false;
             }
 
-            findStartBrace:
+        findStartBrace:
             var startIndex = _routeTemplate.IndexOf('{');
             if (startIndex == -1)
             {
@@ -100,7 +100,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
 
             var tokenStart = startIndex + 1;
 
-            findEndBrace:
+        findEndBrace:
             var endIndex = IndexOf(_routeTemplate, tokenStart, '}');
             if (endIndex == -1)
             {

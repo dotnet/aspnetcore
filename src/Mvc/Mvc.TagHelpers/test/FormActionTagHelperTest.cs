@@ -42,7 +42,7 @@ public class FormActionTagHelperTest
             {
                 var tagHelperContent = new DefaultTagHelperContent();
                 tagHelperContent.SetContent("Something Else");  // ignored
-                    return Task.FromResult<TagHelperContent>(tagHelperContent);
+                return Task.FromResult<TagHelperContent>(tagHelperContent);
             });
 
         var urlHelper = new Mock<IUrlHelper>(MockBehavior.Strict);
@@ -117,7 +117,7 @@ public class FormActionTagHelperTest
             {
                 var tagHelperContent = new DefaultTagHelperContent();
                 tagHelperContent.SetContent("Something Else");  // ignored
-                    return Task.FromResult<TagHelperContent>(tagHelperContent);
+                return Task.FromResult<TagHelperContent>(tagHelperContent);
             });
 
         var urlHelper = new Mock<IUrlHelper>(MockBehavior.Strict);

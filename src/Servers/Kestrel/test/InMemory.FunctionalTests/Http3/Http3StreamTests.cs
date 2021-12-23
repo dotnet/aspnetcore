@@ -741,9 +741,9 @@ public class Http3StreamTests : Http3TestBase
         var requestDelegateCalled = false;
         var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(c =>
         {
-                // Bad content-length + end stream means the request delegate
-                // is never called by the server.
-                requestDelegateCalled = true;
+            // Bad content-length + end stream means the request delegate
+            // is never called by the server.
+            requestDelegateCalled = true;
             return Task.CompletedTask;
         });
 
@@ -1012,8 +1012,8 @@ public class Http3StreamTests : Http3TestBase
             Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("Custom你好Name", "Custom Value"));
             Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("CustomName", "Custom 你好 Value"));
             Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("CustomName", "Custom \r Value"));
-                // ETag is one of the few special cased trailers. Accept is not.
-                Assert.Throws<InvalidOperationException>(() => context.Features.Get<IHttpResponseTrailersFeature>().Trailers.ETag = "Custom 你好 Tag");
+            // ETag is one of the few special cased trailers. Accept is not.
+            Assert.Throws<InvalidOperationException>(() => context.Features.Get<IHttpResponseTrailersFeature>().Trailers.ETag = "Custom 你好 Tag");
             Assert.Throws<InvalidOperationException>(() => context.Features.Get<IHttpResponseTrailersFeature>().Trailers.Accept = "Custom 你好 Tag");
         });
 
@@ -1045,8 +1045,8 @@ public class Http3StreamTests : Http3TestBase
             Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("Custom你好Name", "Custom Value"));
             Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("CustomName", "Custom \r Value"));
             context.Response.AppendTrailer("CustomName", "Custom 你好 Value");
-                // ETag is one of the few special cased trailers. Accept is not.
-                context.Features.Get<IHttpResponseTrailersFeature>().Trailers.ETag = "Custom 你好 Tag";
+            // ETag is one of the few special cased trailers. Accept is not.
+            context.Features.Get<IHttpResponseTrailersFeature>().Trailers.ETag = "Custom 你好 Tag";
             context.Features.Get<IHttpResponseTrailersFeature>().Trailers.Accept = "Custom 你好 Accept";
         });
 
@@ -1147,11 +1147,11 @@ public class Http3StreamTests : Http3TestBase
                 await context.Response.CompleteAsync().DefaultTimeout();
 
                 Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
-                    Assert.True(context.Response.Headers.IsReadOnly);
+                Assert.True(context.Response.Headers.IsReadOnly);
                 Assert.True(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
 
-                    // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
-                    await clientTcs.Task.DefaultTimeout();
+                // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
+                await clientTcs.Task.DefaultTimeout();
                 appTcs.SetResult(0);
             }
             catch (Exception ex)
@@ -1197,12 +1197,12 @@ public class Http3StreamTests : Http3TestBase
                 await context.Response.CompleteAsync().DefaultTimeout();
                 await context.Response.CompleteAsync().DefaultTimeout(); // Can be called twice, no-ops
 
-                    Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
-                    Assert.True(context.Response.Headers.IsReadOnly);
+                Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
+                Assert.True(context.Response.Headers.IsReadOnly);
                 Assert.True(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
 
-                    // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
-                    await clientTcs.Task.DefaultTimeout();
+                // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
+                await clientTcs.Task.DefaultTimeout();
                 appTcs.SetResult(0);
             }
             catch (Exception ex)
@@ -1299,15 +1299,15 @@ public class Http3StreamTests : Http3TestBase
 
                 await context.Response.WriteAsync("Hello World");
                 Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
-                    Assert.True(context.Response.Headers.IsReadOnly);
+                Assert.True(context.Response.Headers.IsReadOnly);
 
                 await context.Response.CompleteAsync().DefaultTimeout();
                 await context.Response.CompleteAsync().DefaultTimeout(); // Can be called twice, no-ops
 
-                    Assert.True(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
+                Assert.True(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
 
-                    // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
-                    await clientTcs.Task.DefaultTimeout();
+                // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
+                await clientTcs.Task.DefaultTimeout();
                 appTcs.SetResult(0);
             }
             catch (Exception ex)
@@ -1354,14 +1354,14 @@ public class Http3StreamTests : Http3TestBase
                 await context.Response.CompleteAsync().DefaultTimeout();
 
                 Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
-                    Assert.True(context.Response.Headers.IsReadOnly);
+                Assert.True(context.Response.Headers.IsReadOnly);
                 Assert.True(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
 
                 var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => context.Response.WriteAsync("2 Hello World").DefaultTimeout());
                 Assert.Equal("Writing is not allowed after writer was completed.", ex.Message);
 
-                    // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
-                    await clientTcs.Task.DefaultTimeout();
+                // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
+                await clientTcs.Task.DefaultTimeout();
                 appTcs.SetResult(0);
             }
             catch (Exception ex)
@@ -1405,7 +1405,7 @@ public class Http3StreamTests : Http3TestBase
 
                 await context.Response.WriteAsync("Hello World").DefaultTimeout();
                 Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
-                    Assert.True(context.Response.Headers.IsReadOnly);
+                Assert.True(context.Response.Headers.IsReadOnly);
 
                 await context.Response.CompleteAsync().DefaultTimeout();
 
@@ -1414,8 +1414,8 @@ public class Http3StreamTests : Http3TestBase
                 var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => context.Response.WriteAsync("2 Hello World").DefaultTimeout());
                 Assert.Equal("Writing is not allowed after writer was completed.", ex.Message);
 
-                    // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
-                    await clientTcs.Task.DefaultTimeout();
+                // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
+                await clientTcs.Task.DefaultTimeout();
                 appTcs.SetResult(0);
             }
             catch (Exception ex)
@@ -1505,18 +1505,18 @@ public class Http3StreamTests : Http3TestBase
                 context.Response.BodyWriter.Advance(length);
 
                 Assert.False(startingTcs.Task.IsCompletedSuccessfully); // OnStarting did not get called.
-                    Assert.False(context.Response.Headers.IsReadOnly);
+                Assert.False(context.Response.Headers.IsReadOnly);
 
                 context.Response.AppendTrailer("CustomName", "Custom Value");
 
                 await context.Response.CompleteAsync().DefaultTimeout();
                 Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
-                    Assert.True(context.Response.Headers.IsReadOnly);
+                Assert.True(context.Response.Headers.IsReadOnly);
 
                 Assert.True(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
 
-                    // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
-                    await clientTcs.Task.DefaultTimeout();
+                // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
+                await clientTcs.Task.DefaultTimeout();
                 appTcs.SetResult(0);
             }
             catch (Exception ex)
@@ -1564,7 +1564,7 @@ public class Http3StreamTests : Http3TestBase
 
                 await context.Response.WriteAsync("Hello World");
                 Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
-                    Assert.True(context.Response.Headers.IsReadOnly);
+                Assert.True(context.Response.Headers.IsReadOnly);
 
                 context.Response.AppendTrailer("CustomName", "Custom Value");
 
@@ -1572,8 +1572,8 @@ public class Http3StreamTests : Http3TestBase
 
                 Assert.True(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
 
-                    // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
-                    await clientTcs.Task.DefaultTimeout();
+                // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
+                await clientTcs.Task.DefaultTimeout();
                 appTcs.SetResult(0);
             }
             catch (Exception ex)
@@ -1622,7 +1622,7 @@ public class Http3StreamTests : Http3TestBase
                 context.Response.ContentLength = 25;
                 await context.Response.WriteAsync("Hello World");
                 Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
-                    Assert.True(context.Response.Headers.IsReadOnly);
+                Assert.True(context.Response.Headers.IsReadOnly);
 
                 context.Response.AppendTrailer("CustomName", "Custom Value");
 
@@ -1631,8 +1631,8 @@ public class Http3StreamTests : Http3TestBase
 
                 Assert.False(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
 
-                    // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
-                    await clientTcs.Task.DefaultTimeout();
+                // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
+                await clientTcs.Task.DefaultTimeout();
                 appTcs.SetResult(0);
             }
             catch (Exception ex)
@@ -1682,7 +1682,7 @@ public class Http3StreamTests : Http3TestBase
                 context.Response.ContentLength = 25;
                 await context.Response.WriteAsync("Hello World");
                 Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
-                    Assert.True(context.Response.Headers.IsReadOnly);
+                Assert.True(context.Response.Headers.IsReadOnly);
 
                 context.Response.AppendTrailer("CustomName", "Custom Value");
 
@@ -1691,8 +1691,8 @@ public class Http3StreamTests : Http3TestBase
 
                 Assert.False(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
 
-                    // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
-                    await clientTcs.Task.DefaultTimeout();
+                // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
+                await clientTcs.Task.DefaultTimeout();
                 appTcs.SetResult(0);
             }
             catch (Exception ex)
@@ -1740,7 +1740,7 @@ public class Http3StreamTests : Http3TestBase
 
                 await context.Response.WriteAsync("Hello World");
                 Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
-                    Assert.True(context.Response.Headers.IsReadOnly);
+                Assert.True(context.Response.Headers.IsReadOnly);
 
                 context.Response.AppendTrailer("CustomName", "Custom Value");
 
@@ -1748,12 +1748,12 @@ public class Http3StreamTests : Http3TestBase
 
                 Assert.True(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
 
-                    // RequestAborted will no longer fire after CompleteAsync.
-                    Assert.False(context.RequestAborted.CanBeCanceled);
+                // RequestAborted will no longer fire after CompleteAsync.
+                Assert.False(context.RequestAborted.CanBeCanceled);
                 context.Abort();
 
-                    // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
-                    await clientTcs.Task.DefaultTimeout();
+                // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
+                await clientTcs.Task.DefaultTimeout();
                 appTcs.SetResult(0);
             }
             catch (Exception ex)
@@ -1803,7 +1803,7 @@ public class Http3StreamTests : Http3TestBase
 
                 await context.Response.WriteAsync("Hello World");
                 Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
-                    Assert.True(context.Response.Headers.IsReadOnly);
+                Assert.True(context.Response.Headers.IsReadOnly);
 
                 context.Response.AppendTrailer("CustomName", "Custom Value");
 
@@ -1811,15 +1811,15 @@ public class Http3StreamTests : Http3TestBase
 
                 Assert.True(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
 
-                    // RequestAborted will no longer fire after CompleteAsync.
-                    Assert.False(context.RequestAborted.CanBeCanceled);
+                // RequestAborted will no longer fire after CompleteAsync.
+                Assert.False(context.RequestAborted.CanBeCanceled);
                 context.Abort();
 
                 await Assert.ThrowsAsync<TaskCanceledException>(async () => await requestBodyTask);
                 await Assert.ThrowsAsync<ConnectionAbortedException>(async () => await context.Request.BodyReader.ReadAsync());
 
-                    // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
-                    await clientTcs.Task.DefaultTimeout();
+                // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
+                await clientTcs.Task.DefaultTimeout();
                 appTcs.SetResult(0);
             }
             catch (Exception ex)
@@ -1867,7 +1867,7 @@ public class Http3StreamTests : Http3TestBase
 
                 await context.Response.WriteAsync("Hello World");
                 Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
-                    Assert.True(context.Response.Headers.IsReadOnly);
+                Assert.True(context.Response.Headers.IsReadOnly);
 
                 context.Response.AppendTrailer("CustomName", "Custom Value");
 
@@ -1875,14 +1875,14 @@ public class Http3StreamTests : Http3TestBase
 
                 Assert.True(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
 
-                    // RequestAborted will no longer fire after CompleteAsync.
-                    Assert.False(context.RequestAborted.CanBeCanceled);
+                // RequestAborted will no longer fire after CompleteAsync.
+                Assert.False(context.RequestAborted.CanBeCanceled);
                 var resetFeature = context.Features.Get<IHttpResetFeature>();
                 Assert.NotNull(resetFeature);
                 resetFeature.Reset((int)Http3ErrorCode.NoError);
 
-                    // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
-                    await clientTcs.Task.DefaultTimeout();
+                // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
+                await clientTcs.Task.DefaultTimeout();
                 appTcs.SetResult(0);
             }
             catch (Exception ex)
@@ -1934,7 +1934,7 @@ public class Http3StreamTests : Http3TestBase
 
                 await context.Response.WriteAsync("Hello World");
                 Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
-                    Assert.True(context.Response.Headers.IsReadOnly);
+                Assert.True(context.Response.Headers.IsReadOnly);
 
                 context.Response.AppendTrailer("CustomName", "Custom Value");
 
@@ -1942,8 +1942,8 @@ public class Http3StreamTests : Http3TestBase
 
                 Assert.True(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
 
-                    // RequestAborted will no longer fire after CompleteAsync.
-                    Assert.False(context.RequestAborted.CanBeCanceled);
+                // RequestAborted will no longer fire after CompleteAsync.
+                Assert.False(context.RequestAborted.CanBeCanceled);
                 var resetFeature = context.Features.Get<IHttpResetFeature>();
                 Assert.NotNull(resetFeature);
                 resetFeature.Reset((int)Http3ErrorCode.NoError);
@@ -1951,8 +1951,8 @@ public class Http3StreamTests : Http3TestBase
                 await Assert.ThrowsAsync<TaskCanceledException>(async () => await requestBodyTask);
                 await Assert.ThrowsAsync<ConnectionAbortedException>(async () => await context.Request.BodyReader.ReadAsync());
 
-                    // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
-                    await clientTcs.Task.DefaultTimeout();
+                // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
+                await clientTcs.Task.DefaultTimeout();
                 appTcs.SetResult(0);
             }
             catch (Exception ex)
@@ -2043,8 +2043,8 @@ public class Http3StreamTests : Http3TestBase
         var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(async c =>
         {
-                // Send headers
-                await c.Response.Body.FlushAsync();
+            // Send headers
+            await c.Response.Body.FlushAsync();
 
             await tcs.Task;
         });
@@ -2471,9 +2471,9 @@ public class Http3StreamTests : Http3TestBase
         var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(async context =>
         {
 #pragma warning disable CS0618 // Type or member is obsolete
-                exception = await Assert.ThrowsAsync<BadHttpRequestException>(async () =>
+            exception = await Assert.ThrowsAsync<BadHttpRequestException>(async () =>
 #pragma warning restore CS0618 // Type or member is obsolete
-                {
+            {
                 var buffer = new byte[100];
                 while (await context.Request.Body.ReadAsync(buffer, 0, buffer.Length) > 0) { }
             });
@@ -2547,9 +2547,9 @@ public class Http3StreamTests : Http3TestBase
         var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(async context =>
         {
 #pragma warning disable CS0618 // Type or member is obsolete
-                exception = await Assert.ThrowsAsync<BadHttpRequestException>(async () =>
+            exception = await Assert.ThrowsAsync<BadHttpRequestException>(async () =>
 #pragma warning restore CS0618 // Type or member is obsolete
-                {
+            {
                 var buffer = new byte[100];
                 while (await context.Request.Body.ReadAsync(buffer, 0, buffer.Length) > 0) { }
             });
@@ -2602,9 +2602,9 @@ public class Http3StreamTests : Http3TestBase
             Assert.False(context.Features.Get<IHttpMaxRequestBodySizeFeature>().IsReadOnly);
             context.Features.Get<IHttpMaxRequestBodySizeFeature>().MaxRequestBodySize = 17;
 #pragma warning disable CS0618 // Type or member is obsolete
-                exception = await Assert.ThrowsAsync<BadHttpRequestException>(async () =>
+            exception = await Assert.ThrowsAsync<BadHttpRequestException>(async () =>
 #pragma warning restore CS0618 // Type or member is obsolete
-                {
+            {
                 var buffer = new byte[100];
                 while (await context.Request.Body.ReadAsync(buffer, 0, buffer.Length) > 0) { }
             });
@@ -2771,8 +2771,8 @@ public class Http3StreamTests : Http3TestBase
             var buffer = new byte[1024];
             try
             {
-                    // Read 100 bytes
-                    var readCount = 0;
+                // Read 100 bytes
+                var readCount = 0;
                 while (readCount < 100)
                 {
                     readCount += await context.Request.Body.ReadAsync(buffer.AsMemory(readCount, 100 - readCount));

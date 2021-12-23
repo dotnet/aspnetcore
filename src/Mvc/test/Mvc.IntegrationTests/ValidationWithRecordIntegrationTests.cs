@@ -370,8 +370,8 @@ public class ValidationWithRecordIntegrationTests
 
         var testContext = ModelBindingTestHelper.GetTestContext(request =>
         {
-                // Force creation of the Customer model.
-                request.QueryString = new QueryString("?parameter.Customer.Age=17");
+            // Force creation of the Customer model.
+            request.QueryString = new QueryString("?parameter.Customer.Age=17");
         });
 
         var modelState = testContext.ModelState;
@@ -455,8 +455,8 @@ public class ValidationWithRecordIntegrationTests
 
         var testContext = ModelBindingTestHelper.GetTestContext(request =>
         {
-                // Force creation of the Customer model.
-                request.QueryString = new QueryString("?");
+            // Force creation of the Customer model.
+            request.QueryString = new QueryString("?");
         });
 
         var modelState = testContext.ModelState;
@@ -535,8 +535,8 @@ public class ValidationWithRecordIntegrationTests
 
         var testContext = ModelBindingTestHelper.GetTestContext(request =>
         {
-                // Force creation of the Customer model.
-                request.QueryString = new QueryString("?parameter[0].Name=bill");
+            // Force creation of the Customer model.
+            request.QueryString = new QueryString("?parameter[0].Name=bill");
         });
 
         var modelState = testContext.ModelState;
@@ -1735,8 +1735,8 @@ public class ValidationWithRecordIntegrationTests
         var testContext = ModelBindingTestHelper.GetTestContext(
             request =>
             {
-                    // This string is too long and will have a validation error.
-                    request.Body = new MemoryStream(Encoding.UTF8.GetBytes("{ message: \"Hello There\" }"));
+                // This string is too long and will have a validation error.
+                request.Body = new MemoryStream(Encoding.UTF8.GetBytes("{ message: \"Hello There\" }"));
                 request.ContentType = "application/json";
             });
 

@@ -92,8 +92,8 @@ public class WebSocketClient
 
             request.Body = Stream.Null;
 
-                // WebSocket
-                webSocketFeature = new WebSocketFeature(context);
+            // WebSocket
+            webSocketFeature = new WebSocketFeature(context);
             context.Features.Set<IHttpWebSocketFeature>(webSocketFeature);
 
             ConfigureRequest?.Invoke(context.Request);

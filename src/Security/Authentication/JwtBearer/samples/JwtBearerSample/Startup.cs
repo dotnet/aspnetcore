@@ -39,8 +39,8 @@ public class Startup
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(o =>
             {
-                    // You also need to update /wwwroot/app/scripts/app.js
-                    o.Authority = Configuration["oidc:authority"];
+                // You also need to update /wwwroot/app/scripts/app.js
+                o.Authority = Configuration["oidc:authority"];
                 o.Audience = Configuration["oidc:clientid"];
             });
     }
@@ -58,16 +58,16 @@ public class Startup
         // [Authorize] would usually handle this
         app.Use(async (context, next) =>
         {
-                // Use this if there are multiple authentication schemes
-                var authResult = await context.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
+            // Use this if there are multiple authentication schemes
+            var authResult = await context.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
             if (authResult.Succeeded && authResult.Principal.Identity.IsAuthenticated)
             {
                 await next(context);
             }
             else if (authResult.Failure != null)
             {
-                    // Rethrow, let the exception page handle it.
-                    ExceptionDispatchInfo.Capture(authResult.Failure).Throw();
+                // Rethrow, let the exception page handle it.
+                ExceptionDispatchInfo.Capture(authResult.Failure).Throw();
             }
             else
             {

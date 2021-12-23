@@ -21,9 +21,9 @@ public class Program
             {
                 webBuilder.UseSetting(WebHostDefaults.ApplicationKey, typeof(Program).Assembly.GetName().Name);
 
-                    // We require this line because we run in Production environment
-                    // and static web assets are only on by default during development.
-                    webBuilder.UseStaticWebAssets();
+                // We require this line because we run in Production environment
+                // and static web assets are only on by default during development.
+                webBuilder.UseStaticWebAssets();
                 webBuilder.UseStartup<Startup>();
             });
 }

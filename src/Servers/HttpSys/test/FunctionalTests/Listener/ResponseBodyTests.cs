@@ -250,8 +250,8 @@ public class ResponseBodyTests
 
             await Assert.ThrowsAsync<IOException>(async () =>
             {
-                    // It can take several tries before Write notices the disconnect.
-                    for (int i = 0; i < Utilities.WriteRetryLimit; i++)
+                // It can take several tries before Write notices the disconnect.
+                for (int i = 0; i < Utilities.WriteRetryLimit; i++)
                 {
                     context.Response.Body.Write(Utilities.WriteBuffer, 0, Utilities.WriteBuffer.Length);
                     await Task.Delay(TimeSpan.FromMilliseconds(50));
@@ -286,8 +286,8 @@ public class ResponseBodyTests
 
             await Assert.ThrowsAsync<IOException>(async () =>
             {
-                    // It can take several tries before Write notices the disconnect.
-                    for (int i = 0; i < Utilities.WriteRetryLimit; i++)
+                // It can take several tries before Write notices the disconnect.
+                for (int i = 0; i < Utilities.WriteRetryLimit; i++)
                 {
                     await context.Response.Body.WriteAsync(Utilities.WriteBuffer, 0, Utilities.WriteBuffer.Length);
                     await Task.Delay(TimeSpan.FromMilliseconds(50));
@@ -384,8 +384,8 @@ public class ResponseBodyTests
 
             await Assert.ThrowsAsync<IOException>(async () =>
             {
-                    // It can take several tries before Write notices the disconnect.
-                    for (int i = 0; i < Utilities.WriteRetryLimit; i++)
+                // It can take several tries before Write notices the disconnect.
+                for (int i = 0; i < Utilities.WriteRetryLimit; i++)
                 {
                     context.Response.Body.Write(Utilities.WriteBuffer, 0, Utilities.WriteBuffer.Length);
                     await Task.Delay(TimeSpan.FromMilliseconds(50));
@@ -423,8 +423,8 @@ public class ResponseBodyTests
 
             await Assert.ThrowsAsync<IOException>(async () =>
             {
-                    // It can take several tries before Write notices the disconnect.
-                    for (int i = 0; i < Utilities.WriteRetryLimit; i++)
+                // It can take several tries before Write notices the disconnect.
+                for (int i = 0; i < Utilities.WriteRetryLimit; i++)
                 {
                     await context.Response.Body.WriteAsync(Utilities.WriteBuffer, 0, Utilities.WriteBuffer.Length);
                     await Task.Delay(TimeSpan.FromMilliseconds(50));

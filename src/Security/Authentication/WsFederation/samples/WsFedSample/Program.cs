@@ -25,8 +25,8 @@ public class Program
                     {
                         options.Listen(IPAddress.Loopback, 44307, listenOptions =>
                         {
-                                // Configure SSL
-                                var serverCertificate = LoadCertificate();
+                            // Configure SSL
+                            var serverCertificate = LoadCertificate();
                             listenOptions.UseHttps(serverCertificate);
                         });
                     })

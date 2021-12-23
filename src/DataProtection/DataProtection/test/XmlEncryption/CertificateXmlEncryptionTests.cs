@@ -27,7 +27,7 @@ public class CertificateXmlEncryptorTests
             .Returns<EncryptedXml, XmlElement>((encryptedXml, element) =>
             {
                 encryptedXml.AddKeyNameMapping("theKey", symmetricAlgorithm); // use symmetric encryption
-                    return encryptedXml.Encrypt(element, "theKey");
+                return encryptedXml.Encrypt(element, "theKey");
             });
 
         var mockInternalDecryptor = new Mock<IInternalEncryptedXmlDecryptor>();
@@ -35,7 +35,7 @@ public class CertificateXmlEncryptorTests
             .Callback<EncryptedXml>(encryptedXml =>
             {
                 encryptedXml.AddKeyNameMapping("theKey", symmetricAlgorithm); // use symmetric encryption
-                });
+            });
 
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddSingleton<IInternalEncryptedXmlDecryptor>(mockInternalDecryptor.Object);

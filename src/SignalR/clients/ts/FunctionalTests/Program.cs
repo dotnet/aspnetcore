@@ -50,8 +50,8 @@ public class Program
                         bool useRSA = false;
                         if (OperatingSystem.IsWindows())
                         {
-                                // Detect Win10+
-                                var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
+                            // Detect Win10+
+                            var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
                             var major = key.GetValue("CurrentMajorVersionNumber") as int?;
                             var minor = key.GetValue("CurrentMinorVersionNumber") as int?;
 
@@ -67,14 +67,14 @@ public class Program
 
                         if (useRSA)
                         {
-                                // RSA cert, won't work on Windows 8.1 & Windows 2012 R2 using HTTP2, and ECC won't work in some Node environments
-                                var certPath = Path.Combine(Directory.GetCurrentDirectory(), "testCert.pfx");
+                            // RSA cert, won't work on Windows 8.1 & Windows 2012 R2 using HTTP2, and ECC won't work in some Node environments
+                            var certPath = Path.Combine(Directory.GetCurrentDirectory(), "testCert.pfx");
                             httpsOptions.ServerCertificate = new X509Certificate2(certPath, "testPassword");
                         }
                         else
                         {
-                                // ECC cert, works on Windows 8.1 & Windows 2012 R2 using HTTP2
-                                var certPath = Path.Combine(Directory.GetCurrentDirectory(), "testCertECC.pfx");
+                            // ECC cert, works on Windows 8.1 & Windows 2012 R2 using HTTP2
+                            var certPath = Path.Combine(Directory.GetCurrentDirectory(), "testCertECC.pfx");
                             httpsOptions.ServerCertificate = new X509Certificate2(certPath, "testPassword");
                         }
                     });

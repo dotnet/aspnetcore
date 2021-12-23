@@ -376,9 +376,9 @@ public class MicrosoftAccountTests : RemoteAuthenticationTests<MicrosoftAccountO
                                     LoginHint = "username",
                                     DomainHint = "consumers",
 #pragma warning disable CS0618 // Type or member is obsolete
-                                        ResponseMode = "query",
+                                    ResponseMode = "query",
 #pragma warning restore CS0618 // Type or member is obsolete
-                                        RedirectUri = "/me"
+                                    RedirectUri = "/me"
                                 });
                             }
                             else if (req.Path == new PathString("/challengeWithOtherScope"))

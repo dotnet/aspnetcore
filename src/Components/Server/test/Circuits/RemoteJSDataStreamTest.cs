@@ -60,8 +60,8 @@ public class RemoteJSDataStreamTest
 
         var sendDataTask = Task.Run(async () =>
         {
-                // Act 1
-                var success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 0, chunk, error: null).DefaultTimeout();
+            // Act 1
+            var success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 0, chunk, error: null).DefaultTimeout();
             return success;
         });
 
@@ -88,8 +88,8 @@ public class RemoteJSDataStreamTest
 
         var sendDataTask = Task.Run(async () =>
         {
-                // Act 1
-                var success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 0, chunk, error: null).DefaultTimeout();
+            // Act 1
+            var success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 0, chunk, error: null).DefaultTimeout();
             return success;
         });
 

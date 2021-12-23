@@ -1027,9 +1027,9 @@ public class ControllerBinderDelegateProviderTest
 
         var binder = new StubModelBinder(bindingContext =>
         {
-                // BindingContext.ModelName will be string.Empty here. This is a 'fallback to empty prefix'
-                // because the value providers have no data.
-                if (inputPropertyValues.TryGetValue(bindingContext.FieldName, out var model))
+            // BindingContext.ModelName will be string.Empty here. This is a 'fallback to empty prefix'
+            // because the value providers have no data.
+            if (inputPropertyValues.TryGetValue(bindingContext.FieldName, out var model))
             {
                 bindingContext.Result = ModelBindingResult.Success(model);
             }

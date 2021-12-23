@@ -170,8 +170,8 @@ public class AssemblyTestLog : IDisposable
 
             if (serilogLoggerProvider != null)
             {
-                    // Use a factory so that the container will dispose it
-                    builder.Services.AddSingleton<ILoggerProvider>(_ => serilogLoggerProvider);
+                // Use a factory so that the container will dispose it
+                builder.Services.AddSingleton<ILoggerProvider>(_ => serilogLoggerProvider);
             }
         });
 
@@ -197,13 +197,13 @@ public class AssemblyTestLog : IDisposable
 
         serviceCollection.AddLogging(builder =>
         {
-                // Global logging, when it's written, is expected to be outputted. So set the log level to minimum.
-                builder.SetMinimumLevel(LogLevel.Trace);
+            // Global logging, when it's written, is expected to be outputted. So set the log level to minimum.
+            builder.SetMinimumLevel(LogLevel.Trace);
 
             if (serilogLoggerProvider != null)
             {
-                    // Use a factory so that the container will dispose it
-                    builder.Services.AddSingleton<ILoggerProvider>(_ => serilogLoggerProvider);
+                // Use a factory so that the container will dispose it
+                builder.Services.AddSingleton<ILoggerProvider>(_ => serilogLoggerProvider);
             }
         });
 

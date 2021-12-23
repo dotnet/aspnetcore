@@ -223,8 +223,8 @@ public static class ListenOptionsHttpsExtensions
 
         listenOptions.Use(next =>
         {
-                // Set the list of protocols from listen options
-                httpsOptions.HttpProtocols = listenOptions.Protocols;
+            // Set the list of protocols from listen options
+            httpsOptions.HttpProtocols = listenOptions.Protocols;
             var middleware = new HttpsConnectionMiddleware(next, httpsOptions, loggerFactory);
             return middleware.OnConnectionAsync;
         });
@@ -297,8 +297,8 @@ public static class ListenOptionsHttpsExtensions
         listenOptions.IsTls = true;
         listenOptions.Use(next =>
         {
-                // Set the list of protocols from listen options
-                callbackOptions.HttpProtocols = listenOptions.Protocols;
+            // Set the list of protocols from listen options
+            callbackOptions.HttpProtocols = listenOptions.Protocols;
             var middleware = new HttpsConnectionMiddleware(next, callbackOptions, loggerFactory);
             return middleware.OnConnectionAsync;
         });

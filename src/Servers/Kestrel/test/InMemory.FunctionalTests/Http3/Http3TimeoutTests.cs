@@ -570,8 +570,8 @@ public class Http3TimeoutTests : Http3TestBase
 
         var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(context =>
         {
-                // Completely disable rate limiting for this stream.
-                context.Features.Get<IHttpMinRequestBodyDataRateFeature>().MinDataRate = null;
+            // Completely disable rate limiting for this stream.
+            context.Features.Get<IHttpMinRequestBodyDataRateFeature>().MinDataRate = null;
             return _readRateApplication(context);
         });
 

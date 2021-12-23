@@ -38,7 +38,7 @@ public class SocketSender
 #if NETCOREAPP
         if (!_eventArgs.MemoryBuffer.Equals(Memory<byte>.Empty))
 #else
-            if (_eventArgs.Buffer != null)
+        if (_eventArgs.Buffer != null)
 #endif
         {
             _eventArgs.SetBuffer(null, 0, 0);
@@ -65,9 +65,9 @@ public class SocketSender
 #if NETCOREAPP
         _eventArgs.SetBuffer(MemoryMarshal.AsMemory(memory));
 #else
-            var segment = memory.GetArray();
+        var segment = memory.GetArray();
 
-            _eventArgs.SetBuffer(segment.Array, segment.Offset, segment.Count);
+        _eventArgs.SetBuffer(segment.Array, segment.Offset, segment.Count);
 #endif
         if (!_socket.SendAsync(_eventArgs))
         {

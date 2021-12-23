@@ -579,8 +579,8 @@ public class CorsMiddlewareTests
                 .UseTestServer()
                 .Configure(app =>
                 {
-                        // Simulate ExceptionHandler middleware
-                        app.Use(async (context, next) =>
+                    // Simulate ExceptionHandler middleware
+                    app.Use(async (context, next) =>
                     {
                         try
                         {

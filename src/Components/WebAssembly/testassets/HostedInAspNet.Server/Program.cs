@@ -17,9 +17,9 @@ public class Program
         Host.CreateDefaultBuilder(args)
         .ConfigureWebHostDefaults(webHostBuilder =>
         {
-                // We require this line because we run in Production environment
-                // and static web assets are only on by default during development.
-                webHostBuilder.UseStaticWebAssets();
+            // We require this line because we run in Production environment
+            // and static web assets are only on by default during development.
+            webHostBuilder.UseStaticWebAssets();
 
             webHostBuilder.UseStartup<Startup>();
         })

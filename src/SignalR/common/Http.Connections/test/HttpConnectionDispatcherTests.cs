@@ -476,8 +476,8 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
                 {
                     return async connectionContext =>
                     {
-                            // Ensure both sides of the pipe are ok
-                            var result = await connectionContext.Transport.Input.ReadAsync();
+                        // Ensure both sides of the pipe are ok
+                        var result = await connectionContext.Transport.Input.ReadAsync();
                         Assert.True(result.IsCompleted);
                         await connectionContext.Transport.Output.WriteAsync(result.Buffer.First);
                     };
@@ -540,8 +540,8 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
                 {
                     return async connectionContext =>
                     {
-                            // Ensure both sides of the pipe are ok
-                            var result = await connectionContext.Transport.Input.ReadAsync();
+                        // Ensure both sides of the pipe are ok
+                        var result = await connectionContext.Transport.Input.ReadAsync();
                         Assert.True(result.IsCompleted);
                         await connectionContext.Transport.Output.WriteAsync(result.Buffer.First);
                     };
@@ -2986,38 +2986,38 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
 
         using var host = CreateHost(services =>
             {
-                    // Set default to Cookie auth but use JWT auth for the endpoint
-                    // This makes sure we take the scheme into account when grabbing the token expiration
-                    services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-                    .AddCookie()
-                    .AddJwtBearer(options =>
-                    {
-                        options.TokenValidationParameters =
-                            new TokenValidationParameters
-                            {
-                                LifetimeValidator = (before, expires, token, parameters) => expires > DateTime.UtcNow,
-                                ValidateAudience = false,
-                                ValidateIssuer = false,
-                                ValidateActor = false,
-                                ValidateLifetime = true,
-                                IssuerSigningKey = SecurityKey
-                            };
-
-                        options.Events = new JwtBearerEvents
+                // Set default to Cookie auth but use JWT auth for the endpoint
+                // This makes sure we take the scheme into account when grabbing the token expiration
+                services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie()
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters =
+                        new TokenValidationParameters
                         {
-                            OnMessageReceived = context =>
-                            {
-                                var accessToken = context.Request.Query["access_token"];
-
-                                if (!string.IsNullOrEmpty(accessToken) &&
-                                    (context.HttpContext.WebSockets.IsWebSocketRequest || context.Request.Headers["Accept"] == "text/event-stream"))
-                                {
-                                    context.Token = context.Request.Query["access_token"];
-                                }
-                                return Task.CompletedTask;
-                            }
+                            LifetimeValidator = (before, expires, token, parameters) => expires > DateTime.UtcNow,
+                            ValidateAudience = false,
+                            ValidateIssuer = false,
+                            ValidateActor = false,
+                            ValidateLifetime = true,
+                            IssuerSigningKey = SecurityKey
                         };
-                    });
+
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnMessageReceived = context =>
+                        {
+                            var accessToken = context.Request.Query["access_token"];
+
+                            if (!string.IsNullOrEmpty(accessToken) &&
+                                (context.HttpContext.WebSockets.IsWebSocketRequest || context.Request.Headers["Accept"] == "text/event-stream"))
+                            {
+                                context.Token = context.Request.Query["access_token"];
+                            }
+                            return Task.CompletedTask;
+                        }
+                    };
+                });
             }, endpoints =>
             {
                 endpoints.MapConnectionHandler<JwtConnectionHandler>("/foo", o => o.CloseOnAuthenticationExpiration = true);
@@ -3175,9 +3175,9 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
                     configureServices(services);
                     services.AddAuthorization();
 
-                        // Since tests run in parallel, it's possible multiple servers will startup,
-                        // we use an ephemeral key provider to avoid filesystem contention issues
-                        services.AddSingleton<IDataProtectionProvider, EphemeralDataProtectionProvider>();
+                    // Since tests run in parallel, it's possible multiple servers will startup,
+                    // we use an ephemeral key provider to avoid filesystem contention issues
+                    services.AddSingleton<IDataProtectionProvider, EphemeralDataProtectionProvider>();
                 })
                 .Configure(app =>
                 {

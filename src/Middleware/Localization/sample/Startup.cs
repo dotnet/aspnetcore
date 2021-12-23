@@ -42,8 +42,8 @@ public class Startup
         {
             if (context.Request.Path.Value.EndsWith("favicon.ico", StringComparison.Ordinal))
             {
-                    // Pesky browsers
-                    context.Response.StatusCode = 404;
+                // Pesky browsers
+                context.Response.StatusCode = 404;
                 return;
             }
 

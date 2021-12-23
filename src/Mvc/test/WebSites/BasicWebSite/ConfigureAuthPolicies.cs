@@ -12,8 +12,8 @@ internal static class ConfigureAuthPoliciesExtensions
     {
         services.AddAuthorization(options =>
         {
-                // This policy cannot succeed since the claim is never added
-                options.AddPolicy("Impossible", policy =>
+            // This policy cannot succeed since the claim is never added
+            options.AddPolicy("Impossible", policy =>
             {
                 policy.AuthenticationSchemes.Add("Api");
                 policy.RequireClaim("Never");

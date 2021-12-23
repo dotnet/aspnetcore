@@ -61,8 +61,8 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
 
             foreach (var host in hosts)
             {
-                    // Don't run policy on endpoints that match everything
-                    var key = CreateEdgeKey(host);
+                // Don't run policy on endpoints that match everything
+                var key = CreateEdgeKey(host);
                 if (!key.MatchesAll)
                 {
                     return true;

@@ -155,9 +155,9 @@ public sealed class WebAssemblyHost : IAsyncDisposable
 
                 try
                 {
-                        // Here, we add each root component but don't await the returned tasks so that the
-                        // components can be processed in parallel.
-                        var count = rootComponents.Count;
+                    // Here, we add each root component but don't await the returned tasks so that the
+                    // components can be processed in parallel.
+                    var count = rootComponents.Count;
                     var pendingRenders = new Task[count];
                     for (var i = 0; i < count; i++)
                     {
@@ -168,8 +168,8 @@ public sealed class WebAssemblyHost : IAsyncDisposable
                             rootComponent.Selector);
                     }
 
-                        // Now we wait for all components to finish rendering.
-                        await Task.WhenAll(pendingRenders);
+                    // Now we wait for all components to finish rendering.
+                    await Task.WhenAll(pendingRenders);
 
                     initializationTcs.SetResult();
                 }

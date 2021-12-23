@@ -81,8 +81,8 @@ internal class ControllerRequestDelegateFactory : IRequestDelegateFactory
 
             var controllerContext = new ControllerContext(actionContext)
             {
-                    // PERF: These are rarely going to be changed, so let's go copy-on-write.
-                    ValueProviderFactories = new CopyOnWriteList<IValueProviderFactory>(_valueProviderFactories)
+                // PERF: These are rarely going to be changed, so let's go copy-on-write.
+                ValueProviderFactories = new CopyOnWriteList<IValueProviderFactory>(_valueProviderFactories)
             };
 
             controllerContext.ModelState.MaxAllowedErrors = _maxModelValidationErrors;

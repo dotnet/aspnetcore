@@ -52,8 +52,8 @@ public class ClientHandlerTests
     {
         var handler = new ClientHandler(new PathString("/A/Path/"), new DummyApplication(context =>
         {
-                // TODO: Assert.True(context.RequestAborted.CanBeCanceled);
-                Assert.Equal(HttpProtocol.Http11, context.Request.Protocol);
+            // TODO: Assert.True(context.RequestAborted.CanBeCanceled);
+            Assert.Equal(HttpProtocol.Http11, context.Request.Protocol);
             Assert.Equal("GET", context.Request.Method);
             Assert.Equal("https", context.Request.Scheme);
             Assert.Equal("/A/Path", context.Request.PathBase.Value);
@@ -212,8 +212,8 @@ public class ClientHandlerTests
             await context.Response.WriteAsync("Hello World");
             await context.Response.Body.FlushAsync();
 
-                // Pause writing response to ensure trailers are written at the end
-                await tcs.Task;
+            // Pause writing response to ensure trailers are written at the end
+            await tcs.Task;
 
             await context.Response.WriteAsync("Bye World");
             await context.Response.Body.FlushAsync();
@@ -522,9 +522,9 @@ public class ClientHandlerTests
             }
             catch (Exception ex)
             {
-                    // This is no longer the first write, so it doesn't trigger OnStarting again.
-                    // The exception is large enough that it fills the pipe and stalls.
-                    await context.Response.WriteAsync(ex.ToString());
+                // This is no longer the first write, so it doesn't trigger OnStarting again.
+                // The exception is large enough that it fills the pipe and stalls.
+                await context.Response.WriteAsync(ex.ToString());
             }
         }));
         var httpClient = new HttpClient(handler);
