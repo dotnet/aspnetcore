@@ -41,9 +41,9 @@ public class Startup
             var basePath = Path.Combine(HostingEnvironment.ContentRootPath, "PrivateFiles");
             var usersPath = Path.Combine(basePath, "Users");
 
-                // When using this policy users are only authorized to access the base directory, the Users directory,
-                // and their own directory under Users.
-                options.AddPolicy("files", builder =>
+            // When using this policy users are only authorized to access the base directory, the Users directory,
+            // and their own directory under Users.
+            options.AddPolicy("files", builder =>
             {
                 builder.RequireAuthenticatedUser().RequireAssertion(context =>
                 {

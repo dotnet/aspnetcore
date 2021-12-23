@@ -35,14 +35,14 @@ public class FileSystemXmlRepositoryTests
     {
         WithUniqueTempDirectory(dirInfo =>
         {
-                // Arrange
-                var repository = new FileSystemXmlRepository(dirInfo, NullLoggerFactory.Instance);
+            // Arrange
+            var repository = new FileSystemXmlRepository(dirInfo, NullLoggerFactory.Instance);
 
-                // Act
-                var retVal = repository.Directory;
+            // Act
+            var retVal = repository.Directory;
 
-                // Assert
-                Assert.Equal(dirInfo, retVal);
+            // Assert
+            Assert.Equal(dirInfo, retVal);
         });
     }
 
@@ -51,14 +51,14 @@ public class FileSystemXmlRepositoryTests
     {
         WithUniqueTempDirectory(dirInfo =>
         {
-                // Arrange
-                var repository = new FileSystemXmlRepository(dirInfo, NullLoggerFactory.Instance);
+            // Arrange
+            var repository = new FileSystemXmlRepository(dirInfo, NullLoggerFactory.Instance);
 
-                // Act
-                var allElements = repository.GetAllElements();
+            // Act
+            var allElements = repository.GetAllElements();
 
-                // Assert
-                Assert.Equal(0, allElements.Count);
+            // Assert
+            Assert.Equal(0, allElements.Count);
         });
     }
 
@@ -67,22 +67,22 @@ public class FileSystemXmlRepositoryTests
     {
         WithUniqueTempDirectory(dirInfo =>
         {
-                // Arrange
-                var element = XElement.Parse("<element1 />");
+            // Arrange
+            var element = XElement.Parse("<element1 />");
             var repository = new FileSystemXmlRepository(dirInfo, NullLoggerFactory.Instance);
 
-                // Act
-                repository.StoreElement(element, "valid-friendly-name");
+            // Act
+            repository.StoreElement(element, "valid-friendly-name");
 
-                // Assert
-                var fileInfos = dirInfo.GetFiles();
+            // Assert
+            var fileInfos = dirInfo.GetFiles();
             var fileInfo = fileInfos.Single(); // only one file should've been created
 
-                // filename should be "valid-friendly-name.xml"
-                Assert.Equal("valid-friendly-name.xml", fileInfo.Name, StringComparer.OrdinalIgnoreCase);
+            // filename should be "valid-friendly-name.xml"
+            Assert.Equal("valid-friendly-name.xml", fileInfo.Name, StringComparer.OrdinalIgnoreCase);
 
-                // file contents should be "<element1 />"
-                var parsedElement = XElement.Parse(File.ReadAllText(fileInfo.FullName));
+            // file contents should be "<element1 />"
+            var parsedElement = XElement.Parse(File.ReadAllText(fileInfo.FullName));
             XmlAssert.Equal("<element1 />", parsedElement);
         });
     }
@@ -97,26 +97,26 @@ public class FileSystemXmlRepositoryTests
     {
         WithUniqueTempDirectory(dirInfo =>
         {
-                // Arrange
-                var element = XElement.Parse("<element1 />");
+            // Arrange
+            var element = XElement.Parse("<element1 />");
             var repository = new FileSystemXmlRepository(dirInfo, NullLoggerFactory.Instance);
 
-                // Act
-                repository.StoreElement(element, friendlyName);
+            // Act
+            repository.StoreElement(element, friendlyName);
 
-                // Assert
-                var fileInfos = dirInfo.GetFiles();
+            // Assert
+            var fileInfos = dirInfo.GetFiles();
             var fileInfo = fileInfos.Single(); // only one file should've been created
 
-                // filename should be "{GUID}.xml"
-                var filename = fileInfo.Name;
+            // filename should be "{GUID}.xml"
+            var filename = fileInfo.Name;
             Assert.EndsWith(".xml", filename, StringComparison.OrdinalIgnoreCase);
             var filenameNoSuffix = filename.Substring(0, filename.Length - ".xml".Length);
             Guid parsedGuid = Guid.Parse(filenameNoSuffix);
             Assert.NotEqual(Guid.Empty, parsedGuid);
 
-                // file contents should be "<element1 />"
-                var parsedElement = XElement.Parse(File.ReadAllText(fileInfo.FullName));
+            // file contents should be "<element1 />"
+            var parsedElement = XElement.Parse(File.ReadAllText(fileInfo.FullName));
             XmlAssert.Equal("<element1 />", parsedElement);
         });
     }
@@ -126,17 +126,17 @@ public class FileSystemXmlRepositoryTests
     {
         WithUniqueTempDirectory(dirInfo =>
         {
-                // Arrange
-                var repository = new FileSystemXmlRepository(dirInfo, NullLoggerFactory.Instance);
+            // Arrange
+            var repository = new FileSystemXmlRepository(dirInfo, NullLoggerFactory.Instance);
 
-                // Act
-                repository.StoreElement(new XElement("element1"), friendlyName: null);
+            // Act
+            repository.StoreElement(new XElement("element1"), friendlyName: null);
             repository.StoreElement(new XElement("element2"), friendlyName: null);
             repository.StoreElement(new XElement("element3"), friendlyName: null);
             var allElements = repository.GetAllElements();
 
-                // Assert
-                var orderedNames = allElements.Select(el => el.Name.LocalName).OrderBy(name => name);
+            // Assert
+            var orderedNames = allElements.Select(el => el.Name.LocalName).OrderBy(name => name);
             Assert.Equal(new[] { "element1", "element2", "element3" }, orderedNames);
         });
     }
@@ -150,11 +150,11 @@ public class FileSystemXmlRepositoryTests
         var loggerFactory = new StringLoggerFactory(LogLevel.Warning);
         WithUniqueTempDirectory(dirInfo =>
         {
-                // Act
-                var repo = new FileSystemXmlRepository(dirInfo, loggerFactory);
+            // Act
+            var repo = new FileSystemXmlRepository(dirInfo, loggerFactory);
 
-                // Assert
-                Assert.Contains(Resources.FormatFileSystem_EphemeralKeysLocationInContainer(dirInfo.FullName), loggerFactory.ToString());
+            // Assert
+            Assert.Contains(Resources.FormatFileSystem_EphemeralKeysLocationInContainer(dirInfo.FullName), loggerFactory.ToString());
         });
     }
 

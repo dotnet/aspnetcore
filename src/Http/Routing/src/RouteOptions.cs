@@ -125,9 +125,9 @@ public class RouteOptions
         return defaults;
     }
 
-   /// <summary>
-   /// Adds or overwrites the parameter policy with the associated route pattern token.
-   /// </summary>
+    /// <summary>
+    /// Adds or overwrites the parameter policy with the associated route pattern token.
+    /// </summary>
     /// <typeparam name="T">The parameter policy type.</typeparam>
     /// <param name="token">The route token used to apply the parameter policy.</param>
     public void SetParameterPolicy<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]T>(string token) where T : IParameterPolicy

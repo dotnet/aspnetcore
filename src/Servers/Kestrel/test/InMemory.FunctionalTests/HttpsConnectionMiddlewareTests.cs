@@ -112,11 +112,11 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
             Assert.True(tlsFeature.CipherAlgorithm > CipherAlgorithmType.Null, "Cipher");
             Assert.True(tlsFeature.CipherStrength > 0, "CipherStrength");
             Assert.True(tlsFeature.HashAlgorithm >= HashAlgorithmType.None, "HashAlgorithm"); // May be None on Linux.
-                Assert.True(tlsFeature.HashStrength >= 0, "HashStrength"); // May be 0 for some algorithms
-                Assert.True(tlsFeature.KeyExchangeAlgorithm >= ExchangeAlgorithmType.None, "KeyExchangeAlgorithm"); // Maybe None on Windows 7
-                Assert.True(tlsFeature.KeyExchangeStrength >= 0, "KeyExchangeStrength"); // May be 0 on mac
+            Assert.True(tlsFeature.HashStrength >= 0, "HashStrength"); // May be 0 for some algorithms
+            Assert.True(tlsFeature.KeyExchangeAlgorithm >= ExchangeAlgorithmType.None, "KeyExchangeAlgorithm"); // Maybe None on Windows 7
+            Assert.True(tlsFeature.KeyExchangeStrength >= 0, "KeyExchangeStrength"); // May be 0 on mac
 
-                return context.Response.WriteAsync("hello world");
+            return context.Response.WriteAsync("hello world");
         }, new TestServiceContext(LoggerFactory), ConfigureListenOptions))
         {
             var result = await server.HttpClientSlim.GetStringAsync($"https://localhost:{server.Port}/", validateCertificate: false);
@@ -148,11 +148,11 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
             Assert.True(tlsFeature.CipherAlgorithm > CipherAlgorithmType.Null, "Cipher");
             Assert.True(tlsFeature.CipherStrength > 0, "CipherStrength");
             Assert.True(tlsFeature.HashAlgorithm >= HashAlgorithmType.None, "HashAlgorithm"); // May be None on Linux.
-                Assert.True(tlsFeature.HashStrength >= 0, "HashStrength"); // May be 0 for some algorithms
-                Assert.True(tlsFeature.KeyExchangeAlgorithm >= ExchangeAlgorithmType.None, "KeyExchangeAlgorithm"); // Maybe None on Windows 7
-                Assert.True(tlsFeature.KeyExchangeStrength >= 0, "KeyExchangeStrength"); // May be 0 on mac
+            Assert.True(tlsFeature.HashStrength >= 0, "HashStrength"); // May be 0 for some algorithms
+            Assert.True(tlsFeature.KeyExchangeAlgorithm >= ExchangeAlgorithmType.None, "KeyExchangeAlgorithm"); // Maybe None on Windows 7
+            Assert.True(tlsFeature.KeyExchangeStrength >= 0, "KeyExchangeStrength"); // May be 0 on mac
 
-                return context.Response.WriteAsync("hello world");
+            return context.Response.WriteAsync("hello world");
         }, new TestServiceContext(LoggerFactory), ConfigureListenOptions))
         {
             var result = await server.HttpClientSlim.GetStringAsync($"https://localhost:{server.Port}/", validateCertificate: false);
@@ -542,7 +542,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
             {
                 options.ServerCertificate = _x509Certificate2;
                 options.SslProtocols = SslProtocols.Tls12; // Linux doesn't support renegotiate on TLS1.3 yet. https://github.com/dotnet/runtime/issues/55757
-                    options.ClientCertificateMode = ClientCertificateMode.DelayCertificate;
+                options.ClientCertificateMode = ClientCertificateMode.DelayCertificate;
                 options.AllowAnyClientCertificate();
             });
         }
@@ -629,7 +629,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
                     {
                         ServerCertificate = _x509Certificate2,
                         EnabledSslProtocols = SslProtocols.Tls12, // Linux doesn't support renegotiate on TLS1.3 yet. https://github.com/dotnet/runtime/issues/55757
-                            ClientCertificateRequired = false,
+                        ClientCertificateRequired = false,
                         RemoteCertificateValidationCallback = (_, _, _, _) => true,
                     });
                 }
@@ -673,7 +673,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
             {
                 options.ServerCertificate = _x509Certificate2;
                 options.SslProtocols = SslProtocols.Tls12; // Linux doesn't support renegotiate on TLS1.3 yet. https://github.com/dotnet/runtime/issues/55757
-                    options.ClientCertificateMode = ClientCertificateMode.DelayCertificate;
+                options.ClientCertificateMode = ClientCertificateMode.DelayCertificate;
                 options.AllowAnyClientCertificate();
             });
         }
@@ -907,7 +907,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
             {
                 options.ServerCertificate = _x509Certificate2;
                 options.SslProtocols = SslProtocols.Tls12; // Linux doesn't support renegotiate on TLS1.3 yet. https://github.com/dotnet/runtime/issues/55757
-                    options.ClientCertificateMode = ClientCertificateMode.DelayCertificate;
+                options.ClientCertificateMode = ClientCertificateMode.DelayCertificate;
                 options.AllowAnyClientCertificate();
             });
         }
@@ -921,8 +921,8 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
             Assert.Null(tlsFeature.ClientCertificate);
             Assert.Null(context.Connection.ClientCertificate);
 
-                // Read the body before requesting the client cert
-                var body = await new StreamReader(context.Request.Body).ReadToEndAsync();
+            // Read the body before requesting the client cert
+            var body = await new StreamReader(context.Request.Body).ReadToEndAsync();
             Assert.Equal(expectedBody, body);
 
             var clientCert = await context.Connection.GetClientCertificateAsync();

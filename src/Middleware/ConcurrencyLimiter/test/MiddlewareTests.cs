@@ -54,8 +54,8 @@ public class MiddlewareTests
             queue: TestQueue.AlwaysFalse,
             next: httpContext =>
             {
-                    // throttle should bounce the request; it should never get here
-                    throw new DivideByZeroException();
+                // throttle should bounce the request; it should never get here
+                throw new DivideByZeroException();
             });
 
         await middleware.Invoke(new DefaultHttpContext()).DefaultTimeout();

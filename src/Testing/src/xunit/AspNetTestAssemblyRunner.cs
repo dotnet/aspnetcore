@@ -39,8 +39,8 @@ public class AspNetTestAssemblyRunner : XunitTestAssemblyRunner
                 .Cast<AssemblyFixtureAttribute>()
                 .ToList();
 
-                // Instantiate all the fixtures
-                foreach (var fixtureAttribute in fixturesAttributes)
+            // Instantiate all the fixtures
+            foreach (var fixtureAttribute in fixturesAttributes)
             {
                 var ctorWithDiagnostics = fixtureAttribute.FixtureType.GetConstructor(new[] { typeof(IMessageSink) });
                 object instance = null;

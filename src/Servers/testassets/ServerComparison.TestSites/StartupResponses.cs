@@ -28,7 +28,7 @@ public class StartupResponses
                 context.Response.Headers.Connection = "close";
                 await context.Response.WriteAsync("Connnection Close");
                 await context.Response.Body.FlushAsync(); // Bypass IIS write-behind buffering
-                });
+            });
         });
 
         app.Map("/chunked", subApp =>
@@ -37,7 +37,7 @@ public class StartupResponses
             {
                 await context.Response.WriteAsync("Chunked");
                 await context.Response.Body.FlushAsync(); // Bypass IIS write-behind buffering
-                });
+            });
         });
 
         app.Map("/manuallychunked", subApp =>

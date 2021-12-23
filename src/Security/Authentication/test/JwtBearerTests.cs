@@ -451,19 +451,19 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
             {
                 OnTokenValidated = context =>
                 {
-                        // Retrieve the NameIdentifier claim from the identity
-                        // returned by the custom security token validator.
-                        var identity = (ClaimsIdentity)context.Principal.Identity;
+                    // Retrieve the NameIdentifier claim from the identity
+                    // returned by the custom security token validator.
+                    var identity = (ClaimsIdentity)context.Principal.Identity;
                     var identifier = identity.FindFirst(ClaimTypes.NameIdentifier);
 
                     Assert.Equal("Bob le Tout Puissant", identifier.Value);
 
-                        // Remove the existing NameIdentifier claim and replace it
-                        // with a new one containing a different value.
-                        identity.RemoveClaim(identifier);
-                        // Make sure to use a different name identifier
-                        // than the one defined by BlobTokenValidator.
-                        identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Bob le Magnifique"));
+                    // Remove the existing NameIdentifier claim and replace it
+                    // with a new one containing a different value.
+                    identity.RemoveClaim(identifier);
+                    // Make sure to use a different name identifier
+                    // than the one defined by BlobTokenValidator.
+                    identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Bob le Magnifique"));
 
                     return Task.FromResult<object>(null);
                 }
@@ -1051,7 +1051,7 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
                             if (context.Request.Path == new PathString("/checkforerrors"))
                             {
                                 var result = await context.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme); // this used to be "Automatic"
-                                    if (result.Failure != null)
+                                if (result.Failure != null)
                                 {
                                     throw new Exception("Failed to authenticate", result.Failure);
                                 }
@@ -1064,8 +1064,8 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
                                     !context.User.Identity.IsAuthenticated)
                                 {
                                     context.Response.StatusCode = 401;
-                                        // REVIEW: no more automatic challenge
-                                        await context.ChallengeAsync(JwtBearerDefaults.AuthenticationScheme);
+                                    // REVIEW: no more automatic challenge
+                                    await context.ChallengeAsync(JwtBearerDefaults.AuthenticationScheme);
                                     return;
                                 }
 
@@ -1085,14 +1085,14 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
                             }
                             else if (context.Request.Path == new PathString("/unauthorized"))
                             {
-                                    // Simulate Authorization failure
-                                    var result = await context.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
+                                // Simulate Authorization failure
+                                var result = await context.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
                                 await context.ChallengeAsync(JwtBearerDefaults.AuthenticationScheme);
                             }
                             else if (context.Request.Path == new PathString("/forbidden"))
                             {
-                                    // Simulate Forbidden
-                                    await context.ForbidAsync(JwtBearerDefaults.AuthenticationScheme);
+                                // Simulate Forbidden
+                                await context.ForbidAsync(JwtBearerDefaults.AuthenticationScheme);
                             }
                             else if (context.Request.Path == new PathString("/signIn"))
                             {

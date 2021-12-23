@@ -843,8 +843,8 @@ public class Http2TimeoutTests : Http2TestBase
 
         await InitializeConnectionAsync(context =>
         {
-                // Completely disable rate limiting for this stream.
-                context.Features.Get<IHttpMinRequestBodyDataRateFeature>().MinDataRate = null;
+            // Completely disable rate limiting for this stream.
+            context.Features.Get<IHttpMinRequestBodyDataRateFeature>().MinDataRate = null;
             return _readRateApplication(context);
         });
 

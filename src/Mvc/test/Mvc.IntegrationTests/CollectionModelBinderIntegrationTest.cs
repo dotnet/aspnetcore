@@ -987,8 +987,8 @@ public class CollectionModelBinderIntegrationTest
 
         var testContext = ModelBindingTestHelper.GetTestContext(request =>
         {
-                // CollectionModelBinder binds an empty collection when value providers are all empty.
-                request.QueryString = new QueryString("?a=b");
+            // CollectionModelBinder binds an empty collection when value providers are all empty.
+            request.QueryString = new QueryString("?a=b");
         });
 
         var modelState = testContext.ModelState;
@@ -1111,8 +1111,8 @@ public class CollectionModelBinderIntegrationTest
 
         var testContext = ModelBindingTestHelper.GetTestContext(request =>
         {
-                // CollectionModelBinder binds an empty collection when value providers lack matching data.
-                request.QueryString = new QueryString("?Successes[0]=b");
+            // CollectionModelBinder binds an empty collection when value providers lack matching data.
+            request.QueryString = new QueryString("?Successes[0]=b");
         });
 
         var modelState = testContext.ModelState;

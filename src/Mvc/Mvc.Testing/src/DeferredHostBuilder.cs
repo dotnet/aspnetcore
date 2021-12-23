@@ -29,9 +29,9 @@ internal class DeferredHostBuilder : IHostBuilder
     {
         _configure = b =>
         {
-                // Copy the properties from this builder into the builder
-                // that we're going to receive
-                foreach (var pair in Properties)
+            // Copy the properties from this builder into the builder
+            // that we're going to receive
+            foreach (var pair in Properties)
             {
                 b.Properties[pair.Key] = pair.Value;
             }

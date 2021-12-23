@@ -975,7 +975,7 @@ public class DfaMatcherTest
             .Returns<HttpContext, CandidateSet>((c, cs) =>
             {
                 throw null; // Won't be called.
-                });
+            });
 
         var matcher = CreateDfaMatcher(dataSource, policies: new[] { policy.Object, });
 

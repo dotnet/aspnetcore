@@ -44,9 +44,9 @@ public class Startup
         })
         .AddJsonProtocol(options =>
         {
-                // we are running the same tests with JSON and MsgPack protocols and having
-                // consistent casing makes it cleaner to verify results
-                options.PayloadSerializerOptions.PropertyNamingPolicy = null;
+            // we are running the same tests with JSON and MsgPack protocols and having
+            // consistent casing makes it cleaner to verify results
+            options.PayloadSerializerOptions.PropertyNamingPolicy = null;
         })
         .AddMessagePackProtocol();
 

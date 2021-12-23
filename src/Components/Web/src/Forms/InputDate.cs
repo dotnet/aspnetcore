@@ -96,7 +96,7 @@ public class InputDate<[DynamicallyAccessedMembers(DynamicallyAccessedMemberType
             DateOnly dateOnlyValue => BindConverter.FormatValue(dateOnlyValue, _format, CultureInfo.InvariantCulture),
             TimeOnly timeOnlyValue => BindConverter.FormatValue(timeOnlyValue, _format, CultureInfo.InvariantCulture),
             _ => string.Empty, // Handles null for Nullable<DateTime>, etc.
-            };
+        };
 
     /// <inheritdoc />
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)

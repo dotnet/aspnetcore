@@ -46,9 +46,9 @@ internal sealed class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
     {
         WebAssemblyCallQueue.Schedule(argsJson, static argsJson =>
         {
-                // This is not expected to throw, as it takes care of converting any unhandled user code
-                // exceptions into a failure on the Task that was returned when calling InvokeAsync.
-                DotNetDispatcher.EndInvokeJS(Instance, argsJson);
+            // This is not expected to throw, as it takes care of converting any unhandled user code
+            // exceptions into a failure on the Task that was returned when calling InvokeAsync.
+            DotNetDispatcher.EndInvokeJS(Instance, argsJson);
         });
     }
 
@@ -74,9 +74,9 @@ internal sealed class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
         var callInfo = new DotNetInvocationInfo(assemblyName, methodIdentifier, dotNetObjectId, callId);
         WebAssemblyCallQueue.Schedule((callInfo, argsJson), static state =>
         {
-                // This is not expected to throw, as it takes care of converting any unhandled user code
-                // exceptions into a failure on the JS Promise object.
-                DotNetDispatcher.BeginInvokeDotNet(Instance, state.callInfo, state.argsJson);
+            // This is not expected to throw, as it takes care of converting any unhandled user code
+            // exceptions into a failure on the JS Promise object.
+            DotNetDispatcher.BeginInvokeDotNet(Instance, state.callInfo, state.argsJson);
         });
     }
 

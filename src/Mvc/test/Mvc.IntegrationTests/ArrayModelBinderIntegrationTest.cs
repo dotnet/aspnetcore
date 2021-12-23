@@ -389,8 +389,8 @@ public class ArrayModelBinderIntegrationTest
 
         var testContext = ModelBindingTestHelper.GetTestContext(request =>
         {
-                // CollectionModelBinder binds an empty collection when value providers are all empty.
-                request.QueryString = new QueryString("?a=b");
+            // CollectionModelBinder binds an empty collection when value providers are all empty.
+            request.QueryString = new QueryString("?a=b");
         });
 
         var modelState = testContext.ModelState;

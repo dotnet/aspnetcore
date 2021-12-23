@@ -20,8 +20,8 @@ public class Startup
         // Configure the error handler to show an error page.
         app.UseExceptionHandler(errorApp =>
         {
-                // Normally you'd use MVC or similar to render a nice page.
-                errorApp.Run(async context =>
+            // Normally you'd use MVC or similar to render a nice page.
+            errorApp.Run(async context =>
             {
                 context.Response.StatusCode = 500;
                 context.Response.ContentType = "text/html";
@@ -31,13 +31,13 @@ public class Startup
                 var error = context.Features.Get<IExceptionHandlerFeature>();
                 if (error != null)
                 {
-                        // This error would not normally be exposed to the client
-                        await context.Response.WriteAsync("<br>Error: " + HtmlEncoder.Default.Encode(error.Error.Message) + "<br>\r\n");
+                    // This error would not normally be exposed to the client
+                    await context.Response.WriteAsync("<br>Error: " + HtmlEncoder.Default.Encode(error.Error.Message) + "<br>\r\n");
                 }
                 await context.Response.WriteAsync("<br><a href=\"/\">Home</a><br>\r\n");
                 await context.Response.WriteAsync("</body></html>\r\n");
                 await context.Response.WriteAsync(new string(' ', 512)); // Padding for IE
-                });
+            });
         });
 
         // We could also configure it to re-execute the request on the normal pipeline with a different path.

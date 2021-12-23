@@ -27,14 +27,14 @@ public class KestrelWebSocketHelpers
             {
                 try
                 {
-                        // Kestrel does not return proper error responses:
-                        // https://github.com/aspnet/KestrelHttpServer/issues/43
-                        await next(ct);
+                    // Kestrel does not return proper error responses:
+                    // https://github.com/aspnet/KestrelHttpServer/issues/43
+                    await next(ct);
                 }
                 catch (Exception ex)
                 {
-                        // capture the exception from the app, we'll throw this at the end of the test when the server is disposed
-                        exceptionFromApp = ex;
+                    // capture the exception from the app, we'll throw this at the end of the test when the server is disposed
+                    exceptionFromApp = ex;
                     if (ct.Response.HasStarted)
                     {
                         throw;

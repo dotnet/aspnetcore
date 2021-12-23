@@ -49,7 +49,7 @@ public class HttpsPolicyTests
                         options.MaxAge = TimeSpan.FromSeconds(maxAge);
                         options.Preload = preload;
                         options.ExcludedHosts.Clear(); // allowing localhost for testing
-                        });
+                    });
                 })
                 .Configure(app =>
                 {

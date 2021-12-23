@@ -105,8 +105,8 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
         var response = await aspNetProcess.SendRequest(() =>
         {
             var request = new HttpRequestMessage(HttpMethod.Get, new Uri(aspNetProcess.ListeningUri, "/_framework/blazor.boot.json"));
-                // These are the same as chrome
-                request.Headers.AcceptEncoding.Clear();
+            // These are the same as chrome
+            request.Headers.AcceptEncoding.Clear();
             request.Headers.AcceptEncoding.Add(StringWithQualityHeaderValue.Parse("gzip"));
             request.Headers.AcceptEncoding.Add(StringWithQualityHeaderValue.Parse("deflate"));
             request.Headers.AcceptEncoding.Add(StringWithQualityHeaderValue.Parse("br"));

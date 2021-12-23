@@ -616,8 +616,8 @@ public abstract class ComplexTypeIntegrationTestBase
         {
             request.QueryString = new QueryString("?parameter.Customer.Name=bill");
 
-                // Deliberately leaving out any form data.
-            });
+            // Deliberately leaving out any form data.
+        });
 
         var modelState = testContext.ModelState;
         var metadata = GetMetadata(testContext, parameter);
@@ -2163,9 +2163,9 @@ public abstract class ComplexTypeIntegrationTestBase
             .ForProperty(typeof(Order10), nameof(Order10.Customer))
             .BindingDetails((Action<ModelBinding.Metadata.BindingMetadata>)(binding =>
             {
-                    // A real details provider could customize message based on BindingMetadataProviderContext.
-                    binding.ModelBindingMessageProvider.SetMissingBindRequiredValueAccessor(
-                    name => $"Hurts when '{ name }' is not provided.");
+                // A real details provider could customize message based on BindingMetadataProviderContext.
+                binding.ModelBindingMessageProvider.SetMissingBindRequiredValueAccessor(
+                name => $"Hurts when '{ name }' is not provided.");
             }));
 
         var parameter = new ParameterDescriptor()
@@ -3190,8 +3190,8 @@ public abstract class ComplexTypeIntegrationTestBase
         {
             SetFormFileBodyContent(request, "Hello world!", "[0].Photo");
 
-                // CollectionModelBinder binds an empty collection when value providers are all empty.
-                request.QueryString = new QueryString("?a=b");
+            // CollectionModelBinder binds an empty collection when value providers are all empty.
+            request.QueryString = new QueryString("?a=b");
         });
 
         var modelState = testContext.ModelState;

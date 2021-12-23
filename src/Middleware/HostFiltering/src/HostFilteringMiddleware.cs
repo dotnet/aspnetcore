@@ -52,8 +52,8 @@ public class HostFilteringMiddleware
         _options = _optionsMonitor.CurrentValue;
         _optionsMonitor.OnChange(options =>
         {
-                // Clear the cached settings so the next EnsureConfigured will re-evaluate.
-                _options = options;
+            // Clear the cached settings so the next EnsureConfigured will re-evaluate.
+            _options = options;
             _allowedHosts = new List<StringSegment>();
             _allowAnyNonEmptyHost = null;
         });

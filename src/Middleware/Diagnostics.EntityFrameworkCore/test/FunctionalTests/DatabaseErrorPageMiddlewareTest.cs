@@ -344,13 +344,13 @@ public class DatabaseErrorPageMiddlewareTest
                 .Configure(app =>
                 {
 #pragma warning disable CS0618 // Type or member is obsolete
-                        app.UseDatabaseErrorPage(new DatabaseErrorPageOptions
+                    app.UseDatabaseErrorPage(new DatabaseErrorPageOptions
                     {
                         MigrationsEndPointPath = new PathString(migrationsEndpoint)
                     });
 #pragma warning restore CS0618 // Type or member is obsolete
 
-                        app.UseMiddleware<PendingMigrationsMiddleware>();
+                    app.UseMiddleware<PendingMigrationsMiddleware>();
                 })
                 .ConfigureServices(services =>
                 {
@@ -387,13 +387,13 @@ public class DatabaseErrorPageMiddlewareTest
                 .Configure(app =>
                 {
 #pragma warning disable CS0618 // Type or member is obsolete
-                        app.UseDatabaseErrorPage();
+                    app.UseDatabaseErrorPage();
 #pragma warning restore CS0618 // Type or member is obsolete
-                        app.UseMiddleware<ContextNotRegisteredInServicesMiddleware>();
+                    app.UseMiddleware<ContextNotRegisteredInServicesMiddleware>();
 #pragma warning disable CS0618 // Type or member is obsolete
-                        app.ApplicationServices.GetService<ILoggerFactory>().AddProvider(logProvider);
+                    app.ApplicationServices.GetService<ILoggerFactory>().AddProvider(logProvider);
 #pragma warning restore CS0618 // Type or member is obsolete
-                    });
+                });
             }).Build();
 
         await host.StartAsync();
@@ -530,17 +530,17 @@ public class DatabaseErrorPageMiddlewareTest
                 .Configure(app =>
                 {
 #pragma warning disable CS0618 // Type or member is obsolete
-                        app.UseDatabaseErrorPage();
+                    app.UseDatabaseErrorPage();
 #pragma warning restore CS0618 // Type or member is obsolete
 
-                        app.UseMiddleware<TMiddleware>();
+                    app.UseMiddleware<TMiddleware>();
 
                     if (logProvider != null)
                     {
 #pragma warning disable CS0618 // Type or member is obsolete
-                            app.ApplicationServices.GetService<ILoggerFactory>().AddProvider(logProvider);
+                        app.ApplicationServices.GetService<ILoggerFactory>().AddProvider(logProvider);
 #pragma warning restore CS0618 // Type or member is obsolete
-                        }
+                    }
                 })
                 .ConfigureServices(services =>
                 {

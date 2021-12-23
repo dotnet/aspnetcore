@@ -56,8 +56,8 @@ public class HttpsTests : LoggedTest
         {
             options.UseHttps(opt =>
             {
-                    // The default cert is applied after UseHttps.
-                    Assert.Null(opt.ServerCertificate);
+                // The default cert is applied after UseHttps.
+                Assert.Null(opt.ServerCertificate);
             });
         });
         Assert.False(serverOptions.IsDevCertLoaded);
@@ -222,8 +222,8 @@ public class HttpsTests : LoggedTest
                     }
                     catch (TaskCanceledException)
                     {
-                            // Don't regard connection abort as an error
-                        }
+                        // Don't regard connection abort as an error
+                    }
                 }
             },
             new TestServiceContext(LoggerFactory),

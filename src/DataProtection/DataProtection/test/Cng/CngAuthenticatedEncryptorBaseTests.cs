@@ -23,8 +23,8 @@ public unsafe class CngAuthenticatedEncryptorBaseTests
             .Setup(o => o.DecryptHook(It.IsAny<IntPtr>(), 2, It.IsAny<IntPtr>(), 4))
             .Returns((IntPtr pbCiphertext, uint cbCiphertext, IntPtr pbAdditionalAuthenticatedData, uint cbAdditionalAuthenticatedData) =>
             {
-                    // ensure that pointers started at the right place
-                    Assert.Equal((byte)0x03, *(byte*)pbCiphertext);
+                // ensure that pointers started at the right place
+                Assert.Equal((byte)0x03, *(byte*)pbCiphertext);
                 Assert.Equal((byte)0x11, *(byte*)pbAdditionalAuthenticatedData);
                 return new byte[] { 0x20, 0x21, 0x22 };
             });
@@ -48,10 +48,10 @@ public unsafe class CngAuthenticatedEncryptorBaseTests
             .Setup(o => o.DecryptHook(It.IsAny<IntPtr>(), 2, It.IsAny<IntPtr>(), 0))
             .Returns((IntPtr pbCiphertext, uint cbCiphertext, IntPtr pbAdditionalAuthenticatedData, uint cbAdditionalAuthenticatedData) =>
             {
-                    // ensure that pointers started at the right place
-                    Assert.Equal((byte)0x03, *(byte*)pbCiphertext);
+                // ensure that pointers started at the right place
+                Assert.Equal((byte)0x03, *(byte*)pbCiphertext);
                 Assert.NotEqual(IntPtr.Zero, pbAdditionalAuthenticatedData); // CNG will complain if this pointer is zero
-                    return new byte[] { 0x20, 0x21, 0x22 };
+                return new byte[] { 0x20, 0x21, 0x22 };
             });
 
         // Act
@@ -73,9 +73,9 @@ public unsafe class CngAuthenticatedEncryptorBaseTests
             .Setup(o => o.DecryptHook(It.IsAny<IntPtr>(), 0, It.IsAny<IntPtr>(), 4))
             .Returns((IntPtr pbCiphertext, uint cbCiphertext, IntPtr pbAdditionalAuthenticatedData, uint cbAdditionalAuthenticatedData) =>
             {
-                    // ensure that pointers started at the right place
-                    Assert.NotEqual(IntPtr.Zero, pbCiphertext); // CNG will complain if this pointer is zero
-                    Assert.Equal((byte)0x11, *(byte*)pbAdditionalAuthenticatedData);
+                // ensure that pointers started at the right place
+                Assert.NotEqual(IntPtr.Zero, pbCiphertext); // CNG will complain if this pointer is zero
+                Assert.Equal((byte)0x11, *(byte*)pbAdditionalAuthenticatedData);
                 return new byte[] { 0x20, 0x21, 0x22 };
             });
 

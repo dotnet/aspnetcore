@@ -513,8 +513,8 @@ public class HubFilterTests : VerifiableLoggedTest
                     options.AddFilter<VerifyMethodFilter>();
                 });
 
-                    // If this instance wasn't resolved, then the tcsService.StartedMethod waits would never trigger and fail the test
-                    services.AddSingleton(new VerifyMethodFilter(tcsService));
+                // If this instance wasn't resolved, then the tcsService.StartedMethod waits would never trigger and fail the test
+                services.AddSingleton(new VerifyMethodFilter(tcsService));
             }, LoggerFactory);
 
             await AssertMethodsCalled(serviceProvider, tcsService);

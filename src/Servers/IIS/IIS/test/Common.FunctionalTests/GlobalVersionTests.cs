@@ -228,7 +228,8 @@ public class GlobalVersionTests : IISFunctionalTestBase
     private static void CopyShimToOutput(IISDeploymentParameters parameters)
     {
         parameters.AddServerConfigAction(
-            (config, contentRoot) => {
+            (config, contentRoot) =>
+            {
                 var moduleNodes = config.DescendantNodesAndSelf()
                     .OfType<XElement>()
                     .Where(element =>

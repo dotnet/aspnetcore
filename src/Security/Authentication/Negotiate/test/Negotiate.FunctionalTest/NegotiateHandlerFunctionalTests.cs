@@ -317,7 +317,7 @@ public class NegotiateHandlerFunctionalTests : LoggedTest
             }
 
             Assert.Equal("HTTP/1.1", context.Request.Protocol); // Not HTTP/2
-                var name = context.User.Identity.Name;
+            var name = context.User.Identity.Name;
             Assert.False(string.IsNullOrEmpty(name), "name");
             await context.Response.WriteAsync(name);
         });
@@ -346,7 +346,7 @@ public class NegotiateHandlerFunctionalTests : LoggedTest
         builder.Map("/AlreadyAuthenticated", async context =>
         {
             Assert.Equal("HTTP/1.1", context.Request.Protocol); // Not HTTP/2
-                Assert.True(context.User.Identity.IsAuthenticated, "Authenticated");
+            Assert.True(context.User.Identity.IsAuthenticated, "Authenticated");
             var name = context.User.Identity.Name;
             Assert.False(string.IsNullOrEmpty(name), "name");
             await context.Response.WriteAsync(name);
@@ -354,8 +354,8 @@ public class NegotiateHandlerFunctionalTests : LoggedTest
 
         builder.Map("/Unauthorized", async context =>
         {
-                // Simulate Authorization failure
-                var result = await context.AuthenticateAsync();
+            // Simulate Authorization failure
+            var result = await context.AuthenticateAsync();
             await context.ChallengeAsync();
         });
     }

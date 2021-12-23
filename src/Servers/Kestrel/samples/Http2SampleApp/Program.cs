@@ -27,23 +27,23 @@ public class Program
                     {
                         var basePort = context.Configuration.GetValue<int?>("BASE_PORT") ?? 5000;
 
-                            // Http/1.1 endpoint for comparison
-                            options.ListenAnyIP(basePort, listenOptions =>
+                        // Http/1.1 endpoint for comparison
+                        options.ListenAnyIP(basePort, listenOptions =>
                         {
                             listenOptions.Protocols = HttpProtocols.Http1;
                         });
 
-                            // TLS Http/1.1 or HTTP/2 endpoint negotiated via ALPN
-                            options.ListenAnyIP(basePort + 1, listenOptions =>
+                        // TLS Http/1.1 or HTTP/2 endpoint negotiated via ALPN
+                        options.ListenAnyIP(basePort + 1, listenOptions =>
                         {
                             listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
                             listenOptions.UseHttps();
                             listenOptions.Use((context, next) =>
                             {
-                                    // https://tools.ietf.org/html/rfc7540#appendix-A
-                                    // Allows filtering TLS handshakes on a per connection basis
+                                // https://tools.ietf.org/html/rfc7540#appendix-A
+                                // Allows filtering TLS handshakes on a per connection basis
 
-                                    var tlsFeature = context.Features.Get<ITlsHandshakeFeature>();
+                                var tlsFeature = context.Features.Get<ITlsHandshakeFeature>();
 
                                 if (tlsFeature.CipherAlgorithm == CipherAlgorithmType.Null)
                                 {
@@ -54,9 +54,9 @@ public class Program
                             });
                         });
 
-                            // Prior knowledge, no TLS handshake. WARNING: Not supported by browsers
-                            // but useful for the h2spec tests
-                            options.ListenAnyIP(basePort + 5, listenOptions =>
+                        // Prior knowledge, no TLS handshake. WARNING: Not supported by browsers
+                        // but useful for the h2spec tests
+                        options.ListenAnyIP(basePort + 5, listenOptions =>
                         {
                             listenOptions.Protocols = HttpProtocols.Http2;
                         });
@@ -66,8 +66,8 @@ public class Program
             })
             .ConfigureLogging((_, factory) =>
             {
-                    // Set logging to the MAX.
-                    factory.SetMinimumLevel(LogLevel.Trace);
+                // Set logging to the MAX.
+                factory.SetMinimumLevel(LogLevel.Trace);
                 factory.AddConsole();
             });
 

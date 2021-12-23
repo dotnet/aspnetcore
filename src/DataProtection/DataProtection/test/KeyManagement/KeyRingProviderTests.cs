@@ -526,8 +526,8 @@ public class KeyRingProviderTests
         mockCacheableKeyRingProvider.Setup(o => o.GetCacheableKeyRing(updatedKeyRingTime))
             .Returns<DateTimeOffset>(dto =>
             {
-                    // at this point we're inside the critical section - spawn the background thread now
-                    var backgroundGetKeyRingTask = Task.Run(() =>
+                // at this point we're inside the critical section - spawn the background thread now
+                var backgroundGetKeyRingTask = Task.Run(() =>
                 {
                     keyRingReturnedToBackgroundThread = keyRingProvider.GetCurrentKeyRingCore(updatedKeyRingTime);
                 });

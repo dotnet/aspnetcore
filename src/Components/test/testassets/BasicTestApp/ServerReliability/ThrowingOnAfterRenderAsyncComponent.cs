@@ -13,8 +13,8 @@ public class ThrowingOnAfterRenderAsyncComponent : IComponent, IHandleAfterRende
     {
         renderHandle.Render(builder =>
         {
-                // Do nothing.
-            });
+            // Do nothing.
+        });
     }
 
     public async Task OnAfterRenderAsync()

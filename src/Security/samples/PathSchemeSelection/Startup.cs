@@ -37,8 +37,8 @@ public class Startup
             .AddScheme<AuthenticationSchemeOptions, ApiAuthHandler>("Api", o => { })
             .AddCookie(options =>
             {
-                    // Foward any requests that start with /api to that scheme
-                    options.ForwardDefaultSelector = ctx =>
+                // Foward any requests that start with /api to that scheme
+                options.ForwardDefaultSelector = ctx =>
                 {
                     return ctx.Request.Path.StartsWithSegments("/api") ? "Api" : null;
                 };

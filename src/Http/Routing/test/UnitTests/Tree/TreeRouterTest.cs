@@ -1751,7 +1751,7 @@ public class TreeRouterTest
                 nestedValues = new RouteValueDictionary(c.RouteData.Values);
                 nestedRouters = new List<IRouter>(c.RouteData.Routers);
                 c.Handler = null; // Not a match
-                })
+            })
             .Returns(Task.CompletedTask);
 
         var builder = CreateBuilder();
@@ -1788,7 +1788,7 @@ public class TreeRouterTest
                 nestedValues = new RouteValueDictionary(c.RouteData.Values);
                 nestedRouters = new List<IRouter>(c.RouteData.Routers);
                 c.Handler = null; // Not a match
-                })
+            })
             .Returns(Task.CompletedTask);
 
         var builder = CreateBuilder();

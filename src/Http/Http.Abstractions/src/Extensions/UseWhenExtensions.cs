@@ -45,9 +45,9 @@ public static class UseWhenExtensions
 
         return app.Use(main =>
         {
-                // This is called only when the main application builder
-                // is built, not per request.
-                branchBuilder.Run(main);
+            // This is called only when the main application builder
+            // is built, not per request.
+            branchBuilder.Run(main);
             var branch = branchBuilder.Build();
 
             return context =>

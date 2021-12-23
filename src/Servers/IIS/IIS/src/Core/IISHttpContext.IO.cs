@@ -263,14 +263,14 @@ internal partial class IISHttpContext
                         }
                     }
 
-                        // If we cancel the cts, we don't dispose as people may still be using
-                        // the cts. It also isn't necessary to dispose a canceled cts.
-                        localAbortCts?.Cancel();
+                    // If we cancel the cts, we don't dispose as people may still be using
+                    // the cts. It also isn't necessary to dispose a canceled cts.
+                    localAbortCts?.Cancel();
                 }
                 catch (Exception ex)
                 {
                     Log.ApplicationError(_logger, ((IHttpConnectionFeature)this).ConnectionId, TraceIdentifier!, ex); // TODO: Can TraceIdentifier be null?
-                    }
+                }
             }, this, preferLocal: false);
     }
 
