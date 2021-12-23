@@ -1,7 +1,5 @@
-/*
- * Licensed to the .NET Foundation under one or more agreements.
- * The .NET Foundation licenses this file to you under the MIT license.
- */
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 // This is a single-file self-contained module to avoid the need for a Webpack build
 
@@ -69,11 +67,9 @@ export module DotNet {
 
   cachedJSObjectsById[windowJSObjectId]._cachedFunctions.set("import", (url: any) => {
 
-      /*
-       * In most cases developers will want to resolve dynamic imports relative to the base HREF.
-       * However since we're the one calling the import keyword, they would be resolved relative to
-       * this framework bundle URL. Fix this by providing an absolute URL.
-       */
+      // In most cases developers will want to resolve dynamic imports relative to the base HREF.
+      // However since we're the one calling the import keyword, they would be resolved relative to
+      // this framework bundle URL. Fix this by providing an absolute URL.
       if (typeof url === "string" && url.startsWith("./")) {
           url = document.baseURI + url.substr(2);
       }
@@ -162,10 +158,8 @@ export module DotNet {
   export function createJSStreamReference(streamReference: ArrayBuffer | ArrayBufferView | Blob | any): any {
       let length = -1;
 
-      /*
-       * If we're given a raw Array Buffer, we interpret it as a `Uint8Array` as
-       * ArrayBuffers' aren't directly readable.
-       */
+      // If we're given a raw Array Buffer, we interpret it as a `Uint8Array` as
+      // ArrayBuffers' aren't directly readable.
       if (streamReference instanceof ArrayBuffer) {
           streamReference = new Uint8Array(streamReference);
       }
@@ -216,10 +210,8 @@ export module DotNet {
    */
   function parseJsonWithRevivers(json: string): any {
       return json ? JSON.parse(json, (key, initialValue) => {
-          /*
-           * Invoke each reviver in order, passing the output from the previous reviver,
-           * so that each one gets a chance to transform the value
-           */
+          // Invoke each reviver in order, passing the output from the previous reviver,
+          // so that each one gets a chance to transform the value
 
           return jsonRevivers.reduce(
               (latestValue, reviver) => reviver(key, latestValue),
@@ -389,10 +381,8 @@ export module DotNet {
        * @param targetInstanceId The ID of the target JS object instance.
        */
       beginInvokeJSFromDotNet: (asyncHandle: number, identifier: string, argsJson: string, resultType: JSCallResultType, targetInstanceId: number): void => {
-      /*
-       * Coerce synchronous functions into async ones, plus treat
-       * synchronous exceptions the same as async ones
-       */
+      // Coerce synchronous functions into async ones, plus treat
+      // synchronous exceptions the same as async ones
           const promise = new Promise<any>(resolve => {
               const synchronousResultOrPromise = findJSFunction(identifier, targetInstanceId).apply(null, parseJsonWithRevivers(argsJson));
               resolve(synchronousResultOrPromise);
@@ -400,10 +390,8 @@ export module DotNet {
 
           // We only listen for a result if the caller wants to be notified about it
           if (asyncHandle) {
-              /*
-               * On completion, dispatch result back to .NET
-               * Not using "await" because it codegens a lot of boilerplate
-               */
+              // On completion, dispatch result back to .NET
+              // Not using "await" because it codegens a lot of boilerplate
               promise.then(
                   result => getRequiredDispatcher().endInvokeJSFromDotNet(asyncHandle, true, stringifyArgs([
                       asyncHandle,
@@ -542,12 +530,10 @@ export module DotNet {
       private _streamPromise: Promise<ReadableStream>;
 
       constructor(streamId: number) {
-      /*
-       * This constructor runs when we're JSON-deserializing some value from the .NET side.
-       * At this point we might already have started receiving the stream, or maybe it will come later.
-       * We have to handle both possible orderings, but we can count on it coming eventually because
-       * it's not something the developer gets to control, and it would be an error if it doesn't.
-       */
+          // This constructor runs when we're JSON-deserializing some value from the .NET side.
+          // At this point we might already have started receiving the stream, or maybe it will come later.
+          // We have to handle both possible orderings, but we can count on it coming eventually because
+          // it's not something the developer gets to control, and it would be an error if it doesn't.
           if (pendingDotNetToJSStreams.has(streamId)) {
               // We've already started receiving the stream, so no longer need to track it as pending
               this._streamPromise = pendingDotNetToJSStreams.get(streamId)!.streamPromise!;
