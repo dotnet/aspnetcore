@@ -441,8 +441,8 @@ public class WebHostBuilderTests
             .UseServer(new TestServer())
             .ConfigureServices(services =>
             {
-                    // Added as a factory since instances are never disposed by the container
-                    services.AddSingleton(sp => service);
+                // Added as a factory since instances are never disposed by the container
+                services.AddSingleton(sp => service);
             })
             .UseStartup<StartupWithResolvedDisposableThatThrows>();
 
@@ -1683,14 +1683,14 @@ public class WebHostBuilderTests
                    .UseSetting("testhostingstartup_chain", builder.GetSetting("testhostingstartup_chain") + "0")
                    .ConfigureServices(services =>
                    {
-                           // This check is required because MVC still uses the
-                           // IWebHostEnvironment instance before the container is baked
+                       // This check is required because MVC still uses the
+                       // IWebHostEnvironment instance before the container is baked
 #pragma warning disable CS0618 // Type or member is obsolete
-                           var heDescriptor = services.SingleOrDefault(s => s.ServiceType == typeof(IHostingEnvironment));
+                       var heDescriptor = services.SingleOrDefault(s => s.ServiceType == typeof(IHostingEnvironment));
                        Assert.NotNull(heDescriptor);
                        Assert.NotNull(heDescriptor.ImplementationInstance);
 #pragma warning restore CS0618 // Type or member is obsolete
-                           var wheDescriptor = services.SingleOrDefault(s => s.ServiceType == typeof(IWebHostEnvironment));
+                       var wheDescriptor = services.SingleOrDefault(s => s.ServiceType == typeof(IWebHostEnvironment));
                        Assert.NotNull(wheDescriptor);
                        Assert.NotNull(wheDescriptor.ImplementationInstance);
                    })

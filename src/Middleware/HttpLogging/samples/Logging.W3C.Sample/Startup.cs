@@ -17,8 +17,8 @@ public class Startup
     {
         services.AddW3CLogging(logging =>
         {
-                // Log all W3C fields
-                logging.LoggingFields = W3CLoggingFields.All;
+            // Log all W3C fields
+            logging.LoggingFields = W3CLoggingFields.All;
         });
     }
 

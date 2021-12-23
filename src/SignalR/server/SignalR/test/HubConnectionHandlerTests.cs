@@ -4545,12 +4545,12 @@ public class HubConnectionHandlerTests : VerifiableLoggedTest
         {
             serviceBuilder.AddSignalR(o =>
             {
-                    // ConnectAsync would fail if this value was used
-                    o.MaximumReceiveMessageSize = 1;
+                // ConnectAsync would fail if this value was used
+                o.MaximumReceiveMessageSize = 1;
             }).AddHubOptions<MethodHub>(o =>
             {
-                    // null is treated as both no-limit and not set, this test verifies that we track if the user explicitly sets the value
-                    o.MaximumReceiveMessageSize = null;
+                // null is treated as both no-limit and not set, this test verifies that we track if the user explicitly sets the value
+                o.MaximumReceiveMessageSize = null;
             });
         });
         var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();

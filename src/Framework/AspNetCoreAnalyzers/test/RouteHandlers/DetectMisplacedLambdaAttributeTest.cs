@@ -92,12 +92,14 @@ void Hello() { }
 
         // Assert
         Assert.Collection(diagnostics,
-            diagnostic => {
+            diagnostic =>
+            {
                 Assert.Same(DiagnosticDescriptors.DetectMisplacedLambdaAttribute, diagnostic.Descriptor);
                 AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
                 Assert.Equal("'AuthorizeAttribute' should be placed directly on the route handler lambda to be effective", diagnostic.GetMessage(CultureInfo.InvariantCulture));
             },
-            diagnostic => {
+            diagnostic =>
+            {
                 Assert.Same(DiagnosticDescriptors.DetectMisplacedLambdaAttribute, diagnostic.Descriptor);
                 AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
                 Assert.Equal("'ProducesAttribute' should be placed directly on the route handler lambda to be effective", diagnostic.GetMessage(CultureInfo.InvariantCulture));
@@ -123,7 +125,8 @@ void Hello() { }
 
         // Assert
         Assert.Collection(diagnostics,
-            diagnostic => {
+            diagnostic =>
+            {
                 Assert.Same(DiagnosticDescriptors.DetectMisplacedLambdaAttribute, diagnostic.Descriptor);
                 AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
                 Assert.Equal("'ProducesAttribute' should be placed directly on the route handler lambda to be effective", diagnostic.GetMessage(CultureInfo.InvariantCulture));

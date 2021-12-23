@@ -38,9 +38,9 @@ internal sealed partial class DefaultLinkParser : LinkParser, IDisposable
         // that cache is the endpoints change so that we don't allow unbounded memory growth.
         _matcherCache = new DataSourceDependentCache<ConcurrentDictionary<RouteEndpoint, MatcherState>>(dataSource, (_) =>
         {
-                // We don't eagerly fill this cache because there's no real reason to. Unlike URL matching, we don't
-                // need to build a big data structure up front to be correct.
-                return new ConcurrentDictionary<RouteEndpoint, MatcherState>();
+            // We don't eagerly fill this cache because there's no real reason to. Unlike URL matching, we don't
+            // need to build a big data structure up front to be correct.
+            return new ConcurrentDictionary<RouteEndpoint, MatcherState>();
         });
 
         // Cached to avoid per-call allocation of a delegate on lookup.

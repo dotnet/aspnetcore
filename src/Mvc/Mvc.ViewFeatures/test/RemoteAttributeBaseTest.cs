@@ -210,8 +210,8 @@ public class RemoteAttributeBaseTest
             kvp => { Assert.Equal("data-val", kvp.Key); Assert.Equal("true", kvp.Value); },
             kvp =>
             {
-                    // IStringLocalizerFactory existence alone is insufficient to change error message.
-                    Assert.Equal("data-val-remote", kvp.Key);
+                // IStringLocalizerFactory existence alone is insufficient to change error message.
+                Assert.Equal("data-val-remote", kvp.Key);
                 Assert.Equal(expected, kvp.Value);
             },
             kvp =>
@@ -250,8 +250,8 @@ public class RemoteAttributeBaseTest
             kvp => { Assert.Equal("data-val", kvp.Key); Assert.Equal("true", kvp.Value); },
             kvp =>
             {
-                    // Non-null DataAnnotationLocalizerProvider alone is insufficient to change error message.
-                    Assert.Equal("data-val-remote", kvp.Key);
+                // Non-null DataAnnotationLocalizerProvider alone is insufficient to change error message.
+                Assert.Equal("data-val-remote", kvp.Key);
                 Assert.Equal(expected, kvp.Value);
             },
             kvp =>
@@ -341,8 +341,8 @@ public class RemoteAttributeBaseTest
             kvp => { Assert.Equal("data-val", kvp.Key); Assert.Equal("true", kvp.Value); },
             kvp =>
             {
-                    // Configuring the attribute using ErrorMessageResource* trumps available IStringLocalizer etc.
-                    Assert.Equal("data-val-remote", kvp.Key);
+                // Configuring the attribute using ErrorMessageResource* trumps available IStringLocalizer etc.
+                Assert.Equal("data-val-remote", kvp.Key);
                 Assert.Equal(expected, kvp.Value);
             },
             kvp =>

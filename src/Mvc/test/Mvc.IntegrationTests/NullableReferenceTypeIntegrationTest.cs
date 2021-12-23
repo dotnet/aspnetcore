@@ -61,8 +61,8 @@ public class NullableReferenceTypeIntegrationTest
                 Assert.Equal("FirstName", kvp.Key);
                 Assert.Equal(ModelValidationState.Invalid, kvp.Value.ValidationState);
 
-                    // Not validating framework error message.
-                    Assert.Single(kvp.Value.Errors);
+                // Not validating framework error message.
+                Assert.Single(kvp.Value.Errors);
             });
     }
 
@@ -203,8 +203,8 @@ public class NullableReferenceTypeIntegrationTest
                 Assert.Equal("param1", kvp.Key);
                 Assert.Equal(ModelValidationState.Invalid, kvp.Value.ValidationState);
 
-                    // Not validating framework error message.
-                    Assert.Single(kvp.Value.Errors);
+                // Not validating framework error message.
+                Assert.Single(kvp.Value.Errors);
             });
     }
 }

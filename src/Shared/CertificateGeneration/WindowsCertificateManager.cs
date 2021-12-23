@@ -28,8 +28,8 @@ internal class WindowsCertificateManager : CertificateManager
     protected override bool IsExportable(X509Certificate2 c)
     {
 #if XPLAT
-            // For the first run experience we don't need to know if the certificate can be exported.
-            return true;
+        // For the first run experience we don't need to know if the certificate can be exported.
+        return true;
 #else
         using var key = c.GetRSAPrivateKey();
         return (key is RSACryptoServiceProvider rsaPrivateKey &&

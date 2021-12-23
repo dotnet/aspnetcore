@@ -57,8 +57,8 @@ public class Startup
         {
             endpoints.MapRazorPages();
             endpoints.MapControllers();
-                //endpoints.MapFallbackToFile("index.html");
-                endpoints.MapFallbackToPage("/_Host");
+            //endpoints.MapFallbackToFile("index.html");
+            endpoints.MapFallbackToPage("/_Host");
         });
     }
 }

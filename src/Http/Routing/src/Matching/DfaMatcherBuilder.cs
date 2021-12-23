@@ -502,7 +502,7 @@ internal class DfaMatcherBuilder : MatcherBuilder
 #if DEBUG
         var includeLabel = true;
 #else
-            var includeLabel = false;
+        var includeLabel = false;
 #endif
 
         var root = BuildDfaTree(includeLabel);

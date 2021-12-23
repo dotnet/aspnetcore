@@ -33,15 +33,15 @@ public class Startup
         // "/[?statuscode=400]"
         app.Use(async (context, next) =>
         {
-                // Check for ?statuscode=400
-                var requestedStatusCode = context.Request.Query["statuscode"];
+            // Check for ?statuscode=400
+            var requestedStatusCode = context.Request.Query["statuscode"];
             if (!string.IsNullOrEmpty(requestedStatusCode))
             {
                 context.Response.StatusCode = int.Parse(requestedStatusCode, CultureInfo.InvariantCulture);
 
-                    // To turn off the StatusCode feature - For example the below code turns off the StatusCode middleware
-                    // if the query contains a disableStatusCodePages=true parameter.
-                    var disableStatusCodePages = context.Request.Query["disableStatusCodePages"];
+                // To turn off the StatusCode feature - For example the below code turns off the StatusCode middleware
+                // if the query contains a disableStatusCodePages=true parameter.
+                var disableStatusCodePages = context.Request.Query["disableStatusCodePages"];
                 if (disableStatusCodePages == "true")
                 {
                     var statusCodePagesFeature = context.Features.Get<IStatusCodePagesFeature>();
@@ -80,8 +80,8 @@ public class Startup
 
         app.Run(async context =>
         {
-                // Generates the HTML with all status codes.
-                var builder = new StringBuilder();
+            // Generates the HTML with all status codes.
+            var builder = new StringBuilder();
             builder.AppendLine("<html><body>");
             builder.AppendLine("<a href=\"" +
                 HtmlEncoder.Default.Encode(context.Request.PathBase.ToString()) + "/missingpage/\">" +

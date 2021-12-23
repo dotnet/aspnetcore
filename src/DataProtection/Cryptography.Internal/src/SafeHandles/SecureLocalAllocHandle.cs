@@ -2,8 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Runtime.InteropServices;
 using System.Runtime.ConstrainedExecution;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Cryptography.SafeHandles;
 
@@ -39,7 +39,7 @@ internal sealed unsafe class SecureLocalAllocHandle : LocalAllocHandle
     }
 
 #if NETSTANDARD2_0
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
+    [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
 #endif
     private void AllocateImpl(IntPtr cb)
     {

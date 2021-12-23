@@ -62,7 +62,7 @@ public class CertificateValidationCache : ICertificateValidationCache
             .SetSlidingExpiration(_options.CacheEntryExpiration)
             .SetAbsoluteExpiration(absoluteExpiration));
     }
-        
+
     private string ComputeKey(X509Certificate2 certificate)
         => certificate.GetCertHashString(HashAlgorithmName.SHA256);
 

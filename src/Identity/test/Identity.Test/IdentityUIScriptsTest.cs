@@ -17,7 +17,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Identity.Test;
 
-[SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/38542", Queues="OSX.1015.Amd64.Open;OSX.1015.Amd64")] //slow
+[SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/38542", Queues = "OSX.1015.Amd64.Open;OSX.1015.Amd64")] //slow
 public class IdentityUIScriptsTest : IDisposable
 {
     private readonly ITestOutputHelper _output;

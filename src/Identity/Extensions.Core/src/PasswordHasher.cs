@@ -247,7 +247,7 @@ public class PasswordHasher<TUser> : IPasswordHasher<TUser> where TUser : class
 #if NETSTANDARD2_0 || NETFRAMEWORK
         return ByteArraysEqual(actualSubkey, expectedSubkey);
 #elif NETCOREAPP
-            return CryptographicOperations.FixedTimeEquals(actualSubkey, expectedSubkey);
+        return CryptographicOperations.FixedTimeEquals(actualSubkey, expectedSubkey);
 #else
 #error Update target frameworks
 #endif
@@ -286,7 +286,7 @@ public class PasswordHasher<TUser> : IPasswordHasher<TUser> where TUser : class
 #if NETSTANDARD2_0 || NETFRAMEWORK
             return ByteArraysEqual(actualSubkey, expectedSubkey);
 #elif NETCOREAPP
-                return CryptographicOperations.FixedTimeEquals(actualSubkey, expectedSubkey);
+            return CryptographicOperations.FixedTimeEquals(actualSubkey, expectedSubkey);
 #else
 #error Update target frameworks
 #endif

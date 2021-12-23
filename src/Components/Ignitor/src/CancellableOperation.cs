@@ -40,8 +40,8 @@ internal class CancellableOperation<TResult>
 
                 if (cancellationToken.IsCancellationRequested)
                 {
-                        // The operation was externally canceled before it timed out.
-                        Dispose();
+                    // The operation was externally canceled before it timed out.
+                    Dispose();
                     return;
                 }
 

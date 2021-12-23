@@ -31,8 +31,8 @@ public class StartupWithoutEndpointRouting
             .AddMvc(options =>
             {
                 options.Conventions.Add(new ApplicationDescription("This is a basic website."));
-                    // Filter that records a value in HttpContext.Items
-                    options.Filters.Add(new TraceResourceFilter());
+                // Filter that records a value in HttpContext.Items
+                options.Filters.Add(new TraceResourceFilter());
 
                 options.EnableEndpointRouting = false;
             })

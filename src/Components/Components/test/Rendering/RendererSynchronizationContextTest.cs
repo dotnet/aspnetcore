@@ -779,8 +779,8 @@ public class RendererSynchronizationContextTest
 
         var invokeTask = context.InvokeAsync(async () =>
         {
-                // When the sync context is idle, queued work items start synchronously
-                actual += " Second";
+            // When the sync context is idle, queued work items start synchronously
+            actual += " Second";
             await Task.Delay(250);
             actual += " Fourth";
         });

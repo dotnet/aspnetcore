@@ -43,7 +43,7 @@ public class ResponseCachingBenchmark
                 Options.Create(new ResponseCachingOptions
                 {
                     SizeLimit = int.MaxValue, // ~2GB
-                        MaximumBodySize = 1 * 1024 * 1024,
+                    MaximumBodySize = 1 * 1024 * 1024,
                 }),
                 NullLoggerFactory.Instance,
                 new DefaultObjectPoolProvider()

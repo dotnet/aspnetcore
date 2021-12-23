@@ -578,8 +578,8 @@ public class ClientCertificateAuthenticationTests
                     {
                         validationCount++;
 
-                            // Make sure we get the validated principal
-                            Assert.NotNull(context.Principal);
+                        // Make sure we get the validated principal
+                        Assert.NotNull(context.Principal);
 
                         var claims = new[]
                         {
@@ -650,8 +650,8 @@ public class ClientCertificateAuthenticationTests
                 {
                     OnCertificateValidated = context =>
                     {
-                            // Make sure we get the validated principal
-                            Assert.NotNull(context.Principal);
+                        // Make sure we get the validated principal
+                        Assert.NotNull(context.Principal);
                         var claims = new[]
                         {
                                 new Claim(ClaimTypes.Name, Expected, ClaimValueTypes.String, context.Options.ClaimsIssuer)

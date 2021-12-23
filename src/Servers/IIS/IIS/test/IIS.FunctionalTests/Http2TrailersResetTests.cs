@@ -230,8 +230,8 @@ public class Http2TrailerResetTests
                 var resetFrame = await h2Connection.ReceiveFrameAsync();
                 Http2Utilities.VerifyResetFrame(resetFrame, expectedStreamId: 1, expectedErrorCode: (Http2ErrorCode)1111);
 
-                    // Any app errors?
-                    var client = CreateClient();
+                // Any app errors?
+                var client = CreateClient();
                 var response = await client.GetAsync(Fixture.Client.BaseAddress + "/Reset_BeforeResponse_Resets_Complete");
                 Assert.True(response.IsSuccessStatusCode);
 
@@ -259,17 +259,17 @@ public class Http2TrailerResetTests
 
               await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
               {
-                      // HTTP/2 filters out the connection header
-                      Assert.False(decodedHeaders.ContainsKey(HeaderNames.Connection));
+                  // HTTP/2 filters out the connection header
+                  Assert.False(decodedHeaders.ContainsKey(HeaderNames.Connection));
                   Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
               });
 
               var dataFrame = await h2Connection.ReceiveFrameAsync();
               Http2Utilities.VerifyDataFrame(dataFrame, 1, endOfStream: true, length: 0);
 
-                  // Http.Sys doesn't send a final GoAway unless we ignore the first one and send 200 additional streams.
+              // Http.Sys doesn't send a final GoAway unless we ignore the first one and send 200 additional streams.
 
-                  h2Connection.Logger.LogInformation("Connection stopped.");
+              h2Connection.Logger.LogInformation("Connection stopped.");
           })
           .Build().RunAsync();
     }
@@ -291,8 +291,8 @@ public class Http2TrailerResetTests
                 var resetFrame = await h2Connection.ReceiveFrameAsync();
                 Http2Utilities.VerifyResetFrame(resetFrame, expectedStreamId: 1, expectedErrorCode: (Http2ErrorCode)0);
 
-                    // Any app errors?
-                    var client = CreateClient();
+                // Any app errors?
+                var client = CreateClient();
                 var response = await client.GetAsync(Fixture.Client.BaseAddress + "/Reset_BeforeResponse_Zero_Resets_Complete");
                 Assert.True(response.IsSuccessStatusCode);
 
@@ -315,8 +315,8 @@ public class Http2TrailerResetTests
 
                 await h2Connection.StartStreamAsync(1, GetHeaders("/Reset_AfterResponseHeaders_Resets"), endStream: true);
 
-                    // Any app errors?
-                    var client = CreateClient();
+                // Any app errors?
+                var client = CreateClient();
                 var response = await client.GetAsync(Fixture.Client.BaseAddress + "/Reset_AfterResponseHeaders_Resets_Complete");
                 Assert.True(response.IsSuccessStatusCode);
 
@@ -347,8 +347,8 @@ public class Http2TrailerResetTests
 
                 await h2Connection.StartStreamAsync(1, GetHeaders("/Reset_DuringResponseBody_Resets"), endStream: true);
 
-                    // This is currently flaky, can either receive header or reset at this point
-                    var headerOrResetFrame = await h2Connection.ReceiveFrameAsync();
+                // This is currently flaky, can either receive header or reset at this point
+                var headerOrResetFrame = await h2Connection.ReceiveFrameAsync();
                 Assert.True(headerOrResetFrame.Type == Http2FrameType.HEADERS || headerOrResetFrame.Type == Http2FrameType.RST_STREAM);
 
                 if (headerOrResetFrame.Type == Http2FrameType.HEADERS)
@@ -384,10 +384,10 @@ public class Http2TrailerResetTests
 
                 await h2Connection.StartStreamAsync(1, GetPostHeaders("/Reset_BeforeRequestBody_Resets"), endStream: false);
 
-                    // Any app errors?
-                    //Assert.Equal(0, await appResult.Task.DefaultTimeout());
+                // Any app errors?
+                //Assert.Equal(0, await appResult.Task.DefaultTimeout());
 
-                    var resetFrame = await h2Connection.ReceiveFrameAsync();
+                var resetFrame = await h2Connection.ReceiveFrameAsync();
                 Http2Utilities.VerifyResetFrame(resetFrame, expectedStreamId: 1, expectedErrorCode: (Http2ErrorCode)1111);
 
                 h2Connection.Logger.LogInformation("Connection stopped.");
@@ -410,10 +410,10 @@ public class Http2TrailerResetTests
                 await h2Connection.StartStreamAsync(1, GetPostHeaders("/Reset_DuringRequestBody_Resets"), endStream: false);
                 await h2Connection.SendDataAsync(1, new byte[10], endStream: false);
 
-                    // Any app errors?
-                    //Assert.Equal(0, await appResult.Task.DefaultTimeout());
+                // Any app errors?
+                //Assert.Equal(0, await appResult.Task.DefaultTimeout());
 
-                    var resetFrame = await h2Connection.ReceiveFrameAsync();
+                var resetFrame = await h2Connection.ReceiveFrameAsync();
                 Http2Utilities.VerifyResetFrame(resetFrame, expectedStreamId: 1, expectedErrorCode: (Http2ErrorCode)1111);
 
                 h2Connection.Logger.LogInformation("Connection stopped.");

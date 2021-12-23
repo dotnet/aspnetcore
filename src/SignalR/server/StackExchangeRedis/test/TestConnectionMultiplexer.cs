@@ -245,10 +245,10 @@ public class TestRedisServer
     {
         Action<RedisChannel, RedisValue> handler = (channel, value) =>
         {
-                // Workaround for https://github.com/StackExchange/StackExchange.Redis/issues/969
-                // ChannelMessageQueue isn't mockable currently, this works around that by using private reflection
-                typeof(ChannelMessageQueue).GetMethod("Write", BindingFlags.NonPublic | BindingFlags.Instance)
-                .Invoke(messageQueue, new object[] { channel, value });
+            // Workaround for https://github.com/StackExchange/StackExchange.Redis/issues/969
+            // ChannelMessageQueue isn't mockable currently, this works around that by using private reflection
+            typeof(ChannelMessageQueue).GetMethod("Write", BindingFlags.NonPublic | BindingFlags.Instance)
+            .Invoke(messageQueue, new object[] { channel, value });
         };
 
         _subscriptions.AddOrUpdate(messageQueue.Channel, _ => new List<(int, Action<RedisChannel, RedisValue>)> { (subscriberId, handler) }, (_, list) =>

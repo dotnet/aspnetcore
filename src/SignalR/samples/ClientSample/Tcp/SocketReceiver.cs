@@ -28,9 +28,9 @@ public class SocketReceiver
 #if NETCOREAPP
         _eventArgs.SetBuffer(buffer);
 #else
-            var segment = buffer.GetArray();
+        var segment = buffer.GetArray();
 
-            _eventArgs.SetBuffer(segment.Array, segment.Offset, segment.Count);
+        _eventArgs.SetBuffer(segment.Array, segment.Offset, segment.Count);
 #endif
         if (!_socket.ReceiveAsync(_eventArgs))
         {

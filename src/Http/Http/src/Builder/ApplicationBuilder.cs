@@ -119,9 +119,9 @@ public class ApplicationBuilder : IApplicationBuilder
     {
         RequestDelegate app = context =>
         {
-                // If we reach the end of the pipeline, but we have an endpoint, then something unexpected has happened.
-                // This could happen if user code sets an endpoint, but they forgot to add the UseEndpoint middleware.
-                var endpoint = context.GetEndpoint();
+            // If we reach the end of the pipeline, but we have an endpoint, then something unexpected has happened.
+            // This could happen if user code sets an endpoint, but they forgot to add the UseEndpoint middleware.
+            var endpoint = context.GetEndpoint();
             var endpointRequestDelegate = endpoint?.RequestDelegate;
             if (endpointRequestDelegate != null)
             {

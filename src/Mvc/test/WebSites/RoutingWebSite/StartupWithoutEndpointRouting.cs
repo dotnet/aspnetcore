@@ -80,7 +80,7 @@ public class StartupWithoutEndpointRouting : Startup
             {
                 ControllerType = typeof(EndpointRoutingController),
                 Actions = null, // remove all
-                },
+            },
             new ControllerToRemove
             {
                 ControllerType = typeof(PageRouteController),

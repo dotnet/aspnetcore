@@ -445,8 +445,8 @@ internal class ActionEndpointFactory
             var routeData = new RouteData();
             routeData.PushState(router: null, context.Request.RouteValues, new RouteValueDictionary(dataTokens?.DataTokens));
 
-                // Don't close over the ActionDescriptor, that's not valid for pages.
-                var action = endpoint.Metadata.GetMetadata<ActionDescriptor>()!;
+            // Don't close over the ActionDescriptor, that's not valid for pages.
+            var action = endpoint.Metadata.GetMetadata<ActionDescriptor>()!;
             var actionContext = new ActionContext(context, routeData, action);
 
             if (invokerFactory == null)

@@ -93,10 +93,10 @@ public class PageResultExecutor : ViewExecutor
                     return;
                 }
 
-                    // ViewContext is always activated with the "right" ViewData<T> type.
-                    // Copy that over to the PageContext since PageContext.ViewData is exposed
-                    // as the ViewData property on the Page that the user works with.
-                    pageContext.ViewData = currentViewContext.ViewData;
+                // ViewContext is always activated with the "right" ViewData<T> type.
+                // Copy that over to the PageContext since PageContext.ViewData is exposed
+                // as the ViewData property on the Page that the user works with.
+                pageContext.ViewData = currentViewContext.ViewData;
             },
         };
 

@@ -212,7 +212,7 @@ public class SignInManagerTest
         if (tfaEnabled)
         {
             manager.Setup(m => m.GetTwoFactorEnabledAsync(user)).ReturnsAsync(true).Verifiable();
-            manager.Setup(m => m.GetValidTwoFactorProvidersAsync(user)).ReturnsAsync(new string[1] {"Fake"}).Verifiable();
+            manager.Setup(m => m.GetValidTwoFactorProvidersAsync(user)).ReturnsAsync(new string[1] { "Fake" }).Verifiable();
         }
 
         if (tfaRemembered)

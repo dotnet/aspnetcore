@@ -467,9 +467,9 @@ public class ActionParameterIntegrationTest
         {
             options.ModelBinderProviders.RemoveType<ComplexObjectModelBinderProvider>();
 #pragma warning disable CS0618 // Type or member is obsolete
-                options.ModelBinderProviders.Add(new ComplexTypeModelBinderProvider());
+            options.ModelBinderProviders.Add(new ComplexTypeModelBinderProvider());
 #pragma warning restore CS0618 // Type or member is obsolete
-            });
+        });
         var modelState = testContext.ModelState;
 
         // Act & Assert

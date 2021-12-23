@@ -201,8 +201,8 @@ public class IISExpressDeployer : IISDeployerBase
                 {
                     if (string.Equals(dataArgs.Data, UnableToStartIISExpressMessage, StringComparison.Ordinal))
                     {
-                            // We completely failed to start and we don't really know why
-                            started.TrySetException(new InvalidOperationException("Failed to start IIS Express"));
+                        // We completely failed to start and we don't really know why
+                        started.TrySetException(new InvalidOperationException("Failed to start IIS Express"));
                     }
                     else if (string.Equals(dataArgs.Data, FailedToInitializeBindingsMessage, StringComparison.Ordinal))
                     {
@@ -228,8 +228,8 @@ public class IISExpressDeployer : IISDeployerBase
                 {
                     Logger.LogInformation("iisexpress Process {pid} shut down", process.Id);
 
-                        // If TrySetResult was called above, this will just silently fail to set the new state, which is what we want
-                        started.TrySetException(new Exception($"Command exited unexpectedly with exit code: {process.ExitCode}"));
+                    // If TrySetResult was called above, this will just silently fail to set the new state, which is what we want
+                    started.TrySetException(new Exception($"Command exited unexpectedly with exit code: {process.ExitCode}"));
 
                     TriggerHostShutdown(hostExitTokenSource);
                 };

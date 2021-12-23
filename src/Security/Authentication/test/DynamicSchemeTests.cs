@@ -138,33 +138,33 @@ public class DynamicSchemeTests
                    {
                        app.UseAuthentication();
                        app.Use(async (context, next) =>
+                       {
+                           var req = context.Request;
+                           var res = context.Response;
+                           if (req.Path.StartsWithSegments(new PathString("/add"), out var remainder))
                            {
-                            var req = context.Request;
-                            var res = context.Response;
-                            if (req.Path.StartsWithSegments(new PathString("/add"), out var remainder))
-                            {
-                                var name = remainder.Value.Substring(1);
-                                var auth = context.RequestServices.GetRequiredService<IAuthenticationSchemeProvider>();
-                                var scheme = new AuthenticationScheme(name, name, typeof(TestHandler));
-                                auth.AddScheme(scheme);
-                            }
-                            else if (req.Path.StartsWithSegments(new PathString("/auth"), out remainder))
-                            {
-                                var name = (remainder.Value.Length > 0) ? remainder.Value.Substring(1) : null;
-                                var result = await context.AuthenticateAsync(name);
-                                await res.DescribeAsync(result?.Ticket?.Principal);
-                            }
-                            else if (req.Path.StartsWithSegments(new PathString("/remove"), out remainder))
-                            {
-                                var name = remainder.Value.Substring(1);
-                                var auth = context.RequestServices.GetRequiredService<IAuthenticationSchemeProvider>();
-                                auth.RemoveScheme(name);
-                            }
-                            else
-                            {
-                                await next(context);
-                            }
-                        });
+                               var name = remainder.Value.Substring(1);
+                               var auth = context.RequestServices.GetRequiredService<IAuthenticationSchemeProvider>();
+                               var scheme = new AuthenticationScheme(name, name, typeof(TestHandler));
+                               auth.AddScheme(scheme);
+                           }
+                           else if (req.Path.StartsWithSegments(new PathString("/auth"), out remainder))
+                           {
+                               var name = (remainder.Value.Length > 0) ? remainder.Value.Substring(1) : null;
+                               var result = await context.AuthenticateAsync(name);
+                               await res.DescribeAsync(result?.Ticket?.Principal);
+                           }
+                           else if (req.Path.StartsWithSegments(new PathString("/remove"), out remainder))
+                           {
+                               var name = remainder.Value.Substring(1);
+                               var auth = context.RequestServices.GetRequiredService<IAuthenticationSchemeProvider>();
+                               auth.RemoveScheme(name);
+                           }
+                           else
+                           {
+                               await next(context);
+                           }
+                       });
                    })
                     .ConfigureServices(services =>
                     {

@@ -29,7 +29,7 @@ public class Startup
         {
             Task.Delay(100).Wait(); // 100ms sync-over-async
 
-                await context.Response.WriteAsync("Hello World!");
+            await context.Response.WriteAsync("Hello World!");
         });
     }
 

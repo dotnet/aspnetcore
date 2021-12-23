@@ -583,8 +583,8 @@ public class WebSocketMiddlewareTests : LoggedTest
             Assert.True(context.WebSockets.IsWebSocketRequest);
             var webSocket = await context.WebSockets.AcceptWebSocketAsync();
 
-                // Use ReferenceEquals and test against the constants
-                Assert.Same(HeaderNames.Upgrade, context.Request.Headers.Connection.ToString());
+            // Use ReferenceEquals and test against the constants
+            Assert.Same(HeaderNames.Upgrade, context.Request.Headers.Connection.ToString());
             Assert.Same(Constants.Headers.UpgradeWebSocket, context.Request.Headers.Upgrade.ToString());
             Assert.Same(Constants.Headers.SupportedVersion, context.Request.Headers.SecWebSocketVersion.ToString());
         }))

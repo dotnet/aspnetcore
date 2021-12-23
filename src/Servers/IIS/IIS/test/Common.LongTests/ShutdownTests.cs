@@ -339,7 +339,7 @@ public class ShutdownTests : IISFunctionalTestBase
 
     private async Task AppOfflineAddAndRemovedStress(HostingModel hostingModel)
     {
-            var deploymentResult = await AssertStarts(hostingModel);
+        var deploymentResult = await AssertStarts(hostingModel);
 
         var load = Helpers.StressLoad(deploymentResult.HttpClient, "/HelloWorld", response =>
         {

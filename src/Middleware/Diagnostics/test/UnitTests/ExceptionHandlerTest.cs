@@ -134,8 +134,8 @@ public class ExceptionHandlerTest
                 .UseTestServer()
                 .Configure(app =>
                 {
-                        // add response buffering
-                        app.Use(async (httpContext, next) =>
+                    // add response buffering
+                    app.Use(async (httpContext, next) =>
                     {
                         var response = httpContext.Response;
                         var originalResponseBody = response.Body;
@@ -170,8 +170,8 @@ public class ExceptionHandlerTest
 
                     app.Run(async (context) =>
                     {
-                            // Write some content into the response before throwing exception
-                            await context.Response.WriteAsync(new string('a', 100));
+                        // Write some content into the response before throwing exception
+                        await context.Response.WriteAsync(new string('a', 100));
 
                         throw new InvalidOperationException("Invalid input provided.");
                     });
@@ -557,18 +557,18 @@ public class ExceptionHandlerTest
                         {
                             exception = ex;
 
-                                // This mimics what the server would do when an exception occurs
-                                httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                            // This mimics what the server would do when an exception occurs
+                            httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
                         }
 
-                            // Invalid operation exception
-                            Assert.NotNull(exception);
+                        // Invalid operation exception
+                        Assert.NotNull(exception);
                         Assert.Equal("The exception handler configured on ExceptionHandlerOptions produced a 404 status response. " +
             "This InvalidOperationException containing the original exception was thrown since this is often due to a misconfigured ExceptionHandlingPath. " +
             "If the exception handler is expected to return 404 status responses then set AllowStatusCode404Response to true.", exception.Message);
 
-                            // The original exception is inner exception
-                            Assert.NotNull(exception.InnerException);
+                        // The original exception is inner exception
+                        Assert.NotNull(exception.InnerException);
                         Assert.IsType<ApplicationException>(exception.InnerException);
                         Assert.Equal("Something bad happened.", exception.InnerException.Message);
 

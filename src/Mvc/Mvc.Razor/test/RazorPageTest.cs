@@ -202,8 +202,8 @@ public class RazorPageTest
             v.Write("Hello World!");
             var returnValue = v.EndTagHelperWritingScope();
 
-                // Assert
-                var content = Assert.IsType<DefaultTagHelperContent>(returnValue);
+            // Assert
+            var content = Assert.IsType<DefaultTagHelperContent>(returnValue);
             Assert.Equal("HtmlEncode[[Hello World!]]", content.GetContent());
         });
 
@@ -243,8 +243,8 @@ public class RazorPageTest
             v.Write("Hello World!");
             var returnValue = v.EndWriteTagHelperAttribute();
 
-                // Assert
-                var content = Assert.IsType<string>(returnValue);
+            // Assert
+            var content = Assert.IsType<string>(returnValue);
             Assert.Equal("HtmlEncode[[Hello World!]]", content);
         });
 
@@ -282,16 +282,16 @@ public class RazorPageTest
         {
             Assert.Equal(0, bufferScope.CreatedBuffers.Count);
             v.Write("Level:0"); // Creates a 'top-level' buffer.
-                Assert.Equal(1, bufferScope.CreatedBuffers.Count);
+            Assert.Equal(1, bufferScope.CreatedBuffers.Count);
 
-                // Run a TagHelper
-                {
+            // Run a TagHelper
+            {
                 v.StartTagHelperWritingScope(encoder: null);
 
                 Assert.Equal(1, bufferScope.CreatedBuffers.Count);
                 Assert.Equal(0, bufferScope.ReturnedBuffers.Count);
                 v.Write("Level:1-A"); // Creates a new buffer for the TagHelper.
-                    Assert.Equal(2, bufferScope.CreatedBuffers.Count);
+                Assert.Equal(2, bufferScope.CreatedBuffers.Count);
                 Assert.Equal(0, bufferScope.ReturnedBuffers.Count);
 
                 TagHelperContent innerContentLevel1 = null;
@@ -306,24 +306,24 @@ public class RazorPageTest
                 Assert.Equal(2, bufferScope.CreatedBuffers.Count);
                 Assert.Equal(0, bufferScope.ReturnedBuffers.Count);
                 v.Write(outputLevel1); // Writing the TagHelper to output returns a buffer.
-                    Assert.Equal(2, bufferScope.CreatedBuffers.Count);
+                Assert.Equal(2, bufferScope.CreatedBuffers.Count);
                 Assert.Equal(1, bufferScope.ReturnedBuffers.Count);
             }
 
             Assert.Equal(2, bufferScope.CreatedBuffers.Count);
             Assert.Equal(1, bufferScope.ReturnedBuffers.Count);
             v.Write("Level:0"); // Already have a buffer for this scope.
-                Assert.Equal(2, bufferScope.CreatedBuffers.Count);
+            Assert.Equal(2, bufferScope.CreatedBuffers.Count);
             Assert.Equal(1, bufferScope.ReturnedBuffers.Count);
 
-                // Run another TagHelper
-                {
+            // Run another TagHelper
+            {
                 v.StartTagHelperWritingScope(encoder: null);
 
                 Assert.Equal(2, bufferScope.CreatedBuffers.Count);
                 Assert.Equal(1, bufferScope.ReturnedBuffers.Count);
                 v.Write("Level:1-B"); // Creates a new buffer for the TagHelper.
-                    Assert.Equal(3, bufferScope.CreatedBuffers.Count);
+                Assert.Equal(3, bufferScope.CreatedBuffers.Count);
                 Assert.Equal(1, bufferScope.ReturnedBuffers.Count);
 
                 TagHelperContent innerContentLevel1 = null;
@@ -332,14 +332,14 @@ public class RazorPageTest
                     return Task.FromResult(innerContentLevel1);
                 });
 
-                    // Run a nested TagHelper
-                    {
+                // Run a nested TagHelper
+                {
                     v.StartTagHelperWritingScope(encoder: null);
 
                     Assert.Equal(3, bufferScope.CreatedBuffers.Count);
                     Assert.Equal(1, bufferScope.ReturnedBuffers.Count);
                     v.Write("Level:2"); // Creates a new buffer for the TagHelper.
-                        Assert.Equal(4, bufferScope.CreatedBuffers.Count);
+                    Assert.Equal(4, bufferScope.CreatedBuffers.Count);
                     Assert.Equal(1, bufferScope.ReturnedBuffers.Count);
 
                     TagHelperContent innerContentLevel2 = null;
@@ -354,14 +354,14 @@ public class RazorPageTest
                     Assert.Equal(4, bufferScope.CreatedBuffers.Count);
                     Assert.Equal(1, bufferScope.ReturnedBuffers.Count);
                     v.Write(outputLevel2); // Writing the TagHelper to output returns a buffer.
-                        Assert.Equal(4, bufferScope.CreatedBuffers.Count);
+                    Assert.Equal(4, bufferScope.CreatedBuffers.Count);
                     Assert.Equal(2, bufferScope.ReturnedBuffers.Count);
                 }
 
                 Assert.Equal(4, bufferScope.CreatedBuffers.Count);
                 Assert.Equal(2, bufferScope.ReturnedBuffers.Count);
                 v.Write("Level:1-B"); // Already have a buffer for this scope.
-                    Assert.Equal(4, bufferScope.CreatedBuffers.Count);
+                Assert.Equal(4, bufferScope.CreatedBuffers.Count);
                 Assert.Equal(2, bufferScope.ReturnedBuffers.Count);
 
                 innerContentLevel1 = v.EndTagHelperWritingScope();
@@ -370,14 +370,14 @@ public class RazorPageTest
                 Assert.Equal(4, bufferScope.CreatedBuffers.Count);
                 Assert.Equal(2, bufferScope.ReturnedBuffers.Count);
                 v.Write(outputLevel1); // Writing the TagHelper to output returns a buffer.
-                    Assert.Equal(4, bufferScope.CreatedBuffers.Count);
+                Assert.Equal(4, bufferScope.CreatedBuffers.Count);
                 Assert.Equal(3, bufferScope.ReturnedBuffers.Count);
             }
 
             Assert.Equal(4, bufferScope.CreatedBuffers.Count);
             Assert.Equal(3, bufferScope.ReturnedBuffers.Count);
             v.Write("Level:0"); // Already have a buffer for this scope.
-                Assert.Equal(4, bufferScope.CreatedBuffers.Count);
+            Assert.Equal(4, bufferScope.CreatedBuffers.Count);
             Assert.Equal(3, bufferScope.ReturnedBuffers.Count);
 
         }, viewContext);

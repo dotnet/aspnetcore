@@ -109,8 +109,8 @@ public class TargetingPackTests
 
         Assert.All(dlls, path =>
         {
-                // Skip netstandard2.0 System.IO.Pipelines assembly. References have old versions.
-                var filename = Path.GetFileName(path);
+            // Skip netstandard2.0 System.IO.Pipelines assembly. References have old versions.
+            var filename = Path.GetFileName(path);
             if (!string.Equals("System.IO.Pipelines.dll", filename, StringComparison.OrdinalIgnoreCase))
             {
                 using var fileStream = File.OpenRead(path);

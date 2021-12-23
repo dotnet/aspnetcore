@@ -29,8 +29,8 @@ public class RouteViewTest
     {
         var ex = Assert.Throws<InvalidOperationException>(() =>
         {
-                // Throws synchronously, so no need to await
-                _ = _routeViewComponent.SetParametersAsync(ParameterView.Empty);
+            // Throws synchronously, so no need to await
+            _ = _routeViewComponent.SetParametersAsync(ParameterView.Empty);
         });
 
 

@@ -47,10 +47,10 @@ public class WebHostFunctionalTests : LoggedTest
             var responseText = await response.Content.ReadAsStringAsync();
             try
             {
-                    // Assert server is Kestrel
-                    Assert.Equal("Kestrel", response.Headers.Server.ToString());
-                    // The application name will be sent in response when all asserts succeed in the test app.
-                    Assert.Equal(applicationName, responseText);
+                // Assert server is Kestrel
+                Assert.Equal("Kestrel", response.Headers.Server.ToString());
+                // The application name will be sent in response when all asserts succeed in the test app.
+                Assert.Equal(applicationName, responseText);
             }
             catch (XunitException)
             {
@@ -72,10 +72,10 @@ public class WebHostFunctionalTests : LoggedTest
             var responseText = await response.Content.ReadAsStringAsync();
             try
             {
-                    // Assert server is Kestrel
-                    Assert.Equal("Kestrel", response.Headers.Server.ToString());
-                    // The application name will be sent in response when all asserts succeed in the test app.
-                    Assert.Equal(applicationName, responseText);
+                // Assert server is Kestrel
+                Assert.Equal("Kestrel", response.Headers.Server.ToString());
+                // The application name will be sent in response when all asserts succeed in the test app.
+                Assert.Equal(applicationName, responseText);
             }
             catch (XunitException)
             {
@@ -98,8 +98,8 @@ public class WebHostFunctionalTests : LoggedTest
             var responseText = await response.Content.ReadAsStringAsync();
             try
             {
-                    // Assert UseDeveloperExceptionPage is called in WebHostStartupFilter.
-                    Assert.Contains(expected, responseText);
+                // Assert UseDeveloperExceptionPage is called in WebHostStartupFilter.
+                Assert.Contains(expected, responseText);
             }
             catch (XunitException)
             {

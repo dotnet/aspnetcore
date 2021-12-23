@@ -143,7 +143,7 @@ internal sealed unsafe class SafeLibraryHandle : SafeHandleZeroOrMinusOneIsInval
         // http://msdn.microsoft.com/en-us/library/ms683152(v=vs.85).aspx
         [return: MarshalAs(UnmanagedType.Bool)]
 #if NETSTANDARD2_0
-            [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 #endif
         [DllImport("kernel32.dll", CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode)]
         internal static extern bool FreeLibrary(IntPtr hModule);

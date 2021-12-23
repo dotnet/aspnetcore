@@ -50,9 +50,9 @@ internal static class AngularCliMiddleware
 
         SpaProxyingExtensions.UseProxyToSpaDevelopmentServer(spaBuilder, () =>
         {
-                // On each request, we create a separate startup task with its own timeout. That way, even if
-                // the first request times out, subsequent requests could still work.
-                var timeout = spaBuilder.Options.StartupTimeout;
+            // On each request, we create a separate startup task with its own timeout. That way, even if
+            // the first request times out, subsequent requests could still work.
+            var timeout = spaBuilder.Options.StartupTimeout;
             return angularCliServerInfoTask.WithTimeout(timeout,
                 $"The Angular CLI process did not start listening for requests " +
                 $"within the timeout period of {timeout.TotalSeconds} seconds. " +

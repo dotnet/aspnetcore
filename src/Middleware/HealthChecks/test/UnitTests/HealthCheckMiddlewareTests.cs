@@ -637,8 +637,8 @@ public class HealthCheckMiddlewareTests
                 .UseTestServer()
                 .Configure(app =>
                 {
-                        // Throws if used
-                        app.UseHealthChecks("/health", new HealthCheckOptions()
+                    // Throws if used
+                    app.UseHealthChecks("/health", new HealthCheckOptions()
                     {
                         ResponseWriter = (c, r) => throw null,
                     });
@@ -676,8 +676,8 @@ public class HealthCheckMiddlewareTests
                 {
                     app.UseHealthChecks("/health/detailed");
 
-                        // Throws if used
-                        app.UseHealthChecks("/health", new HealthCheckOptions()
+                    // Throws if used
+                    app.UseHealthChecks("/health", new HealthCheckOptions()
                     {
                         ResponseWriter = (c, r) => throw null,
                     });
@@ -712,9 +712,9 @@ public class HealthCheckMiddlewareTests
                 {
                     app.Use(next => async (context) =>
                     {
-                            // Need to fake setting the connection info. TestServer doesn't
-                            // do that, because it doesn't have a connection.
-                            context.Connection.LocalPort = context.Request.Host.Port.Value;
+                        // Need to fake setting the connection info. TestServer doesn't
+                        // do that, because it doesn't have a connection.
+                        context.Connection.LocalPort = context.Request.Host.Port.Value;
                         await next(context);
                     });
 
@@ -750,9 +750,9 @@ public class HealthCheckMiddlewareTests
                 {
                     app.Use(next => async (context) =>
                     {
-                            // Need to fake setting the connection info. TestServer doesn't
-                            // do that, because it doesn't have a connection.
-                            context.Connection.LocalPort = context.Request.Host.Port.Value;
+                        // Need to fake setting the connection info. TestServer doesn't
+                        // do that, because it doesn't have a connection.
+                        context.Connection.LocalPort = context.Request.Host.Port.Value;
                         await next(context);
                     });
 
@@ -788,9 +788,9 @@ public class HealthCheckMiddlewareTests
                 {
                     app.Use(next => async (context) =>
                     {
-                            // Need to fake setting the connection info. TestServer doesn't
-                            // do that, because it doesn't have a connection.
-                            context.Connection.LocalPort = context.Request.Host.Port.Value;
+                        // Need to fake setting the connection info. TestServer doesn't
+                        // do that, because it doesn't have a connection.
+                        context.Connection.LocalPort = context.Request.Host.Port.Value;
                         await next(context);
                     });
 
@@ -824,14 +824,14 @@ public class HealthCheckMiddlewareTests
                 {
                     app.Use(next => async (context) =>
                     {
-                            // Need to fake setting the connection info. TestServer doesn't
-                            // do that, because it doesn't have a connection.
-                            context.Connection.LocalPort = context.Request.Host.Port.Value;
+                        // Need to fake setting the connection info. TestServer doesn't
+                        // do that, because it doesn't have a connection.
+                        context.Connection.LocalPort = context.Request.Host.Port.Value;
                         await next(context);
                     });
 
-                        // Throws if used
-                        app.UseHealthChecks("/health", port: 5001, new HealthCheckOptions()
+                    // Throws if used
+                    app.UseHealthChecks("/health", port: 5001, new HealthCheckOptions()
                     {
                         ResponseWriter = (c, r) => throw null,
                     });
@@ -868,14 +868,14 @@ public class HealthCheckMiddlewareTests
                 {
                     app.Use(next => async (context) =>
                     {
-                            // Need to fake setting the connection info. TestServer doesn't
-                            // do that, because it doesn't have a connection.
-                            context.Connection.LocalPort = context.Request.Host.Port.Value;
+                        // Need to fake setting the connection info. TestServer doesn't
+                        // do that, because it doesn't have a connection.
+                        context.Connection.LocalPort = context.Request.Host.Port.Value;
                         await next(context);
                     });
 
-                        // Throws if used
-                        app.UseHealthChecks("/health", port: 5002, new HealthCheckOptions()
+                    // Throws if used
+                    app.UseHealthChecks("/health", port: 5002, new HealthCheckOptions()
                     {
                         ResponseWriter = (c, r) => throw null,
                     });

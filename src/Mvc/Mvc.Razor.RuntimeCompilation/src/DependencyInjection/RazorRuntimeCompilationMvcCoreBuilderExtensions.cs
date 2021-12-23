@@ -111,13 +111,13 @@ public static class RazorRuntimeCompilationMvcCoreBuilderExtensions
             {
                 RazorExtensions.Register(builder);
 
-                    // Roslyn + TagHelpers infrastructure
-                    var referenceManager = s.GetRequiredService<RazorReferenceManager>();
+                // Roslyn + TagHelpers infrastructure
+                var referenceManager = s.GetRequiredService<RazorReferenceManager>();
                 builder.Features.Add(new LazyMetadataReferenceFeature(referenceManager));
                 builder.Features.Add(new CompilationTagHelperFeature());
 
-                    // TagHelperDescriptorProviders (actually do tag helper discovery)
-                    builder.Features.Add(new DefaultTagHelperDescriptorProvider());
+                // TagHelperDescriptorProviders (actually do tag helper discovery)
+                builder.Features.Add(new DefaultTagHelperDescriptorProvider());
                 builder.Features.Add(new ViewComponentTagHelperDescriptorProvider());
                 builder.SetCSharpLanguageVersion(csharpCompiler.ParseOptions.LanguageVersion);
             });

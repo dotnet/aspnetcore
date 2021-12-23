@@ -74,11 +74,11 @@ internal partial class FileLoggerProcessor : IAsyncDisposable
         {
             lock (_pathLock)
             {
-                    // Clear the cached settings.
-                    loggerOptions = options;
+                // Clear the cached settings.
+                loggerOptions = options;
 
-                    // Move to a new file if the fields have changed
-                    if (_fields != loggerOptions.LoggingFields)
+                // Move to a new file if the fields have changed
+                if (_fields != loggerOptions.LoggingFields)
                 {
                     _fileNumber++;
                     if (_fileNumber >= W3CLoggerOptions.MaxFileCount)

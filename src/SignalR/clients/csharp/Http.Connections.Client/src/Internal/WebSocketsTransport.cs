@@ -58,8 +58,8 @@ internal partial class WebSocketsTransport : ITransport
 #if !NETSTANDARD2_0 && !NETFRAMEWORK
             webSocket.Options.SetRequestHeader("User-Agent", Constants.UserAgentHeader.ToString());
 #else
-                // Set an alternative user agent header on Full framework
-                webSocket.Options.SetRequestHeader("X-SignalR-User-Agent", Constants.UserAgentHeader.ToString());
+            // Set an alternative user agent header on Full framework
+            webSocket.Options.SetRequestHeader("X-SignalR-User-Agent", Constants.UserAgentHeader.ToString());
 #endif
 
             // Set this header so the server auth middleware will set an Unauthorized instead of Redirect status code
@@ -277,11 +277,11 @@ internal partial class WebSocketsTransport : ITransport
                 // Because we checked the CloseStatus from the 0 byte read above, we don't need to check again after reading
                 var receiveResult = await socket.ReceiveAsync(memory, CancellationToken.None);
 #elif NETSTANDARD2_0 || NETFRAMEWORK
-                    var isArray = MemoryMarshal.TryGetArray<byte>(memory, out var arraySegment);
-                    Debug.Assert(isArray);
+                var isArray = MemoryMarshal.TryGetArray<byte>(memory, out var arraySegment);
+                Debug.Assert(isArray);
 
-                    // Exceptions are handled above where the send and receive tasks are being run.
-                    var receiveResult = await socket.ReceiveAsync(arraySegment, CancellationToken.None);
+                // Exceptions are handled above where the send and receive tasks are being run.
+                var receiveResult = await socket.ReceiveAsync(arraySegment, CancellationToken.None);
 #else
 #error TFMs need to be updated
 #endif

@@ -20,9 +20,9 @@ class Program
             .AddDbContext<DataProtectionKeyContext>(o =>
             {
                 o.UseInMemoryDatabase("DataProtection_EntityFrameworkCore");
-                    // Make sure to create a sql server called DataProtectionApp
-                    //o.UseSqlServer(@"Server=(localdb)\mssqllocaldb;Database=DataProtectionApp;Trusted_Connection=True;Connect Timeout=5;ConnectRetryCount=0");
-                    o.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+                // Make sure to create a sql server called DataProtectionApp
+                //o.UseSqlServer(@"Server=(localdb)\mssqllocaldb;Database=DataProtectionApp;Trusted_Connection=True;Connect Timeout=5;ConnectRetryCount=0");
+                o.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
                 o.EnableSensitiveDataLogging();
             })
             .AddDataProtection()

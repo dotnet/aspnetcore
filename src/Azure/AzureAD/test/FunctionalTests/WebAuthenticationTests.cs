@@ -183,8 +183,8 @@ public class WebAuthenticationTests : IClassFixture<WebApplicationFactory<Startu
                         AuthorizationEndpoint = "https://www.example.com/authorize",
                         EndSessionEndpoint = "https://www.example.com/logout"
                     };
-                        // CookieContainer doesn't allow cookies from other paths
-                        o.CorrelationCookie.Path = "/";
+                    // CookieContainer doesn't allow cookies from other paths
+                    o.CorrelationCookie.Path = "/";
                     o.NonceCookie.Path = "/";
                 });
 

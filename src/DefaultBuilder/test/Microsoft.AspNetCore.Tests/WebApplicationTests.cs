@@ -601,9 +601,9 @@ public class WebApplicationTests
             new(),
             bootstrapBuilder =>
             {
-                    // Verify the defaults observed by the boostrap host builder we use internally to populate
-                    // the defaults
-                    bootstrapBuilder.ConfigureAppConfiguration((context, config) =>
+                // Verify the defaults observed by the boostrap host builder we use internally to populate
+                // the defaults
+                bootstrapBuilder.ConfigureAppConfiguration((context, config) =>
                 {
                     Assert.Equal(assemblyName, context.HostingEnvironment.ApplicationName);
                 });
@@ -642,12 +642,12 @@ public class WebApplicationTests
             options,
             bootstrapBuilder =>
             {
-                    // Verify the defaults observed by the boostrap host builder we use internally to populate
-                    // the defaults
-                    bootstrapBuilder.ConfigureAppConfiguration((context, config) =>
-                {
-                    Assert.Equal(assemblyName, context.HostingEnvironment.ApplicationName);
-                });
+                // Verify the defaults observed by the boostrap host builder we use internally to populate
+                // the defaults
+                bootstrapBuilder.ConfigureAppConfiguration((context, config) =>
+            {
+                Assert.Equal(assemblyName, context.HostingEnvironment.ApplicationName);
+            });
             });
 
         Assert.Equal(assemblyName, builder.Environment.ApplicationName);
@@ -809,8 +809,8 @@ public class WebApplicationTests
         {
             hostBuilder.ConfigureHostConfiguration(config =>
             {
-                    // Clearing here would not remove the app config added via builder.Configuration.
-                    config.AddInMemoryCollection(new Dictionary<string, string>()
+                // Clearing here would not remove the app config added via builder.Configuration.
+                config.AddInMemoryCollection(new Dictionary<string, string>()
                 {
                         { "A", "A" },
                 });
@@ -818,8 +818,8 @@ public class WebApplicationTests
 
             hostBuilder.ConfigureAppConfiguration(config =>
             {
-                    // This clears both the chained host configuration and chained builder.Configuration.
-                    config.Sources.Clear();
+                // This clears both the chained host configuration and chained builder.Configuration.
+                config.Sources.Clear();
                 config.AddInMemoryCollection(new Dictionary<string, string>()
                 {
                         { "B", "B" },
@@ -1923,8 +1923,8 @@ public class WebApplicationTests
             {
                 next(app);
 
-                    // This should be true
-                    var val = app.Properties["didsomething"];
+                // This should be true
+                var val = app.Properties["didsomething"];
                 Assert.True((bool)val);
             };
         }
@@ -2134,7 +2134,7 @@ public class WebApplicationTests
                 app.Run(context =>
                 {
                     context.Response.StatusCode = 418; // I'm a teapot
-                        return Task.CompletedTask;
+                    return Task.CompletedTask;
                 });
             };
         }

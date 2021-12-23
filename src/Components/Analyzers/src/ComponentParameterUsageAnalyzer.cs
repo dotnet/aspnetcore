@@ -31,8 +31,8 @@ public class ComponentParameterUsageAnalyzer : DiagnosticAnalyzer
         {
             if (!ComponentSymbols.TryCreate(context.Compilation, out var symbols))
             {
-                    // Types we need are not defined.
-                    return;
+                // Types we need are not defined.
+                return;
             }
 
             context.RegisterOperationBlockStartAction(startBlockContext =>
@@ -53,15 +53,15 @@ public class ComponentParameterUsageAnalyzer : DiagnosticAnalyzer
 
                     if (leftHandSide == null)
                     {
-                            // Malformed assignment, no left hand side.
-                            return;
+                        // Malformed assignment, no left hand side.
+                        return;
                     }
 
                     if (leftHandSide.Kind != OperationKind.PropertyReference)
                     {
-                            // We don't want to capture situations where a user does
-                            // MyOtherProperty = aComponent.SomeParameter
-                            return;
+                        // We don't want to capture situations where a user does
+                        // MyOtherProperty = aComponent.SomeParameter
+                        return;
                     }
 
                     var propertyReference = (IPropertyReferenceOperation)leftHandSide;
@@ -69,44 +69,44 @@ public class ComponentParameterUsageAnalyzer : DiagnosticAnalyzer
 
                     if (!ComponentFacts.IsParameter(symbols, componentProperty))
                     {
-                            // This is not a property reference that we care about, it is not decorated with [Parameter].
-                            return;
+                        // This is not a property reference that we care about, it is not decorated with [Parameter].
+                        return;
                     }
 
                     var propertyContainingType = componentProperty.ContainingType;
                     if (!ComponentFacts.IsComponent(symbols, context.Compilation, propertyContainingType))
                     {
-                            // Someone referenced a property as [Parameter] inside something that is not a component.
-                            return;
+                        // Someone referenced a property as [Parameter] inside something that is not a component.
+                        return;
                     }
 
                     var assignmentContainingType = startBlockContext.OwningSymbol?.ContainingType;
                     if (assignmentContainingType == null)
                     {
-                            // Assignment location has no containing type. Most likely we're operating on malformed code, don't try and validate.
-                            return;
+                        // Assignment location has no containing type. Most likely we're operating on malformed code, don't try and validate.
+                        return;
                     }
 
                     var conversion = context.Compilation.ClassifyConversion(propertyContainingType, assignmentContainingType);
                     if (conversion.Exists && conversion.IsIdentity)
                     {
-                            // The assignment is taking place inside of the declaring component.
-                            return;
+                        // The assignment is taking place inside of the declaring component.
+                        return;
                     }
 
                     if (conversion.Exists && conversion.IsExplicit)
                     {
-                            // The assignment is taking place within the components type hierarchy. This means the user is setting this in a supported
-                            // scenario.
-                            return;
+                        // The assignment is taking place within the components type hierarchy. This means the user is setting this in a supported
+                        // scenario.
+                        return;
                     }
 
-                        // At this point the user is referencing a component parameter outside of its declaring class.
+                    // At this point the user is referencing a component parameter outside of its declaring class.
 
-                        context.ReportDiagnostic(Diagnostic.Create(
-                        DiagnosticDescriptors.ComponentParametersShouldNotBeSetOutsideOfTheirDeclaredComponent,
-                        propertyReference.Syntax.GetLocation(),
-                        propertyReference.Member.Name));
+                    context.ReportDiagnostic(Diagnostic.Create(
+                    DiagnosticDescriptors.ComponentParametersShouldNotBeSetOutsideOfTheirDeclaredComponent,
+                    propertyReference.Syntax.GetLocation(),
+                    propertyReference.Member.Name));
                 }, OperationKind.SimpleAssignment, OperationKind.CompoundAssignment, OperationKind.CoalesceAssignment, OperationKind.Increment, OperationKind.Decrement);
             });
         });

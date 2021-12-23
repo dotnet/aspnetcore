@@ -28,8 +28,8 @@ internal static class MockExtensions
                     .Setup(o => o.ImportFromXml(It.IsAny<XElement>()))
                     .Returns<XElement>(el =>
                     {
-                            // Only return the descriptor if the XML matches
-                            XmlAssert.Equal(xml, el);
+                        // Only return the descriptor if the XML matches
+                        XmlAssert.Equal(xml, el);
                         return descriptor;
                     });
                 return mockDeserializer.Object;
@@ -51,8 +51,8 @@ internal static class MockExtensions
                     .Setup(o => o.Decrypt(It.IsAny<XElement>()))
                     .Returns<XElement>(el =>
                     {
-                            // Only return the descriptor if the XML matches
-                            XmlAssert.Equal(expectedInputXml, el);
+                        // Only return the descriptor if the XML matches
+                        XmlAssert.Equal(expectedInputXml, el);
                         return XElement.Parse(outputXml);
                     });
                 return mockDecryptor.Object;

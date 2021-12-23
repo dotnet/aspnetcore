@@ -926,7 +926,7 @@ Environment.NewLine;
         {
             dd.DataTypeName = dataTypeName;
             dd.EditFormatString = editFormatString; // What [DataType] does for given type.
-                dd.HasNonDefaultEditFormat = true;
+            dd.HasNonDefaultEditFormat = true;
         });
 
         var helper = DefaultTemplatesUtilities.GetHtmlHelper(
@@ -997,7 +997,7 @@ Environment.NewLine;
         {
             dd.DataTypeName = dataTypeName;
             dd.EditFormatString = editFormatString; // What [DataType] does for given type.
-                dd.HasNonDefaultEditFormat = true;
+            dd.HasNonDefaultEditFormat = true;
         });
 
         var helper = DefaultTemplatesUtilities.GetHtmlHelper(
@@ -1067,7 +1067,7 @@ Environment.NewLine;
         {
             dd.DataTypeName = dataTypeName;
             dd.EditFormatString = editFormatString; // What [DataType] does for given type.
-                dd.HasNonDefaultEditFormat = true;
+            dd.HasNonDefaultEditFormat = true;
         });
 
         var helper = DefaultTemplatesUtilities.GetHtmlHelper(
@@ -1136,7 +1136,7 @@ Environment.NewLine;
         {
             dd.DataTypeName = dataTypeName;
             dd.EditFormatString = editFormatString; // What [DataType] does for given type.
-                dd.HasNonDefaultEditFormat = true;
+            dd.HasNonDefaultEditFormat = true;
         });
 
         var helper = DefaultTemplatesUtilities.GetHtmlHelper(
@@ -1202,7 +1202,7 @@ Environment.NewLine;
         {
             dd.DataTypeName = dataTypeName;
             dd.EditFormatString = "Formatted as {0:O}"; // What [DataType] does for given type.
-                dd.HasNonDefaultEditFormat = true;
+            dd.HasNonDefaultEditFormat = true;
         });
 
         var helper = DefaultTemplatesUtilities.GetHtmlHelper(
