@@ -31,8 +31,8 @@ public class EventTests
             {
                 OnChallenge = context =>
                 {
-                        // Not changed yet
-                        eventInvoked = true;
+                    // Not changed yet
+                    eventInvoked = true;
                     Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
                     Assert.False(context.Response.Headers.ContainsKey(HeaderNames.WWWAuthenticate));
                     return Task.CompletedTask;
@@ -446,7 +446,7 @@ public class EventTests
             }
 
             Assert.Equal("HTTP/1.1", context.Request.Protocol); // Not HTTP/2
-                var name = context.User.Identity.Name;
+            var name = context.User.Identity.Name;
             Assert.False(string.IsNullOrEmpty(name), "name");
             await context.Response.WriteAsync(name);
         });

@@ -92,8 +92,8 @@ public class Program
                 }
                 catch
                 {
-                        // Do nothing;
-                    }
+                    // Do nothing;
+                }
                 BenchmarkResultTask.TrySetException(new TimeoutException(exceptionMessage));
             });
 

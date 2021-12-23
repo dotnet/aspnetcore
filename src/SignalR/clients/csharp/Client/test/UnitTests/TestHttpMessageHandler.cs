@@ -110,8 +110,8 @@ public class TestHttpMessageHandler : HttpMessageHandler
         {
             var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, deleteCts.Token);
 
-                // Just block until canceled
-                var tcs = new TaskCompletionSource();
+            // Just block until canceled
+            var tcs = new TaskCompletionSource();
             using (cts.Token.Register(() => tcs.TrySetResult()))
             {
                 await tcs.Task;

@@ -22,8 +22,8 @@ public class Startup
             {
                 options.Events = new CertificateAuthenticationEvents()
                 {
-                        // If there is no certificate we must be on HostWithoutCert that does not require one. Redirect to HostWithCert to prompt for a certificate.
-                        OnChallenge = context =>
+                    // If there is no certificate we must be on HostWithoutCert that does not require one. Redirect to HostWithCert to prompt for a certificate.
+                    OnChallenge = context =>
                     {
                         var request = context.Request;
                         var redirect = UriHelper.BuildAbsolute("https",
@@ -31,7 +31,7 @@ public class Startup
                             request.PathBase, request.Path, request.QueryString);
                         context.Response.Redirect(redirect, permanent: false, preserveMethod: true);
                         context.HandleResponse(); // Don't do the default behavior that would send a 403 response.
-                            return Task.CompletedTask;
+                        return Task.CompletedTask;
                     }
                 };
             });

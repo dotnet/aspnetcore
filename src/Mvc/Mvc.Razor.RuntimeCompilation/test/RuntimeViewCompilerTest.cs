@@ -598,14 +598,14 @@ public class RuntimeViewCompilerTest
             {
                 compilingOne = true;
 
-                    // Event 2
-                    Assert.True(resetEvent1.WaitOne(waitDuration));
+                // Event 2
+                Assert.True(resetEvent1.WaitOne(waitDuration));
 
-                    // Event 3
-                    Assert.True(resetEvent2.Set());
+                // Event 3
+                Assert.True(resetEvent2.Set());
 
-                    // Event 6
-                    Assert.True(resetEvent1.WaitOne(waitDuration));
+                // Event 6
+                Assert.True(resetEvent1.WaitOne(waitDuration));
 
                 Assert.True(compilingTwo);
 
@@ -615,11 +615,11 @@ public class RuntimeViewCompilerTest
             {
                 compilingTwo = true;
 
-                    // Event 4
-                    Assert.True(resetEvent2.WaitOne(waitDuration));
+                // Event 4
+                Assert.True(resetEvent2.WaitOne(waitDuration));
 
-                    // Event 5
-                    Assert.True(resetEvent1.Set());
+                // Event 5
+                Assert.True(resetEvent1.Set());
 
                 Assert.True(compilingOne);
 
@@ -661,11 +661,11 @@ public class RuntimeViewCompilerTest
 
         compiler.Compile = _ =>
         {
-                // Event 2
-                resetEvent1.WaitOne(waitDuration);
+            // Event 2
+            resetEvent1.WaitOne(waitDuration);
 
-                // Event 3
-                resetEvent2.Set();
+            // Event 3
+            resetEvent2.Set();
             return new CompiledViewDescriptor();
         };
 
@@ -673,8 +673,8 @@ public class RuntimeViewCompilerTest
         var task1 = Task.Run(() => compiler.CompileAsync(path));
         var task2 = Task.Run(() =>
         {
-                // Event 4
-                Assert.True(resetEvent2.WaitOne(waitDuration));
+            // Event 4
+            Assert.True(resetEvent2.WaitOne(waitDuration));
             return compiler.CompileAsync(path);
         });
 

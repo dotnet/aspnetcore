@@ -39,8 +39,8 @@ public class ArrayModelBinderProviderTest
         var context = new TestModelBinderProviderContext(modelType);
         context.OnCreatingBinder((m) =>
         {
-                // Expect to be called with the element type to create a binder for elements.
-                Assert.Equal(modelType.GetElementType(), m.ModelType);
+            // Expect to be called with the element type to create a binder for elements.
+            Assert.Equal(modelType.GetElementType(), m.ModelType);
             return Mock.Of<IModelBinder>();
         });
 
@@ -89,8 +89,8 @@ public class ArrayModelBinderProviderTest
         var context = new TestModelBinderProviderContext(typeof(int[]));
         context.OnCreatingBinder((m) =>
         {
-                // Expect to be called with the element type to create a binder for elements.
-                Assert.Equal(typeof(int), m.ModelType);
+            // Expect to be called with the element type to create a binder for elements.
+            Assert.Equal(typeof(int), m.ModelType);
             return Mock.Of<IModelBinder>();
         });
 

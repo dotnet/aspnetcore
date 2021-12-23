@@ -156,9 +156,9 @@ public class HostFilteringMiddlewareTests
                 {
                     app.Use((ctx, next) =>
                     {
-                            // TestHost's ClientHandler doesn't let you set the host header, only the host in the URI
-                            // and that would over-normalize some of our test conditions like casing.
-                            ctx.Request.Headers.Host = hosturl;
+                        // TestHost's ClientHandler doesn't let you set the host header, only the host in the URI
+                        // and that would over-normalize some of our test conditions like casing.
+                        ctx.Request.Headers.Host = hosturl;
                         return next(ctx);
                     });
                     app.UseHostFiltering();
@@ -208,9 +208,9 @@ public class HostFilteringMiddlewareTests
                 {
                     app.Use((ctx, next) =>
                     {
-                            // TestHost's ClientHandler doesn't let you set the host header, only the host in the URI
-                            // and that would reject some of our test conditions.
-                            ctx.Request.Headers.Host = hosturl;
+                        // TestHost's ClientHandler doesn't let you set the host header, only the host in the URI
+                        // and that would reject some of our test conditions.
+                        ctx.Request.Headers.Host = hosturl;
                         return next(ctx);
                     });
                     app.UseHostFiltering();

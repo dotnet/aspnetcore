@@ -100,9 +100,9 @@ public class JSRuntimeExtensionsTest
         jsRuntime.Setup(s => s.InvokeAsync<string>(method, It.IsAny<CancellationToken>(), args))
             .Callback<string, CancellationToken, object[]>((method, cts, args) =>
             {
-                    // There isn't a very good way to test when the cts will cancel. We'll just verify that
-                    // it'll get cancelled eventually.
-                    Assert.True(cts.CanBeCanceled);
+                // There isn't a very good way to test when the cts will cancel. We'll just verify that
+                // it'll get cancelled eventually.
+                Assert.True(cts.CanBeCanceled);
             })
             .Returns(new ValueTask<string>(expected));
 
@@ -146,9 +146,9 @@ public class JSRuntimeExtensionsTest
         jsRuntime.Setup(s => s.InvokeAsync<IJSVoidResult>(method, It.IsAny<CancellationToken>(), args))
             .Callback<string, CancellationToken, object[]>((method, cts, args) =>
             {
-                    // There isn't a very good way to test when the cts will cancel. We'll just verify that
-                    // it'll get cancelled eventually.
-                    Assert.True(cts.CanBeCanceled);
+                // There isn't a very good way to test when the cts will cancel. We'll just verify that
+                // it'll get cancelled eventually.
+                Assert.True(cts.CanBeCanceled);
             })
             .Returns(new ValueTask<IJSVoidResult>(Mock.Of<IJSVoidResult>()));
 

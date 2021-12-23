@@ -61,8 +61,8 @@ public static class RoutingServiceCollectionExtensions
         // Allow global access to the list of endpoints.
         services.TryAddSingleton<EndpointDataSource>(s =>
         {
-                // Call internal ctor and pass global collection
-                return new CompositeEndpointDataSource(dataSources);
+            // Call internal ctor and pass global collection
+            return new CompositeEndpointDataSource(dataSources);
         });
 
         //
@@ -75,8 +75,8 @@ public static class RoutingServiceCollectionExtensions
         services.TryAddTransient<DataSourceDependentMatcher.Lifetime>();
         services.TryAddSingleton<EndpointMetadataComparer>(services =>
         {
-                // This has no public constructor.
-                return new EndpointMetadataComparer(services);
+            // This has no public constructor.
+            return new EndpointMetadataComparer(services);
         });
 
         // Link generation related services

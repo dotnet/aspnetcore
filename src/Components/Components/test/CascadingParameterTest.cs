@@ -93,7 +93,7 @@ public class CascadingParameterTest
             {
                 Assert.Equal(RenderTreeEditType.UpdateText, edit.Type);
                 Assert.Equal(0, edit.ReferenceFrameIndex); // This is the only change
-                    AssertFrame.Text(secondBatch.ReferenceFrames[0], "CascadingParameter=Hello; RegularParameter=Changed value");
+                AssertFrame.Text(secondBatch.ReferenceFrames[0], "CascadingParameter=Hello; RegularParameter=Changed value");
             });
         Assert.Equal(2, nestedComponent.NumRenders);
     }
@@ -139,7 +139,7 @@ public class CascadingParameterTest
             {
                 Assert.Equal(RenderTreeEditType.UpdateText, edit.Type);
                 Assert.Equal(0, edit.ReferenceFrameIndex); // This is the only change
-                    AssertFrame.Text(secondBatch.ReferenceFrames[0], "CascadingParameter=Updated value; RegularParameter=Goodbye");
+                AssertFrame.Text(secondBatch.ReferenceFrames[0], "CascadingParameter=Updated value; RegularParameter=Goodbye");
             });
         Assert.Equal(2, nestedComponent.NumRenders);
     }
@@ -189,14 +189,14 @@ public class CascadingParameterTest
         var renderer = new TestRenderer();
         var component = new TestComponent(builder =>
         {
-                // At the outer level, have an unrelated fixed cascading value to show we can deal with combining both types
-                builder.OpenComponent<CascadingValue<int>>(0);
+            // At the outer level, have an unrelated fixed cascading value to show we can deal with combining both types
+            builder.OpenComponent<CascadingValue<int>>(0);
             builder.AddAttribute(1, "Value", 123);
             builder.AddAttribute(2, "IsFixed", true);
             builder.AddAttribute(3, "ChildContent", new RenderFragment(builder2 =>
             {
-                    // Then also have a non-fixed cascading value so we can show that unsubscription works
-                    builder2.OpenComponent<CascadingValue<string>>(0);
+                // Then also have a non-fixed cascading value so we can show that unsubscription works
+                builder2.OpenComponent<CascadingValue<string>>(0);
                 builder2.AddAttribute(1, "Value", providedValue);
                 builder2.AddAttribute(2, "ChildContent", new RenderFragment(builder3 =>
                 {
@@ -339,7 +339,7 @@ public class CascadingParameterTest
         {
             builder.OpenComponent<CascadingValue<object>>(0);
             if (isFixed) // Showing also that "unset" is treated as "false"
-                {
+            {
                 builder.AddAttribute(1, "IsFixed", true);
             }
             builder.AddAttribute(2, "Value", new object());

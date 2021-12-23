@@ -184,8 +184,8 @@ public class MiddlewareFilterBuilderTest
                 Exception thrownException;
                 try
                 {
-                        // Create a small stack trace.
-                        throw new InvalidOperationException("Error!!!");
+                    // Create a small stack trace.
+                    throw new InvalidOperationException("Error!!!");
                 }
                 catch (Exception ex)
                 {
@@ -252,8 +252,8 @@ public class MiddlewareFilterBuilderTest
                 ExceptionDispatchInfo exceptionInfo;
                 try
                 {
-                        // Create a small stack trace.
-                        throw new InvalidOperationException("Error!!!");
+                    // Create a small stack trace.
+                    throw new InvalidOperationException("Error!!!");
                 }
                 catch (Exception ex)
                 {

@@ -297,17 +297,17 @@ public class HtmlRendererTest
                 rtb.AddAttribute(7, "value", optionValue);
                 rtb.AddContent(8, $"Pick value {optionValue}");
                 rtb.CloseElement(); // option
-                }
+            }
 
             rtb.CloseElement(); // select
 
-                rtb.OpenElement(9, "option"); // To show other value-matching options don't get marked as selected
-                rtb.AddAttribute(10, "value", "b");
+            rtb.OpenElement(9, "option"); // To show other value-matching options don't get marked as selected
+            rtb.AddAttribute(10, "value", "b");
             rtb.AddContent(11, "unrelated option");
             rtb.CloseElement(); // option
 
-                rtb.CloseElement(); // p
-            })).BuildServiceProvider();
+            rtb.CloseElement(); // p
+        })).BuildServiceProvider();
 
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
 
@@ -340,11 +340,11 @@ public class HtmlRendererTest
                 rtb.AddAttribute(4, "value", optionValue);
                 rtb.AddContent(5, optionValue);
                 rtb.CloseElement(); // option
-                    rtb.CloseElement(); // optgroup
-                }
+                rtb.CloseElement(); // optgroup
+            }
 
             rtb.CloseElement(); // select
-            })).BuildServiceProvider();
+        })).BuildServiceProvider();
 
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
 

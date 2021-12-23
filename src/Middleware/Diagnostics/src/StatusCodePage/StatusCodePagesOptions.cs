@@ -23,8 +23,8 @@ public class StatusCodePagesOptions
     {
         HandleAsync = context =>
         {
-                // TODO: Render with a pre-compiled html razor view.
-                var statusCode = context.HttpContext.Response.StatusCode;
+            // TODO: Render with a pre-compiled html razor view.
+            var statusCode = context.HttpContext.Response.StatusCode;
 
             var body = BuildResponseBody(statusCode);
 

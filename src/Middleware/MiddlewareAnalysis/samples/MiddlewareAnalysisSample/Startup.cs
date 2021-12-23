@@ -35,8 +35,8 @@ public class Startup
         // Anonymous method inline middleware
         app.Use((context, next) =>
         {
-                // No-op
-                return next(context);
+            // No-op
+            return next(context);
         });
 
         app.Map("/map", subApp =>

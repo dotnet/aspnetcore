@@ -18,8 +18,8 @@ public class Startup
         services
             .AddControllers(options =>
             {
-                    // Remove when all URL generation tests are passing - https://github.com/aspnet/Routing/issues/590
-                    options.EnableEndpointRouting = false;
+                // Remove when all URL generation tests are passing - https://github.com/aspnet/Routing/issues/590
+                options.EnableEndpointRouting = false;
             });
 
         services.AddLogging();

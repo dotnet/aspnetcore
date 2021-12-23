@@ -479,8 +479,8 @@ public class CookieConsentTests
             Assert.False(feature.HasConsent);
             Assert.False(feature.CanTrack);
 
-                // Doesn't throw the normal InvalidOperationException because the cookie is never written
-                context.Response.Cookies.Append("Test", "Value2");
+            // Doesn't throw the normal InvalidOperationException because the cookie is never written
+            context.Response.Cookies.Append("Test", "Value2");
 
             await context.Response.WriteAsync("Withdrawn.");
         });

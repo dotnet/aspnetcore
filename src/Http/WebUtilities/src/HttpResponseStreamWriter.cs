@@ -382,7 +382,7 @@ public class HttpResponseStreamWriter : TextWriter
     }
 
     /// <inheritdoc/>
-    [SuppressMessage("ApiDesign", "RS0027:Public API with optional parameter(s) should have the most parameters amongst its public overloads.", Justification = "Required to maintain compatibility")] 
+    [SuppressMessage("ApiDesign", "RS0027:Public API with optional parameter(s) should have the most parameters amongst its public overloads.", Justification = "Required to maintain compatibility")]
     public override Task WriteLineAsync(ReadOnlyMemory<char> value, CancellationToken cancellationToken = default)
     {
         if (_disposed)

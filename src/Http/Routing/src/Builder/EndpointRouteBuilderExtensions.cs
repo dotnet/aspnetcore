@@ -23,7 +23,7 @@ public static class EndpointRouteBuilderExtensions
     private static readonly string[] PostVerb = new[] { HttpMethods.Post };
     private static readonly string[] PutVerb = new[] { HttpMethods.Put };
     private static readonly string[] DeleteVerb = new[] { HttpMethods.Delete };
-    private static readonly string[] PatchVerb = new[] {  HttpMethods.Patch  };
+    private static readonly string[] PatchVerb = new[] { HttpMethods.Patch };
 
     /// <summary>
     /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP GET requests

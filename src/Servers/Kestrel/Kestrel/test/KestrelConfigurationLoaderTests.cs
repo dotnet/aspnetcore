@@ -634,8 +634,8 @@ public class KestrelConfigurationLoaderTests
         var ranDefault = false;
         serverOptions.ConfigureEndpointDefaults(opt =>
         {
-                // Kestrel default.
-                Assert.Equal(HttpProtocols.Http1AndHttp2, opt.Protocols);
+            // Kestrel default.
+            Assert.Equal(HttpProtocols.Http1AndHttp2, opt.Protocols);
             ranDefault = true;
         });
 
@@ -664,15 +664,15 @@ public class KestrelConfigurationLoaderTests
             })
             .LocalhostEndpoint(5002, opt =>
             {
-                    // Kestrel default.
-                    Assert.Equal(HttpProtocols.Http1AndHttp2, opt.Protocols);
+                // Kestrel default.
+                Assert.Equal(HttpProtocols.Http1AndHttp2, opt.Protocols);
                 ran2 = true;
             })
             .Load();
         serverOptions.ListenAnyIP(0, opt =>
         {
-                // Kestrel default.
-                Assert.Equal(HttpProtocols.Http1AndHttp2, opt.Protocols);
+            // Kestrel default.
+            Assert.Equal(HttpProtocols.Http1AndHttp2, opt.Protocols);
             ran3 = true;
         });
 
@@ -692,8 +692,8 @@ public class KestrelConfigurationLoaderTests
         {
             opt.ServerCertificate = TestResources.GetTestCertificate();
 
-                // Kestrel default
-                Assert.Equal(SslProtocols.None, opt.SslProtocols);
+            // Kestrel default
+            Assert.Equal(SslProtocols.None, opt.SslProtocols);
             ranDefault = true;
         });
 
@@ -715,8 +715,8 @@ public class KestrelConfigurationLoaderTests
         {
             opt.UseHttps(httpsOptions =>
             {
-                    // Kestrel default.
-                    Assert.Equal(SslProtocols.None, httpsOptions.SslProtocols);
+                // Kestrel default.
+                Assert.Equal(SslProtocols.None, httpsOptions.SslProtocols);
                 ran2 = true;
             });
         });
@@ -821,8 +821,8 @@ public class KestrelConfigurationLoaderTests
         {
             opt.ServerCertificate = TestResources.GetTestCertificate();
 
-                // Kestrel default
-                Assert.Equal(ClientCertificateMode.NoCertificate, opt.ClientCertificateMode);
+            // Kestrel default
+            Assert.Equal(ClientCertificateMode.NoCertificate, opt.ClientCertificateMode);
             ranDefault = true;
         });
 
@@ -844,8 +844,8 @@ public class KestrelConfigurationLoaderTests
         {
             opt.UseHttps(httpsOptions =>
             {
-                    // Kestrel default.
-                    Assert.Equal(ClientCertificateMode.NoCertificate, httpsOptions.ClientCertificateMode);
+                // Kestrel default.
+                Assert.Equal(ClientCertificateMode.NoCertificate, httpsOptions.ClientCertificateMode);
                 ran2 = true;
             });
         });

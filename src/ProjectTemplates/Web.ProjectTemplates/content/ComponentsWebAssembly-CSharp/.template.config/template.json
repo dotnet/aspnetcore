@@ -599,6 +599,7 @@
   },
   "postActions": [
     {
+      "id": "restore",
       "condition": "(!skipRestore && Hosted)",
       "description": "Restore NuGet packages required by this project.",
       "manualInstructions": [
@@ -610,6 +611,7 @@
       "continueOnError": true
     },
     {
+      "id": "restoreClient",
       "condition": "(!skipRestore && !Hosted)",
       "description": "Restore NuGet packages required by this project.",
       "manualInstructions": [

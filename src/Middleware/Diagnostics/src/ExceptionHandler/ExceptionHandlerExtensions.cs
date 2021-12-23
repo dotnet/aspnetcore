@@ -119,16 +119,16 @@ public static class ExceptionHandlerExtensions
 
                 if (!string.IsNullOrEmpty(options.Value.ExceptionHandlingPath) && options.Value.ExceptionHandler is null)
                 {
-                        // start a new middleware pipeline
-                        var builder = app.New();
-                        // use the old routing pipeline if it exists so we preserve all the routes and matching logic
-                        // ((IApplicationBuilder)WebApplication).New() does not copy globalRouteBuilderKey automatically like it does for all other properties.
-                        builder.Properties[globalRouteBuilderKey] = routeBuilder;
+                    // start a new middleware pipeline
+                    var builder = app.New();
+                    // use the old routing pipeline if it exists so we preserve all the routes and matching logic
+                    // ((IApplicationBuilder)WebApplication).New() does not copy globalRouteBuilderKey automatically like it does for all other properties.
+                    builder.Properties[globalRouteBuilderKey] = routeBuilder;
                     builder.UseRouting();
-                        // apply the next middleware
-                        builder.Run(next);
-                        // store the pipeline for the error case
-                        options.Value.ExceptionHandler = builder.Build();
+                    // apply the next middleware
+                    builder.Run(next);
+                    // store the pipeline for the error case
+                    options.Value.ExceptionHandler = builder.Build();
                 }
 
                 return new ExceptionHandlerMiddleware(next, loggerFactory, options, diagnosticListener).Invoke;

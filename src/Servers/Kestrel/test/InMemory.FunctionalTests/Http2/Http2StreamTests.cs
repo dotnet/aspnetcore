@@ -993,9 +993,9 @@ public class Http2StreamTests : Http2TestBase
         var requestDelegateCalled = false;
         await InitializeConnectionAsync(c =>
         {
-                // Bad content-length + end stream means the request delegate
-                // is never called by the server.
-                requestDelegateCalled = true;
+            // Bad content-length + end stream means the request delegate
+            // is never called by the server.
+            requestDelegateCalled = true;
             return Task.CompletedTask;
         });
 
@@ -1234,7 +1234,7 @@ public class Http2StreamTests : Http2TestBase
         {
             context.Response.ContentLength = 11;
             await context.Response.WriteAsync("hello, world"); // 12
-            });
+        });
 
         await StartStreamAsync(1, headers, endStream: true);
 
@@ -1492,8 +1492,8 @@ public class Http2StreamTests : Http2TestBase
         {
             await context.Response.StartAsync();
 
-                // Verify that the response isn't flushed by verifying the TCS isn't set
-                var res = await Task.WhenAny(tcs.Task, Task.Delay(1000)) == tcs.Task;
+            // Verify that the response isn't flushed by verifying the TCS isn't set
+            var res = await Task.WhenAny(tcs.Task, Task.Delay(1000)) == tcs.Task;
             await context.Response.WriteAsync("hello, world");
         });
 
@@ -1540,8 +1540,8 @@ public class Http2StreamTests : Http2TestBase
         {
             await context.Response.StartAsync();
 
-                // Verify that the response isn't flushed by verifying the TCS isn't set
-                await context.Response.Body.FlushAsync();
+            // Verify that the response isn't flushed by verifying the TCS isn't set
+            await context.Response.Body.FlushAsync();
         });
 
         await StartStreamAsync(1, headers, endStream: true);
@@ -1807,9 +1807,9 @@ public class Http2StreamTests : Http2TestBase
         await InitializeConnectionAsync(async context =>
         {
 #pragma warning disable CS0618 // Type or member is obsolete
-                exception = await Assert.ThrowsAsync<BadHttpRequestException>(async () =>
+            exception = await Assert.ThrowsAsync<BadHttpRequestException>(async () =>
 #pragma warning restore CS0618 // Type or member is obsolete
-                {
+            {
                 var buffer = new byte[100];
                 while (await context.Request.Body.ReadAsync(buffer, 0, buffer.Length) > 0) { }
             });
@@ -1892,9 +1892,9 @@ public class Http2StreamTests : Http2TestBase
         await InitializeConnectionAsync(async context =>
         {
 #pragma warning disable CS0618 // Type or member is obsolete
-                exception = await Assert.ThrowsAsync<BadHttpRequestException>(async () =>
+            exception = await Assert.ThrowsAsync<BadHttpRequestException>(async () =>
 #pragma warning restore CS0618 // Type or member is obsolete
-                {
+            {
                 var buffer = new byte[100];
                 while (await context.Request.Body.ReadAsync(buffer, 0, buffer.Length) > 0) { }
             });
@@ -1953,9 +1953,9 @@ public class Http2StreamTests : Http2TestBase
             Assert.False(context.Features.Get<IHttpMaxRequestBodySizeFeature>().IsReadOnly);
             context.Features.Get<IHttpMaxRequestBodySizeFeature>().MaxRequestBodySize = 17;
 #pragma warning disable CS0618 // Type or member is obsolete
-                exception = await Assert.ThrowsAsync<BadHttpRequestException>(async () =>
+            exception = await Assert.ThrowsAsync<BadHttpRequestException>(async () =>
 #pragma warning restore CS0618 // Type or member is obsolete
-                {
+            {
                 var buffer = new byte[100];
                 while (await context.Request.Body.ReadAsync(buffer, 0, buffer.Length) > 0) { }
             });
@@ -2302,14 +2302,14 @@ public class Http2StreamTests : Http2TestBase
         await InitializeConnectionAsync(async context =>
         {
             await context.Response.WriteAsync("Hello World");
-                // The first five fill the first frame
-                context.Response.AppendTrailer("CustomName0", largeHeader);
+            // The first five fill the first frame
+            context.Response.AppendTrailer("CustomName0", largeHeader);
             context.Response.AppendTrailer("CustomName1", largeHeader);
             context.Response.AppendTrailer("CustomName2", largeHeader);
             context.Response.AppendTrailer("CustomName3", largeHeader);
             context.Response.AppendTrailer("CustomName4", largeHeader);
-                // This one spills over to the next frame
-                context.Response.AppendTrailer("CustomName5", largeHeader);
+            // This one spills over to the next frame
+            context.Response.AppendTrailer("CustomName5", largeHeader);
         });
 
         await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
@@ -2370,8 +2370,8 @@ public class Http2StreamTests : Http2TestBase
             Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("Custom你好Name", "Custom Value"));
             Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("CustomName", "Custom 你好 Value"));
             Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("CustomName", "Custom \r Value"));
-                // ETag is one of the few special cased trailers. Accept is not.
-                Assert.Throws<InvalidOperationException>(() => context.Features.Get<IHttpResponseTrailersFeature>().Trailers.ETag = "Custom 你好 Tag");
+            // ETag is one of the few special cased trailers. Accept is not.
+            Assert.Throws<InvalidOperationException>(() => context.Features.Get<IHttpResponseTrailersFeature>().Trailers.ETag = "Custom 你好 Tag");
             Assert.Throws<InvalidOperationException>(() => context.Features.Get<IHttpResponseTrailersFeature>().Trailers.Accept = "Custom 你好 Tag");
         });
 
@@ -2413,8 +2413,8 @@ public class Http2StreamTests : Http2TestBase
             Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("Custom你好Name", "Custom Value"));
             Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer("CustomName", "Custom \r Value"));
             context.Response.AppendTrailer("CustomName", "Custom 你好 Value");
-                // ETag is one of the few special cased trailers. Accept is not.
-                context.Features.Get<IHttpResponseTrailersFeature>().Trailers.ETag = "Custom 你好 Tag";
+            // ETag is one of the few special cased trailers. Accept is not.
+            context.Features.Get<IHttpResponseTrailersFeature>().Trailers.ETag = "Custom 你好 Tag";
             context.Features.Get<IHttpResponseTrailersFeature>().Trailers.Accept = "Custom 你好 Accept";
         });
 
@@ -2538,9 +2538,9 @@ public class Http2StreamTests : Http2TestBase
         {
             await context.Response.StartAsync();
 
-                // Body exceeds flow control available and requires the client to allow more
-                // data via updating the window
-                context.Response.BodyWriter.GetMemory(windowSize + 1);
+            // Body exceeds flow control available and requires the client to allow more
+            // data via updating the window
+            context.Response.BodyWriter.GetMemory(windowSize + 1);
             context.Response.BodyWriter.Advance(windowSize + 1);
 
             context.Response.AppendTrailer("CustomName", "Custom Value");
@@ -2811,7 +2811,7 @@ public class Http2StreamTests : Http2TestBase
                 _runningStreams[streamIdFeature.StreamId].TrySetException(new Exception("ReadAsync was expected to throw."));
             }
             catch (IOException) // Expected failure
-                {
+            {
                 await context.Response.Body.WriteAsync(new byte[10], 0, 10);
 
                 lock (_abortedStreamIdsLock)
@@ -2854,7 +2854,7 @@ public class Http2StreamTests : Http2TestBase
                 _runningStreams[streamIdFeature.StreamId].TrySetException(new Exception("ReadAsync was expected to throw."));
             }
             catch (IOException) // Expected failure
-                {
+            {
                 await context.Response.Body.WriteAsync(new byte[10], 0, 10);
 
                 lock (_abortedStreamIdsLock)
@@ -2901,8 +2901,8 @@ public class Http2StreamTests : Http2TestBase
 
                 context.Abort();
 
-                    // Not sent
-                    await context.Response.Body.WriteAsync(new byte[10], 0, 10);
+                // Not sent
+                await context.Response.Body.WriteAsync(new byte[10], 0, 10);
 
                 await _runningStreams[streamIdFeature.StreamId].Task;
             }
@@ -2943,8 +2943,8 @@ public class Http2StreamTests : Http2TestBase
 
                 context.Abort();
 
-                    // Not sent
-                    await context.Response.Body.WriteAsync(new byte[11], 0, 11);
+                // Not sent
+                await context.Response.Body.WriteAsync(new byte[11], 0, 11);
 
                 await _runningStreams[streamIdFeature.StreamId].Task;
             }
@@ -3040,8 +3040,8 @@ public class Http2StreamTests : Http2TestBase
         {
             var bodyControlFeature = context.Features.Get<IHttpBodyControlFeature>();
             bodyControlFeature.AllowSynchronousIO = true;
-                // Fill the flow control window to create async back pressure.
-                await context.Response.Body.WriteAsync(new byte[windowSize + 1], 0, windowSize + 1);
+            // Fill the flow control window to create async back pressure.
+            await context.Response.Body.WriteAsync(new byte[windowSize + 1], 0, windowSize + 1);
             context.Response.Body.Write(new byte[1], 0, 1);
         });
 
@@ -3117,8 +3117,8 @@ public class Http2StreamTests : Http2TestBase
             };
         await InitializeConnectionAsync(async context =>
         {
-                // The cancellation is checked at the start of WriteAsync and no application state is changed.
-                await Assert.ThrowsAsync<OperationCanceledException>(() => context.Response.WriteAsync("hello,", new CancellationToken(true)));
+            // The cancellation is checked at the start of WriteAsync and no application state is changed.
+            await Assert.ThrowsAsync<OperationCanceledException>(() => context.Response.WriteAsync("hello,", new CancellationToken(true)));
             Assert.False(context.Response.HasStarted);
         });
 
@@ -3153,7 +3153,7 @@ public class Http2StreamTests : Http2TestBase
         await InitializeConnectionAsync(async context =>
         {
             await context.Response.Body.FlushAsync(); // https://github.com/aspnet/KestrelHttpServer/issues/3031
-                var writeTask = context.Response.WriteAsync("hello,", cts.Token);
+            var writeTask = context.Response.WriteAsync("hello,", cts.Token);
             writeStarted.SetResult(0);
             await Assert.ThrowsAsync<OperationCanceledException>(() => writeTask);
         });
@@ -3992,11 +3992,11 @@ public class Http2StreamTests : Http2TestBase
                 await context.Response.CompleteAsync().DefaultTimeout();
 
                 Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
-                    Assert.True(context.Response.Headers.IsReadOnly);
+                Assert.True(context.Response.Headers.IsReadOnly);
                 Assert.True(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
 
-                    // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
-                    await clientTcs.Task.DefaultTimeout();
+                // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
+                await clientTcs.Task.DefaultTimeout();
                 appTcs.SetResult(0);
             }
             catch (Exception ex)
@@ -4047,12 +4047,12 @@ public class Http2StreamTests : Http2TestBase
                 await context.Response.CompleteAsync().DefaultTimeout();
                 await context.Response.CompleteAsync().DefaultTimeout(); // Can be called twice, no-ops
 
-                    Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
-                    Assert.True(context.Response.Headers.IsReadOnly);
+                Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
+                Assert.True(context.Response.Headers.IsReadOnly);
                 Assert.True(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
 
-                    // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
-                    await clientTcs.Task.DefaultTimeout();
+                // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
+                await clientTcs.Task.DefaultTimeout();
                 appTcs.SetResult(0);
             }
             catch (Exception ex)
@@ -4166,15 +4166,15 @@ public class Http2StreamTests : Http2TestBase
 
                 await context.Response.WriteAsync("Hello World");
                 Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
-                    Assert.True(context.Response.Headers.IsReadOnly);
+                Assert.True(context.Response.Headers.IsReadOnly);
 
                 await context.Response.CompleteAsync().DefaultTimeout();
                 await context.Response.CompleteAsync().DefaultTimeout(); // Can be called twice, no-ops
 
-                    Assert.True(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
+                Assert.True(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
 
-                    // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
-                    await clientTcs.Task.DefaultTimeout();
+                // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
+                await clientTcs.Task.DefaultTimeout();
                 appTcs.SetResult(0);
             }
             catch (Exception ex)
@@ -4232,14 +4232,14 @@ public class Http2StreamTests : Http2TestBase
                 await context.Response.CompleteAsync().DefaultTimeout();
 
                 Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
-                    Assert.True(context.Response.Headers.IsReadOnly);
+                Assert.True(context.Response.Headers.IsReadOnly);
                 Assert.True(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
 
                 var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => context.Response.WriteAsync("2 Hello World").DefaultTimeout());
                 Assert.Equal("Writing is not allowed after writer was completed.", ex.Message);
 
-                    // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
-                    await clientTcs.Task.DefaultTimeout();
+                // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
+                await clientTcs.Task.DefaultTimeout();
                 appTcs.SetResult(0);
             }
             catch (Exception ex)
@@ -4288,7 +4288,7 @@ public class Http2StreamTests : Http2TestBase
 
                 await context.Response.WriteAsync("Hello World").DefaultTimeout();
                 Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
-                    Assert.True(context.Response.Headers.IsReadOnly);
+                Assert.True(context.Response.Headers.IsReadOnly);
 
                 await context.Response.CompleteAsync().DefaultTimeout();
 
@@ -4297,8 +4297,8 @@ public class Http2StreamTests : Http2TestBase
                 var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => context.Response.WriteAsync("2 Hello World").DefaultTimeout());
                 Assert.Equal("Writing is not allowed after writer was completed.", ex.Message);
 
-                    // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
-                    await clientTcs.Task.DefaultTimeout();
+                // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
+                await clientTcs.Task.DefaultTimeout();
                 appTcs.SetResult(0);
             }
             catch (Exception ex)
@@ -4405,18 +4405,18 @@ public class Http2StreamTests : Http2TestBase
                 context.Response.BodyWriter.Advance(length);
 
                 Assert.False(startingTcs.Task.IsCompletedSuccessfully); // OnStarting did not get called.
-                    Assert.False(context.Response.Headers.IsReadOnly);
+                Assert.False(context.Response.Headers.IsReadOnly);
 
                 context.Response.AppendTrailer("CustomName", "Custom Value");
 
                 await context.Response.CompleteAsync().DefaultTimeout();
                 Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
-                    Assert.True(context.Response.Headers.IsReadOnly);
+                Assert.True(context.Response.Headers.IsReadOnly);
 
                 Assert.True(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
 
-                    // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
-                    await clientTcs.Task.DefaultTimeout();
+                // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
+                await clientTcs.Task.DefaultTimeout();
                 appTcs.SetResult(0);
             }
             catch (Exception ex)
@@ -4481,7 +4481,7 @@ public class Http2StreamTests : Http2TestBase
 
                 await context.Response.WriteAsync("Hello World");
                 Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
-                    Assert.True(context.Response.Headers.IsReadOnly);
+                Assert.True(context.Response.Headers.IsReadOnly);
 
                 context.Response.AppendTrailer("CustomName", "Custom Value");
 
@@ -4489,8 +4489,8 @@ public class Http2StreamTests : Http2TestBase
 
                 Assert.True(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
 
-                    // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
-                    await clientTcs.Task.DefaultTimeout();
+                // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
+                await clientTcs.Task.DefaultTimeout();
                 appTcs.SetResult(0);
             }
             catch (Exception ex)
@@ -4556,7 +4556,7 @@ public class Http2StreamTests : Http2TestBase
                 context.Response.ContentLength = 25;
                 await context.Response.WriteAsync("Hello World");
                 Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
-                    Assert.True(context.Response.Headers.IsReadOnly);
+                Assert.True(context.Response.Headers.IsReadOnly);
 
                 context.Response.AppendTrailer("CustomName", "Custom Value");
 
@@ -4565,8 +4565,8 @@ public class Http2StreamTests : Http2TestBase
 
                 Assert.False(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
 
-                    // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
-                    await clientTcs.Task.DefaultTimeout();
+                // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
+                await clientTcs.Task.DefaultTimeout();
                 appTcs.SetResult(0);
             }
             catch (Exception ex)
@@ -4627,7 +4627,7 @@ public class Http2StreamTests : Http2TestBase
                 context.Response.ContentLength = 25;
                 await context.Response.WriteAsync("Hello World");
                 Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
-                    Assert.True(context.Response.Headers.IsReadOnly);
+                Assert.True(context.Response.Headers.IsReadOnly);
 
                 context.Response.AppendTrailer("CustomName", "Custom Value");
 
@@ -4636,8 +4636,8 @@ public class Http2StreamTests : Http2TestBase
 
                 Assert.False(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
 
-                    // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
-                    await clientTcs.Task.DefaultTimeout();
+                // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
+                await clientTcs.Task.DefaultTimeout();
                 appTcs.SetResult(0);
             }
             catch (Exception ex)
@@ -4696,7 +4696,7 @@ public class Http2StreamTests : Http2TestBase
 
                 await context.Response.WriteAsync("Hello World");
                 Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
-                    Assert.True(context.Response.Headers.IsReadOnly);
+                Assert.True(context.Response.Headers.IsReadOnly);
 
                 context.Response.AppendTrailer("CustomName", "Custom Value");
 
@@ -4704,12 +4704,12 @@ public class Http2StreamTests : Http2TestBase
 
                 Assert.True(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
 
-                    // RequestAborted will no longer fire after CompleteAsync.
-                    Assert.False(context.RequestAborted.CanBeCanceled);
+                // RequestAborted will no longer fire after CompleteAsync.
+                Assert.False(context.RequestAborted.CanBeCanceled);
                 context.Abort();
 
-                    // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
-                    await clientTcs.Task.DefaultTimeout();
+                // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
+                await clientTcs.Task.DefaultTimeout();
                 appTcs.SetResult(0);
             }
             catch (Exception ex)
@@ -4777,7 +4777,7 @@ public class Http2StreamTests : Http2TestBase
 
                 await context.Response.WriteAsync("Hello World");
                 Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
-                    Assert.True(context.Response.Headers.IsReadOnly);
+                Assert.True(context.Response.Headers.IsReadOnly);
 
                 context.Response.AppendTrailer("CustomName", "Custom Value");
 
@@ -4785,15 +4785,15 @@ public class Http2StreamTests : Http2TestBase
 
                 Assert.True(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
 
-                    // RequestAborted will no longer fire after CompleteAsync.
-                    Assert.False(context.RequestAborted.CanBeCanceled);
+                // RequestAborted will no longer fire after CompleteAsync.
+                Assert.False(context.RequestAborted.CanBeCanceled);
                 context.Abort();
 
                 await Assert.ThrowsAsync<TaskCanceledException>(async () => await requestBodyTask);
                 await Assert.ThrowsAsync<ConnectionAbortedException>(async () => await context.Request.BodyReader.ReadAsync());
 
-                    // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
-                    await clientTcs.Task.DefaultTimeout();
+                // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
+                await clientTcs.Task.DefaultTimeout();
                 appTcs.SetResult(0);
             }
             catch (Exception ex)
@@ -4859,7 +4859,7 @@ public class Http2StreamTests : Http2TestBase
 
                 await context.Response.WriteAsync("Hello World");
                 Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
-                    Assert.True(context.Response.Headers.IsReadOnly);
+                Assert.True(context.Response.Headers.IsReadOnly);
 
                 context.Response.AppendTrailer("CustomName", "Custom Value");
 
@@ -4867,14 +4867,14 @@ public class Http2StreamTests : Http2TestBase
 
                 Assert.True(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
 
-                    // RequestAborted will no longer fire after CompleteAsync.
-                    Assert.False(context.RequestAborted.CanBeCanceled);
+                // RequestAborted will no longer fire after CompleteAsync.
+                Assert.False(context.RequestAborted.CanBeCanceled);
                 var resetFeature = context.Features.Get<IHttpResetFeature>();
                 Assert.NotNull(resetFeature);
                 resetFeature.Reset((int)Http2ErrorCode.NO_ERROR);
 
-                    // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
-                    await clientTcs.Task.DefaultTimeout();
+                // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
+                await clientTcs.Task.DefaultTimeout();
                 appTcs.SetResult(0);
             }
             catch (Exception ex)
@@ -4943,7 +4943,7 @@ public class Http2StreamTests : Http2TestBase
 
                 await context.Response.WriteAsync("Hello World");
                 Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
-                    Assert.True(context.Response.Headers.IsReadOnly);
+                Assert.True(context.Response.Headers.IsReadOnly);
 
                 context.Response.AppendTrailer("CustomName", "Custom Value");
 
@@ -4951,8 +4951,8 @@ public class Http2StreamTests : Http2TestBase
 
                 Assert.True(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
 
-                    // RequestAborted will no longer fire after CompleteAsync.
-                    Assert.False(context.RequestAborted.CanBeCanceled);
+                // RequestAborted will no longer fire after CompleteAsync.
+                Assert.False(context.RequestAborted.CanBeCanceled);
                 var resetFeature = context.Features.Get<IHttpResetFeature>();
                 Assert.NotNull(resetFeature);
                 resetFeature.Reset((int)Http2ErrorCode.NO_ERROR);
@@ -4960,8 +4960,8 @@ public class Http2StreamTests : Http2TestBase
                 await Assert.ThrowsAsync<TaskCanceledException>(async () => await requestBodyTask);
                 await Assert.ThrowsAsync<ConnectionAbortedException>(async () => await context.Request.BodyReader.ReadAsync());
 
-                    // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
-                    await clientTcs.Task.DefaultTimeout();
+                // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
+                await clientTcs.Task.DefaultTimeout();
                 appTcs.SetResult(0);
             }
             catch (Exception ex)

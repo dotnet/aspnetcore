@@ -95,9 +95,9 @@ internal class NodeScriptRunner : IDisposable
         {
             if (!string.IsNullOrWhiteSpace(line))
             {
-                    // Node tasks commonly emit ANSI colors, but it wouldn't make sense to forward
-                    // those to loggers (because a logger isn't necessarily any kind of terminal)
-                    logger.LogInformation(StripAnsiColors(line));
+                // Node tasks commonly emit ANSI colors, but it wouldn't make sense to forward
+                // those to loggers (because a logger isn't necessarily any kind of terminal)
+                logger.LogInformation(StripAnsiColors(line));
             }
         };
 

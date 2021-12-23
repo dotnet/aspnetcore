@@ -79,9 +79,9 @@ public static class HostingAbstractionsWebHostBuilderExtensions
 
         return hostBuilder.ConfigureServices(services =>
         {
-                // It would be nicer if this was transient but we need to pass in the
-                // factory instance directly
-                services.AddSingleton(server);
+            // It would be nicer if this was transient but we need to pass in the
+            // factory instance directly
+            services.AddSingleton(server);
         });
     }
 

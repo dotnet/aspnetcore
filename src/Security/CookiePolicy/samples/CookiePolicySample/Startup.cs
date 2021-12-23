@@ -76,9 +76,9 @@ public class Startup
                     break;
             }
 
-                // TODO: Debug log when cookie is suppressed
+            // TODO: Debug log when cookie is suppressed
 
-                await HomePage(context);
+            await HomePage(context);
         });
     }
 

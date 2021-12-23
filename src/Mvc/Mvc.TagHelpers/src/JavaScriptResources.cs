@@ -35,8 +35,8 @@ internal static class JavaScriptResources
     {
         return cache.GetOrAdd(resourceName, key =>
         {
-                // Load the JavaScript from embedded resource
-                using (var resourceStream = getManifestResourceStream(key))
+            // Load the JavaScript from embedded resource
+            using (var resourceStream = getManifestResourceStream(key))
             {
                 Debug.Assert(
                     resourceStream != null,

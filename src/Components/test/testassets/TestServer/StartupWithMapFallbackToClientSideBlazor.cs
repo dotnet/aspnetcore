@@ -41,8 +41,8 @@ public class StartupWithMapFallbackToClientSideBlazor
             subApp.UseBlazorFrameworkFiles();
             subApp.UseStaticFiles();
 
-                // The calls to `Map` allow us to test each of these overloads, while keeping them isolated.
-                subApp.Map("/filepath", filepath =>
+            // The calls to `Map` allow us to test each of these overloads, while keeping them isolated.
+            subApp.Map("/filepath", filepath =>
             {
                 filepath.UseRouting();
                 filepath.UseEndpoints(endpoints =>

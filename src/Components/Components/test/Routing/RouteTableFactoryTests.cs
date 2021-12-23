@@ -52,6 +52,16 @@ public class RouteTableFactoryTests
     }
 
     [Fact]
+    public void IgnoresIdenticalTypes()
+    {
+        // Arrange & Act
+        var routes = RouteTableFactory.Create(new RouteKey(GetType().Assembly, new[] { GetType().Assembly }));
+
+        // Assert
+        Assert.Equal(routes.Routes.GroupBy(x => x.Handler).Count(), routes.Routes.Length);
+    }
+
+    [Fact]
     public void CanDiscoverRoute()
     {
         // Arrange & Act

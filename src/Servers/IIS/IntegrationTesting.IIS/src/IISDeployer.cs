@@ -275,12 +275,12 @@ public class IISDeployer : IISDeployerBase
 
             HostProcess = Process.GetProcessById(workerProcess.ProcessId);
 
-                // Ensure w3wp.exe is killed if test process termination is non-graceful.
-                // Prevents locked files when stop debugging unit test.
-                ProcessTracker.Add(HostProcess);
+            // Ensure w3wp.exe is killed if test process termination is non-graceful.
+            // Prevents locked files when stop debugging unit test.
+            ProcessTracker.Add(HostProcess);
 
-                // cache the process start time for verifying log file name.
-                var _ = HostProcess.StartTime;
+            // cache the process start time for verifying log file name.
+            var _ = HostProcess.StartTime;
 
             Logger.LogInformation("Site has started.");
         });
@@ -304,8 +304,8 @@ public class IISDeployer : IISDeployerBase
 
             if ((bool)redirectionSection.Attributes["enabled"].Value)
             {
-                    // redirection wasn't removed before starting another site.
-                    redirectionSection.Attributes["enabled"].Value = false;
+                // redirection wasn't removed before starting another site.
+                redirectionSection.Attributes["enabled"].Value = false;
                 var redirectedFilePath = (string)redirectionSection.Attributes["path"].Value;
                 Logger.LogWarning($"Name of redirected file: {redirectedFilePath}");
 
@@ -407,10 +407,10 @@ public class IISDeployer : IISDeployerBase
                     }
 
                 }
-                    // If WAS was stopped for some reason appPool.WorkerProcesses
-                    // would throw UnauthorizedAccessException.
-                    // check if it's the case and continue shutting down deployer
-                    catch (UnauthorizedAccessException)
+                // If WAS was stopped for some reason appPool.WorkerProcesses
+                // would throw UnauthorizedAccessException.
+                // check if it's the case and continue shutting down deployer
+                catch (UnauthorizedAccessException)
                 {
                     var serviceController = new ServiceController("was");
                     if (serviceController.Status != ServiceControllerStatus.Stopped)

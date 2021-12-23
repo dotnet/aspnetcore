@@ -54,7 +54,7 @@ public class KeyRingBasedDataProtectorTests
                 Assert.Equal(expectedPlaintext, actualPlaintext);
                 Assert.Equal(expectedAad, actualAad);
                 return new byte[] { 0x23, 0x29, 0x31, 0x37 }; // ciphertext + tag
-                });
+            });
 
         var mockKeyRing = new Mock<IKeyRing>(MockBehavior.Strict);
         mockKeyRing.Setup(o => o.DefaultKeyId).Returns(defaultKey);
@@ -92,7 +92,7 @@ public class KeyRingBasedDataProtectorTests
                 Assert.Equal(expectedPlaintext, actualPlaintext);
                 Assert.Equal(expectedAad, actualAad);
                 return new byte[] { 0x23, 0x29, 0x31, 0x37 }; // ciphertext + tag
-                });
+            });
 
         var mockKeyRing = new Mock<IKeyRing>(MockBehavior.Strict);
         mockKeyRing.Setup(o => o.DefaultKeyId).Returns(defaultKey);
@@ -603,7 +603,7 @@ public class KeyRingBasedDataProtectorTests
                 Assert.Equal(expectedPlaintext, actualPlaintext);
                 Assert.Equal(expectedAad, actualAad);
                 return new byte[] { 0x23, 0x29, 0x31, 0x37 }; // ciphertext + tag
-                });
+            });
 
         var mockKeyRing = new Mock<IKeyRing>(MockBehavior.Strict);
         mockKeyRing.Setup(o => o.DefaultKeyId).Returns(defaultKey);

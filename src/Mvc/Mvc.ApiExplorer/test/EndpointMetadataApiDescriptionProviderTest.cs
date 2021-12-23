@@ -969,8 +969,7 @@ public class EndpointMetadataApiDescriptionProviderTest
     public void HasMultipleRequestFormatsWhenFormFileSpecifiedWithConsumedAttribute()
     {
         var apiDescription = GetApiDescription(
-            [Consumes("application/custom0", "application/custom1")]
-            (IFormFile file) => Results.NoContent());
+            [Consumes("application/custom0", "application/custom1")] (IFormFile file) => Results.NoContent());
 
         Assert.Equal(2, apiDescription.SupportedRequestFormats.Count);
 

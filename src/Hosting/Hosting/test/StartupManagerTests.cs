@@ -203,8 +203,8 @@ public class StartupManagerTests
 
                 next(services);
 
-                    // Ensures we can always override.
-                    if (OverrideAfterService)
+                // Ensures we can always override.
+                if (OverrideAfterService)
                 {
                     services.Services.AddSingleton(new ServiceAfter { Message = $"ConfigureContainerFilter After {AdditionalData}" });
                 }
@@ -252,8 +252,8 @@ public class StartupManagerTests
 
                 next(services);
 
-                    // Ensures we can always override.
-                    if (OverrideAfterService)
+                // Ensures we can always override.
+                if (OverrideAfterService)
                 {
                     services.AddSingleton(new ServiceAfter { Message = $"StartupServicesFilter After {AdditionalData}" });
                 }

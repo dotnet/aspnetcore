@@ -410,8 +410,8 @@ public class OptionTagHelperTest
             originalAttributes,
             getChildContentAsync: (useCachedResult, encoder) =>
             {
-                    // GetChildContentAsync should not be invoked since we are setting the content below.
-                    Assert.True(false);
+                // GetChildContentAsync should not be invoked since we are setting the content below.
+                Assert.True(false);
                 return Task.FromResult<TagHelperContent>(null);
             })
         {

@@ -2536,9 +2536,9 @@ public class ControllerBaseTest
             Assert.Empty(context.ModelName);
             Assert.Same(valueProvider, Assert.IsType<CompositeValueProvider>(context.ValueProvider)[0]);
 
-                // Include and exclude should be null, resulting in property
-                // being included.
-                Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property1"]));
+            // Include and exclude should be null, resulting in property
+            // being included.
+            Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property1"]));
             Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property2"]));
         });
 
@@ -2564,9 +2564,9 @@ public class ControllerBaseTest
         {
             Assert.Same(valueProvider, Assert.IsType<CompositeValueProvider>(context.ValueProvider)[0]);
 
-                // Include and exclude should be null, resulting in property
-                // being included.
-                Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property1"]));
+            // Include and exclude should be null, resulting in property
+            // being included.
+            Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property1"]));
             Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property2"]));
         });
 
@@ -2591,9 +2591,9 @@ public class ControllerBaseTest
               {
                   Assert.Same(valueProvider, context.ValueProvider);
 
-                      // Include and exclude should be null, resulting in property
-                      // being included.
-                      Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property1"]));
+                  // Include and exclude should be null, resulting in property
+                  // being included.
+                  Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property1"]));
                   Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property2"]));
               });
 
@@ -2811,9 +2811,9 @@ public class ControllerBaseTest
         {
             Assert.Same(valueProvider, Assert.IsType<CompositeValueProvider>(context.ValueProvider)[0]);
 
-                // Include and exclude should be null, resulting in property
-                // being included.
-                Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property1"]));
+            // Include and exclude should be null, resulting in property
+            // being included.
+            Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property1"]));
             Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property2"]));
         });
 
@@ -2839,9 +2839,9 @@ public class ControllerBaseTest
         {
             Assert.Same(valueProvider, Assert.IsType<CompositeValueProvider>(context.ValueProvider)[0]);
 
-                // Include and exclude should be null, resulting in property
-                // being included.
-                Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property1"]));
+            // Include and exclude should be null, resulting in property
+            // being included.
+            Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property1"]));
             Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property2"]));
         });
 

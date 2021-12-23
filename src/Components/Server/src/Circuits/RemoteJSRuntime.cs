@@ -161,8 +161,8 @@ internal partial class RemoteJSRuntime : JSRuntime
         var cancellationToken = new CancellationTokenSource(TimeSpan.FromSeconds(10)).Token;
         cancellationToken.Register(() =>
         {
-                // If by now the stream hasn't been claimed for sending, stop tracking it
-                if (_pendingDotNetToJSStreams.TryRemove(streamId, out var timedOutStream) && !timedOutStream.LeaveOpen)
+            // If by now the stream hasn't been claimed for sending, stop tracking it
+            if (_pendingDotNetToJSStreams.TryRemove(streamId, out var timedOutStream) && !timedOutStream.LeaveOpen)
             {
                 timedOutStream.Stream.Dispose();
             }

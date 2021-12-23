@@ -147,8 +147,8 @@ public class H2SpecTests : LoggedTest
     {
         app.Run(async context =>
         {
-                // Read the whole request body to check for errors.
-                await context.Request.Body.CopyToAsync(Stream.Null);
+            // Read the whole request body to check for errors.
+            await context.Request.Body.CopyToAsync(Stream.Null);
             await context.Response.WriteAsync("Hello World");
         });
     }

@@ -18,11 +18,11 @@ public class ComponentParameterAnalyzer : DiagnosticAnalyzer
     {
         SupportedDiagnostics = ImmutableArray.Create(new[]
         {
-                DiagnosticDescriptors.ComponentParametersShouldBePublic,
-                DiagnosticDescriptors.ComponentParameterSettersShouldBePublic,
-                DiagnosticDescriptors.ComponentParameterCaptureUnmatchedValuesMustBeUnique,
-                DiagnosticDescriptors.ComponentParameterCaptureUnmatchedValuesHasWrongType,
-            });
+            DiagnosticDescriptors.ComponentParametersShouldBePublic,
+            DiagnosticDescriptors.ComponentParameterSettersShouldBePublic,
+            DiagnosticDescriptors.ComponentParameterCaptureUnmatchedValuesMustBeUnique,
+            DiagnosticDescriptors.ComponentParameterCaptureUnmatchedValuesHasWrongType,
+        });
     }
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; }
@@ -35,13 +35,13 @@ public class ComponentParameterAnalyzer : DiagnosticAnalyzer
         {
             if (!ComponentSymbols.TryCreate(context.Compilation, out var symbols))
             {
-                    // Types we need are not defined.
-                    return;
+                // Types we need are not defined.
+                return;
             }
 
-                // This operates per-type because one of the validations we need has to look for duplicates
-                // defined on the same type.
-                context.RegisterSymbolStartAction(context =>
+            // This operates per-type because one of the validations we need has to look for duplicates
+            // defined on the same type.
+            context.RegisterSymbolStartAction(context =>
             {
                 var properties = new List<IPropertySymbol>();
 
@@ -50,8 +50,8 @@ public class ComponentParameterAnalyzer : DiagnosticAnalyzer
                 {
                     if (member is IPropertySymbol property && ComponentFacts.IsParameter(symbols, property))
                     {
-                            // Annotated with [Parameter]. We ignore [CascadingParameter]'s because they don't interact with tooling and don't currently have any analyzer restrictions.
-                            properties.Add(property);
+                        // Annotated with [Parameter]. We ignore [CascadingParameter]'s because they don't interact with tooling and don't currently have any analyzer restrictions.
+                        properties.Add(property);
                     }
                 }
 
@@ -64,8 +64,8 @@ public class ComponentParameterAnalyzer : DiagnosticAnalyzer
                 {
                     var captureUnmatchedValuesParameters = new List<IPropertySymbol>();
 
-                        // Per-property validations
-                        foreach (var property in properties)
+                    // Per-property validations
+                    foreach (var property in properties)
                     {
                         var propertyLocation = property.Locations.FirstOrDefault();
                         if (propertyLocation == null)
@@ -92,8 +92,8 @@ public class ComponentParameterAnalyzer : DiagnosticAnalyzer
                         {
                             captureUnmatchedValuesParameters.Add(property);
 
-                                // Check the type, we need to be able to assign a Dictionary<string, object>
-                                var conversion = context.Compilation.ClassifyConversion(symbols.ParameterCaptureUnmatchedValuesRuntimeType, property.Type);
+                            // Check the type, we need to be able to assign a Dictionary<string, object>
+                            var conversion = context.Compilation.ClassifyConversion(symbols.ParameterCaptureUnmatchedValuesRuntimeType, property.Type);
                             if (!conversion.Exists || conversion.IsExplicit)
                             {
                                 context.ReportDiagnostic(Diagnostic.Create(
@@ -106,9 +106,9 @@ public class ComponentParameterAnalyzer : DiagnosticAnalyzer
                         }
                     }
 
-                        // Check if the type defines multiple CaptureUnmatchedValues parameters. Doing this outside the loop means we place the
-                        // errors on the type.
-                        if (captureUnmatchedValuesParameters.Count > 1)
+                    // Check if the type defines multiple CaptureUnmatchedValues parameters. Doing this outside the loop means we place the
+                    // errors on the type.
+                    if (captureUnmatchedValuesParameters.Count > 1)
                     {
                         context.ReportDiagnostic(Diagnostic.Create(
                             DiagnosticDescriptors.ComponentParameterCaptureUnmatchedValuesMustBeUnique,

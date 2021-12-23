@@ -67,8 +67,8 @@ public class RazorViewTest
         var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary());
         var page = new TestableRazorPage(v =>
         {
-                // viewData is assigned to ViewContext by the activator
-                Assert.Same(viewData, v.ViewContext.ViewData);
+            // viewData is assigned to ViewContext by the activator
+            Assert.Same(viewData, v.ViewContext.ViewData);
         });
         var activator = new Mock<IRazorPageActivator>();
         var view = new RazorView(
@@ -105,8 +105,8 @@ public class RazorViewTest
         var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary());
         var page = new TestableRazorPageForDiagnostics(v =>
         {
-                // viewData is assigned to ViewContext by the activator
-                Assert.Same(viewData, v.ViewContext.ViewData);
+            // viewData is assigned to ViewContext by the activator
+            Assert.Same(viewData, v.ViewContext.ViewData);
         });
         var activator = new Mock<IRazorPageActivator>();
 
@@ -378,10 +378,10 @@ public class RazorViewTest
         });
         var page = new TestableRazorPage(v =>
         {
-                // This path must have been set as a consequence of running viewStart
-                actualLayoutPath = v.Layout;
-                // Clear out layout so we don't render it
-                v.Layout = null;
+            // This path must have been set as a consequence of running viewStart
+            actualLayoutPath = v.Layout;
+            // Clear out layout so we don't render it
+            v.Layout = null;
         });
         var activator = new Mock<IRazorPageActivator>();
         activator
@@ -1565,8 +1565,8 @@ public class RazorViewTest
         var page = new TestableRazorPage(v =>
         {
             actualPage = v.Layout;
-                // Clear it out because we don't care about rendering the layout in this test.
-                v.Layout = null;
+            // Clear it out because we don't care about rendering the layout in this test.
+            v.Layout = null;
         });
         var viewStart1 = new TestableRazorPage(v =>
         {
@@ -1614,8 +1614,8 @@ public class RazorViewTest
         {
             actualPage = v.Layout;
 
-                // Clear it out because we don't care about rendering the layout in this test.
-                v.Layout = null;
+            // Clear it out because we don't care about rendering the layout in this test.
+            v.Layout = null;
         });
 
         var viewStart1 = new TestableRazorPage(v =>

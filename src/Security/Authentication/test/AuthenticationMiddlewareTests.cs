@@ -35,8 +35,8 @@ public class AuthenticationMiddlewareTests
                         {
                             s.HandlerType = typeof(SkipHandler);
                         });
-                            // Won't get hit since CanHandleRequests is false
-                            o.AddScheme("throws", s =>
+                        // Won't get hit since CanHandleRequests is false
+                        o.AddScheme("throws", s =>
                         {
                             s.HandlerType = typeof(ThrowsHandler);
                         });
@@ -44,8 +44,8 @@ public class AuthenticationMiddlewareTests
                         {
                             s.HandlerType = typeof(SixOhSevenHandler);
                         });
-                            // Won't get run since 607 will finish
-                            o.AddScheme("305", s =>
+                        // Won't get run since 607 will finish
+                        o.AddScheme("305", s =>
                         {
                             s.HandlerType = typeof(ThreeOhFiveHandler);
                         });

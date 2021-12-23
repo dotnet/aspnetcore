@@ -98,8 +98,8 @@ public abstract class CommonResourceInvokerTest
                 exception = context.Exception;
                 resultFromAction = context.Result;
 
-                    // Handle the exception
-                    context.Result = expected.Object;
+                // Handle the exception
+                context.Result = expected.Object;
             })
             .Verifiable();
 
@@ -141,8 +141,8 @@ public abstract class CommonResourceInvokerTest
                 exception = context.Exception;
                 resultFromAction = context.Result;
 
-                    // Handle the exception
-                    context.Result = expected.Object;
+                // Handle the exception
+                context.Result = expected.Object;
             })
             .Returns<ExceptionContext>((context) => Task.FromResult(true))
             .Verifiable();
@@ -698,8 +698,8 @@ public abstract class CommonResourceInvokerTest
             .Setup(f => f.OnException(It.IsAny<ExceptionContext>()))
             .Callback<ExceptionContext>(context =>
             {
-                    // Mark as handled
-                    context.Result = new EmptyResult();
+                // Mark as handled
+                context.Result = new EmptyResult();
             })
             .Verifiable();
 
@@ -857,8 +857,8 @@ public abstract class CommonResourceInvokerTest
             .Setup(f => f.OnResultExecutionAsync(It.IsAny<ResultExecutingContext>(), It.IsAny<ResultExecutionDelegate>()))
             .Returns<ResultExecutingContext, ResultExecutionDelegate>((c, next) =>
             {
-                    // Not calling next here
-                    c.Cancel = true;
+                // Not calling next here
+                c.Cancel = true;
                 return Task.FromResult(true);
             })
             .Verifiable();
@@ -900,8 +900,8 @@ public abstract class CommonResourceInvokerTest
             .Setup(f => f.OnResultExecutionAsync(It.IsAny<ResultExecutingContext>(), It.IsAny<ResultExecutionDelegate>()))
             .Returns<ResultExecutingContext, ResultExecutionDelegate>((c, next) =>
             {
-                    // Not calling next here
-                    return Task.FromResult(true);
+                // Not calling next here
+                return Task.FromResult(true);
             })
             .Verifiable();
 
@@ -933,8 +933,8 @@ public abstract class CommonResourceInvokerTest
             .Setup(f => f.OnResultExecutionAsync(It.IsAny<ResultExecutingContext>(), It.IsAny<ResultExecutionDelegate>()))
             .Returns<ResultExecutingContext, ResultExecutionDelegate>(async (c, next) =>
             {
-                    // Not calling next here
-                    c.Cancel = true;
+                // Not calling next here
+                c.Cancel = true;
                 await next();
             })
             .Verifiable();
@@ -1009,8 +1009,8 @@ public abstract class CommonResourceInvokerTest
             {
                 context = c;
 
-                    // Handle the exception
-                    Assert.False(c.ExceptionHandled);
+                // Handle the exception
+                Assert.False(c.ExceptionHandled);
                 c.ExceptionHandled = true;
             })
             .Verifiable();
@@ -1051,8 +1051,8 @@ public abstract class CommonResourceInvokerTest
 
                 context = await next();
 
-                    // Handle the exception
-                    Assert.False(context.ExceptionHandled);
+                // Handle the exception
+                Assert.False(context.ExceptionHandled);
                 context.ExceptionHandled = true;
             })
             .Verifiable();
@@ -1087,8 +1087,8 @@ public abstract class CommonResourceInvokerTest
             {
                 context = c;
 
-                    // Handle the exception
-                    Assert.False(c.ExceptionHandled);
+                // Handle the exception
+                Assert.False(c.ExceptionHandled);
                 c.ExceptionHandled = true;
             })
             .Verifiable();
@@ -1129,8 +1129,8 @@ public abstract class CommonResourceInvokerTest
             {
                 context = await next();
 
-                    // Handle the exception
-                    Assert.False(context.ExceptionHandled);
+                // Handle the exception
+                Assert.False(context.ExceptionHandled);
                 context.ExceptionHandled = true;
             })
             .Verifiable();
@@ -1685,8 +1685,8 @@ public abstract class CommonResourceInvokerTest
             .Setup(f => f.OnResourceExecutionAsync(It.IsAny<ResourceExecutingContext>(), It.IsAny<ResourceExecutionDelegate>()))
             .Returns<ResourceExecutingContext, ResourceExecutionDelegate>(async (c, next) =>
             {
-                    // This is not valid.
-                    c.Result = Mock.Of<IActionResult>();
+                // This is not valid.
+                c.Result = Mock.Of<IActionResult>();
                 context = await next();
             });
 

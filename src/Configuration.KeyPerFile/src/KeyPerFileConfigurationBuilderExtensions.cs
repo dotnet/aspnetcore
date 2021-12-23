@@ -46,8 +46,8 @@ public static class KeyPerFileConfigurationBuilderExtensions
     public static IConfigurationBuilder AddKeyPerFile(this IConfigurationBuilder builder, string directoryPath, bool optional, bool reloadOnChange)
         => builder.AddKeyPerFile(source =>
         {
-                // Only try to set the file provider if its not optional or the directory exists 
-                if (!optional || Directory.Exists(directoryPath))
+            // Only try to set the file provider if its not optional or the directory exists 
+            if (!optional || Directory.Exists(directoryPath))
             {
                 source.FileProvider = new PhysicalFileProvider(directoryPath);
             }

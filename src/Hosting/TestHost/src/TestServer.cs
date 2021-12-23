@@ -203,7 +203,7 @@ public class TestServer : IServer
             if (pathBase.HasValue && pathBase.Value.EndsWith('/'))
             {
                 pathBase = new PathString(pathBase.Value[..^1]); // All but the last character.
-                }
+            }
             request.PathBase = pathBase;
         });
         builder.Configure((context, reader) => configureContext(context));

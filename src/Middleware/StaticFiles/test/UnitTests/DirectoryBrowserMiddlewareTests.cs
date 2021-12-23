@@ -113,8 +113,8 @@ public class DirectoryBrowserMiddlewareTests
 
                     app.Use(next => context =>
                     {
-                            // Assign an endpoint, this will make the directory browser noop
-                            context.SetEndpoint(new Endpoint((c) =>
+                        // Assign an endpoint, this will make the directory browser noop
+                        context.SetEndpoint(new Endpoint((c) =>
                         {
                             c.Response.StatusCode = (int)HttpStatusCode.NotAcceptable;
                             return c.Response.WriteAsync("Hi from endpoint.");

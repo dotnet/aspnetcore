@@ -45,8 +45,8 @@ public class HubConnectionStartBenchmark
         var delegateConnectionFactory = new DelegateConnectionFactory(endPoint =>
         {
             var connection = new DefaultConnectionContext();
-                // prevents keep alive time being activated
-                connection.Features.Set<IConnectionInherentKeepAliveFeature>(new TestConnectionInherentKeepAliveFeature());
+            // prevents keep alive time being activated
+            connection.Features.Set<IConnectionInherentKeepAliveFeature>(new TestConnectionInherentKeepAliveFeature());
             connection.Transport = _pipe;
             return new ValueTask<ConnectionContext>(connection);
         });

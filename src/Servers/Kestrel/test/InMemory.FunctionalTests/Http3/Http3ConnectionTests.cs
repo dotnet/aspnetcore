@@ -276,8 +276,8 @@ public class Http3ConnectionTests : Http3TestBase
         {
             var controlStream = new Microsoft.AspNetCore.Testing.Http3ControlStream(Http3Api, testStreamContext);
 
-                // Make server connection error when trying to write to control stream.
-                controlStream.StreamContext.Transport.Output.Complete();
+            // Make server connection error when trying to write to control stream.
+            controlStream.StreamContext.Transport.Output.Complete();
 
             return controlStream;
         };

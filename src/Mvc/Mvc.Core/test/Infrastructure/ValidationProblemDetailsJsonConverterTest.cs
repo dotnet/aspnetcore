@@ -137,9 +137,9 @@ public class ValidationProblemDetailsJsonConverterTest
     [Fact]
     public void WriteWorks()
     {
-        var problemDetails = new ValidationProblemDetails(new Dictionary<string, string[]>() { { "Property",  new string[]{ "error0" } }})
+        var problemDetails = new ValidationProblemDetails(new Dictionary<string, string[]>() { { "Property", new string[] { "error0" } } })
         {
-            Title  = "One or more validation errors occurred.",
+            Title = "One or more validation errors occurred.",
             Status = 400
         };
 
@@ -170,7 +170,7 @@ public class ValidationProblemDetailsJsonConverterTest
         };
         var problemDetails = new ValidationProblemDetails(errors)
         {
-            Title  = "One or more validation errors occurred.",
+            Title = "One or more validation errors occurred.",
             Status = 400
         };
 

@@ -17,8 +17,8 @@ public abstract class HttpResponse
     private static readonly Func<object, Task> _callbackDelegate = callback => ((Func<Task>)callback)();
     private static readonly Func<object, Task> _disposeDelegate = state =>
     {
-            // Prefer async dispose over dispose
-            if (state is IAsyncDisposable asyncDisposable)
+        // Prefer async dispose over dispose
+        if (state is IAsyncDisposable asyncDisposable)
         {
             return asyncDisposable.DisposeAsync().AsTask();
         }
