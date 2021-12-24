@@ -3,7 +3,6 @@
 
 #nullable enable
 
-using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 
