@@ -8,10 +8,7 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Microsoft;
 
 /// <summary>
 /// Manages a sequence of elements, readily castable as a <see cref="ReadOnlySequence{T}"/>.

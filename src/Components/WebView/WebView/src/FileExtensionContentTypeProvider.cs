@@ -7,8 +7,6 @@
 // Microsoft.AspNetCore.App, thus preventing it from being used anywhere ASP.NET Core isn't supported (such as
 // various platforms that .NET MAUI runs on, such as Android and iOS).
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Components.WebView;

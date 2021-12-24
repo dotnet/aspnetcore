@@ -3,7 +3,6 @@
 
 // Most of the code in this file comes from the default Roslyn Analyzer project template
 
-using System;
 using Microsoft.CodeAnalysis;
 
 namespace TestHelper;
