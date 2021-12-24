@@ -6,13 +6,10 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
-using System.Threading.Tasks;
 using FormatterWebSite.Controllers;
 using FormatterWebSite.Models;
-using Microsoft.AspNetCore.Testing;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 

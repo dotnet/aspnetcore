@@ -3,7 +3,6 @@
 
 #nullable enable
 
-using System;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 

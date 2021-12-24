@@ -1,13 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Text;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -24,7 +19,6 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor;
 

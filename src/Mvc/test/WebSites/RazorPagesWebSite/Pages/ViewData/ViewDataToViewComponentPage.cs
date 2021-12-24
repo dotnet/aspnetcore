@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using RazorPagesWebSite.Components;
 
