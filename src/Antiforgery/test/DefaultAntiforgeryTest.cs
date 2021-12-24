@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
+using Microsoft.Extensions.Logging.Testing;
 
 namespace Microsoft.AspNetCore.Antiforgery.Internal;
 
