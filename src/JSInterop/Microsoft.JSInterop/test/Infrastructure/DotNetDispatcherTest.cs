@@ -2,11 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
-using System;
-using System.Linq;
 using System.Text.Json;
-using System.Threading.Tasks;
-using Xunit;
 
 namespace Microsoft.JSInterop.Infrastructure;
 
