@@ -26,6 +26,23 @@ public class IdentityDbContext : IdentityDbContext<IdentityUser, IdentityRole, s
 /// <summary>
 /// Base class for the Entity Framework database context used for identity.
 /// </summary>
+public class IdentityDbContext : IdentityDbContext<IdentityUser>
+{
+    /// <summary>
+    /// Initializes a new instance of <see cref="IdentityDbContext"/>.
+    /// </summary>
+    /// <param name="options">The options to be used by a <see cref="DbContext"/>.</param>
+    public IdentityDbContext(DbContextOptions<IdentityDbContext> options) : base(options) { }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="IdentityDbContext" /> class.
+    /// </summary>
+    protected IdentityDbContext() { }
+}
+
+/// <summary>
+/// Base class for the Entity Framework database context used for identity.
+/// </summary>
 /// <typeparam name="TUser">The type of the user objects.</typeparam>
 public class IdentityDbContext<TUser> : IdentityDbContext<TUser, IdentityRole, string> where TUser : IdentityUser
 {
