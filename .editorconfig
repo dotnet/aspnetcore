@@ -73,6 +73,11 @@ end_of_line = lf
 charset = utf-8-bom
 
 [*.{cs,vb}]
+
+# CS8019: Remove unnecessary usings
+dotnet_diagnostic.CS8019.severity = warning
+dotnet_diagnostic.IDE0005.severity = warning
+
 # CA1018: Mark attributes with AttributeUsageAttribute
 dotnet_diagnostic.CA1018.severity = warning
 
