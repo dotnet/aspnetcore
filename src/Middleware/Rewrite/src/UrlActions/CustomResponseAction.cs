@@ -26,7 +26,7 @@ internal class CustomResponseAction : UrlAction
 
         if (!string.IsNullOrEmpty(StatusReason))
         {
-            context.HttpContext.Features.Get<IHttpResponseFeature>()!.ReasonPhrase = StatusReason;
+            context.HttpContext.Features.GetRequiredFeature<IHttpResponseFeature>().ReasonPhrase = StatusReason;
         }
 
         if (!string.IsNullOrEmpty(StatusDescription))

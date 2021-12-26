@@ -186,7 +186,7 @@ public class ClientHandler : HttpMessageHandler
         var httpContext = await contextBuilder.SendAsync(cancellationToken);
 
         response.StatusCode = (HttpStatusCode)httpContext.Response.StatusCode;
-        response.ReasonPhrase = httpContext.Features.Get<IHttpResponseFeature>()!.ReasonPhrase;
+        response.ReasonPhrase = httpContext.Features.GetRequiredFeature<IHttpResponseFeature>().ReasonPhrase;
         response.RequestMessage = request;
         response.Version = request.Version;
 
