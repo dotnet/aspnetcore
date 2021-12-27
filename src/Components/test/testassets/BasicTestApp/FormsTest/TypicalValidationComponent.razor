@@ -138,6 +138,9 @@
         Username (optional): <InputText @bind-Value="person.Username" />
         <button type="button" @onclick="@TriggerAsyncValidationError">Trigger async error</button>
     </p>
+    <p class="nickname">
+        Nick name: <InputText @bind-Value="person.NickName" />
+    </p>
 
     <button type="submit">Submit</button>
 
@@ -235,6 +238,8 @@
         public string[] HostileStrings { get; set; } = new string[] { "\"", "{" };
 
         public string Username { get; set; }
+
+        public string NickName { get; set; }
     }
 
     enum TicketClass { Economy, Premium, First }

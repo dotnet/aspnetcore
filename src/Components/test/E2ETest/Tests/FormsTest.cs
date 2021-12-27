@@ -440,6 +440,59 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     }
 
     [Fact]
+    public void InputRadioGroupWithNonPrimitiveValuesNoDoubleClick()
+    {
+        var appElement = MountTypicalValidationComponent();
+        var nickNameInput = appElement.FindElement(By.ClassName("nickname")).FindElement(By.TagName("input"));
+
+        Browser.True(() => FindUnknownAirlineInput().Selected);
+        Browser.False(() => FindBestAirlineInput().Selected);
+
+        nickNameInput.SendKeys("Mr. Anderson");
+
+        FindBestAirlineInput().Click();
+
+        Browser.False(() => FindUnknownAirlineInput().Selected);
+        Browser.True(() => FindBestAirlineInput().Selected);
+
+        IReadOnlyCollection<IWebElement> FindAirlineInputs()
+            => appElement.FindElement(By.ClassName("airline")).FindElements(By.TagName("input"));
+
+        IWebElement FindUnknownAirlineInput()
+            => FindAirlineInputs().First(i => string.Equals("Unknown", i.GetAttribute("value")));
+
+        IWebElement FindBestAirlineInput()
+            => FindAirlineInputs().First(i => string.Equals("BestAirline", i.GetAttribute("value")));
+    }
+
+    [Fact]
+    public void InputRadioGroupWithBoolValuesNoDoubleClick()
+    {
+        var appElement = MountTypicalValidationComponent();
+        var nickNameInput = appElement.FindElement(By.ClassName("nickname")).FindElement(By.TagName("input"));
+
+        // Validate selected inputs
+        Browser.False(() => FindTrueInput().Selected);
+        Browser.True(() => FindFalseInput().Selected);
+
+        nickNameInput.SendKeys("Mr. Anderson");
+
+        FindTrueInput().Click();
+
+        Browser.True(() => FindTrueInput().Selected);
+        Browser.False(() => FindFalseInput().Selected);
+
+        IReadOnlyCollection<IWebElement> FindInputs()
+            => appElement.FindElement(By.ClassName("radio-group-bool-values")).FindElements(By.TagName("input"));
+
+        IWebElement FindTrueInput()
+            => FindInputs().First(i => string.Equals("True", i.GetAttribute("value")));
+
+        IWebElement FindFalseInput()
+            => FindInputs().First(i => string.Equals("False", i.GetAttribute("value")));
+    }
+
+    [Fact]
     public void CanWireUpINotifyPropertyChangedToEditContext()
     {
         var appElement = Browser.MountTestComponent<NotifyPropertyChangedValidationComponent>();
