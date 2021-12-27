@@ -26,6 +26,9 @@ elseif(TARGET_ARCH_NAME STREQUAL "arm")
   else()
     set(TOOLCHAIN "arm-linux-gnueabihf")
   endif()
+  if("$ENV{__DistroRid}" MATCHES "tizen.*")
+    set(TIZEN_TOOLCHAIN "armv7hl-tizen-linux-gnueabihf/9.2.0")
+  endif()
 elseif(TARGET_ARCH_NAME STREQUAL "arm64")
   set(CMAKE_SYSTEM_PROCESSOR aarch64)
   if(EXISTS ${CROSS_ROOTFS}/usr/lib/gcc/aarch64-alpine-linux-musl)
@@ -58,6 +61,10 @@ endif()
 
 # Specify include paths
 if(DEFINED TIZEN_TOOLCHAIN)
+  if(TARGET_ARCH_NAME STREQUAL "arm")
+    include_directories(SYSTEM ${CROSS_ROOTFS}/usr/lib/gcc/${TIZEN_TOOLCHAIN}/include/c++/)
+    include_directories(SYSTEM ${CROSS_ROOTFS}/usr/lib/gcc/${TIZEN_TOOLCHAIN}/include/c++/armv7hl-tizen-linux-gnueabihf)
+  endif()
   if(TARGET_ARCH_NAME STREQUAL "armel")
     include_directories(SYSTEM ${CROSS_ROOTFS}/usr/lib/gcc/${TIZEN_TOOLCHAIN}/include/c++/)
     include_directories(SYSTEM ${CROSS_ROOTFS}/usr/lib/gcc/${TIZEN_TOOLCHAIN}/include/c++/armv7l-tizen-linux-gnueabi)
@@ -150,7 +157,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   add_toolchain_linker_flag("-Wl,--rpath-link=${CROSS_ROOTFS}/usr/lib/${TOOLCHAIN}")
 endif()
 
-if(TARGET_ARCH_NAME STREQUAL "armel")
+if(TARGET_ARCH_NAME STREQUAL "arm" OR TARGET_ARCH_NAME STREQUAL "armel")
   if(DEFINED TIZEN_TOOLCHAIN) # For Tizen only
     add_toolchain_linker_flag("-B${CROSS_ROOTFS}/usr/lib/gcc/${TIZEN_TOOLCHAIN}")
     add_toolchain_linker_flag("-L${CROSS_ROOTFS}/lib")
@@ -205,7 +212,7 @@ elseif(TARGET_ARCH_NAME STREQUAL "x86")
 endif()
 
 if(DEFINED TIZEN_TOOLCHAIN)
-  if(TARGET_ARCH_NAME MATCHES "^(armel|arm64)$")
+  if(TARGET_ARCH_NAME MATCHES "^(arm|armel|arm64)$")
     add_compile_options(-Wno-deprecated-declarations) # compile-time option
     add_compile_options(-D__extern_always_inline=inline) # compile-time option
   endif()
