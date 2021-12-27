@@ -1,1 +1,2 @@
 #nullable enable
+virtual Microsoft.AspNetCore.Components.Forms.InputRadio<TValue>.Dispose(bool disposing) -> void

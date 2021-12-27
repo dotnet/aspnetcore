@@ -10,12 +10,12 @@ namespace Microsoft.AspNetCore.Components.Forms;
 /// <summary>
 /// An input component used for selecting a value from a group of choices.
 /// </summary>
-public class InputRadio<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TValue> : ComponentBase
+public class InputRadio<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TValue> : ComponentBase, IDisposable
 {
     /// <summary>
     /// Gets context for this <see cref="InputRadio{TValue}"/>.
     /// </summary>
-    internal InputRadioContext? Context { get; private set; }
+    internal IInputRadioContext? Context { get; private set; }
 
     /// <summary>
     /// Gets or sets a collection of additional attributes that will be applied to the input element.
@@ -25,15 +25,14 @@ public class InputRadio<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTyp
     /// <summary>
     /// Gets or sets the value of this input.
     /// </summary>
-    [Parameter]
-    public TValue? Value { get; set; }
+    [Parameter] public TValue? Value { get; set; }
 
     /// <summary>
     /// Gets or sets the name of the parent input radio group.
     /// </summary>
     [Parameter] public string? Name { get; set; }
 
-    [CascadingParameter] private InputRadioContext? CascadedContext { get; set; }
+    [CascadingParameter] private IInputRadioContext? CascadedContext { get; set; }
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -45,6 +44,7 @@ public class InputRadio<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTyp
             throw new InvalidOperationException($"{GetType()} must have an ancestor {typeof(InputRadioGroup<TValue>)} " +
                 $"with a matching 'Name' property, if specified.");
         }
+        Context.Add(StateHasChanged);
     }
 
     /// <inheritdoc />
@@ -61,5 +61,17 @@ public class InputRadio<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTyp
         builder.AddAttribute(6, "checked", Context.CurrentValue?.Equals(Value));
         builder.AddAttribute(7, "onchange", Context.ChangeEventCallback);
         builder.CloseElement();
+    }
+
+    /// <inheritdoc />
+    protected virtual void Dispose(bool disposing)
+    {
+
+    }
+
+    void IDisposable.Dispose()
+    {
+        Context?.Remove(StateHasChanged);
+        Dispose(disposing: true);
     }
 }
