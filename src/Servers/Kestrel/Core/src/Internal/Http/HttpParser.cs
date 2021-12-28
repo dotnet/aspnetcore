@@ -4,8 +4,11 @@
 using System;
 using System.Buffers;
 using System.Diagnostics;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -138,6 +141,211 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
         handler.OnStartLine(versionAndMethod, path, startLine);
     }
 
+    /// <summary>
+    /// Finds '\r' or '\n' or '\t' or ' ' or '\t' in the given sequence (whatever comes first)
+    /// </summary>
+    private static int IndexOfTabOrSpaceOrColonOrCrOrLf(ref byte searchSpace, int length)
+    {
+        nuint ulen = (nuint)length;
+        nuint offset = 0;
+
+        // most inputs will be longer than 16 bytes so
+        // let's prioritize SSE/NEON path
+        // TODO: use AdvSimd for Arm64
+        if (!Sse2.IsSupported || ulen < (nuint)Vector128<byte>.Count)
+            goto SCALAR;
+
+        var crVector = Vector128.Create((byte)'\r');
+        var lfVector = Vector128.Create((byte)'\n');
+        var tbVector = Vector128.Create((byte)'\t');
+        var wsVector = Vector128.Create((byte)' ');
+        var clVector = Vector128.Create((byte)':');
+
+    NEXT_VECTOR:
+        var search = Unsafe.ReadUnaligned<Vector128<byte>>(
+            ref Unsafe.AddByteOffset(ref searchSpace, offset));
+
+        // pipeline SIMD operations
+        var cmp0 = Sse2.CompareEqual(crVector, search);
+        var cmp1 = Sse2.CompareEqual(lfVector, search);
+        var cmp2 = Sse2.CompareEqual(tbVector, search);
+        var cmp3 = Sse2.CompareEqual(wsVector, search);
+        var cmp4 = Sse2.CompareEqual(clVector, search);
+
+        // For some reason JIT may still re-order some :'(
+        var or0 = Sse2.Or(cmp0, cmp1);
+        var or1 = Sse2.Or(cmp2, cmp3);
+        var or2 = Sse2.Or(or0, cmp4);
+        var or3 = Sse2.Or(or1, or2);
+
+        int matches = Sse2.MoveMask(or3);
+        if (matches != 0)
+            return (int)(offset + (nuint)BitOperations.TrailingZeroCount(matches));
+
+        offset += 16;
+        if (offset == ulen)
+            // we're done and nothing was found
+            return -1;
+        if (offset + 16 > ulen)
+            // not enough space for the next 128bit vector so let's overlap
+            // with the current one in order to avoid SCALAR fallback
+            offset = ulen - 16;
+        goto NEXT_VECTOR;
+
+    SCALAR:
+        for (; offset < ulen; offset++)
+        {
+            var val = Unsafe.AddByteOffset(ref searchSpace, offset);
+            if (val == '\r' || val == '\n' || val == '\t' || val == ' ' || val == ':')
+                return (int)offset;
+
+            // bit-test version: JIT/Roslyn are not smart enough to do it yet
+            //
+            // val = (byte)(val - 9);
+            // if (val > 49)
+            //     return -1;
+            // if (((562949961809939UL >> val) & 1) == 1)
+            //     return (int)offset;
+        }
+        return -1;
+    }
+
+    /// <summary>
+    /// Find CR or LF in the given sequence (whatever comes first)
+    /// </summary>
+    private static int IndexOfCrOrLf(ref byte searchSpace, int length)
+    {
+        nuint ulen = (nuint)length;
+        nuint offset = 0;
+
+        // most inputs will be longer than 16 bytes so
+        // let's prioritize SSE/NEON path
+        // TODO: use AdvSimd for Arm64
+        if (!Sse2.IsSupported || ulen < (nuint)Vector128<byte>.Count)
+            goto SCALAR;
+
+        var crVector = Vector128.Create((byte)'\r');
+        var lfVector = Vector128.Create((byte)'\n');
+
+    NEXT_VECTOR:
+        var search = Unsafe.ReadUnaligned<Vector128<byte>>(
+            ref Unsafe.AddByteOffset(ref searchSpace, offset));
+
+        var cmp0 = Sse2.CompareEqual(crVector, search);
+        var cmp1 = Sse2.CompareEqual(lfVector, search);
+
+        int matches = Sse2.MoveMask(Sse2.Or(cmp0, cmp1));
+        if (matches != 0)
+            return (int)(offset + (nuint)BitOperations.TrailingZeroCount(matches));
+
+        offset += 16;
+        if (offset == ulen)
+            // we're done
+            return -1;
+        if (offset + 16 > ulen)
+            // not enough space for the next 128bit vector so let's overlap
+            // with the current one in order to avoid SCALAR fallback
+            offset = ulen - 16;
+        goto NEXT_VECTOR;
+
+    SCALAR:
+        for (; offset < ulen; offset++)
+        {
+            // if (val == '\r' || val == '\n' || val == '\t' || val == ' ' || val == ':')
+            // the following code is a "bittest" version of ^:
+            var val = Unsafe.AddByteOffset(ref searchSpace, offset);
+            if (val == '\r' || val == '\n')
+                return (int)offset;
+        }
+        return -1;
+    }
+
+    /// <summary>
+    /// Finds "name: value\r\n" in the given span.
+    /// Rules:
+    ///  1) name should not be empty
+    ///  2) name is ended with ':'
+    ///  3) name should not contain ' ' or '\t'
+    ///  4) value can be surrounded by multiple ' ' or\and '\t' and we must trim them out for OnHeader
+    ///  5) name-value must be followed by \r\n (CRLF)
+    ///  6) CR or\and LF are not expected anywhere else
+    /// </summary>
+    /// <returns>
+    ///  -1: in case of invalid sequence
+    ///   0: in case if it needs more data from span
+    /// >=0: length of the current header line
+    /// </returns>
+    private static int TryTakeSingleHeaderFast(TRequestHandler handler, ReadOnlySpan<byte> span)
+    {
+        ref byte searchSpace = ref MemoryMarshal.GetReference(span);
+        int colonPos = IndexOfTabOrSpaceOrColonOrCrOrLf(ref searchSpace, span.Length);
+
+        // colon was not found - needs more data
+        if (colonPos == -1)
+            goto NOT_ENOUGH_DATA;
+
+        // name should not be empty
+        if (colonPos == 0)
+            goto FAILED;
+
+        ref byte colonValue = ref Unsafe.AddByteOffset(ref searchSpace, (nuint)colonPos);
+
+        // none of '\r', '\n', '\t', ' ' should be found before ':'
+        if (colonValue != ByteColon)
+            goto FAILED;
+
+        int crlf = IndexOfCrOrLf(ref colonValue, span.Length - colonPos);
+
+        // CR was not found - needs more data
+        if (crlf == -1)
+            goto NOT_ENOUGH_DATA;
+
+        int crPos = crlf + colonPos;
+
+        ref byte crRef = ref Unsafe.AddByteOffset(ref colonValue, (nuint)crlf);
+
+        // for some reason previous version of parser gave up on inputs
+        // like "X:\r\n", however, "X: \r\n" was fine for it
+        // should we care about it here?
+        if (/*crPos < 3 ||*/ crRef != ByteCR)
+            goto FAILED;
+
+        // no room for LF - needs more data
+        if (crPos == span.Length - 1)
+            goto NOT_ENOUGH_DATA;
+
+        // check next symbol after CR, it has to be LF
+        if (Unsafe.AddByteOffset(ref crRef, 1) != ByteLF)
+            goto FAILED;
+
+        // Trim leading ' ' and '\t'
+        int valueStarts = colonPos + 1;
+        for (; valueStarts < crPos; valueStarts++)
+        {
+            var val = Unsafe.AddByteOffset(ref searchSpace, (nuint)valueStarts);
+            if (val != ByteSpace && val != ByteTab)
+                break;
+        }
+
+        // Trim trailing ' ' and '\t'
+        int valueEnds = crPos - 1;
+        for (; valueEnds > valueStarts; valueEnds--)
+        {
+            var b = Unsafe.AddByteOffset(ref searchSpace, (nuint)valueEnds);
+            if (b != ByteSpace && b != ByteTab)
+                break;
+        }
+
+        handler.OnHeader(span.Slice(0, colonPos), span.Slice(valueStarts, (valueEnds + 1 - valueStarts)));
+        return crPos + 2;
+
+    FAILED:
+        return -1;
+
+    NOT_ENOUGH_DATA:
+        return 0;
+    }
+
     public bool ParseHeaders(TRequestHandler handler, ref SequenceReader<byte> reader)
     {
         while (!reader.End)
@@ -195,50 +403,17 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
                 // in the span to contain a header.
                 if (readAhead == 0)
                 {
-                    length = span.IndexOfAny(ByteCR, ByteLF);
-                    // If not found length with be -1; casting to uint will turn it to uint.MaxValue
-                    // which will be larger than any possible span.Length. This also serves to eliminate
-                    // the bounds check for the next lookup of span[length]
-                    if ((uint)length < (uint)span.Length)
+                    length = TryTakeSingleHeaderFast(handler, span);
+                    if (length > 0)
                     {
-                        // Early memory read to hide latency
-                        var expectedCR = span[length];
-                        // Correctly has a CR, move to next
-                        length++;
-
-                        if (expectedCR != ByteCR)
-                        {
-                            // Sequence needs to be CRLF not LF first.
-                            RejectRequestHeader(span[..length]);
-                        }
-
-                        if ((uint)length < (uint)span.Length)
-                        {
-                            // Early memory read to hide latency
-                            var expectedLF = span[length];
-                            // Correctly has a LF, move to next
-                            length++;
-
-                            if (expectedLF != ByteLF ||
-                                length < 5 ||
-                                // Exclude the CRLF from the headerLine and parse the header name:value pair
-                                !TryTakeSingleHeader(handler, span[..(length - 2)]))
-                            {
-                                // Sequence needs to be CRLF and not contain an inner CR not part of terminator.
-                                // Less than min possible headerSpan of 5 bytes a:b\r\n
-                                // Not parsable as a valid name:value header pair.
-                                RejectRequestHeader(span[..length]);
-                            }
-
-                            // Read the header successfully, skip the reader forward past the headerSpan.
-                            span = span.Slice(length);
-                            reader.Advance(length);
-                        }
-                        else
-                        {
-                            // No enough data, set length to 0.
-                            length = 0;
-                        }
+                        span = span.Slice(length);
+                        reader.Advance(length);
+                        continue;
+                    }
+                    if (length == -1)
+                    {
+                        // do we need to limit span here as it was before?
+                        RejectRequestHeader(span);
                     }
                 }
 
