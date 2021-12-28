@@ -123,15 +123,15 @@ public static class UseMiddlewareExtensions
                 var middlewareFactory = (IMiddlewareFactory?)context.RequestServices.GetService(typeof(IMiddlewareFactory));
                 if (middlewareFactory == null)
                 {
-                        // No middleware factory
-                        throw new InvalidOperationException(Resources.FormatException_UseMiddlewareNoMiddlewareFactory(typeof(IMiddlewareFactory)));
+                    // No middleware factory
+                    throw new InvalidOperationException(Resources.FormatException_UseMiddlewareNoMiddlewareFactory(typeof(IMiddlewareFactory)));
                 }
 
                 var middleware = middlewareFactory.Create(middlewareType);
                 if (middleware == null)
                 {
-                        // The factory returned null, it's a broken implementation
-                        throw new InvalidOperationException(Resources.FormatException_UseMiddlewareUnableToCreateMiddleware(middlewareFactory.GetType(), middlewareType));
+                    // The factory returned null, it's a broken implementation
+                    throw new InvalidOperationException(Resources.FormatException_UseMiddlewareUnableToCreateMiddleware(middlewareFactory.GetType(), middlewareType));
                 }
 
                 try

@@ -68,11 +68,11 @@ internal partial class DisconnectListener
         {
             Log.DisconnectTriggered(_logger, connectionId);
 
-                // Free the overlapped
-                boundHandle.FreeNativeOverlapped(pOverlapped);
+            // Free the overlapped
+            boundHandle.FreeNativeOverlapped(pOverlapped);
 
-                // Pull the token out of the list and Cancel it.
-                _connectionCancellationTokens.TryRemove(connectionId, out _);
+            // Pull the token out of the list and Cancel it.
+            _connectionCancellationTokens.TryRemove(connectionId, out _);
             try
             {
                 cts.Cancel();

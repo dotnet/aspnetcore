@@ -270,8 +270,8 @@ public class HttpClientHttp2InteropTests : LoggedTest
                 .Configure(app => app.Run(async context =>
                 {
                     var reader = context.Request.BodyReader;
-                        // Read Hello World and echo it back to the client, twice
-                        for (var i = 0; i < 2; i++)
+                    // Read Hello World and echo it back to the client, twice
+                    for (var i = 0; i < 2; i++)
                     {
                         var readResult = await reader.ReadAsync().DefaultTimeout();
                         while (!readResult.IsCompleted && readResult.Buffer.Length < "Hello World".Length)
@@ -345,8 +345,8 @@ public class HttpClientHttp2InteropTests : LoggedTest
 
                     try
                     {
-                            // The client sends one more packet after the server completes
-                            readResult = await reader.ReadAsync().DefaultTimeout();
+                        // The client sends one more packet after the server completes
+                        readResult = await reader.ReadAsync().DefaultTimeout();
                         while (!readResult.IsCompleted && readResult.Buffer.Length < "Hello World".Length)
                         {
                             reader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
@@ -592,7 +592,7 @@ public class HttpClientHttp2InteropTests : LoggedTest
                 .Configure(app => app.Run(context =>
                 {
                     context.Features.Get<IHttpResetFeature>().Reset(8); // Cancel
-                        return Task.CompletedTask;
+                    return Task.CompletedTask;
                 }));
             });
         using var host = await hostBuilder.StartAsync().DefaultTimeout();
@@ -619,7 +619,7 @@ public class HttpClientHttp2InteropTests : LoggedTest
                     await context.Response.BodyWriter.FlushAsync();
                     await receivedHeaders.Task.DefaultTimeout();
                     context.Features.Get<IHttpResetFeature>().Reset(8); // Cancel
-                    }));
+                }));
             });
         using var host = await hostBuilder.StartAsync().DefaultTimeout();
 
@@ -647,7 +647,7 @@ public class HttpClientHttp2InteropTests : LoggedTest
                     await context.Response.WriteAsync("Hello World");
                     await context.Response.CompleteAsync();
                     context.Features.Get<IHttpResetFeature>().Reset(8); // Cancel
-                    }));
+                }));
             });
         using var host = await hostBuilder.StartAsync().DefaultTimeout();
 
@@ -676,7 +676,7 @@ public class HttpClientHttp2InteropTests : LoggedTest
                     context.Response.AppendTrailer("TestTrailer", "TestValue");
                     await context.Response.CompleteAsync();
                     context.Features.Get<IHttpResetFeature>().Reset(8); // Cancel
-                    }));
+                }));
             });
         using var host = await hostBuilder.StartAsync().DefaultTimeout();
 
@@ -710,7 +710,7 @@ public class HttpClientHttp2InteropTests : LoggedTest
                     await context.Response.BodyWriter.FlushAsync();
                     await headersReceived.Task.DefaultTimeout();
                     context.Features.Get<IHttpResetFeature>().Reset(8); // Cancel
-                        serverReset.SetResult(0);
+                    serverReset.SetResult(0);
 
                     try
                     {
@@ -769,7 +769,7 @@ public class HttpClientHttp2InteropTests : LoggedTest
                     await context.Response.BodyWriter.FlushAsync();
                     await responseHeadersReceived.Task.DefaultTimeout();
                     context.Features.Get<IHttpResetFeature>().Reset(8); // Cancel
-                        serverReset.SetResult(0);
+                    serverReset.SetResult(0);
 
                     try
                     {
@@ -1088,8 +1088,8 @@ public class HttpClientHttp2InteropTests : LoggedTest
                 {
                     try
                     {
-                            // The default frame size limit is 16kb, and the total header size limit is 64kb.
-                            for (var i = 0; i < 59; i++)
+                        // The default frame size limit is 16kb, and the total header size limit is 64kb.
+                        for (var i = 0; i < 59; i++)
                         {
                             context.Response.Headers.Append("header" + i, oneKbString + i);
                         }
@@ -1137,8 +1137,8 @@ public class HttpClientHttp2InteropTests : LoggedTest
                 ConfigureKestrel(webHostBuilder, scheme);
                 webHostBuilder.ConfigureKestrel(options =>
                 {
-                        // Must be larger than 0, should disable header compression
-                        options.Limits.Http2.HeaderTableSize = 1;
+                    // Must be larger than 0, should disable header compression
+                    options.Limits.Http2.HeaderTableSize = 1;
                 });
                 webHostBuilder.ConfigureServices(AddTestLogging)
                 .Configure(app => app.Run(context =>
@@ -1203,8 +1203,8 @@ public class HttpClientHttp2InteropTests : LoggedTest
                 webHostBuilder.ConfigureServices(AddTestLogging)
                 .Configure(app => app.Run(async context =>
                 {
-                        // The stream limit should mean we never hit the semaphore limit.
-                        Assert.True(sync.Wait(0));
+                    // The stream limit should mean we never hit the semaphore limit.
+                    Assert.True(sync.Wait(0));
                     var count = Interlocked.Increment(ref requestCount);
 
                     if (count == 5)
@@ -1264,8 +1264,8 @@ public class HttpClientHttp2InteropTests : LoggedTest
                 webHostBuilder.ConfigureServices(AddTestLogging)
                 .Configure(app => app.Run(async context =>
                 {
-                        // The stream limit should mean we never hit the semaphore limit.
-                        Assert.True(sync.Wait(0));
+                    // The stream limit should mean we never hit the semaphore limit.
+                    Assert.True(sync.Wait(0));
                     var count = Interlocked.Increment(ref requestCount);
 
                     if (count == 5)
@@ -1318,8 +1318,8 @@ public class HttpClientHttp2InteropTests : LoggedTest
             {
                 ConfigureKestrel(webHostBuilder, scheme);
                 webHostBuilder.ConfigureKestrel(options => options.Limits.Http2.MaxFrameSize = 1024 * 20); // The default is 16kb
-                    webHostBuilder.ConfigureServices(AddTestLogging)
-                .Configure(app => app.Run(context => context.Response.WriteAsync("Hello World")));
+                webHostBuilder.ConfigureServices(AddTestLogging)
+            .Configure(app => app.Run(context => context.Response.WriteAsync("Hello World")));
             });
         using var host = await hostBuilder.StartAsync().DefaultTimeout();
 
@@ -1386,8 +1386,8 @@ public class HttpClientHttp2InteropTests : LoggedTest
                 webHostBuilder.ConfigureServices(AddTestLogging)
                 .Configure(app => app.Run(context =>
                 {
-                        // The total header size limit is 64kb.
-                        for (var i = 0; i < 65; i++)
+                    // The total header size limit is 64kb.
+                    for (var i = 0; i < 65; i++)
                     {
                         context.Response.Headers.Append("header" + i, oneKbString + i);
                     }
@@ -1462,9 +1462,9 @@ public class HttpClientHttp2InteropTests : LoggedTest
                 webHostBuilder.ConfigureServices(AddTestLogging)
                 .Configure(app => app.Run(async context =>
                 {
-                        // The spec default window is 64kb - 1.
-                        // We should be able to send the entire response body without getting blocked by flow control.
-                        var oneKbString = new string('a', 1024);
+                    // The spec default window is 64kb - 1.
+                    // We should be able to send the entire response body without getting blocked by flow control.
+                    var oneKbString = new string('a', 1024);
                     for (var i = 0; i < 63; i++)
                     {
                         await context.Response.WriteAsync(oneKbString).DefaultTimeout();

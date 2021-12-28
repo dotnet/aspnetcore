@@ -201,8 +201,8 @@ public static class StaticFilesEndpointRouteBuilderExtensions
         {
             context.Request.Path = "/" + filePath;
 
-                // Set endpoint to null so the static files middleware will handle the request.
-                context.SetEndpoint(null);
+            // Set endpoint to null so the static files middleware will handle the request.
+            context.SetEndpoint(null);
 
             return next(context);
         });

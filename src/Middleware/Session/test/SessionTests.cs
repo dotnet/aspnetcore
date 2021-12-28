@@ -1104,8 +1104,8 @@ public class SessionTests
                     app.UseSession();
                     app.Run(context =>
                     {
-                            // The middleware calls context.Session.CommitAsync() once per request
-                            return Task.FromResult(0);
+                        // The middleware calls context.Session.CommitAsync() once per request
+                        return Task.FromResult(0);
                     });
                 })
                 .ConfigureServices(services =>

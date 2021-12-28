@@ -186,8 +186,8 @@ public class NegotiateHandler : AuthenticationHandler<NegotiateOptions>, IAuthen
             {
                 Response.OnStarting(() =>
                 {
-                        // Only include it if the response ultimately succeeds. This avoids adding it twice if Challenge is called again.
-                        if (Response.StatusCode < StatusCodes.Status400BadRequest)
+                    // Only include it if the response ultimately succeeds. This avoids adding it twice if Challenge is called again.
+                    if (Response.StatusCode < StatusCodes.Status400BadRequest)
                     {
                         Response.Headers.Append(HeaderNames.WWWAuthenticate, AuthHeaderPrefix + outgoing);
                     }

@@ -13,7 +13,7 @@ internal static unsafe class UnsafeBufferUtil
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #if NETSTANDARD2_0
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+    [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 #endif
     public static void BlockCopy(void* from, void* to, int byteCount)
     {
@@ -22,7 +22,7 @@ internal static unsafe class UnsafeBufferUtil
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #if NETSTANDARD2_0
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+    [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 #endif
     public static void BlockCopy(void* from, void* to, uint byteCount)
     {
@@ -33,7 +33,7 @@ internal static unsafe class UnsafeBufferUtil
     }
 
 #if NETSTANDARD2_0
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
+    [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
 #endif
     public static void BlockCopy(LocalAllocHandle from, void* to, uint byteCount)
     {
@@ -53,7 +53,7 @@ internal static unsafe class UnsafeBufferUtil
     }
 
 #if NETSTANDARD2_0
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
+    [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
 #endif
     public static void BlockCopy(void* from, LocalAllocHandle to, uint byteCount)
     {
@@ -73,7 +73,7 @@ internal static unsafe class UnsafeBufferUtil
     }
 
 #if NETSTANDARD2_0
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
+    [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
 #endif
     public static void BlockCopy(LocalAllocHandle from, LocalAllocHandle to, IntPtr length)
     {
@@ -127,7 +127,7 @@ internal static unsafe class UnsafeBufferUtil
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #if NETSTANDARD2_0
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+    [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 #endif
     public static void SecureZeroMemory(byte* buffer, int byteCount)
     {
@@ -139,7 +139,7 @@ internal static unsafe class UnsafeBufferUtil
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #if NETSTANDARD2_0
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+    [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 #endif
     public static void SecureZeroMemory(byte* buffer, uint byteCount)
     {
@@ -160,7 +160,7 @@ internal static unsafe class UnsafeBufferUtil
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #if NETSTANDARD2_0
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+    [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 #endif
     public static void SecureZeroMemory(byte* buffer, ulong byteCount)
     {
@@ -180,7 +180,7 @@ internal static unsafe class UnsafeBufferUtil
     /// Securely clears a memory buffer.
     /// </summary>
 #if NETSTANDARD2_0
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+    [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 #endif
     public static void SecureZeroMemory(byte* buffer, IntPtr length)
     {

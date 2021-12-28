@@ -52,22 +52,22 @@ public class HostingApplicationDiagnosticsTests
 
         diagnosticListener.Subscribe(new CallbackDiagnosticListener(pair =>
         {
-                // This should not fire
-                if (pair.Key == "Microsoft.AspNetCore.Hosting.HttpRequestIn.Start")
+            // This should not fire
+            if (pair.Key == "Microsoft.AspNetCore.Hosting.HttpRequestIn.Start")
             {
                 startFired = true;
             }
 
-                // This should not fire
-                if (pair.Key == "Microsoft.AspNetCore.Hosting.HttpRequestIn.Stop")
+            // This should not fire
+            if (pair.Key == "Microsoft.AspNetCore.Hosting.HttpRequestIn.Stop")
             {
                 stopFired = true;
             }
         }),
         (s, o, arg3) =>
         {
-                // The events are off
-                return false;
+            // The events are off
+            return false;
         });
 
 

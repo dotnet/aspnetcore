@@ -72,7 +72,7 @@ public class ClientDisconnectTests : StrictTestServerTests
                 {
                     await ctx.Response.Body.WriteAsync(data, ctx.RequestAborted);
                     await Task.Delay(10); // Small delay to not constantly call WriteAsync.
-                    }
+                }
             }
             catch (Exception e)
             {

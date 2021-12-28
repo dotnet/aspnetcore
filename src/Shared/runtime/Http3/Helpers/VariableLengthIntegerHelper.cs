@@ -109,7 +109,7 @@ namespace System.Net.Http
                             InitialTwoByteLengthMask => 2,
                             InitialFourByteLengthMask => 4,
                             _ => 8 // LengthEightByte
-                    };
+                        };
 
                     Span<byte> temp = (stackalloc byte[8])[..length];
                     if (reader.TryCopyTo(temp))

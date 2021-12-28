@@ -84,8 +84,8 @@ public static class WebHostBuilderIISExtensions
 
             hostBuilder.ConfigureServices(services =>
             {
-                    // Delay register the url so users don't accidentally overwrite it.
-                    hostBuilder.UseSetting(WebHostDefaults.ServerUrlsKey, address);
+                // Delay register the url so users don't accidentally overwrite it.
+                hostBuilder.UseSetting(WebHostDefaults.ServerUrlsKey, address);
                 hostBuilder.PreferHostingUrls(true);
                 services.AddSingleton<IServerIntegratedAuth>(_ => new ServerIntegratedAuth()
                 {

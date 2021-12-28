@@ -23,7 +23,7 @@ internal sealed unsafe class ManagedGenRandomImpl : IManagedGenRandom
 #if NETSTANDARD2_0 || NETFRAMEWORK
         _rng.GetBytes(bytes);
 #else
-            RandomNumberGenerator.Fill(bytes);
+        RandomNumberGenerator.Fill(bytes);
 #endif
         return bytes;
     }

@@ -149,7 +149,7 @@ public class RazorCompiledItemFeatureProviderTest
                 Assert.Same("Item2", item.Item.Identifier);
                 Assert.Equal("mvc.1.0.razor-page", item.Item.Kind);
                 Assert.Contains(typeof(RouteAttribute), item.Item.Metadata.Select(m => m.GetType())); // Verify we pick up new attributes
-                });
+            });
 
     }
 

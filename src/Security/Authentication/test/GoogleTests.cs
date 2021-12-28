@@ -1118,8 +1118,8 @@ public class GoogleTests : RemoteAuthenticationTests<GoogleOptions>
                             }
                             else if (req.Path == new PathString("/unauthorized"))
                             {
-                                    // Simulate Authorization failure
-                                    var result = await context.AuthenticateAsync("Google");
+                                // Simulate Authorization failure
+                                var result = await context.AuthenticateAsync("Google");
                                 await context.ChallengeAsync("Google");
                             }
                             else if (req.Path == new PathString("/unauthorizedAuto"))

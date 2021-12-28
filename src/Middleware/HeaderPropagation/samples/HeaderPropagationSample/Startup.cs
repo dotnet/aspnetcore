@@ -35,11 +35,11 @@ public class Startup
         // It's also easy to forward a header with a different name, using Add(string, string)
         services.AddHeaderPropagation(options =>
         {
-                // Propagate the X-BetaFeatures if present.
-                options.Headers.Add("X-BetaFeatures");
+            // Propagate the X-BetaFeatures if present.
+            options.Headers.Add("X-BetaFeatures");
 
-                // Generate a new X-BetaFeatures if not present.
-                options.Headers.Add("X-BetaFeatures", context =>
+            // Generate a new X-BetaFeatures if not present.
+            options.Headers.Add("X-BetaFeatures", context =>
             {
                 return GenerateBetaFeatureOptions();
             });

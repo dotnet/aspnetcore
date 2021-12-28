@@ -76,13 +76,13 @@ public class ClientHandler : HttpMessageHandler
             {
                 if (requestContent is StreamContent)
                 {
-                        // This is odd but required for backwards compat. If StreamContent is passed in then seek to beginning.
-                        // This is safe because StreamContent.ReadAsStreamAsync doesn't block. It will return the inner stream.
-                        var body = await requestContent.ReadAsStreamAsync();
+                    // This is odd but required for backwards compat. If StreamContent is passed in then seek to beginning.
+                    // This is safe because StreamContent.ReadAsStreamAsync doesn't block. It will return the inner stream.
+                    var body = await requestContent.ReadAsStreamAsync();
                     if (body.CanSeek)
                     {
-                            // This body may have been consumed before, rewind it.
-                            body.Seek(0, SeekOrigin.Begin);
+                        // This body may have been consumed before, rewind it.
+                        body.Seek(0, SeekOrigin.Begin);
                     }
 
                     await body.CopyToAsync(writer);
@@ -108,16 +108,16 @@ public class ClientHandler : HttpMessageHandler
             if (requestContent != null)
             {
                 canHaveBody = true;
-                    // Chunked takes precedence over Content-Length, don't create a request with both Content-Length and chunked.
-                    if (request.Headers.TransferEncodingChunked != true)
+                // Chunked takes precedence over Content-Length, don't create a request with both Content-Length and chunked.
+                if (request.Headers.TransferEncodingChunked != true)
                 {
-                        // Reading the ContentLength will add it to the Headers‼
-                        // https://github.com/dotnet/runtime/blob/874399ab15e47c2b4b7c6533cc37d27d47cb5242/src/libraries/System.Net.Http/src/System/Net/Http/Headers/HttpContentHeaders.cs#L68-L87
-                        var contentLength = requestContent.Headers.ContentLength;
+                    // Reading the ContentLength will add it to the Headers‼
+                    // https://github.com/dotnet/runtime/blob/874399ab15e47c2b4b7c6533cc37d27d47cb5242/src/libraries/System.Net.Http/src/System/Net/Http/Headers/HttpContentHeaders.cs#L68-L87
+                    var contentLength = requestContent.Headers.ContentLength;
                     if (!contentLength.HasValue && request.Version == HttpVersion.Version11)
                     {
-                            // HTTP/1.1 requests with a body require either Content-Length or Transfer-Encoding: chunked.
-                            request.Headers.TransferEncodingChunked = true;
+                        // HTTP/1.1 requests with a body require either Content-Length or Transfer-Encoding: chunked.
+                        request.Headers.TransferEncodingChunked = true;
                     }
                     else if (contentLength == 0)
                     {
@@ -139,8 +139,8 @@ public class ClientHandler : HttpMessageHandler
 
             foreach (var header in request.Headers)
             {
-                    // User-Agent is a space delineated single line header but HttpRequestHeaders parses it as multiple elements.
-                    if (string.Equals(header.Key, HeaderNames.UserAgent, StringComparison.OrdinalIgnoreCase))
+                // User-Agent is a space delineated single line header but HttpRequestHeaders parses it as multiple elements.
+                if (string.Equals(header.Key, HeaderNames.UserAgent, StringComparison.OrdinalIgnoreCase))
                 {
                     req.Headers.Append(header.Key, string.Join(" ", header.Value));
                 }
@@ -152,8 +152,8 @@ public class ClientHandler : HttpMessageHandler
 
             if (!req.Host.HasValue)
             {
-                    // If Host wasn't explicitly set as a header, let's infer it from the Uri
-                    req.Host = HostString.FromUriComponent(request.RequestUri);
+                // If Host wasn't explicitly set as a header, let's infer it from the Uri
+                req.Host = HostString.FromUriComponent(request.RequestUri);
                 if (request.RequestUri.IsDefaultPort)
                 {
                     req.Host = new HostString(req.Host.Host);
@@ -177,8 +177,8 @@ public class ClientHandler : HttpMessageHandler
         {
             var responseTrailersFeature = context.Features.Get<IHttpResponseTrailersFeature>();
 
-                // Trailers collection is settable so double check the app hasn't set it to null.
-                if (responseTrailersFeature?.Trailers != null)
+            // Trailers collection is settable so double check the app hasn't set it to null.
+            if (responseTrailersFeature?.Trailers != null)
             {
                 foreach (var trailer in responseTrailersFeature.Trailers)
                 {

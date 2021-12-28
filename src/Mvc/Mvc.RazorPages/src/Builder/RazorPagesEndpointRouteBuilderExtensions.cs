@@ -85,8 +85,8 @@ public static class RazorPagesEndpointRouteBuilderExtensions
         var builder = endpoints.MapFallback(context => Task.CompletedTask);
         builder.Add(b =>
         {
-                // MVC registers a policy that looks for this metadata.
-                b.Metadata.Add(CreateDynamicPageMetadata(page, area: null));
+            // MVC registers a policy that looks for this metadata.
+            b.Metadata.Add(CreateDynamicPageMetadata(page, area: null));
             b.Metadata.Add(new PageEndpointDataSourceIdMetadata(pageDataSource.DataSourceId));
         });
         return builder;
@@ -154,8 +154,8 @@ public static class RazorPagesEndpointRouteBuilderExtensions
         var builder = endpoints.MapFallback(pattern, context => Task.CompletedTask);
         builder.Add(b =>
         {
-                // MVC registers a policy that looks for this metadata.
-                b.Metadata.Add(CreateDynamicPageMetadata(page, area: null));
+            // MVC registers a policy that looks for this metadata.
+            b.Metadata.Add(CreateDynamicPageMetadata(page, area: null));
             b.Metadata.Add(new PageEndpointDataSourceIdMetadata(pageDataSource.DataSourceId));
         });
         return builder;
@@ -215,8 +215,8 @@ public static class RazorPagesEndpointRouteBuilderExtensions
         var builder = endpoints.MapFallback(context => Task.CompletedTask);
         builder.Add(b =>
         {
-                // MVC registers a policy that looks for this metadata.
-                b.Metadata.Add(CreateDynamicPageMetadata(page, area));
+            // MVC registers a policy that looks for this metadata.
+            b.Metadata.Add(CreateDynamicPageMetadata(page, area));
             b.Metadata.Add(new PageEndpointDataSourceIdMetadata(pageDataSource.DataSourceId));
         });
         return builder;
@@ -286,8 +286,8 @@ public static class RazorPagesEndpointRouteBuilderExtensions
         var builder = endpoints.MapFallback(pattern, context => Task.CompletedTask);
         builder.Add(b =>
         {
-                // MVC registers a policy that looks for this metadata.
-                b.Metadata.Add(CreateDynamicPageMetadata(page, area));
+            // MVC registers a policy that looks for this metadata.
+            b.Metadata.Add(CreateDynamicPageMetadata(page, area));
             b.Metadata.Add(new PageEndpointDataSourceIdMetadata(pageDataSource.DataSourceId));
         });
         return builder;

@@ -1091,8 +1091,8 @@ public class DefaultAuthorizationServiceTests
     {
         var authorizationService = BuildAuthorizationService(services =>
         {
-                // This will ignore the policy options
-                services.AddSingleton<IAuthorizationPolicyProvider, StaticPolicyProvider>();
+            // This will ignore the policy options
+            services.AddSingleton<IAuthorizationPolicyProvider, StaticPolicyProvider>();
             services.AddAuthorization(options =>
             {
                 options.AddPolicy("Basic", policy => policy.RequireAssertion(context => true));
@@ -1130,8 +1130,8 @@ public class DefaultAuthorizationServiceTests
     {
         var authorizationService = BuildAuthorizationService(services =>
         {
-                // This will ignore the policy options
-                services.AddSingleton<IAuthorizationPolicyProvider, DynamicPolicyProvider>();
+            // This will ignore the policy options
+            services.AddSingleton<IAuthorizationPolicyProvider, DynamicPolicyProvider>();
             services.AddAuthorization(options => { });
         });
         var id = new ClaimsIdentity();

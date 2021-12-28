@@ -470,8 +470,8 @@ public class FormTagHelperTest
             .Callback<ViewContext, string, string, object, string, object>(
                 (viewContext, actionName, controllerName, routeValues, method, htmlAttributes) =>
                 {
-                        // Fixes Roslyn bug with lambdas
-                        generator.ToString();
+                    // Fixes Roslyn bug with lambdas
+                    generator.ToString();
 
                     var routeValueDictionary = Assert.IsType<RouteValueDictionary>(routeValues);
                     Assert.Equal(2, routeValueDictionary.Count);

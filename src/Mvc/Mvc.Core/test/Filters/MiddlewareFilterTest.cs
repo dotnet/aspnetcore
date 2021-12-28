@@ -60,7 +60,7 @@ public class MiddlewareFilterTest
             {
                 httpContext.Response.Headers.Add(expectedHeader, "");
                 return Task.FromResult(true); // short circuit the request
-                });
+            });
         };
         var resourceFilter1 = new TestResourceFilter(TestResourceFilterAction.Passthrough);
         var middlewareResourceFilter = new MiddlewareFilter(GetMiddlewarePipeline(typeof(Pipeline1)));
@@ -106,7 +106,7 @@ public class MiddlewareFilterTest
             {
                 httpContext.Response.Headers["h1"] = httpContext.Response.Headers["h1"] + "-pipeline2";
                 return Task.FromResult(true); // short circuits the request
-                });
+            });
         };
         var resourceFilter1 = new TestResourceFilter(TestResourceFilterAction.Passthrough);
         var middlewareResourceFilter1 = new MiddlewareFilter(GetMiddlewarePipeline(typeof(Pipeline1)));

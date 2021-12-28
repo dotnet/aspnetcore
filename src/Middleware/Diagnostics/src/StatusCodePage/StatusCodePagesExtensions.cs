@@ -181,14 +181,14 @@ public static class StatusCodePagesExtensions
             return app.Use(next =>
             {
                 RequestDelegate? newNext = null;
-                    // start a new middleware pipeline
-                    var builder = app.New();
-                    // use the old routing pipeline if it exists so we preserve all the routes and matching logic
-                    // ((IApplicationBuilder)WebApplication).New() does not copy globalRouteBuilderKey automatically like it does for all other properties.
-                    builder.Properties[globalRouteBuilderKey] = routeBuilder;
+                // start a new middleware pipeline
+                var builder = app.New();
+                // use the old routing pipeline if it exists so we preserve all the routes and matching logic
+                // ((IApplicationBuilder)WebApplication).New() does not copy globalRouteBuilderKey automatically like it does for all other properties.
+                builder.Properties[globalRouteBuilderKey] = routeBuilder;
                 builder.UseRouting();
-                    // apply the next middleware
-                    builder.Run(next);
+                // apply the next middleware
+                builder.Run(next);
                 newNext = builder.Build();
 
                 return new StatusCodePagesMiddleware(next,
@@ -214,8 +214,8 @@ public static class StatusCodePagesExtensions
 
             var routeValuesFeature = context.HttpContext.Features.Get<IRouteValuesFeature>();
 
-                // Store the original paths so the app can check it.
-                context.HttpContext.Features.Set<IStatusCodeReExecuteFeature>(new StatusCodeReExecuteFeature()
+            // Store the original paths so the app can check it.
+            context.HttpContext.Features.Set<IStatusCodeReExecuteFeature>(new StatusCodeReExecuteFeature()
             {
                 OriginalPathBase = context.HttpContext.Request.PathBase.Value!,
                 OriginalPath = originalPath.Value!,
@@ -224,9 +224,9 @@ public static class StatusCodePagesExtensions
                 RouteValues = routeValuesFeature?.RouteValues
             });
 
-                // An endpoint may have already been set. Since we're going to re-invoke the middleware pipeline we need to reset
-                // the endpoint and route values to ensure things are re-calculated.
-                context.HttpContext.SetEndpoint(endpoint: null);
+            // An endpoint may have already been set. Since we're going to re-invoke the middleware pipeline we need to reset
+            // the endpoint and route values to ensure things are re-calculated.
+            context.HttpContext.SetEndpoint(endpoint: null);
             if (routeValuesFeature != null)
             {
                 routeValuesFeature.RouteValues = null!;

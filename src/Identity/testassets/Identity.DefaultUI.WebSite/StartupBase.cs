@@ -35,8 +35,8 @@ public class StartupBase<TUser, TContext>
     {
         services.Configure<CookiePolicyOptions>(options =>
         {
-                // This lambda determines whether user consent for non-essential cookies is needed for a given request.
-                options.CheckConsentNeeded = context => true;
+            // This lambda determines whether user consent for non-essential cookies is needed for a given request.
+            options.CheckConsentNeeded = context => true;
         });
 
         services.AddDbContext<TContext>(options =>

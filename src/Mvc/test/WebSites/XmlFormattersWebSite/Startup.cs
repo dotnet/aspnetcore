@@ -23,13 +23,13 @@ public class Startup
 
         services.Configure<MvcOptions>(options =>
         {
-                // Since both XmlSerializer and DataContractSerializer based formatters
-                // have supported media types of 'application/xml' and 'text/xml',  it
-                // would be difficult for a test to choose a particular formatter based on
-                // request information (Ex: Accept header).
-                // We'll configure the ones on MvcOptions to use a distinct set of content types.
+            // Since both XmlSerializer and DataContractSerializer based formatters
+            // have supported media types of 'application/xml' and 'text/xml',  it
+            // would be difficult for a test to choose a particular formatter based on
+            // request information (Ex: Accept header).
+            // We'll configure the ones on MvcOptions to use a distinct set of content types.
 
-                XmlSerializerInputFormatter xmlSerializerInputFormatter = null;
+            XmlSerializerInputFormatter xmlSerializerInputFormatter = null;
             XmlSerializerOutputFormatter xmlSerializerOutputFormatter = null;
             XmlDataContractSerializerInputFormatter dcsInputFormatter = null;
             XmlDataContractSerializerOutputFormatter dcsOutputFormatter = null;

@@ -48,8 +48,8 @@ public static class OwinExtensions
                 var app = middleware(exitMiddleware);
                 return httpContext =>
                 {
-                        // Use the existing OWIN env if there is one.
-                        IDictionary<string, object> env;
+                    // Use the existing OWIN env if there is one.
+                    IDictionary<string, object> env;
                     var owinEnvFeature = httpContext.Features.Get<IOwinEnvironmentFeature>();
                     if (owinEnvFeature != null)
                     {
@@ -146,8 +146,8 @@ public static class OwinExtensions
 
             return env =>
             {
-                    // Use the existing HttpContext if there is one.
-                    HttpContext context;
+                // Use the existing HttpContext if there is one.
+                HttpContext context;
                 object obj;
                 if (env.TryGetValue(typeof(HttpContext).FullName, out obj))
                 {

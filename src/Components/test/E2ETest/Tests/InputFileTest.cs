@@ -120,8 +120,8 @@ public class InputFileTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
             var fileContentTypeElement = fileContainer.FindElement(By.Id("file-content-type"));
             var fileContentElement = fileContainer.FindElement(By.Id("file-content"));
 
-                // Validate that the file was uploaded correctly and all fields are present
-                Browser.False(() => string.IsNullOrWhiteSpace(fileNameElement.Text));
+            // Validate that the file was uploaded correctly and all fields are present
+            Browser.False(() => string.IsNullOrWhiteSpace(fileNameElement.Text));
             Browser.NotEqual(default, () => DateTimeOffset.Parse(fileLastModifiedElement.Text, CultureInfo.InvariantCulture));
             Browser.Equal(file.Contents.Length.ToString(CultureInfo.InvariantCulture), () => fileSizeElement.Text);
             Browser.Equal("text/plain", () => fileContentTypeElement.Text);

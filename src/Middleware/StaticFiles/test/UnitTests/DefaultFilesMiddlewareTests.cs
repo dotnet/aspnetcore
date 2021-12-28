@@ -96,8 +96,8 @@ public class DefaultFilesMiddlewareTests
 
                     app.Use(next => context =>
                     {
-                            // Assign an endpoint, this will make the default files noop.
-                            context.SetEndpoint(new Endpoint((c) =>
+                        // Assign an endpoint, this will make the default files noop.
+                        context.SetEndpoint(new Endpoint((c) =>
                         {
                             return context.Response.WriteAsync(context.Request.Path.Value);
                         },

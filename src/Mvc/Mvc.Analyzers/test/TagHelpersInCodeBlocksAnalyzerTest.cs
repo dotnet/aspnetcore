@@ -16,8 +16,8 @@ public class TagHelpersInCodeBlocksAnalyzerTest
 {
     private readonly DiagnosticDescriptor DiagnosticDescriptor = DiagnosticDescriptors.MVC1006_FunctionsContainingTagHelpersMustBeAsyncAndReturnTask;
 
-    private static readonly DiagnosticResult CS4033Result = new ("CS4033", DiagnosticSeverity.Error);
-    private static readonly DiagnosticResult CS4034Result = new ("CS4034", DiagnosticSeverity.Error);
+    private static readonly DiagnosticResult CS4033Result = new("CS4033", DiagnosticSeverity.Error);
+    private static readonly DiagnosticResult CS4034Result = new("CS4034", DiagnosticSeverity.Error);
 
     [Fact]
     public Task DiagnosticsAreReturned_ForUseOfTagHelpersInActions()

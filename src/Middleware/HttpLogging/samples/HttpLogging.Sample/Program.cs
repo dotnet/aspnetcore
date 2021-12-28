@@ -19,8 +19,8 @@ public class Program
         Host.CreateDefaultBuilder(args)
             .ConfigureLogging(logging =>
             {
-                    // Json Logging
-                    logging.ClearProviders();
+                // Json Logging
+                logging.ClearProviders();
                 logging.AddJsonConsole(options =>
                 {
                     options.JsonWriterOptions = new JsonWriterOptions()

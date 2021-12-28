@@ -40,15 +40,15 @@ public class HeaderPropagationIntegrationTest
                 })
                 .Configure(app =>
                 {
-                        // note: no header propagation middleware
+                    // note: no header propagation middleware
 
-                        app.Run(async context =>
+                    app.Run(async context =>
                     {
                         try
                         {
                             var client = context.RequestServices.GetRequiredService<IHttpClientFactory>().CreateClient("test");
                             await client.GetAsync("http://localhost/"); // will throw
-                            }
+                        }
                         catch (Exception ex)
                         {
                             captured = ex;

@@ -280,10 +280,10 @@ public class Http2KeepAliveTests : Http2TestBase
         var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
         await InitializeConnectionAsync(async c =>
         {
-                // Don't consume any request data
-                await tcs.Task;
-                // Send headers
-                await c.Request.Body.FlushAsync();
+            // Don't consume any request data
+            await tcs.Task;
+            // Send headers
+            await c.Request.Body.FlushAsync();
         }, expectedWindowUpdate: false).DefaultTimeout();
 
         DateTimeOffset now = _serviceContext.MockSystemClock.UtcNow;
@@ -335,10 +335,10 @@ public class Http2KeepAliveTests : Http2TestBase
         var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
         await InitializeConnectionAsync(async c =>
         {
-                // Don't consume any request data
-                await tcs.Task;
-                // Send headers
-                await c.Request.Body.FlushAsync();
+            // Don't consume any request data
+            await tcs.Task;
+            // Send headers
+            await c.Request.Body.FlushAsync();
         }, expectedWindowUpdate: false).DefaultTimeout();
 
         DateTimeOffset now = _serviceContext.MockSystemClock.UtcNow;

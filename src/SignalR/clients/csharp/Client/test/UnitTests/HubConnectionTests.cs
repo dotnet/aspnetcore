@@ -624,8 +624,8 @@ public partial class HubConnectionTests : VerifiableLoggedTest
             {
                 try
                 {
-                        // This should be canceled when the connection is closed
-                        await hubConnection.InvokeAsync<string>("Echo", msg).DefaultTimeout();
+                    // This should be canceled when the connection is closed
+                    await hubConnection.InvokeAsync<string>("Echo", msg).DefaultTimeout();
                 }
                 catch (Exception ex)
                 {

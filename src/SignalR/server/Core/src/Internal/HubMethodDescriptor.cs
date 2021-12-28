@@ -61,8 +61,8 @@ internal class HubMethodDescriptor
         // Take out synthetic arguments that will be provided by the server, this list will be given to the protocol parsers
         ParameterTypes = methodExecutor.MethodParameters.Where(p =>
         {
-                // Only streams can take CancellationTokens currently
-                if (IsStreamResponse && p.ParameterType == typeof(CancellationToken))
+            // Only streams can take CancellationTokens currently
+            if (IsStreamResponse && p.ParameterType == typeof(CancellationToken))
             {
                 HasSyntheticArguments = true;
                 return false;

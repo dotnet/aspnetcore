@@ -283,8 +283,8 @@ public class RegistryPolicyResolverTests
         }
         catch
         {
-                // swallow all failures
-                return null;
+            // swallow all failures
+            return null;
         }
     });
 

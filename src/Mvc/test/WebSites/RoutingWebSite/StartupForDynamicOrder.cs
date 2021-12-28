@@ -54,8 +54,8 @@ public class StartupForDynamicOrder
         app.UseRouting();
         app.UseEndpoints(endpoints =>
         {
-                // Route order definition is important for all these routes:
-                switch (scenario)
+            // Route order definition is important for all these routes:
+            switch (scenario)
             {
                 case DynamicOrderScenarios.AttributeRouteDynamicRoute:
                     endpoints.MapDynamicControllerRoute<Transformer>("attribute-dynamic-order/{**slug}", new TransformerState() { Identifier = "slug" });

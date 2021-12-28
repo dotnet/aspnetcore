@@ -394,16 +394,16 @@ public class UpgradeTests : LoggedTest
                 var upgradeFeature = context.Features.Get<IHttpUpgradeFeature>();
                 var duplexStream = await upgradeFeature.UpgradeAsync();
 
-                    // Kestrel will call Transport.Input.CancelPendingRead() during shutdown so idle connections
-                    // can wake up and shutdown gracefully. We manually call CancelPendingRead() to simulate this and
-                    // ensure the Stream returned by UpgradeAsync doesn't throw in this case.
-                    // https://github.com/dotnet/aspnetcore/issues/26482
-                    var connectionTransportFeature = context.Features.Get<IConnectionTransportFeature>();
+                // Kestrel will call Transport.Input.CancelPendingRead() during shutdown so idle connections
+                // can wake up and shutdown gracefully. We manually call CancelPendingRead() to simulate this and
+                // ensure the Stream returned by UpgradeAsync doesn't throw in this case.
+                // https://github.com/dotnet/aspnetcore/issues/26482
+                var connectionTransportFeature = context.Features.Get<IConnectionTransportFeature>();
                 connectionTransportFeature.Transport.Input.CancelPendingRead();
 
-                    // Use ReadAsync() instead of CopyToAsync() for this test since IsCanceled is only checked in
-                    // HttpRequestStream.ReadAsync() and not HttpRequestStream.CopyToAsync()
-                    Assert.Equal(0, await duplexStream.ReadAsync(new byte[1]));
+                // Use ReadAsync() instead of CopyToAsync() for this test since IsCanceled is only checked in
+                // HttpRequestStream.ReadAsync() and not HttpRequestStream.CopyToAsync()
+                Assert.Equal(0, await duplexStream.ReadAsync(new byte[1]));
                 appCompletedTcs.SetResult(null);
             }
             catch (Exception ex)

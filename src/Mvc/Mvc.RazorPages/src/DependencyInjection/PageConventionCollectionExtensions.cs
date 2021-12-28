@@ -543,8 +543,8 @@ public static class PageConventionCollectionExtensions
     {
         return model =>
         {
-                // Use the route specified in MapPageRoute for outbound routing.
-                foreach (var selector in model.Selectors)
+            // Use the route specified in MapPageRoute for outbound routing.
+            foreach (var selector in model.Selectors)
             {
                 selector.AttributeRouteModel!.SuppressLinkGeneration = true;
             }
