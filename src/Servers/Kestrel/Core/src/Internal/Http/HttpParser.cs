@@ -144,6 +144,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
     /// <summary>
     /// Finds '\r' or '\n' or '\t' or ' ' or '\t' in the given sequence (whatever comes first)
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static int IndexOfTabOrSpaceOrColonOrCrOrLf(ref byte searchSpace, int length)
     {
         nuint ulen = (nuint)length;
@@ -173,39 +174,38 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
         var cmp4 = Sse2.CompareEqual(clVector, search);
 
         // For some reason JIT may still re-order some :'(
-        var or0 = Sse2.Or(cmp0, cmp1);
-        var or1 = Sse2.Or(cmp2, cmp3);
-        var or2 = Sse2.Or(or0, cmp4);
-        var or3 = Sse2.Or(or1, or2);
+        var or01 = Sse2.Or(cmp0, cmp1);
+        var or23 = Sse2.Or(cmp2, cmp3);
+        var orAll = Sse2.Or(Sse2.Or(or01, cmp4), or23);
 
-        int matches = Sse2.MoveMask(or3);
+        int matches = Sse2.MoveMask(orAll);
         if (matches != 0)
             return (int)(offset + (nuint)BitOperations.TrailingZeroCount(matches));
 
-        offset += 16;
+        offset += (nuint)Vector128<byte>.Count;
         if (offset == ulen)
             // we're done and nothing was found
             return -1;
-        if (offset + 16 > ulen)
+        if (offset + (nuint)Vector128<byte>.Count > ulen)
             // not enough space for the next 128bit vector so let's overlap
             // with the current one in order to avoid SCALAR fallback
-            offset = ulen - 16;
+            offset = ulen - (nuint)Vector128<byte>.Count;
         goto NEXT_VECTOR;
 
     SCALAR:
         for (; offset < ulen; offset++)
         {
             var val = Unsafe.AddByteOffset(ref searchSpace, offset);
-            if (val == '\r' || val == '\n' || val == '\t' || val == ' ' || val == ':')
-                return (int)offset;
+            //if (val == '\r' || val == '\n' || val == '\t' || val == ' ' || val == ':')
+            //    return (int)offset;
 
             // bit-test version: JIT/Roslyn are not smart enough to do it yet
             //
-            // val = (byte)(val - 9);
-            // if (val > 49)
-            //     return -1;
-            // if (((562949961809939UL >> val) & 1) == 1)
-            //     return (int)offset;
+            val = (byte)(val - 9);
+            if (val > 49)
+                return -1;
+            if (((562949961809939UL >> val) & 1) == 1)
+                return (int)offset;
         }
         return -1;
     }
@@ -213,6 +213,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
     /// <summary>
     /// Find CR or LF in the given sequence (whatever comes first)
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static int IndexOfCrOrLf(ref byte searchSpace, int length)
     {
         nuint ulen = (nuint)length;
@@ -238,14 +239,14 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
         if (matches != 0)
             return (int)(offset + (nuint)BitOperations.TrailingZeroCount(matches));
 
-        offset += 16;
+        offset += (nuint)Vector128<byte>.Count;
         if (offset == ulen)
             // we're done
             return -1;
-        if (offset + 16 > ulen)
+        if (offset + (nuint)Vector128<byte>.Count > ulen)
             // not enough space for the next 128bit vector so let's overlap
             // with the current one in order to avoid SCALAR fallback
-            offset = ulen - 16;
+            offset = ulen - (nuint)Vector128<byte>.Count;
         goto NEXT_VECTOR;
 
     SCALAR:
