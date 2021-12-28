@@ -173,7 +173,6 @@
 ~Microsoft.AspNetCore.Mvc.TagHelpers.LinkTagHelper.HrefInclude.get -> string
 ~Microsoft.AspNetCore.Mvc.TagHelpers.LinkTagHelper.HrefInclude.set -> void
 ~Microsoft.AspNetCore.Mvc.TagHelpers.LinkTagHelper.JavaScriptEncoder.get -> System.Text.Encodings.Web.JavaScriptEncoder
-~Microsoft.AspNetCore.Mvc.TagHelpers.LinkTagHelper.LinkTagHelper(Microsoft.AspNetCore.Hosting.IWebHostEnvironment hostingEnvironment, Microsoft.AspNetCore.Mvc.Razor.Infrastructure.TagHelperMemoryCacheProvider cacheProvider, Microsoft.AspNetCore.Mvc.ViewFeatures.IFileVersionProvider fileVersionProvider, System.Text.Encodings.Web.HtmlEncoder htmlEncoder, System.Text.Encodings.Web.JavaScriptEncoder javaScriptEncoder, Microsoft.AspNetCore.Mvc.Routing.IUrlHelperFactory urlHelperFactory) -> void
 ~Microsoft.AspNetCore.Mvc.TagHelpers.OptionTagHelper.Generator.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.IHtmlGenerator
 ~Microsoft.AspNetCore.Mvc.TagHelpers.OptionTagHelper.OptionTagHelper(Microsoft.AspNetCore.Mvc.ViewFeatures.IHtmlGenerator generator) -> void
 ~Microsoft.AspNetCore.Mvc.TagHelpers.OptionTagHelper.Value.get -> string

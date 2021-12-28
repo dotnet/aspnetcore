@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.TagHelpers;
 
@@ -54,9 +55,7 @@ public class LinkTagHelper : UrlResolutionTagHelper
     private const string IntegrityAttributeName = "integrity";
     private static readonly Func<Mode, Mode, int> Compare = (a, b) => a - b;
 
-    private static readonly ModeAttributes<Mode>[] ModeDetails = new[] {
-            // Regular src with file version alone
-            new ModeAttributes<Mode>(Mode.AppendVersion, new[] { AppendVersionAttributeName }),
+    private static readonly ModeAttributes<Mode>[] ModeDetails = new[] {           
             // Globbed Href (include only) no static href
             new ModeAttributes<Mode>(Mode.GlobbedHref, new [] { HrefIncludeAttributeName }),
             // Globbed Href (include & exclude), no static href
@@ -104,6 +103,7 @@ public class LinkTagHelper : UrlResolutionTagHelper
     /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/>.</param>
     /// <param name="javaScriptEncoder">The <see cref="JavaScriptEncoder"/>.</param>
     /// <param name="urlHelperFactory">The <see cref="IUrlHelperFactory"/>.</param>
+    /// <param name="mvcViewOptions">The <see cref="MvcViewOptions"/>.</param>
     // Decorated with ActivatorUtilitiesConstructor since we want to influence tag helper activation
     // to use this constructor in the default case.
     public LinkTagHelper(
@@ -112,13 +112,15 @@ public class LinkTagHelper : UrlResolutionTagHelper
         IFileVersionProvider fileVersionProvider,
         HtmlEncoder htmlEncoder,
         JavaScriptEncoder javaScriptEncoder,
-        IUrlHelperFactory urlHelperFactory)
+        IUrlHelperFactory urlHelperFactory,
+        IOptions<MvcViewOptions> mvcViewOptions)
         : base(urlHelperFactory, htmlEncoder)
     {
         HostingEnvironment = hostingEnvironment;
         JavaScriptEncoder = javaScriptEncoder;
         Cache = cacheProvider.Cache;
         FileVersionProvider = fileVersionProvider;
+        MvcViewOptions = mvcViewOptions;
     }
 
     /// <inheritdoc />
@@ -216,6 +218,11 @@ public class LinkTagHelper : UrlResolutionTagHelper
     protected internal IWebHostEnvironment HostingEnvironment { get; }
 
     /// <summary>
+    /// Gets the <see cref="MvcOptions"/> for the application.
+    /// </summary>
+    protected internal IOptions<MvcViewOptions> MvcViewOptions { get; }
+
+    /// <summary>
     /// Gets the <see cref="IMemoryCache"/> used to store globbed urls.
     /// </summary>
     protected internal IMemoryCache Cache { get; }
@@ -272,12 +279,11 @@ public class LinkTagHelper : UrlResolutionTagHelper
         // Retrieve the TagHelperOutput variation of the "href" attribute in case other TagHelpers in the
         // pipeline have touched the value. If the value is already encoded this LinkTagHelper may
         // not function properly.
-        Href = output.Attributes[HrefAttributeName]?.Value as string;
+        Href = output.Attributes[HrefAttributeName]?.Value as string;        
 
-        if (!AttributeMatcher.TryDetermineMode(context, ModeDetails, Compare, out var mode))
+        if (AppendVersion == null)
         {
-            // No attributes matched so we have nothing to do
-            return;
+            AppendVersion = MvcViewOptions.Value.HtmlHelperOptions?.AppendFileVersionsToTagHelpers;
         }
 
         if (AppendVersion == true)
@@ -293,6 +299,12 @@ public class LinkTagHelper : UrlResolutionTagHelper
                     FileVersionProvider.AddFileVersionToPath(ViewContext.HttpContext.Request.PathBase, Href),
                     existingAttribute.ValueStyle);
             }
+        }
+
+        if (!AttributeMatcher.TryDetermineMode(context, ModeDetails, Compare, out var mode))
+        {
+            // No attributes matched so we have nothing to do
+            return;
         }
 
         var builder = output.PostElement;
@@ -460,6 +472,12 @@ public class LinkTagHelper : UrlResolutionTagHelper
             Debug.Assert(fallbackHrefs[i] != null);
 
             var valueToWrite = fallbackHrefs[i];
+
+            if (AppendVersion == null)
+            {
+                AppendVersion = MvcViewOptions.Value.HtmlHelperOptions?.AppendFileVersionsToTagHelpers;
+            }
+
             if (AppendVersion == true)
             {
                 valueToWrite = FileVersionProvider.AddFileVersionToPath(ViewContext.HttpContext.Request.PathBase, fallbackHrefs[i]);
@@ -530,6 +548,11 @@ public class LinkTagHelper : UrlResolutionTagHelper
 
     private void AppendVersionedHref(string hrefName, string hrefValue, TagHelperContent builder)
     {
+        if (AppendVersion == null)
+        {
+            AppendVersion = MvcViewOptions.Value.HtmlHelperOptions?.AppendFileVersionsToTagHelpers;
+        }
+
         if (AppendVersion == true)
         {
             hrefValue = FileVersionProvider.AddFileVersionToPath(ViewContext.HttpContext.Request.PathBase, hrefValue);

@@ -61,4 +61,12 @@ public class HtmlHelperOptions
     /// Gets or sets the way hidden inputs are rendered for checkbox tag helpers and html helpers.
     /// </summary>
     public CheckBoxHiddenInputRenderMode CheckBoxHiddenInputRenderMode { get; set; } = CheckBoxHiddenInputRenderMode.EndOfForm;
+
+    /// <summary>
+    /// Value indicating if file version should be appended to the href urls.
+    /// </summary>
+    /// <remarks>
+    /// If <c>true</c> then a query string "v" with the encoded content of the file is added.
+    /// </remarks>
+    public bool AppendFileVersionsToTagHelpers { get; set; }
 }

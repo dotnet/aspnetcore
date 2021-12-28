@@ -23,6 +23,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
@@ -940,13 +941,17 @@ public class LinkTagHelperTest
         var memoryCacheProvider = new TagHelperMemoryCacheProvider();
         var fileVersionProvider = new DefaultFileVersionProvider(hostingEnvironment, memoryCacheProvider);
 
+        var mvcViewOptionsAccessor = new Mock<IOptions<MvcViewOptions>>();
+        mvcViewOptionsAccessor.SetupGet(accessor => accessor.Value).Returns(new MvcViewOptions());
+
         return new LinkTagHelper(
             hostingEnvironment,
             memoryCacheProvider,
             fileVersionProvider,
             new HtmlTestEncoder(),
             new JavaScriptTestEncoder(),
-            urlHelperFactory)
+            urlHelperFactory,
+            mvcViewOptionsAccessor.Object)
         {
             ViewContext = viewContext,
         };

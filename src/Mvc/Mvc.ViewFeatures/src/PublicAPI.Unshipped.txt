@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.AspNetCore.Mvc.ViewFeatures.HtmlHelperOptions.AppendFileVersionsToTagHelpers.get -> bool
+Microsoft.AspNetCore.Mvc.ViewFeatures.HtmlHelperOptions.AppendFileVersionsToTagHelpers.set -> void
