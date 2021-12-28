@@ -195,16 +195,25 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
     SCALAR:
         for (; offset < ulen; offset++)
         {
-            var val = Unsafe.AddByteOffset(ref searchSpace, offset);
-            //if (val == '\r' || val == '\n' || val == '\t' || val == ' ' || val == ':')
-            //    return (int)offset;
+            byte val = Unsafe.AddByteOffset(ref searchSpace, offset);
 
-            // bit-test version: JIT/Roslyn are not smart enough to do it yet
+            // Here we want to do something like this:
             //
-            val = (byte)(val - 9);
-            if (val > 49)
+            // if (val == '\r' || val == '\n' || val == '\t' || val == ' ' || val == ':')
+            //     return (int)offset;
+            //
+            // (or a switch operator)
+            //
+            // but unfortunately neither JIT nor Roslyn are smart enough to lower it to bit-test
+            // PS: JIT still emits sub-optimal codegen here and doesn't recognize 'bt'
+            //
+            val = (byte)(val - 9); // lower limit is '\t'
+            if (val > 49) // upper limit is ':'
                 return -1;
-            if (((562949961809939UL >> val) & 1) == 1)
+
+            const ulong bitMask = 0b10000000000000000000000000100000000000000000010011;
+            //                      :                        ' '                 r  nt
+            if (((bitMask >> val) & 1) == 1)
                 return (int)offset;
         }
         return -1;
