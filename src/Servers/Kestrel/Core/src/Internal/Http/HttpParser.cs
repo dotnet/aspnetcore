@@ -209,7 +209,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
             //
             val = (byte)(val - 9); // lower limit is '\t'
             if (val > 49) // upper limit is ':'
-                return -1;
+                continue;
 
             const ulong bitMask = 0b10000000000000000000000000100000000000000000010011;
             //                      :                        ' '                 r  nt
