@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             returnOperation);
 
         // Assert
-        Assert.Null(actualResponseMetadata);
+        Assert.Empty(actualResponseMetadata);
     }
 
     [Fact]
@@ -92,8 +92,10 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         var actualResponseMetadata = await RunInspectReturnStatementSyntax();
 
         // Assert
-        Assert.NotNull(actualResponseMetadata);
-        Assert.Equal(401, actualResponseMetadata.Value.StatusCode);
+        Assert.NotEmpty(actualResponseMetadata);
+
+        var metadata = actualResponseMetadata.Single();
+        Assert.Equal(401, metadata.StatusCode);
     }
 
     [Fact]
@@ -103,8 +105,10 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         var actualResponseMetadata = await RunInspectReturnStatementSyntax();
 
         // Assert
-        Assert.NotNull(actualResponseMetadata);
-        Assert.True(actualResponseMetadata.Value.IsDefaultResponse);
+        Assert.NotEmpty(actualResponseMetadata);
+
+        var metadata = actualResponseMetadata.Single();
+        Assert.True(metadata.IsDefaultResponse);
     }
 
     [Fact]
@@ -114,8 +118,10 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         var actualResponseMetadata = await RunInspectReturnStatementSyntax();
 
         // Assert
-        Assert.NotNull(actualResponseMetadata);
-        Assert.Equal(201, actualResponseMetadata.Value.StatusCode);
+        Assert.NotEmpty(actualResponseMetadata);
+
+        var metadata = actualResponseMetadata.Single();
+        Assert.Equal(201, metadata.StatusCode);
     }
 
     [Fact]
@@ -125,8 +131,10 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         var actualResponseMetadata = await RunInspectReturnStatementSyntax();
 
         // Assert
-        Assert.NotNull(actualResponseMetadata);
-        Assert.Equal(204, actualResponseMetadata.Value.StatusCode);
+        Assert.NotEmpty(actualResponseMetadata);
+
+        var metadata = actualResponseMetadata.Single();
+        Assert.Equal(204, metadata.StatusCode);
     }
 
     [Fact]
@@ -136,8 +144,10 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         var actualResponseMetadata = await RunInspectReturnStatementSyntax();
 
         // Assert
-        Assert.NotNull(actualResponseMetadata);
-        Assert.Equal(302, actualResponseMetadata.Value.StatusCode);
+        Assert.NotEmpty(actualResponseMetadata);
+
+        var metadata = actualResponseMetadata.Single();
+        Assert.Equal(302, metadata.StatusCode);
     }
 
     [Fact]
@@ -147,8 +157,10 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         var actualResponseMetadata = await RunInspectReturnStatementSyntax();
 
         // Assert
-        Assert.NotNull(actualResponseMetadata);
-        Assert.Equal(422, actualResponseMetadata.Value.StatusCode);
+        Assert.NotEmpty(actualResponseMetadata);
+
+        var metadata = actualResponseMetadata.Single();
+        Assert.Equal(422, metadata.StatusCode);
     }
 
     [Fact]
@@ -158,8 +170,10 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         var actualResponseMetadata = await RunInspectReturnStatementSyntax();
 
         // Assert
-        Assert.NotNull(actualResponseMetadata);
-        Assert.Equal(423, actualResponseMetadata.Value.StatusCode);
+        Assert.NotEmpty(actualResponseMetadata);
+
+        var metadata = actualResponseMetadata.Single();
+        Assert.Equal(423, metadata.StatusCode);
     }
 
     [Fact]
@@ -170,7 +184,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         var actualResponseMetadata = await RunInspectReturnStatementSyntax();
 
         // Assert
-        Assert.Null(actualResponseMetadata);
+        Assert.Empty(actualResponseMetadata);
     }
 
     [Fact]
@@ -181,8 +195,10 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         var actualResponseMetadata = await RunInspectReturnStatementSyntax();
 
         // Assert
-        Assert.NotNull(actualResponseMetadata);
-        Assert.Equal(400, actualResponseMetadata.Value.StatusCode);
+        Assert.NotEmpty(actualResponseMetadata);
+
+        var metadata = actualResponseMetadata.Single();
+        Assert.Equal(400, metadata.StatusCode);
     }
 
     [Fact]
@@ -192,8 +208,11 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         var actualResponseMetadata = await RunInspectReturnStatementSyntax();
 
         // Assert
-        Assert.NotNull(actualResponseMetadata?.ReturnType);
-        Assert.Equal("TestModel", actualResponseMetadata.Value.ReturnType.Name);
+        Assert.NotEmpty(actualResponseMetadata);
+
+        var metadata = actualResponseMetadata.Single();
+        Assert.NotNull(metadata.ReturnType);
+        Assert.Equal("TestModel", metadata.ReturnType.Name);
     }
 
     [Fact]
@@ -203,8 +222,11 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         var actualResponseMetadata = await RunInspectReturnStatementSyntax();
 
         // Assert
-        Assert.NotNull(actualResponseMetadata?.ReturnType);
-        Assert.Equal("TestModel", actualResponseMetadata.Value.ReturnType.Name);
+        Assert.NotEmpty(actualResponseMetadata);
+
+        var metadata = actualResponseMetadata.Single();
+        Assert.NotNull(metadata.ReturnType);
+        Assert.Equal("TestModel", metadata.ReturnType.Name);
     }
 
     [Fact]
@@ -214,8 +236,11 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         var actualResponseMetadata = await RunInspectReturnStatementSyntax();
 
         // Assert
-        Assert.NotNull(actualResponseMetadata?.ReturnType);
-        Assert.Equal("TestModel", actualResponseMetadata.Value.ReturnType.Name);
+        Assert.NotEmpty(actualResponseMetadata);
+
+        var metadata = actualResponseMetadata.Single();
+        Assert.NotNull(metadata.ReturnType);
+        Assert.Equal("TestModel", metadata.ReturnType.Name);
     }
 
     [Fact]
@@ -225,8 +250,10 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         var actualResponseMetadata = await RunInspectReturnStatementSyntax();
 
         // Assert
-        Assert.NotNull(actualResponseMetadata);
-        Assert.Null(actualResponseMetadata.Value.ReturnType);
+        Assert.NotEmpty(actualResponseMetadata);
+
+        var metadata = actualResponseMetadata.Single();
+        Assert.Null(metadata.ReturnType);
     }
 
     [Fact]
@@ -339,7 +366,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         return (result, responseMetadatas, testSource);
     }
 
-    private async Task<ActualApiResponseMetadata?> RunInspectReturnStatementSyntax([CallerMemberName] string test = null)
+    private async Task<List<ActualApiResponseMetadata>> RunInspectReturnStatementSyntax([CallerMemberName] string test = null)
     {
         // Arrange
         var compilation = await GetCompilation("InspectReturnExpressionTests");
@@ -358,7 +385,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             returnOperation);
     }
 
-    private async Task<ActualApiResponseMetadata?> RunInspectReturnStatementSyntax(string source, string test)
+    private async Task<List<ActualApiResponseMetadata>> RunInspectReturnStatementSyntax(string source, string test)
     {
         var project = MvcDiagnosticAnalyzerRunner.CreateProjectWithReferencesInBinDir(GetType().Assembly, new[] { source });
         var compilation = await project.GetCompilationAsync();

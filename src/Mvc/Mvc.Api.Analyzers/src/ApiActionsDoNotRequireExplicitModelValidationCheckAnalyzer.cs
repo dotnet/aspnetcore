@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -111,9 +112,9 @@ public class ApiActionsDoNotRequireExplicitModelValidationCheckAnalyzer : Diagno
 
             var actualMetadata = ActualApiResponseMetadataFactory.InspectReturnOperation(
                 in symbolCache,
-               returnOperation);
+                returnOperation);
 
-            if (actualMetadata == null || actualMetadata.Value.StatusCode != 400)
+            if (actualMetadata.All(x => x.StatusCode != 400))
             {
                 return;
             }

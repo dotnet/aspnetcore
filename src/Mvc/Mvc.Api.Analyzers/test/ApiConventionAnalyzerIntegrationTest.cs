@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -29,10 +29,6 @@ public class ApiConventionAnalyzerIntegrationTest
 
     [Fact]
     public Task NoDiagnosticsAreReturned_ForOkResultReturningAction()
-        => RunNoDiagnosticsAreReturned();
-
-    [Fact]
-    public Task NoDiagnosticsAreReturned_ForApiController_IfStatusCodesCannotBeInferred()
         => RunNoDiagnosticsAreReturned();
 
     [Fact]
@@ -157,6 +153,18 @@ namespace Test
     [Fact]
     public Task DiagnosticsAreReturned_ForActionResultOfTReturningMethodWithoutSomeAttributes()
         => RunTest(ApiDiagnosticDescriptors.API1000_ActionReturnsUndocumentedStatusCode, 422);
+
+    [Fact]
+    public Task DiagnosticsAreReturned_ForConditionalReturn_ReturnsUndocumentedStatusCode()
+        => RunTest(ApiDiagnosticDescriptors.API1000_ActionReturnsUndocumentedStatusCode, 404);
+
+    [Fact]
+    public Task DiagnosticsAreReturned_ForMultipleConditionalReturns_ReturnsUndocumentedStatusCode()
+        => RunTest(ApiDiagnosticDescriptors.API1000_ActionReturnsUndocumentedStatusCode, 400);
+
+    [Fact]
+    public Task DiagnosticsAreReturned_IfCondtionalWithAttributeReturnsValue_WithoutDocumentation()
+        => RunTest(ApiDiagnosticDescriptors.API1001_ActionReturnsUndocumentedSuccessResult);
 
     [Fact]
     public Task DiagnosticsAreReturned_IfMethodWithConvention_ReturnsUndocumentedStatusCode()

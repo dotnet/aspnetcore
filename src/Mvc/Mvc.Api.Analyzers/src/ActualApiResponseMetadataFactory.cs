@@ -39,9 +39,9 @@ public static class ActualApiResponseMetadataFactory
                 localSymbolCache,
                 returnOperation);
 
-            if (responseMetadata is { } value)
+            if (responseMetadata.Any())
             {
-                localActualResponseMetadata.Add(value);
+                localActualResponseMetadata.AddRange(responseMetadata);
             }
             else
             {
@@ -58,23 +58,68 @@ public static class ActualApiResponseMetadataFactory
         return allReturnStatementsReadable;
     }
 
-    internal static ActualApiResponseMetadata? InspectReturnOperation(
+    internal static List<ActualApiResponseMetadata> InspectReturnOperation(
         in ApiControllerSymbolCache symbolCache,
         IReturnOperation returnOperation)
     {
+        var apiResponses = new List<ActualApiResponseMetadata>();
+
         var returnedValue = returnOperation.ReturnedValue;
         if (returnedValue is null || returnedValue is IInvalidOperation)
         {
-            return null;
+            return apiResponses;
         }
 
-        // Covers conversion in the `IActionResult GetResult => NotFound()` case.
-        // Multiple conversions can happen for ActionResult<T>, hence a while loop.
-        while (returnedValue is IConversionOperation conversion)
+        // Add the original returned value to the stack as starting point.
+        // If there are conditional expressions, multiple operations are added to the stack.
+        // Due to this, it is possible to return multiple response metadata elements.
+        var pendingOperations = new Stack<IOperation>();
+        pendingOperations.Push(returnedValue);
+
+        while (pendingOperations.Any())
         {
-            returnedValue = conversion.Operand;
+            var currentOperation = pendingOperations.Pop();
+
+            // Covers conversion in the `IActionResult GetResult => NotFound()` case.
+            // Multiple conversions can happen for ActionResult<T>, hence a while loop.
+            if (currentOperation is IConversionOperation conversion)
+            {
+                pendingOperations.Push(conversion.Operand);
+            }
+
+            // Covers condtional expressions like `return id == 0 ? NotFound() : Ok()`.
+            else if (currentOperation is IConditionalOperation conditional)
+            {
+                if (conditional.WhenTrue != null)
+                {
+                    pendingOperations.Push(conditional.WhenTrue);
+                }
+
+                if (conditional.WhenFalse != null)
+                {
+                    pendingOperations.Push(conditional.WhenFalse);
+                }
+            }
+
+            // Otherwise, inspect the current operation for metadata and add it to the list.
+            else
+            {
+                var response = InspectReturnedValue(symbolCache, returnOperation, currentOperation);
+                if (response.HasValue)
+                {
+                    apiResponses.Add(response.Value);
+                }
+            }
         }
 
+        return apiResponses;
+    }
+
+    private static ActualApiResponseMetadata? InspectReturnedValue(
+        in ApiControllerSymbolCache symbolCache,
+        IReturnOperation returnOperation,
+        IOperation returnedValue)
+    {
         var statementReturnType = returnedValue.Type;
 
         if (!symbolCache.IActionResult.IsAssignableFrom(statementReturnType))
@@ -120,7 +165,6 @@ public static class ActualApiResponseMetadataFactory
                     break;
                 }
         }
-
 
         if (statusCode == null)
         {
