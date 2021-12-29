@@ -75,6 +75,22 @@
         "panel": "new"
       },
       "problemMatcher": []
+    },
+    {
+      "label": "Build current project",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "${workspaceFolder}/eng/scripts/vscode-build.ps1",
+        "-filePath",
+        "${file}"
+      ],
+      "group": "none",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": [],
     }
   ]
 }
