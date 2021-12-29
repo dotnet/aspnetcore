@@ -302,7 +302,7 @@ namespace Common.Tests.Tests.System.Net.aspnetcore.Http3
         }
 
         [Theory]
-        [InlineData(16384, new byte[] { 128, 0, 64, 0 })]
+        [InlineData(16384, new byte[] {128, 0, 64, 0 })]
         [InlineData(16386, new byte[] { 128, 0, 64, 2 })]
         [InlineData(1073741823, new byte[] { 191, 255, 255, 255 })]
         public void TryWrite_BufferNotEmpty_FourByteLimit(long longToEncode,
