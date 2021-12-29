@@ -24,14 +24,7 @@ public static class FeatureCollectionExtensions
             throw new ArgumentNullException(nameof(featureCollection));
         }
 
-        var feature = featureCollection.Get<TFeature>();
-
-        if (feature == null)
-        {
-            throw new InvalidOperationException($"{nameof(TFeature)} is not available");
-        }
-
-        return feature;
+        return featureCollection.Get<TFeature>() ?? throw new InvalidOperationException($"{nameof(TFeature)} is not available");
     }
 
     /// <summary>
