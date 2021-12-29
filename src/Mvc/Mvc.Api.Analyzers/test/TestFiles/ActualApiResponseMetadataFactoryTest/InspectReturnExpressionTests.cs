@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
@@ -77,6 +77,22 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers.TestFiles.InspectReturnExpressi
         {
             var local = new TestModel();
             return local;
+        }
+
+        public IActionResult InspectReturnExpression_ReturnsAllStatusCodes_IfUsingCondtionalExpression()
+        {
+            var x = 0;
+            return x == 0 ? NotFound() : Ok();
+        }
+
+        public IActionResult InspectReturnExpression_ReturnsAllStatusCodes_IfUsingMultipleCondtionalExpression()
+        {
+            var x = 0;
+            return x == 0
+                ? NotFound()
+                : x == 1
+                    ? BadRequest()
+                    : Ok();
         }
     }
 

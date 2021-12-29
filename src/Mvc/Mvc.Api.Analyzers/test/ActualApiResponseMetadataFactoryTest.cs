@@ -257,6 +257,35 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
     }
 
     [Fact]
+    public async Task InspectReturnExpression_ReturnsAllStatusCodes_IfUsingCondtionalExpression()
+    {
+        // Arrange & Act
+        var actualResponseMetadata = await RunInspectReturnStatementSyntax();
+
+        // Assert
+        Assert.NotEmpty(actualResponseMetadata);
+
+        Assert.Equal(2, actualResponseMetadata.Count);
+        Assert.Contains(actualResponseMetadata, x => x.StatusCode == 404);
+        Assert.Contains(actualResponseMetadata, x => x.StatusCode == 200);
+    }
+
+    [Fact]
+    public async Task InspectReturnExpression_ReturnsAllStatusCodes_IfUsingMultipleCondtionalExpression()
+    {
+        // Arrange & Act
+        var actualResponseMetadata = await RunInspectReturnStatementSyntax();
+
+        // Assert
+        Assert.NotEmpty(actualResponseMetadata);
+
+        Assert.Equal(3, actualResponseMetadata.Count);
+        Assert.Contains(actualResponseMetadata, x => x.StatusCode == 400);
+        Assert.Contains(actualResponseMetadata, x => x.StatusCode == 404);
+        Assert.Contains(actualResponseMetadata, x => x.StatusCode == 200);
+    }
+
+    [Fact]
     public async Task TryGetActualResponseMetadata_ActionWithActionResultOfTReturningOkResult()
     {
         // Arrange
