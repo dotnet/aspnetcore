@@ -47,13 +47,6 @@ public static class FeatureCollectionExtensions
             throw new ArgumentNullException(nameof(featureType));
         }
 
-        var feature = featureCollection[featureType];
-
-        if (feature == null)
-        {
-            throw new InvalidOperationException($"{nameof(featureType)} is not available");
-        }
-
-        return feature;
+        return featureCollection[featureType] ?? throw new InvalidOperationException($"{nameof(featureType)} is not available");
     }
 }
