@@ -160,7 +160,8 @@ public class TargetTest : IDisposable
     {
         var project = new TemporaryOpenApiProject("test", _temporaryDirectory, "Microsoft.NET.Sdk")
             .WithTargetFrameworks(_targetFramework)
-            .WithItem(new TemporaryOpenApiProject.ItemSpec {
+            .WithItem(new TemporaryOpenApiProject.ItemSpec
+            {
                 Include = "files/azureMonitor.json",
             });
         _temporaryDirectory.WithCSharpProject(project);
@@ -260,9 +261,10 @@ public class TargetTest : IDisposable
     {
         var project = new TemporaryOpenApiProject("test", _temporaryDirectory, "Microsoft.NET.Sdk")
             .WithTargetFrameworks(_targetFramework)
-            .WithItem(new TemporaryOpenApiProject.ItemSpec {
+            .WithItem(new TemporaryOpenApiProject.ItemSpec
+            {
                 Include = "files/azureMonitor.json",
-                CodeGenerator="NSwagTypeScript"
+                CodeGenerator = "NSwagTypeScript"
             });
         _temporaryDirectory.WithCSharpProject(project);
         project.Create();
@@ -309,9 +311,10 @@ public class TargetTest : IDisposable
     {
         var project = new TemporaryOpenApiProject("test", _temporaryDirectory, "Microsoft.NET.Sdk")
             .WithTargetFrameworks(_targetFramework)
-            .WithItem(new TemporaryOpenApiProject.ItemSpec {
+            .WithItem(new TemporaryOpenApiProject.ItemSpec
+            {
                 Include = "files/azureMonitor.json",
-                Options="--an-option"
+                Options = "--an-option"
             });
         _temporaryDirectory.WithCSharpProject(project);
         project.Create();
