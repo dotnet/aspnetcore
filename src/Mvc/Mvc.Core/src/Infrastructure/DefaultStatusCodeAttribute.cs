@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 /// <remarks>
 /// This attribute is informational only and does not have any runtime effects.
 /// </remarks>
-[AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
 public sealed class DefaultStatusCodeAttribute : Attribute
 {
     /// <summary>

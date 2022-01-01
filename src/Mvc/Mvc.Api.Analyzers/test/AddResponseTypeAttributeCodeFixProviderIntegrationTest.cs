@@ -57,6 +57,9 @@ public class AddResponseTypeAttributeCodeFixProviderIntegrationTest
     [Fact]
     public Task CodeFixWorksOnExpressionBodiedMethod() => RunTest();
 
+    [Fact]
+    public Task CodeFixWorksWithValidationProblem() => RunTest();
+
     private async Task RunTest([CallerMemberName] string testMethod = "")
     {
         // Arrange
