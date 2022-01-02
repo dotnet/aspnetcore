@@ -4,8 +4,6 @@
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Net.Http.Headers;
 
 namespace Components.TestServer.Controllers;
 

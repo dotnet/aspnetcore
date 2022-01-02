@@ -3,8 +3,6 @@
 
 #nullable disable
 
-using System;
-using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Routing.Patterns;
 

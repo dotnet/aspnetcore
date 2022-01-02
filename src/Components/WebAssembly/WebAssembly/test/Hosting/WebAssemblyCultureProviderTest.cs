@@ -1,16 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Globalization;
-using System.IO;
-using System.Net.NetworkInformation;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.JSInterop;
 using Moq;
-using Xunit;
 using static Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyCultureProvider;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting;

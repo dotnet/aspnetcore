@@ -3,7 +3,6 @@
 
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Rewrite.PatternSegments;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Rewrite.Tests.PatternSegments;
 

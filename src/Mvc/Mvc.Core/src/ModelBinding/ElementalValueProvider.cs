@@ -3,7 +3,6 @@
 
 #nullable enable
 
-using System;
 using System.Globalization;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding;
