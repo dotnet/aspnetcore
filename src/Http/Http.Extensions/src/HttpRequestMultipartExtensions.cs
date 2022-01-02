@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Http.Extensions;
 public static class HttpRequestMultipartExtensions
 {
     /// <summary>
-    /// Gets the mutipart boundary from the <c>Content-Type</c> header.
+    /// Gets the multipart boundary from the <c>Content-Type</c> header.
     /// </summary>
     /// <param name="request">The <see cref="HttpRequest"/>.</param>
     /// <returns>The multipart boundary.</returns>
