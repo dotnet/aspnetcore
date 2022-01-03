@@ -235,7 +235,9 @@ public class NewtonsoftJsonInputFormatter : TextInputFormatter, IInputFormatterE
             // Skipping error, if it's already marked as handled
             // This allows user code to implement its own error handling
             if (eventArgs.ErrorContext.Handled)
+            {
                 return;
+            }
 
             successful = false;
 
