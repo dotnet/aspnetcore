@@ -506,7 +506,6 @@ public class NewtonsoftJsonInputFormatterTest : JsonInputFormatterTestBase
             new MvcOptions(),
             new MvcNewtonsoftJsonOptions());
 
-
         var content = $"{{'id': 'should be integer', 'name': 'test location'}}";
         var contentBytes = Encoding.UTF8.GetBytes(content);
         var httpContext = new DefaultHttpContext();
