@@ -1,24 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Net.Http;
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
@@ -107,15 +96,15 @@ public class Startup
             .AddCookie()
             .AddOpenIdConnect(o =>
         {
-                /*
-                o.ClientId = Configuration["oidc:clientid"];
-                o.ClientSecret = Configuration["oidc:clientsecret"]; // for code flow
-                o.Authority = Configuration["oidc:authority"];
-                */
-                // https://github.com/IdentityServer/IdentityServer4.Demo/blob/master/src/IdentityServer4Demo/Config.cs
-                o.ClientId = "hybrid";
+            /*
+            o.ClientId = Configuration["oidc:clientid"];
+            o.ClientSecret = Configuration["oidc:clientsecret"]; // for code flow
+            o.Authority = Configuration["oidc:authority"];
+            */
+            // https://github.com/IdentityServer/IdentityServer4.Demo/blob/master/src/IdentityServer4Demo/Config.cs
+            o.ClientId = "hybrid";
             o.ClientSecret = "secret"; // for code flow
-                o.Authority = "https://demo.identityserver.io/";
+            o.Authority = "https://demo.identityserver.io/";
 
             o.ResponseType = OpenIdConnectResponseType.CodeIdToken;
             o.SaveTokens = true;
@@ -123,9 +112,9 @@ public class Startup
             o.AccessDeniedPath = "/access-denied-from-remote";
             o.MapInboundClaims = false;
 
-                // o.ClaimActions.MapAllExcept("aud", "iss", "iat", "nbf", "exp", "aio", "c_hash", "uti", "nonce");
+            // o.ClaimActions.MapAllExcept("aud", "iss", "iat", "nbf", "exp", "aio", "c_hash", "uti", "nonce");
 
-                o.Events = new OpenIdConnectEvents()
+            o.Events = new OpenIdConnectEvents()
             {
                 OnAuthenticationFailed = c =>
                 {
@@ -135,8 +124,8 @@ public class Startup
                     c.Response.ContentType = "text/plain";
                     if (Environment.IsDevelopment())
                     {
-                            // Debug only, in production do not share exceptions with the remote host.
-                            return c.Response.WriteAsync(c.Exception.ToString());
+                        // Debug only, in production do not share exceptions with the remote host.
+                        return c.Response.WriteAsync(c.Exception.ToString());
                     }
                     return c.Response.WriteAsync("An error occurred processing your authentication.");
                 }
@@ -177,8 +166,8 @@ public class Startup
 
             if (context.Request.Path.Equals("/signout-remote"))
             {
-                    // Redirects
-                    await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                // Redirects
+                await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                 await context.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme, new AuthenticationProperties()
                 {
                     RedirectUri = "/signedout"
@@ -208,31 +197,31 @@ public class Startup
                 return;
             }
 
-                // DefaultAuthenticateScheme causes User to be set
-                // var user = context.User;
+            // DefaultAuthenticateScheme causes User to be set
+            // var user = context.User;
 
-                // This is what [Authorize] calls
-                var userResult = await context.AuthenticateAsync();
+            // This is what [Authorize] calls
+            var userResult = await context.AuthenticateAsync();
             var user = userResult.Principal;
             var props = userResult.Properties;
 
-                // This is what [Authorize(ActiveAuthenticationSchemes = OpenIdConnectDefaults.AuthenticationScheme)] calls
-                // var user = await context.AuthenticateAsync(OpenIdConnectDefaults.AuthenticationScheme);
+            // This is what [Authorize(ActiveAuthenticationSchemes = OpenIdConnectDefaults.AuthenticationScheme)] calls
+            // var user = await context.AuthenticateAsync(OpenIdConnectDefaults.AuthenticationScheme);
 
-                // Not authenticated
-                if (user == null || !user.Identities.Any(identity => identity.IsAuthenticated))
+            // Not authenticated
+            if (user == null || !user.Identities.Any(identity => identity.IsAuthenticated))
             {
-                    // This is what [Authorize] calls
-                    await context.ChallengeAsync();
+                // This is what [Authorize] calls
+                await context.ChallengeAsync();
 
-                    // This is what [Authorize(ActiveAuthenticationSchemes = OpenIdConnectDefaults.AuthenticationScheme)] calls
-                    // await context.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme);
+                // This is what [Authorize(ActiveAuthenticationSchemes = OpenIdConnectDefaults.AuthenticationScheme)] calls
+                // await context.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme);
 
-                    return;
+                return;
             }
 
-                // Authenticated, but not authorized
-                if (context.Request.Path.Equals("/restricted") && !user.Identities.Any(identity => identity.HasClaim("special", "true")))
+            // Authenticated, but not authorized
+            if (context.Request.Path.Equals("/restricted") && !user.Identities.Any(identity => identity.HasClaim("special", "true")))
             {
                 await context.ForbidAsync();
                 return;
@@ -269,8 +258,8 @@ public class Startup
 
                 using (var payload = JsonDocument.Parse(await tokenResponse.Content.ReadAsStringAsync()))
                 {
-                        // Persist the new acess token
-                        props.UpdateTokenValue("access_token", payload.RootElement.GetString("access_token"));
+                    // Persist the new acess token
+                    props.UpdateTokenValue("access_token", payload.RootElement.GetString("access_token"));
                     props.UpdateTokenValue("refresh_token", payload.RootElement.GetString("refresh_token"));
                     if (payload.RootElement.TryGetProperty("expires_in", out var property) && property.TryGetInt32(out var seconds))
                     {
@@ -298,16 +287,16 @@ public class Startup
 
             if (context.Request.Path.Equals("/login-challenge"))
             {
-                    // Challenge the user authentication, and force a login prompt by overwriting the
-                    // "prompt". This could be used for example to require the user to re-enter their
-                    // credentials at the authentication provider, to add an extra confirmation layer.
-                    await context.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme, new OpenIdConnectChallengeProperties()
+                // Challenge the user authentication, and force a login prompt by overwriting the
+                // "prompt". This could be used for example to require the user to re-enter their
+                // credentials at the authentication provider, to add an extra confirmation layer.
+                await context.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme, new OpenIdConnectChallengeProperties()
                 {
                     Prompt = "login",
 
-                        // it is also possible to specify different scopes, e.g.
-                        // Scope = new string[] { "openid", "profile", "other" }
-                    });
+                    // it is also possible to specify different scopes, e.g.
+                    // Scope = new string[] { "openid", "profile", "other" }
+                });
 
                 return;
             }

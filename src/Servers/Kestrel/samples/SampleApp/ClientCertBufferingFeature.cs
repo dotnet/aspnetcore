@@ -25,9 +25,9 @@ internal static class ClientCertBufferingExtensions
             var bodyFeature = context.Features.Get<IHttpRequestBodyDetectionFeature>();
             var connectionItems = context.Features.Get<IConnectionItemsFeature>();
 
-                // Look for TLS connections that don't already have a client cert, and requests that could have a body.
-                if (tlsFeature != null && tlsFeature.ClientCertificate == null && bodyFeature.CanHaveBody
-                && !connectionItems.Items.TryGetValue("tls.clientcert.negotiated", out var _))
+            // Look for TLS connections that don't already have a client cert, and requests that could have a body.
+            if (tlsFeature != null && tlsFeature.ClientCertificate == null && bodyFeature.CanHaveBody
+            && !connectionItems.Items.TryGetValue("tls.clientcert.negotiated", out var _))
             {
                 context.Features.Set<ITlsConnectionFeature>(new ClientCertBufferingFeature(tlsFeature, context));
             }

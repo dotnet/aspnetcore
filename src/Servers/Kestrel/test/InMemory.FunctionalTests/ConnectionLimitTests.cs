@@ -57,8 +57,8 @@ public class ConnectionLimitTests : LoggedTest
             if (feature.IsUpgradableRequest)
             {
                 var stream = await feature.UpgradeAsync();
-                    // keep it running until aborted
-                    while (!context.RequestAborted.IsCancellationRequested)
+                // keep it running until aborted
+                while (!context.RequestAborted.IsCancellationRequested)
                 {
                     await Task.Delay(100);
                 }

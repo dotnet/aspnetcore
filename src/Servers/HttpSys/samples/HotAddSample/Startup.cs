@@ -35,8 +35,8 @@ public class Startup
 
         app.Use(async (context, next) =>
         {
-                // Note: To add any prefix other than localhost you must run this sample as an administrator.
-                var toAdd = context.Request.Query["add"];
+            // Note: To add any prefix other than localhost you must run this sample as an administrator.
+            var toAdd = context.Request.Query["add"];
             if (!string.IsNullOrEmpty(toAdd))
             {
                 context.Response.ContentType = "text/html";
@@ -60,9 +60,9 @@ public class Startup
 
         app.Use(async (context, next) =>
         {
-                // Be careful not to remove the prefix you're currently accessing because the connection
-                // will be reset before the response is sent.
-                var toRemove = context.Request.Query["remove"];
+            // Be careful not to remove the prefix you're currently accessing because the connection
+            // will be reset before the response is sent.
+            var toRemove = context.Request.Query["remove"];
             if (!string.IsNullOrEmpty(toRemove))
             {
                 context.Response.ContentType = "text/html";

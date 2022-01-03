@@ -1,22 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
-using System.Collections.Generic;
-using System.IO;
-using System.IO.Pipelines;
 using System.Runtime.ExceptionServices;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Net.Http.Headers;
 
 namespace JwtBearerSample;
 
@@ -39,8 +28,8 @@ public class Startup
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(o =>
             {
-                    // You also need to update /wwwroot/app/scripts/app.js
-                    o.Authority = Configuration["oidc:authority"];
+                // You also need to update /wwwroot/app/scripts/app.js
+                o.Authority = Configuration["oidc:authority"];
                 o.Audience = Configuration["oidc:clientid"];
             });
     }
@@ -58,16 +47,16 @@ public class Startup
         // [Authorize] would usually handle this
         app.Use(async (context, next) =>
         {
-                // Use this if there are multiple authentication schemes
-                var authResult = await context.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
+            // Use this if there are multiple authentication schemes
+            var authResult = await context.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
             if (authResult.Succeeded && authResult.Principal.Identity.IsAuthenticated)
             {
                 await next(context);
             }
             else if (authResult.Failure != null)
             {
-                    // Rethrow, let the exception page handle it.
-                    ExceptionDispatchInfo.Capture(authResult.Failure).Throw();
+                // Rethrow, let the exception page handle it.
+                ExceptionDispatchInfo.Capture(authResult.Failure).Throw();
             }
             else
             {

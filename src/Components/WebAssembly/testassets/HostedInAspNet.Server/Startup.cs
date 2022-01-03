@@ -1,13 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-
 namespace HostedInAspNet.Server;
 
 public class Startup
@@ -33,11 +26,11 @@ public class Startup
         var mapAllApps = Configuration.GetValue<bool>("MapAllApps");
         app.Use((context, next) =>
         {
-                // This is used by E2E tests to verify that the correct resources were fetched,
-                // and that it was possible to override the loading mechanism
-                if (context.Request.Query.ContainsKey("customizedbootresource")
-                || context.Request.Headers.ContainsKey("customizedbootresource")
-                || context.Request.Path.Value.EndsWith("/blazor.boot.json", StringComparison.Ordinal))
+            // This is used by E2E tests to verify that the correct resources were fetched,
+            // and that it was possible to override the loading mechanism
+            if (context.Request.Query.ContainsKey("customizedbootresource")
+            || context.Request.Headers.ContainsKey("customizedbootresource")
+            || context.Request.Path.Value.EndsWith("/blazor.boot.json", StringComparison.Ordinal))
             {
                 bootResourceRequestLog.AddRequest(context.Request);
             }

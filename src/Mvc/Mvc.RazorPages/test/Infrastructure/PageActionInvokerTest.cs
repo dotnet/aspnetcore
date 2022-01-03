@@ -1,13 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -23,9 +19,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
-using Microsoft.Extensions.Options;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 
@@ -917,8 +911,8 @@ public class PageActionInvokerTest : CommonResourceInvokerTest
             .Setup(f => f.OnPageHandlerExecutionAsync(It.IsAny<PageHandlerExecutingContext>(), It.IsAny<PageHandlerExecutionDelegate>()))
             .Returns<PageHandlerExecutingContext, PageHandlerExecutionDelegate>((c, next) =>
             {
-                    // Notice we're not calling next
-                    c.Result = result.Object;
+                // Notice we're not calling next
+                c.Result = result.Object;
                 return Task.FromResult(true);
             })
             .Verifiable();
@@ -983,8 +977,8 @@ public class PageActionInvokerTest : CommonResourceInvokerTest
             .Setup(f => f.OnPageHandlerExecutionAsync(It.IsAny<PageHandlerExecutingContext>(), It.IsAny<PageHandlerExecutionDelegate>()))
             .Returns<PageHandlerExecutingContext, PageHandlerExecutionDelegate>((c, next) =>
             {
-                    // Notice we're not calling next
-                    return Task.FromResult(true);
+                // Notice we're not calling next
+                return Task.FromResult(true);
             })
             .Verifiable();
 
@@ -1064,8 +1058,8 @@ public class PageActionInvokerTest : CommonResourceInvokerTest
             {
                 context = c;
 
-                    // Handle the exception so the test doesn't throw.
-                    Assert.Same(Exception, c.Exception);
+                // Handle the exception so the test doesn't throw.
+                Assert.Same(Exception, c.Exception);
                 Assert.False(c.ExceptionHandled);
                 c.ExceptionHandled = true;
             })
@@ -1100,8 +1094,8 @@ public class PageActionInvokerTest : CommonResourceInvokerTest
             {
                 context = c;
 
-                    // Handle the exception so the test doesn't throw.
-                    Assert.False(c.ExceptionHandled);
+                // Handle the exception so the test doesn't throw.
+                Assert.False(c.ExceptionHandled);
                 c.ExceptionHandled = true;
             })
             .Verifiable();
@@ -1144,8 +1138,8 @@ public class PageActionInvokerTest : CommonResourceInvokerTest
             {
                 context = await next();
 
-                    // Handle the exception so the test doesn't throw.
-                    Assert.False(context.ExceptionHandled);
+                // Handle the exception so the test doesn't throw.
+                Assert.False(context.ExceptionHandled);
                 context.ExceptionHandled = true;
             })
             .Verifiable();
@@ -1191,8 +1185,8 @@ public class PageActionInvokerTest : CommonResourceInvokerTest
             .Setup(f => f.OnPageHandlerExecuted(It.IsAny<PageHandlerExecutedContext>()))
             .Callback<PageHandlerExecutedContext>(c =>
             {
-                    // Handle the exception so the test doesn't throw.
-                    Assert.False(c.ExceptionHandled);
+                // Handle the exception so the test doesn't throw.
+                Assert.False(c.ExceptionHandled);
                 c.ExceptionHandled = true;
 
                 c.Result = result.Object;

@@ -1,11 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using System.IO.Pipelines;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Http;
 
@@ -17,8 +13,8 @@ public abstract class HttpResponse
     private static readonly Func<object, Task> _callbackDelegate = callback => ((Func<Task>)callback)();
     private static readonly Func<object, Task> _disposeDelegate = state =>
     {
-            // Prefer async dispose over dispose
-            if (state is IAsyncDisposable asyncDisposable)
+        // Prefer async dispose over dispose
+        if (state is IAsyncDisposable asyncDisposable)
         {
             return asyncDisposable.DisposeAsync().AsTask();
         }

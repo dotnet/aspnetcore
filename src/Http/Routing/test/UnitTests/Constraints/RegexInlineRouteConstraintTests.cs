@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.AspNetCore.Testing;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Routing.Tests;
 

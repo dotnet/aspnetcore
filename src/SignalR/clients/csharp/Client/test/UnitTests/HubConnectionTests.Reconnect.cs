@@ -1064,8 +1064,8 @@ public partial class HubConnectionTests
                 mockReconnectPolicy.Setup(p => p.NextRetryDelay(It.IsAny<RetryContext>())).Returns<RetryContext>(context =>
                 {
                     retryContexts.Add(context);
-                        // Hopefully this test never takes over a minute.
-                        return TimeSpan.FromMinutes(1);
+                    // Hopefully this test never takes over a minute.
+                    return TimeSpan.FromMinutes(1);
                 });
                 builder.WithAutomaticReconnect(mockReconnectPolicy.Object);
 

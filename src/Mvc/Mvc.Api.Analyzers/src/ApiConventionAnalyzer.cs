@@ -4,8 +4,6 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
 
@@ -28,8 +26,8 @@ public class ApiConventionAnalyzer : DiagnosticAnalyzer
         {
             if (!ApiControllerSymbolCache.TryCreate(compilationStartAnalysisContext.Compilation, out var symbolCache))
             {
-                    // No-op if we can't find types we care about.
-                    return;
+                // No-op if we can't find types we care about.
+                return;
             }
 
             InitializeWorker(compilationStartAnalysisContext, symbolCache);
@@ -75,9 +73,9 @@ public class ApiConventionAnalyzer : DiagnosticAnalyzer
 
             if (hasUndocumentedStatusCodes || hasUnreadableStatusCodes)
             {
-                    // If we produced analyzer warnings about undocumented status codes, don't attempt to determine
-                    // if there are documented status codes that are missing from the method body.
-                    return;
+                // If we produced analyzer warnings about undocumented status codes, don't attempt to determine
+                // if there are documented status codes that are missing from the method body.
+                return;
             }
 
             for (var i = 0; i < declaredResponseMetadata.Count; i++)

@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.ObjectModel;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Internal;
@@ -61,8 +60,8 @@ public static class RoutingServiceCollectionExtensions
         // Allow global access to the list of endpoints.
         services.TryAddSingleton<EndpointDataSource>(s =>
         {
-                // Call internal ctor and pass global collection
-                return new CompositeEndpointDataSource(dataSources);
+            // Call internal ctor and pass global collection
+            return new CompositeEndpointDataSource(dataSources);
         });
 
         //
@@ -75,8 +74,8 @@ public static class RoutingServiceCollectionExtensions
         services.TryAddTransient<DataSourceDependentMatcher.Lifetime>();
         services.TryAddSingleton<EndpointMetadataComparer>(services =>
         {
-                // This has no public constructor.
-                return new EndpointMetadataComparer(services);
+            // This has no public constructor.
+            return new EndpointMetadataComparer(services);
         });
 
         // Link generation related services

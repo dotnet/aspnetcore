@@ -79,7 +79,7 @@ internal static unsafe class DpapiSecretSerializerHelper
         var dataOut = default(DATA_BLOB);
 
 #if NETSTANDARD2_0
-            RuntimeHelpers.PrepareConstrainedRegions();
+        RuntimeHelpers.PrepareConstrainedRegions();
 #endif
 
         try
@@ -171,7 +171,7 @@ internal static unsafe class DpapiSecretSerializerHelper
                     var handleAcquired = false;
 
 #if NETSTANDARD2_0
-                        RuntimeHelpers.PrepareConstrainedRegions();
+                    RuntimeHelpers.PrepareConstrainedRegions();
 #endif
 
                     try
@@ -222,7 +222,7 @@ internal static unsafe class DpapiSecretSerializerHelper
         var dataOut = default(DATA_BLOB);
 
 #if NETSTANDARD2_0
-            RuntimeHelpers.PrepareConstrainedRegions();
+        RuntimeHelpers.PrepareConstrainedRegions();
 #endif
 
         try
@@ -297,7 +297,7 @@ internal static unsafe class DpapiSecretSerializerHelper
             var handleAcquired = false;
 
 #if NETSTANDARD2_0
-                RuntimeHelpers.PrepareConstrainedRegions();
+            RuntimeHelpers.PrepareConstrainedRegions();
 #endif
 
             try

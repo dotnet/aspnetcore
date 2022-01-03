@@ -38,14 +38,14 @@ public class PolicyAuthorizationResult
         => new PolicyAuthorizationResult { Challenged = true };
 
     /// <summary>
-    /// Indiciates that the access to a resource was forbidden.
+    /// Indicates that the access to a resource was forbidden.
     /// </summary>
     /// <returns>The <see cref="PolicyAuthorizationResult"/>.</returns>
     public static PolicyAuthorizationResult Forbid()
         => Forbid(null);
 
     /// <summary>
-    /// Indiciates that the access to a resource was forbidden.
+    /// Indicates that the access to a resource was forbidden.
     /// </summary>
     /// <param name="authorizationFailure">Specifies the reason the authorization failed.s</param>
     /// <returns>The <see cref="PolicyAuthorizationResult"/>.</returns>

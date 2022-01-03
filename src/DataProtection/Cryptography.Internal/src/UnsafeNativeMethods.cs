@@ -11,7 +11,6 @@ using System.Security.Cryptography;
 using System.Threading;
 using Microsoft.AspNetCore.Cryptography.Cng;
 using Microsoft.AspNetCore.Cryptography.SafeHandles;
-using Microsoft.Win32.SafeHandles;
 
 namespace Microsoft.AspNetCore.Cryptography;
 
@@ -83,7 +82,7 @@ internal static unsafe class UnsafeNativeMethods
 
     [DllImport(BCRYPT_LIB, CallingConvention = CallingConvention.Winapi)]
 #if NETSTANDARD2_0
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+    [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 #endif
     // http://msdn.microsoft.com/en-us/library/windows/desktop/aa375399(v=vs.85).aspx
     internal static extern int BCryptDestroyHash(
@@ -91,7 +90,7 @@ internal static unsafe class UnsafeNativeMethods
 
     [DllImport(BCRYPT_LIB, CallingConvention = CallingConvention.Winapi)]
 #if NETSTANDARD2_0
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+    [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 #endif
     // http://msdn.microsoft.com/en-us/library/windows/desktop/aa375404(v=vs.85).aspx
     internal static extern int BCryptDestroyKey(
@@ -245,7 +244,7 @@ internal static unsafe class UnsafeNativeMethods
 
     [DllImport(NCRYPT_LIB, CallingConvention = CallingConvention.Winapi)]
 #if NETSTANDARD2_0
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+    [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 #endif
     // http://msdn.microsoft.com/en-us/library/windows/desktop/hh706799(v=vs.85).aspx
     internal static extern int NCryptCloseProtectionDescriptor(

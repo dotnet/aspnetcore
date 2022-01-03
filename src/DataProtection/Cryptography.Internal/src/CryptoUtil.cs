@@ -72,15 +72,15 @@ internal static unsafe class CryptoUtil
 
     [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
 #if NETSTANDARD2_0
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+    [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 #endif
     public static bool TimeConstantBuffersAreEqual(byte* bufA, byte* bufB, uint count)
     {
 #if NETCOREAPP
-            var byteCount = Convert.ToInt32(count);
-            var bytesA = new ReadOnlySpan<byte>(bufA, byteCount);
-            var bytesB = new ReadOnlySpan<byte>(bufB, byteCount);
-            return CryptographicOperations.FixedTimeEquals(bytesA, bytesB);
+        var byteCount = Convert.ToInt32(count);
+        var bytesA = new ReadOnlySpan<byte>(bufA, byteCount);
+        var bytesB = new ReadOnlySpan<byte>(bufB, byteCount);
+        return CryptographicOperations.FixedTimeEquals(bytesA, bytesB);
 #else
         bool areEqual = true;
         for (uint i = 0; i < count; i++)
@@ -99,12 +99,12 @@ internal static unsafe class CryptoUtil
         Assert(countA == countB, "countA == countB");
 
 #if NETCOREAPP
-            unsafe
-            {
-                return CryptographicOperations.FixedTimeEquals(
-                    bufA.AsSpan(start: offsetA, length: countA),
-                    bufB.AsSpan(start: offsetB, length: countB));
-            }
+        unsafe
+        {
+            return CryptographicOperations.FixedTimeEquals(
+                bufA.AsSpan(start: offsetA, length: countA),
+                bufB.AsSpan(start: offsetB, length: countB));
+        }
 #else
         bool areEqual = true;
         for (int i = 0; i < countA; i++)

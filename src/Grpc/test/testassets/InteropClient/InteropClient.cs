@@ -100,10 +100,10 @@ public class InteropClient : IDisposable
             configure.AddConsole(loggerOptions =>
             {
 #pragma warning disable CS0618 // Type or member is obsolete
-                    loggerOptions.IncludeScopes = true;
+                loggerOptions.IncludeScopes = true;
                 loggerOptions.DisableColors = true;
 #pragma warning restore CS0618 // Type or member is obsolete
-                });
+            });
         });
 
         serviceProvider = services.BuildServiceProvider();

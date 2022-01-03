@@ -106,8 +106,8 @@ public abstract class Http3TestBase : TestApplicationErrorLoggerLoggedTest, IDis
 
             var stalledReadTask = context.Request.Body.ReadAsync(buffer, 0, buffer.Length);
 
-                // Write to the response so the test knows the app started the stalled read.
-                await context.Response.Body.WriteAsync(new byte[1], 0, 1);
+            // Write to the response so the test knows the app started the stalled read.
+            await context.Response.Body.WriteAsync(new byte[1], 0, 1);
 
             await stalledReadTask;
         };

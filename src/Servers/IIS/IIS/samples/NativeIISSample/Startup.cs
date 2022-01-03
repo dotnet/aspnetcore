@@ -77,8 +77,8 @@ public class Startup
             }
             await context.Response.WriteAsync(Environment.NewLine);
 
-                // accessing IIS server variables
-                await context.Response.WriteAsync("Server Variables:" + Environment.NewLine);
+            // accessing IIS server variables
+            await context.Response.WriteAsync("Server Variables:" + Environment.NewLine);
 
             foreach (var varName in IISServerVarNames)
             {

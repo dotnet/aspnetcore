@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Authorization;
@@ -543,8 +542,8 @@ public static class PageConventionCollectionExtensions
     {
         return model =>
         {
-                // Use the route specified in MapPageRoute for outbound routing.
-                foreach (var selector in model.Selectors)
+            // Use the route specified in MapPageRoute for outbound routing.
+            foreach (var selector in model.Selectors)
             {
                 selector.AttributeRouteModel!.SuppressLinkGeneration = true;
             }

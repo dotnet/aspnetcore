@@ -1,16 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using DevServerProgram = Microsoft.AspNetCore.Components.WebAssembly.DevServer.Server.Program;
 
@@ -83,9 +76,9 @@ public class Program
             {
                 webHostBuilder.UseStartup<TStartup>();
 
-                    // We require this line because we run in Production environment
-                    // and static web assets are only on by default during development.
-                    webHostBuilder.UseStaticWebAssets();
+                // We require this line because we run in Production environment
+                // and static web assets are only on by default during development.
+                webHostBuilder.UseStaticWebAssets();
             })
             .Build();
 }

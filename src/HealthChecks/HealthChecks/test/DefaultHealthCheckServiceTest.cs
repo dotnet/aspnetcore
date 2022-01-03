@@ -337,8 +337,8 @@ public class DefaultHealthCheckServiceTest
         var loggerFactory = new TestLoggerFactory(sink, enabled: true);
         var service = CreateHealthChecksService(b =>
         {
-                // Override the logger factory for testing
-                b.Services.AddSingleton<ILoggerFactory>(loggerFactory);
+            // Override the logger factory for testing
+            b.Services.AddSingleton<ILoggerFactory>(loggerFactory);
 
             b.AddCheck("TestScope", check);
         });
@@ -579,8 +579,8 @@ public class DefaultHealthCheckServiceTest
 
             SingleThreadedSynchronizationContext.Run(() =>
             {
-                    // Act
-                    service.CheckHealthAsync(token).GetAwaiter().GetResult();
+                // Act
+                service.CheckHealthAsync(token).GetAwaiter().GetResult();
                 hangs = false;
             });
         }

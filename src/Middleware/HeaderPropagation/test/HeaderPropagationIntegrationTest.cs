@@ -1,19 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Xunit;
 
 namespace Microsoft.AspNetCore.HeaderPropagation.Tests;
 
@@ -40,15 +36,15 @@ public class HeaderPropagationIntegrationTest
                 })
                 .Configure(app =>
                 {
-                        // note: no header propagation middleware
+                    // note: no header propagation middleware
 
-                        app.Run(async context =>
+                    app.Run(async context =>
                     {
                         try
                         {
                             var client = context.RequestServices.GetRequiredService<IHttpClientFactory>().CreateClient("test");
                             await client.GetAsync("http://localhost/"); // will throw
-                            }
+                        }
                         catch (Exception ex)
                         {
                             captured = ex;

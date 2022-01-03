@@ -40,7 +40,7 @@ public class EncoderServiceCollectionExtensionsTests
         {
             options.TextEncoderSettings = new TextEncoderSettings();
             options.TextEncoderSettings.AllowCharacters("ace".ToCharArray()); // only these three chars are allowed
-            });
+        });
 
         // Assert
         var serviceProvider = serviceCollection.BuildServiceProvider();
@@ -72,7 +72,7 @@ public class EncoderServiceCollectionExtensionsTests
         {
             options.TextEncoderSettings = new TextEncoderSettings();
             options.TextEncoderSettings.AllowCharacters("ace".ToCharArray()); // only these three chars are allowed
-            });
+        });
 
         // Assert
         var serviceProvider = serviceCollection.BuildServiceProvider();

@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Microsoft.AspNetCore.Analyzers.RouteHandlers.CSharpRouteHandlerCodeFixVerifier<
     Microsoft.AspNetCore.Analyzers.RouteHandlers.RouteHandlerAnalyzer,
     Microsoft.AspNetCore.Analyzers.RouteHandlers.Fixers.DetectMismatchedParameterOptionalityFixer>;
@@ -366,12 +365,12 @@ app.MapGet(""/hello/{name?}"", (string name) => $""Hello {name}"");
     [InlineData("{id}", new[] { "id" }, new[] { "" })]
     [InlineData("{category}/product/{group}", new[] { "category", "group" }, new[] { "", "" })]
     [InlineData("{category:int}/product/{group:range(10, 20)}?", new[] { "category", "group" }, new[] { ":int", ":range(10, 20)" })]
-    [InlineData("{person:int}/{ssn:regex(^\\d{{3}}-\\d{{2}}-\\d{{4}}$)}", new[] { "person", "ssn" }, new[] { ":int", ":regex(^\\d{{3}}-\\d{{2}}-\\d{{4}}$)"})]
+    [InlineData("{person:int}/{ssn:regex(^\\d{{3}}-\\d{{2}}-\\d{{4}}$)}", new[] { "person", "ssn" }, new[] { ":int", ":regex(^\\d{{3}}-\\d{{2}}-\\d{{4}}$)" })]
     [InlineData("{area=Home}/{controller:required}/{id=0:int}", new[] { "area", "controller", "id" }, new[] { "=Home", ":required", "=0:int" })]
-    [InlineData("{category}/product/{group?}", new[] { "category", "group" }, new[] { "", "?"})]
+    [InlineData("{category}/product/{group?}", new[] { "category", "group" }, new[] { "", "?" })]
     [InlineData("{category}/{product}/{*sku}", new[] { "category", "product", "*sku" }, new[] { "", "", "" })]
-    [InlineData("{category}-product-{sku}", new[] { "category", "sku" }, new[] { "", "" } )]
-    [InlineData("category-{product}-sku", new[] { "product" }, new[] { "" } )]
+    [InlineData("{category}-product-{sku}", new[] { "category", "sku" }, new[] { "", "" })]
+    [InlineData("category-{product}-sku", new[] { "product" }, new[] { "" })]
     [InlineData("{category}.{sku?}", new[] { "category", "sku" }, new[] { "", "?" })]
     [InlineData("{category}.{product?}/{sku}", new[] { "category", "product", "sku" }, new[] { "", "?", "" })]
     public void RouteTokenizer_Works_ForSimpleRouteTemplates(string template, string[] expectedNames, string[] expectedQualifiers)

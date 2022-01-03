@@ -390,7 +390,7 @@ public class ServerTests
         {
             Assert.Null(options.MaxConnections);
             options.MaxConnections = -1; // infinite
-            }, httpContext => Task.FromResult(0)))
+        }, httpContext => Task.FromResult(0)))
         {
             using (var client1 = await SendHungRequestAsync("GET", address))
             using (var client2 = await SendHungRequestAsync("GET", address))

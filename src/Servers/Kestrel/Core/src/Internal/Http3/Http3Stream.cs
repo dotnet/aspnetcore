@@ -17,8 +17,8 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
-using HttpMethods = Microsoft.AspNetCore.Http.HttpMethods;
 using HttpMethod = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod;
+using HttpMethods = Microsoft.AspNetCore.Http.HttpMethods;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 
@@ -666,8 +666,8 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
                     if (!stream.IsCompleted)
                     {
-                            // An error code value other than -1 indicates a value was set and the request didn't gracefully complete.
-                            var errorCode = stream._errorCodeFeature.Error;
+                        // An error code value other than -1 indicates a value was set and the request didn't gracefully complete.
+                        var errorCode = stream._errorCodeFeature.Error;
                         if (errorCode >= 0)
                         {
                             stream.AbortCore(new IOException(CoreStrings.HttpStreamResetByClient), (Http3ErrorCode)errorCode);

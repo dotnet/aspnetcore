@@ -5,7 +5,6 @@ using System.Text.Json;
 using Microsoft.JSInterop;
 using Microsoft.JSInterop.Implementation;
 using Microsoft.JSInterop.WebAssembly;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Services;
 

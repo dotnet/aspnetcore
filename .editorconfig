@@ -73,6 +73,11 @@ end_of_line = lf
 charset = utf-8-bom
 
 [*.{cs,vb}]
+
+# CS8019: Remove unnecessary usings
+# dotnet_diagnostic.CS8019.severity = warning
+# dotnet_diagnostic.IDE0005.severity = warning
+
 # CA1018: Mark attributes with AttributeUsageAttribute
 dotnet_diagnostic.CA1018.severity = warning
 
@@ -207,6 +212,9 @@ dotnet_diagnostic.IDE0043.severity = warning
 # IDE0044: Make field readonly
 dotnet_diagnostic.IDE0044.severity = warning
 
+# IDE0055: All formatting rules
+dotnet_diagnostic.IDE0055.severity = warning
+
 # IDE0073: File header
 dotnet_diagnostic.IDE0073.severity = warning
 file_header_template = Licensed to the .NET Foundation under one or more agreements.\nThe .NET Foundation licenses this file to you under the MIT license.
@@ -260,5 +268,7 @@ dotnet_diagnostic.CA2016.severity = suggestion
 # Defaults for content in the shared src/ and shared runtime dir
 
 [{**/Shared/runtime/**.{cs,vb},src/Shared/test/Shared.Tests/runtime/**.{cs,vb},**/microsoft.extensions.hostfactoryresolver.sources/**.{cs,vb}}]
+# IDE0055: Fix formatting
+dotnet_diagnostic.IDE0055.severity = silent
 # IDE0161: Convert to file-scoped namespace
 dotnet_diagnostic.IDE0161.severity = silent

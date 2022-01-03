@@ -1,18 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
 using Microsoft.AspNetCore.Testing;
@@ -201,8 +193,8 @@ public class IISExpressDeployer : IISDeployerBase
                 {
                     if (string.Equals(dataArgs.Data, UnableToStartIISExpressMessage, StringComparison.Ordinal))
                     {
-                            // We completely failed to start and we don't really know why
-                            started.TrySetException(new InvalidOperationException("Failed to start IIS Express"));
+                        // We completely failed to start and we don't really know why
+                        started.TrySetException(new InvalidOperationException("Failed to start IIS Express"));
                     }
                     else if (string.Equals(dataArgs.Data, FailedToInitializeBindingsMessage, StringComparison.Ordinal))
                     {
@@ -228,8 +220,8 @@ public class IISExpressDeployer : IISDeployerBase
                 {
                     Logger.LogInformation("iisexpress Process {pid} shut down", process.Id);
 
-                        // If TrySetResult was called above, this will just silently fail to set the new state, which is what we want
-                        started.TrySetException(new Exception($"Command exited unexpectedly with exit code: {process.ExitCode}"));
+                    // If TrySetResult was called above, this will just silently fail to set the new state, which is what we want
+                    started.TrySetException(new Exception($"Command exited unexpectedly with exit code: {process.ExitCode}"));
 
                     TriggerHostShutdown(hostExitTokenSource);
                 };

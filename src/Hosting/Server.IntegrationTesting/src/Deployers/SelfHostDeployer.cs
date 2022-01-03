@@ -1,12 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
-using System.IO;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
@@ -170,8 +166,8 @@ public class SelfHostDeployer : ApplicationDeployer
             {
                 Logger.LogInformation("host process ID {pid} shut down", HostProcess.Id);
 
-                    // If TrySetResult was called above, this will just silently fail to set the new state, which is what we want
-                    started.TrySetException(new Exception($"Command exited unexpectedly with exit code: {HostProcess.ExitCode}"));
+                // If TrySetResult was called above, this will just silently fail to set the new state, which is what we want
+                started.TrySetException(new Exception($"Command exited unexpectedly with exit code: {HostProcess.ExitCode}"));
 
                 TriggerHostShutdown(hostExitTokenSource);
             };

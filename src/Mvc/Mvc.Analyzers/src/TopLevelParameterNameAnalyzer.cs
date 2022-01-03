@@ -25,8 +25,8 @@ public class TopLevelParameterNameAnalyzer : DiagnosticAnalyzer
         {
             if (!SymbolCache.TryCreate(compilationStartAnalysisContext.Compilation, out var typeCache))
             {
-                    // No-op if we can't find types we care about.
-                    return;
+                // No-op if we can't find types we care about.
+                return;
             }
 
             InitializeWorker(compilationStartAnalysisContext, typeCache);
@@ -56,9 +56,9 @@ public class TopLevelParameterNameAnalyzer : DiagnosticAnalyzer
 
             if (method.ContainingType.HasAttribute(symbolCache.IApiBehaviorMetadata, inherit: true))
             {
-                    // The issue of parameter name collision with properties affects complex model-bound types
-                    // and not input formatting. Ignore ApiController instances since they default to formatting.
-                    return;
+                // The issue of parameter name collision with properties affects complex model-bound types
+                // and not input formatting. Ignore ApiController instances since they default to formatting.
+                return;
             }
 
             for (var i = 0; i < method.Parameters.Length; i++)

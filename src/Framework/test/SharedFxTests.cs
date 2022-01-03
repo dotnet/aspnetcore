@@ -1,17 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.IO.Compression;
-using System.Linq;
-using System.Reflection;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Xml.Linq;
 using Newtonsoft.Json.Linq;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore;
@@ -178,8 +172,8 @@ public class SharedFxTests
 
         Assert.All(dlls, path =>
         {
-                // Unlike dotnet/aspnetcore, dotnet/runtime varies the assembly version while in servicing.
-                if (!repoAssemblies.Contains(Path.GetFileNameWithoutExtension(path)))
+            // Unlike dotnet/aspnetcore, dotnet/runtime varies the assembly version while in servicing.
+            if (!repoAssemblies.Contains(Path.GetFileNameWithoutExtension(path)))
             {
                 return;
             }
@@ -189,8 +183,8 @@ public class SharedFxTests
             var reader = peReader.GetMetadataReader(MetadataReaderOptions.Default);
             var assemblyDefinition = reader.GetAssemblyDefinition();
 
-                // Assembly versions should all match Major.Minor.0.0
-                Assert.Equal(version.Major, assemblyDefinition.Version.Major);
+            // Assembly versions should all match Major.Minor.0.0
+            Assert.Equal(version.Major, assemblyDefinition.Version.Major);
             Assert.Equal(version.Minor, assemblyDefinition.Version.Minor);
             Assert.Equal(0, assemblyDefinition.Version.Build);
             Assert.Equal(0, assemblyDefinition.Version.Revision);
@@ -211,9 +205,9 @@ public class SharedFxTests
 
         Assert.All(dlls, path =>
         {
-                // Unlike dotnet/aspnetcore, dotnet/runtime varies the assembly version while in servicing.
-                // dotnet/aspnetcore assemblies build against RTM targeting pack from dotnet/runtime.
-                if (!repoAssemblies.Contains(Path.GetFileNameWithoutExtension(path)))
+            // Unlike dotnet/aspnetcore, dotnet/runtime varies the assembly version while in servicing.
+            // dotnet/aspnetcore assemblies build against RTM targeting pack from dotnet/runtime.
+            if (!repoAssemblies.Contains(Path.GetFileNameWithoutExtension(path)))
             {
                 return;
             }

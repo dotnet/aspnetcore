@@ -3,9 +3,6 @@
 
 using Microsoft.AspNetCore.JsonPatch.Internal;
 using Newtonsoft.Json.Serialization;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Microsoft.AspNetCore.JsonPatch.Adapters;
 
