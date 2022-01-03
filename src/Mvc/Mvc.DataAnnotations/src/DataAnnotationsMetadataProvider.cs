@@ -23,10 +23,6 @@ internal class DataAnnotationsMetadataProvider :
     IDisplayMetadataProvider,
     IValidationMetadataProvider
 {
-    // The [Nullable] attribute is synthesized by the compiler. It's best to just compare the type name.
-    private const string NullableAttributeFullTypeName = "System.Runtime.CompilerServices.NullableAttribute";
-    private const string NullableFlagsFieldName = "NullableFlags";
-
     private readonly IStringLocalizerFactory? _stringLocalizerFactory;
     private readonly MvcOptions _options;
     private readonly MvcDataAnnotationsLocalizationOptions _localizationOptions;
@@ -359,20 +355,7 @@ internal class DataAnnotationsMetadataProvider :
             else if (context.Key.MetadataKind == ModelMetadataKind.Property)
             {
                 var property = context.Key.PropertyInfo;
-                if (property is null)
-                {
-                    // PropertyInfo was unavailable on ModelIdentity prior to 3.1.
-                    // Making a cogent argument about the nullability of the property requires inspecting the declared type,
-                    // since looking at the runtime type may result in false positives: https://github.com/dotnet/aspnetcore/issues/14812
-                    // The only way we could arrive here is if the ModelMetadata was constructed using the non-default provider.
-                    // We'll cursorily examine the attributes on the property, but not the ContainerType to make a decision about it's nullability.
-
-                    if (HasNullableAttribute(context.PropertyAttributes!, out var propertyHasNullableAttribute))
-                    {
-                        addInferredRequiredAttribute = propertyHasNullableAttribute;
-                    }
-                }
-                else
+                if (property is not null)
                 {
                     addInferredRequiredAttribute = IsRequired(context);
                 }
@@ -470,37 +453,5 @@ internal class DataAnnotationsMetadataProvider :
         };
         var isOptional = nullability != null && nullability.ReadState != NullabilityState.NotNull;
         return !isOptional;
-    }
-
-    // Internal for testing
-    internal static bool HasNullableAttribute(IEnumerable<object> attributes, out bool isNullable)
-    {
-        // [Nullable] is compiler synthesized, comparing by name.
-        var nullableAttribute = attributes
-            .FirstOrDefault(a => string.Equals(a.GetType().FullName, NullableAttributeFullTypeName, StringComparison.Ordinal));
-        if (nullableAttribute == null)
-        {
-            isNullable = false;
-            return false; // [Nullable] not found
-        }
-
-        // We don't handle cases where generics and NNRT are used. This runs into a
-        // fundamental limitation of ModelMetadata - we use a single Type and Property/Parameter
-        // to look up the metadata. However when generics are involved and NNRT is in use
-        // the distance between the [Nullable] and member we're looking at is potentially
-        // unbounded.
-        //
-        // See: https://github.com/dotnet/roslyn/blob/master/docs/features/nullable-reference-types.md#annotations
-        if (nullableAttribute.GetType().GetField(NullableFlagsFieldName) is FieldInfo field &&
-            field.GetValue(nullableAttribute) is byte[] flags &&
-            flags.Length > 0 &&
-            flags[0] == 1) // First element is the property/parameter type.
-        {
-            isNullable = true;
-            return true; // [Nullable] found and type is an NNRT
-        }
-
-        isNullable = false;
-        return true; // [Nullable] found but type is not an NNRT
     }
 }

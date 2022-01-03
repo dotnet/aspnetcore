@@ -1237,11 +1237,6 @@ public class DataAnnotationsMetadataProviderTest
         var key = ModelMetadataIdentity.ForProperty(property, property.PropertyType, modelType);
         var context = new ValidationMetadataProviderContext(key, ModelAttributes.GetAttributesForProperty(modelType, property));
 
-        // This test verifies how MVC reads the NullableContextOptions. We expect the property to not have a Nullable attribute on, and for
-        // the types to have NullableContext. We'll encode our expectations as assertions so that we can catch if or when the compiler changes
-        // this behavior and the test needs to be tweaked.
-        Assert.False(DataAnnotationsMetadataProvider.HasNullableAttribute(context.PropertyAttributes, out _), "We do not expect NullableAttribute to be defined on the property");
-
         // Act
         provider.CreateValidationMetadata(context);
 
