@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 /// An implementation of <see cref="IDisplayMetadataProvider"/> and <see cref="IValidationMetadataProvider"/> for
 /// the Newtonsoft.Json attribute classes.
 /// </summary>
-public class NewtonsoftJsonMetadataProvider : IDisplayMetadataProvider, IValidationMetadataProvider
+public sealed class NewtonsoftJsonValidationMetadataProvider : IDisplayMetadataProvider, IValidationMetadataProvider
 {
     private readonly NamingStrategy _jsonNamingPolicy;
 
