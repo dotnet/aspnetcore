@@ -1,18 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.Net.WebSockets;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Owin;
-
-using RawWebSocketReceiveResult = Tuple<int, // type
-    bool, // end of message?
-    int>; // count
 // http://owin.org/extensions/owin-WebSocket-Extension-v0.4.0.htm
 using WebSocketCloseAsync =
     Func<int /* closeStatus */,

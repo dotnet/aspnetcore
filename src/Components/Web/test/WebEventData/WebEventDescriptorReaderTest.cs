@@ -3,7 +3,6 @@
 
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.RenderTree;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Web;
 

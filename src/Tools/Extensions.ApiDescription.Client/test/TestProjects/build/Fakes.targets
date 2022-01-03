@@ -1,40 +1,52 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
 <Project>
+  <Target Name="_GetMetadataProperties">
+    <ItemGroup>
+      <_HeaderMetadata Include="Licensed to the .NET Foundation under one or more agreements." />
+      <_HeaderMetadata Include="The .NET Foundation licenses this file to you under the MIT license." />
+
+      <_Metadata Include="__TargetName__" />
+      <_Metadata Include="%(CurrentOpenApiReference.FullPath)" />
+      <_Metadata Include="Class: '%(CurrentOpenApiReference.Namespace).%(CurrentOpenApiReference.ClassName)'" />
+      <_Metadata Include="FirstForGenerator: '%(CurrentOpenApiReference.FirstForGenerator)'" />
+      <_Metadata Include="Options: '%(CurrentOpenApiReference.Options)'" />
+      <_Metadata Include="OutputPath: '%(CurrentOpenApiReference.OutputPath)'" />
+    </ItemGroup>
+    <PropertyGroup>
+      <_Message>@(_Metadata, ' ')</_Message>
+      <_Lines>@(_HeaderMetadata -> '// %(Identity)', '%0A')
+
+</_Lines>
+    </PropertyGroup>
+  </Target>
+
   <!-- NSwag's OpenApiReference support for C# (default target). -->
 
-  <Target Name="GenerateNSwagCSharp">
-    <PropertyGroup>
-      <_Metadata>'%(CurrentOpenApiReference.FullPath)'</_Metadata>
-      <_Metadata>$(_Metadata) Class: '%(CurrentOpenApiReference.Namespace).%(CurrentOpenApiReference.ClassName)'</_Metadata>
-      <_Metadata>$(_Metadata) FirstForGenerator: '%(CurrentOpenApiReference.FirstForGenerator)'</_Metadata>
-      <_Metadata>$(_Metadata) Options: '%(CurrentOpenApiReference.Options)'</_Metadata>
-      <_Metadata>$(_Metadata) OutputPath: '%(CurrentOpenApiReference.OutputPath)'</_Metadata>
-    </PropertyGroup>
-
-    <Message Importance="high" Text="GenerateNSwagCSharp $(_Metadata)" />
+  <Target Name="GenerateNSwagCSharp" DependsOnTargets="_GetMetadataProperties">
+    <Message Importance="high" Text="$(_Message.Replace('__TargetName__', 'GenerateNSwagCSharp'))" />
+    <WriteLinesToFile File="%(CurrentOpenApiReference.OutputPath)"
+        Lines="$(_Lines)"
+        Overwrite="true" />
   </Target>
 
   <!-- NSwag's OpenApiReference support for TypeScript. -->
 
-  <Target Name="GenerateNSwagTypeScript">
-    <PropertyGroup>
-      <_Metadata>'%(FullPath)' Class: '%(Namespace).%(ClassName)'</_Metadata>
-      <_Metadata>$(_Metadata) FirstForGenerator: '%(FirstForGenerator)' Options: '%(Options)'</_Metadata>
-      <_Metadata>$(_Metadata) OutputPath: '%(OutputPath)'</_Metadata>
-    </PropertyGroup>
-
-    <Message Importance="high" Text="GenerateNSwagTypeScript $(_Metadata)" />
+  <Target Name="GenerateNSwagTypeScript" DependsOnTargets="_GetMetadataProperties">
+    <Message Importance="high" Text="$(_Message.Replace('__TargetName__', 'GenerateNSwagTypeScript'))" />
+    <WriteLinesToFile File="%(CurrentOpenApiReference.OutputPath)"
+        Lines="$(_Lines)"
+        Overwrite="true" />
   </Target>
 
   <!-- Custom OpenApiReference support for C#. -->
 
-  <Target Name="GenerateCustomCSharp">
-    <PropertyGroup>
-      <_Metadata>'%(FullPath)' Class: '%(Namespace).%(ClassName)'</_Metadata>
-      <_Metadata>$(_Metadata) FirstForGenerator: '%(FirstForGenerator)' Options: '%(Options)'</_Metadata>
-      <_Metadata>$(_Metadata) OutputPath: '%(OutputPath)'</_Metadata>
-    </PropertyGroup>
-
-    <Message Importance="high" Text="GenerateCustomCSharp $(_Metadata)" />
+  <Target Name="GenerateCustomCSharp" DependsOnTargets="_GetMetadataProperties">
+    <Message Importance="high" Text="$(_Message.Replace('__TargetName__', 'GenerateCustomCSharp'))" />
+    <WriteLinesToFile File="%(CurrentOpenApiReference.OutputPath)/Generated1.cs"
+        Lines="$(_Lines)"
+        Overwrite="true" />
+    <WriteLinesToFile File="%(CurrentOpenApiReference.OutputPath)/Generated2.cs"
+        Lines="$(_Lines)"
+        Overwrite="true" />
   </Target>
 </Project>

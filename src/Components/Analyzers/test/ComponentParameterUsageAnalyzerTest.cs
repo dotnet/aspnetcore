@@ -4,7 +4,6 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using TestHelper;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Analyzers;
 

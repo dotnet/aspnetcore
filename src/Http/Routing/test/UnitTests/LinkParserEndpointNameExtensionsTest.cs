@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Routing.Matching;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Routing;
 

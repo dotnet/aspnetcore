@@ -3,9 +3,7 @@
 
 #nullable enable
 
-using System;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Routing.Template;
 

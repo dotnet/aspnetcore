@@ -3,7 +3,6 @@
 
 #nullable enable
 
-using System.IO;
 using System.Text;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;
