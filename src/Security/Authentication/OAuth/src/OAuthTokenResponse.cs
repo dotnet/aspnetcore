@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth;
 public class OAuthTokenResponse : IDisposable
 {
     /// <summary>
-    /// Initializes a new isntance <see cref="OAuthTokenResponse"/>.
+    /// Initializes a new instance <see cref="OAuthTokenResponse"/>.
     /// </summary>
     /// <param name="response">The received JSON payload.</param>
     private OAuthTokenResponse(JsonDocument response)

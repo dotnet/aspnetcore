@@ -89,7 +89,7 @@ internal class ViewBufferTextWriter : TextWriter
     public ViewBuffer Buffer { get; }
 
     /// <summary>
-    /// Gets a value that indiciates if <see cref="Flush"/> or <see cref="FlushAsync" /> was invoked.
+    /// Gets a value that indicates if <see cref="Flush"/> or <see cref="FlushAsync" /> was invoked.
     /// </summary>
     public bool Flushed { get; private set; }
 

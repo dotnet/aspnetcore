@@ -209,7 +209,7 @@ public class TestServer : IServer
     }
 
     /// <summary>
-    /// Dispoes the <see cref="IWebHost" /> object associated with the test server.
+    /// Dispose the <see cref="IWebHost" /> object associated with the test server.
     /// </summary>
     public void Dispose()
     {

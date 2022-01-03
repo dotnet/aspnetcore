@@ -384,7 +384,7 @@ public class ResponseCachingMiddleware
     }
 
     /// <summary>
-    /// Mark the response as started and set the response time if no reponse was started yet.
+    /// Mark the response as started and set the response time if no response was started yet.
     /// </summary>
     /// <param name="context"></param>
     /// <returns><c>true</c> if the response was not started before this call; otherwise <c>false</c>.</returns>

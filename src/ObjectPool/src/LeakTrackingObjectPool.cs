@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.ObjectPool;
 /// <para>
 /// A leak is produced if an object is leased from the pool but not returned before it is finalized.
 /// An error is only produced in <c>Debug</c> builds.
-/// This type is only recommended to be used for diagnostc builds.
+/// This type is only recommended to be used for diagnostic builds.
 /// </para>
 /// </summary>
 /// <typeparam name="T">The type of object which is being pooled.</typeparam>
