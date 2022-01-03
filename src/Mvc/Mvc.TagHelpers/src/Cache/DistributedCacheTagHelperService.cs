@@ -1,13 +1,10 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Concurrent;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.Caching.Distributed;
@@ -31,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache;
 /// </item>
 /// </list>
 /// </summary>
-public class DistributedCacheTagHelperService : IDistributedCacheTagHelperService
+public partial class DistributedCacheTagHelperService : IDistributedCacheTagHelperService
 {
     private readonly IDistributedCacheTagHelperStorage _storage;
     private readonly IDistributedCacheTagHelperFormatter _formatter;
@@ -142,7 +139,7 @@ public class DistributedCacheTagHelperService : IDistributedCacheTagHelperServic
                         }
                         catch (Exception e)
                         {
-                            _logger.DistributedFormatterDeserializationException(storageKey, e);
+                            Log.DistributedFormatterDeserializationException(_logger, storageKey, e);
                         }
                         finally
                         {
@@ -215,5 +212,11 @@ public class DistributedCacheTagHelperService : IDistributedCacheTagHelperServic
         }
 
         return decoded;
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(1, LogLevel.Error, "Couldn't deserialize cached value for key {Key}.", EventName = "DistributedFormatterDeserializationException")]
+        public static partial void DistributedFormatterDeserializationException(ILogger logger, string key, Exception exception);
     }
 }
