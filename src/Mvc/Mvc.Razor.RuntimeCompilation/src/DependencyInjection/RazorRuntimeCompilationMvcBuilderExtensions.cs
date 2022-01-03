@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
 namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
-/// Static class that adds razor compilation extenstion methods.
+/// Static class that adds razor compilation extension methods.
 /// </summary>
 public static class RazorRuntimeCompilationMvcBuilderExtensions
 {

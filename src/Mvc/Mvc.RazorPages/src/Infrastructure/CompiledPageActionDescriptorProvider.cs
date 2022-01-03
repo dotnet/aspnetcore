@@ -22,7 +22,7 @@ public sealed class CompiledPageActionDescriptorProvider : IActionDescriptorProv
     private readonly CompiledPageActionDescriptorFactory _compiledPageActionDescriptorFactory;
 
     /// <summary>
-    /// Initializes a new isntance of <see cref="CompiledPageActionDescriptorProvider"/>.
+    /// Initializes a new instance of <see cref="CompiledPageActionDescriptorProvider"/>.
     /// </summary>
     /// <param name="pageRouteModelProviders">The sequence of <see cref="IPageRouteModelProvider"/>.</param>
     /// <param name="applicationModelProviders">The sequence of <see cref="IPageRouteModelProvider"/>.</param>
