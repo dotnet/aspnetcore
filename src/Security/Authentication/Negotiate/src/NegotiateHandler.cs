@@ -1,15 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -186,8 +182,8 @@ public class NegotiateHandler : AuthenticationHandler<NegotiateOptions>, IAuthen
             {
                 Response.OnStarting(() =>
                 {
-                        // Only include it if the response ultimately succeeds. This avoids adding it twice if Challenge is called again.
-                        if (Response.StatusCode < StatusCodes.Status400BadRequest)
+                    // Only include it if the response ultimately succeeds. This avoids adding it twice if Challenge is called again.
+                    if (Response.StatusCode < StatusCodes.Status400BadRequest)
                     {
                         Response.Headers.Append(HeaderNames.WWWAuthenticate, AuthHeaderPrefix + outgoing);
                     }

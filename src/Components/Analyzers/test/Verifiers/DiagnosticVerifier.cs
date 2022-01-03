@@ -3,14 +3,10 @@
 
 // Most of the code in this file comes from the default Roslyn Analyzer project template
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Xunit;
 
 namespace TestHelper;
 

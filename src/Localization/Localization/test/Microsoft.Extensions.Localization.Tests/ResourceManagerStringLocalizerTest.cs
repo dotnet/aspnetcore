@@ -8,7 +8,6 @@ using System.Linq;
 using System.Reflection;
 using System.Resources;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.Localization.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -194,11 +193,11 @@ public class ResourceManagerStringLocalizerTest
         // Act & Assert
         var exception = Assert.Throws<MissingManifestResourceException>(() =>
         {
-                // We have to access the result so it evaluates.
+            // We have to access the result so it evaluates.
 #pragma warning disable CA1304 // Specify CultureInfo
-                localizer.GetAllStrings(includeParentCultures).ToArray();
+            localizer.GetAllStrings(includeParentCultures).ToArray();
 #pragma warning restore CA1304 // Specify CultureInfo
-            });
+        });
 
         var expectedTries = includeParentCultures ? 3 : 1;
         var expected = includeParentCultures

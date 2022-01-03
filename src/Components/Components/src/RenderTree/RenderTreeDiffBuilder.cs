@@ -3,8 +3,6 @@
 
 #nullable disable warnings
 
-using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Rendering;
 

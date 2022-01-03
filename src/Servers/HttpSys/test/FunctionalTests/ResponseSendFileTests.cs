@@ -334,8 +334,8 @@ public class ResponseSendFileTests
         using (Utilities.CreateHttpServer(out var address, async httpContext =>
         {
             var cts = new CancellationTokenSource();
-                // First write sends headers
-                await httpContext.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
+            // First write sends headers
+            await httpContext.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
             await httpContext.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
         }))
         {
@@ -352,8 +352,8 @@ public class ResponseSendFileTests
         {
             var cts = new CancellationTokenSource();
             cts.CancelAfter(TimeSpan.FromSeconds(10));
-                // First write sends headers
-                await httpContext.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
+            // First write sends headers
+            await httpContext.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
             await httpContext.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
         }))
         {
@@ -373,8 +373,8 @@ public class ResponseSendFileTests
             {
                 var cts = new CancellationTokenSource();
                 cts.Cancel();
-                    // First write sends headers
-                    var writeTask = httpContext.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
+                // First write sends headers
+                var writeTask = httpContext.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
                 Assert.True(writeTask.IsCanceled);
                 testComplete.SetResult(0);
             }
@@ -401,8 +401,8 @@ public class ResponseSendFileTests
             {
                 var cts = new CancellationTokenSource();
                 cts.Cancel();
-                    // First write sends headers
-                    var writeTask = httpContext.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
+                // First write sends headers
+                var writeTask = httpContext.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
                 Assert.True(writeTask.IsCanceled);
                 testComplete.SetResult(0);
             }
@@ -428,8 +428,8 @@ public class ResponseSendFileTests
             try
             {
                 var cts = new CancellationTokenSource();
-                    // First write sends headers
-                    await httpContext.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
+                // First write sends headers
+                await httpContext.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
                 cts.Cancel();
                 var writeTask = httpContext.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
                 Assert.True(writeTask.IsCanceled);
@@ -455,8 +455,8 @@ public class ResponseSendFileTests
             try
             {
                 var cts = new CancellationTokenSource();
-                    // First write sends headers
-                    await httpContext.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
+                // First write sends headers
+                await httpContext.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
                 cts.Cancel();
                 var writeTask = httpContext.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
                 Assert.True(writeTask.IsCanceled);
@@ -488,14 +488,14 @@ public class ResponseSendFileTests
 
             try
             {
-                    // Note Response.SendFileAsync uses RequestAborted by default. This can cause the response to be disposed
-                    // before it throws an IOException, but there's a race depending on when the disconnect is noticed.
-                    // Passing our own token to skip that.
-                    using var cts = new CancellationTokenSource();
+                // Note Response.SendFileAsync uses RequestAborted by default. This can cause the response to be disposed
+                // before it throws an IOException, but there's a race depending on when the disconnect is noticed.
+                // Passing our own token to skip that.
+                using var cts = new CancellationTokenSource();
                 await Assert.ThrowsAsync<IOException>(async () =>
                 {
-                        // It can take several tries before Send notices the disconnect.
-                        for (int i = 0; i < Utilities.WriteRetryLimit; i++)
+                    // It can take several tries before Send notices the disconnect.
+                    for (int i = 0; i < Utilities.WriteRetryLimit; i++)
                     {
                         await httpContext.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
                     }
@@ -541,8 +541,8 @@ public class ResponseSendFileTests
 
             try
             {
-                    // It can take several tries before Send notices the disconnect.
-                    for (int i = 0; i < Utilities.WriteRetryLimit; i++)
+                // It can take several tries before Send notices the disconnect.
+                for (int i = 0; i < Utilities.WriteRetryLimit; i++)
                 {
                     await httpContext.Response.SendFileAsync(AbsoluteFilePath, 0, null);
                 }
@@ -578,13 +578,13 @@ public class ResponseSendFileTests
         var testComplete = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
         using (Utilities.CreateHttpServer(out var address, async httpContext =>
         {
-                // Note Response.SendFileAsync uses RequestAborted by default. This can cause the response to be disposed
-                // before it throws an IOException, but there's a race depending on when the disconnect is noticed.
-                // Passing our own token to skip that.
-                using var cts = new CancellationTokenSource();
+            // Note Response.SendFileAsync uses RequestAborted by default. This can cause the response to be disposed
+            // before it throws an IOException, but there's a race depending on when the disconnect is noticed.
+            // Passing our own token to skip that.
+            using var cts = new CancellationTokenSource();
             httpContext.RequestAborted.Register(() => cancellationReceived.SetResult(0));
-                // First write sends headers
-                await httpContext.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
+            // First write sends headers
+            await httpContext.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
             firstSendComplete.SetResult(0);
             await clientDisconnected.Task;
 
@@ -592,8 +592,8 @@ public class ResponseSendFileTests
             {
                 await Assert.ThrowsAsync<IOException>(async () =>
                 {
-                        // It can take several tries before Write notices the disconnect.
-                        for (int i = 0; i < Utilities.WriteRetryLimit; i++)
+                    // It can take several tries before Write notices the disconnect.
+                    for (int i = 0; i < Utilities.WriteRetryLimit; i++)
                     {
                         await httpContext.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
                     }
@@ -635,15 +635,15 @@ public class ResponseSendFileTests
         using (Utilities.CreateHttpServer(out var address, async httpContext =>
         {
             httpContext.RequestAborted.Register(() => cancellationReceived.SetResult(0));
-                // First write sends headers
-                await httpContext.Response.SendFileAsync(AbsoluteFilePath, 0, null);
+            // First write sends headers
+            await httpContext.Response.SendFileAsync(AbsoluteFilePath, 0, null);
             firstSendComplete.SetResult(0);
             await clientDisconnected.Task;
 
             try
             {
-                    // It can take several tries before Write notices the disconnect.
-                    for (int i = 0; i < Utilities.WriteRetryLimit; i++)
+                // It can take several tries before Write notices the disconnect.
+                for (int i = 0; i < Utilities.WriteRetryLimit; i++)
                 {
                     await httpContext.Response.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
                 }

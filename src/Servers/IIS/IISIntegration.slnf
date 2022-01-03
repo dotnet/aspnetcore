@@ -2,6 +2,7 @@
   "solution": {
     "path": "..\\..\\..\\AspNetCore.sln",
     "projects": [
+      "src\\Extensions\\Features\\src\\Microsoft.Extensions.Features.csproj",
       "src\\FileProviders\\Embedded\\src\\Microsoft.Extensions.FileProviders.Embedded.csproj",
       "src\\Hosting\\Abstractions\\src\\Microsoft.AspNetCore.Hosting.Abstractions.csproj",
       "src\\Hosting\\Hosting\\src\\Microsoft.AspNetCore.Hosting.csproj",
@@ -13,7 +14,6 @@
       "src\\Http\\Headers\\src\\Microsoft.Net.Http.Headers.csproj",
       "src\\Http\\Http.Abstractions\\src\\Microsoft.AspNetCore.Http.Abstractions.csproj",
       "src\\Http\\Http.Extensions\\src\\Microsoft.AspNetCore.Http.Extensions.csproj",
-      "src\\Extensions\\Features\\src\\Microsoft.Extensions.Features.csproj",
       "src\\Http\\Http.Features\\src\\Microsoft.AspNetCore.Http.Features.csproj",
       "src\\Http\\Http\\src\\Microsoft.AspNetCore.Http.csproj",
       "src\\Http\\WebUtilities\\src\\Microsoft.AspNetCore.WebUtilities.csproj",
@@ -37,10 +37,10 @@
       "src\\Servers\\IIS\\IIS\\perf\\Microbenchmarks\\IIS.Microbenchmarks.csproj",
       "src\\Servers\\IIS\\IIS\\samples\\NativeIISSample\\NativeIISSample.csproj",
       "src\\Servers\\IIS\\IIS\\src\\Microsoft.AspNetCore.Server.IIS.csproj",
-      "src\\Servers\\IIS\\IIS\\samples\\NativeIISSample\\NativeIISSample.csproj",
       "src\\Servers\\IIS\\IIS\\test\\IIS.FunctionalTests\\IIS.FunctionalTests.csproj",
       "src\\Servers\\IIS\\IIS\\test\\IIS.NewHandler.FunctionalTests\\IIS.NewHandler.FunctionalTests.csproj",
       "src\\Servers\\IIS\\IIS\\test\\IIS.NewShim.FunctionalTests\\IIS.NewShim.FunctionalTests.csproj",
+      "src\\Servers\\IIS\\IIS\\test\\IIS.ShadowCopy.Tests\\IIS.ShadowCopy.Tests.csproj",
       "src\\Servers\\IIS\\IIS\\test\\IIS.Tests\\IIS.Tests.csproj",
       "src\\Servers\\IIS\\IIS\\test\\IISExpress.FunctionalTests\\IISExpress.FunctionalTests.csproj",
       "src\\Servers\\IIS\\IIS\\test\\testassets\\IIS.Common.TestLib\\IIS.Common.TestLib.csproj",

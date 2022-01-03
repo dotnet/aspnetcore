@@ -31,8 +31,8 @@ public class TagHelpersInCodeBlocksAnalyzer : DiagnosticAnalyzer
         {
             if (!SymbolCache.TryCreate(context.Compilation, out var symbolCache))
             {
-                    // No-op if we can't find types we care about.
-                    return;
+                // No-op if we can't find types we care about.
+                return;
             }
 
             InitializeWorker(context, symbolCache);
@@ -81,8 +81,8 @@ public class TagHelpersInCodeBlocksAnalyzer : DiagnosticAnalyzer
 
                 if (methodSymbol == null)
                 {
-                        // Unsupported operation type.
-                        return;
+                    // Unsupported operation type.
+                    return;
                 }
 
                 if (!methodSymbol.IsAsync ||

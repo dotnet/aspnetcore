@@ -25,8 +25,8 @@ public class WebHostBuilderKestrelExtensionsTests
         {
             services.Configure<KestrelServerOptions>(options =>
             {
-                    // Assert
-                    Assert.NotNull(options.ApplicationServices);
+                // Assert
+                Assert.NotNull(options.ApplicationServices);
             });
         });
 
@@ -41,8 +41,8 @@ public class WebHostBuilderKestrelExtensionsTests
         var hostBuilder = new WebHostBuilder()
             .UseKestrel(options =>
             {
-                    // Assert
-                    Assert.NotNull(options.ApplicationServices);
+                // Assert
+                Assert.NotNull(options.ApplicationServices);
             })
             .Configure(app => { });
 

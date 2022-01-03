@@ -1,11 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.AspNetCore.Routing.TestObjects;
@@ -14,7 +10,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Routing.Tree;
 
@@ -1751,7 +1746,7 @@ public class TreeRouterTest
                 nestedValues = new RouteValueDictionary(c.RouteData.Values);
                 nestedRouters = new List<IRouter>(c.RouteData.Routers);
                 c.Handler = null; // Not a match
-                })
+            })
             .Returns(Task.CompletedTask);
 
         var builder = CreateBuilder();
@@ -1788,7 +1783,7 @@ public class TreeRouterTest
                 nestedValues = new RouteValueDictionary(c.RouteData.Values);
                 nestedRouters = new List<IRouter>(c.RouteData.Routers);
                 c.Handler = null; // Not a match
-                })
+            })
             .Returns(Task.CompletedTask);
 
         var builder = CreateBuilder();

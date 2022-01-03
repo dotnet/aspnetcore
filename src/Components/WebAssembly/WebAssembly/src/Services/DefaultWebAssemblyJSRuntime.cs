@@ -1,14 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.IO;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.JSInterop;
 using Microsoft.JSInterop.Infrastructure;
@@ -46,9 +41,9 @@ internal sealed class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
     {
         WebAssemblyCallQueue.Schedule(argsJson, static argsJson =>
         {
-                // This is not expected to throw, as it takes care of converting any unhandled user code
-                // exceptions into a failure on the Task that was returned when calling InvokeAsync.
-                DotNetDispatcher.EndInvokeJS(Instance, argsJson);
+            // This is not expected to throw, as it takes care of converting any unhandled user code
+            // exceptions into a failure on the Task that was returned when calling InvokeAsync.
+            DotNetDispatcher.EndInvokeJS(Instance, argsJson);
         });
     }
 
@@ -74,9 +69,9 @@ internal sealed class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
         var callInfo = new DotNetInvocationInfo(assemblyName, methodIdentifier, dotNetObjectId, callId);
         WebAssemblyCallQueue.Schedule((callInfo, argsJson), static state =>
         {
-                // This is not expected to throw, as it takes care of converting any unhandled user code
-                // exceptions into a failure on the JS Promise object.
-                DotNetDispatcher.BeginInvokeDotNet(Instance, state.callInfo, state.argsJson);
+            // This is not expected to throw, as it takes care of converting any unhandled user code
+            // exceptions into a failure on the JS Promise object.
+            DotNetDispatcher.BeginInvokeDotNet(Instance, state.callInfo, state.argsJson);
         });
     }
 

@@ -46,8 +46,8 @@ public class AspNetCorePortTests : IISFunctionalTestBase
 
     public static IEnumerable<object[]> InvalidTestVariants
         => from v in TestVariants.Select(v => v.Single())
-            from s in new string[] { (_minPort - 1).ToString(CultureInfo.InvariantCulture), (_maxPort + 1).ToString(CultureInfo.InvariantCulture), "noninteger" }
-            select new object[] { v, s };
+           from s in new string[] { (_minPort - 1).ToString(CultureInfo.InvariantCulture), (_maxPort + 1).ToString(CultureInfo.InvariantCulture), "noninteger" }
+           select new object[] { v, s };
 
     [ConditionalTheory]
     [MemberData(nameof(TestVariants))]

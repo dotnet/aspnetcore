@@ -1,15 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.ExceptionServices;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Rendering;
 
@@ -297,17 +293,17 @@ public class HtmlRendererTest
                 rtb.AddAttribute(7, "value", optionValue);
                 rtb.AddContent(8, $"Pick value {optionValue}");
                 rtb.CloseElement(); // option
-                }
+            }
 
             rtb.CloseElement(); // select
 
-                rtb.OpenElement(9, "option"); // To show other value-matching options don't get marked as selected
-                rtb.AddAttribute(10, "value", "b");
+            rtb.OpenElement(9, "option"); // To show other value-matching options don't get marked as selected
+            rtb.AddAttribute(10, "value", "b");
             rtb.AddContent(11, "unrelated option");
             rtb.CloseElement(); // option
 
-                rtb.CloseElement(); // p
-            })).BuildServiceProvider();
+            rtb.CloseElement(); // p
+        })).BuildServiceProvider();
 
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
 
@@ -340,11 +336,11 @@ public class HtmlRendererTest
                 rtb.AddAttribute(4, "value", optionValue);
                 rtb.AddContent(5, optionValue);
                 rtb.CloseElement(); // option
-                    rtb.CloseElement(); // optgroup
-                }
+                rtb.CloseElement(); // optgroup
+            }
 
             rtb.CloseElement(); // select
-            })).BuildServiceProvider();
+        })).BuildServiceProvider();
 
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
 

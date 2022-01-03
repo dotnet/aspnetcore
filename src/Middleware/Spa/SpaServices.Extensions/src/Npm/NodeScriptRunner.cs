@@ -1,11 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
-using System.Threading;
 using Microsoft.AspNetCore.NodeServices.Util;
 using Microsoft.Extensions.Logging;
 
@@ -95,9 +92,9 @@ internal class NodeScriptRunner : IDisposable
         {
             if (!string.IsNullOrWhiteSpace(line))
             {
-                    // Node tasks commonly emit ANSI colors, but it wouldn't make sense to forward
-                    // those to loggers (because a logger isn't necessarily any kind of terminal)
-                    logger.LogInformation(StripAnsiColors(line));
+                // Node tasks commonly emit ANSI colors, but it wouldn't make sense to forward
+                // those to loggers (because a logger isn't necessarily any kind of terminal)
+                logger.LogInformation(StripAnsiColors(line));
             }
         };
 

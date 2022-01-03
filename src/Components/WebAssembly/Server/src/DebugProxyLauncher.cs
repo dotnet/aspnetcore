@@ -1,15 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.DependencyInjection;
@@ -117,14 +112,14 @@ internal static class DebugProxyLauncher
     {
         process.OutputDataReceived += (sender, eventArgs) =>
         {
-                // It's confusing if the debug proxy emits its own startup status messages, because the developer
-                // may think the ports/environment/paths refer to their actual application. So we want to suppress
-                // them, but we can't stop the debug proxy app from emitting the messages entirely (e.g., via
-                // SuppressStatusMessages) because we need the "Now listening on" one to detect the chosen port.
-                // Instead, we'll filter out known strings from the passthrough logic. It's legit to hardcode these
-                // strings because they are also hardcoded like this inside WebHostExtensions.cs and can't vary
-                // according to culture.
-                if (eventArgs.Data is not null)
+            // It's confusing if the debug proxy emits its own startup status messages, because the developer
+            // may think the ports/environment/paths refer to their actual application. So we want to suppress
+            // them, but we can't stop the debug proxy app from emitting the messages entirely (e.g., via
+            // SuppressStatusMessages) because we need the "Now listening on" one to detect the chosen port.
+            // Instead, we'll filter out known strings from the passthrough logic. It's legit to hardcode these
+            // strings because they are also hardcoded like this inside WebHostExtensions.cs and can't vary
+            // according to culture.
+            if (eventArgs.Data is not null)
             {
                 foreach (var prefix in MessageSuppressionPrefixes)
                 {

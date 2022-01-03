@@ -1,13 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
@@ -410,9 +406,9 @@ public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPo
             {
                 context.Response.StatusCode = 405;
 
-                    // Prevent ArgumentException from duplicate key if header already added, such as when the
-                    // request is re-executed by an error handler (see https://github.com/dotnet/aspnetcore/issues/6415)
-                    context.Response.Headers.Allow = allow;
+                // Prevent ArgumentException from duplicate key if header already added, such as when the
+                // request is re-executed by an error handler (see https://github.com/dotnet/aspnetcore/issues/6415)
+                context.Response.Headers.Allow = allow;
 
                 return Task.CompletedTask;
             },

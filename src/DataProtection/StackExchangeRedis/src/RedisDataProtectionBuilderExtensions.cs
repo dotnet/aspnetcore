@@ -2,10 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using StackExchange.Redis;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.DataProtection.StackExchangeRedis;
+using Microsoft.Extensions.DependencyInjection;
+using StackExchange.Redis;
 
 namespace Microsoft.AspNetCore.DataProtection;
 

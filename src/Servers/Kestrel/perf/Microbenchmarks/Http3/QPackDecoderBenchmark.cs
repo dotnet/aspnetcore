@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net.Http;
 using System.Net.Http.QPack;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Http;
@@ -97,8 +98,12 @@ public class QPackDecoderBenchmark
         _decoder.Reset();
     }
 
-    private class TestHeadersHandler : IHttpHeadersHandler
+    private class TestHeadersHandler : IHttpStreamHeadersHandler
     {
+        public void OnDynamicIndexedHeader(int? index, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+        {
+        }
+
         public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
         }

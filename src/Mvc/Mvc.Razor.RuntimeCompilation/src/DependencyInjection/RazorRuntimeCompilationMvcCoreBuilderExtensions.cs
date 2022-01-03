@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
@@ -111,13 +110,13 @@ public static class RazorRuntimeCompilationMvcCoreBuilderExtensions
             {
                 RazorExtensions.Register(builder);
 
-                    // Roslyn + TagHelpers infrastructure
-                    var referenceManager = s.GetRequiredService<RazorReferenceManager>();
+                // Roslyn + TagHelpers infrastructure
+                var referenceManager = s.GetRequiredService<RazorReferenceManager>();
                 builder.Features.Add(new LazyMetadataReferenceFeature(referenceManager));
                 builder.Features.Add(new CompilationTagHelperFeature());
 
-                    // TagHelperDescriptorProviders (actually do tag helper discovery)
-                    builder.Features.Add(new DefaultTagHelperDescriptorProvider());
+                // TagHelperDescriptorProviders (actually do tag helper discovery)
+                builder.Features.Add(new DefaultTagHelperDescriptorProvider());
                 builder.Features.Add(new ViewComponentTagHelperDescriptorProvider());
                 builder.SetCSharpLanguageVersion(csharpCompiler.ParseOptions.LanguageVersion);
             });

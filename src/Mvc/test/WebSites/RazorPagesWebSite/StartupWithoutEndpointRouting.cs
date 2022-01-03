@@ -3,9 +3,6 @@
 
 using System.Globalization;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 using RazorPagesWebSite.Conventions;
 
 namespace RazorPagesWebSite;

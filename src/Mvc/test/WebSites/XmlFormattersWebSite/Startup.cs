@@ -1,12 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 
 namespace XmlFormattersWebSite;
@@ -23,13 +19,13 @@ public class Startup
 
         services.Configure<MvcOptions>(options =>
         {
-                // Since both XmlSerializer and DataContractSerializer based formatters
-                // have supported media types of 'application/xml' and 'text/xml',  it
-                // would be difficult for a test to choose a particular formatter based on
-                // request information (Ex: Accept header).
-                // We'll configure the ones on MvcOptions to use a distinct set of content types.
+            // Since both XmlSerializer and DataContractSerializer based formatters
+            // have supported media types of 'application/xml' and 'text/xml',  it
+            // would be difficult for a test to choose a particular formatter based on
+            // request information (Ex: Accept header).
+            // We'll configure the ones on MvcOptions to use a distinct set of content types.
 
-                XmlSerializerInputFormatter xmlSerializerInputFormatter = null;
+            XmlSerializerInputFormatter xmlSerializerInputFormatter = null;
             XmlSerializerOutputFormatter xmlSerializerOutputFormatter = null;
             XmlDataContractSerializerInputFormatter dcsInputFormatter = null;
             XmlDataContractSerializerOutputFormatter dcsOutputFormatter = null;

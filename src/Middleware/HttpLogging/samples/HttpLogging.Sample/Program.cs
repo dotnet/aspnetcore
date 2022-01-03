@@ -2,9 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace HttpLogging.Sample;
 
@@ -19,8 +16,8 @@ public class Program
         Host.CreateDefaultBuilder(args)
             .ConfigureLogging(logging =>
             {
-                    // Json Logging
-                    logging.ClearProviders();
+                // Json Logging
+                logging.ClearProviders();
                 logging.AddJsonConsole(options =>
                 {
                     options.JsonWriterOptions = new JsonWriterOptions()

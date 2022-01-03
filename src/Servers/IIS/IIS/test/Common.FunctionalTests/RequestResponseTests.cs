@@ -427,11 +427,12 @@ public class RequestResponseTests
     [ConditionalFact]
     public async Task GetServerVariableDoesNotCrash()
     {
-        await Helpers.StressLoad(_fixture.Client, "/GetServerVariableStress", response => {
-                var text = response.Content.ReadAsStringAsync().Result;
-                Assert.StartsWith("Response Begin", text);
-                Assert.EndsWith("Response End", text);
-            });
+        await Helpers.StressLoad(_fixture.Client, "/GetServerVariableStress", response =>
+        {
+            var text = response.Content.ReadAsStringAsync().Result;
+            Assert.StartsWith("Response Begin", text);
+            Assert.EndsWith("Response End", text);
+        });
     }
 
 

@@ -1,16 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -22,7 +16,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Authentication.WsFederation;
 
@@ -314,8 +307,8 @@ public class WsFederationTest
                             {
                                 if (context.ProtocolMessage.IsSignInMessage)
                                 {
-                                        // Sign in message
-                                        context.ProtocolMessage.Wctx = "customValue";
+                                    // Sign in message
+                                    context.ProtocolMessage.Wctx = "customValue";
                                 }
 
                                 return Task.FromResult(0);
@@ -343,8 +336,8 @@ public class WsFederationTest
                             OnAuthenticationFailed = context =>
                             {
                                 context.HttpContext.Items["AuthenticationFailed"] = true;
-                                    //Change the request url to something different and skip Wsfed. This new url will handle the request and let us know if this notification was invoked.
-                                    context.HttpContext.Request.Path = new PathString("/AuthenticationFailed");
+                                //Change the request url to something different and skip Wsfed. This new url will handle the request and let us know if this notification was invoked.
+                                context.HttpContext.Request.Path = new PathString("/AuthenticationFailed");
                                 context.SkipHandler();
                                 return Task.FromResult(0);
                             },

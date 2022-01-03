@@ -1,22 +1,14 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.IO;
-using System.Linq;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Extensions.Logging.Testing;
-using Moq;
 using Newtonsoft.Json;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters;
 

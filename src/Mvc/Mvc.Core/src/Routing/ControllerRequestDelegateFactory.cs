@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
@@ -81,8 +80,8 @@ internal class ControllerRequestDelegateFactory : IRequestDelegateFactory
 
             var controllerContext = new ControllerContext(actionContext)
             {
-                    // PERF: These are rarely going to be changed, so let's go copy-on-write.
-                    ValueProviderFactories = new CopyOnWriteList<IValueProviderFactory>(_valueProviderFactories)
+                // PERF: These are rarely going to be changed, so let's go copy-on-write.
+                ValueProviderFactories = new CopyOnWriteList<IValueProviderFactory>(_valueProviderFactories)
             };
 
             controllerContext.ModelState.MaxAllowedErrors = _maxModelValidationErrors;

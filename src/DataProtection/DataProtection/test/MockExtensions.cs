@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Xml.Linq;
-using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.DataProtection.Internal;
 using Microsoft.AspNetCore.DataProtection.XmlEncryption;
@@ -28,8 +26,8 @@ internal static class MockExtensions
                     .Setup(o => o.ImportFromXml(It.IsAny<XElement>()))
                     .Returns<XElement>(el =>
                     {
-                            // Only return the descriptor if the XML matches
-                            XmlAssert.Equal(xml, el);
+                        // Only return the descriptor if the XML matches
+                        XmlAssert.Equal(xml, el);
                         return descriptor;
                     });
                 return mockDeserializer.Object;
@@ -51,8 +49,8 @@ internal static class MockExtensions
                     .Setup(o => o.Decrypt(It.IsAny<XElement>()))
                     .Returns<XElement>(el =>
                     {
-                            // Only return the descriptor if the XML matches
-                            XmlAssert.Equal(expectedInputXml, el);
+                        // Only return the descriptor if the XML matches
+                        XmlAssert.Equal(expectedInputXml, el);
                         return XElement.Parse(outputXml);
                     });
                 return mockDecryptor.Object;

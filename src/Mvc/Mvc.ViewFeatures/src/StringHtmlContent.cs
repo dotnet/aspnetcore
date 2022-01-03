@@ -3,9 +3,7 @@
 
 #nullable enable
 
-using System;
 using System.Diagnostics;
-using System.IO;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Html;
 

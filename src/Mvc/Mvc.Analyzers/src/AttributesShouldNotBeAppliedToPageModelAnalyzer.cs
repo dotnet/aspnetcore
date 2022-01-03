@@ -25,8 +25,8 @@ public class AttributesShouldNotBeAppliedToPageModelAnalyzer : DiagnosticAnalyze
             var typeCache = new TypeCache(compilationStartAnalysisContext.Compilation);
             if (typeCache.PageModelAttribute == null || typeCache.PageModelAttribute.TypeKind == TypeKind.Error)
             {
-                    // No-op if we can't find types we care about.
-                    return;
+                // No-op if we can't find types we care about.
+                return;
             }
 
             InitializeWorker(compilationStartAnalysisContext, typeCache);

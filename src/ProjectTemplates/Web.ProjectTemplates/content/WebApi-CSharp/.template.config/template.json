@@ -374,6 +374,7 @@
   "defaultName": "WebApplication",
   "postActions": [
     {
+      "id": "restore",
       "condition": "(!skipRestore)",
       "description": "Restore NuGet packages required by this project.",
       "manualInstructions": [

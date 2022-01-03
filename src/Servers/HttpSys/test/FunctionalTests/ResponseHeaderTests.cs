@@ -123,7 +123,7 @@ public class ResponseHeaderTests
             var responseHeaders = responseInfo.Headers;
             responseHeaders["Connection"] = new string[] { "Close" };
             return httpContext.Response.Body.FlushAsync(); // Http.Sys adds the Content-Length: header for us if we don't flush
-            }))
+        }))
         {
             HttpResponseMessage response = await SendRequestAsync(address);
             response.EnsureSuccessStatusCode();

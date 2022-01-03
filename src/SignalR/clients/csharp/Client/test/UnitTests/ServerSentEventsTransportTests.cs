@@ -35,11 +35,11 @@ public class ServerSentEventsTransportTests : VerifiableLoggedTest
             .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
             {
                 await Task.Yield();
-                    // Receive loop started - allow stopping the transport
-                    eventStreamTcs.SetResult();
+                // Receive loop started - allow stopping the transport
+                eventStreamTcs.SetResult();
 
-                    // returns unfinished task to block pipelines
-                    var mockStream = new Mock<Stream>();
+                // returns unfinished task to block pipelines
+                var mockStream = new Mock<Stream>();
                 mockStream
                     .Setup(s => s.CopyToAsync(It.IsAny<Stream>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
                     .Returns(copyToAsyncTcs.Task);
@@ -184,11 +184,11 @@ public class ServerSentEventsTransportTests : VerifiableLoggedTest
 
                 if (request.Headers.Accept?.Contains(new MediaTypeWithQualityHeaderValue("text/event-stream")) == true)
                 {
-                        // Receive loop started - allow stopping the transport
-                        eventStreamTcs.SetResult();
+                    // Receive loop started - allow stopping the transport
+                    eventStreamTcs.SetResult();
 
-                        // returns unfinished task to block pipelines
-                        var mockStream = new Mock<Stream>();
+                    // returns unfinished task to block pipelines
+                    var mockStream = new Mock<Stream>();
                     mockStream
                         .Setup(s => s.ReadAsync(It.IsAny<Memory<byte>>(), It.IsAny<CancellationToken>()))
                         .Returns<Memory<byte>, CancellationToken>(async (data, ct) =>
@@ -237,11 +237,11 @@ public class ServerSentEventsTransportTests : VerifiableLoggedTest
             {
                 await Task.Yield();
 
-                    // Receive loop started - allow stopping the transport
-                    eventStreamTcs.SetResult();
+                // Receive loop started - allow stopping the transport
+                eventStreamTcs.SetResult();
 
-                    // returns unfinished task to block pipelines
-                    var mockStream = new Mock<Stream>();
+                // returns unfinished task to block pipelines
+                var mockStream = new Mock<Stream>();
                 mockStream
                         .Setup(s => s.ReadAsync(It.IsAny<Memory<byte>>(), It.IsAny<CancellationToken>()))
                         .Returns<Memory<byte>, CancellationToken>(async (data, ct) =>
@@ -313,11 +313,11 @@ public class ServerSentEventsTransportTests : VerifiableLoggedTest
 
                 if (request.Headers.Accept?.Contains(new MediaTypeWithQualityHeaderValue("text/event-stream")) == true)
                 {
-                        // Receive loop started - allow stopping the transport
-                        eventStreamTcs.SetResult();
+                    // Receive loop started - allow stopping the transport
+                    eventStreamTcs.SetResult();
 
-                        // returns unfinished task to block pipelines
-                        var mockStream = new Mock<Stream>();
+                    // returns unfinished task to block pipelines
+                    var mockStream = new Mock<Stream>();
                     mockStream
                         .Setup(s => s.ReadAsync(It.IsAny<Memory<byte>>(), It.IsAny<CancellationToken>()))
                         .Returns(async () =>
@@ -330,8 +330,8 @@ public class ServerSentEventsTransportTests : VerifiableLoggedTest
                     return new HttpResponseMessage { Content = new StreamContent(mockStream.Object) };
                 }
 
-                    // Throw TaskCanceledException from SSE send's SendAsync on stop
-                    cancellationToken.Register(s => ((SyncPoint)s).Continue(), sendSyncPoint);
+                // Throw TaskCanceledException from SSE send's SendAsync on stop
+                cancellationToken.Register(s => ((SyncPoint)s).Continue(), sendSyncPoint);
                 await sendSyncPoint.WaitToContinue();
                 throw new TaskCanceledException();
             });

@@ -198,9 +198,9 @@ internal partial class CircuitRegistry
             {
                 if (previouslyConnected)
                 {
-                        // During reconnects, we may transition from Connect->Connect i.e.without ever having invoking OnConnectionDownAsync during
-                        // a formal client disconnect. To allow authors of CircuitHandlers to have reasonable expectations will pair the connection up with a connection down.
-                        await circuitHost.OnConnectionDownAsync(cancellationToken);
+                    // During reconnects, we may transition from Connect->Connect i.e.without ever having invoking OnConnectionDownAsync during
+                    // a formal client disconnect. To allow authors of CircuitHandlers to have reasonable expectations will pair the connection up with a connection down.
+                    await circuitHost.OnConnectionDownAsync(cancellationToken);
                 }
 
                 await circuitHost.OnConnectionUpAsync(cancellationToken);

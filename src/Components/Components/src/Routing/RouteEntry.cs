@@ -3,8 +3,6 @@
 
 #nullable disable warnings
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;

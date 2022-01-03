@@ -3,7 +3,6 @@
 
 #nullable enable
 
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;

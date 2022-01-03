@@ -1,11 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Testing;
-using Xunit;
 
 namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests;
 
@@ -54,8 +51,8 @@ public class MiddlewareTests
             queue: TestQueue.AlwaysFalse,
             next: httpContext =>
             {
-                    // throttle should bounce the request; it should never get here
-                    throw new DivideByZeroException();
+                // throttle should bounce the request; it should never get here
+                throw new DivideByZeroException();
             });
 
         await middleware.Invoke(new DefaultHttpContext()).DefaultTimeout();

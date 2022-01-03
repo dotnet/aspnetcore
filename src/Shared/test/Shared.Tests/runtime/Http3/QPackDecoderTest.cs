@@ -2,12 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http.HPack;
+using System.Net.Http.QPack;
 using System.Text;
 using Xunit;
-using System.Net.Http.QPack;
-using System.Net.Http.HPack;
 using HeaderField = System.Net.Http.QPack.HeaderField;
 #if KESTREL
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -236,7 +236,7 @@ namespace System.Net.Http.Unit.Tests.QPack
             else
             {
                 int chunkSize = bytesAtATime.Value;
-                
+
                 // Parse data in chunks, separated by empty chunks
                 for (int i = 0; i < encoded.Length; i += chunkSize)
                 {
@@ -264,12 +264,12 @@ namespace System.Net.Http.Unit.Tests.QPack
         }
     }
 
-    public class TestHttpHeadersHandler : IHttpHeadersHandler
+    public class TestHttpHeadersHandler : IHttpStreamHeadersHandler
     {
         public Dictionary<string, string> DecodedHeaders { get; } = new Dictionary<string, string>();
         public Dictionary<int, KeyValuePair<string, string>> DecodedStaticHeaders { get; } = new Dictionary<int, KeyValuePair<string, string>>();
 
-        void IHttpHeadersHandler.OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+        void IHttpStreamHeadersHandler.OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
             if (name.Length == 0)
             {
@@ -282,20 +282,28 @@ namespace System.Net.Http.Unit.Tests.QPack
             DecodedHeaders[headerName] = headerValue;
         }
 
-        void IHttpHeadersHandler.OnStaticIndexedHeader(int index)
+        void IHttpStreamHeadersHandler.OnStaticIndexedHeader(int index)
         {
             ref readonly HeaderField entry = ref H3StaticTable.Get(index);
-            ((IHttpHeadersHandler)this).OnHeader(entry.Name, entry.Value);
+            ((IHttpStreamHeadersHandler)this).OnHeader(entry.Name, entry.Value);
             DecodedStaticHeaders[index] = new KeyValuePair<string, string>(Encoding.ASCII.GetString(entry.Name), Encoding.ASCII.GetString(entry.Value));
         }
 
-        void IHttpHeadersHandler.OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
+        void IHttpStreamHeadersHandler.OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
         {
             byte[] name = H3StaticTable.Get(index).Name;
-            ((IHttpHeadersHandler)this).OnHeader(name, value);
+            ((IHttpStreamHeadersHandler)this).OnHeader(name, value);
             DecodedStaticHeaders[index] = new KeyValuePair<string, string>(Encoding.ASCII.GetString(name), Encoding.ASCII.GetString(value));
         }
 
-        void IHttpHeadersHandler.OnHeadersComplete(bool endStream) { }
+        void IHttpStreamHeadersHandler.OnHeadersComplete(bool endStream) { }
+
+        public void OnDynamicIndexedHeader(int? index, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+        {
+            string headerName = Encoding.ASCII.GetString(name);
+            string headerValue = Encoding.ASCII.GetString(value);
+
+            DecodedHeaders[headerName] = headerValue;
+        }
     }
 }

@@ -2,12 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
-using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.WebUtilities;
 

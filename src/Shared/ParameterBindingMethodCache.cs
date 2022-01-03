@@ -72,17 +72,17 @@ internal sealed class ParameterBindingMethodCache
                     var enumAsObject = Expression.Variable(typeof(object), "enumAsObject");
                     var success = Expression.Variable(typeof(bool), "success");
 
-                        // object enumAsObject;
-                        // bool success;
-                        // success = Enum.TryParse(type, tempSourceString, out enumAsObject);
-                        // parsedValue = success ? (Type)enumAsObject : default;
-                        // return success;
+                    // object enumAsObject;
+                    // bool success;
+                    // success = Enum.TryParse(type, tempSourceString, out enumAsObject);
+                    // parsedValue = success ? (Type)enumAsObject : default;
+                    // return success;
 
-                        return Expression.Block(new[] { success, enumAsObject },
-                        Expression.Assign(success, Expression.Call(_enumTryParseMethod, Expression.Constant(type), TempSourceStringExpr, enumAsObject)),
-                        Expression.Assign(expression,
-                            Expression.Condition(success, Expression.Convert(enumAsObject, type), Expression.Default(type))),
-                        success);
+                    return Expression.Block(new[] { success, enumAsObject },
+                    Expression.Assign(success, Expression.Call(_enumTryParseMethod, Expression.Constant(type), TempSourceStringExpr, enumAsObject)),
+                    Expression.Assign(expression,
+                        Expression.Condition(success, Expression.Convert(enumAsObject, type), Expression.Default(type))),
+                    success);
                 };
 
             }
@@ -197,9 +197,9 @@ internal sealed class ParameterBindingMethodCache
                         MethodCallExpression typedCall;
                         if (hasParameterInfo)
                         {
-                                // parameter is being intentionally shadowed. We never want to use the outer ParameterInfo inside
-                                // this Func because the ParameterInfo varies after it's been cached for a given parameter type.
-                                typedCall = Expression.Call(methodInfo, HttpContextExpr, Expression.Constant(parameter));
+                            // parameter is being intentionally shadowed. We never want to use the outer ParameterInfo inside
+                            // this Func because the ParameterInfo varies after it's been cached for a given parameter type.
+                            typedCall = Expression.Call(methodInfo, HttpContextExpr, Expression.Constant(parameter));
                         }
                         else
                         {
@@ -218,9 +218,9 @@ internal sealed class ParameterBindingMethodCache
                         MethodCallExpression typedCall;
                         if (hasParameterInfo)
                         {
-                                // parameter is being intentionally shadowed. We never want to use the outer ParameterInfo inside
-                                // this Func because the ParameterInfo varies after it's been cached for a given parameter type.
-                                typedCall = Expression.Call(methodInfo, HttpContextExpr, Expression.Constant(parameter));
+                            // parameter is being intentionally shadowed. We never want to use the outer ParameterInfo inside
+                            // this Func because the ParameterInfo varies after it's been cached for a given parameter type.
+                            typedCall = Expression.Call(methodInfo, HttpContextExpr, Expression.Constant(parameter));
                         }
                         else
                         {

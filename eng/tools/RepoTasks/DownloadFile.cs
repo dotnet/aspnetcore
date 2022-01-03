@@ -100,7 +100,7 @@ public class DownloadFile : Microsoft.Build.Utilities.Task
 
         Log.LogMessage(MessageImportance.High, $"Attempting download '{source}' to '{target}'");
 
-        using (var httpClient = new HttpClient { Timeout = TimeSpan.FromMinutes(5) })
+        using (var httpClient = new HttpClient { Timeout = TimeSpan.FromMinutes(7.5) })
         {
             for (int retryNumber = 0; retryNumber < MaxRetries; retryNumber++)
             {

@@ -3,7 +3,6 @@
 
 #nullable disable
 
-using System;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Patterns;

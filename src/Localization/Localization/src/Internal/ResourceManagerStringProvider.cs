@@ -57,8 +57,8 @@ internal class ResourceManagerStringProvider : IResourceStringProvider
 
         return _resourceNamesCache.GetOrAdd(cacheKey, _ =>
         {
-                // We purposly don't dispose the ResourceSet because it causes an ObjectDisposedException when you try to read the values later.
-                var resourceSet = _resourceManager.GetResourceSet(culture, createIfNotExists: true, tryParents: false);
+            // We purposly don't dispose the ResourceSet because it causes an ObjectDisposedException when you try to read the values later.
+            var resourceSet = _resourceManager.GetResourceSet(culture, createIfNotExists: true, tryParents: false);
             if (resourceSet == null)
             {
                 if (throwOnMissing)

@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.Extensions.Caching.SqlServer;
 

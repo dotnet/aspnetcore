@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 #nullable enable
 namespace Ignitor;
@@ -40,8 +37,8 @@ internal class CancellableOperation<TResult>
 
                 if (cancellationToken.IsCancellationRequested)
                 {
-                        // The operation was externally canceled before it timed out.
-                        Dispose();
+                    // The operation was externally canceled before it timed out.
+                    Dispose();
                     return;
                 }
 
