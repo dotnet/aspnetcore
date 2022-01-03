@@ -2,9 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
-
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
-
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
