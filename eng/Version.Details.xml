@@ -294,17 +294,17 @@
          Win-x64 is used here because we have picked an arbitrary runtime identifier to flow the version of the latest NETCore.App runtime.
          All Runtime.$rid packages should have the same version.
     -->
-    <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="5.0.13">
+    <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="5.0.14">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>b3afe992253738208ccaaa058e726553889928de</Sha>
+      <Sha>85e316c7ca6edace30049c783cf1cdf2df5138c9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Internal" Version="5.0.13-servicing.21565.16">
+    <Dependency Name="Microsoft.NETCore.App.Internal" Version="5.0.14-servicing.22052.5">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>b3afe992253738208ccaaa058e726553889928de</Sha>
+      <Sha>85e316c7ca6edace30049c783cf1cdf2df5138c9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="5.0.13-servicing.21565.16">
+    <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="5.0.14-servicing.22052.5">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>b3afe992253738208ccaaa058e726553889928de</Sha>
+      <Sha>85e316c7ca6edace30049c783cf1cdf2df5138c9</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
