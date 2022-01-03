@@ -205,8 +205,8 @@ public class ResponseTrailersTests
             httpContext.Response.ContentLength = body.Length;
             httpContext.Response.DeclareTrailer("TrailerName");
             await httpContext.Response.WriteAsync(body);
-                // If we declare trailers but don't send any make sure it completes anyways.
-            }))
+            // If we declare trailers but don't send any make sure it completes anyways.
+        }))
         {
             var response = await SendRequestAsync(address);
             response.EnsureSuccessStatusCode();

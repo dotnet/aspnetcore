@@ -1,22 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
 using System.Runtime.ExceptionServices;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging.Abstractions;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Test;
 
@@ -370,11 +364,11 @@ public class RendererTest
                 {
                     hasRendered = true;
 
-                        // If we were to await here, then it would deadlock, because the component would be saying it's not
-                        // finished rendering until the rendering system has already finished. The point of this test is to
-                        // show that, as long as we don't await quiescence here, nothing within the system will be doing so
-                        // and hence the whole process can complete.
-                        _ = renderer.RenderRootComponentAsync(componentId.Value, ParameterView.Empty);
+                    // If we were to await here, then it would deadlock, because the component would be saying it's not
+                    // finished rendering until the rendering system has already finished. The point of this test is to
+                    // show that, as long as we don't await quiescence here, nothing within the system will be doing so
+                    // and hence the whole process can complete.
+                    _ = renderer.RenderRootComponentAsync(componentId.Value, ParameterView.Empty);
                 }
             }
         };
@@ -1344,8 +1338,8 @@ public class RendererTest
             builder.OpenComponent<EventComponent>(0);
             builder.AddAttribute(1, nameof(EventComponent.OnClickAction), (Action)(() =>
             {
-                    // Do nothing.
-                }));
+                // Do nothing.
+            }));
             builder.CloseComponent();
         };
 
@@ -1376,8 +1370,8 @@ public class RendererTest
             builder.OpenComponent<EventComponent>(0);
             builder.AddAttribute(1, nameof(EventComponent.OnClickEventCallback), EventCallback.Factory.Create(parentComponent, (Action)(() =>
             {
-                    // Do nothing.
-                })));
+                // Do nothing.
+            })));
             builder.CloseComponent();
         };
 
@@ -2214,8 +2208,8 @@ public class RendererTest
         {
             if (firstRender)
             {
-                    // Nested descendants
-                    builder.OpenComponent<ConditionalParentComponent<FakeComponent>>(100);
+                // Nested descendants
+                builder.OpenComponent<ConditionalParentComponent<FakeComponent>>(100);
                 builder.AddAttribute(101, nameof(ConditionalParentComponent<FakeComponent>.IncludeChild), true);
                 builder.CloseComponent();
             }
@@ -2817,8 +2811,8 @@ public class RendererTest
         Assert.Collection(batch.DiffsInOrder,
             diff =>
             {
-                    // First we triggered the root component to re-render
-                    Assert.Equal(rootComponentId, diff.ComponentId);
+                // First we triggered the root component to re-render
+                Assert.Equal(rootComponentId, diff.ComponentId);
                 Assert.Collection(diff.Edits, edit =>
                 {
                     Assert.Equal(RenderTreeEditType.UpdateText, edit.Type);
@@ -2829,8 +2823,8 @@ public class RendererTest
             },
             diff =>
             {
-                    // Then the root re-render will have triggered an update to the child
-                    Assert.Equal(childComponentId, diff.ComponentId);
+                // Then the root re-render will have triggered an update to the child
+                Assert.Equal(childComponentId, diff.ComponentId);
                 Assert.Collection(diff.Edits, edit =>
                 {
                     Assert.Equal(RenderTreeEditType.UpdateText, edit.Type);
@@ -2841,8 +2835,8 @@ public class RendererTest
             },
             diff =>
             {
-                    // Finally we explicitly requested a re-render of the child
-                    Assert.Equal(childComponentId, diff.ComponentId);
+                // Finally we explicitly requested a re-render of the child
+                Assert.Equal(childComponentId, diff.ComponentId);
                 Assert.Collection(diff.Edits, edit =>
                 {
                     Assert.Equal(RenderTreeEditType.UpdateText, edit.Type);
@@ -2974,10 +2968,10 @@ public class RendererTest
                 builder.OpenComponent<RendersSelfAfterEventComponent>(1);
                 builder.AddAttribute(2, "onclick", (Action<object>)((object obj) =>
                 {
-                        // First we queue (1) a re-render of the root component, then the child component
-                        // will queue (2) its own re-render. But by the time (1) completes, the child will
-                        // have been disposed, even though (2) is still in the queue
-                        shouldRenderChild = false;
+                    // First we queue (1) a re-render of the root component, then the child component
+                    // will queue (2) its own re-render. But by the time (1) completes, the child will
+                    // have been disposed, even though (2) is still in the queue
+                    shouldRenderChild = false;
                     component.TriggerRender();
                 }));
                 builder.CloseComponent();
@@ -3181,17 +3175,17 @@ public class RendererTest
         var showComponent3 = true;
         var parentComponent = new TestComponent(builder =>
         {
-                // First child will be re-rendered because we'll change its param
-                builder.OpenComponent<AfterRenderCaptureComponent>(0);
+            // First child will be re-rendered because we'll change its param
+            builder.OpenComponent<AfterRenderCaptureComponent>(0);
             builder.AddAttribute(1, "some param", showComponent3);
             builder.CloseComponent();
 
-                // Second child will not be re-rendered because nothing changes
-                builder.OpenComponent<AfterRenderCaptureComponent>(2);
+            // Second child will not be re-rendered because nothing changes
+            builder.OpenComponent<AfterRenderCaptureComponent>(2);
             builder.CloseComponent();
 
-                // Third component will be disposed
-                if (showComponent3)
+            // Third component will be disposed
+            if (showComponent3)
             {
                 builder.OpenComponent<AfterRenderCaptureComponent>(3);
                 builder.CloseComponent();
@@ -3280,9 +3274,9 @@ public class RendererTest
         {
             numEventsFired++;
 
-                // Replace the old event handler with a different one,
-                // (old the old handler ID will be disposed) then re-render.
-                component.OnTest = args => eventHandler(args);
+            // Replace the old event handler with a different one,
+            // (old the old handler ID will be disposed) then re-render.
+            component.OnTest = args => eventHandler(args);
             component.TriggerRender();
         };
 
@@ -4126,10 +4120,10 @@ public class RendererTest
         var batch2 = renderer.Batches[1];
         Assert.Collection(batch2.DiffsInOrder.Single().Edits.ToArray(), edit =>
         {
-                // The only edit is updating the event handler ID, since the test component
-                // deliberately uses a capturing lambda. The whole point of this test is to
-                // show that the diff does *not* update the BoundString value attribute.
-                Assert.Equal(RenderTreeEditType.SetAttribute, edit.Type);
+            // The only edit is updating the event handler ID, since the test component
+            // deliberately uses a capturing lambda. The whole point of this test is to
+            // show that the diff does *not* update the BoundString value attribute.
+            Assert.Equal(RenderTreeEditType.SetAttribute, edit.Type);
             var attributeFrame = batch2.ReferenceFrames[edit.ReferenceFrameIndex];
             AssertFrame.Attribute(attributeFrame, "ontestevent", typeof(Action<ChangeEventArgs>));
             Assert.NotEqual(default, attributeFrame.AttributeEventHandlerId);
@@ -4178,10 +4172,10 @@ public class RendererTest
             var latestBatch = renderer.Batches.Last();
             Assert.Collection(latestBatch.DiffsInOrder.Single().Edits.ToArray(), edit =>
             {
-                    // The only edit is updating the event handler ID, since the test component
-                    // deliberately uses a capturing lambda. The whole point of this test is to
-                    // show that the diff does *not* update the BoundString value attribute.
-                    Assert.Equal(RenderTreeEditType.SetAttribute, edit.Type);
+                // The only edit is updating the event handler ID, since the test component
+                // deliberately uses a capturing lambda. The whole point of this test is to
+                // show that the diff does *not* update the BoundString value attribute.
+                Assert.Equal(RenderTreeEditType.SetAttribute, edit.Type);
                 var attributeFrame = latestBatch.ReferenceFrames[edit.ReferenceFrameIndex];
                 AssertFrame.Attribute(attributeFrame, "ontestevent", typeof(Action<ChangeEventArgs>));
                 Assert.NotEqual(default, attributeFrame.AttributeEventHandlerId);
@@ -4197,11 +4191,11 @@ public class RendererTest
         var renderer = new InvalidRecursiveRenderer();
         var component = new CallbackOnRenderComponent(() =>
         {
-                // The renderer disallows one batch to be started inside another, because that
-                // would violate all kinds of state tracking invariants. It's not something that
-                // would ever happen except if you subclass the renderer and do something unsupported
-                // that commences batches from inside each other.
-                renderer.ProcessPendingRender();
+            // The renderer disallows one batch to be started inside another, because that
+            // would violate all kinds of state tracking invariants. It's not something that
+            // would ever happen except if you subclass the renderer and do something unsupported
+            // that commences batches from inside each other.
+            renderer.ProcessPendingRender();
         });
         var componentId = renderer.AssignRootComponentId(component);
 
@@ -4607,9 +4601,9 @@ public class RendererTest
         {
             renderer.RemoveRootComponent(rootComponentId);
 
-                // Even though we didn't await anything, it's synchronously unavailable for re-removal
-                var ex = Assert.Throws<ArgumentException>(() =>
-                renderer.RemoveRootComponent(rootComponentId));
+            // Even though we didn't await anything, it's synchronously unavailable for re-removal
+            var ex = Assert.Throws<ArgumentException>(() =>
+            renderer.RemoveRootComponent(rootComponentId));
             Assert.Equal($"The renderer does not have a component with ID {rootComponentId}.", ex.Message);
             didRunTestLogic = true;
         });
@@ -5603,8 +5597,8 @@ public class RendererTest
             builder.OpenComponent<TestErrorBoundary>(0);
             builder.AddAttribute(1, nameof(TestErrorBoundary.ChildContent), (RenderFragment)(builder =>
             {
-                    // ... containing another error boundary, containing the content
-                    builder.OpenComponent<TestErrorBoundary>(0);
+                // ... containing another error boundary, containing the content
+                builder.OpenComponent<TestErrorBoundary>(0);
                 builder.AddAttribute(1, nameof(TestErrorBoundary.ChildContent), innerContent);
                 builder.CloseComponent();
             }));

@@ -109,7 +109,7 @@ public class OpaqueUpgradeTests
         using (Utilities.CreateHttpServer(out var address, async httpContext =>
         {
             httpContext.Response.Headers["Upgrade"] = "websocket"; // Win8.1 blocks anything but WebSockets
-                var opaqueFeature = httpContext.Features.Get<IHttpUpgradeFeature>();
+            var opaqueFeature = httpContext.Features.Get<IHttpUpgradeFeature>();
             Assert.NotNull(opaqueFeature);
             Assert.True(opaqueFeature.IsUpgradableRequest);
             await opaqueFeature.UpgradeAsync();
@@ -135,8 +135,8 @@ public class OpaqueUpgradeTests
             Assert.False(feature.IsReadOnly);
             Assert.Null(feature.MaxRequestBodySize); // GET/Upgrade requests don't actually have an entity body, so they can't set the limit.
 
-                httpContext.Response.Headers["Upgrade"] = "websocket"; // Win8.1 blocks anything but WebSockets
-                var opaqueFeature = httpContext.Features.Get<IHttpUpgradeFeature>();
+            httpContext.Response.Headers["Upgrade"] = "websocket"; // Win8.1 blocks anything but WebSockets
+            var opaqueFeature = httpContext.Features.Get<IHttpUpgradeFeature>();
             Assert.NotNull(opaqueFeature);
             Assert.True(opaqueFeature.IsUpgradableRequest);
             var stream = await opaqueFeature.UpgradeAsync();
@@ -169,7 +169,7 @@ public class OpaqueUpgradeTests
                 return Task.FromResult(0);
             }, null);
             httpContext.Response.Headers["Upgrade"] = "websocket"; // Win8.1 blocks anything but WebSockets
-                var opaqueFeature = httpContext.Features.Get<IHttpUpgradeFeature>();
+            var opaqueFeature = httpContext.Features.Get<IHttpUpgradeFeature>();
             Assert.NotNull(opaqueFeature);
             Assert.True(opaqueFeature.IsUpgradableRequest);
             await opaqueFeature.UpgradeAsync();
@@ -216,7 +216,7 @@ public class OpaqueUpgradeTests
             try
             {
                 httpContext.Response.Headers["Upgrade"] = "websocket"; // Win8.1 blocks anything but WebSockets
-                    var opaqueFeature = httpContext.Features.Get<IHttpUpgradeFeature>();
+                var opaqueFeature = httpContext.Features.Get<IHttpUpgradeFeature>();
                 Assert.NotNull(opaqueFeature);
                 Assert.True(opaqueFeature.IsUpgradableRequest);
                 var opaqueStream = await opaqueFeature.UpgradeAsync();

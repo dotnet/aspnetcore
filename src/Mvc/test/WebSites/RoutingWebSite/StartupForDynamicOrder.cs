@@ -1,18 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace RoutingWebSite;
 
@@ -54,8 +45,8 @@ public class StartupForDynamicOrder
         app.UseRouting();
         app.UseEndpoints(endpoints =>
         {
-                // Route order definition is important for all these routes:
-                switch (scenario)
+            // Route order definition is important for all these routes:
+            switch (scenario)
             {
                 case DynamicOrderScenarios.AttributeRouteDynamicRoute:
                     endpoints.MapDynamicControllerRoute<Transformer>("attribute-dynamic-order/{**slug}", new TransformerState() { Identifier = "slug" });

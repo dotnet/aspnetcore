@@ -1,12 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -18,7 +13,6 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor;
 
@@ -67,8 +61,8 @@ public class RazorViewTest
         var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary());
         var page = new TestableRazorPage(v =>
         {
-                // viewData is assigned to ViewContext by the activator
-                Assert.Same(viewData, v.ViewContext.ViewData);
+            // viewData is assigned to ViewContext by the activator
+            Assert.Same(viewData, v.ViewContext.ViewData);
         });
         var activator = new Mock<IRazorPageActivator>();
         var view = new RazorView(
@@ -105,8 +99,8 @@ public class RazorViewTest
         var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary());
         var page = new TestableRazorPageForDiagnostics(v =>
         {
-                // viewData is assigned to ViewContext by the activator
-                Assert.Same(viewData, v.ViewContext.ViewData);
+            // viewData is assigned to ViewContext by the activator
+            Assert.Same(viewData, v.ViewContext.ViewData);
         });
         var activator = new Mock<IRazorPageActivator>();
 
@@ -378,10 +372,10 @@ public class RazorViewTest
         });
         var page = new TestableRazorPage(v =>
         {
-                // This path must have been set as a consequence of running viewStart
-                actualLayoutPath = v.Layout;
-                // Clear out layout so we don't render it
-                v.Layout = null;
+            // This path must have been set as a consequence of running viewStart
+            actualLayoutPath = v.Layout;
+            // Clear out layout so we don't render it
+            v.Layout = null;
         });
         var activator = new Mock<IRazorPageActivator>();
         activator
@@ -1565,8 +1559,8 @@ public class RazorViewTest
         var page = new TestableRazorPage(v =>
         {
             actualPage = v.Layout;
-                // Clear it out because we don't care about rendering the layout in this test.
-                v.Layout = null;
+            // Clear it out because we don't care about rendering the layout in this test.
+            v.Layout = null;
         });
         var viewStart1 = new TestableRazorPage(v =>
         {
@@ -1614,8 +1608,8 @@ public class RazorViewTest
         {
             actualPage = v.Layout;
 
-                // Clear it out because we don't care about rendering the layout in this test.
-                v.Layout = null;
+            // Clear it out because we don't care about rendering the layout in this test.
+            v.Layout = null;
         });
 
         var viewStart1 = new TestableRazorPage(v =>

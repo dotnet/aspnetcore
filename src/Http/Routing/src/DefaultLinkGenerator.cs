@@ -3,9 +3,7 @@
 
 #nullable enable
 
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Http;
@@ -50,9 +48,9 @@ internal sealed partial class DefaultLinkGenerator : LinkGenerator, IDisposable
         // that cache is the endpoints change so that we don't allow unbounded memory growth.
         _cache = new DataSourceDependentCache<ConcurrentDictionary<RouteEndpoint, TemplateBinder>>(dataSource, (_) =>
         {
-                // We don't eagerly fill this cache because there's no real reason to. Unlike URL matching, we don't
-                // need to build a big data structure up front to be correct.
-                return new ConcurrentDictionary<RouteEndpoint, TemplateBinder>();
+            // We don't eagerly fill this cache because there's no real reason to. Unlike URL matching, we don't
+            // need to build a big data structure up front to be correct.
+            return new ConcurrentDictionary<RouteEndpoint, TemplateBinder>();
         });
 
         // Cached to avoid per-call allocation of a delegate on lookup.

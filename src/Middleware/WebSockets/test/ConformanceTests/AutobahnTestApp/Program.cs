@@ -1,14 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using System.Net;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace AutobahnTestApp;
 
@@ -39,16 +32,16 @@ public class Program
                 }
                 else if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNETCORE_PORT")))
                 {
-                        // ANCM is hosting the process.
-                        // The port will not yet be configured at this point, but will also not require HTTPS.
-                        scenarioName = "AspNetCoreModule";
+                    // ANCM is hosting the process.
+                    // The port will not yet be configured at this point, but will also not require HTTPS.
+                    scenarioName = "AspNetCoreModule";
                     Console.WriteLine("Detected ANCM, using Kestrel");
                     webHostBuilder.UseKestrel();
                 }
                 else
                 {
-                        // Also check "server.urls" for back-compat.
-                        var urls = webHostBuilder.GetSetting(WebHostDefaults.ServerUrlsKey) ?? webHostBuilder.GetSetting("server.urls");
+                    // Also check "server.urls" for back-compat.
+                    var urls = webHostBuilder.GetSetting(WebHostDefaults.ServerUrlsKey) ?? webHostBuilder.GetSetting("server.urls");
                     webHostBuilder.UseSetting(WebHostDefaults.ServerUrlsKey, string.Empty);
 
                     Console.WriteLine($"Using Kestrel, URL: {urls}");

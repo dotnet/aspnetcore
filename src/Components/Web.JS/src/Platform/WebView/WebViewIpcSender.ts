@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 import { trySerializeMessage } from './WebViewIpcCommon';
 
 export function sendAttachPage(baseUrl: string, startUrl: string) {
@@ -26,7 +29,7 @@ function base64EncodeByteArray(data: Uint8Array) {
   // Note `btoa(String.fromCharCode.apply(null, data as unknown as number[]));`
   // isn't sufficient as the `apply` over a large array overflows the stack.
   const charBytes = new Array(data.length);
-  for (var i = 0; i < data.length; i++) {
+  for (let i = 0; i < data.length; i++) {
     charBytes[i] = String.fromCharCode(data[i]);
   }
   const dataBase64Encoded = btoa(charBytes.join(''));

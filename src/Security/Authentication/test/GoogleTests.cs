@@ -1,15 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
@@ -20,7 +16,6 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Authentication.Google;
 
@@ -1118,8 +1113,8 @@ public class GoogleTests : RemoteAuthenticationTests<GoogleOptions>
                             }
                             else if (req.Path == new PathString("/unauthorized"))
                             {
-                                    // Simulate Authorization failure
-                                    var result = await context.AuthenticateAsync("Google");
+                                // Simulate Authorization failure
+                                var result = await context.AuthenticateAsync("Google");
                                 await context.ChallengeAsync("Google");
                             }
                             else if (req.Path == new PathString("/unauthorizedAuto"))

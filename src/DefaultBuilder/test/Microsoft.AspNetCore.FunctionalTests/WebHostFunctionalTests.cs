@@ -1,17 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Net.Http;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Testing;
-using Xunit;
 using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Tests;
@@ -47,10 +41,10 @@ public class WebHostFunctionalTests : LoggedTest
             var responseText = await response.Content.ReadAsStringAsync();
             try
             {
-                    // Assert server is Kestrel
-                    Assert.Equal("Kestrel", response.Headers.Server.ToString());
-                    // The application name will be sent in response when all asserts succeed in the test app.
-                    Assert.Equal(applicationName, responseText);
+                // Assert server is Kestrel
+                Assert.Equal("Kestrel", response.Headers.Server.ToString());
+                // The application name will be sent in response when all asserts succeed in the test app.
+                Assert.Equal(applicationName, responseText);
             }
             catch (XunitException)
             {
@@ -72,10 +66,10 @@ public class WebHostFunctionalTests : LoggedTest
             var responseText = await response.Content.ReadAsStringAsync();
             try
             {
-                    // Assert server is Kestrel
-                    Assert.Equal("Kestrel", response.Headers.Server.ToString());
-                    // The application name will be sent in response when all asserts succeed in the test app.
-                    Assert.Equal(applicationName, responseText);
+                // Assert server is Kestrel
+                Assert.Equal("Kestrel", response.Headers.Server.ToString());
+                // The application name will be sent in response when all asserts succeed in the test app.
+                Assert.Equal(applicationName, responseText);
             }
             catch (XunitException)
             {
@@ -98,8 +92,8 @@ public class WebHostFunctionalTests : LoggedTest
             var responseText = await response.Content.ReadAsStringAsync();
             try
             {
-                    // Assert UseDeveloperExceptionPage is called in WebHostStartupFilter.
-                    Assert.Contains(expected, responseText);
+                // Assert UseDeveloperExceptionPage is called in WebHostStartupFilter.
+                Assert.Contains(expected, responseText);
             }
             catch (XunitException)
             {

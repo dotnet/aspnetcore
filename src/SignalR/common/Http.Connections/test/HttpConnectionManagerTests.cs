@@ -82,8 +82,8 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
                 connection.ApplicationTask = Task.FromException(new Exception("Application failed"));
                 connection.TransportTask = Task.Run(async () =>
                 {
-                        // Wait for the application to end
-                        var result = await connection.Application.Input.ReadAsync();
+                    // Wait for the application to end
+                    var result = await connection.Application.Input.ReadAsync();
                     connection.Application.Input.AdvanceTo(result.Buffer.End);
 
                     if (transportFaulted)
@@ -100,8 +100,8 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
                 connection.TransportTask = Task.FromException(new Exception("Application failed"));
                 connection.ApplicationTask = Task.Run(async () =>
                 {
-                        // Wait for the application to end
-                        var result = await connection.Transport.Input.ReadAsync();
+                    // Wait for the application to end
+                    var result = await connection.Transport.Input.ReadAsync();
                     connection.Transport.Input.AdvanceTo(result.Buffer.End);
                 });
             }

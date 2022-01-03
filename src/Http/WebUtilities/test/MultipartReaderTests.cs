@@ -3,11 +3,7 @@
 
 #nullable disable warnings
 
-using System;
-using System.IO;
 using System.Text;
-using System.Threading.Tasks;
-using Xunit;
 
 namespace Microsoft.AspNetCore.WebUtilities;
 
@@ -307,8 +303,8 @@ public class MultipartReaderTests
 
         await Assert.ThrowsAsync<IOException>(async () =>
         {
-                // we'll be unable to ensure enough bytes are buffered to even contain a final boundary
-                section = await reader.ReadNextSectionAsync();
+            // we'll be unable to ensure enough bytes are buffered to even contain a final boundary
+            section = await reader.ReadNextSectionAsync();
         });
     }
 

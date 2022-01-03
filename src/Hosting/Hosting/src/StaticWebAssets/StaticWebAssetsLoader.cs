@@ -3,8 +3,6 @@
 
 #nullable enable
 
-using System.IO;
-using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.StaticWebAssets;
 using Microsoft.Extensions.Configuration;

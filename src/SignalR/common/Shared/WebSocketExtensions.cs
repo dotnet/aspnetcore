@@ -23,16 +23,16 @@ internal static class WebSocketExtensions
             return SendMultiSegmentAsync(webSocket, buffer, webSocketMessageType, cancellationToken);
         }
 #else
-            if (buffer.IsSingleSegment)
-            {
-                var isArray = MemoryMarshal.TryGetArray(buffer.First, out var segment);
-                Debug.Assert(isArray);
-                return new ValueTask(webSocket.SendAsync(segment, webSocketMessageType, endOfMessage: true, cancellationToken));
-            }
-            else
-            {
-                return SendMultiSegmentAsync(webSocket, buffer, webSocketMessageType, cancellationToken);
-            }
+        if (buffer.IsSingleSegment)
+        {
+            var isArray = MemoryMarshal.TryGetArray(buffer.First, out var segment);
+            Debug.Assert(isArray);
+            return new ValueTask(webSocket.SendAsync(segment, webSocketMessageType, endOfMessage: true, cancellationToken));
+        }
+        else
+        {
+            return SendMultiSegmentAsync(webSocket, buffer, webSocketMessageType, cancellationToken);
+        }
 #endif
     }
 
@@ -47,9 +47,9 @@ internal static class WebSocketExtensions
 #if NETCOREAPP
             await webSocket.SendAsync(prevSegment, webSocketMessageType, endOfMessage: false, cancellationToken);
 #else
-                var isArray = MemoryMarshal.TryGetArray(prevSegment, out var arraySegment);
-                Debug.Assert(isArray);
-                await webSocket.SendAsync(arraySegment, webSocketMessageType, endOfMessage: false, cancellationToken);
+            var isArray = MemoryMarshal.TryGetArray(prevSegment, out var arraySegment);
+            Debug.Assert(isArray);
+            await webSocket.SendAsync(arraySegment, webSocketMessageType, endOfMessage: false, cancellationToken);
 #endif
             prevSegment = segment;
         }
@@ -58,9 +58,9 @@ internal static class WebSocketExtensions
 #if NETCOREAPP
         await webSocket.SendAsync(prevSegment, webSocketMessageType, endOfMessage: true, cancellationToken);
 #else
-            var isArrayEnd = MemoryMarshal.TryGetArray(prevSegment, out var arraySegmentEnd);
-            Debug.Assert(isArrayEnd);
-            await webSocket.SendAsync(arraySegmentEnd, webSocketMessageType, endOfMessage: true, cancellationToken);
+        var isArrayEnd = MemoryMarshal.TryGetArray(prevSegment, out var arraySegmentEnd);
+        Debug.Assert(isArrayEnd);
+        await webSocket.SendAsync(arraySegmentEnd, webSocketMessageType, endOfMessage: true, cancellationToken);
 #endif
     }
 }

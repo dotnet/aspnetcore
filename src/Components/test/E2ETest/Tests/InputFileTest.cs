@@ -1,20 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Text;
 using BasicTestApp;
 using BasicTestApp.FormsTest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
-using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.Extensions;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests;
@@ -120,8 +115,8 @@ public class InputFileTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
             var fileContentTypeElement = fileContainer.FindElement(By.Id("file-content-type"));
             var fileContentElement = fileContainer.FindElement(By.Id("file-content"));
 
-                // Validate that the file was uploaded correctly and all fields are present
-                Browser.False(() => string.IsNullOrWhiteSpace(fileNameElement.Text));
+            // Validate that the file was uploaded correctly and all fields are present
+            Browser.False(() => string.IsNullOrWhiteSpace(fileNameElement.Text));
             Browser.NotEqual(default, () => DateTimeOffset.Parse(fileLastModifiedElement.Text, CultureInfo.InvariantCulture));
             Browser.Equal(file.Contents.Length.ToString(CultureInfo.InvariantCulture), () => fileSizeElement.Text);
             Browser.Equal("text/plain", () => fileContentTypeElement.Text);

@@ -436,8 +436,8 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
                 var connection = _connections[groupMessage.ConnectionId];
                 if (connection == null)
                 {
-                        // user not on this server
-                        return;
+                    // user not on this server
+                    return;
                 }
 
                 if (groupMessage.Action == GroupAction.Remove)
@@ -450,8 +450,8 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
                     await AddGroupAsyncCore(connection, groupMessage.GroupName);
                 }
 
-                    // Send an ack to the server that sent the original command.
-                    await PublishAsync(_channels.Ack(groupMessage.ServerName), _protocol.WriteAck(groupMessage.Id));
+                // Send an ack to the server that sent the original command.
+                await PublishAsync(_channels.Ack(groupMessage.ServerName), _protocol.WriteAck(groupMessage.Id));
             }
             catch (Exception ex)
             {
@@ -560,9 +560,9 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
 
                     _redisServerConnection.ConnectionRestored += (_, e) =>
                     {
-                            // We use the subscription connection type
-                            // Ignore messages from the interactive connection (avoids duplicates)
-                            if (e.ConnectionType == ConnectionType.Interactive)
+                        // We use the subscription connection type
+                        // Ignore messages from the interactive connection (avoids duplicates)
+                        if (e.ConnectionType == ConnectionType.Interactive)
                         {
                             return;
                         }
@@ -572,9 +572,9 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
 
                     _redisServerConnection.ConnectionFailed += (_, e) =>
                     {
-                            // We use the subscription connection type
-                            // Ignore messages from the interactive connection (avoids duplicates)
-                            if (e.ConnectionType == ConnectionType.Interactive)
+                        // We use the subscription connection type
+                        // Ignore messages from the interactive connection (avoids duplicates)
+                        if (e.ConnectionType == ConnectionType.Interactive)
                         {
                             return;
                         }

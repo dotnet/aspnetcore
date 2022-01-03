@@ -1,12 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using Microsoft.AspNetCore.Testing;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Routing;
 
@@ -49,6 +44,16 @@ public class RouteTableFactoryTests
 
         // Assert
         Assert.NotSame(routes1, routes2);
+    }
+
+    [Fact]
+    public void IgnoresIdenticalTypes()
+    {
+        // Arrange & Act
+        var routes = RouteTableFactory.Create(new RouteKey(GetType().Assembly, new[] { GetType().Assembly }));
+
+        // Assert
+        Assert.Equal(routes.Routes.GroupBy(x => x.Handler).Count(), routes.Routes.Length);
     }
 
     [Fact]

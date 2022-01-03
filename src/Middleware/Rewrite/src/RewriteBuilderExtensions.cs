@@ -67,14 +67,14 @@ public static class RewriteBuilderExtensions
                 var webHostEnv = app.ApplicationServices.GetRequiredService<IWebHostEnvironment>();
                 var loggerFactory = app.ApplicationServices.GetRequiredService<ILoggerFactory>();
 
-                    // start a new middleware pipeline
-                    var builder = app.New();
-                    // use the old routing pipeline if it exists so we preserve all the routes and matching logic
-                    // ((IApplicationBuilder)WebApplication).New() does not copy globalRouteBuilderKey automatically like it does for all other properties.
-                    builder.Properties[globalRouteBuilderKey] = routeBuilder;
+                // start a new middleware pipeline
+                var builder = app.New();
+                // use the old routing pipeline if it exists so we preserve all the routes and matching logic
+                // ((IApplicationBuilder)WebApplication).New() does not copy globalRouteBuilderKey automatically like it does for all other properties.
+                builder.Properties[globalRouteBuilderKey] = routeBuilder;
                 builder.UseRouting();
-                    // apply the next middleware
-                    builder.Run(next);
+                // apply the next middleware
+                builder.Run(next);
                 options.Value.BranchedNext = builder.Build();
 
                 return new RewriteMiddleware(next, webHostEnv, loggerFactory, options).Invoke;

@@ -1,14 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Net;
-using System.Reflection;
 using System.Text;
-using System.Threading;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
@@ -17,7 +12,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.DataProtection.KeyManagement;
 
@@ -54,7 +48,7 @@ public class KeyRingBasedDataProtectorTests
                 Assert.Equal(expectedPlaintext, actualPlaintext);
                 Assert.Equal(expectedAad, actualAad);
                 return new byte[] { 0x23, 0x29, 0x31, 0x37 }; // ciphertext + tag
-                });
+            });
 
         var mockKeyRing = new Mock<IKeyRing>(MockBehavior.Strict);
         mockKeyRing.Setup(o => o.DefaultKeyId).Returns(defaultKey);
@@ -92,7 +86,7 @@ public class KeyRingBasedDataProtectorTests
                 Assert.Equal(expectedPlaintext, actualPlaintext);
                 Assert.Equal(expectedAad, actualAad);
                 return new byte[] { 0x23, 0x29, 0x31, 0x37 }; // ciphertext + tag
-                });
+            });
 
         var mockKeyRing = new Mock<IKeyRing>(MockBehavior.Strict);
         mockKeyRing.Setup(o => o.DefaultKeyId).Returns(defaultKey);
@@ -603,7 +597,7 @@ public class KeyRingBasedDataProtectorTests
                 Assert.Equal(expectedPlaintext, actualPlaintext);
                 Assert.Equal(expectedAad, actualAad);
                 return new byte[] { 0x23, 0x29, 0x31, 0x37 }; // ciphertext + tag
-                });
+            });
 
         var mockKeyRing = new Mock<IKeyRing>(MockBehavior.Strict);
         mockKeyRing.Setup(o => o.DefaultKeyId).Returns(defaultKey);

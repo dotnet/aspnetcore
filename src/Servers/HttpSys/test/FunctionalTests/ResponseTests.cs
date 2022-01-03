@@ -44,8 +44,8 @@ public class ResponseTests
         using (Utilities.CreateHttpServer(out address, httpContext =>
         {
             httpContext.Response.StatusCode = 201;
-                // TODO: httpContext["owin.ResponseProtocol"] = "HTTP/1.0"; // Http.Sys ignores this value
-                return Task.FromResult(0);
+            // TODO: httpContext["owin.ResponseProtocol"] = "HTTP/1.0"; // Http.Sys ignores this value
+            return Task.FromResult(0);
         }))
         {
             HttpResponseMessage response = await SendRequestAsync(address);
@@ -65,7 +65,7 @@ public class ResponseTests
             httpContext.Response.StatusCode = 201;
             httpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase = "CustomReasonPhrase"; // TODO?
                                                                                                   // TODO: httpContext["owin.ResponseProtocol"] = "HTTP/1.0"; // Http.Sys ignores this value
-                return Task.FromResult(0);
+            return Task.FromResult(0);
         }))
         {
             HttpResponseMessage response = await SendRequestAsync(address);
@@ -234,9 +234,9 @@ public class ResponseTests
 
             try
             {
-                    // https://github.com/dotnet/aspnetcore/issues/12194
-                    // Modifying the response after the client has disconnected must be allowed.
-                    Assert.False(httpContext.Response.HasStarted);
+                // https://github.com/dotnet/aspnetcore/issues/12194
+                // Modifying the response after the client has disconnected must be allowed.
+                Assert.False(httpContext.Response.HasStarted);
                 httpContext.Response.StatusCode = 400;
                 httpContext.Response.ContentType = "text/plain";
                 await httpContext.Response.WriteAsync("Body");

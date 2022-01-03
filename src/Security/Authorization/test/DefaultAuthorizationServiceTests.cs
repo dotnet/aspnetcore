@@ -1,16 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Authorization.Test;
 
@@ -1091,8 +1086,8 @@ public class DefaultAuthorizationServiceTests
     {
         var authorizationService = BuildAuthorizationService(services =>
         {
-                // This will ignore the policy options
-                services.AddSingleton<IAuthorizationPolicyProvider, StaticPolicyProvider>();
+            // This will ignore the policy options
+            services.AddSingleton<IAuthorizationPolicyProvider, StaticPolicyProvider>();
             services.AddAuthorization(options =>
             {
                 options.AddPolicy("Basic", policy => policy.RequireAssertion(context => true));
@@ -1130,8 +1125,8 @@ public class DefaultAuthorizationServiceTests
     {
         var authorizationService = BuildAuthorizationService(services =>
         {
-                // This will ignore the policy options
-                services.AddSingleton<IAuthorizationPolicyProvider, DynamicPolicyProvider>();
+            // This will ignore the policy options
+            services.AddSingleton<IAuthorizationPolicyProvider, DynamicPolicyProvider>();
             services.AddAuthorization(options => { });
         });
         var id = new ClaimsIdentity();

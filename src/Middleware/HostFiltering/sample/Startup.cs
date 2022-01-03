@@ -1,14 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HostFiltering;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 namespace HostFilteringSample;
@@ -34,10 +27,10 @@ public class Startup
         {
             if (options.AllowedHosts == null || options.AllowedHosts.Count == 0)
             {
-                    // "AllowedHosts": "localhost;127.0.0.1;[::1]"
-                    var hosts = Config["AllowedHosts"]?.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
-                    // Fall back to "*" to disable.
-                    options.AllowedHosts = (hosts?.Length > 0 ? hosts : new[] { "*" });
+                // "AllowedHosts": "localhost;127.0.0.1;[::1]"
+                var hosts = Config["AllowedHosts"]?.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                // Fall back to "*" to disable.
+                options.AllowedHosts = (hosts?.Length > 0 ? hosts : new[] { "*" });
             }
         });
         // Change notification

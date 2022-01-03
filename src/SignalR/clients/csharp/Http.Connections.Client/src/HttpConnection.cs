@@ -669,15 +669,15 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
         // .NET Core 2.1 and above has a managed implementation
         return true;
 #else
-            try
-            {
-                new ClientWebSocket().Dispose();
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
+        try
+        {
+            new ClientWebSocket().Dispose();
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
 #endif
     }
 

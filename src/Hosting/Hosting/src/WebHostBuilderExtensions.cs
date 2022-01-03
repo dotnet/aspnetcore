@@ -3,7 +3,6 @@
 
 #nullable enable
 
-using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
@@ -120,8 +119,8 @@ public static class WebHostBuilderExtensions
 
                     var hostingEnvironment = sp.GetRequiredService<IHostEnvironment>();
 
-                        // Check if the instance implements IStartup before wrapping
-                        if (instance is IStartup startup)
+                    // Check if the instance implements IStartup before wrapping
+                    if (instance is IStartup startup)
                     {
                         return startup;
                     }

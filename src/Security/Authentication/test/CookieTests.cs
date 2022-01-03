@@ -1,14 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
@@ -19,7 +16,6 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Authentication.Cookies;
 
@@ -735,9 +731,9 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
                         id.RemoveClaim(claim);
                         id.AddClaim(new Claim("counter", claim.Value + "1"));
                     }
-                        // Causes the expiry time to not be extended because the lifetime is
-                        // calculated relative to the issue time.
-                        ctx.Properties.IssuedUtc = _clock.UtcNow;
+                    // Causes the expiry time to not be extended because the lifetime is
+                    // calculated relative to the issue time.
+                    ctx.Properties.IssuedUtc = _clock.UtcNow;
                     return Task.FromResult(0);
                 }
             };
@@ -957,9 +953,9 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
             o.SlidingExpiration = true;
             o.Events.OnValidatePrincipal = c =>
             {
-                    // https://github.com/aspnet/Security/issues/1607
-                    // On sliding refresh the transformed principal should not be serialized into the cookie, only the original principal.
-                    Assert.Single(c.Principal.Identities);
+                // https://github.com/aspnet/Security/issues/1607
+                // On sliding refresh the transformed principal should not be serialized into the cookie, only the original principal.
+                Assert.Single(c.Principal.Identities);
                 Assert.True(c.Principal.Identities.First().HasClaim("marker", "true"));
                 return Task.CompletedTask;
             };
@@ -1703,7 +1699,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
                                 res.StatusCode = 200;
                             }
                             else if (req.Path == new PathString("/forbid")) // Simulate forbidden
-                                {
+                            {
                                 await context.ForbidAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                             }
                             else if (req.Path == new PathString("/challenge"))
@@ -1738,7 +1734,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
                             else if (req.Path == new PathString("/checkforerrors"))
                             {
                                 var result = await context.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme); // this used to be "Automatic"
-                                    if (result.Failure != null)
+                                if (result.Failure != null)
                                 {
                                     throw new Exception("Failed to authenticate", result.Failure);
                                 }

@@ -51,7 +51,8 @@ public class MaxRequestBodySizeTests : IISFunctionalTestBase
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters();
         deploymentParameters.ServerConfigActionList.Add(
-            (config, _) => {
+            (config, _) =>
+            {
                 config
                     .RequiredElement("system.webServer")
                     .GetOrAdd("security")
@@ -73,7 +74,8 @@ public class MaxRequestBodySizeTests : IISFunctionalTestBase
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters();
         deploymentParameters.ServerConfigActionList.Add(
-            (config, _) => {
+            (config, _) =>
+            {
                 config
                     .RequiredElement("system.webServer")
                     .GetOrAdd("security")
@@ -93,7 +95,8 @@ public class MaxRequestBodySizeTests : IISFunctionalTestBase
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters();
         deploymentParameters.ServerConfigActionList.Add(
-            (config, _) => {
+            (config, _) =>
+            {
                 config
                     .RequiredElement("system.webServer")
                     .GetOrAdd("security")
@@ -139,7 +142,8 @@ public class MaxRequestBodySizeTests : IISFunctionalTestBase
         // Disable it for this test as we are trying to verify a log.
         deploymentParameters.HandlerSettings["debugLevel"] = "";
         deploymentParameters.ServerConfigActionList.Add(
-            (config, _) => {
+            (config, _) =>
+            {
                 config
                     .RequiredElement("system.webServer")
                     .GetOrAdd("security")

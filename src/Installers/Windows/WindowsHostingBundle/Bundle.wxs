@@ -58,8 +58,6 @@
         <Variable Name="BundleNameShort" Value="$(var.BundleNameShort)"/>
         <Variable Name="BundleNameSub" Value="$(var.BundleNameSub)"/>
         <Variable Name="OPT_NO_ANCM" bal:Overridable="yes"/>
-        <Variable Name="OPT_NO_FTS" bal:Overridable="yes"/>
-        <Variable Name="OPT_NO_LTS" bal:Overridable="yes"/>
         <Variable Name="OPT_NO_SHAREDFX" bal:Overridable="yes"/>
         <Variable Name="OPT_NO_RUNTIME" bal:Overridable="yes"/>
         <Variable Name="OPT_NO_X86" bal:Overridable="yes"/>
@@ -67,8 +65,8 @@
 
         <!-- Use values from the registry for switches, if the registry values are set & the user hasn't passed any switches from the command line -->
 
-        <?define Options=OPT_NO_ANCM;OPT_NO_FTS;OPT_NO_LTS;OPT_NO_SHAREDFX;OPT_NO_RUNTIME;OPT_NO_X86;OPT_NO_SHARED_CONFIG_CHECK ?>
-        <?define RegistrySeachCondition="NOT (OPT_NO_ANCM OR OPT_NO_ANCM=0 OR OPT_NO_FTS OR OPT_NO_FTS=0 OR OPT_NO_LTS OR OPT_NO_LTS=0 OR OPT_NO_SHAREDFX OR OPT_NO_SHAREDFX=0 OR OPT_NO_RUNTIME OR OPT_NO_RUNTIME=0 OR OPT_NO_X86 OR OPT_NO_X86=0 OR OPT_NO_SHARED_CONFIG_CHECK OR OPT_NO_SHARED_CONFIG_CHECK=0)" ?>
+        <?define Options=OPT_NO_ANCM;OPT_NO_SHAREDFX;OPT_NO_RUNTIME;OPT_NO_X86;OPT_NO_SHARED_CONFIG_CHECK ?>
+        <?define RegistrySeachCondition="NOT (OPT_NO_ANCM OR OPT_NO_ANCM=0 OR OPT_NO_SHAREDFX OR OPT_NO_SHAREDFX=0 OR OPT_NO_RUNTIME OR OPT_NO_RUNTIME=0 OR OPT_NO_X86 OR OPT_NO_X86=0 OR OPT_NO_SHARED_CONFIG_CHECK OR OPT_NO_SHARED_CONFIG_CHECK=0)" ?>
 
         <?foreach Option in $(var.Options) ?>
             <util:RegistrySearch Id="$(var.Option)_should_be_set" 
@@ -97,8 +95,6 @@
         <Chain ParallelCache="yes">
             <MsiPackage SourceFile="$(var.HostOptions.TargetPath)">
                 <MsiProperty Name="OPT_NO_ANCM" Value="[OPT_NO_ANCM]"/>
-                <MsiProperty Name="OPT_NO_FTS" Value="[OPT_NO_FTS]"/>
-                <MsiProperty Name="OPT_NO_LTS" Value="[OPT_NO_LTS]"/>
                 <MsiProperty Name="OPT_NO_SHAREDFX" Value="[OPT_NO_SHAREDFX]"/>
                 <MsiProperty Name="OPT_NO_RUNTIME" Value="[OPT_NO_RUNTIME]"/>
                 <MsiProperty Name="OPT_NO_X86" Value="[OPT_NO_X86]"/>

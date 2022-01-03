@@ -186,7 +186,7 @@ internal partial class LongPollingTransport : ITransport
                 {
                     Log.ReceivedMessages(_logger);
 #if NETCOREAPP
-                        await response.Content.CopyToAsync(applicationStream, cancellationToken);
+                    await response.Content.CopyToAsync(applicationStream, cancellationToken);
 
 #else
                     await response.Content.CopyToAsync(applicationStream);

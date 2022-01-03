@@ -28,6 +28,7 @@
   },
   "postActions": [
     {
+      "id": "openInEditor",
       "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
       "description": "Opens _ViewStart.cshtml in the editor",
       "manualInstructions": [ ],

@@ -1,16 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.Extensions.DependencyInjection;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Authorization;
 
@@ -356,15 +352,15 @@ public class AuthorizeRouteViewTest
         Assert.Collection(diff.Edits,
             edit =>
             {
-                    // Inside the layout, we add the new content
-                    Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
+                // Inside the layout, we add the new content
+                Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
                 Assert.Equal(1, edit.SiblingIndex);
                 AssertFrame.Text(batch2.ReferenceFrames[edit.ReferenceFrameIndex], "Not authorized");
             },
             edit =>
             {
-                    // ... and remove the old content
-                    Assert.Equal(RenderTreeEditType.RemoveFrame, edit.Type);
+                // ... and remove the old content
+                Assert.Equal(RenderTreeEditType.RemoveFrame, edit.Type);
                 Assert.Equal(2, edit.SiblingIndex);
             });
     }

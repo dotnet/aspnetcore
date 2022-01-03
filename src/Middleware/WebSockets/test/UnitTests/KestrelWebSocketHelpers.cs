@@ -1,10 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Net;
 using System.Runtime.ExceptionServices;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -27,14 +25,14 @@ public class KestrelWebSocketHelpers
             {
                 try
                 {
-                        // Kestrel does not return proper error responses:
-                        // https://github.com/aspnet/KestrelHttpServer/issues/43
-                        await next(ct);
+                    // Kestrel does not return proper error responses:
+                    // https://github.com/aspnet/KestrelHttpServer/issues/43
+                    await next(ct);
                 }
                 catch (Exception ex)
                 {
-                        // capture the exception from the app, we'll throw this at the end of the test when the server is disposed
-                        exceptionFromApp = ex;
+                    // capture the exception from the app, we'll throw this at the end of the test when the server is disposed
+                    exceptionFromApp = ex;
                     if (ct.Response.HasStarted)
                     {
                         throw;
