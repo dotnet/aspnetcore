@@ -18,17 +18,17 @@ public class SystemTextJsonValidationMetadataProvider : IDisplayMetadataProvider
     private readonly JsonNamingPolicy _jsonNamingPolicy;
 
     /// <summary>
-    /// Creates a new <see cref="JsonMetadataProvider"/> with the default <see cref="JsonNamingPolicy.CamelCase"/>
+    /// Creates a new <see cref="SystemTextJsonValidationMetadataProvider"/> with the default <see cref="JsonNamingPolicy.CamelCase"/>
     /// </summary>
-    public JsonMetadataProvider()
+    public SystemTextJsonValidationMetadataProvider()
         : this(JsonNamingPolicy.CamelCase)
     { }
 
     /// <summary>
-    /// Creates a new <see cref="JsonMetadataProvider"/> with an optional <see cref="JsonNamingPolicy"/>
+    /// Creates a new <see cref="SystemTextJsonValidationMetadataProvider"/> with an optional <see cref="JsonNamingPolicy"/>
     /// </summary>
     /// <param name="namingPolicy">The <see cref="JsonNamingPolicy"/> to be used to configure the metadata provider.</param>
-    public JsonMetadataProvider(JsonNamingPolicy namingPolicy)
+    public SystemTextJsonValidationMetadataProvider(JsonNamingPolicy namingPolicy)
     {
         if (namingPolicy == null)
         {

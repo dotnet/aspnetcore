@@ -19,17 +19,17 @@ public sealed class NewtonsoftJsonValidationMetadataProvider : IDisplayMetadataP
     private readonly NamingStrategy _jsonNamingPolicy;
 
     /// <summary>
-    /// Creates a new <see cref="JsonMetadataProvider"/> with the default <see cref="CamelCaseNamingStrategy"/>
+    /// Creates a new <see cref="NewtonsoftJsonValidationMetadataProvider"/> with the default <see cref="CamelCaseNamingStrategy"/>
     /// </summary>
-    public NewtonsoftJsonMetadataProvider()
+    public NewtonsoftJsonValidationMetadataProvider()
         : this(new CamelCaseNamingStrategy())
     { }
 
     /// <summary>
-    /// Initializes a new instance of <see cref="NewtonsoftJsonMetadataProvider"/> with an optional <see cref="NamingStrategy"/>
+    /// Initializes a new instance of <see cref="NewtonsoftJsonValidationMetadataProvider"/> with an optional <see cref="NamingStrategy"/>
     /// </summary>
     /// <param name="namingStrategy">The <see cref="NamingStrategy"/> to be used to configure the metadata provider.</param>
-    public NewtonsoftJsonMetadataProvider(NamingStrategy namingStrategy)
+    public NewtonsoftJsonValidationMetadataProvider(NamingStrategy namingStrategy)
     {
         if (namingStrategy == null)
         {
@@ -37,21 +37,6 @@ public sealed class NewtonsoftJsonValidationMetadataProvider : IDisplayMetadataP
         }
 
         _jsonNamingPolicy = namingStrategy;
-    }
-
-    /// <summary>
-    /// Initializes a new instance of <see cref="NewtonsoftJsonMetadataProvider"/> with an optional <see cref="MvcNewtonsoftJsonOptions"/>
-    /// </summary>
-    /// <param name="jsonOptions">The <see cref="MvcNewtonsoftJsonOptions"/> to be used to configure the metadata provider.</param>
-    internal NewtonsoftJsonMetadataProvider(MvcNewtonsoftJsonOptions jsonOptions)
-    {
-        if (jsonOptions == null)
-        {
-            throw new ArgumentNullException(nameof(jsonOptions));
-        }
-
-        var contractResolver = jsonOptions.SerializerSettings?.ContractResolver as DefaultContractResolver;
-        _jsonNamingPolicy = contractResolver?.NamingStrategy != null ? contractResolver.NamingStrategy : new CamelCaseNamingStrategy();
     }
 
     /// <inheritdoc />

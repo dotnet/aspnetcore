@@ -1,8 +1,8 @@
 #nullable enable
-Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.JsonMetadataProvider
-Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.JsonMetadataProvider.CreateDisplayMetadata(Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DisplayMetadataProviderContext! context) -> void
-Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.JsonMetadataProvider.CreateValidationMetadata(Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ValidationMetadataProviderContext! context) -> void
-Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.JsonMetadataProvider.JsonMetadataProvider() -> void
-Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.JsonMetadataProvider.JsonMetadataProvider(System.Text.Json.JsonNamingPolicy! namingPolicy) -> void
+Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.SystemTextJsonValidationMetadataProvider
+Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.SystemTextJsonValidationMetadataProvider.CreateDisplayMetadata(Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DisplayMetadataProviderContext! context) -> void
+Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.SystemTextJsonValidationMetadataProvider.CreateValidationMetadata(Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ValidationMetadataProviderContext! context) -> void
+Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.SystemTextJsonValidationMetadataProvider.SystemTextJsonValidationMetadataProvider() -> void
+Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.SystemTextJsonValidationMetadataProvider.SystemTextJsonValidationMetadataProvider(System.Text.Json.JsonNamingPolicy! namingPolicy) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ValidationMetadata.ValidationModelName.get -> string?
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ValidationMetadata.ValidationModelName.set -> void
