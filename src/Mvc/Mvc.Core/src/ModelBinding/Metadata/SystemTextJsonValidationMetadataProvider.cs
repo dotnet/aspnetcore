@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 /// An implementation of <see cref="IDisplayMetadataProvider"/> and <see cref="IValidationMetadataProvider"/> for
 /// the System.Text.Json.Serialization attribute classes.
 /// </summary>
-public class JsonMetadataProvider : IDisplayMetadataProvider, IValidationMetadataProvider
+public class SystemTextJsonValidationMetadataProvider : IDisplayMetadataProvider, IValidationMetadataProvider
 {
     private readonly JsonNamingPolicy _jsonNamingPolicy;
 
