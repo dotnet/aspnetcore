@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
-
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
@@ -11,7 +10,6 @@ using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
-
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Extensions.DependencyInjection;

@@ -194,6 +194,7 @@ public class DefaultComplexObjectValidationStrategyTest
 
     private class TestValidationModelNameProvider : IValidationMetadataProvider
     {
-        public void CreateValidationMetadata(ValidationMetadataProviderContext context) => context.ValidationMetadata.ValidationModelName = context.Key.Name?.ToUpperInvariant();
+        public void CreateValidationMetadata(ValidationMetadataProviderContext context)
+            => context.ValidationMetadata.ValidationModelName = context.Key.Name?.ToUpperInvariant();
     }
 }

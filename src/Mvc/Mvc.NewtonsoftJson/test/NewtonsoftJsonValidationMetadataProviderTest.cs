@@ -1,13 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-
-namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson;
-
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+
+namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 
 public class NewtonsoftJsonValidationMetadataProviderTest
 {
