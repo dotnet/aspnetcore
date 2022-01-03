@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 import { RenderBatch, ArrayBuilderSegment, RenderTreeEdit, RenderTreeFrame, EditType, FrameType, ArrayValues } from './RenderBatch/RenderBatch';
 import { EventDelegator } from './Events/EventDelegator';
 import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, getLogicalChildrenArray, getLogicalSiblingEnd, permuteLogicalChildren, getClosestDomElement, emptyLogicalElement } from './LogicalElements';
@@ -15,6 +18,7 @@ export class BrowserRenderer {
   public eventDelegator: EventDelegator;
 
   private rootComponentIds = new Set<number>();
+
   private childComponentLocations: { [componentId: number]: LogicalElement } = {};
 
   public constructor(browserRendererId: number) {
