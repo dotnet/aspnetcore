@@ -1,14 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
 using System.Globalization;
-using System.IO;
 using System.Runtime.ExceptionServices;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Microsoft.AspNetCore.WebUtilities;
@@ -21,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters;
 /// <summary>
 /// A <see cref="TextInputFormatter"/> for JSON content.
 /// </summary>
-public class NewtonsoftJsonInputFormatter : TextInputFormatter, IInputFormatterExceptionPolicy
+public partial class NewtonsoftJsonInputFormatter : TextInputFormatter, IInputFormatterExceptionPolicy
 {
     private readonly IArrayPool<char> _charPool;
     private readonly ILogger _logger;
@@ -275,8 +271,7 @@ public class NewtonsoftJsonInputFormatter : TextInputFormatter, IInputFormatterE
             var metadata = GetPathMetadata(context.Metadata, path);
             var modelStateException = WrapExceptionForModelState(exception);
             context.ModelState.TryAddModelError(key, modelStateException, metadata);
-
-            _logger.JsonInputException(exception);
+            Log.JsonInputException(_logger, exception);
 
             // Error must always be marked as handled
             // Failure to do so can cause the exception to be rethrown at every recursive level and
@@ -398,5 +393,11 @@ public class NewtonsoftJsonInputFormatter : TextInputFormatter, IInputFormatterE
 
         // Not a known exception type, so we're not going to assume that it's safe.
         return exception;
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(1, LogLevel.Debug, "JSON input formatter threw an exception.", EventName = "JsonInputException")]
+        public static partial void JsonInputException(ILogger logger, Exception exception);
     }
 }
