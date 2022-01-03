@@ -74,10 +74,6 @@ charset = utf-8-bom
 
 [*.{cs,vb}]
 
-# CS8019: Remove unnecessary usings
-# dotnet_diagnostic.CS8019.severity = warning
-# dotnet_diagnostic.IDE0005.severity = warning
-
 # CA1018: Mark attributes with AttributeUsageAttribute
 dotnet_diagnostic.CA1018.severity = warning
 
@@ -199,6 +195,9 @@ dotnet_diagnostic.CA2200.severity = warning
 # CA2208: Instantiate argument exceptions correctly
 dotnet_diagnostic.CA2208.severity = warning
 
+# IDE0005: Remove unnecessary usings
+dotnet_diagnostic.IDE0005.severity = warning
+
 # IDE0035: Remove unreachable code
 dotnet_diagnostic.IDE0035.severity = warning
 
@@ -272,3 +271,7 @@ dotnet_diagnostic.CA2016.severity = suggestion
 dotnet_diagnostic.IDE0055.severity = silent
 # IDE0161: Convert to file-scoped namespace
 dotnet_diagnostic.IDE0161.severity = silent
+
+[{**/Shared/**.cs,**/microsoft.extensions.hostfactoryresolver.sources/**.{cs,vb}}]
+# IDE0005: Remove unused usings. Ignore for shared src files since imports for those depend on the projects in which they are included.
+dotnet_diagnostic.IDE0005.severity = silent
