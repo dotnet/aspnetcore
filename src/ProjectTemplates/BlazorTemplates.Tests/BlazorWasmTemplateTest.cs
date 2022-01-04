@@ -63,7 +63,7 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
     private async Task<IPage> NavigateToPage(IBrowserContext browser, string listeningUri)
     {
         var page = await browser.NewPageAsync();
-        await page.GotoAsync(listeningUri, new () { WaitUntil = WaitUntilState.NetworkIdle });
+        await page.GotoAsync(listeningUri, new() { WaitUntil = WaitUntilState.NetworkIdle });
         return page;
     }
 
@@ -427,7 +427,7 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
 
         // Can navigate to the counter page
         await Task.WhenAll(
-            page.WaitForNavigationAsync(new () { UrlString = "**/counter" }),
+            page.WaitForNavigationAsync(new() { UrlString = "**/counter" }),
             page.WaitForSelectorAsync("h1 >> text=Counter"),
             page.WaitForSelectorAsync("p >> text=Current count: 0"),
             page.ClickAsync("a[href=counter]"));
@@ -440,12 +440,12 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
         if (usesAuth)
         {
             await Task.WhenAll(
-                page.WaitForNavigationAsync(new () { UrlString = "**/Identity/Account/Login**", WaitUntil = WaitUntilState.NetworkIdle }),
+                page.WaitForNavigationAsync(new() { UrlString = "**/Identity/Account/Login**", WaitUntil = WaitUntilState.NetworkIdle }),
                 page.ClickAsync("text=Log in"));
 
             await Task.WhenAll(
                 page.WaitForSelectorAsync("[name=\"Input.Email\"]"),
-                page.WaitForNavigationAsync(new () { UrlString = "**/Identity/Account/Register**", WaitUntil = WaitUntilState.NetworkIdle }),
+                page.WaitForNavigationAsync(new() { UrlString = "**/Identity/Account/Register**", WaitUntil = WaitUntilState.NetworkIdle }),
                 page.ClickAsync("text=Register as a new user"));
 
             var userName = $"{Guid.NewGuid()}@example.com";
@@ -457,12 +457,12 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
 
             // We will be redirected to the RegisterConfirmation
             await Task.WhenAll(
-                page.WaitForNavigationAsync(new () { UrlString = "**/Identity/Account/RegisterConfirmation**", WaitUntil = WaitUntilState.NetworkIdle }),
+                page.WaitForNavigationAsync(new() { UrlString = "**/Identity/Account/RegisterConfirmation**", WaitUntil = WaitUntilState.NetworkIdle }),
                 page.ClickAsync("#registerSubmit"));
 
             // We will be redirected to the ConfirmEmail
             await Task.WhenAll(
-                page.WaitForNavigationAsync(new () { UrlString = "**/Identity/Account/ConfirmEmail**", WaitUntil = WaitUntilState.NetworkIdle }),
+                page.WaitForNavigationAsync(new() { UrlString = "**/Identity/Account/ConfirmEmail**", WaitUntil = WaitUntilState.NetworkIdle }),
                 page.ClickAsync("text=Click here to confirm your account"));
 
             // Now we can login
@@ -481,7 +481,7 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
         {
             // Can navigate to the 'fetch data' page
             await Task.WhenAll(
-                page.WaitForNavigationAsync(new () { UrlString = "**/fetchdata" }),
+                page.WaitForNavigationAsync(new() { UrlString = "**/fetchdata" }),
                 page.WaitForSelectorAsync("h1 >> text=Weather forecast"),
                 page.ClickAsync("text=Fetch data"));
 
