@@ -12,6 +12,13 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 /// </summary>
 /// <remarks>
 /// This attribute is informational only and does not have any runtime effects.
+/// Applying the attribute on a class indicates that the <see cref="ActionResult"/>
+/// represented by that class uses a particular status code by default. Applying the
+/// attribute to a method indicates that the <see cref="ActionResult"/> returned by the
+/// method uses that status code by default. The later is helpful in scenarios where we
+/// need to specify that a method modifies the status code that an <see cref="ActionResult"/>
+/// uses by default in its logic or for specifying the status code for consumption in
+/// the API analyzers.
 /// </remarks>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
 public sealed class DefaultStatusCodeAttribute : Attribute

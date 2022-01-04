@@ -98,8 +98,8 @@ public static class ActualApiResponseMetadataFactory
             if (methodSymbol is not null)
             {
                 defaultStatusCodeAttribute = methodSymbol
-                    .GetAttributes()
-                    .FirstOrDefault(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, defaultStatusCodeAttributeSymbol));
+                    .GetAttributes(defaultStatusCodeAttributeSymbol)
+                    .FirstOrDefault();
             }
         }
 
