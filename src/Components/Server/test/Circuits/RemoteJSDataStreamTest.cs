@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits;
 
 public class RemoteJSDataStreamTest
 {
-    private static readonly TestRemoteJSRuntime _jsRuntime = new(Options.Create(new CircuitOptions()), Options.Create(new HubOptions<ComponentHub>()), Options.Create(new HubOptions()), Mock.Of<ILogger<RemoteJSRuntime>>());
+    private static readonly TestRemoteJSRuntime _jsRuntime = new(Options.Create(new CircuitOptions()), Options.Create(new HubOptions<ComponentHub>()), Mock.Of<ILogger<RemoteJSRuntime>>());
 
     [Fact]
     public async Task CreateRemoteJSDataStreamAsync_CreatesStream()
@@ -51,7 +51,7 @@ public class RemoteJSDataStreamTest
     public async Task ReceiveData_SuccessReadsBackStream()
     {
         // Arrange
-        var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions<ComponentHub>()), Options.Create(new HubOptions()), Mock.Of<ILogger<RemoteJSRuntime>>());
+        var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions<ComponentHub>()), Mock.Of<ILogger<RemoteJSRuntime>>());
         var remoteJSDataStream = await CreateRemoteJSDataStreamAsync(jsRuntime);
         var streamId = GetStreamId(remoteJSDataStream, jsRuntime);
         var chunk = new byte[100];
@@ -79,7 +79,7 @@ public class RemoteJSDataStreamTest
     public async Task ReceiveData_SuccessReadsBackPipeReader()
     {
         // Arrange
-        var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions<ComponentHub>()), Options.Create(new HubOptions()), Mock.Of<ILogger<RemoteJSRuntime>>());
+        var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions<ComponentHub>()), Mock.Of<ILogger<RemoteJSRuntime>>());
         var remoteJSDataStream = await CreateRemoteJSDataStreamAsync(jsRuntime);
         var streamId = GetStreamId(remoteJSDataStream, jsRuntime);
         var chunk = new byte[100];
@@ -107,7 +107,7 @@ public class RemoteJSDataStreamTest
     public async Task ReceiveData_WithError()
     {
         // Arrange
-        var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions<ComponentHub>()), Options.Create(new HubOptions()), Mock.Of<ILogger<RemoteJSRuntime>>());
+        var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions<ComponentHub>()), Mock.Of<ILogger<RemoteJSRuntime>>());
         var remoteJSDataStream = await CreateRemoteJSDataStreamAsync(jsRuntime);
         var streamId = GetStreamId(remoteJSDataStream, jsRuntime);
 
@@ -125,7 +125,7 @@ public class RemoteJSDataStreamTest
     public async Task ReceiveData_WithZeroLengthChunk()
     {
         // Arrange
-        var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions<ComponentHub>()), Options.Create(new HubOptions()), Mock.Of<ILogger<RemoteJSRuntime>>());
+        var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions<ComponentHub>()), Mock.Of<ILogger<RemoteJSRuntime>>());
         var remoteJSDataStream = await CreateRemoteJSDataStreamAsync(jsRuntime);
         var streamId = GetStreamId(remoteJSDataStream, jsRuntime);
         var chunk = Array.Empty<byte>();
@@ -144,7 +144,7 @@ public class RemoteJSDataStreamTest
     public async Task ReceiveData_WithLargerChunksThanPermitted()
     {
         // Arrange
-        var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions<ComponentHub>()), Options.Create(new HubOptions()), Mock.Of<ILogger<RemoteJSRuntime>>());
+        var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions<ComponentHub>()), Mock.Of<ILogger<RemoteJSRuntime>>());
         var remoteJSDataStream = await CreateRemoteJSDataStreamAsync(jsRuntime);
         var streamId = GetStreamId(remoteJSDataStream, jsRuntime);
         var chunk = new byte[50_000]; // more than the 32k maximum chunk size
@@ -163,7 +163,7 @@ public class RemoteJSDataStreamTest
     public async Task ReceiveData_ProvidedWithMoreBytesThanRemaining()
     {
         // Arrange
-        var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions<ComponentHub>()), Options.Create(new HubOptions()), Mock.Of<ILogger<RemoteJSRuntime>>());
+        var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions<ComponentHub>()), Mock.Of<ILogger<RemoteJSRuntime>>());
         var jsStreamReference = Mock.Of<IJSStreamReference>();
         var remoteJSDataStream = await RemoteJSDataStream.CreateRemoteJSDataStreamAsync(jsRuntime, jsStreamReference, totalLength: 100, signalRMaximumIncomingBytes: 10_000, jsInteropDefaultCallTimeout: TimeSpan.FromMinutes(1), cancellationToken: CancellationToken.None);
         var streamId = GetStreamId(remoteJSDataStream, jsRuntime);
@@ -183,7 +183,7 @@ public class RemoteJSDataStreamTest
     public async Task ReceiveData_ProvidedWithOutOfOrderChunk_SimulatesSignalRDisconnect()
     {
         // Arrange
-        var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions<ComponentHub>()), Options.Create(new HubOptions()), Mock.Of<ILogger<RemoteJSRuntime>>());
+        var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions<ComponentHub>()), Mock.Of<ILogger<RemoteJSRuntime>>());
         var jsStreamReference = Mock.Of<IJSStreamReference>();
         var remoteJSDataStream = await RemoteJSDataStream.CreateRemoteJSDataStreamAsync(jsRuntime, jsStreamReference, totalLength: 100, signalRMaximumIncomingBytes: 10_000, jsInteropDefaultCallTimeout: TimeSpan.FromMinutes(1), cancellationToken: CancellationToken.None);
         var streamId = GetStreamId(remoteJSDataStream, jsRuntime);
@@ -208,7 +208,7 @@ public class RemoteJSDataStreamTest
     {
         // Arrange
         var unhandledExceptionRaisedTask = new TaskCompletionSource<bool>();
-        var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions<ComponentHub>()), Options.Create(new HubOptions()), Mock.Of<ILogger<RemoteJSRuntime>>());
+        var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions<ComponentHub>()), Mock.Of<ILogger<RemoteJSRuntime>>());
         jsRuntime.UnhandledException += (_, ex) =>
         {
             Assert.Equal("Did not receive any data in the allotted time.", ex.Message);
@@ -249,7 +249,7 @@ public class RemoteJSDataStreamTest
     {
         // Arrange
         var unhandledExceptionRaisedTask = new TaskCompletionSource<bool>();
-        var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions<ComponentHub>()), Options.Create(new HubOptions()), Mock.Of<ILogger<RemoteJSRuntime>>());
+        var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions<ComponentHub>()), Mock.Of<ILogger<RemoteJSRuntime>>());
         jsRuntime.UnhandledException += (_, ex) =>
         {
             Assert.Equal("Did not receive any data in the allotted time.", ex.Message);
@@ -305,7 +305,7 @@ public class RemoteJSDataStreamTest
 
     class TestRemoteJSRuntime : RemoteJSRuntime, IJSRuntime
     {
-        public TestRemoteJSRuntime(IOptions<CircuitOptions> circuitOptions, IOptions<HubOptions<ComponentHub>> hubOptions, IOptions<HubOptions> globalHubOptions, ILogger<RemoteJSRuntime> logger) : base(circuitOptions, hubOptions, globalHubOptions, logger)
+        public TestRemoteJSRuntime(IOptions<CircuitOptions> circuitOptions, IOptions<HubOptions<ComponentHub>> hubOptions, ILogger<RemoteJSRuntime> logger) : base(circuitOptions, hubOptions, logger)
         {
         }
 
