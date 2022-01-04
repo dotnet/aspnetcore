@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Reflection;
+
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
@@ -189,6 +191,23 @@ public class MvcServiceCollectionExtensionsTest
     }
 
     [Fact]
+    public void AddControllersAddRazorPagesWithEntryAssembly_Twice_DoesNotAddDuplicates()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var assembly = GetEntryAssembly();
+
+        // Act
+        services.AddControllers(assembly);
+        services.AddRazorPages(assembly);
+        services.AddControllers(assembly);
+        services.AddRazorPages(assembly);
+
+        // Assert
+        VerifyAllServices(services);
+    }
+
+    [Fact]
     public void AddControllersWithViews_Twice_DoesNotAddDuplicates()
     {
         // Arrange
@@ -204,6 +223,21 @@ public class MvcServiceCollectionExtensionsTest
     }
 
     [Fact]
+    public void AddControllersWithViewsWithEntryAssembly_Twice_DoesNotAddDuplicates()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var assembly = GetEntryAssembly();
+
+        // Act
+        services.AddControllersWithViews(assembly);
+        services.AddControllersWithViews(assembly);
+
+        // Assert
+        VerifyAllServices(services);
+    }
+
+    [Fact]
     public void AddRazorPages_Twice_DoesNotAddDuplicates()
     {
         // Arrange
@@ -213,6 +247,21 @@ public class MvcServiceCollectionExtensionsTest
         // Act
         services.AddRazorPages();
         services.AddRazorPages();
+
+        // Assert
+        VerifyAllServices(services);
+    }
+
+    [Fact]
+    public void AddRazorPagesWithEntryAssembly_Twice_DoesNotAddDuplicates()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var assembly = GetEntryAssembly();
+
+        // Act
+        services.AddRazorPages(assembly);
+        services.AddRazorPages(assembly);
 
         // Assert
         VerifyAllServices(services);
@@ -626,6 +675,8 @@ public class MvcServiceCollectionExtensionsTest
                 $"Found multiple instances of {implementationType} registered as {serviceType}");
         }
     }
+
+    private Assembly GetEntryAssembly() => typeof(MvcServiceCollectionExtensionsTest).Assembly;
 
     private IWebHostEnvironment GetHostingEnvironment()
     {

@@ -210,6 +210,25 @@ public class MvcCoreServiceCollectionExtensionsTest
         environment.VerifyAll();
     }
 
+    [Fact]
+    public void AddMvcCore_GetsPartsForApplication_ExplictEntryAssembly()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var assembly = typeof(MvcCoreServiceCollectionExtensionsTest).Assembly;
+
+        // Act
+        var builder = services.AddMvcCore(assembly);
+
+        // Assert
+        Assert.NotNull(builder.PartManager);
+        Assert.NotNull(builder.PartManager.EntryAssembly);
+        Assert.Contains(
+            builder.PartManager.ApplicationParts,
+            part => string.Equals(assembly.GetName().Name, part.Name, StringComparison.Ordinal));
+        Assert.Contains(builder.PartManager.FeatureProviders, provider => provider is ControllerFeatureProvider);
+    }
+
     private IEnumerable<Type> SingleRegistrationServiceTypes
     {
         get
