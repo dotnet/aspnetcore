@@ -115,11 +115,5 @@ public class RemoteJSRuntimeTest
         {
             ReceiveByteArray(id, data);
         }
-
-        public new ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args)
-        {
-            Assert.Equal("Blazor._internal.sendJSDataStream", identifier);
-            return ValueTask.FromResult<TValue>(default);
-        }
     }
 }
