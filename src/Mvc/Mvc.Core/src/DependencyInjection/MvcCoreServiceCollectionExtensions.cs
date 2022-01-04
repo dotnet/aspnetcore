@@ -4,7 +4,6 @@
 using System.Buffers;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Metadata;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
