@@ -39,7 +39,6 @@ internal partial class RemoteJSRuntime : JSRuntime
         ILogger<RemoteJSRuntime> logger)
     {
         _options = circuitOptions.Value;
-
         _maximumIncomingBytes = componentHubOptions.Value.MaximumReceiveMessageSize ?? long.MaxValue;
         _logger = logger;
         DefaultAsyncTimeout = _options.JSInteropDefaultCallTimeout;
