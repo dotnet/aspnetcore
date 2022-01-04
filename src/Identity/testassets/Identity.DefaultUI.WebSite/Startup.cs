@@ -3,7 +3,6 @@
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 
 namespace Identity.DefaultUI.WebSite;
 

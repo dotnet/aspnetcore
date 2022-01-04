@@ -3,7 +3,6 @@
 
 using Microsoft.AspNetCore.Razor.Hosting;
 using Microsoft.AspNetCore.Razor.Language;
-using Xunit;
 using static Microsoft.AspNetCore.Razor.Hosting.TestRazorCompiledItem;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;

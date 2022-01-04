@@ -1,4 +1,6 @@
-/* eslint-disable @typescript-eslint/ban-types */
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 /* eslint-disable no-prototype-builtins */
 import { DotNet } from '@microsoft/dotnet-js-interop';
 import { attachDebuggerHotkey, hasDebuggingEnabled } from './MonoDebugger';

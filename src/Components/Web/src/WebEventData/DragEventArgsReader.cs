@@ -3,7 +3,6 @@
 
 #nullable enable
 
-using System;
 using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Components.Web;

@@ -228,6 +228,13 @@ public partial class NewtonsoftJsonInputFormatter : TextInputFormatter, IInputFo
 
         void ErrorHandler(object? sender, Newtonsoft.Json.Serialization.ErrorEventArgs eventArgs)
         {
+            // Skipping error, if it's already marked as handled
+            // This allows user code to implement its own error handling
+            if (eventArgs.ErrorContext.Handled)
+            {
+                return;
+            }
+
             successful = false;
 
             // When ErrorContext.Path does not include ErrorContext.Member, add Member to form full path.
