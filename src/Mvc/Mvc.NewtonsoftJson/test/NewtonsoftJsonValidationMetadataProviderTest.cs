@@ -78,7 +78,7 @@ public class NewtonsoftJsonValidationMetadataProviderTest
     }
 
     public class UpperCaseJsonNamingPolicy : NamingStrategy
-    { 
+    {
         protected override string ResolvePropertyName(string name) => name?.ToUpperInvariant();
     }
 
