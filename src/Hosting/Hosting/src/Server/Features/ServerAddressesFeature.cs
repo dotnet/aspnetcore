@@ -3,7 +3,6 @@
 
 #nullable enable
 
-using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Hosting.Server.Features;
 

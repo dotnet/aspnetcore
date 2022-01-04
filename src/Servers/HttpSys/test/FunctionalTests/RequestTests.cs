@@ -34,8 +34,8 @@ public class RequestTests
             {
                 var requestInfo = httpContext.Features.Get<IHttpRequestFeature>();
 
-                    // Request Keys
-                    Assert.Equal("GET", requestInfo.Method);
+                // Request Keys
+                Assert.Equal("GET", requestInfo.Method);
                 Assert.Equal(Stream.Null, requestInfo.Body);
                 Assert.NotNull(requestInfo.Headers);
                 Assert.Equal("http", requestInfo.Scheme);
@@ -53,13 +53,13 @@ public class RequestTests
                 Assert.NotEqual(0, connectionInfo.LocalPort);
                 Assert.NotNull(connectionInfo.ConnectionId);
 
-                    // Trace identifier
-                    var requestIdentifierFeature = httpContext.Features.Get<IHttpRequestIdentifierFeature>();
+                // Trace identifier
+                var requestIdentifierFeature = httpContext.Features.Get<IHttpRequestIdentifierFeature>();
                 Assert.NotNull(requestIdentifierFeature);
                 Assert.NotNull(requestIdentifierFeature.TraceIdentifier);
 
-                    // Note: Response keys are validated in the ResponseTests
-                }
+                // Note: Response keys are validated in the ResponseTests
+            }
             catch (Exception ex)
             {
                 byte[] body = Encoding.ASCII.GetBytes(ex.ToString());
@@ -83,8 +83,8 @@ public class RequestTests
             {
                 var requestInfo = httpContext.Features.Get<IHttpRequestFeature>();
 
-                    // Request Keys
-                    requestInfo.Method = "TEST";
+                // Request Keys
+                requestInfo.Method = "TEST";
                 Assert.Equal("TEST", requestInfo.Method);
                 requestInfo.Body = new MemoryStream();
                 Assert.IsType<MemoryStream>(requestInfo.Body);
@@ -116,14 +116,14 @@ public class RequestTests
                 connectionInfo.ConnectionId = "CustomId";
                 Assert.Equal("CustomId", connectionInfo.ConnectionId);
 
-                    // Trace identifier
-                    var requestIdentifierFeature = httpContext.Features.Get<IHttpRequestIdentifierFeature>();
+                // Trace identifier
+                var requestIdentifierFeature = httpContext.Features.Get<IHttpRequestIdentifierFeature>();
                 Assert.NotNull(requestIdentifierFeature);
                 requestIdentifierFeature.TraceIdentifier = "customTrace";
                 Assert.Equal("customTrace", requestIdentifierFeature.TraceIdentifier);
 
-                    // Note: Response keys are validated in the ResponseTests
-                }
+                // Note: Response keys are validated in the ResponseTests
+            }
             catch (Exception ex)
             {
                 byte[] body = Encoding.ASCII.GetBytes(ex.ToString());
@@ -147,8 +147,8 @@ public class RequestTests
             {
                 var requestInfo = httpContext.Features.Get<IHttpRequestFeature>();
 
-                    // Request Keys
-                    requestInfo.Method = null;
+                // Request Keys
+                requestInfo.Method = null;
                 Assert.Null(requestInfo.Method);
                 requestInfo.Body = null;
                 Assert.Null(requestInfo.Body);
@@ -179,14 +179,14 @@ public class RequestTests
                 connectionInfo.ConnectionId = null;
                 Assert.Null(connectionInfo.ConnectionId);
 
-                    // Trace identifier
-                    var requestIdentifierFeature = httpContext.Features.Get<IHttpRequestIdentifierFeature>();
+                // Trace identifier
+                var requestIdentifierFeature = httpContext.Features.Get<IHttpRequestIdentifierFeature>();
                 Assert.NotNull(requestIdentifierFeature);
                 requestIdentifierFeature.TraceIdentifier = null;
                 Assert.Null(requestIdentifierFeature.TraceIdentifier);
 
-                    // Note: Response keys are validated in the ResponseTests
-                }
+                // Note: Response keys are validated in the ResponseTests
+            }
             catch (Exception ex)
             {
                 byte[] body = Encoding.ASCII.GetBytes(ex.ToString());
@@ -219,15 +219,15 @@ public class RequestTests
                 var connectionInfo = httpContext.Features.Get<IHttpConnectionFeature>();
                 var requestIdentifierFeature = httpContext.Features.Get<IHttpRequestIdentifierFeature>();
 
-                    // Request Keys
-                    Assert.Equal("http", requestInfo.Scheme);
+                // Request Keys
+                Assert.Equal("http", requestInfo.Scheme);
                 Assert.Equal(expectedPath, requestInfo.Path);
                 Assert.Equal(expectedPathBase, requestInfo.PathBase);
                 Assert.Equal(string.Empty, requestInfo.QueryString);
                 Assert.Equal(requestPath, requestInfo.RawTarget);
 
-                    // Trace identifier
-                    Assert.NotNull(requestIdentifierFeature);
+                // Trace identifier
+                Assert.NotNull(requestIdentifierFeature);
                 Assert.NotNull(requestIdentifierFeature.TraceIdentifier);
             }
             catch (Exception ex)
@@ -323,8 +323,8 @@ public class RequestTests
                 Assert.Equal(expectedPathBase, requestInfo.PathBase);
                 Assert.Equal(requestPath, requestInfo.RawTarget);
 
-                    // Trace identifier
-                    Assert.NotNull(requestIdentifierFeature);
+                // Trace identifier
+                Assert.NotNull(requestIdentifierFeature);
                 Assert.NotNull(requestIdentifierFeature.TraceIdentifier);
             }
             catch (Exception ex)
@@ -356,8 +356,8 @@ public class RequestTests
         {
             var requestInfo = httpContext.Features.Get<IHttpRequestFeature>();
             Assert.Equal(rawPath, requestInfo.RawTarget);
-                // '/' %2F is an exception, un-escaping it would change the structure of the path
-                Assert.Equal("/ !\"#$%&'()*+,-.%2F0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~", requestInfo.Path);
+            // '/' %2F is an exception, un-escaping it would change the structure of the path
+            Assert.Equal("/ !\"#$%&'()*+,-.%2F0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~", requestInfo.Path);
             return Task.FromResult(0);
         }))
         {
@@ -487,8 +487,8 @@ public class RequestTests
 
             registered.SetResult();
 
-                // Don't exit until it fires or else it could be disposed.
-                await result.Task.DefaultTimeout();
+            // Don't exit until it fires or else it could be disposed.
+            await result.Task.DefaultTimeout();
         });
 
         // Send a request and then abort.

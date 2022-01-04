@@ -73,8 +73,8 @@ public static class Http3Helpers
             {
                 if (Debugger.IsAttached)
                 {
-                        // Avoid timeout while debugging.
-                        o.ShutdownTimeout = TimeSpan.FromHours(1);
+                    // Avoid timeout while debugging.
+                    o.ShutdownTimeout = TimeSpan.FromHours(1);
                 }
                 else
                 {

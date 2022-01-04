@@ -1,15 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
 using System.Net;
-using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace WsFedSample;
 
@@ -25,8 +19,8 @@ public class Program
                     {
                         options.Listen(IPAddress.Loopback, 44307, listenOptions =>
                         {
-                                // Configure SSL
-                                var serverCertificate = LoadCertificate();
+                            // Configure SSL
+                            var serverCertificate = LoadCertificate();
                             listenOptions.UseHttps(serverCertificate);
                         });
                     })

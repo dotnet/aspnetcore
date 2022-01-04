@@ -1,17 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Authentication.Cookies;
 
@@ -20,6 +17,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies;
 /// </summary>
 public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAuthenticationOptions>
 {
+    // This should be kept in sync with HttpConnectionDispatcher
     private const string HeaderValueNoCache = "no-cache";
     private const string HeaderValueNoCacheNoStore = "no-cache,no-store";
     private const string HeaderValueEpocDate = "Thu, 01 Jan 1970 00:00:00 GMT";

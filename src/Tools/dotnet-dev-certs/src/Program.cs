@@ -72,10 +72,10 @@ internal class Program
                     "Password to use when exporting the certificate with the private key into a pfx file or to encrypt the Pem exported key",
                     CommandOptionType.SingleValue);
 
-                    // We want to force generating a key without a password to not be an accident.
-                    var noPassword = c.Option("-np|--no-password",
-                    "Explicitly request that you don't use a password for the key when exporting a certificate to a PEM format",
-                    CommandOptionType.NoValue);
+                // We want to force generating a key without a password to not be an accident.
+                var noPassword = c.Option("-np|--no-password",
+                "Explicitly request that you don't use a password for the key when exporting a certificate to a PEM format",
+                CommandOptionType.NoValue);
 
                 var check = c.Option(
                     "-c|--check",

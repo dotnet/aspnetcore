@@ -200,7 +200,7 @@ internal sealed class MemoryBufferWriter : Stream, IBufferWriter<byte>
 #if NETCOREAPP
                 await destination.WriteAsync(segment.Buffer.AsMemory(0, segment.Length), cancellationToken);
 #else
-                    await destination.WriteAsync(segment.Buffer, 0, segment.Length, cancellationToken);
+                await destination.WriteAsync(segment.Buffer, 0, segment.Length, cancellationToken);
 #endif
             }
         }
@@ -210,7 +210,7 @@ internal sealed class MemoryBufferWriter : Stream, IBufferWriter<byte>
 #if NETCOREAPP
             await destination.WriteAsync(_currentSegment.AsMemory(0, _position), cancellationToken);
 #else
-                await destination.WriteAsync(_currentSegment, 0, _position, cancellationToken);
+            await destination.WriteAsync(_currentSegment, 0, _position, cancellationToken);
 #endif
         }
     }

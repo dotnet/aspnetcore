@@ -1,14 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.MicrosoftAccount;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Builder;
@@ -20,7 +17,6 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Authentication.Tests.MicrosoftAccount;
 
@@ -376,9 +372,9 @@ public class MicrosoftAccountTests : RemoteAuthenticationTests<MicrosoftAccountO
                                     LoginHint = "username",
                                     DomainHint = "consumers",
 #pragma warning disable CS0618 // Type or member is obsolete
-                                        ResponseMode = "query",
+                                    ResponseMode = "query",
 #pragma warning restore CS0618 // Type or member is obsolete
-                                        RedirectUri = "/me"
+                                    RedirectUri = "/me"
                                 });
                             }
                             else if (req.Path == new PathString("/challengeWithOtherScope"))

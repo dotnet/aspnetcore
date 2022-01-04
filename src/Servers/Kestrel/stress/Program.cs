@@ -36,12 +36,12 @@ public class Program
         cmd.AddOption(new Option("-n", "Max number of requests to make concurrently.") { Argument = new Argument<int>("numWorkers", 1) });
         cmd.AddOption(new Option("-maxContentLength", "Max content length for request and response bodies.") { Argument = new Argument<int>("numBytes", 1000) });
         cmd.AddOption(new Option("-http", "HTTP version (1.1 or 2.0)") { Argument = new Argument<Version[]>("version", new[] { HttpVersion.Version20 }) });
-        cmd.AddOption(new Option("-connectionLifetime", "Max connection lifetime length (milliseconds).") { Argument = new Argument<int?>("connectionLifetime", null)});
+        cmd.AddOption(new Option("-connectionLifetime", "Max connection lifetime length (milliseconds).") { Argument = new Argument<int?>("connectionLifetime", null) });
         cmd.AddOption(new Option("-ops", "Indices of the operations to use") { Argument = new Argument<int[]>("space-delimited indices", null) });
         cmd.AddOption(new Option("-trace", "Enable Microsoft-System-Net-Http tracing.") { Argument = new Argument<string>("\"console\" or path") });
         cmd.AddOption(new Option("-aspnetlog", "Enable ASP.NET warning and error logging.") { Argument = new Argument<bool>("enable", false) });
         cmd.AddOption(new Option("-listOps", "List available options.") { Argument = new Argument<bool>("enable", false) });
-        cmd.AddOption(new Option("-seed", "Seed for generating pseudo-random parameters for a given -n argument.") { Argument = new Argument<int?>("seed", null)});
+        cmd.AddOption(new Option("-seed", "Seed for generating pseudo-random parameters for a given -n argument.") { Argument = new Argument<int?>("seed", null) });
 
         ParseResult cmdline = cmd.Parse(args);
         if (cmdline.Errors.Count > 0)
@@ -55,15 +55,15 @@ public class Program
             return;
         }
 
-        Run(concurrentRequests  : cmdline.ValueForOption<int>("-n"),
-            maxContentLength    : cmdline.ValueForOption<int>("-maxContentLength"),
-            httpVersions        : cmdline.ValueForOption<Version[]>("-http"),
-            connectionLifetime  : cmdline.ValueForOption<int?>("-connectionLifetime"),
-            opIndices           : cmdline.ValueForOption<int[]>("-ops"),
-            logPath             : cmdline.HasOption("-trace") ? cmdline.ValueForOption<string>("-trace") : null,
-            aspnetLog           : cmdline.ValueForOption<bool>("-aspnetlog"),
-            listOps             : cmdline.ValueForOption<bool>("-listOps"),
-            seed                : cmdline.ValueForOption<int?>("-seed") ?? Random.Shared.Next());
+        Run(concurrentRequests: cmdline.ValueForOption<int>("-n"),
+            maxContentLength: cmdline.ValueForOption<int>("-maxContentLength"),
+            httpVersions: cmdline.ValueForOption<Version[]>("-http"),
+            connectionLifetime: cmdline.ValueForOption<int?>("-connectionLifetime"),
+            opIndices: cmdline.ValueForOption<int[]>("-ops"),
+            logPath: cmdline.HasOption("-trace") ? cmdline.ValueForOption<string>("-trace") : null,
+            aspnetLog: cmdline.ValueForOption<bool>("-aspnetlog"),
+            listOps: cmdline.ValueForOption<bool>("-listOps"),
+            seed: cmdline.ValueForOption<int?>("-seed") ?? Random.Shared.Next());
     }
 
     private static void Run(int concurrentRequests, int maxContentLength, Version[] httpVersions, int? connectionLifetime, int[] opIndices, string logPath, bool aspnetLog, bool listOps, int seed)

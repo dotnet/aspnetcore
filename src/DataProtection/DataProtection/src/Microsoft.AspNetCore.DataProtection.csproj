@@ -42,8 +42,4 @@
   <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetFxTargetFramework)' OR '$(MSBuildRestoreSessionId)' == ''">
     <Reference Include="System.Runtime.InteropServices.RuntimeInformation" />
   </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' ">
-    <SuppressBaselineReference Include="Microsoft.Win32.Registry" />
-  </ItemGroup>
 </Project>

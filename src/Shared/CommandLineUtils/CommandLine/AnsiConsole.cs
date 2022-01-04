@@ -93,7 +93,7 @@ internal class AnsiConsole
                     case 'm':
                         int value;
 #if NETFRAMEWORK
-                            if (int.TryParse(message.Substring(startIndex, endIndex - startIndex), out value))
+                        if (int.TryParse(message.Substring(startIndex, endIndex - startIndex), out value))
 #else
                         if (int.TryParse(message.AsSpan(startIndex, endIndex - startIndex), out value))
 #endif

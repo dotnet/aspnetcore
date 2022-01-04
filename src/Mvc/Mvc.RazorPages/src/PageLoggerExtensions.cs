@@ -3,7 +3,6 @@
 
 #nullable disable warnings
 
-using System;
 using System.Globalization;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;

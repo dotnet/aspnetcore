@@ -1,17 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Reflection;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.AspNetCore.StaticWebAssets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.WebView;
 
@@ -156,10 +150,10 @@ public abstract class WebViewManager : IAsyncDisposable
 
         _ = _dispatcher.InvokeAsync(async () =>
         {
-                // TODO: Verify this produces the correct exception-surfacing behaviors.
-                // For example, JS interop exceptions should flow back into JS, whereas
-                // renderer exceptions should be fatal.
-                try
+            // TODO: Verify this produces the correct exception-surfacing behaviors.
+            // For example, JS interop exceptions should flow back into JS, whereas
+            // renderer exceptions should be fatal.
+            try
             {
                 await _ipcReceiver.OnMessageReceivedAsync(_currentPageContext, message);
             }

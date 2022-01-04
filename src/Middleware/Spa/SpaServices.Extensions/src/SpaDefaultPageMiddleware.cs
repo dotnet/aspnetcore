@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -25,8 +24,8 @@ internal class SpaDefaultPageMiddleware
         // Rewrite all requests to the default page
         app.Use((context, next) =>
         {
-                // If we have an Endpoint, then this is a deferred match - just noop.
-                if (context.GetEndpoint() != null)
+            // If we have an Endpoint, then this is a deferred match - just noop.
+            if (context.GetEndpoint() != null)
             {
                 return next(context);
             }
@@ -46,8 +45,8 @@ internal class SpaDefaultPageMiddleware
         // present on disk), the SPA is definitely not going to work.
         app.Use((context, next) =>
         {
-                // If we have an Endpoint, then this is a deferred match - just noop.
-                if (context.GetEndpoint() != null)
+            // If we have an Endpoint, then this is a deferred match - just noop.
+            if (context.GetEndpoint() != null)
             {
                 return next(context);
             }
@@ -56,10 +55,10 @@ internal class SpaDefaultPageMiddleware
                 $"'{options.DefaultPage}' because it was not found, and no other middleware " +
                 "handled the request.\n";
 
-                // Try to clarify the common scenario where someone runs an application in
-                // Production environment without first publishing the whole application
-                // or at least building the SPA.
-                var hostEnvironment = (IWebHostEnvironment?)context.RequestServices.GetService(typeof(IWebHostEnvironment));
+            // Try to clarify the common scenario where someone runs an application in
+            // Production environment without first publishing the whole application
+            // or at least building the SPA.
+            var hostEnvironment = (IWebHostEnvironment?)context.RequestServices.GetService(typeof(IWebHostEnvironment));
             if (hostEnvironment != null && hostEnvironment.IsProduction())
             {
                 message += "Your application is running in Production mode, so make sure it has " +

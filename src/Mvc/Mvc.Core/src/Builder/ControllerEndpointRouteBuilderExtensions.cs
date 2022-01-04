@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -222,8 +220,8 @@ public static class ControllerEndpointRouteBuilderExtensions
         var builder = endpoints.MapFallback(context => Task.CompletedTask);
         builder.Add(b =>
         {
-                // MVC registers a policy that looks for this metadata.
-                b.Metadata.Add(CreateDynamicControllerMetadata(action, controller, area: null));
+            // MVC registers a policy that looks for this metadata.
+            b.Metadata.Add(CreateDynamicControllerMetadata(action, controller, area: null));
             b.Metadata.Add(new ControllerEndpointDataSourceIdMetadata(dataSource.DataSourceId));
         });
         return builder;
@@ -301,8 +299,8 @@ public static class ControllerEndpointRouteBuilderExtensions
         var builder = endpoints.MapFallback(pattern, context => Task.CompletedTask);
         builder.Add(b =>
         {
-                // MVC registers a policy that looks for this metadata.
-                b.Metadata.Add(CreateDynamicControllerMetadata(action, controller, area: null));
+            // MVC registers a policy that looks for this metadata.
+            b.Metadata.Add(CreateDynamicControllerMetadata(action, controller, area: null));
             b.Metadata.Add(new ControllerEndpointDataSourceIdMetadata(dataSource.DataSourceId));
         });
         return builder;
@@ -372,8 +370,8 @@ public static class ControllerEndpointRouteBuilderExtensions
         var builder = endpoints.MapFallback(context => Task.CompletedTask);
         builder.Add(b =>
         {
-                // MVC registers a policy that looks for this metadata.
-                b.Metadata.Add(CreateDynamicControllerMetadata(action, controller, area));
+            // MVC registers a policy that looks for this metadata.
+            b.Metadata.Add(CreateDynamicControllerMetadata(action, controller, area));
             b.Metadata.Add(new ControllerEndpointDataSourceIdMetadata(dataSource.DataSourceId));
         });
         return builder;
@@ -453,8 +451,8 @@ public static class ControllerEndpointRouteBuilderExtensions
         var builder = endpoints.MapFallback(pattern, context => Task.CompletedTask);
         builder.Add(b =>
         {
-                // MVC registers a policy that looks for this metadata.
-                b.Metadata.Add(CreateDynamicControllerMetadata(action, controller, area));
+            // MVC registers a policy that looks for this metadata.
+            b.Metadata.Add(CreateDynamicControllerMetadata(action, controller, area));
             b.Metadata.Add(new ControllerEndpointDataSourceIdMetadata(dataSource.DataSourceId));
         });
         return builder;

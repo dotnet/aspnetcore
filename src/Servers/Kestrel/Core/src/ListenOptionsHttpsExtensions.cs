@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -223,8 +221,8 @@ public static class ListenOptionsHttpsExtensions
 
         listenOptions.Use(next =>
         {
-                // Set the list of protocols from listen options
-                httpsOptions.HttpProtocols = listenOptions.Protocols;
+            // Set the list of protocols from listen options
+            httpsOptions.HttpProtocols = listenOptions.Protocols;
             var middleware = new HttpsConnectionMiddleware(next, httpsOptions, loggerFactory);
             return middleware.OnConnectionAsync;
         });
@@ -297,8 +295,8 @@ public static class ListenOptionsHttpsExtensions
         listenOptions.IsTls = true;
         listenOptions.Use(next =>
         {
-                // Set the list of protocols from listen options
-                callbackOptions.HttpProtocols = listenOptions.Protocols;
+            // Set the list of protocols from listen options
+            callbackOptions.HttpProtocols = listenOptions.Protocols;
             var middleware = new HttpsConnectionMiddleware(next, callbackOptions, loggerFactory);
             return middleware.OnConnectionAsync;
         });

@@ -56,11 +56,11 @@ public sealed class WebApplicationBuilder
 
         _bootstrapHostBuilder.ConfigureWebHostDefaults(webHostBuilder =>
         {
-                // Runs inline.
-                webHostBuilder.Configure(ConfigureApplication);
+            // Runs inline.
+            webHostBuilder.Configure(ConfigureApplication);
 
-                // Attempt to set the application name from options
-                options.ApplyApplicationName(webHostBuilder);
+            // Attempt to set the application name from options
+            options.ApplyApplicationName(webHostBuilder);
         });
 
         // Apply the args to host configuration last since ConfigureWebHostDefaults overrides a host specific setting (the application name).
@@ -71,8 +71,8 @@ public sealed class WebApplicationBuilder
                 config.AddCommandLine(args);
             }
 
-                // Apply the options after the args
-                options.ApplyHostConfiguration(config);
+            // Apply the options after the args
+            options.ApplyHostConfiguration(config);
         });
 
         Configuration = new();
@@ -166,50 +166,50 @@ public sealed class WebApplicationBuilder
         // Copy the services that were added via WebApplicationBuilder.Services into the final IServiceCollection
         _hostBuilder.ConfigureServices((context, services) =>
         {
-                // We've only added services configured by the GenericWebHostBuilder and WebHost.ConfigureWebDefaults
-                // at this point. HostBuilder news up a new ServiceCollection in HostBuilder.Build() we haven't seen
-                // until now, so we cannot clear these services even though some are redundant because
-                // we called ConfigureWebHostDefaults on both the _deferredHostBuilder and _hostBuilder.
-                foreach (var s in _services)
+            // We've only added services configured by the GenericWebHostBuilder and WebHost.ConfigureWebDefaults
+            // at this point. HostBuilder news up a new ServiceCollection in HostBuilder.Build() we haven't seen
+            // until now, so we cannot clear these services even though some are redundant because
+            // we called ConfigureWebHostDefaults on both the _deferredHostBuilder and _hostBuilder.
+            foreach (var s in _services)
             {
                 services.Add(s);
             }
 
-                // Add the hosted services that were initially added last
-                // this makes sure any hosted services that are added run after the initial set
-                // of hosted services. This means hosted services run before the web host starts.
-                foreach (var s in _services.HostedServices)
+            // Add the hosted services that were initially added last
+            // this makes sure any hosted services that are added run after the initial set
+            // of hosted services. This means hosted services run before the web host starts.
+            foreach (var s in _services.HostedServices)
             {
                 services.Add(s);
             }
 
-                // Clear the hosted services list out
-                _services.HostedServices.Clear();
+            // Clear the hosted services list out
+            _services.HostedServices.Clear();
 
-                // Add any services to the user visible service collection so that they are observable
-                // just in case users capture the Services property. Orchard does this to get a "blueprint"
-                // of the service collection
+            // Add any services to the user visible service collection so that they are observable
+            // just in case users capture the Services property. Orchard does this to get a "blueprint"
+            // of the service collection
 
-                // Drop the reference to the existing collection and set the inner collection
-                // to the new one. This allows code that has references to the service collection to still function.
-                _services.InnerCollection = services;
+            // Drop the reference to the existing collection and set the inner collection
+            // to the new one. This allows code that has references to the service collection to still function.
+            _services.InnerCollection = services;
 
             var hostBuilderProviders = ((IConfigurationRoot)context.Configuration).Providers;
 
             if (!hostBuilderProviders.Contains(chainedConfigSource.BuiltProvider))
             {
-                    // Something removed the _hostBuilder's TrackingChainedConfigurationSource pointing back to the ConfigurationManager.
-                    // This is likely a test using WebApplicationFactory. Replicate the effect by clearing the ConfingurationManager sources.
-                    ((IConfigurationBuilder)Configuration).Sources.Clear();
+                // Something removed the _hostBuilder's TrackingChainedConfigurationSource pointing back to the ConfigurationManager.
+                // This is likely a test using WebApplicationFactory. Replicate the effect by clearing the ConfingurationManager sources.
+                ((IConfigurationBuilder)Configuration).Sources.Clear();
             }
 
-                // Make the ConfigurationManager match the final _hostBuilder's configuration. To do that, we add the additional providers
-                // to the inner _hostBuilders's configuration to the ConfigurationManager. We wrap the existing provider in a
-                // configuration source to avoid rebulding or reloading the already added configuration sources.
-                foreach (var provider in hostBuilderProviders)
+            // Make the ConfigurationManager match the final _hostBuilder's configuration. To do that, we add the additional providers
+            // to the inner _hostBuilders's configuration to the ConfigurationManager. We wrap the existing provider in a
+            // configuration source to avoid rebulding or reloading the already added configuration sources.
+            foreach (var provider in hostBuilderProviders)
             {
-                    // Avoid creating a circular reference to the ConfigurationManager via the chained configuration source.
-                    if (!ReferenceEquals(provider, chainedConfigSource.BuiltProvider))
+                // Avoid creating a circular reference to the ConfigurationManager via the chained configuration source.
+                if (!ReferenceEquals(provider, chainedConfigSource.BuiltProvider))
                 {
                     ((IConfigurationBuilder)Configuration).Add(new ConfigurationProviderSource(provider));
                 }

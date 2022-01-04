@@ -331,8 +331,8 @@ public class Http3RequestTests : LoggedTest
             Logger.LogInformation("Server reading content");
             await body.ReadAtLeastLengthAsync(TestData.Length).DefaultTimeout();
 
-                // Sync with client
-                await syncPoint.WaitToContinue();
+            // Sync with client
+            await syncPoint.WaitToContinue();
 
             Logger.LogInformation("Server waiting for cancellation");
             await cancelledTcs.Task;
@@ -407,8 +407,8 @@ public class Http3RequestTests : LoggedTest
 
             context.Abort();
 
-                // Sync with client
-                await syncPoint.WaitToContinue();
+            // Sync with client
+            await syncPoint.WaitToContinue();
 
             readAsyncTask.SetResult(context.Request.Body.ReadAsync(new byte[1024]).AsTask());
         }, protocol: protocol);
@@ -473,8 +473,8 @@ public class Http3RequestTests : LoggedTest
 
             context.Abort();
 
-                // Sync with client
-                await syncPoint.WaitToContinue();
+            // Sync with client
+            await syncPoint.WaitToContinue();
 
             writeAsyncTask.SetResult(context.Response.Body.WriteAsync(TestData).AsTask());
         }, protocol: protocol);
@@ -652,8 +652,8 @@ public class Http3RequestTests : LoggedTest
             var requestBody = context.Request.Body;
             var responseBody = context.Response.Body;
 
-                // Read content
-                Logger.LogInformation("Server reading request body.");
+            // Read content
+            Logger.LogInformation("Server reading request body.");
             var data = await requestBody.ReadAtLeastLengthAsync(TestData.Length);
 
             Logger.LogInformation("Server writing response body.");
@@ -841,8 +841,8 @@ public class Http3RequestTests : LoggedTest
             await responseBody.WriteAsync(TestData);
             await responseBody.FlushAsync();
 
-                // Wait for task cancellation
-                await cancelledTcs.Task;
+            // Wait for task cancellation
+            await cancelledTcs.Task;
         }, protocol: protocol);
 
         var httpClientHandler = new HttpClientHandler();
@@ -1309,9 +1309,9 @@ public class Http3RequestTests : LoggedTest
                     return false;
                 }
 
-                    // This message says the client closed the connection because the server
-                    // sends a GOAWAY and the client then closes the connection once all requests are finished.
-                    Assert.Contains("The client closed the connection.", connectionAbortLog.Message);
+                // This message says the client closed the connection because the server
+                // sends a GOAWAY and the client then closes the connection once all requests are finished.
+                Assert.Contains("The client closed the connection.", connectionAbortLog.Message);
                 return true;
             }, "Wait for connection abort.");
 

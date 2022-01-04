@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
-using System.Collections.Generic;
-using System.IO;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 

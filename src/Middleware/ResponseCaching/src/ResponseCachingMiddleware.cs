@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
@@ -387,7 +384,7 @@ public class ResponseCachingMiddleware
     }
 
     /// <summary>
-    /// Mark the response as started and set the response time if no reponse was started yet.
+    /// Mark the response as started and set the response time if no response was started yet.
     /// </summary>
     /// <param name="context"></param>
     /// <returns><c>true</c> if the response was not started before this call; otherwise <c>false</c>.</returns>

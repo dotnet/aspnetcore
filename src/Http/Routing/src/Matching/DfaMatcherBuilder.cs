@@ -3,8 +3,6 @@
 
 #nullable disable
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
@@ -502,7 +500,7 @@ internal class DfaMatcherBuilder : MatcherBuilder
 #if DEBUG
         var includeLabel = true;
 #else
-            var includeLabel = false;
+        var includeLabel = false;
 #endif
 
         var root = BuildDfaTree(includeLabel);

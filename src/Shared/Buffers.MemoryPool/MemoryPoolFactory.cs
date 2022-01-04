@@ -10,7 +10,7 @@ internal static class PinnedBlockMemoryPoolFactory
 #if DEBUG
         return new DiagnosticMemoryPool(CreatePinnedBlockMemoryPool());
 #else
-            return CreatePinnedBlockMemoryPool();
+        return CreatePinnedBlockMemoryPool();
 #endif
     }
 

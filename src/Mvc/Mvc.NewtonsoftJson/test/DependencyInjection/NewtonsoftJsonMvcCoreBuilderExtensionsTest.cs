@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Serialization;
-using Xunit;
 
 namespace Microsoft.Extensions.DependencyInjection;
 

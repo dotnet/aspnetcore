@@ -47,14 +47,14 @@ public class Program
     {
     }
 
-    class Service<T>: IService<T>
+    class Service<T> : IService<T>
     {
         public Service(T t)
         {
         }
     }
 
-    class AnotherService: IAnotherService
+    class AnotherService : IAnotherService
     {
     }
 }

@@ -34,11 +34,11 @@ public class Program
                 })
                 .UseKestrel(options =>
                 {
-                        // Default port
-                        options.ListenLocalhost(5000);
+                    // Default port
+                    options.ListenLocalhost(5000);
 
-                        // Hub bound to TCP end point
-                        options.Listen(IPAddress.Any, 9001, builder =>
+                    // Hub bound to TCP end point
+                    options.Listen(IPAddress.Any, 9001, builder =>
                     {
                         builder.UseHub<Chat>();
                     });

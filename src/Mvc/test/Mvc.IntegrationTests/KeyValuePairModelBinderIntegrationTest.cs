@@ -1,12 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.IntegrationTests;
 
@@ -99,9 +96,9 @@ public class KeyValuePairModelBinderIntegrationTest
             .ForType(typeof(KeyValuePair<string, int>))
             .BindingDetails((System.Action<ModelBinding.Metadata.BindingMetadata>)(binding =>
             {
-                    // A real details provider could customize message based on BindingMetadataProviderContext.
-                    binding.ModelBindingMessageProvider.SetMissingKeyOrValueAccessor(
-                    () => $"Hurts when nothing is provided.");
+                // A real details provider could customize message based on BindingMetadataProviderContext.
+                binding.ModelBindingMessageProvider.SetMissingKeyOrValueAccessor(
+                () => $"Hurts when nothing is provided.");
             }));
 
         var testContext = ModelBindingTestHelper.GetTestContext(
@@ -186,9 +183,9 @@ public class KeyValuePairModelBinderIntegrationTest
             .ForType(typeof(KeyValuePair<string, int>))
             .BindingDetails((System.Action<ModelBinding.Metadata.BindingMetadata>)(binding =>
             {
-                    // A real details provider could customize message based on BindingMetadataProviderContext.
-                    binding.ModelBindingMessageProvider.SetMissingKeyOrValueAccessor(
-                    () => $"Hurts when nothing is provided.");
+                // A real details provider could customize message based on BindingMetadataProviderContext.
+                binding.ModelBindingMessageProvider.SetMissingKeyOrValueAccessor(
+                () => $"Hurts when nothing is provided.");
             }));
 
         var testContext = ModelBindingTestHelper.GetTestContext(

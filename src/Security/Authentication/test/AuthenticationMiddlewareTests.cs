@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -13,7 +11,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Authentication;
 
@@ -35,8 +32,8 @@ public class AuthenticationMiddlewareTests
                         {
                             s.HandlerType = typeof(SkipHandler);
                         });
-                            // Won't get hit since CanHandleRequests is false
-                            o.AddScheme("throws", s =>
+                        // Won't get hit since CanHandleRequests is false
+                        o.AddScheme("throws", s =>
                         {
                             s.HandlerType = typeof(ThrowsHandler);
                         });
@@ -44,8 +41,8 @@ public class AuthenticationMiddlewareTests
                         {
                             s.HandlerType = typeof(SixOhSevenHandler);
                         });
-                            // Won't get run since 607 will finish
-                            o.AddScheme("305", s =>
+                        // Won't get run since 607 will finish
+                        o.AddScheme("305", s =>
                         {
                             s.HandlerType = typeof(ThreeOhFiveHandler);
                         });

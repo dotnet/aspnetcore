@@ -1,17 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.WebSockets;
-using System.Reflection;
-using System.Security.Claims;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.Features;
-using Xunit;
-
 namespace Microsoft.AspNetCore.Http;
 
 public class HttpContextAccessorTests
@@ -52,8 +41,8 @@ public class HttpContextAccessorTests
 
         ThreadPool.QueueUserWorkItem(async _ =>
         {
-                // The HttpContext flows with the execution context
-                Assert.Same(context, accessor.HttpContext);
+            // The HttpContext flows with the execution context
+            Assert.Same(context, accessor.HttpContext);
 
             checkAsyncFlowTcs.SetResult(null);
 
@@ -97,8 +86,8 @@ public class HttpContextAccessorTests
 
         ThreadPool.QueueUserWorkItem(async _ =>
         {
-                // The HttpContext flows with the execution context
-                Assert.Same(context, accessor.HttpContext);
+            // The HttpContext flows with the execution context
+            Assert.Same(context, accessor.HttpContext);
 
             checkAsyncFlowTcs.SetResult(null);
 
@@ -145,8 +134,8 @@ public class HttpContextAccessorTests
         {
             try
             {
-                    // The HttpContext flows with the execution context
-                    Assert.Null(accessor.HttpContext);
+                // The HttpContext flows with the execution context
+                Assert.Null(accessor.HttpContext);
                 checkAsyncFlowTcs.SetResult(null);
             }
             catch (Exception ex)
@@ -172,8 +161,8 @@ public class HttpContextAccessorTests
         {
             try
             {
-                    // The HttpContext flows with the execution context
-                    Assert.Null(accessor.HttpContext);
+                // The HttpContext flows with the execution context
+                Assert.Null(accessor.HttpContext);
                 checkAsyncFlowTcs.SetResult(null);
             }
             catch (Exception ex)

@@ -1,18 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.WsFederation;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace WsFedSample;
 
@@ -38,9 +30,9 @@ public class Startup
         {
             options.Wtrealm = "https://Tratcheroutlook.onmicrosoft.com/WsFedSample";
             options.MetadataAddress = "https://login.windows.net/cdc690f9-b6b8-4023-813a-bae7143d1f87/FederationMetadata/2007-06/FederationMetadata.xml";
-                // options.CallbackPath = "/";
-                // options.SkipUnrecognizedRequests = true;
-            })
+            // options.CallbackPath = "/";
+            // options.SkipUnrecognizedRequests = true;
+        })
         .AddCookie();
     }
 
@@ -74,8 +66,8 @@ public class Startup
 
             if (context.Request.Path.Equals("/signout-remote"))
             {
-                    // Redirects
-                    await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                // Redirects
+                await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                 await context.SignOutAsync(WsFederationDefaults.AuthenticationScheme, new AuthenticationProperties()
                 {
                     RedirectUri = "/signedout"
@@ -93,29 +85,29 @@ public class Startup
                 return;
             }
 
-                // DefaultAuthenticateScheme causes User to be set
-                var user = context.User;
+            // DefaultAuthenticateScheme causes User to be set
+            var user = context.User;
 
+            // This is what [Authorize] calls
+            // var user = await context.AuthenticateAsync();
+
+            // This is what [Authorize(ActiveAuthenticationSchemes = WsFederationDefaults.AuthenticationScheme)] calls
+            // var user = await context.AuthenticateAsync(WsFederationDefaults.AuthenticationScheme);
+
+            // Not authenticated
+            if (user == null || !user.Identities.Any(identity => identity.IsAuthenticated))
+            {
                 // This is what [Authorize] calls
-                // var user = await context.AuthenticateAsync();
+                await context.ChallengeAsync();
 
                 // This is what [Authorize(ActiveAuthenticationSchemes = WsFederationDefaults.AuthenticationScheme)] calls
-                // var user = await context.AuthenticateAsync(WsFederationDefaults.AuthenticationScheme);
+                // await context.ChallengeAsync(WsFederationDefaults.AuthenticationScheme);
 
-                // Not authenticated
-                if (user == null || !user.Identities.Any(identity => identity.IsAuthenticated))
-            {
-                    // This is what [Authorize] calls
-                    await context.ChallengeAsync();
-
-                    // This is what [Authorize(ActiveAuthenticationSchemes = WsFederationDefaults.AuthenticationScheme)] calls
-                    // await context.ChallengeAsync(WsFederationDefaults.AuthenticationScheme);
-
-                    return;
+                return;
             }
 
-                // Authenticated, but not authorized
-                if (context.Request.Path.Equals("/restricted") && !user.Identities.Any(identity => identity.HasClaim("special", "true")))
+            // Authenticated, but not authorized
+            if (context.Request.Path.Equals("/restricted") && !user.Identities.Any(identity => identity.HasClaim("special", "true")))
             {
                 await context.ForbidAsync();
                 return;

@@ -1,11 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using System.Runtime.InteropServices;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.FileProviders;
 using PhotinoNET;
@@ -33,13 +29,13 @@ internal class PhotinoWebViewManager : WebViewManager
         _window = window ?? throw new ArgumentNullException(nameof(window));
         _window.WebMessageReceived += (sender, message) =>
         {
-                // On some platforms, we need to move off the browser UI thread
-                Task.Factory.StartNew(message =>
+            // On some platforms, we need to move off the browser UI thread
+            Task.Factory.StartNew(message =>
             {
-                    // TODO: Fix this. Photino should ideally tell us the URL that the message comes from so we
-                    // know whether to trust it. Currently it's hardcoded to trust messages from any source, including
-                    // if the webview is somehow navigated to an external URL.
-                    var messageOriginUrl = new Uri(AppBaseUri);
+                // TODO: Fix this. Photino should ideally tell us the URL that the message comes from so we
+                // know whether to trust it. Currently it's hardcoded to trust messages from any source, including
+                // if the webview is somehow navigated to an external URL.
+                var messageOriginUrl = new Uri(AppBaseUri);
 
                 MessageReceived(messageOriginUrl, (string)message!);
             }, message, CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default);

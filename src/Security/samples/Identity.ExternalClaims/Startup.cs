@@ -42,8 +42,8 @@ public class Startup
 
         services.AddAuthentication().AddGoogle(o =>
         {
-                // Configure your auth keys, usually stored in Config or User Secrets
-                o.ClientId = "<yourid>";
+            // Configure your auth keys, usually stored in Config or User Secrets
+            o.ClientId = "<yourid>";
             o.ClientSecret = "<yoursecret>";
             o.Scope.Add("https://www.googleapis.com/auth/plus.login");
             o.ClaimActions.MapJsonKey(ClaimTypes.Gender, "gender");
