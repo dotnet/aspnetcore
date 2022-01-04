@@ -82,7 +82,7 @@ public class SystemTextJsonOutputFormatter : TextOutputFormatter
                 await JsonSerializer.SerializeAsync(responseStream, context.Object, objectType, SerializerOptions, httpContext.RequestAborted);
                 await responseStream.FlushAsync(httpContext.RequestAborted);
             }
-            catch (OperationCanceledException) { }
+            catch (OperationCanceledException ex) when (ex.CancellationToken == httpContext.RequestAborted) { }
         }
         else
         {

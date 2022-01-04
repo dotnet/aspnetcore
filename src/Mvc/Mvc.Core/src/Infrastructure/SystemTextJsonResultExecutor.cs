@@ -77,7 +77,7 @@ internal sealed partial class SystemTextJsonResultExecutor : IActionResultExecut
                 await JsonSerializer.SerializeAsync(responseStream, value, objectType, jsonSerializerOptions, context.HttpContext.RequestAborted);
                 await responseStream.FlushAsync(context.HttpContext.RequestAborted);
             }
-            catch (OperationCanceledException) { }
+            catch (OperationCanceledException ex) when (ex.CancellationToken == context.HttpContext.RequestAborted) { }
         }
         else
         {
@@ -91,7 +91,7 @@ internal sealed partial class SystemTextJsonResultExecutor : IActionResultExecut
                 await JsonSerializer.SerializeAsync(transcodingStream, value, objectType, jsonSerializerOptions, context.HttpContext.RequestAborted);
                 await transcodingStream.FlushAsync(context.HttpContext.RequestAborted);
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException ex) when (ex.CancellationToken == context.HttpContext.RequestAborted)
             { }
             catch (Exception ex)
             {
