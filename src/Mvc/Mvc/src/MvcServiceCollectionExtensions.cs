@@ -205,7 +205,7 @@ public static class MvcServiceCollectionExtensions
     /// on the resulting builder.
     /// </para>
     /// </remarks>
-    public static IMvcBuilder AddControllers(this IServiceCollection services, Assembly entryAssembly, Action<MvcOptions>? configure)
+    public static IMvcBuilder AddControllers(this IServiceCollection services, Assembly entryAssembly, Action<MvcOptions> configure)
     {
         if (services == null)
         {
@@ -346,7 +346,7 @@ public static class MvcServiceCollectionExtensions
     /// To add services for pages call <see cref="AddRazorPages(IServiceCollection)"/>.
     /// </para>
     /// </remarks>
-    public static IMvcBuilder AddControllersWithViews(this IServiceCollection services, Assembly entryAssembly, Action<MvcOptions>? configure)
+    public static IMvcBuilder AddControllersWithViews(this IServiceCollection services, Assembly entryAssembly, Action<MvcOptions> configure)
     {
         if (services == null)
         {
@@ -409,7 +409,7 @@ public static class MvcServiceCollectionExtensions
         return new MvcBuilder(builder.Services, builder.PartManager);
     }
 
-    private static IMvcCoreBuilder AddControllersWithViewsCore(IServiceCollection services, Assembly? entryAssembly  = null)
+    private static IMvcCoreBuilder AddControllersWithViewsCore(IServiceCollection services, Assembly? entryAssembly = null)
     {
         var builder = AddControllersCore(services, entryAssembly)
             .AddViews()
@@ -552,7 +552,7 @@ public static class MvcServiceCollectionExtensions
     /// To add services for controllers with views call <see cref="AddControllersWithViews(IServiceCollection)"/>.
     /// </para>
     /// </remarks>
-    public static IMvcBuilder AddRazorPages(this IServiceCollection services, Assembly entryAssembly, Action<RazorPagesOptions>? configure)
+    public static IMvcBuilder AddRazorPages(this IServiceCollection services, Assembly entryAssembly, Action<RazorPagesOptions> configure)
     {
         if (services == null)
         {
