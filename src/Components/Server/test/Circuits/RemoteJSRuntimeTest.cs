@@ -38,7 +38,7 @@ public class RemoteJSRuntimeTest
     public void ReceiveByteArray_WithLargeChunks_UsingConfiguredComponentHubOptions()
     {
         // Arrange
-        var jsRuntime = CreateTestRemoteJSRuntime(componentHubMaximumIncomingBytes: 52*1024);
+        var jsRuntime = CreateTestRemoteJSRuntime(componentHubMaximumIncomingBytes: 52 * 1024);
         var data = new byte[50_000];
 
         // Act & Assert
@@ -97,7 +97,7 @@ public class RemoteJSRuntimeTest
         jsRuntime.TestReceiveByteArray(id: 0, new byte[5000]);
     }
 
-    private static TestRemoteJSRuntime CreateTestRemoteJSRuntime(long? componentHubMaximumIncomingBytes = 32*1024)
+    private static TestRemoteJSRuntime CreateTestRemoteJSRuntime(long? componentHubMaximumIncomingBytes = 32 * 1024)
     {
         var componentHubOptions = Options.Create(new HubOptions<ComponentHub>());
         componentHubOptions.Value.MaximumReceiveMessageSize = componentHubMaximumIncomingBytes;
