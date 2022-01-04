@@ -178,7 +178,6 @@ function importDotnetJs(resourceLoader: WebAssemblyResourceLoader): Promise<Crea
   const dotnetJsContentHash = resourceLoader.bootConfig.resources.runtime[dotnetJsResourceName];
   let src = `./${dotnetJsResourceName}`;
 
-  // TODO How to do SRI dotnetJsContentHash with dynamic import ?
 
   // Allow overriding the URI from which the dotnet.*.js file is loaded
   if (resourceLoader.startOptions.loadBootResource) {
