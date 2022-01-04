@@ -9,7 +9,7 @@
       ]
     },
     "Microsoft.Playwright.CLI": {
-      "version": "1.2.0",
+      "version": "1.2.2",
       "commands": [
         "playwright"
       ]
