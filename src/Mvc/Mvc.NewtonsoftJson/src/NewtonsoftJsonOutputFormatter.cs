@@ -175,7 +175,7 @@ public class NewtonsoftJsonOutputFormatter : TextOutputFormatter
             {
                 value = await reader(value, context.HttpContext.RequestAborted);
             }
-            catch (OperationCanceledException ex) when (ex.CancellationToken == context.HttpContext.RequestAborted) { }
+            catch (OperationCanceledException) when (context.HttpContext.RequestAborted.IsCancellationRequested) { }
 
             if (context.HttpContext.RequestAborted.IsCancellationRequested)
             {
