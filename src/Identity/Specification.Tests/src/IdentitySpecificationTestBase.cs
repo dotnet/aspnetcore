@@ -1,12 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -320,20 +317,20 @@ public abstract class IdentitySpecificationTestBase<TUser, TRole, TKey> : UserMa
     /// </summary>
     /// <returns>Task</returns>
     [Fact]
-    public async Task CanQueryableRoles()
+    public virtual async Task CanQueryableRoles()
     {
         var manager = CreateRoleManager();
         if (manager.SupportsQueryableRoles)
         {
-            var roles = GenerateRoles("CanQuerableRolesTest", 4);
+            var roles = GenerateRoles("CanQueryableRolesTest", 4);
             foreach (var r in roles)
             {
                 IdentityResultAssert.IsSuccess(await manager.CreateAsync(r));
             }
-            Expression<Func<TRole, bool>> func = RoleNameStartsWithPredicate("CanQuerableRolesTest");
+            Expression<Func<TRole, bool>> func = RoleNameStartsWithPredicate("CanQueryableRolesTest");
             Assert.Equal(roles.Count, manager.Roles.Count(func));
             func = RoleNameEqualsPredicate("bogus");
-            Assert.Null(manager.Roles.FirstOrDefault(func));
+            Assert.Empty(manager.Roles.Where(func));
 
         }
     }

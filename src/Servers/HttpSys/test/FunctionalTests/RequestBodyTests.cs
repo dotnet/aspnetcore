@@ -216,8 +216,8 @@ public class RequestBodyTests
 
         using (Utilities.CreateHttpServer(out var address, httpContext =>
         {
-                // play with standard header
-                httpContext.Request.Headers[HeaderNames.ContentLength] = "123";
+            // play with standard header
+            httpContext.Request.Headers[HeaderNames.ContentLength] = "123";
             CheckHeadersCount(HeaderNames.ContentLength, 1, httpContext.Request);
             Assert.Equal(123, httpContext.Request.ContentLength);
             httpContext.Request.Headers[HeaderNames.ContentLength] = "456";
@@ -231,8 +231,8 @@ public class RequestBodyTests
             CheckHeadersCount(HeaderNames.ContentLength, 1, httpContext.Request);
             Assert.Equal(789, httpContext.Request.ContentLength);
 
-                // play with custom header
-                httpContext.Request.Headers["Custom-Header"] = "foo";
+            // play with custom header
+            httpContext.Request.Headers["Custom-Header"] = "foo";
             CheckHeadersCount("Custom-Header", 1, httpContext.Request);
             httpContext.Request.Headers["Custom-Header"] = "bar";
             CheckHeadersCount("Custom-Header", 1, httpContext.Request);

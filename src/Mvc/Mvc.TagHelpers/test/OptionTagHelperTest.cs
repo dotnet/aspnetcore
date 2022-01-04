@@ -1,12 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Razor.TagHelpers;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.TagHelpers;
 
@@ -410,8 +406,8 @@ public class OptionTagHelperTest
             originalAttributes,
             getChildContentAsync: (useCachedResult, encoder) =>
             {
-                    // GetChildContentAsync should not be invoked since we are setting the content below.
-                    Assert.True(false);
+                // GetChildContentAsync should not be invoked since we are setting the content below.
+                Assert.True(false);
                 return Task.FromResult<TagHelperContent>(null);
             })
         {

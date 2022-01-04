@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters;
@@ -14,7 +12,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters;
 public class StringOutputFormatter : TextOutputFormatter
 {
     /// <summary>
-    /// Initializes a new <see cref="StringOutputFormatter"/>.
+    /// Creates a new <see cref="StringOutputFormatter"/> that only supports plain text encoded as <see cref="P:System.Text.Encoding.UTF8" />
+    /// or <see cref="P:System.Text.Encoding.Unicode" />.
     /// </summary>
     public StringOutputFormatter()
     {
@@ -23,7 +22,10 @@ public class StringOutputFormatter : TextOutputFormatter
         SupportedMediaTypes.Add("text/plain");
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Verifies that the object to be formatted is a <see langword="string" /> and proceeds with the standard checks of
+    /// <see cref="M:Microsoft.AspNetCore.Mvc.Formatters.OutputFormatter.CanWriteResult(OutputFormatterCanWriteContext)" />.
+    /// </summary>
     public override bool CanWriteResult(OutputFormatterCanWriteContext context)
     {
         if (context == null)

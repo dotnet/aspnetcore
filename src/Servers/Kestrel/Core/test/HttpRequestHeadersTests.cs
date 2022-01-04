@@ -657,8 +657,8 @@ public class HttpRequestHeadersTests
 
         var headers = new HttpRequestHeaders(encodingSelector: headerName =>
         {
-                // For known headers, the HeaderNames value is passed in.
-                if (ReferenceEquals(headerName, HeaderNames.Accept))
+            // For known headers, the HeaderNames value is passed in.
+            if (ReferenceEquals(headerName, HeaderNames.Accept))
             {
                 return Encoding.GetEncoding("ASCII", EncoderFallback.ExceptionFallback, DecoderFallback.ExceptionFallback);
             }

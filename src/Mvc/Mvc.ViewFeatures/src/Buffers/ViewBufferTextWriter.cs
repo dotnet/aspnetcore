@@ -1,11 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using System.Text;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
@@ -92,7 +89,7 @@ internal class ViewBufferTextWriter : TextWriter
     public ViewBuffer Buffer { get; }
 
     /// <summary>
-    /// Gets a value that indiciates if <see cref="Flush"/> or <see cref="FlushAsync" /> was invoked.
+    /// Gets a value that indicates if <see cref="Flush"/> or <see cref="FlushAsync" /> was invoked.
     /// </summary>
     public bool Flushed { get; private set; }
 

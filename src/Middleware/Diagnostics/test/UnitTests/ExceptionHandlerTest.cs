@@ -1,25 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
-using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Diagnostics;
 
@@ -134,8 +125,8 @@ public class ExceptionHandlerTest
                 .UseTestServer()
                 .Configure(app =>
                 {
-                        // add response buffering
-                        app.Use(async (httpContext, next) =>
+                    // add response buffering
+                    app.Use(async (httpContext, next) =>
                     {
                         var response = httpContext.Response;
                         var originalResponseBody = response.Body;
@@ -170,8 +161,8 @@ public class ExceptionHandlerTest
 
                     app.Run(async (context) =>
                     {
-                            // Write some content into the response before throwing exception
-                            await context.Response.WriteAsync(new string('a', 100));
+                        // Write some content into the response before throwing exception
+                        await context.Response.WriteAsync(new string('a', 100));
 
                         throw new InvalidOperationException("Invalid input provided.");
                     });
@@ -557,18 +548,18 @@ public class ExceptionHandlerTest
                         {
                             exception = ex;
 
-                                // This mimics what the server would do when an exception occurs
-                                httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                            // This mimics what the server would do when an exception occurs
+                            httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
                         }
 
-                            // Invalid operation exception
-                            Assert.NotNull(exception);
+                        // Invalid operation exception
+                        Assert.NotNull(exception);
                         Assert.Equal("The exception handler configured on ExceptionHandlerOptions produced a 404 status response. " +
             "This InvalidOperationException containing the original exception was thrown since this is often due to a misconfigured ExceptionHandlingPath. " +
             "If the exception handler is expected to return 404 status responses then set AllowStatusCode404Response to true.", exception.Message);
 
-                            // The original exception is inner exception
-                            Assert.NotNull(exception.InnerException);
+                        // The original exception is inner exception
+                        Assert.NotNull(exception.InnerException);
                         Assert.IsType<ApplicationException>(exception.InnerException);
                         Assert.Equal("Something bad happened.", exception.InnerException.Message);
 

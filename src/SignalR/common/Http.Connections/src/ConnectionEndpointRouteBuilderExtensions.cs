@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Internal;
@@ -61,9 +59,9 @@ public static class ConnectionEndpointRouteBuilderExtensions
         var attributes = typeof(TConnectionHandler).GetCustomAttributes(inherit: true);
         conventionBuilder.Add(e =>
         {
-                // Add all attributes on the ConnectionHandler has metadata (this will allow for things like)
-                // auth attributes and cors attributes to work seamlessly
-                foreach (var item in attributes)
+            // Add all attributes on the ConnectionHandler has metadata (this will allow for things like)
+            // auth attributes and cors attributes to work seamlessly
+            foreach (var item in attributes)
             {
                 e.Metadata.Add(item);
             }
@@ -120,8 +118,8 @@ public static class ConnectionEndpointRouteBuilderExtensions
         // Add metadata to all of Endpoints
         compositeConventionBuilder.Add(e =>
         {
-                // Add the authorization data as metadata
-                foreach (var data in options.AuthorizationData)
+            // Add the authorization data as metadata
+            foreach (var data in options.AuthorizationData)
             {
                 e.Metadata.Add(data);
             }

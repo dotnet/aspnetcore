@@ -1,14 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Net;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -17,7 +13,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Xunit;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Authentication.Certificate.Test;
 
@@ -575,8 +571,8 @@ public class ClientCertificateAuthenticationTests
                     {
                         validationCount++;
 
-                            // Make sure we get the validated principal
-                            Assert.NotNull(context.Principal);
+                        // Make sure we get the validated principal
+                        Assert.NotNull(context.Principal);
 
                         var claims = new[]
                         {
@@ -647,8 +643,8 @@ public class ClientCertificateAuthenticationTests
                 {
                     OnCertificateValidated = context =>
                     {
-                            // Make sure we get the validated principal
-                            Assert.NotNull(context.Principal);
+                        // Make sure we get the validated principal
+                        Assert.NotNull(context.Principal);
                         var claims = new[]
                         {
                                 new Claim(ClaimTypes.Name, Expected, ClaimValueTypes.String, context.Options.ClaimsIssuer)
@@ -682,6 +678,108 @@ public class ClientCertificateAuthenticationTests
         Assert.Single(responseAsXml.Elements("claim"));
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task VerifyValidationResultNeverCachedAfter30Min(bool cache)
+    {
+        const string Expected = "John Doe";
+        var validationCount = 0;
+        var clock = new TestClock();
+        clock.UtcNow = DateTime.UtcNow;
+
+        using var host = await CreateHost(
+            new CertificateAuthenticationOptions
+            {
+                AllowedCertificateTypes = CertificateTypes.SelfSigned,
+                Events = new CertificateAuthenticationEvents
+                {
+                    OnCertificateValidated = context =>
+                    {
+                        validationCount++;
+
+                        // Make sure we get the validated principal
+                        Assert.NotNull(context.Principal);
+
+                        var claims = new[]
+                        {
+                            new Claim(ClaimTypes.Name, Expected, ClaimValueTypes.String, context.Options.ClaimsIssuer),
+                            new Claim("ValidationCount", validationCount.ToString(CultureInfo.InvariantCulture), ClaimValueTypes.String, context.Options.ClaimsIssuer)
+                        };
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity(claims, context.Scheme.Name));
+                        context.Success();
+                        return Task.CompletedTask;
+                    }
+                }
+            },
+            Certificates.SelfSignedValidWithNoEku, null, null, false, "", cache, clock);
+
+        using var server = host.GetTestServer();
+        var response = await server.CreateClient().GetAsync("https://example.com/");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        XElement responseAsXml = null;
+        if (response.Content != null &&
+            response.Content.Headers.ContentType != null &&
+            response.Content.Headers.ContentType.MediaType == "text/xml")
+        {
+            var responseContent = await response.Content.ReadAsStringAsync();
+            responseAsXml = XElement.Parse(responseContent);
+        }
+
+        Assert.NotNull(responseAsXml);
+        var name = responseAsXml.Elements("claim").Where(claim => claim.Attribute("Type").Value == ClaimTypes.Name);
+        Assert.Single(name);
+        Assert.Equal(Expected, name.First().Value);
+        var count = responseAsXml.Elements("claim").Where(claim => claim.Attribute("Type").Value == "ValidationCount");
+        Assert.Single(count);
+        Assert.Equal("1", count.First().Value);
+
+        // Second request should not trigger validation if caching
+        response = await server.CreateClient().GetAsync("https://example.com/");
+        responseAsXml = null;
+        if (response.Content != null &&
+            response.Content.Headers.ContentType != null &&
+            response.Content.Headers.ContentType.MediaType == "text/xml")
+        {
+            var responseContent = await response.Content.ReadAsStringAsync();
+            responseAsXml = XElement.Parse(responseContent);
+        }
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        name = responseAsXml.Elements("claim").Where(claim => claim.Attribute("Type").Value == ClaimTypes.Name);
+        Assert.Single(name);
+        Assert.Equal(Expected, name.First().Value);
+        count = responseAsXml.Elements("claim").Where(claim => claim.Attribute("Type").Value == "ValidationCount");
+        Assert.Single(count);
+        var expected = cache ? "1" : "2";
+        Assert.Equal(expected, count.First().Value);
+
+        clock.Add(TimeSpan.FromMinutes(31));
+
+        // Third request should always trigger validation even if caching
+        response = await server.CreateClient().GetAsync("https://example.com/");
+        responseAsXml = null;
+        if (response.Content != null &&
+            response.Content.Headers.ContentType != null &&
+            response.Content.Headers.ContentType.MediaType == "text/xml")
+        {
+            var responseContent = await response.Content.ReadAsStringAsync();
+            responseAsXml = XElement.Parse(responseContent);
+        }
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        name = responseAsXml.Elements("claim").Where(claim => claim.Attribute("Type").Value == ClaimTypes.Name);
+        Assert.Single(name);
+        Assert.Equal(Expected, name.First().Value);
+        count = responseAsXml.Elements("claim").Where(claim => claim.Attribute("Type").Value == "ValidationCount");
+        Assert.Single(count);
+
+        var laterExpected = cache ? "2" : "3";
+        Assert.Equal(laterExpected, count.First().Value);
+    }
+
     private static async Task<IHost> CreateHost(
         CertificateAuthenticationOptions configureOptions,
         X509Certificate2 clientCertificate = null,
@@ -689,7 +787,8 @@ public class ClientCertificateAuthenticationTests
         Uri baseAddress = null,
         bool wireUpHeaderMiddleware = false,
         string headerName = "",
-        bool useCache = false)
+        bool useCache = false,
+        ISystemClock clock = null)
     {
         var host = new HostBuilder()
             .ConfigureWebHost(builder =>
@@ -762,7 +861,14 @@ public class ClientCertificateAuthenticationTests
                     }
                     if (useCache)
                     {
-                        authBuilder.AddCertificateCache();
+                        if (clock != null)
+                        {
+                            services.AddSingleton<ICertificateValidationCache>(new CertificateValidationCache(Options.Create(new CertificateValidationCacheOptions()), clock));
+                        }
+                        else
+                        {
+                            authBuilder.AddCertificateCache();
+                        }
                     }
 
                     if (wireUpHeaderMiddleware && !string.IsNullOrEmpty(headerName))
@@ -772,6 +878,12 @@ public class ClientCertificateAuthenticationTests
                             options.CertificateHeader = headerName;
                         });
                     }
+
+                    if (clock != null)
+                    {
+                        services.AddSingleton(clock);
+                    }
+
                 }))
             .Build();
 

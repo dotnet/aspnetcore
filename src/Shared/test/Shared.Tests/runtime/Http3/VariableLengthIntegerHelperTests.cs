@@ -276,7 +276,7 @@ namespace Common.Tests.Tests.System.Net.aspnetcore.Http3
         [Theory]
         [InlineData(64, new byte[] { 64, 64 })]
         [InlineData(66, new byte[] { 64, 66 })]
-        [InlineData(16383, new byte[] { 127, 255})]
+        [InlineData(16383, new byte[] { 127, 255 })]
         public void TryWrite_BufferNotEmpty_TwoByteLimit(long longToEncode,
             byte[] expected)
         {
@@ -302,7 +302,7 @@ namespace Common.Tests.Tests.System.Net.aspnetcore.Http3
         }
 
         [Theory]
-        [InlineData(16384, new byte[] {128, 0, 64, 0})]
+        [InlineData(16384, new byte[] {128, 0, 64, 0 })]
         [InlineData(16386, new byte[] { 128, 0, 64, 2 })]
         [InlineData(1073741823, new byte[] { 191, 255, 255, 255 })]
         public void TryWrite_BufferNotEmpty_FourByteLimit(long longToEncode,

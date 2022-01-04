@@ -4,6 +4,7 @@
 #nullable enable
 using System.Buffers;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.HPack;
 using System.Numerics;
 
@@ -25,14 +26,11 @@ namespace System.Net.Http.QPack
             HeaderFieldIndex,
             HeaderNameIndex,
             HeaderNameLength,
-            HeaderNameLengthContinue,
             HeaderName,
             HeaderValueLength,
             HeaderValueLengthContinue,
             HeaderValue,
-            DynamicTableSizeUpdate,
             PostBaseIndex,
-            LiteralHeaderFieldWithNameReference,
             HeaderNameIndexPostBase
         }
 
@@ -105,64 +103,53 @@ namespace System.Net.Http.QPack
         private const int StringLengthPrefix = 7;
         private const byte HuffmanMask = 0x80;
 
-        private const int DefaultStringBufferSize = 64;
+        private const int HeaderStaticIndexUnset = -1; // Static index starts at 0
 
         private readonly int _maxHeadersLength;
         private State _state = State.RequiredInsertCount;
 
-        private byte[] _stringOctets;
-        private byte[] _headerNameOctets;
-        private byte[] _headerValueOctets;
-
         // s is used for whatever s is in each field. This has multiple definition
         private bool _huffman;
-        private int? _index;
 
         private byte[]? _headerName;
+        private int _headerStaticIndex;
         private int _headerNameLength;
         private int _headerValueLength;
         private int _stringLength;
         private int _stringIndex;
+
         private IntegerDecoder _integerDecoder;
+        private byte[]? _stringOctets;
+        private byte[]? _headerNameOctets;
+        private byte[]? _headerValueOctets;
+        private (int start, int length)? _headerNameRange;
+        private (int start, int length)? _headerValueRange;
 
         private static ArrayPool<byte> Pool => ArrayPool<byte>.Shared;
-
-        private static void ReturnAndGetNewPooledArray(ref byte[] buffer, int newSize)
-        {
-            byte[] old = buffer;
-            buffer = null!;
-
-            Pool.Return(old, clearArray: true);
-            buffer = Pool.Rent(newSize);
-        }
 
         public QPackDecoder(int maxHeadersLength)
         {
             _maxHeadersLength = maxHeadersLength;
-
-            // TODO: make allocation lazy? with static entries it's possible no buffers will be needed.
-            _stringOctets = Pool.Rent(DefaultStringBufferSize);
-            _headerNameOctets = Pool.Rent(DefaultStringBufferSize);
-            _headerValueOctets = Pool.Rent(DefaultStringBufferSize);
+            _headerStaticIndex = HeaderStaticIndexUnset;
         }
 
         public void Dispose()
         {
             if (_stringOctets != null)
             {
-                Pool.Return(_stringOctets, true);
+                Pool.Return(_stringOctets);
                 _stringOctets = null!;
             }
 
             if (_headerNameOctets != null)
             {
-                Pool.Return(_headerNameOctets, true);
+                Pool.Return(_headerNameOctets);
                 _headerNameOctets = null!;
             }
 
             if (_headerValueOctets != null)
             {
-                Pool.Return(_headerValueOctets, true);
+                Pool.Return(_headerValueOctets);
                 _headerValueOctets = null!;
             }
         }
@@ -176,26 +163,417 @@ namespace System.Net.Http.QPack
             _state = State.RequiredInsertCount;
         }
 
-        public void Decode(in ReadOnlySequence<byte> headerBlock, bool endHeaders, IHttpHeadersHandler handler)
+        public void Decode(in ReadOnlySequence<byte> data, bool endHeaders, IHttpStreamHeadersHandler handler)
         {
-            foreach (ReadOnlyMemory<byte> segment in headerBlock)
+            foreach (ReadOnlyMemory<byte> segment in data)
             {
-                DecodeCore(segment.Span, handler);
+                DecodeInternal(segment.Span, handler);
             }
             CheckIncompleteHeaderBlock(endHeaders);
         }
 
-        public void Decode(ReadOnlySpan<byte> headerBlock, bool endHeaders, IHttpHeadersHandler handler)
+        public void Decode(ReadOnlySpan<byte> data, bool endHeaders, IHttpStreamHeadersHandler handler)
         {
-            DecodeCore(headerBlock, handler);
+            DecodeInternal(data, handler);
             CheckIncompleteHeaderBlock(endHeaders);
         }
 
-        private void DecodeCore(ReadOnlySpan<byte> headerBlock, IHttpHeadersHandler handler)
+        private void DecodeInternal(ReadOnlySpan<byte> data, IHttpStreamHeadersHandler handler)
         {
-            foreach (byte b in headerBlock)
+            int currentIndex = 0;
+
+            do
             {
-                OnByte(b, handler);
+                switch (_state)
+                {
+                    case State.RequiredInsertCount:
+                        ParseRequiredInsertCount(data, ref currentIndex, handler);
+                        break;
+                    case State.RequiredInsertCountContinue:
+                        ParseRequiredInsertCountContinue(data, ref currentIndex, handler);
+                        break;
+                    case State.Base:
+                        ParseBase(data, ref currentIndex, handler);
+                        break;
+                    case State.BaseContinue:
+                        ParseBaseContinue(data, ref currentIndex, handler);
+                        break;
+                    case State.CompressedHeaders:
+                        ParseCompressedHeaders(data, ref currentIndex, handler);
+                        break;
+                    case State.HeaderFieldIndex:
+                        ParseHeaderFieldIndex(data, ref currentIndex, handler);
+                        break;
+                    case State.HeaderNameIndex:
+                        ParseHeaderNameIndex(data, ref currentIndex, handler);
+                        break;
+                    case State.HeaderNameLength:
+                        ParseHeaderNameLength(data, ref currentIndex, handler);
+                        break;
+                    case State.HeaderName:
+                        ParseHeaderName(data, ref currentIndex, handler);
+                        break;
+                    case State.HeaderValueLength:
+                        ParseHeaderValueLength(data, ref currentIndex, handler);
+                        break;
+                    case State.HeaderValueLengthContinue:
+                        ParseHeaderValueLengthContinue(data, ref currentIndex, handler);
+                        break;
+                    case State.HeaderValue:
+                        ParseHeaderValue(data, ref currentIndex, handler);
+                        break;
+                    case State.PostBaseIndex:
+                        ParsePostBaseIndex(data, ref currentIndex, handler);
+                        break;
+                    case State.HeaderNameIndexPostBase:
+                        ParseHeaderNameIndexPostBase(data, ref currentIndex, handler);
+                        break;
+                    default:
+                        // Can't happen
+                        Debug.Fail("QPACK decoder reach an invalid state");
+                        throw new NotImplementedException(_state.ToString());
+                }
+            }
+            // Parse methods each check the length. This check is to see whether there is still data available
+            // and to continue parsing.
+            while (currentIndex < data.Length);
+
+            // If a header range was set, but the value was not in the data, then copy the range
+            // to the name buffer. Must copy because because the data will be replaced and the range
+            // will no longer be valid.
+            if (_headerNameRange != null)
+            {
+                EnsureStringCapacity(ref _headerNameOctets, _stringLength, existingLength: 0);
+                _headerName = _headerNameOctets;
+
+                ReadOnlySpan<byte> headerBytes = data.Slice(_headerNameRange.GetValueOrDefault().start, _headerNameRange.GetValueOrDefault().length);
+                headerBytes.CopyTo(_headerName);
+                _headerNameLength = headerBytes.Length;
+                _headerNameRange = null;
+            }
+        }
+
+        private void ParseHeaderNameIndexPostBase(ReadOnlySpan<byte> data, ref int currentIndex, IHttpStreamHeadersHandler handler)
+        {
+            if (TryDecodeInteger(data, ref currentIndex, out int intResult))
+            {
+                OnIndexedHeaderNamePostBase(intResult);
+            }
+        }
+
+        private void ParsePostBaseIndex(ReadOnlySpan<byte> data, ref int currentIndex, IHttpStreamHeadersHandler handler)
+        {
+            if (TryDecodeInteger(data, ref currentIndex, out int intResult))
+            {
+                OnPostBaseIndex(intResult, handler);
+            }
+        }
+
+        private void ParseHeaderNameLength(ReadOnlySpan<byte> data, ref int currentIndex, IHttpStreamHeadersHandler handler)
+        {
+            if (TryDecodeInteger(data, ref currentIndex, out int intResult))
+            {
+                if (intResult == 0)
+                {
+                    throw new QPackDecodingException(SR.Format(SR.net_http_invalid_header_name, ""));
+                }
+                OnStringLength(intResult, nextState: State.HeaderName);
+                ParseHeaderName(data, ref currentIndex, handler);
+            }
+        }
+
+        private void ParseHeaderName(ReadOnlySpan<byte> data, ref int currentIndex, IHttpStreamHeadersHandler handler)
+        {
+            // Read remaining chars, up to the length of the current data
+            int count = Math.Min(_stringLength - _stringIndex, data.Length - currentIndex);
+
+            // Check whether the whole string is available in the data and no decompression required.
+            // If string is good then mark its range.
+            // NOTE: it may need to be copied to buffer later the if value is not current data.
+            if (count == _stringLength && !_huffman)
+            {
+                // Fast path. Store the range rather than copying.
+                _headerNameRange = (start: currentIndex, count);
+                currentIndex += count;
+
+                _state = State.HeaderValueLength;
+                ParseHeaderValueLength(data, ref currentIndex, handler);
+            }
+            else if (count == 0)
+            {
+                // no-op
+            }
+            else
+            {
+                // Copy string to temporary buffer.
+                EnsureStringCapacity(ref _stringOctets, _stringIndex + count, existingLength: _stringIndex);
+                data.Slice(currentIndex, count).CopyTo(_stringOctets.AsSpan(_stringIndex));
+
+                _stringIndex += count;
+                currentIndex += count;
+
+                if (_stringIndex == _stringLength)
+                {
+                    OnString(nextState: State.HeaderValueLength);
+                    ParseHeaderValueLength(data, ref currentIndex, handler);
+                }
+            }
+        }
+
+        private void ParseHeaderFieldIndex(ReadOnlySpan<byte> data, ref int currentIndex, IHttpStreamHeadersHandler handler)
+        {
+            if (TryDecodeInteger(data, ref currentIndex, out int intResult))
+            {
+                OnIndexedHeaderField(intResult, handler);
+            }
+        }
+
+        private void ParseHeaderNameIndex(ReadOnlySpan<byte> data, ref int currentIndex, IHttpStreamHeadersHandler handler)
+        {
+            if (TryDecodeInteger(data, ref currentIndex, out int intResult))
+            {
+                OnIndexedHeaderName(intResult);
+                ParseHeaderValueLength(data, ref currentIndex, handler);
+            }
+        }
+
+        private void ParseHeaderValueLength(ReadOnlySpan<byte> data, ref int currentIndex, IHttpStreamHeadersHandler handler)
+        {
+            if (currentIndex < data.Length)
+            {
+                byte b = data[currentIndex++];
+
+                _huffman = IsHuffmanEncoded(b);
+
+                if (_integerDecoder.BeginTryDecode((byte)(b & ~HuffmanMask), StringLengthPrefix, out int intResult))
+                {
+                    OnStringLength(intResult, nextState: State.HeaderValue);
+
+                    if (intResult == 0)
+                    {
+                        _state = State.CompressedHeaders;
+                        ProcessHeaderValue(data, handler);
+                    }
+                    else
+                    {
+                        ParseHeaderValue(data, ref currentIndex, handler);
+                    }
+                }
+                else
+                {
+                    _state = State.HeaderValueLengthContinue;
+                    ParseHeaderValueLengthContinue(data, ref currentIndex, handler);
+                }
+            }
+        }
+
+        private void ParseHeaderValue(ReadOnlySpan<byte> data, ref int currentIndex, IHttpStreamHeadersHandler handler)
+        {
+            // Read remaining chars, up to the length of the current data
+            int count = Math.Min(_stringLength - _stringIndex, data.Length - currentIndex);
+
+            // Check whether the whole string is available in the data and no decompressed required.
+            // If string is good then mark its range.
+            if (count == _stringLength && !_huffman)
+            {
+                // Fast path. Store the range rather than copying.
+                _headerValueRange = (start: currentIndex, count);
+                currentIndex += count;
+
+                _state = State.CompressedHeaders;
+                ProcessHeaderValue(data, handler);
+            }
+            else if (count == 0)
+            {
+                // no-op
+            }
+            else
+            {
+                // Copy string to temporary buffer.
+                EnsureStringCapacity(ref _stringOctets, _stringIndex + count, existingLength: _stringIndex);
+                data.Slice(currentIndex, count).CopyTo(_stringOctets.AsSpan(_stringIndex));
+
+                _stringIndex += count;
+                currentIndex += count;
+
+                if (_stringIndex == _stringLength)
+                {
+                    OnString(nextState: State.CompressedHeaders);
+                    ProcessHeaderValue(data, handler);
+                }
+            }
+        }
+
+        private void ParseHeaderValueLengthContinue(ReadOnlySpan<byte> data, ref int currentIndex, IHttpStreamHeadersHandler handler)
+        {
+            if (TryDecodeInteger(data, ref currentIndex, out int intResult))
+            {
+                if (intResult == 0)
+                {
+                    _state = State.CompressedHeaders;
+                    ProcessHeaderValue(data, handler);
+                }
+                else
+                {
+                    OnStringLength(intResult, nextState: State.HeaderValue);
+                    ParseHeaderValue(data, ref currentIndex, handler);
+                }
+            }
+        }
+
+        private void ParseCompressedHeaders(ReadOnlySpan<byte> data, ref int currentIndex, IHttpStreamHeadersHandler handler)
+        {
+            if (currentIndex < data.Length)
+            {
+                Debug.Assert(_state == State.CompressedHeaders, "Should be ready to parse a new header.");
+
+                byte b = data[currentIndex++];
+                int prefixInt;
+                int intResult;
+
+                switch (BitOperations.LeadingZeroCount(b) - 24) // byte 'b' is extended to uint, so will have 24 extra 0s.
+                {
+                    case 0: // Indexed Header Field
+                        prefixInt = IndexedHeaderFieldPrefixMask & b;
+
+                        bool useStaticTable = (b & IndexedHeaderStaticMask) == IndexedHeaderStaticRepresentation;
+
+                        if (!useStaticTable)
+                        {
+                            ThrowDynamicTableNotSupported();
+                        }
+
+                        if (_integerDecoder.BeginTryDecode((byte)prefixInt, IndexedHeaderFieldPrefix, out intResult))
+                        {
+                            OnIndexedHeaderField(intResult, handler);
+                        }
+                        else
+                        {
+                            _state = State.HeaderFieldIndex;
+                            ParseHeaderFieldIndex(data, ref currentIndex, handler);
+                        }
+                        break;
+                    case 1: // Literal Header Field With Name Reference
+                        useStaticTable = (LiteralHeaderFieldStaticMask & b) == LiteralHeaderFieldStaticMask;
+
+                        if (!useStaticTable)
+                        {
+                            ThrowDynamicTableNotSupported();
+                        }
+
+                        prefixInt = b & LiteralHeaderFieldPrefixMask;
+                        if (_integerDecoder.BeginTryDecode((byte)prefixInt, LiteralHeaderFieldPrefix, out intResult))
+                        {
+                            OnIndexedHeaderName(intResult);
+                            ParseHeaderValueLength(data, ref currentIndex, handler);
+                        }
+                        else
+                        {
+                            _state = State.HeaderNameIndex;
+                            ParseHeaderNameIndex(data, ref currentIndex, handler);
+                        }
+                        break;
+                    case 2: // Literal Header Field Without Name Reference
+                        _huffman = (b & LiteralHeaderFieldWithoutNameReferenceHuffmanMask) != 0;
+                        prefixInt = b & LiteralHeaderFieldWithoutNameReferencePrefixMask;
+
+                        if (_integerDecoder.BeginTryDecode((byte)prefixInt, LiteralHeaderFieldWithoutNameReferencePrefix, out intResult))
+                        {
+                            if (intResult == 0)
+                            {
+                                throw new QPackDecodingException(SR.Format(SR.net_http_invalid_header_name, ""));
+                            }
+                            OnStringLength(intResult, State.HeaderName);
+                            ParseHeaderName(data, ref currentIndex, handler);
+                        }
+                        else
+                        {
+                            _state = State.HeaderNameLength;
+                            ParseHeaderNameLength(data, ref currentIndex, handler);
+                        }
+                        break;
+                    case 3: // Indexed Header Field With Post-Base Index
+                        prefixInt = ~PostBaseIndexMask & b;
+                        if (_integerDecoder.BeginTryDecode((byte)prefixInt, PostBaseIndexPrefix, out intResult))
+                        {
+                            OnPostBaseIndex(intResult, handler);
+                        }
+                        else
+                        {
+                            _state = State.PostBaseIndex;
+                            ParsePostBaseIndex(data, ref currentIndex, handler);
+                        }
+                        break;
+                    default: // Literal Header Field With Post-Base Name Reference (at least 4 zeroes, maybe more)
+                        prefixInt = b & LiteralHeaderFieldPostBasePrefixMask;
+                        if (_integerDecoder.BeginTryDecode((byte)prefixInt, LiteralHeaderFieldPostBasePrefix, out intResult))
+                        {
+                            OnIndexedHeaderNamePostBase(intResult);
+                        }
+                        else
+                        {
+                            _state = State.HeaderNameIndexPostBase;
+                            ParseHeaderNameIndexPostBase(data, ref currentIndex, handler);
+                        }
+                        break;
+                }
+            }
+        }
+
+        private void ParseRequiredInsertCountContinue(ReadOnlySpan<byte> data, ref int currentIndex, IHttpStreamHeadersHandler handler)
+        {
+            if (TryDecodeInteger(data, ref currentIndex, out int intResult))
+            {
+                OnRequiredInsertCount(intResult);
+                ParseBase(data, ref currentIndex, handler);
+            }
+        }
+
+        private void ParseBase(ReadOnlySpan<byte> data, ref int currentIndex, IHttpStreamHeadersHandler handler)
+        {
+            if (currentIndex < data.Length)
+            {
+                byte b = data[currentIndex++];
+                int prefixInt = ~BaseMask & b;
+
+                if (_integerDecoder.BeginTryDecode((byte)prefixInt, BasePrefix, out int intResult))
+                {
+                    OnBase(intResult);
+                    ParseCompressedHeaders(data, ref currentIndex, handler);
+                }
+                else
+                {
+                    _state = State.BaseContinue;
+                    ParseBaseContinue(data, ref currentIndex, handler);
+                }
+            }
+        }
+
+        private void ParseBaseContinue(ReadOnlySpan<byte> data, ref int currentIndex, IHttpStreamHeadersHandler handler)
+        {
+            if (TryDecodeInteger(data, ref currentIndex, out int intResult))
+            {
+                OnBase(intResult);
+                ParseCompressedHeaders(data, ref currentIndex, handler);
+            }
+        }
+
+        private void ParseRequiredInsertCount(ReadOnlySpan<byte> data, ref int currentIndex, IHttpStreamHeadersHandler handler)
+        {
+            if (currentIndex < data.Length)
+            {
+                byte b = data[currentIndex++];
+
+                if (_integerDecoder.BeginTryDecode(b, RequiredInsertCountPrefix, out int intResult))
+                {
+                    OnRequiredInsertCount(intResult);
+                    ParseBase(data, ref currentIndex, handler);
+                }
+                else
+                {
+                    _state = State.RequiredInsertCountContinue;
+                    ParseRequiredInsertCountContinue(data, ref currentIndex, handler);
+                }
             }
         }
 
@@ -210,219 +588,37 @@ namespace System.Net.Http.QPack
             }
         }
 
-        private void OnByte(byte b, IHttpHeadersHandler handler)
+        private void ProcessHeaderValue(ReadOnlySpan<byte> data, IHttpStreamHeadersHandler handler)
         {
-            int intResult;
-            int prefixInt;
-            switch (_state)
+            ReadOnlySpan<byte> headerValueSpan = _headerValueRange == null
+                ? _headerValueOctets.AsSpan(0, _headerValueLength)
+                : data.Slice(_headerValueRange.GetValueOrDefault().start, _headerValueRange.GetValueOrDefault().length);
+
+            if (_headerStaticIndex != HeaderStaticIndexUnset)
             {
-                case State.RequiredInsertCount:
-                    if (_integerDecoder.BeginTryDecode(b, RequiredInsertCountPrefix, out intResult))
-                    {
-                        OnRequiredInsertCount(intResult);
-                    }
-                    else
-                    {
-                        _state = State.RequiredInsertCountContinue;
-                    }
-                    break;
-                case State.RequiredInsertCountContinue:
-                    if (_integerDecoder.TryDecode(b, out intResult))
-                    {
-                        OnRequiredInsertCount(intResult);
-                    }
-                    break;
-                case State.Base:
-                    prefixInt = ~BaseMask & b;
-
-                    if (_integerDecoder.BeginTryDecode(b, BasePrefix, out intResult))
-                    {
-                        OnBase(intResult);
-                    }
-                    else
-                    {
-                        _state = State.BaseContinue;
-                    }
-                    break;
-                case State.BaseContinue:
-                    if (_integerDecoder.TryDecode(b, out intResult))
-                    {
-                        OnBase(intResult);
-                    }
-                    break;
-                case State.CompressedHeaders:
-                    switch (BitOperations.LeadingZeroCount(b) - 24) // byte 'b' is extended to uint, so will have 24 extra 0s.
-                    {
-                        case 0: // Indexed Header Field
-                            prefixInt = IndexedHeaderFieldPrefixMask & b;
-
-                            bool useStaticTable = (b & IndexedHeaderStaticMask) == IndexedHeaderStaticRepresentation;
-
-                            if (!useStaticTable)
-                            {
-                                ThrowDynamicTableNotSupported();
-                            }
-
-                            if (_integerDecoder.BeginTryDecode((byte)prefixInt, IndexedHeaderFieldPrefix, out intResult))
-                            {
-                                OnIndexedHeaderField(intResult, handler);
-                            }
-                            else
-                            {
-                                _state = State.HeaderFieldIndex;
-                            }
-                            break;
-                        case 1: // Literal Header Field With Name Reference
-                            useStaticTable = (LiteralHeaderFieldStaticMask & b) == LiteralHeaderFieldStaticMask;
-
-                            if (!useStaticTable)
-                            {
-                                ThrowDynamicTableNotSupported();
-                            }
-
-                            prefixInt = b & LiteralHeaderFieldPrefixMask;
-                            if (_integerDecoder.BeginTryDecode((byte)prefixInt, LiteralHeaderFieldPrefix, out intResult))
-                            {
-                                OnIndexedHeaderName(intResult);
-                            }
-                            else
-                            {
-                                _state = State.HeaderNameIndex;
-                            }
-                            break;
-                        case 2: // Literal Header Field Without Name Reference
-                            _huffman = (b & LiteralHeaderFieldWithoutNameReferenceHuffmanMask) != 0;
-                            prefixInt = b & LiteralHeaderFieldWithoutNameReferencePrefixMask;
-
-                            if (_integerDecoder.BeginTryDecode((byte)prefixInt, LiteralHeaderFieldWithoutNameReferencePrefix, out intResult))
-                            {
-                                if (intResult == 0)
-                                {
-                                    throw new QPackDecodingException(SR.Format(SR.net_http_invalid_header_name, ""));
-                                }
-                                OnStringLength(intResult, State.HeaderName);
-                            }
-                            else
-                            {
-                                _state = State.HeaderNameLength;
-                            }
-                            break;
-                        case 3: // Indexed Header Field With Post-Base Index
-                            prefixInt = ~PostBaseIndexMask & b;
-                            if (_integerDecoder.BeginTryDecode((byte)prefixInt, PostBaseIndexPrefix, out intResult))
-                            {
-                                OnPostBaseIndex(intResult, handler);
-                            }
-                            else
-                            {
-                                _state = State.PostBaseIndex;
-                            }
-                            break;
-                        default: // Literal Header Field With Post-Base Name Reference (at least 4 zeroes, maybe more)
-                            prefixInt = b & LiteralHeaderFieldPostBasePrefixMask;
-                            if (_integerDecoder.BeginTryDecode((byte)prefixInt, LiteralHeaderFieldPostBasePrefix, out intResult))
-                            {
-                                OnIndexedHeaderNamePostBase(intResult);
-                            }
-                            else
-                            {
-                                _state = State.HeaderNameIndexPostBase;
-                            }
-                            break;
-                    }
-                    break;
-                case State.HeaderNameLength:
-                    if (_integerDecoder.TryDecode(b, out intResult))
-                    {
-                        if (intResult == 0)
-                        {
-                            throw new QPackDecodingException(SR.Format(SR.net_http_invalid_header_name, ""));
-                        }
-                        OnStringLength(intResult, nextState: State.HeaderName);
-                    }
-                    break;
-                case State.HeaderName:
-                    _stringOctets[_stringIndex++] = b;
-
-                    if (_stringIndex == _stringLength)
-                    {
-                        OnString(nextState: State.HeaderValueLength);
-                    }
-
-                    break;
-                case State.HeaderNameIndex:
-                    if (_integerDecoder.TryDecode(b, out intResult))
-                    {
-                        OnIndexedHeaderName(intResult);
-                    }
-                    break;
-                case State.HeaderNameIndexPostBase:
-                    if (_integerDecoder.TryDecode(b, out intResult))
-                    {
-                        OnIndexedHeaderNamePostBase(intResult);
-                    }
-                    break;
-                case State.HeaderValueLength:
-                    _huffman = (b & HuffmanMask) != 0;
-
-                    // TODO confirm this.
-                    if (_integerDecoder.BeginTryDecode((byte)(b & ~HuffmanMask), StringLengthPrefix, out intResult))
-                    {
-                        OnStringLength(intResult, nextState: State.HeaderValue);
-                        if (intResult == 0)
-                        {
-                            ProcessHeaderValue(handler);
-                        }
-                    }
-                    else
-                    {
-                        _state = State.HeaderValueLengthContinue;
-                    }
-                    break;
-                case State.HeaderValueLengthContinue:
-                    if (_integerDecoder.TryDecode(b, out intResult))
-                    {
-                        OnStringLength(intResult, nextState: State.HeaderValue);
-                        if (intResult == 0)
-                        {
-                            ProcessHeaderValue(handler);
-                        }
-                    }
-                    break;
-                case State.HeaderValue:
-                    _stringOctets[_stringIndex++] = b;
-                    if (_stringIndex == _stringLength)
-                    {
-                        ProcessHeaderValue(handler);
-                    }
-                    break;
-                case State.HeaderFieldIndex:
-                    if (_integerDecoder.TryDecode(b, out intResult))
-                    {
-                        OnIndexedHeaderField(intResult, handler);
-                    }
-                    break;
-                case State.PostBaseIndex:
-                    if (_integerDecoder.TryDecode(b, out intResult))
-                    {
-                        OnPostBaseIndex(intResult, handler);
-                    }
-                    break;
-                case State.LiteralHeaderFieldWithNameReference:
-                    break;
+                handler.OnStaticIndexedHeader(_headerStaticIndex, headerValueSpan);
             }
+            else
+            {
+                ReadOnlySpan<byte> headerNameSpan = _headerNameRange == null
+                    ? _headerName.AsSpan(0, _headerNameLength)
+                    : data.Slice(_headerNameRange.GetValueOrDefault().start, _headerNameRange.GetValueOrDefault().length);
+
+                handler.OnHeader(headerNameSpan, headerValueSpan);
+            }
+
+            _headerStaticIndex = HeaderStaticIndexUnset;
+            _headerNameRange = null;
+            _headerNameLength = 0;
+            _headerValueRange = null;
+            _headerValueLength = 0;
         }
 
         private void OnStringLength(int length, State nextState)
         {
-            if (length > _stringOctets.Length)
+            if (length > _maxHeadersLength)
             {
-                if (length > _maxHeadersLength)
-                {
-                    throw new QPackDecodingException(SR.Format(SR.net_http_headers_exceeded_length, _maxHeadersLength));
-                }
-
-                ReturnAndGetNewPooledArray(ref _stringOctets, length);
+                throw new QPackDecodingException(SR.Format(SR.net_http_headers_exceeded_length, _maxHeadersLength));
             }
 
             _stringLength = length;
@@ -430,48 +626,24 @@ namespace System.Net.Http.QPack
             _state = nextState;
         }
 
-        private void ProcessHeaderValue(IHttpHeadersHandler handler)
-        {
-            OnString(nextState: State.CompressedHeaders);
-
-            Span<byte> headerNameSpan;
-            Span<byte> headerValueSpan = _headerValueOctets.AsSpan(0, _headerValueLength);
-
-            if (_index is int index)
-            {
-                Debug.Assert(index >= 0 && index <= H3StaticTable.Count, $"The index should be a valid static index here. {nameof(QPackDecoder)} should have previously thrown if it read a dynamic index.");
-                handler.OnStaticIndexedHeader(index, headerValueSpan);
-                _index = null;
-
-                return;
-            }
-            else
-            {
-                headerNameSpan = _headerNameOctets.AsSpan(0, _headerNameLength);
-            }
-
-            handler.OnHeader(headerNameSpan, headerValueSpan);
-        }
-
         private void OnString(State nextState)
         {
-            int Decode(ref byte[] dst)
+            int Decode(ref byte[]? dst)
             {
+                EnsureStringCapacity(ref dst, _stringLength, existingLength: 0);
+
                 if (_huffman)
                 {
                     return Huffman.Decode(new ReadOnlySpan<byte>(_stringOctets, 0, _stringLength), ref dst);
                 }
                 else
                 {
-                    if (dst.Length < _stringLength)
-                    {
-                        ReturnAndGetNewPooledArray(ref dst, _stringLength);
-                    }
-
                     Buffer.BlockCopy(_stringOctets, 0, dst, 0, _stringLength);
                     return _stringLength;
                 }
             }
+
+            Debug.Assert(_stringOctets != null, "String buffer should have a value.");
 
             try
             {
@@ -493,10 +665,48 @@ namespace System.Net.Http.QPack
             _state = nextState;
         }
 
+        private static void EnsureStringCapacity([NotNull] ref byte[]? buffer, int requiredLength, int existingLength)
+        {
+            if (buffer == null)
+            {
+                buffer = Pool.Rent(requiredLength);
+            }
+            else if (buffer.Length < requiredLength)
+            {
+                byte[] newBuffer = Pool.Rent(requiredLength);
+                if (existingLength > 0)
+                {
+                    buffer.AsMemory(0, existingLength).CopyTo(newBuffer);
+                }
+
+                Pool.Return(buffer);
+                buffer = newBuffer;
+            }
+        }
+
+        private bool TryDecodeInteger(ReadOnlySpan<byte> data, ref int currentIndex, out int result)
+        {
+            for (; currentIndex < data.Length; currentIndex++)
+            {
+                if (_integerDecoder.TryDecode(data[currentIndex], out result))
+                {
+                    currentIndex++;
+                    return true;
+                }
+            }
+
+            result = default;
+            return false;
+        }
+
+        private static bool IsHuffmanEncoded(byte b)
+        {
+            return (b & HuffmanMask) != 0;
+        }
 
         private void OnIndexedHeaderName(int index)
         {
-            _index = index;
+            _headerStaticIndex = index;
             _state = State.HeaderValueLength;
         }
 
@@ -508,7 +718,7 @@ namespace System.Net.Http.QPack
             // _state = State.HeaderValueLength;
         }
 
-        private void OnPostBaseIndex(int intResult, IHttpHeadersHandler handler)
+        private void OnPostBaseIndex(int intResult, IHttpStreamHeadersHandler handler)
         {
             ThrowDynamicTableNotSupported();
             // TODO
@@ -533,7 +743,7 @@ namespace System.Net.Http.QPack
             _state = State.Base;
         }
 
-        private void OnIndexedHeaderField(int index, IHttpHeadersHandler handler)
+        private void OnIndexedHeaderField(int index, IHttpStreamHeadersHandler handler)
         {
             handler.OnStaticIndexedHeader(index);
             _state = State.CompressedHeaders;

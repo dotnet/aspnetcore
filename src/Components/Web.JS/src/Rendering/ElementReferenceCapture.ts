@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 import { DotNet } from '@microsoft/dotnet-js-interop';
 
 export function applyCaptureIdToElement(element: Element, referenceCaptureId: string) {

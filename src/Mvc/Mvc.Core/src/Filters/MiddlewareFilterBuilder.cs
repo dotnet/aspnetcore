@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Concurrent;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -76,16 +75,16 @@ internal class MiddlewareFilterBuilder
                 return;
             }
 
-                // Ideally we want the experience of a middleware pipeline to behave the same as if it was registered
-                // in Startup. In this scenario, an Exception thrown in a middleware later in the pipeline gets
-                // propagated back to earlier middleware. So, check if a later resource filter threw an Exception and
-                // propagate that back to the middleware pipeline.
-                resourceExecutedContext.ExceptionDispatchInfo?.Throw();
+            // Ideally we want the experience of a middleware pipeline to behave the same as if it was registered
+            // in Startup. In this scenario, an Exception thrown in a middleware later in the pipeline gets
+            // propagated back to earlier middleware. So, check if a later resource filter threw an Exception and
+            // propagate that back to the middleware pipeline.
+            resourceExecutedContext.ExceptionDispatchInfo?.Throw();
             if (resourceExecutedContext.Exception != null)
             {
-                    // This line is rarely reachable because ResourceInvoker captures thrown Exceptions using
-                    // ExceptionDispatchInfo. That said, filters could set only resourceExecutedContext.Exception.
-                    throw resourceExecutedContext.Exception;
+                // This line is rarely reachable because ResourceInvoker captures thrown Exceptions using
+                // ExceptionDispatchInfo. That said, filters could set only resourceExecutedContext.Exception.
+                throw resourceExecutedContext.Exception;
             }
         });
 

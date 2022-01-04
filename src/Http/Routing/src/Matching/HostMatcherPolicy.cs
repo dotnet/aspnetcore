@@ -1,11 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Routing.Matching;
@@ -61,8 +58,8 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
 
             foreach (var host in hosts)
             {
-                    // Don't run policy on endpoints that match everything
-                    var key = CreateEdgeKey(host);
+                // Don't run policy on endpoints that match everything
+                var key = CreateEdgeKey(host);
                 if (!key.MatchesAll)
                 {
                     return true;

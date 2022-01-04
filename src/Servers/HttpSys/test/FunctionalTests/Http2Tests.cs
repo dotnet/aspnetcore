@@ -33,8 +33,8 @@ public class Http2Tests : LoggedTest
             var feature = httpContext.Features.Get<IHttpUpgradeFeature>();
             Assert.False(feature.IsUpgradableRequest);
             Assert.False(httpContext.Request.CanHaveBody());
-                // Default 200
-                return Task.CompletedTask;
+            // Default 200
+            return Task.CompletedTask;
         });
 
         await new HostBuilder()
@@ -190,8 +190,8 @@ public class Http2Tests : LoggedTest
 
                 await h2Connection.SendDataAsync(1, Encoding.UTF8.GetBytes("Hello World"), endStream: true);
 
-                    // Http.Sys no longer sends a window update here on later versions.
-                    if (Environment.OSVersion.Version < new Version(10, 0, 19041, 0))
+                // Http.Sys no longer sends a window update here on later versions.
+                if (Environment.OSVersion.Version < new Version(10, 0, 19041, 0))
                 {
                     var windowUpdate = await h2Connection.ReceiveFrameAsync();
                     Assert.Equal(Http2FrameType.WINDOW_UPDATE, windowUpdate.Type);
@@ -230,8 +230,8 @@ public class Http2Tests : LoggedTest
             Assert.True(HttpMethods.Equals(method, httpContext.Request.Method));
             Assert.True(httpContext.Request.CanHaveBody());
             Assert.Null(httpContext.Request.ContentLength);
-                // The client didn't send this header, Http.Sys added it for back compat with HTTP/1.1.
-                Assert.Equal("chunked", httpContext.Request.Headers.TransferEncoding);
+            // The client didn't send this header, Http.Sys added it for back compat with HTTP/1.1.
+            Assert.Equal("chunked", httpContext.Request.Headers.TransferEncoding);
             return httpContext.Request.Body.CopyToAsync(httpContext.Response.Body);
         });
 
@@ -254,8 +254,8 @@ public class Http2Tests : LoggedTest
 
                 await h2Connection.SendDataAsync(1, Encoding.UTF8.GetBytes("Hello World"), endStream: true);
 
-                    // Http.Sys no longer sends a window update here on later versions.
-                    if (Environment.OSVersion.Version < new Version(10, 0, 19041, 0))
+                // Http.Sys no longer sends a window update here on later versions.
+                if (Environment.OSVersion.Version < new Version(10, 0, 19041, 0))
                 {
                     var windowUpdate = await h2Connection.ReceiveFrameAsync();
                     Assert.Equal(Http2FrameType.WINDOW_UPDATE, windowUpdate.Type);
@@ -334,19 +334,19 @@ public class Http2Tests : LoggedTest
 
                 await h2Connection.ReceiveHeadersAsync(1, endStream: true, decodedHeaders =>
                 {
-                        // HTTP/2 filters out the connection header
-                        Assert.False(decodedHeaders.ContainsKey(HeaderNames.Connection));
+                    // HTTP/2 filters out the connection header
+                    Assert.False(decodedHeaders.ContainsKey(HeaderNames.Connection));
                     Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
                 });
 
-                    // Send and receive a second request to ensure there is no GoAway frame on the wire yet.
+                // Send and receive a second request to ensure there is no GoAway frame on the wire yet.
 
-                    await h2Connection.StartStreamAsync(3, Http2Utilities.BrowserRequestHeaders, endStream: true);
+                await h2Connection.StartStreamAsync(3, Http2Utilities.BrowserRequestHeaders, endStream: true);
 
                 await h2Connection.ReceiveHeadersAsync(3, endStream: true, decodedHeaders =>
                 {
-                        // HTTP/2 filters out the connection header
-                        Assert.False(decodedHeaders.ContainsKey(HeaderNames.Connection));
+                    // HTTP/2 filters out the connection header
+                    Assert.False(decodedHeaders.ContainsKey(HeaderNames.Connection));
                     Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
                 });
 
@@ -381,17 +381,17 @@ public class Http2Tests : LoggedTest
 
                 await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
                 {
-                        // HTTP/2 filters out the connection header
-                        Assert.False(decodedHeaders.ContainsKey(HeaderNames.Connection));
+                    // HTTP/2 filters out the connection header
+                    Assert.False(decodedHeaders.ContainsKey(HeaderNames.Connection));
                     Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
                 });
 
                 var dataFrame = await h2Connection.ReceiveFrameAsync();
                 Http2Utilities.VerifyDataFrame(dataFrame, 1, endOfStream: true, length: 0);
 
-                    // Http.Sys doesn't send a final GoAway unless we ignore the first one and send 200 additional streams.
+                // Http.Sys doesn't send a final GoAway unless we ignore the first one and send 200 additional streams.
 
-                    h2Connection.Logger.LogInformation("Connection stopped.");
+                h2Connection.Logger.LogInformation("Connection stopped.");
             })
             .Build().RunAsync();
     }
@@ -420,17 +420,17 @@ public class Http2Tests : LoggedTest
 
                 await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
                 {
-                        // HTTP/2 filters out the connection header
-                        Assert.False(decodedHeaders.ContainsKey(HeaderNames.Connection));
+                    // HTTP/2 filters out the connection header
+                    Assert.False(decodedHeaders.ContainsKey(HeaderNames.Connection));
                     Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
                 });
 
                 var dataFrame = await h2Connection.ReceiveFrameAsync();
                 Http2Utilities.VerifyDataFrame(dataFrame, 1, endOfStream: true, length: 0);
 
-                    // Http.Sys doesn't send a final GoAway unless we ignore the first one and send 200 additional streams.
+                // Http.Sys doesn't send a final GoAway unless we ignore the first one and send 200 additional streams.
 
-                    h2Connection.Logger.LogInformation("Connection stopped.");
+                h2Connection.Logger.LogInformation("Connection stopped.");
             })
             .Build().RunAsync();
     }
@@ -460,25 +460,25 @@ public class Http2Tests : LoggedTest
 
                 await h2Connection.ReceiveHeadersAsync(streamId, decodedHeaders =>
                 {
-                        // HTTP/2 filters out the connection header
-                        Assert.False(decodedHeaders.ContainsKey(HeaderNames.Connection));
+                    // HTTP/2 filters out the connection header
+                    Assert.False(decodedHeaders.ContainsKey(HeaderNames.Connection));
                     Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
                 });
 
                 var dataFrame = await h2Connection.ReceiveFrameAsync();
                 Http2Utilities.VerifyDataFrame(dataFrame, streamId, endOfStream: true, length: 0);
 
-                    // Http.Sys doesn't send a final GoAway unless we ignore the first one and send 200 additional streams.
+                // Http.Sys doesn't send a final GoAway unless we ignore the first one and send 200 additional streams.
 
-                    for (var i = 1; i < 200; i++)
+                for (var i = 1; i < 200; i++)
                 {
                     streamId = 1 + (i * 2); // Odds.
-                        await h2Connection.StartStreamAsync(streamId, Http2Utilities.BrowserRequestHeaders, endStream: true);
+                    await h2Connection.StartStreamAsync(streamId, Http2Utilities.BrowserRequestHeaders, endStream: true);
 
                     await h2Connection.ReceiveHeadersAsync(streamId, decodedHeaders =>
                     {
-                            // HTTP/2 filters out the connection header
-                            Assert.False(decodedHeaders.ContainsKey(HeaderNames.Connection));
+                        // HTTP/2 filters out the connection header
+                        Assert.False(decodedHeaders.ContainsKey(HeaderNames.Connection));
                         Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
                     });
 
@@ -487,19 +487,19 @@ public class Http2Tests : LoggedTest
                 }
 
                 streamId = 1 + (200 * 2); // Odds.
-                    await h2Connection.StartStreamAsync(streamId, Http2Utilities.BrowserRequestHeaders, endStream: true);
+                await h2Connection.StartStreamAsync(streamId, Http2Utilities.BrowserRequestHeaders, endStream: true);
 
-                    // Final GoAway
-                    goAwayFrame = await h2Connection.ReceiveFrameAsync();
+                // Final GoAway
+                goAwayFrame = await h2Connection.ReceiveFrameAsync();
                 h2Connection.VerifyGoAway(goAwayFrame, streamId, Http2ErrorCode.NO_ERROR);
 
-                    // Normal response
-                    await h2Connection.ReceiveHeadersAsync(streamId, decodedHeaders =>
-                {
-                        // HTTP/2 filters out the connection header
-                        Assert.False(decodedHeaders.ContainsKey(HeaderNames.Connection));
-                    Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
-                });
+                // Normal response
+                await h2Connection.ReceiveHeadersAsync(streamId, decodedHeaders =>
+            {
+                // HTTP/2 filters out the connection header
+                Assert.False(decodedHeaders.ContainsKey(HeaderNames.Connection));
+                Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
+            });
 
                 dataFrame = await h2Connection.ReceiveFrameAsync();
                 Http2Utilities.VerifyDataFrame(dataFrame, streamId, endOfStream: true, length: 0);
@@ -659,7 +659,7 @@ public class Http2Tests : LoggedTest
                 var feature = httpContext.Features.Get<IHttpResetFeature>();
                 Assert.NotNull(feature);
                 feature.Reset(1111); // Custom
-                    appResult.SetResult(0);
+                appResult.SetResult(0);
             }
             catch (Exception ex)
             {
@@ -680,8 +680,8 @@ public class Http2Tests : LoggedTest
                 var resetFrame = await h2Connection.ReceiveFrameAsync();
                 Http2Utilities.VerifyResetFrame(resetFrame, expectedStreamId: 1, expectedErrorCode: (Http2ErrorCode)1111);
 
-                    // Any app errors?
-                    Assert.Equal(0, await appResult.Task.DefaultTimeout());
+                // Any app errors?
+                Assert.Equal(0, await appResult.Task.DefaultTimeout());
 
                 h2Connection.Logger.LogInformation("Connection stopped.");
             })
@@ -702,7 +702,7 @@ public class Http2Tests : LoggedTest
                 Assert.NotNull(feature);
                 await httpContext.Response.Body.FlushAsync();
                 feature.Reset(1111); // Custom
-                    appResult.SetResult(0);
+                appResult.SetResult(0);
             }
             catch (Exception ex)
             {
@@ -719,8 +719,8 @@ public class Http2Tests : LoggedTest
 
                 await h2Connection.StartStreamAsync(1, Http2Utilities.BrowserRequestHeaders, endStream: true);
 
-                    // Any app errors?
-                    Assert.Equal(0, await appResult.Task.DefaultTimeout());
+                // Any app errors?
+                Assert.Equal(0, await appResult.Task.DefaultTimeout());
 
                 await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
                 {
@@ -749,7 +749,7 @@ public class Http2Tests : LoggedTest
                 Assert.NotNull(feature);
                 await httpContext.Response.WriteAsync("Hello World");
                 feature.Reset(1111); // Custom
-                    appResult.SetResult(0);
+                appResult.SetResult(0);
             }
             catch (Exception ex)
             {
@@ -766,8 +766,8 @@ public class Http2Tests : LoggedTest
 
                 await h2Connection.StartStreamAsync(1, Http2Utilities.BrowserRequestHeaders, endStream: true);
 
-                    // Any app errors?
-                    Assert.Equal(0, await appResult.Task.DefaultTimeout());
+                // Any app errors?
+                Assert.Equal(0, await appResult.Task.DefaultTimeout());
 
                 await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
                 {
@@ -799,8 +799,8 @@ public class Http2Tests : LoggedTest
                 Assert.NotNull(feature);
                 await httpContext.Response.WriteAsync("Hello World");
                 await httpContext.Response.CompleteAsync();
-                    // The request and response are fully complete, the reset doesn't get sent.
-                    feature.Reset(1111);
+                // The request and response are fully complete, the reset doesn't get sent.
+                feature.Reset(1111);
                 appResult.SetResult(0);
             }
             catch (Exception ex)
@@ -818,8 +818,8 @@ public class Http2Tests : LoggedTest
 
                 await h2Connection.StartStreamAsync(1, Http2Utilities.BrowserRequestHeaders, endStream: true);
 
-                    // Any app errors?
-                    Assert.Equal(0, await appResult.Task.DefaultTimeout());
+                // Any app errors?
+                Assert.Equal(0, await appResult.Task.DefaultTimeout());
 
                 await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
                 {
@@ -873,8 +873,8 @@ public class Http2Tests : LoggedTest
 
                 await h2Connection.StartStreamAsync(1, Http2Utilities.PostRequestHeaders, endStream: false);
 
-                    // Any app errors?
-                    Assert.Equal(0, await appResult.Task.DefaultTimeout());
+                // Any app errors?
+                Assert.Equal(0, await appResult.Task.DefaultTimeout());
 
                 var resetFrame = await h2Connection.ReceiveFrameAsync();
                 Http2Utilities.VerifyResetFrame(resetFrame, expectedStreamId: 1, expectedErrorCode: (Http2ErrorCode)1111);
@@ -923,8 +923,8 @@ public class Http2Tests : LoggedTest
                 await h2Connection.StartStreamAsync(1, Http2Utilities.PostRequestHeaders, endStream: false);
                 await h2Connection.SendDataAsync(1, new byte[10], endStream: false);
 
-                    // Any app errors?
-                    Assert.Equal(0, await appResult.Task.DefaultTimeout());
+                // Any app errors?
+                Assert.Equal(0, await appResult.Task.DefaultTimeout());
 
                 var resetFrame = await h2Connection.ReceiveFrameAsync();
                 Http2Utilities.VerifyResetFrame(resetFrame, expectedStreamId: 1, expectedErrorCode: (Http2ErrorCode)1111);
@@ -953,7 +953,7 @@ public class Http2Tests : LoggedTest
                 var readTask = httpContext.Request.Body.ReadAsync(new byte[10], 0, 10);
                 await httpContext.Response.CompleteAsync();
                 feature.Reset((int)Http2ErrorCode.NO_ERROR); // GRPC does this
-                    await Assert.ThrowsAsync<IOException>(() => readTask);
+                await Assert.ThrowsAsync<IOException>(() => readTask);
 
                 appResult.SetResult(0);
             }
@@ -973,8 +973,8 @@ public class Http2Tests : LoggedTest
                 await h2Connection.StartStreamAsync(1, Http2Utilities.PostRequestHeaders, endStream: false);
                 await h2Connection.SendDataAsync(1, new byte[10], endStream: false);
 
-                    // Any app errors?
-                    Assert.Equal(0, await appResult.Task.DefaultTimeout());
+                // Any app errors?
+                Assert.Equal(0, await appResult.Task.DefaultTimeout());
 
                 await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
                 {

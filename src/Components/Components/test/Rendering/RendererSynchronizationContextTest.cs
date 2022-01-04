@@ -1,13 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
 using System.Globalization;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Rendering;
 
@@ -779,8 +774,8 @@ public class RendererSynchronizationContextTest
 
         var invokeTask = context.InvokeAsync(async () =>
         {
-                // When the sync context is idle, queued work items start synchronously
-                actual += " Second";
+            // When the sync context is idle, queued work items start synchronously
+            actual += " Second";
             await Task.Delay(250);
             actual += " Fourth";
         });

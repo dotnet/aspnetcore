@@ -1,5 +1,6 @@
 <Project>
   <PropertyGroup>
+    <IsUnitTestProject>true</IsUnitTestProject>
     <TestDependsOnAspNetRuntime>false</TestDependsOnAspNetRuntime>
     <TestDependsOnAspNetPackages>false</TestDependsOnAspNetPackages>
   </PropertyGroup>
@@ -7,8 +8,6 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
 
   <PropertyGroup>
-    <!-- Keep this property after importing Directory.Build.props, it works around arcade assuming test projects have "Test" in the name -->
-    <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
     <IsBuildable>false</IsBuildable>
     <!-- Npm tests don't run on Helix currently, so we need to set this to false to still run the tests on non-Helix -->

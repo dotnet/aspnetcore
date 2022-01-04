@@ -1,12 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.WebUtilities;
@@ -19,13 +13,13 @@ public class MultipartReader
 {
     /// <summary>
     /// Gets the default value for <see cref="HeadersCountLimit"/>.
-    /// Defaults to 16‬.
+    /// Defaults to 16.
     /// </summary>
     public const int DefaultHeadersCountLimit = 16;
 
     /// <summary>
     /// Gets the default value for <see cref="HeadersLengthLimit"/>.
-    /// Defaults to 16,384‬ bytes‬, which is approximately 16KB.
+    /// Defaults to 16,384 bytes, which is approximately 16KB.
     /// </summary>
     public const int DefaultHeadersLengthLimit = 1024 * 16;
     private const int DefaultBufferSize = 1024 * 4;

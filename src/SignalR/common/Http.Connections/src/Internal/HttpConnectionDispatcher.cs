@@ -1,19 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
-using System.Collections.Generic;
-using System.IO;
-using System.IO.Pipelines;
 using System.Security.Claims;
 using System.Security.Principal;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Connections.Internal.Transports;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
@@ -50,6 +42,11 @@ internal partial class HttpConnectionDispatcher
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger _logger;
     private const int _protocolVersion = 1;
+
+    // This should be kept in sync with CookieAuthenticationHandler
+    private const string HeaderValueNoCache = "no-cache";
+    private const string HeaderValueNoCacheNoStore = "no-cache, no-store";
+    private const string HeaderValueEpochDate = "Thu, 01 Jan 1970 00:00:00 GMT";
 
     public HttpConnectionDispatcher(HttpConnectionManager manager, ILoggerFactory loggerFactory)
     {
@@ -183,6 +180,8 @@ internal partial class HttpConnectionDispatcher
         else
         {
             // GET /{path} maps to long polling
+
+            AddNoCacheHeaders(context.Response);
 
             // Connection must already exist
             var connection = await GetConnectionAsync(context);
@@ -741,6 +740,13 @@ internal partial class HttpConnectionDispatcher
     private HttpConnectionContext CreateConnection(HttpConnectionDispatcherOptions options, int clientProtocolVersion = 0)
     {
         return _manager.CreateConnection(options, clientProtocolVersion);
+    }
+
+    private static void AddNoCacheHeaders(HttpResponse response)
+    {
+        response.Headers.CacheControl = HeaderValueNoCacheNoStore;
+        response.Headers.Pragma = HeaderValueNoCache;
+        response.Headers.Expires = HeaderValueEpochDate;
     }
 
     private class EmptyServiceProvider : IServiceProvider

@@ -83,6 +83,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="System.Text.Encodings.Web" />
     <LatestPackageReference Include="System.Text.Json" />
     <LatestPackageReference Include="System.Threading.Channels" />
+    <LatestPackageReference Include="System.Threading.RateLimiting" />
     <LatestPackageReference Include="System.ValueTuple" />
 
     <!-- Runtime packages required for crossgen -->

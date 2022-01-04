@@ -1,17 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
-using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Controllers;
@@ -22,7 +16,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.IntegrationTests;
 
@@ -397,8 +390,8 @@ public class ValidationIntegrationTests
 
         var testContext = ModelBindingTestHelper.GetTestContext(request =>
         {
-                // Force creation of the Customer model.
-                request.QueryString = new QueryString("?parameter.Customer.Age=17");
+            // Force creation of the Customer model.
+            request.QueryString = new QueryString("?parameter.Customer.Age=17");
         });
 
         var modelState = testContext.ModelState;
@@ -489,8 +482,8 @@ public class ValidationIntegrationTests
 
         var testContext = ModelBindingTestHelper.GetTestContext(request =>
         {
-                // Force creation of the Customer model.
-                request.QueryString = new QueryString("?");
+            // Force creation of the Customer model.
+            request.QueryString = new QueryString("?");
         });
 
         var modelState = testContext.ModelState;
@@ -575,8 +568,8 @@ public class ValidationIntegrationTests
 
         var testContext = ModelBindingTestHelper.GetTestContext(request =>
         {
-                // Force creation of the Customer model.
-                request.QueryString = new QueryString("?parameter[0].Name=bill");
+            // Force creation of the Customer model.
+            request.QueryString = new QueryString("?parameter[0].Name=bill");
         });
 
         var modelState = testContext.ModelState;
@@ -603,6 +596,78 @@ public class ValidationIntegrationTests
 
         var error = Assert.Single(entry.Errors);
         AssertRequiredError("ProductId", error);
+    }
+
+#nullable enable
+    private class ParameterInfos
+    {
+        public void Method(
+            string param1,
+            string param2 = "sample_data")
+        {
+        }
+
+        public static ParameterInfo NonNullableParameterInfo
+            = typeof(ParameterInfos)!
+                .GetMethod(nameof(ParameterInfos.Method))!
+                .GetParameters()[0];
+
+        public static ParameterInfo DefaultValueParameterInfo
+            = typeof(ParameterInfos)!
+                .GetMethod(nameof(ParameterInfos.Method))!
+                .GetParameters()[1];
+    }
+#nullable restore
+
+    [Fact]
+    public async Task Validation_RequiredAttribute_OnActionParameter_WithDefaultValue()
+    {
+        // Arrange
+        var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+        var parameter = new ControllerParameterDescriptor()
+        {
+            Name = "parameter",
+            ParameterType = typeof(string),
+            ParameterInfo = ParameterInfos.DefaultValueParameterInfo
+        };
+
+        var testContext = ModelBindingTestHelper.GetTestContext();
+
+        var modelState = testContext.ModelState;
+
+        // Act
+        _ = await parameterBinder.BindModelAsync(parameter, testContext);
+
+        // Assert
+        Assert.True(modelState.IsValid);
+        Assert.Equal(0, modelState.ErrorCount);
+    }
+
+    [Fact]
+    public async Task Validation_RequiredAttribute_OnActionParameter_Invalid()
+    {
+        // Arrange
+        var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+        var parameter = new ControllerParameterDescriptor()
+        {
+            Name = "parameter",
+            ParameterType = typeof(string),
+            ParameterInfo = ParameterInfos.NonNullableParameterInfo
+        };
+
+        var testContext = ModelBindingTestHelper.GetTestContext();
+
+        var modelState = testContext.ModelState;
+
+        // Act
+        _ = await parameterBinder.BindModelAsync(parameter, testContext);
+
+        // Assert
+        Assert.False(modelState.IsValid);
+        Assert.Equal(1, modelState.ErrorCount);
+
+        var entry = Assert.Single(modelState, e => e.Key == "parameter").Value;
+        Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
     }
 
     private class Order6
@@ -1859,8 +1924,8 @@ public class ValidationIntegrationTests
         var testContext = ModelBindingTestHelper.GetTestContext(
             request =>
             {
-                    // This string is too long and will have a validation error.
-                    request.Body = new MemoryStream(Encoding.UTF8.GetBytes("{ message: \"Hello There\" }"));
+                // This string is too long and will have a validation error.
+                request.Body = new MemoryStream(Encoding.UTF8.GetBytes("{ message: \"Hello There\" }"));
                 request.ContentType = "application/json";
             });
 

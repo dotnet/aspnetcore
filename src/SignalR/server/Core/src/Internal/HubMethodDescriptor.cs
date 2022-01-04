@@ -1,12 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Internal;
@@ -61,8 +58,8 @@ internal class HubMethodDescriptor
         // Take out synthetic arguments that will be provided by the server, this list will be given to the protocol parsers
         ParameterTypes = methodExecutor.MethodParameters.Where(p =>
         {
-                // Only streams can take CancellationTokens currently
-                if (IsStreamResponse && p.ParameterType == typeof(CancellationToken))
+            // Only streams can take CancellationTokens currently
+            if (IsStreamResponse && p.ParameterType == typeof(CancellationToken))
             {
                 HasSyntheticArguments = true;
                 return false;

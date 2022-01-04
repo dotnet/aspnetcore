@@ -80,9 +80,9 @@ public class AssemblyTestLogTests : LoggedTest
     public Task TestLogWritesToGlobalLogFile() =>
         RunTestLogFunctionalTest((tempDir) =>
         {
-                // Because this test writes to a file, it is a functional test and should be logged
-                // but it's also testing the test logging facility. So this is pretty meta ;)
-                var logger = LoggerFactory.CreateLogger("Test");
+            // Because this test writes to a file, it is a functional test and should be logged
+            // but it's also testing the test logging facility. So this is pretty meta ;)
+            var logger = LoggerFactory.CreateLogger("Test");
 
             using (var testAssemblyLog = AssemblyTestLog.Create(ThisAssemblyName, tempDir))
             {
@@ -141,10 +141,10 @@ public class AssemblyTestLogTests : LoggedTest
             var testLog = Assert.Single(testLogFiles);
             var testFileName = Path.GetFileNameWithoutExtension(testLog.Name);
 
-                // The first half of the file comes from the beginning of the test name passed to the logger
-                Assert.Equal(longTestName.Substring(0, testFileName.Length / 2), testFileName.Substring(0, testFileName.Length / 2));
-                // The last half of the file comes from the ending of the test name passed to the logger
-                Assert.Equal(longTestName.Substring(longTestName.Length - testFileName.Length / 2, testFileName.Length / 2), testFileName.Substring(testFileName.Length - testFileName.Length / 2, testFileName.Length / 2));
+            // The first half of the file comes from the beginning of the test name passed to the logger
+            Assert.Equal(longTestName.Substring(0, testFileName.Length / 2), testFileName.Substring(0, testFileName.Length / 2));
+            // The last half of the file comes from the ending of the test name passed to the logger
+            Assert.Equal(longTestName.Substring(longTestName.Length - testFileName.Length / 2, testFileName.Length / 2), testFileName.Substring(testFileName.Length - testFileName.Length / 2, testFileName.Length / 2));
         });
 
     [Fact]
@@ -166,11 +166,11 @@ public class AssemblyTestLogTests : LoggedTest
             }
             logger.LogInformation("Finished test log in {baseDirectory}", tempDir);
 
-                // The first log file exists
-                Assert.True(File.Exists(Path.Combine(tempDir, ThisAssemblyName, TFM, "FakeTestClass", "FakeTestName.log")));
+            // The first log file exists
+            Assert.True(File.Exists(Path.Combine(tempDir, ThisAssemblyName, TFM, "FakeTestClass", "FakeTestName.log")));
 
-                // Subsequent files exist
-                for (var i = 0; i < 9; i++)
+            // Subsequent files exist
+            for (var i = 0; i < 9; i++)
             {
                 Assert.True(File.Exists(Path.Combine(tempDir, ThisAssemblyName, TFM, "FakeTestClass", $"FakeTestName.{i}.log")));
             }

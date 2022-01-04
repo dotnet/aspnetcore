@@ -2,9 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 
-using System;
-using System.IO;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;

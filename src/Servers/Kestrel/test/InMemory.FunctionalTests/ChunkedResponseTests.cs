@@ -87,7 +87,7 @@ public class ChunkedResponseTests : LoggedTest
         await using (var server = new TestServer(async httpContext =>
         {
             httpContext.Request.Protocol = "HTTP/2"; // Doesn't support chunking. This change should be ignored.
-                var response = httpContext.Response;
+            var response = httpContext.Response;
             await response.BodyWriter.WriteAsync(new Memory<byte>(Encoding.ASCII.GetBytes("Hello "), 0, 6));
             await response.BodyWriter.WriteAsync(new Memory<byte>(Encoding.ASCII.GetBytes("World!"), 0, 6));
         }, testContext))
@@ -493,8 +493,8 @@ public class ChunkedResponseTests : LoggedTest
             var response = httpContext.Response;
             await response.BodyWriter.WriteAsync(new Memory<byte>(Encoding.ASCII.GetBytes("Hello "), 0, 6));
 
-                // Don't complete response until client has received the first chunk.
-                await flushWh.Task.DefaultTimeout();
+            // Don't complete response until client has received the first chunk.
+            await flushWh.Task.DefaultTimeout();
 
             await response.BodyWriter.WriteAsync(new Memory<byte>(Encoding.ASCII.GetBytes("World!"), 0, 6));
         }, testContext))
@@ -871,8 +871,8 @@ public class ChunkedResponseTests : LoggedTest
             var response = httpContext.Response;
             await response.StartAsync();
 
-                // To avoid using span in an async method
-                void NonAsyncMethod()
+            // To avoid using span in an async method
+            void NonAsyncMethod()
             {
                 var span = response.BodyWriter.GetSpan(4096);
                 var fisrtPartOfResponse = Encoding.ASCII.GetBytes("Hello ");
@@ -1002,8 +1002,8 @@ public class ChunkedResponseTests : LoggedTest
 
             var memory = response.BodyWriter.GetMemory(0);
 
-                // Headers are already written to memory, sliced appropriately
-                Assert.Equal(4005, memory.Length);
+            // Headers are already written to memory, sliced appropriately
+            Assert.Equal(4005, memory.Length);
 
             memory = response.BodyWriter.GetMemory(1000000);
             Assert.Equal(4005, memory.Length);

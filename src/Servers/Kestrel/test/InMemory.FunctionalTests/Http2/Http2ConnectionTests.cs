@@ -84,11 +84,11 @@ public class Http2ConnectionTests : Http2TestBase
     {
         await InitializeConnectionAsync(async c =>
         {
-                // Send headers
-                await c.Response.Body.FlushAsync();
+            // Send headers
+            await c.Response.Body.FlushAsync();
 
-                // Send large data (1 larger than window size)
-                await c.Response.Body.WriteAsync(new byte[65540]);
+            // Send large data (1 larger than window size)
+            await c.Response.Body.WriteAsync(new byte[65540]);
         });
 
         // Ensure the connection window size is large enough
@@ -1794,8 +1794,8 @@ public class Http2ConnectionTests : Http2TestBase
 
         await InitializeConnectionAsync(async context =>
         {
-                // Exceed connection window size
-                await context.Response.WriteAsync(new string('!', 65536));
+            // Exceed connection window size
+            await context.Response.WriteAsync(new string('!', 65536));
 
             await connectionAbortedTcs.Task;
 
@@ -2151,9 +2151,14 @@ public class Http2ConnectionTests : Http2TestBase
         await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
     }
 
-    private class TestHttpHeadersHandler : IHttpHeadersHandler
+    private class TestHttpHeadersHandler : IHttpStreamHeadersHandler
     {
         public readonly Dictionary<string, StringValues> Headers = new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase);
+
+        public void OnDynamicIndexedHeader(int? index, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+        {
+            OnHeader(name, value);
+        }
 
         public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
@@ -2817,8 +2822,8 @@ public class Http2ConnectionTests : Http2TestBase
             {
                 writeTasks[streamId] = writeTcs.Task;
 
-                    // Flush headers even if the body can't yet be written because of flow control.
-                    await context.Response.Body.FlushAsync();
+                // Flush headers even if the body can't yet be written because of flow control.
+                await context.Response.Body.FlushAsync();
 
                 for (var i = 0; i < expectedFullFrameCountBeforeBackpressure; i++)
                 {
@@ -3762,8 +3767,8 @@ public class Http2ConnectionTests : Http2TestBase
             {
                 writeTasks[streamId] = writeTcs.Task;
 
-                    // Flush headers even if the body can't yet be written because of flow control.
-                    await context.Response.Body.FlushAsync();
+                // Flush headers even if the body can't yet be written because of flow control.
+                await context.Response.Body.FlushAsync();
 
                 for (var i = 0; i < expectedFullFrameCountBeforeBackpressure; i++)
                 {
@@ -4086,8 +4091,8 @@ public class Http2ConnectionTests : Http2TestBase
         {
             try
             {
-                    // Flush the headers so expectingDataSem is released.
-                    await context.Response.Body.FlushAsync();
+                // Flush the headers so expectingDataSem is released.
+                await context.Response.Body.FlushAsync();
 
                 for (var i = 0; i < expectedFullFrameCountBeforeBackpressure; i++)
                 {

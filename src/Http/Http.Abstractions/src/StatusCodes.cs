@@ -4,10 +4,13 @@
 namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
-/// A collection of constants for HTTP status codes.
-///
-/// Status Codes listed at http://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml
+/// A collection of constants for
+/// <see href="http://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml" >HTTP status codes</see >.
 /// </summary>
+/// <remarks>
+/// Descriptions for status codes are available from
+/// <see cref="M:Microsoft.AspNetCore.WebUtilitiesReasonPhrases.GetReasonPhrase(Int32)" />.
+/// </remarks>
 public static class StatusCodes
 {
     /// <summary>

@@ -1,0 +1,26 @@
+# This workflow adds support for prebuilding Codespaces
+# for aspnetcore. For more information on prebuilds,
+# see https://docs.github.com/en/codespaces/customizing-your-codespace/prebuilding-codespaces-for-your-project.
+# This change prebuilds and pools Codespace instances configured
+# for the aspnetcore repo and reduces the amount of time users
+# have to wait for a new Codespace to be built and initialized.
+name: Create Codespaces Prebuild
+on:
+  schedule:
+    # Run at 06:00 am UTC every day
+    - cron:  '0 6 * * *'
+  workflow_dispatch:
+jobs:
+  createPrebuild:
+    if: github.repository == 'dotnet/aspnetcore'
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: github/codespaces-precache@v1-stable
+        with:
+          regions: WestUs2 EastUs WestEurope
+          sku_name: premiumLinux
+        env:
+          GITHUB_TOKEN: ${{ secrets.EXPERIMENTAL_CODESPACE_CACHE_TOKEN }}

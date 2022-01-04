@@ -31,7 +31,7 @@ public class MaxRequestBodySizeTests : LoggedTest
             Assert.True(context.Request.CanHaveBody());
             var buffer = new byte[1];
 #pragma warning disable CS0618 // Type or member is obsolete
-                requestRejectedEx = await Assert.ThrowsAsync<BadHttpRequestException>(
+            requestRejectedEx = await Assert.ThrowsAsync<BadHttpRequestException>(
 #pragma warning restore CS0618 // Type or member is obsolete
                     async () => await context.Request.Body.ReadAsync(buffer, 0, 1));
             throw requestRejectedEx;
@@ -61,6 +61,94 @@ public class MaxRequestBodySizeTests : LoggedTest
     }
 
     [Fact]
+    public async Task RejectsRequestWithBodySizeExceedingPerRequestLimitAndExceptionWasCaughtByApplication()
+    {
+        var maxRequestBodySize = 3;
+        var requestBody = "client content";
+        var customApplicationResponse = "custom";
+        Assert.True(requestBody.Length > maxRequestBodySize);
+
+        await using (var server = new TestServer(async context =>
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+            BadHttpRequestException requestRejectedEx = await Assert.ThrowsAsync<BadHttpRequestException>(async () =>
+#pragma warning restore CS0618 // Type or member is obsolete
+            {
+                using (var stream = new StreamReader(context.Request.Body))
+                {
+                    string body = await stream.ReadToEndAsync();
+                }
+            });
+            context.Response.StatusCode = requestRejectedEx.StatusCode;
+            await context.Response.WriteAsync(customApplicationResponse);
+            throw requestRejectedEx;
+        },
+        new TestServiceContext(LoggerFactory) { ServerOptions = { Limits = { MaxRequestBodySize = maxRequestBodySize } } }))
+        {
+            using var connection = server.CreateConnection();
+            await connection.Send(
+                "POST / HTTP/1.1",
+                "Host:",
+                $"Content-Length: {requestBody.Length}",
+                "",
+                requestBody);
+            await connection.ReceiveEnd(
+                "HTTP/1.1 413 Payload Too Large",
+                "Connection: close",
+                $"Date: {server.Context.DateHeaderValue}",
+                "Transfer-Encoding: chunked",
+                "",
+                $"{customApplicationResponse.Length}",
+                customApplicationResponse,
+                "");
+        }
+    }
+
+    [Fact]
+    public async Task RejectsRequestWithChunckedBodySizeExceedingPerRequestLimitAndExceptionWasCaughtByApplication()
+    {
+        var maxRequestBodySize = 3;
+        var customApplicationResponse = "custom";
+        var chunkedPayload = $"5;random chunk extension\r\nHello\r\n6\r\n World\r\n0\r\n";
+        Assert.True(chunkedPayload.Length > maxRequestBodySize);
+
+        await using (var server = new TestServer(async context =>
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+            BadHttpRequestException requestRejectedEx = await Assert.ThrowsAsync<BadHttpRequestException>(async () =>
+#pragma warning restore CS0618 // Type or member is obsolete
+            {
+                using (var stream = new StreamReader(context.Request.Body))
+                {
+                    string body = await stream.ReadToEndAsync();
+                }
+            });
+            context.Response.StatusCode = requestRejectedEx.StatusCode;
+            await context.Response.WriteAsync(customApplicationResponse);
+            throw requestRejectedEx;
+        },
+        new TestServiceContext(LoggerFactory) { ServerOptions = { Limits = { MaxRequestBodySize = maxRequestBodySize } } }))
+        {
+            using var connection = server.CreateConnection();
+            await connection.Send(
+                "POST / HTTP/1.1",
+                "Host:",
+                "Transfer-Encoding: chunked",
+                "",
+                chunkedPayload);
+            await connection.ReceiveEnd(
+                "HTTP/1.1 413 Payload Too Large",
+                "Connection: close",
+                $"Date: {server.Context.DateHeaderValue}",
+                "Transfer-Encoding: chunked",
+                "",
+                $"{customApplicationResponse.Length}",
+                customApplicationResponse,
+                "");
+        }
+    }
+
+    [Fact]
     public async Task RejectsRequestWithContentLengthHeaderExceedingPerRequestLimit()
     {
         // 8 GiB
@@ -76,12 +164,12 @@ public class MaxRequestBodySizeTests : LoggedTest
             var feature = context.Features.Get<IHttpMaxRequestBodySizeFeature>();
             Assert.Equal(globalMaxRequestBodySize, feature.MaxRequestBodySize);
 
-                // Disable the MaxRequestBodySize prior to calling Request.Body.ReadAsync();
-                feature.MaxRequestBodySize = perRequestMaxRequestBodySize;
+            // Disable the MaxRequestBodySize prior to calling Request.Body.ReadAsync();
+            feature.MaxRequestBodySize = perRequestMaxRequestBodySize;
 
             var buffer = new byte[1];
 #pragma warning disable CS0618 // Type or member is obsolete
-                requestRejectedEx = await Assert.ThrowsAsync<BadHttpRequestException>(
+            requestRejectedEx = await Assert.ThrowsAsync<BadHttpRequestException>(
 #pragma warning restore CS0618 // Type or member is obsolete
                     async () => await context.Request.Body.ReadAsync(buffer, 0, 1));
             throw requestRejectedEx;
@@ -118,8 +206,8 @@ public class MaxRequestBodySizeTests : LoggedTest
             var feature = context.Features.Get<IHttpMaxRequestBodySizeFeature>();
             Assert.Equal(0, feature.MaxRequestBodySize);
 
-                // Disable the MaxRequestBodySize prior to calling Request.Body.ReadAsync();
-                feature.MaxRequestBodySize = null;
+            // Disable the MaxRequestBodySize prior to calling Request.Body.ReadAsync();
+            feature.MaxRequestBodySize = null;
 
             var buffer = new byte[1];
 
@@ -276,12 +364,12 @@ public class MaxRequestBodySizeTests : LoggedTest
         {
             var buffer = new byte[1];
 #pragma warning disable CS0618 // Type or member is obsolete
-                requestRejectedEx1 = await Assert.ThrowsAsync<BadHttpRequestException>(
-                async () => await context.Request.Body.ReadAsync(buffer, 0, 1));
+            requestRejectedEx1 = await Assert.ThrowsAsync<BadHttpRequestException>(
+            async () => await context.Request.Body.ReadAsync(buffer, 0, 1));
             requestRejectedEx2 = await Assert.ThrowsAsync<BadHttpRequestException>(
                 async () => await context.Request.Body.ReadAsync(buffer, 0, 1));
 #pragma warning restore CS0618 // Type or member is obsolete
-                throw requestRejectedEx2;
+            throw requestRejectedEx2;
         },
         new TestServiceContext(LoggerFactory) { ServerOptions = { Limits = { MaxRequestBodySize = 0 } } }))
         {
@@ -322,9 +410,9 @@ public class MaxRequestBodySizeTests : LoggedTest
         {
             var buffer = new byte[11];
 #pragma warning disable CS0618 // Type or member is obsolete
-                requestRejectedEx = await Assert.ThrowsAsync<BadHttpRequestException>(async () =>
+            requestRejectedEx = await Assert.ThrowsAsync<BadHttpRequestException>(async () =>
 #pragma warning restore CS0618 // Type or member is obsolete
-                {
+            {
                 var count = 0;
                 do
                 {
@@ -431,9 +519,9 @@ public class MaxRequestBodySizeTests : LoggedTest
             else
             {
 #pragma warning disable CS0618 // Type or member is obsolete
-                    requestRejectedEx = await Assert.ThrowsAsync<BadHttpRequestException>(async () =>
+                requestRejectedEx = await Assert.ThrowsAsync<BadHttpRequestException>(async () =>
 #pragma warning restore CS0618 // Type or member is obsolete
-                    {
+                {
                     do
                     {
                         count = await context.Request.Body.ReadAsync(buffer, 0, 11);
@@ -487,12 +575,12 @@ public class MaxRequestBodySizeTests : LoggedTest
         {
             var buffer = new byte[1];
 #pragma warning disable CS0618 // Type or member is obsolete
-                requestRejectedEx1 = await Assert.ThrowsAsync<BadHttpRequestException>(
-                async () => await context.Request.Body.ReadAsync(buffer, 0, 1));
+            requestRejectedEx1 = await Assert.ThrowsAsync<BadHttpRequestException>(
+            async () => await context.Request.Body.ReadAsync(buffer, 0, 1));
             requestRejectedEx2 = await Assert.ThrowsAsync<BadHttpRequestException>(
                 async () => await context.Request.Body.ReadAsync(buffer, 0, 1));
 #pragma warning restore CS0618 // Type or member is obsolete
-                throw requestRejectedEx2;
+            throw requestRejectedEx2;
         },
         new TestServiceContext(LoggerFactory) { ServerOptions = { Limits = { MaxRequestBodySize = 0 } } }))
         {

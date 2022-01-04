@@ -34,7 +34,7 @@ public class Http3TlsTests : LoggedTest
                     httpsOptions.ServerCertificateSelector = (context, host) =>
                     {
                         Assert.Null(context); // The context isn't available durring the quic handshake.
-                            Assert.Equal("localhost", host);
+                        Assert.Equal("localhost", host);
                         return TestResources.GetTestCertificate();
                     };
                 });
@@ -177,7 +177,7 @@ public class Http3TlsTests : LoggedTest
                     if (serverAllowInvalid)
                     {
                         httpsOptions.AllowAnyClientCertificate(); // The self-signed cert is invalid. Let it fail the default checks.
-                        }
+                    }
                 });
             });
         });

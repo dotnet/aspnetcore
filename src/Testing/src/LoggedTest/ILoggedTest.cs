@@ -3,7 +3,6 @@
 
 using System;
 using System.Reflection;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
 

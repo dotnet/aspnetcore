@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.StaticFiles;
@@ -201,8 +200,8 @@ public static class StaticFilesEndpointRouteBuilderExtensions
         {
             context.Request.Path = "/" + filePath;
 
-                // Set endpoint to null so the static files middleware will handle the request.
-                context.SetEndpoint(null);
+            // Set endpoint to null so the static files middleware will handle the request.
+            context.SetEndpoint(null);
 
             return next(context);
         });

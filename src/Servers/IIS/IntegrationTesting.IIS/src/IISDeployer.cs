@@ -1,14 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.ServiceProcess;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
 using Microsoft.Extensions.Logging;
@@ -275,12 +269,12 @@ public class IISDeployer : IISDeployerBase
 
             HostProcess = Process.GetProcessById(workerProcess.ProcessId);
 
-                // Ensure w3wp.exe is killed if test process termination is non-graceful.
-                // Prevents locked files when stop debugging unit test.
-                ProcessTracker.Add(HostProcess);
+            // Ensure w3wp.exe is killed if test process termination is non-graceful.
+            // Prevents locked files when stop debugging unit test.
+            ProcessTracker.Add(HostProcess);
 
-                // cache the process start time for verifying log file name.
-                var _ = HostProcess.StartTime;
+            // cache the process start time for verifying log file name.
+            var _ = HostProcess.StartTime;
 
             Logger.LogInformation("Site has started.");
         });
@@ -304,8 +298,8 @@ public class IISDeployer : IISDeployerBase
 
             if ((bool)redirectionSection.Attributes["enabled"].Value)
             {
-                    // redirection wasn't removed before starting another site.
-                    redirectionSection.Attributes["enabled"].Value = false;
+                // redirection wasn't removed before starting another site.
+                redirectionSection.Attributes["enabled"].Value = false;
                 var redirectedFilePath = (string)redirectionSection.Attributes["path"].Value;
                 Logger.LogWarning($"Name of redirected file: {redirectedFilePath}");
 
@@ -407,10 +401,10 @@ public class IISDeployer : IISDeployerBase
                     }
 
                 }
-                    // If WAS was stopped for some reason appPool.WorkerProcesses
-                    // would throw UnauthorizedAccessException.
-                    // check if it's the case and continue shutting down deployer
-                    catch (UnauthorizedAccessException)
+                // If WAS was stopped for some reason appPool.WorkerProcesses
+                // would throw UnauthorizedAccessException.
+                // check if it's the case and continue shutting down deployer
+                catch (UnauthorizedAccessException)
                 {
                     var serviceController = new ServiceController("was");
                     if (serviceController.Status != ServiceControllerStatus.Stopped)

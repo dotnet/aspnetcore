@@ -2,9 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.ExceptionServices;
-using System.Text.Json;
 using Microsoft.AspNetCore.Components.RenderTree;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.Extensions.Logging;
 

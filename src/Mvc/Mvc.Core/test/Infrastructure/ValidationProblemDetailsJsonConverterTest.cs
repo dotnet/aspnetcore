@@ -1,10 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Linq;
 using System.Text;
 using System.Text.Json;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
@@ -134,5 +132,64 @@ public class ValidationProblemDetailsJsonConverterTest
                 Assert.Equal("key1", kvp.Key);
                 Assert.Equal(new[] { "error1", "error2" }, kvp.Value);
             });
+    }
+
+    [Fact]
+    public void WriteWorks()
+    {
+        var problemDetails = new ValidationProblemDetails(new Dictionary<string, string[]>() { { "Property", new string[] { "error0" } } })
+        {
+            Title = "One or more validation errors occurred.",
+            Status = 400
+        };
+
+        var converter = new ValidationProblemDetailsJsonConverter();
+        using MemoryStream stream = new();
+        using Utf8JsonWriter writer = new(stream);
+
+        // Act
+        converter.Write(writer, problemDetails, null);
+
+        writer.Flush();
+        var json = Encoding.UTF8.GetString(stream.ToArray());
+
+        var expectedJSON = $"{{\"title\":\"{problemDetails.Title}\",\"status\":{problemDetails.Status}," +
+            "\"errors\":{\"Property\":[\"error0\"]}}";
+        Assert.NotNull(json);
+        Assert.Equal(expectedJSON, json);
+    }
+
+    [Fact]
+    public void WriteUsingJsonSerializerOptionsWorks()
+    {
+        var errors = new Dictionary<string, string[]>()
+        {
+            { "Property",  new string[]{ "error0" } },
+            { "TwoWords",  new string[]{ "error1" } },
+            { "TopLevelProperty.PropertyName",  new string[]{ "error2" } },
+        };
+        var problemDetails = new ValidationProblemDetails(errors)
+        {
+            Title = "One or more validation errors occurred.",
+            Status = 400
+        };
+
+        // Act
+        var converter = new ValidationProblemDetailsJsonConverter();
+        using MemoryStream stream = new();
+        using Utf8JsonWriter writer = new(stream);
+
+        var options = new JsonOptions().JsonSerializerOptions;
+        options.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
+
+        converter.Write(writer, problemDetails, options);
+
+        writer.Flush();
+        var json = Encoding.UTF8.GetString(stream.ToArray());
+
+        var expectedJSON = $"{{\"title\":\"{problemDetails.Title}\",\"status\":{problemDetails.Status}," +
+            "\"errors\":{\"property\":[\"error0\"],\"twoWords\":[\"error1\"],\"topLevelProperty.PropertyName\":[\"error2\"]}}";
+        Assert.NotNull(json);
+        Assert.Equal(expectedJSON, json);
     }
 }

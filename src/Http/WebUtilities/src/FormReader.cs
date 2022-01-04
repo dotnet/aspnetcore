@@ -1,14 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.WebUtilities;
@@ -26,13 +21,13 @@ public class FormReader : IDisposable
 
     /// <summary>
     /// Gets the default value for <see cref="KeyLengthLimit"/>.
-    /// Defaults to 2,048 bytes‬, which is approximately 2KB.
+    /// Defaults to 2,048 bytes, which is approximately 2KB.
     /// </summary>
     public const int DefaultKeyLengthLimit = 1024 * 2;
 
     /// <summary>
     /// Gets the default value for <see cref="ValueLengthLimit" />.
-    /// Defaults to 4,194,304 bytes‬, which is approximately 4MB.
+    /// Defaults to 4,194,304 bytes, which is approximately 4MB.
     /// </summary>
     public const int DefaultValueLengthLimit = 1024 * 1024 * 4;
 

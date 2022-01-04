@@ -1500,7 +1500,7 @@ public partial class HubConnection : IAsyncDisposable
 #if NETSTANDARD2_1 || NETCOREAPP
         return new OperationCanceledException(message, innerException, _state.StopCts.Token);
 #else
-            return new OperationCanceledException(message, innerException);
+        return new OperationCanceledException(message, innerException);
 #endif
     }
 

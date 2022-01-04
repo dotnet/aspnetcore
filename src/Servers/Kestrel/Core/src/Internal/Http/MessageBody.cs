@@ -1,11 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Globalization;
 using System.IO.Pipelines;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 
@@ -190,6 +187,7 @@ internal abstract class MessageBody
         var maxRequestBodySize = _context.MaxRequestBodySize;
         if (_observedBytes > maxRequestBodySize)
         {
+            _context.DisableHttp1KeepAlive();
             KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge, maxRequestBodySize.GetValueOrDefault().ToString(CultureInfo.InvariantCulture));
         }
     }

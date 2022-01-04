@@ -4,7 +4,6 @@
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Html;
 using Microsoft.Extensions.Options;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Rendering;
 

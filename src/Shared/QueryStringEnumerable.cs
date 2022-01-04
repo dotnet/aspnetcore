@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Internal;
 /// An enumerable that can supply the name/value pairs from a URI query string.
 /// </summary>
 #if QueryStringEnumerable_In_WebUtilities
-    public
+public
 #else
 internal
 #endif

@@ -320,6 +320,11 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
                 Assert.Equal(StatusCodes.Status404NotFound, context.Response.StatusCode);
                 await strm.FlushAsync();
                 Assert.Equal("No Connection with that ID", Encoding.UTF8.GetString(strm.ToArray()));
+
+                if (transportType == HttpTransportType.LongPolling)
+                {
+                    AssertResponseHasCacheHeaders(context.Response);
+                }
             }
         }
     }
@@ -471,8 +476,8 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
                 {
                     return async connectionContext =>
                     {
-                            // Ensure both sides of the pipe are ok
-                            var result = await connectionContext.Transport.Input.ReadAsync();
+                        // Ensure both sides of the pipe are ok
+                        var result = await connectionContext.Transport.Input.ReadAsync();
                         Assert.True(result.IsCompleted);
                         await connectionContext.Transport.Output.WriteAsync(result.Buffer.First);
                     };
@@ -535,8 +540,8 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
                 {
                     return async connectionContext =>
                     {
-                            // Ensure both sides of the pipe are ok
-                            var result = await connectionContext.Transport.Input.ReadAsync();
+                        // Ensure both sides of the pipe are ok
+                        var result = await connectionContext.Transport.Input.ReadAsync();
                         Assert.True(result.IsCompleted);
                         await connectionContext.Transport.Output.WriteAsync(result.Buffer.First);
                     };
@@ -702,6 +707,39 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
     }
 
     [Fact]
+    public async Task ResponsesForLongPollingHaveCacheHeaders()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var connection = manager.CreateConnection();
+            connection.TransportType = HttpTransportType.LongPolling;
+
+            var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+
+            var services = new ServiceCollection();
+            services.AddSingleton<TestConnectionHandler>();
+            var builder = new ConnectionBuilder(services.BuildServiceProvider());
+            builder.UseConnectionHandler<TestConnectionHandler>();
+            var app = builder.Build();
+            var options = new HttpConnectionDispatcherOptions();
+
+            var context = MakeRequest("/foo", connection, services);
+
+            // Initial poll will complete immediately
+            await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
+            AssertResponseHasCacheHeaders(context.Response);
+
+            var pollContext = MakeRequest("/foo", connection, services);
+            var pollTask = dispatcher.ExecuteAsync(pollContext, options, app);
+            connection.Transport.Output.Complete();
+            await pollTask.DefaultTimeout();
+
+            AssertResponseHasCacheHeaders(pollContext.Response);
+        }
+    }
+
+    [Fact]
     public async Task HttpContextFeatureForLongpollingWorksBetweenPolls()
     {
         using (StartVerifiableLog())
@@ -832,6 +870,11 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
                 Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
                 await strm.FlushAsync();
                 Assert.Equal("Connection ID required", Encoding.UTF8.GetString(strm.ToArray()));
+
+                if (transportType == HttpTransportType.LongPolling)
+                {
+                    AssertResponseHasCacheHeaders(context.Response);
+                }
             }
         }
     }
@@ -1038,6 +1081,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             await dispatcher.ExecuteAsync(context, new HttpConnectionDispatcherOptions(), app);
 
             Assert.Equal(StatusCodes.Status204NoContent, context.Response.StatusCode);
+            AssertResponseHasCacheHeaders(context.Response);
 
             var exists = manager.TryGetConnection(connection.ConnectionId, out _);
             Assert.False(exists);
@@ -1067,6 +1111,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
 
             Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+            AssertResponseHasCacheHeaders(context.Response);
         }
     }
 
@@ -1356,6 +1401,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             await request1.DefaultTimeout();
 
             Assert.Equal(StatusCodes.Status204NoContent, context1.Response.StatusCode);
+            AssertResponseHasCacheHeaders(context1.Response);
 
             count = 0;
             // Wait until the second request has started internally
@@ -1422,11 +1468,13 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             {
                 Assert.Equal(StatusCodes.Status409Conflict, context1.Response.StatusCode);
                 Assert.False(request2.IsCompleted);
+                AssertResponseHasCacheHeaders(context1.Response);
             }
             else
             {
                 Assert.Equal(StatusCodes.Status409Conflict, context2.Response.StatusCode);
                 Assert.False(request1.IsCompleted);
+                AssertResponseHasCacheHeaders(context2.Response);
             }
 
             Assert.Equal(HttpConnectionStatus.Active, connection.Status);
@@ -1465,6 +1513,11 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
 
 
             Assert.Equal(StatusCodes.Status404NotFound, context.Response.StatusCode);
+
+            if (transportType == HttpTransportType.LongPolling)
+            {
+                AssertResponseHasCacheHeaders(context.Response);
+            }
         }
     }
 
@@ -1574,6 +1627,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             await task;
 
             Assert.Equal(StatusCodes.Status204NoContent, context.Response.StatusCode);
+            AssertResponseHasCacheHeaders(context.Response);
             var exists = manager.TryGetConnection(connection.ConnectionToken, out _);
             Assert.False(exists);
         }
@@ -1616,8 +1670,10 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             // Verify the results
             Assert.Equal(StatusCodes.Status204NoContent, context1.Response.StatusCode);
             Assert.Equal(string.Empty, GetContentAsString(context1.Response.Body));
+            AssertResponseHasCacheHeaders(context1.Response);
             Assert.Equal(StatusCodes.Status200OK, context2.Response.StatusCode);
             Assert.Equal("Hello, World", GetContentAsString(context2.Response.Body));
+            AssertResponseHasCacheHeaders(context2.Response);
         }
     }
 
@@ -2348,6 +2404,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
 
             Assert.Equal(StatusCodes.Status500InternalServerError, pollContext.Response.StatusCode);
             Assert.False(manager.TryGetConnection(connection.ConnectionToken, out var _));
+            AssertResponseHasCacheHeaders(pollContext.Response);
         }
     }
 
@@ -2929,38 +2986,38 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
 
         using var host = CreateHost(services =>
             {
-                    // Set default to Cookie auth but use JWT auth for the endpoint
-                    // This makes sure we take the scheme into account when grabbing the token expiration
-                    services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-                    .AddCookie()
-                    .AddJwtBearer(options =>
-                    {
-                        options.TokenValidationParameters =
-                            new TokenValidationParameters
-                            {
-                                LifetimeValidator = (before, expires, token, parameters) => expires > DateTime.UtcNow,
-                                ValidateAudience = false,
-                                ValidateIssuer = false,
-                                ValidateActor = false,
-                                ValidateLifetime = true,
-                                IssuerSigningKey = SecurityKey
-                            };
-
-                        options.Events = new JwtBearerEvents
+                // Set default to Cookie auth but use JWT auth for the endpoint
+                // This makes sure we take the scheme into account when grabbing the token expiration
+                services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie()
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters =
+                        new TokenValidationParameters
                         {
-                            OnMessageReceived = context =>
-                            {
-                                var accessToken = context.Request.Query["access_token"];
-
-                                if (!string.IsNullOrEmpty(accessToken) &&
-                                    (context.HttpContext.WebSockets.IsWebSocketRequest || context.Request.Headers["Accept"] == "text/event-stream"))
-                                {
-                                    context.Token = context.Request.Query["access_token"];
-                                }
-                                return Task.CompletedTask;
-                            }
+                            LifetimeValidator = (before, expires, token, parameters) => expires > DateTime.UtcNow,
+                            ValidateAudience = false,
+                            ValidateIssuer = false,
+                            ValidateActor = false,
+                            ValidateLifetime = true,
+                            IssuerSigningKey = SecurityKey
                         };
-                    });
+
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnMessageReceived = context =>
+                        {
+                            var accessToken = context.Request.Query["access_token"];
+
+                            if (!string.IsNullOrEmpty(accessToken) &&
+                                (context.HttpContext.WebSockets.IsWebSocketRequest || context.Request.Headers["Accept"] == "text/event-stream"))
+                            {
+                                context.Token = context.Request.Query["access_token"];
+                            }
+                            return Task.CompletedTask;
+                        }
+                    };
+                });
             }, endpoints =>
             {
                 endpoints.MapConnectionHandler<JwtConnectionHandler>("/foo", o => o.CloseOnAuthenticationExpiration = true);
@@ -3118,9 +3175,9 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
                     configureServices(services);
                     services.AddAuthorization();
 
-                        // Since tests run in parallel, it's possible multiple servers will startup,
-                        // we use an ephemeral key provider to avoid filesystem contention issues
-                        services.AddSingleton<IDataProtectionProvider, EphemeralDataProtectionProvider>();
+                    // Since tests run in parallel, it's possible multiple servers will startup,
+                    // we use an ephemeral key provider to avoid filesystem contention issues
+                    services.AddSingleton<IDataProtectionProvider, EphemeralDataProtectionProvider>();
                 })
                 .Configure(app =>
                 {
@@ -3176,6 +3233,12 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             if (status == 404)
             {
                 Assert.Equal($"{transportType} transport not supported by this end point type", Encoding.UTF8.GetString(strm.ToArray()));
+            }
+
+            // Check cache headers for LongPolling transport
+            if (transportType == HttpTransportType.LongPolling)
+            {
+                AssertResponseHasCacheHeaders(context.Response);
             }
         }
     }
@@ -3235,6 +3298,13 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         {
             return reader.ReadToEnd();
         }
+    }
+
+    private static void AssertResponseHasCacheHeaders(HttpResponse response)
+    {
+        Assert.Equal("no-cache, no-store", response.Headers.CacheControl);
+        Assert.Equal("no-cache", response.Headers.Pragma);
+        Assert.Equal("Thu, 01 Jan 1970 00:00:00 GMT", response.Headers.Expires);
     }
 }
 

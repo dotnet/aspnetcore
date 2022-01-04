@@ -5,7 +5,6 @@ using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using System.Reflection.Metadata;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Reflection;

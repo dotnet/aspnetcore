@@ -1,11 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using System.IO.Pipelines;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Http;
@@ -34,7 +30,7 @@ public class StreamResponseBodyFeature : IHttpResponseBodyFeature
     /// </summary>
     /// <param name="stream"></param>
     /// <param name="priorFeature"></param>
-    public StreamResponseBodyFeature(Stream stream, IHttpResponseBodyFeature priorFeature)
+    public StreamResponseBodyFeature(Stream stream, IHttpResponseBodyFeature? priorFeature)
     {
         Stream = stream ?? throw new ArgumentNullException(nameof(stream));
         PriorFeature = priorFeature;

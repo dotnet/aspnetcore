@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Security.Claims;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace BasicWebSite;
 
@@ -12,8 +11,8 @@ internal static class ConfigureAuthPoliciesExtensions
     {
         services.AddAuthorization(options =>
         {
-                // This policy cannot succeed since the claim is never added
-                options.AddPolicy("Impossible", policy =>
+            // This policy cannot succeed since the claim is never added
+            options.AddPolicy("Impossible", policy =>
             {
                 policy.AuthenticationSchemes.Add("Api");
                 policy.RequireClaim("Never");

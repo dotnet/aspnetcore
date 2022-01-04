@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Routing;
@@ -58,15 +57,15 @@ public static class HubEndpointRouteBuilderExtensions
         var attributes = typeof(THub).GetCustomAttributes(inherit: true);
         conventionBuilder.Add(e =>
         {
-                // Add all attributes on the Hub as metadata (this will allow for things like)
-                // auth attributes and cors attributes to work seamlessly
-                foreach (var item in attributes)
+            // Add all attributes on the Hub as metadata (this will allow for things like)
+            // auth attributes and cors attributes to work seamlessly
+            foreach (var item in attributes)
             {
                 e.Metadata.Add(item);
             }
 
-                // Add metadata that captures the hub type this endpoint is associated with
-                e.Metadata.Add(new HubMetadata(typeof(THub)));
+            // Add metadata that captures the hub type this endpoint is associated with
+            e.Metadata.Add(new HubMetadata(typeof(THub)));
         });
 
         return new HubEndpointConventionBuilder(conventionBuilder);

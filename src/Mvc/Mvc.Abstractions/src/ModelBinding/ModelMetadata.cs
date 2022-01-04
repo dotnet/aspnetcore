@@ -1,15 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
@@ -396,6 +392,7 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
 
     /// <summary>
     /// Gets a string used by the templating system to discover display-templates and editor-templates.
+    /// Use <see cref="System.ComponentModel.DataAnnotations.UIHintAttribute" /> to specify.
     /// </summary>
     public abstract string? TemplateHint { get; }
 

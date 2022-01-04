@@ -1,10 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
 using System.IO.Pipelines;
-using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
@@ -45,8 +43,8 @@ public class HubConnectionStartBenchmark
         var delegateConnectionFactory = new DelegateConnectionFactory(endPoint =>
         {
             var connection = new DefaultConnectionContext();
-                // prevents keep alive time being activated
-                connection.Features.Set<IConnectionInherentKeepAliveFeature>(new TestConnectionInherentKeepAliveFeature());
+            // prevents keep alive time being activated
+            connection.Features.Set<IConnectionInherentKeepAliveFeature>(new TestConnectionInherentKeepAliveFeature());
             connection.Transport = _pipe;
             return new ValueTask<ConnectionContext>(connection);
         });

@@ -1,15 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.WebUtilities;
 
@@ -382,7 +378,7 @@ public class HttpResponseStreamWriter : TextWriter
     }
 
     /// <inheritdoc/>
-    [SuppressMessage("ApiDesign", "RS0027:Public API with optional parameter(s) should have the most parameters amongst its public overloads.", Justification = "Required to maintain compatibility")] 
+    [SuppressMessage("ApiDesign", "RS0027:Public API with optional parameter(s) should have the most parameters amongst its public overloads.", Justification = "Required to maintain compatibility")]
     public override Task WriteLineAsync(ReadOnlyMemory<char> value, CancellationToken cancellationToken = default)
     {
         if (_disposed)

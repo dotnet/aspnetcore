@@ -1,14 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
 using System.Net;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using SignalRSamples.Hubs;
 
 namespace SignalRSamples;
@@ -34,11 +28,11 @@ public class Program
                 })
                 .UseKestrel(options =>
                 {
-                        // Default port
-                        options.ListenLocalhost(5000);
+                    // Default port
+                    options.ListenLocalhost(5000);
 
-                        // Hub bound to TCP end point
-                        options.Listen(IPAddress.Any, 9001, builder =>
+                    // Hub bound to TCP end point
+                    options.Listen(IPAddress.Any, 9001, builder =>
                     {
                         builder.UseHub<Chat>();
                     });
