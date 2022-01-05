@@ -40,10 +40,6 @@ internal sealed class VirtualFileResult : FileResult, IResult
         set => _fileName = value ?? throw new ArgumentNullException(nameof(value));
     }
 
-    // For testing
-    internal Func<string, FileInfo?> ResolveFileLinkTarget { get; init; } =
-        static path => new FileInfo(path).ResolveLinkTarget(true) as FileInfo;
-
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {
@@ -58,23 +54,7 @@ internal sealed class VirtualFileResult : FileResult, IResult
 
         Log.ExecutingFileResult(logger, this);
 
-        var lastModified = fileInfo.LastModified;
-        var length = fileInfo.Length;
-
-        // If the pyshical path is available we should check if it is a symlink and
-        // get the file information from the final link target instead
-        if (!string.IsNullOrEmpty(fileInfo.PhysicalPath))
-        {
-            var linkFileInfo = ResolveFileLinkTarget(fileInfo.PhysicalPath);
-
-            if (linkFileInfo != null)
-            {
-                lastModified = linkFileInfo!.LastWriteTimeUtc;
-                length = linkFileInfo!.Length;
-            }
-        }
-
-        lastModified = LastModified ?? lastModified;
+        var lastModified = LastModified ?? fileInfo.LastModified;
         var fileResultInfo = new FileResultInfo
         {
             ContentType = ContentType,
@@ -87,7 +67,7 @@ internal sealed class VirtualFileResult : FileResult, IResult
         var (range, rangeLength, serveBody) = FileResultHelper.SetHeadersAndLog(
             httpContext,
             fileResultInfo,
-            length,
+            fileInfo.Length,
             EnableRangeProcessing,
             lastModified,
             EntityTag,

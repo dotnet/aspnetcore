@@ -34,10 +34,6 @@ public class VirtualFileResultExecutor : FileResultExecutorBase, IActionResultEx
         _hostingEnvironment = hostingEnvironment;
     }
 
-    // For testing
-    internal Func<string, FileInfo?> ResolveFileLinkTarget { get; init; } =
-        static path => new FileInfo(path).ResolveLinkTarget(true) as FileInfo;
-
     /// <inheritdoc />
     public virtual Task ExecuteAsync(ActionContext context, VirtualFileResult result)
     {
@@ -60,27 +56,11 @@ public class VirtualFileResultExecutor : FileResultExecutorBase, IActionResultEx
 
         Logger.ExecutingFileResult(result, result.FileName);
 
-        var lastModified = fileInfo.LastModified;
-        var length = fileInfo.Length;
-
-        // If the pyshical path is available we should check if it is a symlink and
-        // get the file information from the final link target instead
-        if (!string.IsNullOrEmpty(fileInfo.PhysicalPath))
-        {
-            var linkFileInfo = ResolveFileLinkTarget(fileInfo.PhysicalPath);
-
-            if (linkFileInfo != null)
-            {
-                lastModified = linkFileInfo!.LastWriteTimeUtc;
-                length = linkFileInfo!.Length;
-            }
-        }
-
-        lastModified = result.LastModified ?? lastModified;
+        var lastModified = result.LastModified ?? fileInfo.LastModified;
         var (range, rangeLength, serveBody) = SetHeadersAndLog(
             context,
             result,
-            length,
+            fileInfo.Length,
             result.EnableRangeProcessing,
             lastModified,
             result.EntityTag);

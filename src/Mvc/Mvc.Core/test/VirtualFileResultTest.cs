@@ -83,7 +83,7 @@ public class VirtualFileResultTest : VirtualFileResultTestBase
         var webHostEnvironment = httpContext.RequestServices.GetRequiredService<IWebHostEnvironment>();
         httpContext.RequestServices = new ServiceCollection()
             .AddSingleton(webHostEnvironment)
-            .AddTransient<IActionResultExecutor<VirtualFileResult>, TestVirtualFileResultExecutor>()
+            .AddTransient<IActionResultExecutor<VirtualFileResult>, VirtualFileResultExecutor>()
             .AddTransient<ILoggerFactory, NullLoggerFactory>()
             .BuildServiceProvider();
 
@@ -96,14 +96,5 @@ public class VirtualFileResultTest : VirtualFileResultTestBase
         };
 
         return result.ExecuteResultAsync(actionContext);
-    }
-
-    private class TestVirtualFileResultExecutor : VirtualFileResultExecutor
-    {
-        public TestVirtualFileResultExecutor(ILoggerFactory loggerFactory, IWebHostEnvironment hostingEnvironment)
-            : base(loggerFactory, hostingEnvironment)
-        {
-            ResolveFileLinkTarget = (path) => null;
-        }
     }
 }
