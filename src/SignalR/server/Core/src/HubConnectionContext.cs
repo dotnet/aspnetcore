@@ -666,7 +666,7 @@ public partial class HubConnectionContext
 
                 if (_receivedMessageElapsedTicks >= _clientTimeoutInterval)
                 {
-                    Log.ClientTimeout(_logger, TimeSpan.FromTicks(_clientTimeoutInterval));
+                    Log.ClientTimeout(_logger, TimeSpan.FromMilliseconds(_clientTimeoutInterval));
                     AbortAllowReconnect();
                 }
             }
