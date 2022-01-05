@@ -82,14 +82,14 @@ namespace Microsoft.Extensions.Tools.Internal
             if (item.Exclude != null) sb.Append(" Exclude=\"").Append(item.Exclude).Append('"');
             if (item.Condition != null) sb.Append(" Exclude=\"").Append(item.Condition).Append('"');
             if (!item.Watch) sb.Append(" Watch=\"false\" ");
-        AddAdditionalAttributes(sb, item);
+            AddAdditionalAttributes(sb, item);
             sb.Append(" />");
             _items.Add(sb.ToString());
             return this;
-    }
+        }
 
-    protected virtual void AddAdditionalAttributes(StringBuilder sb, ItemSpec item)
-    {
+        protected virtual void AddAdditionalAttributes(StringBuilder sb, ItemSpec item)
+        {
         }
 
         public TemporaryCSharpProject WithProjectReference(TemporaryCSharpProject reference, bool watch = true)
