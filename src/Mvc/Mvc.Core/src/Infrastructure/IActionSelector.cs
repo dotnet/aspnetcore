@@ -3,7 +3,6 @@
 
 #nullable enable
 
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Routing;
 

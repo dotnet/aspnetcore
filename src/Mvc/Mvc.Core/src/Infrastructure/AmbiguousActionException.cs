@@ -3,7 +3,6 @@
 
 #nullable enable
 
-using System;
 using System.Runtime.Serialization;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;

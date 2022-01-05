@@ -3,7 +3,6 @@
 
 using System.Globalization;
 using Microsoft.AspNetCore.Analyzer.Testing;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteHandlers;
 

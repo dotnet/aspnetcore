@@ -9,7 +9,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Server.Tests;
 

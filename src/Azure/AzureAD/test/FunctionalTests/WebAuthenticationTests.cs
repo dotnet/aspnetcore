@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
-using System.Threading.Tasks;
 using AzureAD.WebSite;
 using Microsoft.AspNetCore.Authentication.AzureAD.UI;
 using Microsoft.AspNetCore.Authentication.AzureADB2C.UI;
@@ -15,7 +14,6 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Authentication.AzureAD.FunctionalTests;
 
