@@ -13,17 +13,6 @@ namespace Microsoft.Extensions.Tools.Internal
 {
     public class TemporaryCSharpProject
     {
-        private const string Template =
- @"<Project Sdk=""{2}"">
-  <PropertyGroup>
-    {0}
-    <OutputType>Exe</OutputType>
-  </PropertyGroup>
-  <ItemGroup>
-    {1}
-  </ItemGroup>
-</Project>";
-
         private readonly string _filename;
         private readonly TemporaryDirectory _directory;
         private readonly List<string> _items = new List<string>();
@@ -41,6 +30,17 @@ namespace Microsoft.Extensions.Tools.Internal
         public string Path => System.IO.Path.Combine(_directory.Root, _filename);
 
         public string Sdk { get; }
+
+        protected virtual string Template =>
+@"<Project Sdk=""{2}"">
+  <PropertyGroup>
+    {0}
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    {1}
+  </ItemGroup>
+</Project>";
 
         public TemporaryCSharpProject WithTargetFrameworks(params string[] tfms)
         {
@@ -82,9 +82,14 @@ namespace Microsoft.Extensions.Tools.Internal
             if (item.Exclude != null) sb.Append(" Exclude=\"").Append(item.Exclude).Append('"');
             if (item.Condition != null) sb.Append(" Exclude=\"").Append(item.Condition).Append('"');
             if (!item.Watch) sb.Append(" Watch=\"false\" ");
+            AddAdditionalAttributes(sb, item);
             sb.Append(" />");
             _items.Add(sb.ToString());
             return this;
+        }
+
+        protected virtual void AddAdditionalAttributes(StringBuilder sb, ItemSpec item)
+        {
         }
 
         public TemporaryCSharpProject WithProjectReference(TemporaryCSharpProject reference, bool watch = true)
