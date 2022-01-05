@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.ResponseCaching;
 using Microsoft.Net.Http.Headers;
@@ -83,12 +84,7 @@ internal class ResponseCacheFilterExecutor
 
         if (VaryByQueryKeys != null)
         {
-            var responseCachingFeature = context.HttpContext.Features.Get<IResponseCachingFeature>();
-            if (responseCachingFeature == null)
-            {
-                throw new InvalidOperationException(
-                    Resources.FormatVaryByQueryKeys_Requires_ResponseCachingMiddleware(nameof(VaryByQueryKeys)));
-            }
+            var responseCachingFeature = context.HttpContext.Features.GetRequiredFeature<IResponseCachingFeature>();
             responseCachingFeature.VaryByQueryKeys = VaryByQueryKeys;
         }
 

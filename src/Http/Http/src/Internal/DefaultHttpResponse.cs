@@ -64,7 +64,7 @@ internal sealed class DefaultHttpResponse : HttpResponse
         get { return HttpResponseBodyFeature.Stream; }
         set
         {
-            var otherFeature = _features.Collection.Get<IHttpResponseBodyFeature>()!;
+            var otherFeature = _features.Collection.GetRequiredFeature<IHttpResponseBodyFeature>();
 
             if (otherFeature is StreamResponseBodyFeature streamFeature
                 && streamFeature.PriorFeature != null

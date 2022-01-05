@@ -50,7 +50,7 @@ internal class Http3Connection : IHttp3StreamLifetimeHandler, IRequestProcessor
         _context = context;
         _streamLifetimeHandler = this;
 
-        _errorCodeFeature = context.ConnectionFeatures.Get<IProtocolErrorCodeFeature>()!;
+        _errorCodeFeature = context.ConnectionFeatures.GetRequiredFeature<IProtocolErrorCodeFeature>();
 
         var httpLimits = context.ServiceContext.ServerOptions.Limits;
 
@@ -300,7 +300,7 @@ internal class Http3Connection : IHttp3StreamLifetimeHandler, IRequestProcessor
                         if (_gracefulCloseStarted)
                         {
                             // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1.2-3
-                            streamContext.Features.Get<IProtocolErrorCodeFeature>()!.Error = (long)Http3ErrorCode.RequestRejected;
+                            streamContext.Features.GetRequiredFeature<IProtocolErrorCodeFeature>().Error = (long)Http3ErrorCode.RequestRejected;
                             streamContext.Abort(new ConnectionAbortedException("HTTP/3 connection is closing and no longer accepts new requests."));
                             await streamContext.DisposeAsync();
 

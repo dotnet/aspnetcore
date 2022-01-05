@@ -35,7 +35,7 @@ internal class ServerSentEventsServerTransport : IHttpTransport
         context.Response.Headers.Pragma = "no-cache";
 
         // Make sure we disable all response buffering for SSE
-        var bufferingFeature = context.Features.Get<IHttpResponseBodyFeature>()!;
+        var bufferingFeature = context.Features.GetRequiredFeature<IHttpResponseBodyFeature>();
         bufferingFeature.DisableBuffering();
 
         context.Response.Headers.ContentEncoding = "identity";
