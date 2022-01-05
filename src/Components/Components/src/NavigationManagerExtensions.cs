@@ -587,7 +587,10 @@ public static class NavigationManagerExtensions
         // Append any parameters with non-null values that did not replace existing parameters.
         foreach (var source in parameterSources.Values)
         {
-            while (source.TryAppendNextParameter(ref newQueryStringBuilder)) ;
+            while (source.TryAppendNextParameter(ref newQueryStringBuilder))
+            {
+                // Read all parameters.
+            }
         }
 
         return newQueryStringBuilder.UriWithQueryString;
@@ -658,7 +661,10 @@ public static class NavigationManagerExtensions
         foreach (var (name, value) in parameters)
         {
             var source = new QueryParameterSource(name, value);
-            while (source.TryAppendNextParameter(ref builder)) ;
+            while (source.TryAppendNextParameter(ref builder))
+            {
+                // Read all parameters.
+            }
         }
 
         return builder.UriWithQueryString;
