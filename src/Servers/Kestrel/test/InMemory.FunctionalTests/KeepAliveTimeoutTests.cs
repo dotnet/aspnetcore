@@ -257,7 +257,10 @@ public class KeepAliveTimeoutTests : LoggedTest
         else if (httpContext.Request.Path == "/consume")
         {
             var buffer = new byte[1024];
-            while (await httpContext.Request.Body.ReadAsync(buffer, 0, buffer.Length) > 0) ;
+            while (await httpContext.Request.Body.ReadAsync(buffer, 0, buffer.Length) > 0)
+            {
+                // Read till end
+            }
         }
 
         await responseStream.WriteAsync(responseBytes, 0, responseBytes.Length);

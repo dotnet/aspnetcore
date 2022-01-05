@@ -312,9 +312,11 @@ internal class RoutePatternMatcher
             {
                 var separator = (RoutePatternSeparatorPart)routeSegment.Parts[indexOfLastSegment - 1];
                 if (requestSegment.EndsWith(
-                separator.Content,
-                StringComparison.OrdinalIgnoreCase))
+                    separator.Content,
+                    StringComparison.OrdinalIgnoreCase))
+                {
                     return false;
+                }
 
                 return MatchComplexSegmentCore(
                     routeSegment,
