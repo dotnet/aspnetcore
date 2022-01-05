@@ -141,6 +141,14 @@ public class PhysicalFileResultExecutor : FileResultExecutorBase, IActionResultE
     protected virtual FileMetadata GetFileInfo(string path)
     {
         var fileInfo = new FileInfo(path);
+
+        // It means we are dealing with a symlink and need to get the information
+        // from the target file instead.
+        if (fileInfo.Exists && fileInfo.ResolveLinkTarget(true) is FileInfo linkTargetInfo)
+        {
+            fileInfo = linkTargetInfo;
+        }
+
         return new FileMetadata
         {
             Exists = fileInfo.Exists,

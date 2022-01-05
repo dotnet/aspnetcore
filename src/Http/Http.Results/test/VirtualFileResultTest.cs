@@ -15,6 +15,7 @@ public class VirtualFileResultTest : VirtualFileResultTestBase
             LastModified = lastModified,
             EntityTag = entityTag,
             EnableRangeProcessing = enableRangeProcessing,
+            ResolveFileLinkTarget = (path) => null
         };
 
         return result.ExecuteAsync(httpContext);
