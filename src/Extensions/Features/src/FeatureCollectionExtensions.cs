@@ -11,11 +11,11 @@ namespace Microsoft.AspNetCore.Http.Features;
 public static class FeatureCollectionExtensions
 {
     /// <summary>
-    /// Get feature of type <typeparamref name="TFeature"/> from the <see cref="IFeatureCollection"/>
+    /// Get feature of type <typeparamref name="TFeature"/> from the <see cref="IFeatureCollection"/>.
+    /// Exception of type <see cref="InvalidOperationException"/> thrown when asked for unregistered feature type
     /// </summary>
     /// <param name="featureCollection"></param>
     /// <returns>Feature object type</returns>
-    /// <exception cref="InvalidOperationException">Thrown when asked for unregistered feature type</exception>
     public static TFeature GetRequiredFeature<TFeature>(this IFeatureCollection featureCollection)
         where TFeature : notnull
     {
@@ -28,13 +28,12 @@ public static class FeatureCollectionExtensions
     }
 
     /// <summary>
-    /// Get feature object of provided type from the <see cref="IFeatureCollection"/>
+    /// Get feature object of provided type from the <see cref="IFeatureCollection"/>.
+    /// Exception of type <see cref="InvalidOperationException"/> thrown when asked for unregistered feature type
     /// </summary>
     /// <param name="featureCollection">feature collection</param>
     /// <param name="featureType">type of feature</param>
     /// <returns>feature object</returns>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="featureCollection"/> is null </exception>
-    /// <exception cref="InvalidOperationException">Thrown when asked for unregistered feature type</exception>
     public static object GetRequiredFeature(this IFeatureCollection featureCollection, Type featureType)
     {
         if (featureCollection == null)
