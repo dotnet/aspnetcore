@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 {
     internal class Http3Connection : IHttp3StreamLifetimeHandler, IRequestProcessor
     {
-        private static readonly object StreamPersistentStateKey = new object();
+        internal static readonly object StreamPersistentStateKey = new object();
 
         // Internal for unit testing
         internal readonly Dictionary<long, IHttp3Stream> _streams = new Dictionary<long, IHttp3Stream>();
