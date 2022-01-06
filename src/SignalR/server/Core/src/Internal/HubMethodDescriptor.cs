@@ -1,12 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 
@@ -24,10 +24,10 @@ internal class HubMethodDescriptor
 
     private readonly MethodInfo? _makeCancelableEnumeratorMethodInfo;
     private Func<object, CancellationToken, IAsyncEnumerator<object>>? _makeCancelableEnumerator;
-        // bitset to store which parameters come from DI
-        private int _isServiceArgument;
+    // bitset to store which parameters come from DI
+    private int _isServiceArgument;
 
-    public HubMethodDescriptor(ObjectMethodExecutor methodExecutor, IServiceProviderIsService? serviceProviderIsService, IEnumerable<IAuthorizeData> policies)
+    public HubMethodDescriptor(ObjectMethodExecutor methodExecutor, IEnumerable<IAuthorizeData> policies)
     {
         MethodExecutor = methodExecutor;
 
@@ -79,7 +79,7 @@ internal class HubMethodDescriptor
                 HasSyntheticArguments = true;
                 return false;
             }
-            else if (serviceProviderIsService?.IsService(p.ParameterType) == true)
+            else if (p.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType)))
             {
                 if (index >= 32)
                 {

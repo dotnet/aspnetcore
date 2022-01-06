@@ -1,16 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading;
 using System.Threading.Channels;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.Metadata;
 using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.AspNetCore.SignalR.Tests;
@@ -1246,50 +1242,58 @@ public class CallerService
     {
         Caller = caller;
     }
+}
 
-    public class Service1
-    { }
-    public class Service2
-    { }
-    public class Service3
-    { }
+[AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = true)]
+public class FromService : Attribute, IFromServiceMetadata
+{ }
+public class Service1
+{ }
+public class Service2
+{ }
+public class Service3
+{ }
 
-    public class ServicesHub : TestHub
+public class ServicesHub : TestHub
+{
+    public bool SingleService([FromService] Service1 service)
     {
-        public bool SingleService(Service1 service)
-        {
-            return true;
-        }
-
-        public bool MultipleServices(Service1 service, Service2 service2, Service3 service3)
-        {
-            return true;
-        }
-
-        public async Task<int> ServicesAndParams(int value, Service1 service, ChannelReader<int> channelReader, Service2 service2, bool value2)
-        {
-            int total = 0;
-            while (await channelReader.WaitToReadAsync())
-            {
-                total += await channelReader.ReadAsync();
-            }
-            return total + value;
-        }
-
-        public async Task Stream(ChannelReader<int> channelReader)
-        {
-            while (await channelReader.WaitToReadAsync())
-            {
-                await channelReader.ReadAsync();
-            }
-        }
+        return true;
     }
 
-    public class TooManyParamsHub : Hub
+    public bool MultipleServices([FromService] Service1 service, [FromService] Service2 service2, [FromService] Service3 service3)
     {
-        public void ManyParams(int a, string b, bool c, float d, string e, int f, int g, int h, int i, int j, int k,
-            int l, int m, int n, int o, int p, int q, int r, int s, int t, int u, int v, int w, int x, int y, int z,
-            int aa, int ab, int ac, int ad, int ae, int af, Service1 service)
-        { }
+        return true;
     }
+
+    public async Task<int> ServicesAndParams(int value, [FromService] Service1 service, ChannelReader<int> channelReader, [FromService] Service2 service2, bool value2)
+    {
+        int total = 0;
+        while (await channelReader.WaitToReadAsync())
+        {
+            total += await channelReader.ReadAsync();
+        }
+        return total + value;
+    }
+
+    public int ServiceWithoutAttribute(Service1 service)
+    {
+        return 1;
+    }
+
+    public async Task Stream(ChannelReader<int> channelReader)
+    {
+        while (await channelReader.WaitToReadAsync())
+        {
+            await channelReader.ReadAsync();
+        }
+    }
+}
+
+public class TooManyParamsHub : Hub
+{
+    public void ManyParams(int a, string b, bool c, float d, string e, int f, int g, int h, int i, int j, int k,
+        int l, int m, int n, int o, int p, int q, int r, int s, int t, int u, int v, int w, int x, int y, int z,
+        int aa, int ab, int ac, int ad, int ae, int af, Service1 service)
+    { }
 }

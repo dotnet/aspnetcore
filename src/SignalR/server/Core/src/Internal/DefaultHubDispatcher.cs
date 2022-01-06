@@ -655,7 +655,6 @@ internal partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> where TH
         var hubName = hubType.Name;
 
         using var scope = _serviceScopeFactory.CreateScope();
-        IServiceProviderIsService? serviceProviderIsService = scope.ServiceProvider.GetService<IServiceProviderIsService>();
 
         foreach (var methodInfo in HubReflectionHelper.GetHubMethods(hubType))
         {
@@ -675,7 +674,7 @@ internal partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> where TH
 
             var executor = ObjectMethodExecutor.Create(methodInfo, hubTypeInfo);
             var authorizeAttributes = methodInfo.GetCustomAttributes<AuthorizeAttribute>(inherit: true);
-            _methods[methodName] = new HubMethodDescriptor(executor, serviceProviderIsService, authorizeAttributes);
+            _methods[methodName] = new HubMethodDescriptor(executor, authorizeAttributes);
 
             Log.HubMethodBound(_logger, hubName, methodName);
         }

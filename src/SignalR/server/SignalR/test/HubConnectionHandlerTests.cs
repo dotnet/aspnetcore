@@ -1,19 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.IO.Pipelines;
-using System.Linq;
 using System.Security.Claims;
 using System.Text;
-using System.Threading;
 using System.Threading.Channels;
-using System.Threading.Tasks;
 using MessagePack;
 using MessagePack.Formatters;
 using MessagePack.Resolvers;
@@ -33,7 +27,6 @@ using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
-using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Tests;
 
@@ -4692,6 +4685,27 @@ public class HubConnectionHandlerTests : VerifiableLoggedTest
             var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
             var res = await client.InvokeAsync(nameof(ServicesHub.Stream)).DefaultTimeout();
             Assert.Equal("An unexpected error occurred invoking 'Stream' on the server. HubException: Client sent 0 stream(s), Hub method expects 1.", res.Error);
+        }
+    }
+
+    [Fact]
+    public async Task ServiceNotResolvedWithoutAttribute()
+    {
+        var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
+        {
+            provider.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+            });
+            provider.AddSingleton<Service1>();
+        });
+        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ServicesHub>>();
+
+        using (var client = new TestClient())
+        {
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+            var res = await client.InvokeAsync(nameof(ServicesHub.ServiceWithoutAttribute)).DefaultTimeout();
+            Assert.Equal("Failed to invoke 'ServiceWithoutAttribute' due to an error on the server. InvalidDataException: Invocation provides 0 argument(s) but target expects 1.", res.Error);
         }
     }
 
