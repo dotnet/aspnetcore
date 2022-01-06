@@ -217,6 +217,9 @@ dotnet_diagnostic.IDE0043.severity = warning
 # IDE0044: Make field readonly
 dotnet_diagnostic.IDE0044.severity = warning
 
+# IDE0051: Remove unused private members
+dotnet_diagnostic.IDE0051.severity = warning
+
 # IDE0055: All formatting rules
 dotnet_diagnostic.IDE0055.severity = warning
 
@@ -266,6 +269,8 @@ dotnet_diagnostic.CA2008.severity = suggestion
 dotnet_diagnostic.CA2012.severity = suggestion
 # IDE0044: Make field readonly
 dotnet_diagnostic.IDE0044.severity = suggestion
+# IDE0051: Remove unused private members
+dotnet_diagnostic.IDE0051.severity = suggestion
 
 # CA2016: Forward the 'CancellationToken' parameter to methods that take one
 dotnet_diagnostic.CA2016.severity = suggestion
