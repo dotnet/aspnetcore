@@ -486,9 +486,4 @@ public class NameValueHeaderValue
             throw new FormatException(string.Format(CultureInfo.InvariantCulture, "The header value is invalid: '{0}'", value));
         }
     }
-
-    private static NameValueHeaderValue CreateNameValue()
-    {
-        return new NameValueHeaderValue();
-    }
 }
