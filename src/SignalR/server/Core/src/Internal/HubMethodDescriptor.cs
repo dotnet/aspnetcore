@@ -7,7 +7,6 @@ using System.Reflection;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Metadata;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.SignalR.Internal;
