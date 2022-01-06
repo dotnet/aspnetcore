@@ -11,11 +11,12 @@ namespace Microsoft.AspNetCore.Http.Features;
 public static class FeatureCollectionExtensions
 {
     /// <summary>
-    /// Get feature of type <typeparamref name="TFeature"/> from the <see cref="IFeatureCollection"/>.
-    /// Exception of type <see cref="InvalidOperationException"/> thrown when asked for unregistered feature type
+    /// Retrives the requested feature from the collection.
+    /// Throws an <see cref="InvalidOperationException"/> if the feature is not present.
     /// </summary>
-    /// <param name="featureCollection"></param>
-    /// <returns>Feature object type</returns>
+    /// <param name="featureCollection">The <see cref="IFeatureCollection"/>.</param>
+    /// <typeparam name="TFeature">The feature key.</typeparam>
+    /// <returns>The requested feature.</returns>
     public static TFeature GetRequiredFeature<TFeature>(this IFeatureCollection featureCollection)
         where TFeature : notnull
     {
@@ -24,28 +25,28 @@ public static class FeatureCollectionExtensions
             throw new ArgumentNullException(nameof(featureCollection));
         }
 
-        return featureCollection.Get<TFeature>() ?? throw new InvalidOperationException($"{typeof(TFeature).Name} is not available");
+        return featureCollection.Get<TFeature>() ?? throw new InvalidOperationException($"Feature with key {typeof(TFeature)} is not present.");
     }
 
     /// <summary>
-    /// Get feature object of provided type from the <see cref="IFeatureCollection"/>.
-    /// Exception of type <see cref="InvalidOperationException"/> thrown when asked for unregistered feature type
+    /// Retrives the requested feature from the collection.
+    /// Throws an <see cref="InvalidOperationException"/> if the feature is not present.
     /// </summary>
     /// <param name="featureCollection">feature collection</param>
-    /// <param name="featureType">type of feature</param>
-    /// <returns>feature object</returns>
-    public static object GetRequiredFeature(this IFeatureCollection featureCollection, Type featureType)
+    /// <param name="key">The feature key.</param>
+    /// <returns>The requested feature.</returns>
+    public static object GetRequiredFeature(this IFeatureCollection featureCollection, Type key)
     {
         if (featureCollection == null)
         {
             throw new ArgumentNullException(nameof(featureCollection));
         }
 
-        if (featureType == null)
+        if (key == null)
         {
-            throw new ArgumentNullException(nameof(featureType));
+            throw new ArgumentNullException(nameof(key));
         }
 
-        return featureCollection[featureType] ?? throw new InvalidOperationException($"{featureType.Name} is not available");
+        return featureCollection[key] ?? throw new InvalidOperationException($"{key} is not present.");
     }
 }

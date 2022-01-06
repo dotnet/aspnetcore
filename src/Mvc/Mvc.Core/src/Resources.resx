@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!--
     Microsoft ResX Schema
@@ -366,9 +366,6 @@
   </data>
   <data name="MiddewareFilter_NoConfigureMethod" xml:space="preserve">
     <value>A public method named '{0}' could not be found in the '{1}' type.</value>
-  </data>
-  <data name="MiddlewareFilterBuilder_NoMiddlewareFeature" xml:space="preserve">
-    <value>Could not find '{0}' in the feature list.</value>
   </data>
   <data name="MiddlewareFilterBuilder_NullApplicationBuilder" xml:space="preserve">
     <value>The '{0}' property cannot be null.</value>

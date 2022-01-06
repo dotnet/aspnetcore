@@ -98,7 +98,7 @@ public class MiddlewareFilterBuilderTest
         // Assert
         Assert.NotNull(pipeline);
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => pipeline(httpContext));
-        Assert.Equal("IMiddlewareFilterFeature is not available", exception.Message);
+        Assert.Equal($"Feature with key {typeof(IMiddlewareFilterFeature)} is not present.", exception.Message);
     }
 
     [Fact]
