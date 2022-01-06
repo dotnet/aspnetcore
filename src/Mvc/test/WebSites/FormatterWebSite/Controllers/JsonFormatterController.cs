@@ -101,7 +101,9 @@ public class JsonFormatterController : Controller
     public ActionResult<SimpleModelWithValidation> RoundtripModelWithValidation([FromBody] SimpleModelWithValidation model)
     {
         if (!ModelState.IsValid)
+        {
             return ValidationProblem();
+        }
         return model;
     }
 }

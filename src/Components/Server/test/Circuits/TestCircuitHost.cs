@@ -28,7 +28,7 @@ internal class TestCircuitHost : CircuitHost
     {
         serviceScope = serviceScope ?? new AsyncServiceScope(Mock.Of<IServiceScope>());
         clientProxy = clientProxy ?? new CircuitClientProxy(Mock.Of<IClientProxy>(), Guid.NewGuid().ToString());
-        var jsRuntime = new RemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions()), Mock.Of<ILogger<RemoteJSRuntime>>());
+        var jsRuntime = new RemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions<ComponentHub>()), Mock.Of<ILogger<RemoteJSRuntime>>());
         var serviceProvider = new Mock<IServiceProvider>();
         serviceProvider
             .Setup(services => services.GetService(typeof(IJSRuntime)))

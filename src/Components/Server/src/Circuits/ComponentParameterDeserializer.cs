@@ -81,32 +81,6 @@ internal sealed partial class ComponentParameterDeserializer
         return true;
     }
 
-    private ComponentParameter[] GetParameterDefinitions(string parametersDefinitions)
-    {
-        try
-        {
-            return JsonSerializer.Deserialize<ComponentParameter[]>(parametersDefinitions, ServerComponentSerializationSettings.JsonSerializationOptions);
-        }
-        catch (Exception e)
-        {
-            Log.FailedToParseParameterDefinitions(_logger, e);
-            return null;
-        }
-    }
-
-    private JsonDocument GetParameterValues(string parameterValues)
-    {
-        try
-        {
-            return JsonDocument.Parse(parameterValues);
-        }
-        catch (Exception e)
-        {
-            Log.FailedToParseParameterValues(_logger, e);
-            return null;
-        }
-    }
-
     private static partial class Log
     {
         [LoggerMessage(1, LogLevel.Debug, "Parameter values must be an array.", EventName = "ParameterValuesInvalidFormat")]

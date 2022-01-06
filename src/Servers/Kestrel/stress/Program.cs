@@ -324,7 +324,10 @@ public class Program
                         throw new Exception($"Expected {maxContentLength}, got {m.Content.Headers.ContentLength}");
                     }
                     string r = await m.Content.ReadAsStringAsync();
-                    if (r.Length > 0) throw new Exception($"Got unexpected response: {r}");
+                    if (r.Length > 0)
+                    {
+                        throw new Exception($"Got unexpected response: {r}");
+                    }
                 }
             }),
 
@@ -339,7 +342,10 @@ public class Program
                 {
                     ValidateResponse(m, httpVersion);
                     string r = await m.Content.ReadAsStringAsync();
-                    if (r != "") throw new Exception($"Got unexpected response: {r}");
+                    if (r != "")
+                    {
+                        throw new Exception($"Got unexpected response: {r}");
+                    }
                 }
             }),
         };
@@ -712,7 +718,9 @@ public class Program
         protected override void OnEventSourceCreated(EventSource eventSource)
         {
             if (eventSource.Name == "Microsoft-System-Net-Http")
+            {
                 EnableEvents(eventSource, EventLevel.LogAlways);
+            }
         }
 
         protected override void OnEventWritten(EventWrittenEventArgs eventData)
@@ -724,7 +732,10 @@ public class Program
                     var sb = new StringBuilder().Append(FormattableString.Invariant($"[{eventData.EventName}] "));
                     for (int i = 0; i < eventData.Payload.Count; i++)
                     {
-                        if (i > 0) sb.Append(", ");
+                        if (i > 0)
+                        {
+                            sb.Append(", ");
+                        }
                         sb.Append(eventData.PayloadNames[i]).Append(": ").Append(eventData.Payload[i]);
                     }
                     _writer.WriteLine(sb);
@@ -736,7 +747,10 @@ public class Program
                     Console.ResetColor();
                     for (int i = 0; i < eventData.Payload.Count; i++)
                     {
-                        if (i > 0) Console.Write(", ");
+                        if (i > 0)
+                        {
+                            Console.Write(", ");
+                        }
                         Console.ForegroundColor = ConsoleColor.DarkGray;
                         Console.Write(eventData.PayloadNames[i] + ": ");
                         Console.ResetColor();

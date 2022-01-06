@@ -424,6 +424,52 @@ public abstract class JsonResultExecutorTestBase
         }
     }
 
+    [Fact]
+    public async Task ExecuteAsync_AsyncEnumerableThrowsCustomOCE_SurfacesError()
+    {
+        var context = GetActionContext();
+        var cts = new CancellationTokenSource();
+        context.HttpContext.RequestAborted = cts.Token;
+        var result = new JsonResult(AsyncEnumerableThrows());
+        var executor = CreateExecutor();
+
+        // Act & Assert
+        await Assert.ThrowsAsync<OperationCanceledException>(() => executor.ExecuteAsync(context, result));
+
+        async IAsyncEnumerable<int> AsyncEnumerableThrows([EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            await Task.Yield();
+            yield return 1;
+            throw new OperationCanceledException();
+        }
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_AsyncEnumerableThrowsConnectionAbortedOCE_DoesNotSurfaceError()
+    {
+        var context = GetActionContext();
+        var cts = new CancellationTokenSource();
+        context.HttpContext.RequestAborted = cts.Token;
+        var result = new JsonResult(AsyncEnumerableThrows());
+        var executor = CreateExecutor();
+
+        // Act
+        await executor.ExecuteAsync(context, result);
+
+        // Assert
+        var written = GetWrittenBytes(context.HttpContext);
+        // System.Text.Json might write the '[' before cancellation is observed (utf-16 means 2 bytes per character)
+        Assert.InRange(written.Length, 0, 2);
+
+        async IAsyncEnumerable<int> AsyncEnumerableThrows([EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            await Task.Yield();
+            cts.Cancel();
+            cancellationToken.ThrowIfCancellationRequested();
+            yield return 1;
+        }
+    }
+
     protected IActionResultExecutor<JsonResult> CreateExecutor() => CreateExecutor(NullLoggerFactory.Instance);
 
     protected abstract IActionResultExecutor<JsonResult> CreateExecutor(ILoggerFactory loggerFactory);
