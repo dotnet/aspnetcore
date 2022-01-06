@@ -437,7 +437,7 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
         return false;
     }
 
-    private static bool ParsePreface(in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
+    private bool ParsePreface(in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
     {
         consumed = buffer.Start;
         examined = buffer.End;
@@ -452,11 +452,42 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
 
         if (!span.SequenceEqual(ClientPreface))
         {
+            // This incoming request data isn't valid HTTP/2. Do some additional investigation of the content to see whether
+            // we can write a clear log message of what is wrong.
+            // A common pit of failure is not using TLS and having pre-negotated HTTP version.
+            //
+            // Do this check when not using TLS. With TLS, ALPN should have already errored if the wrong version is used.
+            var tlsFeature = ConnectionFeatures.Get<ITlsHandshakeFeature>();
+            if (tlsFeature == null)
+            {
+                CheckWrongHttpVersion(buffer);
+            }
+
             throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorInvalidPreface, Http2ErrorCode.PROTOCOL_ERROR);
         }
 
         consumed = examined = preface.End;
         return true;
+    }
+
+    private void CheckWrongHttpVersion(in ReadOnlySequence<byte> buffer)
+    {
+        // Check to see if the request bytes are an HTTP/1.x request.
+        // Initial request line will end with "HTTP/1.0" or "HTTP/1.1".
+        // Note that this test isn't perfect. It is possible the entire first request line isn't in the buffer./
+        // In that case nothing is written to the log.
+        var reader = new SequenceReader<byte>(buffer);
+        if (reader.TryReadTo(out ReadOnlySpan<byte> requestLine, (byte)'\n', advancePastDelimiter: true))
+        {
+            if (requestLine.Length > 10 && requestLine[requestLine.Length - 1] == (byte)'\r')
+            {
+                var detectedVersion = HttpUtilities.GetKnownVersion(requestLine.Slice(requestLine.Length - 9, 8));
+                if (detectedVersion == HttpVersion.Http10 || detectedVersion == HttpVersion.Http11)
+                {
+                    Log.PossibleInvalidHttpVersionDetected(ConnectionId, HttpVersion.Http2, detectedVersion);
+                }
+            }
+        }
     }
 
     private Task ProcessFrameAsync<TContext>(IHttpApplication<TContext> application, in ReadOnlySequence<byte> payload) where TContext : notnull
