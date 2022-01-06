@@ -35,9 +35,6 @@
     <NoWarn Condition="'$(TargetFrameworks)' != ''">$(NoWarn);IDE0005</NoWarn>
 
     <!-- Enable .NET code style analysis during build for src projects. -->
-    <!-- Workaround bug where turning this on produces warnings in VS -->
-    <!-- See https://github.com/dotnet/roslyn/issues/54867 for more info. -->
-    <EnforceCodeStyleInBuild Condition="'$(BuildingInsideVisualStudio)' == 'true' AND $([MSBuild]::VersionGreaterThanOrEquals('$(VisualStudioVersion)', '17.0'))">false</EnforceCodeStyleInBuild>
     <EnforceCodeStyleInBuild Condition="'$(EnforceCodeStyleInBuild)' == ''">true</EnforceCodeStyleInBuild>
 
     <!-- Enable trimming annotation validation in DI. See https://github.com/dotnet/runtime/blob/main/docs/workflow/trimming/feature-switches.md -->
