@@ -44,6 +44,16 @@ public class DownloadFilesController : Controller
         return PhysicalFile(path, "text/plain", "downloadName.txt", lastModified, entityTag, true);
     }
 
+    public IActionResult DownloadFromDiskSymlink()
+    {
+        var path = Path.Combine(_hostingEnvironment.ContentRootPath, "sample.txt");
+        var symlink = Path.Combine(_hostingEnvironment.ContentRootPath, Path.GetRandomFileName());
+
+        var fileInfo = System.IO.File.CreateSymbolicLink(symlink, path);
+
+        return PhysicalFile(fileInfo.FullName, "text/plain");
+    }
+
     public IActionResult DownloadFromStream()
     {
         var stream = new MemoryStream();

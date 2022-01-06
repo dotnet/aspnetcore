@@ -144,9 +144,9 @@ public class PhysicalFileResultExecutor : FileResultExecutorBase, IActionResultE
 
         // It means we are dealing with a symlink and need to get the information
         // from the target file instead.
-        if (fileInfo.Exists && fileInfo.ResolveLinkTarget(true) is FileInfo linkTargetInfo)
+        if (fileInfo.Exists && !string.IsNullOrEmpty(fileInfo.LinkTarget))
         {
-            fileInfo = linkTargetInfo;
+            fileInfo = fileInfo.ResolveLinkTarget(true) as FileInfo ?? fileInfo;
         }
 
         return new FileMetadata
