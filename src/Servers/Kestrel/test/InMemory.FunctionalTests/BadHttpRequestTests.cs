@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
 using BadHttpRequestException = Microsoft.AspNetCore.Http.BadHttpRequestException;
@@ -135,6 +136,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 $"{requestTarget} HTTP/1.1\r\nHost: {host}\r\n\r\n",
                 "400 Bad Request",
                 CoreStrings.FormatBadRequest_InvalidHostHeader_Detail(host.Trim()));
+        }
+
+        [Fact]
+        public async Task BadRequestIfHostHeaderDoesNotMatchRequestTarget_OptOut()
+        {
+            var receivedHost = StringValues.Empty;
+            await using var server = new TestServer(context =>
+            {
+                receivedHost = context.Request.Headers.Host;
+                return Task.CompletedTask;
+            }, new TestServiceContext(LoggerFactory)
+            {
+                ServerOptions = new KestrelServerOptions()
+                {
+                    EnableInsecureAbsoluteFormHostOverride = true,
+                }
+            });
+            using var client = server.CreateConnection();
+
+            await client.SendAll($"GET http://www.foo.com/api/data HTTP/1.1\r\nHost: www.foo.comConnection: keep-alive\r\n\r\n");
+
+            await client.Receive("HTTP/1.1 200 OK");
+
+            Assert.Equal("www.foo.com:80", receivedHost);
         }
 
         [Fact]

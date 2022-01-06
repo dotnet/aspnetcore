@@ -603,7 +603,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if (!_absoluteRequestTarget.IsDefaultPort
                         || hostText != _absoluteRequestTarget.Authority + ":" + _absoluteRequestTarget.Port.ToString(CultureInfo.InvariantCulture))
                     {
-                        KestrelBadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
+                        // https://datatracker.ietf.org/doc/html/rfc2616/#section-5.2
+                        //    1. If Request-URI is an absoluteURI, the host is part of the
+                        // Request-URI. Any Host header field value in the request MUST be
+                        // ignored.
+                        // We don't want to leave the invalid value for the app to accidentally consume,
+                        // replace it with the value from the request line.
+                        if (_context.ServiceContext.ServerOptions.EnableInsecureAbsoluteFormHostOverride)
+                        {
+                            hostText = _absoluteRequestTarget.Authority + ":" + _absoluteRequestTarget.Port.ToString(CultureInfo.InvariantCulture);
+                            HttpRequestHeaders.HeaderHost = hostText;
+                        }
+                        else
+                        {
+                            KestrelBadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
+                        }
                     }
                 }
             }
