@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO.Pipelines;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
@@ -13,6 +14,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpOutputAborter
 {
+    internal static ReadOnlySpan<byte> Http2GoAwayProtocolErrorBytes => new byte[17] { 0, 0, 8, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 };
+
     private const byte ByteAsterisk = (byte)'*';
     private const byte ByteForwardSlash = (byte)'/';
     private const string Asterisk = "*";
@@ -618,7 +621,6 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         _requestTargetForm = HttpRequestTarget.Unknown;
         _absoluteRequestTarget = null;
         _remainingRequestHeadersBytesAllowed = ServerOptions.Limits.MaxRequestHeadersTotalSize + 2;
-        _requestCount++;
 
         MinResponseDataRate = ServerOptions.Limits.MinResponseDataRate;
 
@@ -642,6 +644,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
     {
         // Reset the features and timeout.
         Reset();
+        _requestCount++;
         TimeoutControl.SetTimeout(_keepAliveTicks, TimeoutReason.KeepAlive);
     }
 
@@ -667,6 +670,14 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
             }
             throw;
         }
+#pragma warning disable CS0618 // Type or member is obsolete
+        catch (BadHttpRequestException ex)
+        {
+            DetectHttp2Preface(result.Buffer, ex);
+
+            throw;
+        }
+#pragma warning restore CS0618 // Type or member is obsolete
         finally
         {
             Input.AdvanceTo(reader.Position, isConsumed ? reader.Position : result.Buffer.End);
@@ -710,6 +721,33 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         else
         {
             return false;
+        }
+    }
+
+#pragma warning disable CS0618 // Type or member is obsolete
+    private void DetectHttp2Preface(ReadOnlySequence<byte> requestData, BadHttpRequestException ex)
+#pragma warning restore CS0618 // Type or member is obsolete
+    {
+        const int PrefaceLineLength = 18;
+
+        if (ConnectionFeatures.Get<ITlsHandshakeFeature>() == null)
+        {
+            // If there is an unrecognized HTTP version, it is the first request on the connection, and the request line
+            // bytes matches the HTTP/2 preface request line bytes then log and return a HTTP/2 GOAWAY frame.
+            if (ex.Reason == RequestRejectionReason.UnrecognizedHTTPVersion
+                && _requestCount == 1
+                && requestData.Length >= PrefaceLineLength)
+            {
+                var clientPrefaceRequestLine = Http2.Http2Connection.ClientPreface.Slice(0, PrefaceLineLength);
+                var currentRequestLine = requestData.Slice(0, PrefaceLineLength).ToSpan();
+                if (currentRequestLine.SequenceEqual(clientPrefaceRequestLine))
+                {
+                    Log.PossibleInvalidHttpVersionDetected(ConnectionId, Http.HttpVersion.Http11, Http.HttpVersion.Http2);
+
+                    _context.Transport.Output.Write(Http2GoAwayProtocolErrorBytes);
+                    CancelRequestAbortedToken();
+                }
+            }
         }
     }
 

@@ -992,8 +992,10 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
         {
             return ProduceEnd();
         }
-
-        return Task.CompletedTask;
+        else
+        {
+            return Output.FlushAsync(CancellationToken.None).GetAsTask();
+        }
     }
 
     protected Task ProduceEnd()
