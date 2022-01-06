@@ -690,7 +690,7 @@ public abstract class JsonInputFormatterTestBase : LoggedTest
         public B B { get; set; }
     }
 
-    class B 
+    class B
     {
         public C C { get; set; }
     }
