@@ -603,6 +603,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if (!_absoluteRequestTarget.IsDefaultPort
                         || hostText != _absoluteRequestTarget.Authority + ":" + _absoluteRequestTarget.Port.ToString(CultureInfo.InvariantCulture))
                     {
+                        // Superseded by RFC 7230, but notable for back-compat.
                         // https://datatracker.ietf.org/doc/html/rfc2616/#section-5.2
                         //    1. If Request-URI is an absoluteURI, the host is part of the
                         // Request-URI. Any Host header field value in the request MUST be

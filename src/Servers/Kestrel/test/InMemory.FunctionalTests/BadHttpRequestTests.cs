@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task BadRequestIfHostHeaderDoesNotMatchRequestTarget_OptOut()
+        public async Task CanOptOutOfBadRequestIfHostHeaderDoesNotMatchRequestTarget()
         {
             var receivedHost = StringValues.Empty;
             await using var server = new TestServer(context =>
