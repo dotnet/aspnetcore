@@ -15,10 +15,7 @@
   "BrowserOptions": {
     "Chromium": {
       "BrowserKind": "Chromium",
-      "IsEnabled": true,
-      "Args": {
-        "--ignore-certificate-errors": true
-      }
+      "IsEnabled": true
     },
     "Firefox": {
       "BrowserKind": "Firefox",

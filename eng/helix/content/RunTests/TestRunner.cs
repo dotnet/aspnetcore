@@ -125,13 +125,7 @@ namespace RunTests
                 var tempProjectPath = Path.Combine("Options.HELIX_WORKITEM_ROOT", "TempProj.csproj");
                 File.CreateFile(tempProjectPath);
 
-                await ProcessUtil.RunAsync($"playwright",
-                    "install",
-                    environmentVariables: EnvironmentVariables,
-                    outputDataReceived: Console.WriteLine,
-                    errorDataReceived: Console.Error.WriteLine,
-                    throwOnError: false,
-                    cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
+                var exitCode = Microsoft.Playwright.Program.Main(new[] { "install" });
 
                 File.Delete(tempProjectPath);
 

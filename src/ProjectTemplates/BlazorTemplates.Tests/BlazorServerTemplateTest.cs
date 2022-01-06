@@ -179,7 +179,7 @@ public class BlazorServerTemplateTest : BlazorTemplateTest
 
         // Asynchronously loads and displays the table of weather forecasts
         await page.WaitForSelectorAsync("table>tbody>tr");
-        Assert.Equal(5, (await page.QuerySelectorAllAsync("p+table>tbody>tr")).Count);
+        Assert.Equal(5, await page.Locator("p+table>tbody>tr").CountAsync());
     }
 
     [Theory]
