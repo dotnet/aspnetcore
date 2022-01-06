@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Http.Features;
 public class HttpRequestFeature : IHttpRequestFeature
 {
     /// <summary>
-    /// Initiaizes a new instance of <see cref="HttpRequestFeature"/>.
+    /// Initializes a new instance of <see cref="HttpRequestFeature"/>.
     /// </summary>
     public HttpRequestFeature()
     {

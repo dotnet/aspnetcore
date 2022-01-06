@@ -118,7 +118,7 @@ public class MvcOptions : IEnumerable<ICompatibilitySwitch>
     /// </para>
     /// <para>
     /// MVC does not support non-nullable reference type annotations on type arguments and type parameter
-    /// contraints. The framework will not infer any validation attributes for generic-typed properties
+    /// constraints. The framework will not infer any validation attributes for generic-typed properties
     /// or collection elements.
     /// </para>
     /// </remarks>
