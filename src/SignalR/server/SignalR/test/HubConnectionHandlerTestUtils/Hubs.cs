@@ -1294,6 +1294,6 @@ public class TooManyParamsHub : Hub
 {
     public void ManyParams(int a, string b, bool c, float d, string e, int f, int g, int h, int i, int j, int k,
         int l, int m, int n, int o, int p, int q, int r, int s, int t, int u, int v, int w, int x, int y, int z,
-        int aa, int ab, int ac, int ad, int ae, int af, Service1 service)
+        int aa, int ab, int ac, int ad, int ae, int af, [FromService] Service1 service)
     { }
 }

@@ -4604,7 +4604,7 @@ public class HubConnectionHandlerTests : VerifiableLoggedTest
         {
             var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
             var res = await client.InvokeAsync(nameof(ServicesHub.SingleService)).DefaultTimeout();
-            Assert.Equal("Failed to invoke 'SingleService' due to an error on the server. InvalidDataException: Invocation provides 0 argument(s) but target expects 1.", res.Error);
+            Assert.Equal("An unexpected error occurred invoking 'SingleService' on the server. InvalidOperationException: No service for type 'Microsoft.AspNetCore.SignalR.Tests.Service1' has been registered.", res.Error);
         }
     }
 
