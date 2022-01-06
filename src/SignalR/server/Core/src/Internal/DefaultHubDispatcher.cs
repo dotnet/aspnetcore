@@ -654,8 +654,6 @@ internal partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> where TH
         var hubTypeInfo = hubType.GetTypeInfo();
         var hubName = hubType.Name;
 
-        using var scope = _serviceScopeFactory.CreateScope();
-
         foreach (var methodInfo in HubReflectionHelper.GetHubMethods(hubType))
         {
             if (methodInfo.IsGenericMethod)
