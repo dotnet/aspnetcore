@@ -134,7 +134,7 @@
       <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <AdditionalIncludeDirectories>..\IISLib;..\CommonLib;.\Inc;..\RequestHandlerLib</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\IISLib;..\CommonLib;.\Inc;..\RequestHandlerLib;;C:\Github\aspnetcore\.dotnet\packs\Microsoft.NETCore.App.Host.win-x64\7.0.0-alpha.1.21612.5\runtimes\win-x64\native</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
       <SDLCheck>true</SDLCheck>
       <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -205,7 +205,7 @@
       <PreprocessorDefinitions>NDEBUG;REQUESTHANDLER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>..\IISLib;..\CommonLib;.\Inc;..\RequestHandlerLib</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\IISLib;..\CommonLib;.\Inc;..\RequestHandlerLib;;C:\Github\aspnetcore\.dotnet\packs\Microsoft.NETCore.App.Host.win-x64\7.0.0-alpha.1.21612.5\runtimes\win-x64\native</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
       <SDLCheck>true</SDLCheck>
       <WholeProgramOptimization>true</WholeProgramOptimization>

@@ -11,6 +11,11 @@
 #include "Environment.h"
 #include "StringHelpers.h"
 #include "RegistryKey.h"
+//#include "ModuleHelpers.h"
+//#include "GlobalVersionUtility.h"
+//
+#define NETHOST_USE_AS_STATIC
+#include <nethost.h>
 
 namespace fs = std::filesystem;
 
@@ -60,6 +65,20 @@ HostFxrResolver::GetHostFxrParameters(
         {
             dotnetExePath = GetAbsolutePathToDotnet(applicationPhysicalPath, expandedProcessPath);
         }
+
+
+        // REVIEW TODO: do we need to throw if we aren't in shim?
+
+        //std::wstring hostfxrPath;
+        //size_t size = MAX_PATH * 2;
+        //hostfxrPath.resize(size);
+
+        //get_hostfxr_parameters params;
+        //params.assembly_path = applicationPhysicalPath.c_str();
+        //// REVIEW: when do we set dotnet_root path?
+
+        //get_hostfxr_path(hostfxrPath.data(), &size, &params);
+
 
         hostFxrDllPath = GetAbsolutePathToHostFxr(dotnetExePath);
 

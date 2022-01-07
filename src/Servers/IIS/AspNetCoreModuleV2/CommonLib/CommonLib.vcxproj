@@ -102,7 +102,7 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <ShowIncludes>false</ShowIncludes>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>..\iislib;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\iislib;C:\Github\aspnetcore\.dotnet\packs\Microsoft.NETCore.App.Host.win-x86\7.0.0-alpha.1.21612.5\runtimes\win-x86\native</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ForcedIncludeFiles>stdafx.h</ForcedIncludeFiles>
@@ -127,7 +127,7 @@
       <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <ShowIncludes>false</ShowIncludes>
-      <AdditionalIncludeDirectories>..\iislib;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\iislib;C:\Github\aspnetcore\.dotnet\packs\Microsoft.NETCore.App.Host.win-x64\7.0.0-alpha.1.21612.5\runtimes\win-x64\native;</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ForcedIncludeFiles>stdafx.h</ForcedIncludeFiles>
@@ -152,10 +152,11 @@
       <ConformanceMode>true</ConformanceMode>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <ShowIncludes>false</ShowIncludes>
-      <AdditionalIncludeDirectories>..\iislib;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\iislib;C:\Github\aspnetcore\.dotnet\packs\Microsoft.NETCore.App.Host.win-x86\7.0.0-alpha.1.21612.5\runtimes\win-x86\native</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ForcedIncludeFiles>stdafx.h</ForcedIncludeFiles>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -178,7 +179,7 @@
       <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\iislib;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\iislib;C:\Github\aspnetcore\.dotnet\packs\Microsoft.NETCore.App.Host.win-x64\7.0.0-alpha.1.21612.5\runtimes\win-x64\native;</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalUsingDirectories>
       </AdditionalUsingDirectories>
@@ -195,7 +196,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalLibraryDirectories>..\iislib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\iislib;C:\Github\aspnetcore\.dotnet\packs\Microsoft.NETCore.App.Host.win-x64\7.0.0-alpha.1.21612.5\runtimes\win-x64\native</AdditionalLibraryDirectories>
+      <AdditionalIncludeDirectories>..\iislib;C:\Github\aspnetcore\.dotnet\packs\Microsoft.NETCore.App.Host.win-x64\7.0.0-alpha.1.21612.5\runtimes\win-x64\native</AdditionalIncludeDirectories>
+      <AdditionalDependencies>libnethost.lib</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>

@@ -145,7 +145,7 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)include;%(AdditionalIncludeDirectories);..\RequestHandlerLib;..\IISLib;..\CommonLib;$(GoogleTestSubmoduleRoot)googletest\include;$(GoogleTestSubmoduleRoot)googlemock\include;...\AspNetCore\Inc;..\InProcessRequestHandler\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)include;%(AdditionalIncludeDirectories);..\RequestHandlerLib;..\IISLib;..\CommonLib;$(GoogleTestSubmoduleRoot)googletest\include;$(GoogleTestSubmoduleRoot)googlemock\include;...\AspNetCore\Inc;..\InProcessRequestHandler\;;C:\Github\aspnetcore\.dotnet\packs\Microsoft.NETCore.App.Host.win-x64\7.0.0-alpha.1.21612.5\runtimes\win-x64\native</AdditionalIncludeDirectories>
       <AdditionalOptions>/D "_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING" </AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -230,7 +230,7 @@
       <WarningLevel>Level3</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)include;%(AdditionalIncludeDirectories);..\RequestHandlerLib;..\IISLib;..\CommonLib;$(GoogleTestSubmoduleRoot)googletest\include;$(GoogleTestSubmoduleRoot)googlemock\include;...\AspNetCore\Inc;..\InProcessRequestHandler\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)include;%(AdditionalIncludeDirectories);..\RequestHandlerLib;..\IISLib;..\CommonLib;$(GoogleTestSubmoduleRoot)googletest\include;$(GoogleTestSubmoduleRoot)googlemock\include;...\AspNetCore\Inc;..\InProcessRequestHandler\;;C:\Github\aspnetcore\.dotnet\packs\Microsoft.NETCore.App.Host.win-x64\7.0.0-alpha.1.21612.5\runtimes\win-x64\native</AdditionalIncludeDirectories>
       <AdditionalOptions>/D "_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING" </AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
