@@ -47,6 +47,6 @@ public static class FeatureCollectionExtensions
             throw new ArgumentNullException(nameof(key));
         }
 
-        return featureCollection[key] ?? throw new InvalidOperationException($"{key} is not present.");
+        return featureCollection[key] ?? throw new InvalidOperationException($"Feature {key} is not present.");
     }
 }
