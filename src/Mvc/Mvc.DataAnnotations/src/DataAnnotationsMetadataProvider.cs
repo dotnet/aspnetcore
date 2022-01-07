@@ -387,6 +387,14 @@ internal class DataAnnotationsMetadataProvider :
             }
         }
 
+        // Examine the type to see if a can apply an attribute
+        // to ensure that there are no null items in a collection.
+        // See https://github.com/dotnet/aspnetcore/issues/38548 for more info.
+        if (HasRequiredGeneric(context))
+        {
+            attributes.Add(new ItemsRequiredAttribute());
+        }
+
         if (requiredAttribute != null)
         {
             context.ValidationMetadata.IsRequired = true;
@@ -442,14 +450,30 @@ internal class DataAnnotationsMetadataProvider :
 
     internal static bool IsRequired(ValidationMetadataProviderContext context)
     {
+        var nullability = CreateNullabilityInfo(context);
+        var isOptional = nullability != null && nullability.ReadState != NullabilityState.NotNull;
+        return !isOptional;
+    }
+
+    internal static bool HasRequiredGeneric(ValidationMetadataProviderContext context)
+    {
+        var nullability = CreateNullabilityInfo(context);
+        if (nullability is { GenericTypeArguments: { Length: 1 } })
+        {
+            return nullability.GenericTypeArguments[0].ReadState == NullabilityState.NotNull;
+        }
+        return false;
+    }
+
+    private static NullabilityInfo? CreateNullabilityInfo(ValidationMetadataProviderContext context)
+    {
         var nullabilityContext = new NullabilityInfoContext();
         var nullability = context.Key.MetadataKind switch
         {
-            ModelMetadataKind.Parameter => nullabilityContext.Create(context.Key.ParameterInfo!),
-            ModelMetadataKind.Property => nullabilityContext.Create(context.Key.PropertyInfo!),
+            ModelMetadataKind.Parameter when context.Key.ParameterInfo is not null => nullabilityContext.Create(context.Key.ParameterInfo),
+            ModelMetadataKind.Property when context.Key.PropertyInfo is not null => nullabilityContext.Create(context.Key.PropertyInfo),
             _ => null
         };
-        var isOptional = nullability != null && nullability.ReadState != NullabilityState.NotNull;
-        return !isOptional;
+        return nullability;
     }
 }

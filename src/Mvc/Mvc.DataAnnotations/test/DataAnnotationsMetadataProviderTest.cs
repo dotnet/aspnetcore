@@ -1470,6 +1470,35 @@ public class DataAnnotationsMetadataProviderTest
         Assert.Equal(expected, actual: context.ValidationMetadata.ValidatorMetadata);
     }
 
+    [Theory]
+    [InlineData(nameof(TypeWithListElements.ListWithRequiredStrings), true)]
+    [InlineData(nameof(TypeWithListElements.ListWithOptionalStrings), false)]
+    [InlineData(nameof(TypeWithListElements.DictionaryWithRequiredValues), false)] // Only supported on List-types
+    public void CreateValidationMetadata_HandlesArrayWithAnnotatedElements(string type, bool hasItemsRequiredAttribute)
+    {
+        // Arrange
+        var provider = CreateProvider();
+
+        var modelType = typeof(TypeWithListElements);
+        var property = modelType.GetProperty(type);
+        var key = ModelMetadataIdentity.ForProperty(property, typeof(List<string>), modelType);
+        var context = new ValidationMetadataProviderContext(key, ModelAttributes.GetAttributesForProperty(modelType, property));
+
+        // Act
+        provider.CreateValidationMetadata(context);
+
+        // Assert
+        Assert.True(context.ValidationMetadata.IsRequired);
+        if (hasItemsRequiredAttribute)
+        {
+            Assert.Contains(context.ValidationMetadata.ValidatorMetadata, m => m is ItemsRequiredAttribute);
+        }
+        else
+        {
+            Assert.DoesNotContain(context.ValidationMetadata.ValidatorMetadata, m => m is ItemsRequiredAttribute);
+        }
+    }
+
     // [Required] has no effect on IsBindingRequired
     [Theory]
     [InlineData(true)]
@@ -1969,6 +1998,14 @@ public class DataAnnotationsMetadataProviderTest
     {
         public override string Property { get; set; } = string.Empty;
     }
+
+    public class TypeWithListElements
+    {
+        public List<string> ListWithRequiredStrings { get; set; } = new();
+        public List<string?> ListWithOptionalStrings { get; set; } = new();
+        public Dictionary<string, int> DictionaryWithRequiredValues { get; set; } = new();
+    }
+
 #nullable restore
 
     public class TypeImplementIInterfaceWithNonNullProperty_AsNullable : AbstraceTypehNonNullProperty

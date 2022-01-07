@@ -2013,8 +2013,10 @@ public class ValidationIntegrationTests
         public IList<Order12> RelatedOrders { get; set; }
     }
 
-    [Fact]
-    public async Task Validation_ListOfType_NoValidatorOnParameter()
+    [Theory]
+    [InlineData("?[0]=1&[1]=2", true)]
+    [InlineData("?[0]=1&[1]=null", false)]
+    public async Task Validation_ListOfType_NoValidatorOnParameter(string queryString, bool isValid)
     {
         // Arrange
         var parameterInfo = GetType().GetMethod(nameof(Validation_ListOfType_NoValidatorOnParameterTestMethod), BindingFlags.NonPublic | BindingFlags.Static)
@@ -2033,7 +2035,7 @@ public class ValidationIntegrationTests
 
         var testContext = ModelBindingTestHelper.GetTestContext(request =>
         {
-            request.QueryString = new QueryString("?[0]=1&[1]=2");
+            request.QueryString = new QueryString(queryString);
         });
 
         var modelState = testContext.ModelState;
@@ -2045,12 +2047,11 @@ public class ValidationIntegrationTests
         Assert.True(modelBindingResult.IsModelSet);
 
         var model = Assert.IsType<List<int>>(modelBindingResult.Model);
-        Assert.Equal(new[] { 1, 2 }, model);
 
-        Assert.False(modelMetadata.HasValidators);
+        Assert.True(modelMetadata.HasValidators);
 
-        Assert.True(modelState.IsValid);
-        Assert.Equal(ModelValidationState.Valid, modelState.ValidationState);
+        Assert.Equal(isValid, modelState.IsValid);
+        Assert.Equal(isValid ? ModelValidationState.Valid : ModelValidationState.Invalid, modelState.ValidationState);
 
         var entry = Assert.Single(modelState, e => e.Key == "[0]").Value;
         Assert.Equal("1", entry.AttemptedValue);
@@ -2058,9 +2059,9 @@ public class ValidationIntegrationTests
         Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
 
         entry = Assert.Single(modelState, e => e.Key == "[1]").Value;
-        Assert.Equal("2", entry.AttemptedValue);
-        Assert.Equal("2", entry.RawValue);
-        Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+        Assert.Equal(isValid ? "2" : "null", entry.AttemptedValue);
+        Assert.Equal(isValid ? "2" : "null", entry.RawValue);
+        Assert.Equal(isValid ? ModelValidationState.Valid : ModelValidationState.Invalid, entry.ValidationState);
     }
 
     private static void Validation_ListOfType_NoValidatorOnParameterTestMethod(List<int> parameter) { }
