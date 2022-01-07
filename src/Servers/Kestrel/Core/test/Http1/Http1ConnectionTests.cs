@@ -202,7 +202,10 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         Assert.Equal($"{connectionId}:00000002", secondId);
 
         var big = 1_000_000;
-        while (big-- > 0) Reset();
+        while (big-- > 0)
+        {
+            Reset();
+        }
         Assert.Equal($"{connectionId}:{count:X8}", feature.TraceIdentifier);
     }
 

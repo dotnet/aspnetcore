@@ -127,7 +127,10 @@ public class RequestHeaderLimitsTests : LoggedTest
     private static string MakeHeaders(int count)
     {
         const string host = "Host:\r\n";
-        if (count <= 1) return host;
+        if (count <= 1)
+        {
+            return host;
+        }
 
         return string.Join("", new[] { host }
             .Concat(Enumerable

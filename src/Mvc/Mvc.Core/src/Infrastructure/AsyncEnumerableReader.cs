@@ -7,12 +7,12 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.Extensions.Internal;
 
 #if JSONNET
 namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 #else
+using Microsoft.AspNetCore.Mvc.Core;
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 #endif
 

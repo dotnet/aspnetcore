@@ -857,7 +857,7 @@ public class HtmlHelper : IHtmlHelper, IViewContextAware
     /// <param name="modelExplorer">The <see cref="ModelExplorer"/>.</param>
     /// <param name="expression">The expression.</param>
     /// <param name="selectList">The select list.</param>
-    /// <param name="optionLabel">The option lable.</param>
+    /// <param name="optionLabel">The option label.</param>
     /// <param name="htmlAttributes">
     /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
     /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
