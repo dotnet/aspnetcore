@@ -1292,8 +1292,11 @@ public class ServicesHub : TestHub
 
 public class TooManyParamsHub : Hub
 {
-    public void ManyParams(int a, string b, bool c, float d, string e, int f, int g, int h, int i, int j, int k,
-        int l, int m, int n, int o, int p, int q, int r, int s, int t, int u, int v, int w, int x, int y, int z,
-        int aa, int ab, int ac, int ad, int ae, int af, [FromService] Service1 service)
+    public void ManyParams(int a1, string a2, bool a3, float a4, string a5, int a6, int a7, int a8, int a9, int a10, int a11,
+        int a12, int a13, int a14, int a15, int a16, int a17, int a18, int a19, int a20, int a21, int a22, int a23, int a24,
+        int a25, int a26, int a27, int a28, int a29, int a30, int a31, int a32, int a33, int a34, int a35, int a36, int a37,
+        int a38, int a39, int a40, int a41, int a42, int a43, int a44, int a45, int a46, int a47, int a48, int a49, int a50,
+        int a51, int a52, int a53, int a54, int a55, int a56, int a57, int a58, int a59, int a60, int a61, int a62, int a63,
+        int a64, [FromService] Service1 service)
     { }
 }

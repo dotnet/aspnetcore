@@ -23,8 +23,8 @@ internal class HubMethodDescriptor
 
     private readonly MethodInfo? _makeCancelableEnumeratorMethodInfo;
     private Func<object, CancellationToken, IAsyncEnumerator<object>>? _makeCancelableEnumerator;
-    // bitset to store which parameters come from DI
-    private int _isServiceArgument;
+    // bitset to store which parameters come from DI up to 64 arguments
+    private ulong _isServiceArgument;
 
     public HubMethodDescriptor(ObjectMethodExecutor methodExecutor, IEnumerable<IAuthorizeData> policies)
     {
@@ -80,12 +80,12 @@ internal class HubMethodDescriptor
             }
             else if (p.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType)))
             {
-                if (index >= 32)
+                if (index >= 64)
                 {
                     throw new InvalidOperationException(
-                        "Hub methods can't use services from DI in the parameters after the 32nd parameter.");
+                        "Hub methods can't use services from DI in the parameters after the 64th parameter.");
                 }
-                _isServiceArgument |= (1 << index);
+                _isServiceArgument |= (1UL << index);
                 HasSyntheticArguments = true;
                 return false;
             }
@@ -120,7 +120,7 @@ internal class HubMethodDescriptor
 
     public bool IsServiceArgument(int argumentIndex)
     {
-        return (_isServiceArgument & (1 << argumentIndex)) != 0;
+        return (_isServiceArgument & (1UL << argumentIndex)) != 0;
     }
 
     public IAsyncEnumerator<object> FromReturnedStream(object stream, CancellationToken cancellationToken)
