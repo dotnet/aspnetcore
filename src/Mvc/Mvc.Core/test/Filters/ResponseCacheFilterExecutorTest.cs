@@ -416,7 +416,7 @@ public class ResponseCacheFilterExecutorTest
 
         // Act & Assert
         var exception = Assert.Throws<InvalidOperationException>(() => executor.Execute(context));
-        Assert.Equal($"Feature with key {typeof(IResponseCachingFeature)} is not present.", exception.Message);
+        Assert.Equal($"Feature {typeof(IResponseCachingFeature)} is not present.", exception.Message);
     }
 
     [Fact]
