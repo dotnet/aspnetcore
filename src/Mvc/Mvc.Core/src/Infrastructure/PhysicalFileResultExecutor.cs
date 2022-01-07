@@ -146,7 +146,7 @@ public class PhysicalFileResultExecutor : FileResultExecutorBase, IActionResultE
         // from the target file instead.
         if (fileInfo.Exists && !string.IsNullOrEmpty(fileInfo.LinkTarget))
         {
-            fileInfo = (FileInfo)fileInfo.ResolveLinkTarget(returnFinalTarget: true) ?? fileInfo;
+            fileInfo = (FileInfo?)fileInfo.ResolveLinkTarget(returnFinalTarget: true) ?? fileInfo;
         }
 
         return new FileMetadata
