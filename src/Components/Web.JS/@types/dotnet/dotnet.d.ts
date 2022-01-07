@@ -3,6 +3,8 @@
 //!
 //! This is generated file, see src/mono/wasm/runtime/rollup.config.js
 
+//! This is not considered public API with backward compatibility guarantees. 
+
 declare interface ManagedPointer {
     __brandManagedPointer: "ManagedPointer";
 }
@@ -197,7 +199,7 @@ declare type DotnetModuleConfig = {
     onConfigLoaded?: () => void;
     onDotnetReady?: () => void;
     imports?: DotnetModuleConfigImports;
-} & EmscriptenModule;
+} & Partial<EmscriptenModule>;
 declare type DotnetModuleConfigImports = {
     require?: (name: string) => any;
     fetch?: (url: string) => Promise<Response>;
