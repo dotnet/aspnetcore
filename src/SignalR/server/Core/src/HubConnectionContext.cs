@@ -670,7 +670,7 @@ namespace Microsoft.AspNetCore.SignalR
 
                     if (_receivedMessageElapsedTicks >= _clientTimeoutInterval)
                     {
-                    Log.ClientTimeout(_logger, TimeSpan.FromMilliseconds(_clientTimeoutInterval));
+                        Log.ClientTimeout(_logger, TimeSpan.FromMilliseconds(_clientTimeoutInterval));
                         AbortAllowReconnect();
                     }
                 }
