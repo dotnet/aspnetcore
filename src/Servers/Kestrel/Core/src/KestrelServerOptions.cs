@@ -36,6 +36,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
         private Func<string, Encoding?> _responseHeaderEncodingSelector = DefaultHeaderEncodingSelector;
 
+        private bool? _enableInsecureAbsoluteFormHostOverride;
+        internal bool EnableInsecureAbsoluteFormHostOverride
+        {
+            get
+            {
+                if (!_enableInsecureAbsoluteFormHostOverride.HasValue)
+                {
+                    _enableInsecureAbsoluteFormHostOverride =
+                        AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.Kestrel.EnableInsecureAbsoluteFormHostOverride", out var enabled) && enabled;
+                }
+                return _enableInsecureAbsoluteFormHostOverride.Value;
+            }
+            set => _enableInsecureAbsoluteFormHostOverride = value;
+        }
+
         // The following two lists configure the endpoints that Kestrel should listen to. If both lists are empty, the "urls" config setting (e.g. UseUrls) is used.
         internal List<ListenOptions> CodeBackedListenOptions { get; } = new List<ListenOptions>();
         internal List<ListenOptions> ConfigurationBackedListenOptions { get; } = new List<ListenOptions>();
