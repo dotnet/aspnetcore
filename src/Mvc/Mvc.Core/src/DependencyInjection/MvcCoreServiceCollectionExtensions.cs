@@ -115,30 +115,37 @@ public static class MvcCoreServiceCollectionExtensions
 
     private static ApplicationPartManager GetApplicationPartManager(IServiceCollection services, IWebHostEnvironment? environment)
     {
-        var manager = GetServiceFromCollection<ApplicationPartManager>(services);
-        if (manager == null)
+        var entryAssemblyName = environment?.ApplicationName;
+        Assembly? entryAssembly = null;
+
+        if (!string.IsNullOrEmpty(entryAssemblyName))
         {
-            manager = new ApplicationPartManager();
-
-            var entryAssemblyName = environment?.ApplicationName;
-            if (string.IsNullOrEmpty(entryAssemblyName))
-            {
-                return manager;
-            }
-
-            manager.PopulateDefaultParts(entryAssemblyName);
+            entryAssembly = Assembly.Load(new AssemblyName(entryAssemblyName));
         }
 
-        return manager;
+        return GetApplicationPartManager(services, entryAssembly);
     }
 
-    private static ApplicationPartManager GetApplicationPartManager(IServiceCollection services, Assembly entryAssembly)
+    private static ApplicationPartManager GetApplicationPartManager(IServiceCollection services, Assembly? entryAssembly)
     {
         var manager = GetServiceFromCollection<ApplicationPartManager>(services);
         if (manager == null)
         {
             manager = new ApplicationPartManager();
-            manager.PopulateDefaultParts(entryAssembly);
+
+            if (entryAssembly != null)
+            {
+                manager.PopulateDefaultParts(entryAssembly);
+            }
+        }
+        else
+        {
+            if (entryAssembly != manager.EntryAssembly)
+            {
+                throw new ArgumentException(
+                    AspNetCore.Mvc.Core.Resources.FormatApplicationPartManager_InvalidEntryAssembly(manager.EntryAssembly?.GetName(), entryAssembly?.GetName()),
+                    nameof(entryAssembly));
+            }
         }
 
         return manager;

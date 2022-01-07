@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
@@ -227,6 +228,84 @@ public class MvcCoreServiceCollectionExtensionsTest
             builder.PartManager.ApplicationParts,
             part => string.Equals(assembly.GetName().Name, part.Name, StringComparison.Ordinal));
         Assert.Contains(builder.PartManager.FeatureProviders, provider => provider is ControllerFeatureProvider);
+    }
+
+    [Fact]
+    public void AddMvcCore_GetsPartsForApplication_ExplictEntryAssembly_MultipleTimes_SameAssembly()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var assembly = typeof(MvcCoreServiceCollectionExtensionsTest).Assembly;
+
+        // Act
+        var builder = services.AddMvcCore(assembly);
+        builder = services.AddMvcCore(System.Reflection.Assembly.Load(assembly.GetName()));
+
+        // Assert
+        Assert.NotNull(builder.PartManager);
+        Assert.NotNull(builder.PartManager.EntryAssembly);
+        Assert.Equal(assembly, builder.PartManager.EntryAssembly);
+        Assert.Contains(
+            builder.PartManager.ApplicationParts,
+            part => string.Equals(assembly.GetName().Name, part.Name, StringComparison.Ordinal));
+        Assert.Contains(builder.PartManager.FeatureProviders, provider => provider is ControllerFeatureProvider);
+    }
+
+    [Fact]
+    public void AddMvcCore_GetsPartsForApplication_ExplictEntryAssembly_MultipleTimes_SameAssemblyFromEnvironmentAndExplicit()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var environment = new Mock<IWebHostEnvironment>();
+        var assembly = typeof(MvcCoreServiceCollectionExtensionsTest).Assembly;
+        var applicationName = assembly.GetName().FullName;
+        environment.SetupGet(e => e.ApplicationName).Returns(applicationName).Verifiable();
+        services.AddSingleton<IWebHostEnvironment>(environment.Object);
+
+        // Act
+        var builder = services.AddMvcCore(assembly);
+        builder = services.AddMvcCore();
+
+        // Assert
+        Assert.NotNull(builder.PartManager);
+        Assert.NotNull(builder.PartManager.EntryAssembly);
+        Assert.Equal(assembly, builder.PartManager.EntryAssembly);
+        Assert.Contains(
+            builder.PartManager.ApplicationParts,
+            part => string.Equals(assembly.GetName().Name, part.Name, StringComparison.Ordinal));
+        Assert.Contains(builder.PartManager.FeatureProviders, provider => provider is ControllerFeatureProvider);
+    }
+
+    [Fact]
+    public void AddMvcCore_GetsPartsForApplication_ExplictEntryAssembly_MultipleTimes_DifferentAssemblies_ThrowsArgumentException()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var assembly = typeof(MvcCoreServiceCollectionExtensionsTest).Assembly;
+
+        // Act
+        var builder = services.AddMvcCore(assembly);
+
+        // Assert
+        Assert.NotNull(builder.PartManager);
+        Assert.NotNull(builder.PartManager.EntryAssembly);
+        Assert.Throws<ArgumentException>("entryAssembly", () => services.AddMvcCore());
+        Assert.Contains(
+            builder.PartManager.ApplicationParts,
+            part => string.Equals(assembly.GetName().Name, part.Name, StringComparison.Ordinal));
+        Assert.Contains(builder.PartManager.FeatureProviders, provider => provider is ControllerFeatureProvider);
+    }
+
+
+    [Fact]
+    public void AddMvcCore_GetsPartsForApplication_ExplictEntryAssembly_Null_ThrowsArgumentNullException()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        Assembly assembly = null;
+
+        // Assert
+        Assert.Throws<ArgumentNullException>("entryAssembly", () => services.AddMvcCore(assembly));
     }
 
     private IEnumerable<Type> SingleRegistrationServiceTypes
