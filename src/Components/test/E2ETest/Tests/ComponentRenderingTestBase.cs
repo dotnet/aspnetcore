@@ -235,7 +235,6 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34941")]
     public void CanAddAndRemoveChildComponentsDynamically()
     {
         // Initially there are zero child components

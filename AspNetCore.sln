@@ -477,12 +477,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{5FE1
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorServerApp", "src\Components\Samples\BlazorServerApp\BlazorServerApp.csproj", "{8DE6625B-C9E4-4949-A75C-89E3FF556724}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Ignitor", "Ignitor", "{9E6FF2AC-6424-49A5-8189-623FFB2A9B4C}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ignitor", "src\Components\Ignitor\src\Ignitor.csproj", "{BE5D6903-34B9-4C29-85A2-811A7EA06DAF}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ignitor.Test", "src\Components\Ignitor\test\Ignitor.Test.csproj", "{F3F89B56-66A9-4EBC-8658-80785827237E}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarkapps", "benchmarkapps", "{0CE1CC26-98CE-4022-A81C-E32AAFC9B819}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Wasm.Performance", "Wasm.Performance", "{6276A9A0-791B-49C1-AD8F-50AC47CDC196}"
@@ -1447,8 +1441,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HostingStartup", "src\SiteExtensions\Sdk\HostingStartup\HostingStartup.csproj", "{5D6F99C5-D292-4459-B8BD-8E4AD42E1B21}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CustomBasePathApp", "src\Components\WebAssembly\testassets\CustomBasePathApp\CustomBasePathApp.csproj", "{E2461809-D2EA-436D-B5C3-8A9EE0A283B8}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IgnitorSample", "src\Components\Samples\IgnitorSample\IgnitorSample.csproj", "{CAFD1885-B87B-4A7A-8BE6-86B0C238C2B1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR.Tests.Utils", "src\SignalR\common\testassets\Tests.Utils\Microsoft.AspNetCore.SignalR.Tests.Utils.csproj", "{C1CDD339-B51B-42BE-99F2-F39A4EC0D404}"
 EndProject
