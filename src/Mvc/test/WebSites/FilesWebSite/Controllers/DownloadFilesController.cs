@@ -47,7 +47,7 @@ public class DownloadFilesController : Controller
     public IActionResult DownloadFromDiskSymlink()
     {
         var path = Path.Combine(_hostingEnvironment.ContentRootPath, "sample.txt");
-        var symlink = Path.Combine(_hostingEnvironment.ContentRootPath, Path.GetRandomFileName());
+        var symlink = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
 
         var fileInfo = System.IO.File.CreateSymbolicLink(symlink, path);
 
