@@ -47,15 +47,6 @@ public class BrowserManager
 
         async Task InitializeCore()
         {
-            // var driverPath = Environment.GetEnvironmentVariable("PLAYWRIGHT_DRIVER_PATH");
-            // if (!string.IsNullOrEmpty(driverPath))
-            // {
-            //     Playwright = await Playwright.CreateAsync(_loggerFactory, driverExecutablePath: driverPath, debug: "pw:api");
-            // }
-            // else
-            // {
-            //     Playwright = await Playwright.CreateAsync(_loggerFactory, debug: "pw:api");
-            // }
             Playwright = await Microsoft.Playwright.Playwright.CreateAsync();
             foreach (var (browserName, options) in _browserManagerConfiguration.BrowserOptions)
             {
