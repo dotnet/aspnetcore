@@ -110,7 +110,7 @@ internal sealed partial class PhysicalFileResult : FileResult, IResult
             // from the target file instead.
             if (fileInfo.Exists && !string.IsNullOrEmpty(fileInfo.LinkTarget))
             {
-                fileInfo = fileInfo.ResolveLinkTarget(true) as FileInfo ?? fileInfo;
+                fileInfo = (FileInfo)fileInfo.ResolveLinkTarget(returnFinalTarget: true) ?? fileInfo;
             }
 
             Exists = fileInfo.Exists;
