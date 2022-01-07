@@ -109,16 +109,6 @@ namespace RunTests
         {
             try
             {
-                Console.WriteLine($"Installing Microsoft.Playwright.CLI");
-
-                await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                    $"tool install Microsoft.Playwright.CLI --tool-path {Options.HELIX_WORKITEM_ROOT}",
-                    environmentVariables: EnvironmentVariables,
-                    outputDataReceived: Console.WriteLine,
-                    errorDataReceived: Console.Error.WriteLine,
-                    throwOnError: false,
-                    cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
-
                 Console.WriteLine($"Installing Playwright Browsers to {Environment.GetEnvironmentVariable("PLAYWRIGHT_BROWSERS_PATH")}");
 
                 var exitCode = Microsoft.Playwright.Program.Main(new[] { "install" });
