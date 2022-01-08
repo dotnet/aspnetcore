@@ -199,24 +199,6 @@ public class TargetPickerUi
         }
     }
 
-    private static Uri GetProxyEndpoint(HttpRequest incomingRequest, string browserEndpoint)
-    {
-        var builder = new UriBuilder(
-            schemeName: incomingRequest.IsHttps ? "wss" : "ws",
-            hostName: incomingRequest.Host.Host)
-        {
-            Path = $"{incomingRequest.PathBase}/ws-proxy",
-            Query = $"browser={WebUtility.UrlEncode(browserEndpoint)}"
-        };
-
-        if (incomingRequest.Host.Port.HasValue)
-        {
-            builder.Port = incomingRequest.Host.Port.Value;
-        }
-
-        return builder.Uri;
-    }
-
     private async Task<IEnumerable<BrowserTab>> GetOpenedBrowserTabs()
     {
         using var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };

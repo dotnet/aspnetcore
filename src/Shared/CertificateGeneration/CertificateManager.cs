@@ -819,8 +819,8 @@ internal abstract class CertificateManager
         [Event(15, Level = EventLevel.Verbose, Message = "Selected certificate: {0}")]
         public void SelectedCertificate(string certificate) => WriteEvent(15, certificate);
 
-        [Event(16, Level = EventLevel.Verbose)]
-        public void NoValidCertificatesFound() => WriteEvent(16, "No valid certificates found.");
+        [Event(16, Level = EventLevel.Verbose, Message = "No valid certificates found.")]
+        public void NoValidCertificatesFound() => WriteEvent(16);
 
 
         [Event(17, Level = EventLevel.Verbose, Message = "Generating HTTPS development certificate.")]
@@ -862,8 +862,8 @@ internal abstract class CertificateManager
         [Event(29, Level = EventLevel.Verbose, Message = "Trusting the certificate to: {0}.")]
         public void TrustCertificateStart(string certificate) => WriteEvent(29, certificate);
 
-        [Event(30, Level = EventLevel.Verbose)]
-        public void TrustCertificateEnd() => WriteEvent(30, "Finished trusting the certificate.");
+        [Event(30, Level = EventLevel.Verbose, Message = "Finished trusting the certificate.")]
+        public void TrustCertificateEnd() => WriteEvent(30);
 
         [Event(31, Level = EventLevel.Error, Message = "An error has occurred while trusting the certificate: {0}.")]
         public void TrustCertificateError(string error) => WriteEvent(31, error);

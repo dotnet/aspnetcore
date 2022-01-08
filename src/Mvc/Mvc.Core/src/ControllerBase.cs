@@ -1920,6 +1920,7 @@ public abstract class ControllerBase
     /// </summary>
     /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
     [NonAction]
+    [DefaultStatusCode(StatusCodes.Status400BadRequest)]
     public virtual ActionResult ValidationProblem([ActionResultObjectValue] ValidationProblemDetails descriptor)
     {
         if (descriptor == null)
@@ -1937,6 +1938,7 @@ public abstract class ControllerBase
     /// <param name="modelStateDictionary">The <see cref="ModelStateDictionary"/>.</param>
     /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
     [NonAction]
+    [DefaultStatusCode(StatusCodes.Status400BadRequest)]
     public virtual ActionResult ValidationProblem([ActionResultObjectValue] ModelStateDictionary modelStateDictionary)
          => ValidationProblem(detail: null, modelStateDictionary: modelStateDictionary);
 
@@ -1947,6 +1949,7 @@ public abstract class ControllerBase
     /// </summary>
     /// <returns>The created <see cref="ActionResult"/> for the response.</returns>
     [NonAction]
+    [DefaultStatusCode(StatusCodes.Status400BadRequest)]
     public virtual ActionResult ValidationProblem()
         => ValidationProblem(ModelState);
 
@@ -1963,6 +1966,7 @@ public abstract class ControllerBase
     /// When <see langword="null"/> uses <see cref="ModelState"/>.</param>
     /// <returns>The created <see cref="ActionResult"/> for the response.</returns>
     [NonAction]
+    [DefaultStatusCode(StatusCodes.Status400BadRequest)]
     public virtual ActionResult ValidationProblem(
         string? detail = null,
         string? instance = null,

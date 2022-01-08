@@ -1,2 +1,9 @@
 #nullable enable
+Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.SystemTextJsonValidationMetadataProvider
+Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.SystemTextJsonValidationMetadataProvider.CreateDisplayMetadata(Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DisplayMetadataProviderContext! context) -> void
+Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.SystemTextJsonValidationMetadataProvider.CreateValidationMetadata(Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ValidationMetadataProviderContext! context) -> void
+Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.SystemTextJsonValidationMetadataProvider.SystemTextJsonValidationMetadataProvider() -> void
+Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.SystemTextJsonValidationMetadataProvider.SystemTextJsonValidationMetadataProvider(System.Text.Json.JsonNamingPolicy! namingPolicy) -> void
+Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ValidationMetadata.ValidationModelName.get -> string?
+Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ValidationMetadata.ValidationModelName.set -> void
 static Microsoft.Extensions.DependencyInjection.MvcCoreServiceCollectionExtensions.AddMvcCore(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Reflection.Assembly! entryAssembly) -> Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder!

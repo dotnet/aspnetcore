@@ -8,7 +8,6 @@ using System.Net.Http;
 using System.Net.Http.QPack;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;

@@ -928,18 +928,18 @@ public abstract class UserManagerSpecificationTestBase<TUser, TKey>
     /// </summary>
     /// <returns>Task</returns>
     [Fact]
-    public virtual async Task CanFindUsersViaUserQuerable()
+    public virtual async Task CanFindUsersViaUserQueryable()
     {
         var mgr = CreateManager();
         if (mgr.SupportsQueryableUsers)
         {
-            var users = GenerateUsers("CanFindUsersViaUserQuerable", 4);
+            var users = GenerateUsers("CanFindUsersViaUserQueryable", 4);
             foreach (var u in users)
             {
                 IdentityResultAssert.IsSuccess(await mgr.CreateAsync(u));
             }
-            Assert.Equal(users.Count, mgr.Users.Count(UserNameStartsWithPredicate("CanFindUsersViaUserQuerable")));
-            Assert.Null(mgr.Users.FirstOrDefault(UserNameEqualsPredicate("bogus")));
+            Assert.Equal(users.Count, mgr.Users.Count(UserNameStartsWithPredicate("CanFindUsersViaUserQueryable")));
+            Assert.Empty(mgr.Users.Where(UserNameEqualsPredicate("bogus")));
         }
     }
 

@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 import { DotNet } from '@microsoft/dotnet-js-interop';
 import { Blazor } from './GlobalExports';
 import { HubConnectionBuilder, HubConnection, HttpTransportType } from '@microsoft/signalr';
@@ -111,7 +114,7 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
           complete: () => controller.close(),
           error: (err) => controller.error(err),
         });
-      }
+      },
     });
 
     DotNet.jsCallDispatcher.supplyDotNetStream(streamId, readableStream);

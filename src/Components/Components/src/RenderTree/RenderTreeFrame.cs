@@ -5,16 +5,10 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
-#if !IGNITOR
 using Microsoft.AspNetCore.Components.Rendering;
-#endif
 using Microsoft.AspNetCore.Internal;
 
-#if IGNITOR
-namespace Ignitor;
-#else
 namespace Microsoft.AspNetCore.Components.RenderTree;
-#endif
 
 /// <summary>
 /// Types in the Microsoft.AspNetCore.Components.RenderTree are not recommended for use outside
@@ -145,9 +139,7 @@ public struct RenderTreeFrame
     [FieldOffset(8)] internal int ComponentSubtreeLengthField;
     [FieldOffset(12)] internal int ComponentIdField;
     [FieldOffset(16)]
-#if !IGNITOR
     [DynamicallyAccessedMembers(Internal.LinkerFlags.Component)]
-#endif
     internal Type ComponentTypeField;
     [FieldOffset(24)] internal ComponentState ComponentStateField;
     [FieldOffset(32)] internal object ComponentKeyField;

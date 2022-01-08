@@ -21,8 +21,6 @@ internal class DictionaryStringArrayWrapper : IDictionary<string, string[]>
 
     private KeyValuePair<string, string[]> Convert(KeyValuePair<string, StringValues> item) => new KeyValuePair<string, string[]>(item.Key, item.Value);
 
-    private StringValues Convert(string[] item) => item;
-
     private string[] Convert(StringValues item) => item;
 
     string[] IDictionary<string, string[]>.this[string key]
