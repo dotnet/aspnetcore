@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Matching;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
@@ -28,6 +29,32 @@ public class PageLoaderMatcherPolicyTest
 
         // Assert
         Assert.Same(compiled.Endpoint, candidateSet[0].Endpoint);
+    }
+
+    [Fact]
+    public async Task ApplyAsync_ReadsLoaderFromRequestServices()
+    {
+        // Arrange
+        var compiled = new CompiledPageActionDescriptor();
+        compiled.Endpoint = CreateEndpoint(new PageActionDescriptor());
+
+        var candidateSet = CreateCandidateSet(compiled);
+        var loader = new Mock<PageLoader>();
+        loader.Setup(l => l.LoadAsync(It.IsAny<PageActionDescriptor>(), It.IsAny<EndpointMetadataCollection>()))
+            .Returns(Task.FromResult(compiled))
+            .Verifiable();
+        var policy = new PageLoaderMatcherPolicy();
+        var httpContext = new DefaultHttpContext
+        {
+            RequestServices = new ServiceCollection().AddSingleton(loader.Object).BuildServiceProvider(),
+        };
+
+        // Act
+        await policy.ApplyAsync(httpContext, candidateSet);
+
+        // Assert
+        Assert.Same(compiled.Endpoint, candidateSet[0].Endpoint);
+        loader.Verify();
     }
 
     [Fact]
