@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc;
 /// Represents an <see cref="ActionResult"/> that when executed will
 /// produce an HTTP response with the given response status code.
 /// </summary>
-public class StatusCodeResult : ActionResult, IClientErrorActionResult
+public partial class StatusCodeResult : ActionResult, IClientErrorActionResult
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="StatusCodeResult"/> class
@@ -41,9 +41,14 @@ public class StatusCodeResult : ActionResult, IClientErrorActionResult
         var httpContext = context.HttpContext;
         var factory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
         var logger = factory.CreateLogger<StatusCodeResult>();
-
-        logger.HttpStatusCodeResultExecuting(StatusCode);
+        Log.HttpStatusCodeResultExecuting(logger, StatusCode);
 
         httpContext.Response.StatusCode = StatusCode;
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(1, LogLevel.Information, "Executing StatusCodeResult, setting HTTP status code {StatusCode}", EventName = "HttpStatusCodeResultExecuting")]
+        public static partial void HttpStatusCodeResultExecuting(ILogger logger, int statusCode);
     }
 }

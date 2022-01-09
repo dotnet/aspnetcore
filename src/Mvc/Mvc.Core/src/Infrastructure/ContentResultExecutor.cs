@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 /// <summary>
 /// A <see cref="IActionResultExecutor{ContentResult}"/> that is responsible for <see cref="ContentResult"/>
 /// </summary>
-public class ContentResultExecutor : IActionResultExecutor<ContentResult>
+public partial class ContentResultExecutor : IActionResultExecutor<ContentResult>
 {
     private const string DefaultContentType = "text/plain; charset=utf-8";
     private readonly ILogger<ContentResultExecutor> _logger;
@@ -60,7 +60,7 @@ public class ContentResultExecutor : IActionResultExecutor<ContentResult>
             response.StatusCode = result.StatusCode.Value;
         }
 
-        _logger.ContentResultExecuting(resolvedContentType);
+        Log.ContentResultExecuting(_logger, resolvedContentType);
 
         if (result.Content != null)
         {
@@ -77,5 +77,11 @@ public class ContentResultExecutor : IActionResultExecutor<ContentResult>
                 await textWriter.FlushAsync();
             }
         }
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(1, LogLevel.Information, "Executing ContentResult with HTTP Response ContentType of {ContentType}", EventName = "ContentResultExecuting")]
+        public static partial void ContentResultExecuting(ILogger logger, string contentType);
     }
 }
