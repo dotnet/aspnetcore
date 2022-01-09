@@ -22,6 +22,8 @@
       "version": "16.8",
       "components": [
         "Microsoft.VisualStudio.Component.VC.ATL",
+        "Microsoft.VisualStudio.Component.VC.ATL.ARM64",
+        "Microsoft.VisualStudio.Component.VC.Tools.ARM64",
         "Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
       ]
     },
