@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -61,6 +62,7 @@ public static partial class RequestDelegateFactory
     private static readonly MemberExpression QueryExpr = Expression.Property(HttpRequestExpr, typeof(HttpRequest).GetProperty(nameof(HttpRequest.Query))!);
     private static readonly MemberExpression HeadersExpr = Expression.Property(HttpRequestExpr, typeof(HttpRequest).GetProperty(nameof(HttpRequest.Headers))!);
     private static readonly MemberExpression FormExpr = Expression.Property(HttpRequestExpr, typeof(HttpRequest).GetProperty(nameof(HttpRequest.Form))!);
+    private static readonly MemberExpression RequestStreamExpr = Expression.Property(HttpRequestExpr, typeof(HttpRequest).GetProperty(nameof(HttpRequest.Body))!);
     private static readonly MemberExpression FormFilesExpr = Expression.Property(FormExpr, typeof(IFormCollection).GetProperty(nameof(IFormCollection.Files))!);
     private static readonly MemberExpression StatusCodeExpr = Expression.Property(HttpResponseExpr, typeof(HttpResponse).GetProperty(nameof(HttpResponse.StatusCode))!);
     private static readonly MemberExpression CompletedTaskExpr = Expression.Property(null, (PropertyInfo)GetMemberInfo<Func<Task>>(() => Task.CompletedTask));
@@ -199,7 +201,7 @@ public static partial class RequestDelegateFactory
             var errorMessage = BuildErrorMessageForInferredBodyParameter(factoryContext);
             throw new InvalidOperationException(errorMessage);
         }
-        if (factoryContext.JsonRequestBodyParameter is not null &&
+        if (factoryContext.RequestBodyParameter is not null &&
             factoryContext.FirstFormRequestBodyParameter is not null)
         {
             var errorMessage = BuildErrorMessageForFormAndJsonBodyParameters(factoryContext);
@@ -301,6 +303,10 @@ public static partial class RequestDelegateFactory
         else if (parameter.ParameterType == typeof(IFormFile))
         {
             return BindParameterFromFormFile(parameter, parameter.Name, factoryContext, RequestDelegateFactoryConstants.FormFileParameter);
+        }
+        else if (parameter.ParameterType == typeof(Stream))
+        {
+            return RequestStreamExpr;
         }
         else if (ParameterBindingMethodCache.HasBindAsyncMethod(parameter))
         {
@@ -549,7 +555,7 @@ public static partial class RequestDelegateFactory
 
     private static Func<object?, HttpContext, Task> HandleRequestBodyAndCompileRequestDelegate(Expression responseWritingMethodCall, FactoryContext factoryContext)
     {
-        if (factoryContext.JsonRequestBodyParameter is null && !factoryContext.ReadForm)
+        if (factoryContext.RequestBodyParameter is null && !factoryContext.ReadForm)
         {
             if (factoryContext.ParameterBinders.Count > 0)
             {
@@ -590,11 +596,14 @@ public static partial class RequestDelegateFactory
 
     private static Func<object?, HttpContext, Task> HandleRequestBodyAndCompileRequestDelegateForJson(Expression responseWritingMethodCall, FactoryContext factoryContext)
     {
-        Debug.Assert(factoryContext.JsonRequestBodyParameter is not null, "factoryContext.JsonRequestBodyParameter is null for a JSON body.");
+        Debug.Assert(factoryContext.RequestBodyParameter is not null, "factoryContext.JsonRequestBodyParameter is null for a JSON body.");
 
-        var bodyType = factoryContext.JsonRequestBodyParameter.ParameterType;
-        var parameterTypeName = TypeNameHelper.GetTypeDisplayName(factoryContext.JsonRequestBodyParameter.ParameterType, fullName: false);
-        var parameterName = factoryContext.JsonRequestBodyParameter.Name;
+        var bodyType = factoryContext.RequestBodyParameter.ParameterType;
+        var isRawBodyType = bodyType == typeof(byte[]) ||
+                            bodyType == typeof(ReadOnlyMemory<byte>) ||
+                            bodyType == typeof(ReadOnlySequence<byte>);
+        var parameterTypeName = TypeNameHelper.GetTypeDisplayName(factoryContext.RequestBodyParameter.ParameterType, fullName: false);
+        var parameterName = factoryContext.RequestBodyParameter.Name;
 
         Debug.Assert(parameterName is not null, "CreateArgument() should throw if parameter.Name is null.");
 
@@ -621,6 +630,7 @@ public static partial class RequestDelegateFactory
                 var (bodyValue, successful) = await TryReadBodyAsync(
                     httpContext,
                     bodyType,
+                    isRawBodyType,
                     parameterTypeName,
                     parameterName,
                     factoryContext.AllowEmptyRequestBody,
@@ -645,6 +655,7 @@ public static partial class RequestDelegateFactory
                 var (bodyValue, successful) = await TryReadBodyAsync(
                     httpContext,
                     bodyType,
+                    isRawBodyType,
                     parameterTypeName,
                     parameterName,
                     factoryContext.AllowEmptyRequestBody,
@@ -662,6 +673,7 @@ public static partial class RequestDelegateFactory
         static async Task<(object? FormValue, bool Successful)> TryReadBodyAsync(
             HttpContext httpContext,
             Type bodyType,
+            bool isRawBodyType,
             string parameterTypeName,
             string parameterName,
             bool allowEmptyRequestBody,
@@ -679,6 +691,37 @@ public static partial class RequestDelegateFactory
 
             if (feature?.CanHaveBody == true)
             {
+                if (isRawBodyType)
+                {
+                    var bodyReader = httpContext.Request.BodyReader;
+
+                    while (true)
+                    {
+                        var result = await bodyReader.ReadAsync();
+                        var buffer = result.Buffer;
+
+                        if (result.IsCompleted)
+                        {
+                            if (bodyType == typeof(ReadOnlySequence<byte>))
+                            {
+                                // REVIEW: Does this need to be a copy? We can tell users to consume the buffer
+                                // immediately in the action
+                                return (buffer, true);
+                            }
+
+                            // LOH be damned
+                            if (bodyType == typeof(ReadOnlyMemory<byte>))
+                            {
+                                return (new ReadOnlyMemory<byte>(buffer.ToArray()), true);
+                            }
+
+                            return (buffer.ToArray(), true);
+                        }
+
+                        bodyReader.AdvanceTo(buffer.Start, buffer.End);
+                    }
+                }
+
                 if (!httpContext.Request.HasJsonContentType())
                 {
                     Log.UnexpectedJsonContentType(httpContext, httpContext.Request.ContentType, throwOnBadRequest);
@@ -1157,7 +1200,7 @@ public static partial class RequestDelegateFactory
 
     private static Expression BindParameterFromBody(ParameterInfo parameter, bool allowEmpty, FactoryContext factoryContext)
     {
-        if (factoryContext.JsonRequestBodyParameter is not null)
+        if (factoryContext.RequestBodyParameter is not null)
         {
             factoryContext.HasMultipleBodyParameters = true;
             var parameterName = parameter.Name;
@@ -1173,7 +1216,7 @@ public static partial class RequestDelegateFactory
 
         var isOptional = IsOptionalParameter(parameter, factoryContext);
 
-        factoryContext.JsonRequestBodyParameter = parameter;
+        factoryContext.RequestBodyParameter = parameter;
         factoryContext.AllowEmptyRequestBody = allowEmpty || isOptional;
         factoryContext.Metadata.Add(new AcceptsMetadata(parameter.ParameterType, factoryContext.AllowEmptyRequestBody, DefaultAcceptsContentType));
 
@@ -1445,7 +1488,7 @@ public static partial class RequestDelegateFactory
         public bool DisableInferredFromBody { get; init; }
 
         // Temporary State
-        public ParameterInfo? JsonRequestBodyParameter { get; set; }
+        public ParameterInfo? RequestBodyParameter { get; set; }
         public bool AllowEmptyRequestBody { get; set; }
 
         public bool UsingTempSourceString { get; set; }

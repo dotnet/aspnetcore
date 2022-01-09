@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System.Buffers;
 using System.Globalization;
 using System.IO.Pipelines;
 using System.Linq.Expressions;
@@ -1374,6 +1375,74 @@ public class RequestDelegateFactoryTests : LoggedTest
         var deserializedRequestBody = httpContext.Items["body"];
         Assert.NotNull(deserializedRequestBody);
         Assert.Equal(originalTodo.Name, ((ITodo)deserializedRequestBody!).Name);
+    }
+
+    public static object[][] RawFromBodyActions
+    {
+        get
+        {
+            void TestByteArray(HttpContext httpContext, byte[] body)
+            {
+                httpContext.Items.Add("body", body);
+            }
+
+            void TestReadOnlyMemory(HttpContext httpContext, ReadOnlyMemory<byte> body)
+            {
+                httpContext.Items.Add("body", body.ToArray());
+            }
+
+            void TestReadOnlySequence(HttpContext httpContext, ReadOnlySequence<byte> body)
+            {
+                httpContext.Items.Add("body", body.ToArray());
+            }
+
+            void TestStream(HttpContext httpContext, Stream stream)
+            {
+                var ms = new MemoryStream();
+                stream.CopyTo(ms);
+                httpContext.Items.Add("body", ms.ToArray());
+            }
+
+            return new[]
+            {
+                    new[] { (Action<HttpContext, byte[]>)TestByteArray },
+                    new[] { (Action<HttpContext, ReadOnlyMemory<byte>>)TestReadOnlyMemory },
+                    new object[] { (Action<HttpContext, ReadOnlySequence<byte>>)TestReadOnlySequence },
+                    new object[] { (Action<HttpContext, Stream>)TestStream },
+                };
+        }
+    }
+
+
+    [Theory]
+    [MemberData(nameof(RawFromBodyActions))]
+    public async Task RequestDelegatePopulatesFromRawBodyParameter(Delegate action)
+    {
+        var httpContext = CreateHttpContext();
+
+        var requestBodyBytes = JsonSerializer.SerializeToUtf8Bytes(new
+        {
+            Name = "Write more tests!"
+        });
+
+        var stream = new MemoryStream(requestBodyBytes);
+        httpContext.Request.Body = stream;
+
+        httpContext.Request.Headers["Content-Length"] = stream.Length.ToString(CultureInfo.InvariantCulture);
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        var mock = new Mock<IServiceProvider>();
+        httpContext.RequestServices = mock.Object;
+
+        var factoryResult = RequestDelegateFactory.Create(action);
+
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        var rawRequestBody = httpContext.Items["body"];
+        Assert.NotNull(rawRequestBody);
+        Assert.Equal(requestBodyBytes, (byte[])rawRequestBody!);
     }
 
     [Theory]
