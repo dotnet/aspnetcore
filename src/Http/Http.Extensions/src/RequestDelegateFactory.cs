@@ -605,9 +605,7 @@ public static partial class RequestDelegateFactory
         Debug.Assert(factoryContext.RequestBodyParameter is not null, "factoryContext.JsonRequestBodyParameter is null for a JSON body.");
 
         var bodyType = factoryContext.RequestBodyParameter.ParameterType;
-        var isRawBodyType = bodyType == typeof(byte[]) ||
-                            bodyType == typeof(ReadOnlyMemory<byte>) ||
-                            bodyType == typeof(ReadOnlySequence<byte>);
+        var isRawBodyType = bodyType == typeof(ReadOnlySequence<byte>);
         var parameterTypeName = TypeNameHelper.GetTypeDisplayName(factoryContext.RequestBodyParameter.ParameterType, fullName: false);
         var parameterName = factoryContext.RequestBodyParameter.Name;
 
@@ -708,25 +706,7 @@ public static partial class RequestDelegateFactory
 
                         if (result.IsCompleted)
                         {
-                            if (bodyType == typeof(ReadOnlySequence<byte>))
-                            {
-                                // REVIEW: Does this need to be a copy? We can tell users to consume the buffer
-                                // immediately in the action (they can copy if they need to).
-                                return (buffer, true);
-                            }
-
-                            // This is very LOH unfriendly
-                            var copiedBuffer = buffer.ToArray();
-
-                            // Consume the whole thing
-                            bodyReader.AdvanceTo(buffer.End);
-
-                            if (bodyType == typeof(ReadOnlyMemory<byte>))
-                            {
-                                return (new ReadOnlyMemory<byte>(copiedBuffer), true);
-                            }
-
-                            return (copiedBuffer, true);
+                            return (buffer, true);
                         }
 
                         // Buffer the body

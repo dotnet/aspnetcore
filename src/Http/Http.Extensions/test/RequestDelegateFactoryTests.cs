@@ -1381,16 +1381,6 @@ public class RequestDelegateFactoryTests : LoggedTest
     {
         get
         {
-            void TestByteArray(HttpContext httpContext, byte[] body)
-            {
-                httpContext.Items.Add("body", body);
-            }
-
-            void TestReadOnlyMemory(HttpContext httpContext, ReadOnlyMemory<byte> body)
-            {
-                httpContext.Items.Add("body", body.ToArray());
-            }
-
             void TestReadOnlySequence(HttpContext httpContext, ReadOnlySequence<byte> body)
             {
                 httpContext.Items.Add("body", body.ToArray());
@@ -1412,8 +1402,6 @@ public class RequestDelegateFactoryTests : LoggedTest
 
             return new[]
             {
-                    new[] { (Action<HttpContext, byte[]>)TestByteArray },
-                    new[] { (Action<HttpContext, ReadOnlyMemory<byte>>)TestReadOnlyMemory },
                     new object[] { (Action<HttpContext, ReadOnlySequence<byte>>)TestReadOnlySequence },
                     new object[] { (Action<HttpContext, Stream>)TestStream },
                     new object[] { (Func<HttpContext, PipeReader, Task>)TestPipeReader },
@@ -1445,43 +1433,6 @@ public class RequestDelegateFactoryTests : LoggedTest
         httpContext.RequestServices = mock.Object;
 
         var factoryResult = RequestDelegateFactory.Create(action);
-
-        var requestDelegate = factoryResult.RequestDelegate;
-
-        await requestDelegate(httpContext);
-
-        await responseFeature.RunOnCompletedCallbacks();
-
-        var rawRequestBody = httpContext.Items["body"];
-        Assert.NotNull(rawRequestBody);
-        Assert.Equal(requestBodyBytes, (byte[])rawRequestBody!);
-    }
-
-    [Fact]
-    public async Task BindingReadOnlySequenceConsumedAfterDelegateExecuted()
-    {
-        var httpContext = CreateHttpContext();
-
-        var requestBodyBytes = JsonSerializer.SerializeToUtf8Bytes(new
-        {
-            Name = "Write more tests!"
-        });
-
-        var responseFeature = (TestHttpResponseFeature)httpContext.Features.Get<IHttpResponseFeature>()!;
-
-        var stream = new MemoryStream(requestBodyBytes);
-        httpContext.Request.Body = stream;
-
-        httpContext.Request.Headers["Content-Length"] = stream.Length.ToString(CultureInfo.InvariantCulture);
-        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
-
-        var mock = new Mock<IServiceProvider>();
-        httpContext.RequestServices = mock.Object;
-
-        var factoryResult = RequestDelegateFactory.Create((HttpContext context, ReadOnlySequence<byte> body) =>
-        {
-            httpContext.Items["body"] = body.ToArray();
-        });
 
         var requestDelegate = factoryResult.RequestDelegate;
 
