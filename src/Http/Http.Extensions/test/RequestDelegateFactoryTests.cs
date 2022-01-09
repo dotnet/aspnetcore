@@ -1409,7 +1409,6 @@ public class RequestDelegateFactoryTests : LoggedTest
         }
     }
 
-
     [Theory]
     [MemberData(nameof(RawFromBodyActions))]
     public async Task RequestDelegatePopulatesFromRawBodyParameter(Delegate action)
