@@ -206,7 +206,7 @@ public static partial class RequestDelegateFactory
         if (factoryContext.RequestBodyParameter is not null &&
             factoryContext.FirstFormRequestBodyParameter is not null)
         {
-            var errorMessage = BuildErrorMessageForFormAndJsonBodyParameters(factoryContext);
+            var errorMessage = BuildErrorMessageForFormAndBodyParameters(factoryContext);
             throw new InvalidOperationException(errorMessage);
         }
         if (factoryContext.HasMultipleBodyParameters)
@@ -1717,10 +1717,10 @@ public static partial class RequestDelegateFactory
         return errorMessage.ToString();
     }
 
-    private static string BuildErrorMessageForFormAndJsonBodyParameters(FactoryContext factoryContext)
+    private static string BuildErrorMessageForFormAndBodyParameters(FactoryContext factoryContext)
     {
         var errorMessage = new StringBuilder();
-        errorMessage.AppendLine("An action cannot use both form and JSON body parameters.");
+        errorMessage.AppendLine("An action cannot use both form and body parameters.");
         errorMessage.AppendLine("Below is the list of parameters that we found: ");
         errorMessage.AppendLine();
         errorMessage.AppendLine(FormattableString.Invariant($"{"Parameter",-20}| {"Source",-30}"));
