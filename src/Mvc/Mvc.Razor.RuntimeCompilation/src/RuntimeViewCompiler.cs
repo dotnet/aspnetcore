@@ -435,6 +435,19 @@ internal partial class RuntimeViewCompiler : IViewCompiler
         [LoggerMessage(2, LogLevel.Debug, "Compilation of the generated code for the Razor file at '{FilePath}' completed in {ElapsedMilliseconds}ms.")]
         private static partial void GeneratedCodeToAssemblyCompilationEnd(ILogger logger, string filePath, double elapsedMilliseconds);
 
+        public static void GeneratedCodeToAssemblyCompilationEnd(ILogger logger, string filePath, long startTimestamp)
+        {
+            // Don't log if logging wasn't enabled at start of request as time will be wildly wrong.
+            if (startTimestamp != 0)
+            {
+                var currentTimestamp = Stopwatch.GetTimestamp();
+                var elapsed = new TimeSpan((long)(TimestampToTicks * (currentTimestamp - startTimestamp)));
+                GeneratedCodeToAssemblyCompilationEnd(logger, filePath, elapsed.TotalMilliseconds);
+            }
+        }
+
+        private static readonly double TimestampToTicks = TimeSpan.TicksPerSecond / (double)Stopwatch.Frequency;
+
         [LoggerMessage(3, LogLevel.Debug, "Initializing Razor view compiler with compiled view: '{ViewName}'.")]
         public static partial void ViewCompilerLocatedCompiledView(ILogger logger, string viewName);
 
@@ -455,18 +468,5 @@ internal partial class RuntimeViewCompiler : IViewCompiler
 
         [LoggerMessage(9, LogLevel.Trace, "Invalidating compiled view at path '{Path}' with a file since the checksum did not match.")]
         public static partial void ViewCompilerInvalidatingCompiledFile(ILogger logger, string path);
-
-        private static readonly double TimestampToTicks = TimeSpan.TicksPerSecond / (double)Stopwatch.Frequency;
-
-        public static void GeneratedCodeToAssemblyCompilationEnd(ILogger logger, string filePath, long startTimestamp)
-        {
-            // Don't log if logging wasn't enabled at start of request as time will be wildly wrong.
-            if (startTimestamp != 0)
-            {
-                var currentTimestamp = Stopwatch.GetTimestamp();
-                var elapsed = new TimeSpan((long)(TimestampToTicks * (currentTimestamp - startTimestamp)));
-                GeneratedCodeToAssemblyCompilationEnd(logger, filePath, elapsed.TotalMilliseconds);
-            }
-        }
     }
 }
