@@ -4,6 +4,7 @@
 using System.Buffers;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO.Pipelines;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -63,6 +64,7 @@ public static partial class RequestDelegateFactory
     private static readonly MemberExpression HeadersExpr = Expression.Property(HttpRequestExpr, typeof(HttpRequest).GetProperty(nameof(HttpRequest.Headers))!);
     private static readonly MemberExpression FormExpr = Expression.Property(HttpRequestExpr, typeof(HttpRequest).GetProperty(nameof(HttpRequest.Form))!);
     private static readonly MemberExpression RequestStreamExpr = Expression.Property(HttpRequestExpr, typeof(HttpRequest).GetProperty(nameof(HttpRequest.Body))!);
+    private static readonly MemberExpression RequestPipeReaderExpr = Expression.Property(HttpRequestExpr, typeof(HttpRequest).GetProperty(nameof(HttpRequest.BodyReader))!);
     private static readonly MemberExpression FormFilesExpr = Expression.Property(FormExpr, typeof(IFormCollection).GetProperty(nameof(IFormCollection.Files))!);
     private static readonly MemberExpression StatusCodeExpr = Expression.Property(HttpResponseExpr, typeof(HttpResponse).GetProperty(nameof(HttpResponse.StatusCode))!);
     private static readonly MemberExpression CompletedTaskExpr = Expression.Property(null, (PropertyInfo)GetMemberInfo<Func<Task>>(() => Task.CompletedTask));
@@ -307,6 +309,10 @@ public static partial class RequestDelegateFactory
         else if (parameter.ParameterType == typeof(Stream))
         {
             return RequestStreamExpr;
+        }
+        else if (parameter.ParameterType == typeof(PipeReader))
+        {
+            return RequestPipeReaderExpr;
         }
         else if (ParameterBindingMethodCache.HasBindAsyncMethod(parameter))
         {
@@ -705,19 +711,25 @@ public static partial class RequestDelegateFactory
                             if (bodyType == typeof(ReadOnlySequence<byte>))
                             {
                                 // REVIEW: Does this need to be a copy? We can tell users to consume the buffer
-                                // immediately in the action
+                                // immediately in the action (they can copy if they need to).
                                 return (buffer, true);
                             }
 
-                            // LOH be damned
+                            // This is very LOH unfriendly
+                            var copiedBuffer = buffer.ToArray();
+
+                            // Consume the whole thing
+                            bodyReader.AdvanceTo(buffer.End);
+
                             if (bodyType == typeof(ReadOnlyMemory<byte>))
                             {
-                                return (new ReadOnlyMemory<byte>(buffer.ToArray()), true);
+                                return (new ReadOnlyMemory<byte>(copiedBuffer), true);
                             }
 
-                            return (buffer.ToArray(), true);
+                            return (copiedBuffer, true);
                         }
 
+                        // Buffer the body
                         bodyReader.AdvanceTo(buffer.Start, buffer.End);
                     }
                 }

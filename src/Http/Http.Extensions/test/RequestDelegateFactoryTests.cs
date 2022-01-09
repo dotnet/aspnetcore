@@ -1403,12 +1403,20 @@ public class RequestDelegateFactoryTests : LoggedTest
                 httpContext.Items.Add("body", ms.ToArray());
             }
 
+            async Task TestPipeReader(HttpContext httpContext, PipeReader reader)
+            {
+                var ms = new MemoryStream();
+                await reader.CopyToAsync(ms);
+                httpContext.Items.Add("body", ms.ToArray());
+            }
+
             return new[]
             {
                     new[] { (Action<HttpContext, byte[]>)TestByteArray },
                     new[] { (Action<HttpContext, ReadOnlyMemory<byte>>)TestReadOnlyMemory },
                     new object[] { (Action<HttpContext, ReadOnlySequence<byte>>)TestReadOnlySequence },
                     new object[] { (Action<HttpContext, Stream>)TestStream },
+                    new object[] { (Func<HttpContext, PipeReader, Task>)TestPipeReader },
                 };
         }
     }
@@ -1425,6 +1433,8 @@ public class RequestDelegateFactoryTests : LoggedTest
             Name = "Write more tests!"
         });
 
+        var responseFeature = (TestHttpResponseFeature)httpContext.Features.Get<IHttpResponseFeature>()!;
+
         var stream = new MemoryStream(requestBodyBytes);
         httpContext.Request.Body = stream;
 
@@ -1439,6 +1449,47 @@ public class RequestDelegateFactoryTests : LoggedTest
         var requestDelegate = factoryResult.RequestDelegate;
 
         await requestDelegate(httpContext);
+
+        await responseFeature.RunOnCompletedCallbacks();
+
+        var rawRequestBody = httpContext.Items["body"];
+        Assert.NotNull(rawRequestBody);
+        Assert.Equal(requestBodyBytes, (byte[])rawRequestBody!);
+    }
+
+    [Fact]
+    public async Task BindingReadOnlySequenceConsumedAfterDelegateExecuted()
+    {
+        var httpContext = CreateHttpContext();
+
+        var requestBodyBytes = JsonSerializer.SerializeToUtf8Bytes(new
+        {
+            Name = "Write more tests!"
+        });
+
+        var responseFeature = (TestHttpResponseFeature)httpContext.Features.Get<IHttpResponseFeature>()!;
+
+        var mockReader = new Mock<PipeReader>();
+
+        var stream = new MemoryStream(requestBodyBytes);
+        httpContext.Request.Body = stream;
+
+        httpContext.Request.Headers["Content-Length"] = stream.Length.ToString(CultureInfo.InvariantCulture);
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        var mock = new Mock<IServiceProvider>();
+        httpContext.RequestServices = mock.Object;
+
+        var factoryResult = RequestDelegateFactory.Create((HttpContext context, ReadOnlySequence<byte> body) =>
+        {
+            httpContext.Items["body"] = body.ToArray();
+        });
+
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        await responseFeature.RunOnCompletedCallbacks();
 
         var rawRequestBody = httpContext.Items["body"];
         Assert.NotNull(rawRequestBody);
@@ -4134,6 +4185,8 @@ public class RequestDelegateFactoryTests : LoggedTest
 
     private class TestHttpResponseFeature : IHttpResponseFeature, IHttpResponseBodyFeature
     {
+        private Stack<(Func<object, Task>, object)> _onCompleted = new();
+
         public int StatusCode { get; set; } = 200;
         public string? ReasonPhrase { get; set; }
         public IHeaderDictionary Headers { get; set; } = new HeaderDictionary();
@@ -4199,6 +4252,16 @@ public class RequestDelegateFactoryTests : LoggedTest
 
         public void OnCompleted(Func<object, Task> callback, object state)
         {
+            _onCompleted.Push((callback, state));
+        }
+
+        public async Task RunOnCompletedCallbacks()
+        {
+            while (_onCompleted.TryPop(out var result))
+            {
+                var (callback, state) = result;
+                await callback(state);
+            }
         }
     }
 
