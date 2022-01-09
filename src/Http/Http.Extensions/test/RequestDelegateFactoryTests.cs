@@ -1402,10 +1402,10 @@ public class RequestDelegateFactoryTests : LoggedTest
 
             return new[]
             {
-                    new object[] { (Action<HttpContext, ReadOnlySequence<byte>>)TestReadOnlySequence },
-                    new object[] { (Action<HttpContext, Stream>)TestStream },
-                    new object[] { (Func<HttpContext, PipeReader, Task>)TestPipeReader },
-                };
+                new object[] { (Action<HttpContext, ReadOnlySequence<byte>>)TestReadOnlySequence },
+                new object[] { (Action<HttpContext, Stream>)TestStream },
+                new object[] { (Func<HttpContext, PipeReader, Task>)TestPipeReader },
+            };
         }
     }
 
