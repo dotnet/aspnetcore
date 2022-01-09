@@ -596,13 +596,13 @@ public static partial class RequestDelegateFactory
         }
         else
         {
-            return HandleRequestBodyAndCompileRequestDelegateForJson(responseWritingMethodCall, factoryContext);
+            return HandleRequestBodyAndCompileRequestDelegateForOtherBody(responseWritingMethodCall, factoryContext);
         }
     }
 
-    private static Func<object?, HttpContext, Task> HandleRequestBodyAndCompileRequestDelegateForJson(Expression responseWritingMethodCall, FactoryContext factoryContext)
+    private static Func<object?, HttpContext, Task> HandleRequestBodyAndCompileRequestDelegateForOtherBody(Expression responseWritingMethodCall, FactoryContext factoryContext)
     {
-        Debug.Assert(factoryContext.RequestBodyParameter is not null, "factoryContext.JsonRequestBodyParameter is null for a JSON body.");
+        Debug.Assert(factoryContext.RequestBodyParameter is not null, "factoryContext.RequestBodyParameter is null for a body parameter.");
 
         var bodyType = factoryContext.RequestBodyParameter.ParameterType;
         var isRawBodyType = bodyType == typeof(ReadOnlySequence<byte>);
