@@ -470,7 +470,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         _timeoutControl.Initialize(_serviceContext.SystemClock.UtcNow.Ticks);
     }
 
-    protected async Task InitializeConnectionAsync(RequestDelegate application, int expectedSettingsCount = 3, bool expectedWindowUpdate = true)
+    protected async Task InitializeConnectionWithoutPrefaceAsync(RequestDelegate application)
     {
         if (_connection == null)
         {
@@ -496,6 +496,11 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
 
         // Lose xUnit's AsyncTestSyncContext so middleware always runs inline for better determinism.
         await ThreadPoolAwaitable.Instance;
+    }
+
+    protected async Task InitializeConnectionAsync(RequestDelegate application, int expectedSettingsCount = 3, bool expectedWindowUpdate = true)
+    {
+        await InitializeConnectionWithoutPrefaceAsync(application);
         await SendPreambleAsync();
         await SendSettingsAsync();
 
@@ -1107,6 +1112,22 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         frame.PayloadLength = 0;
         Http2FrameWriter.WriteHeader(frame, outputWriter);
         return FlushAsync(outputWriter);
+    }
+
+    internal async Task<byte[]> ReadAllAsync()
+    {
+        while (true)
+        {
+            var result = await _pair.Application.Input.ReadAsync().AsTask().DefaultTimeout();
+
+            if (result.IsCompleted)
+            {
+                return result.Buffer.ToArray();
+            }
+
+            // Consume nothing, just wait for everything
+            _pair.Application.Input.AdvanceTo(result.Buffer.Start, result.Buffer.End);
+        }
     }
 
     internal async Task<Http2FrameWithPayload> ReceiveFrameAsync(uint maxFrameSize = Http2PeerSettings.DefaultMaxFrameSize)

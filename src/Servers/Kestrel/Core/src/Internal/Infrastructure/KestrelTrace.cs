@@ -402,7 +402,7 @@ internal sealed partial class KestrelTrace : ILogger
     {
         if (_generalLogger.IsEnabled(LogLevel.Debug))
         {
-            PossibleInvalidHttpVersionDetected(_generalLogger, connectionId, HttpUtilities.VersionToString(expectedHttpVersion), HttpUtilities.VersionToString(detectedHttpVersion));
+            PossibleInvalidHttpVersionDetected(_badRequestsLogger, connectionId, HttpUtilities.VersionToString(expectedHttpVersion), HttpUtilities.VersionToString(detectedHttpVersion));
         }
     }
 

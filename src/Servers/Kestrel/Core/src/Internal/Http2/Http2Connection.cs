@@ -12,6 +12,7 @@ using System.Text;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -24,6 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStreamHeadersHandler, IRequestProcessor
 {
     public static ReadOnlySpan<byte> ClientPreface => ClientPrefaceBytes;
+    public static byte[]? InvalidHttp1xErrorResponseBytes;
 
     private const PseudoHeaderFields _mandatoryRequestPseudoHeaderFields =
         PseudoHeaderFields.Method | PseudoHeaderFields.Path | PseudoHeaderFields.Scheme;
@@ -403,10 +405,13 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
         }
     }
 
+    [Flags]
     private enum ReadPrefaceState
     {
-        Preface,
-        Http1x
+        None = 0,
+        Preface = 1,
+        Http1x = 2,
+        All = Preface | Http1x
     }
 
     private async Task<bool> TryReadPrefaceAsync()
@@ -425,7 +430,15 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
         // 4. Timeout while waiting for content.
         //
         // Future improvement: Detect TLS frame. Useful for people starting TLS connection with a non-TLS endpoint.
-        var state = ReadPrefaceState.Preface;
+        var state = ReadPrefaceState.All;
+
+        // With TLS, ALPN should have already errored if the wrong HTTP version is used.
+        // Only perform additional validation if endpoint doesn't use TLS.
+        if (ConnectionFeatures.Get<ITlsHandshakeFeature>() != null)
+        {
+            state ^= ReadPrefaceState.Http1x;
+        }
+
         while (_isClosed == 0)
         {
             var result = await Input.ReadAsync();
@@ -437,63 +450,60 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
             {
                 if (!readableBuffer.IsEmpty)
                 {
-                    switch (state)
+                    if (state.HasFlag(ReadPrefaceState.Preface))
                     {
-                        case ReadPrefaceState.Preface:
-                            if (readableBuffer.Length >= ClientPreface.Length)
+                        if (readableBuffer.Length >= ClientPreface.Length)
+                        {
+                            if (IsPreface(readableBuffer, out consumed, out examined))
                             {
-                                if (IsPreface(readableBuffer, out consumed, out examined))
-                                {
-                                    return true;
-                                }
-                                else
-                                {
-                                    // With TLS, ALPN should have already errored if the wrong HTTP version is used.
-                                    // Only perform additional validation if endpoint doesn't use TLS.
-                                    var tlsFeature = ConnectionFeatures.Get<ITlsHandshakeFeature>();
-                                    if (tlsFeature == null)
-                                    {
-                                        state = ReadPrefaceState.Http1x;
-                                        goto case ReadPrefaceState.Http1x;
-                                    }
-
-                                    throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorInvalidPreface, Http2ErrorCode.PROTOCOL_ERROR);
-                                }
+                                return true;
                             }
-                            break;
-                        case ReadPrefaceState.Http1x:
-                            if (ParseHttp1x(readableBuffer, out var detectedVersion))
+                            else
                             {
-                                if (detectedVersion == HttpVersion.Http10 || detectedVersion == HttpVersion.Http11)
-                                {
-                                    Log.PossibleInvalidHttpVersionDetected(ConnectionId, HttpVersion.Http2, detectedVersion);
+                                state ^= ReadPrefaceState.Preface;
+                            }
+                        }
+                    }
 
-                                    // TODO: Cache bytes
-                                    await _context.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes(@"HTTP/1.1 400 Bad Request
+                    if (state.HasFlag(ReadPrefaceState.Http1x))
+                    {
+                        if (ParseHttp1x(readableBuffer, out var detectedVersion))
+                        {
+                            if (detectedVersion == HttpVersion.Http10 || detectedVersion == HttpVersion.Http11)
+                            {
+                                Log.PossibleInvalidHttpVersionDetected(ConnectionId, HttpVersion.Http2, detectedVersion);
+
+                                var responseBytes = InvalidHttp1xErrorResponseBytes ??= Encoding.ASCII.GetBytes(@"HTTP/1.1 400 Bad Request
 Connection: close
 Content-Type: text/plain
 Content-Length: 57
 
 An HTTP/1.x request was sent to an HTTP/2 only endpoint.
-"));
-                                    await _context.Transport.Output.FlushAsync();
+");
 
-                                    // Close connection here so no GOAWAY frame is written.
-                                    TryClose();
-                                    return false;
-                                }
-                                else
-                                {
-                                    throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorInvalidPreface, Http2ErrorCode.PROTOCOL_ERROR);
-                                }
+                                await _context.Transport.Output.WriteAsync(responseBytes);
+
+                                // Close connection here so a GOAWAY frame isn't written.
+                                TryClose();
+
+                                return false;
                             }
-                            break;
+                            else
+                            {
+                                state ^= ReadPrefaceState.Http1x;
+                            }
+                        }
+                    }
+
+                    if (state == ReadPrefaceState.None)
+                    {
+                        throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorInvalidPreface, Http2ErrorCode.PROTOCOL_ERROR);
                     }
                 }
 
                 if (result.IsCompleted)
                 {
-                    return false;
+                    throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorInvalidPreface, Http2ErrorCode.PROTOCOL_ERROR);
                 }
             }
             finally
@@ -511,15 +521,16 @@ An HTTP/1.x request was sent to an HTTP/2 only endpoint.
     {
         httpVersion = HttpVersion.Unknown;
 
-        var reader = new SequenceReader<byte>(buffer);
-        if (reader.TryReadTo(out ReadOnlySpan<byte> requestLine, (byte)'\n') && requestLine.Length <= Limits.MaxRequestLineSize)
+        var reader = new SequenceReader<byte>(buffer.Length > Limits.MaxRequestLineSize ? buffer.Slice(0, Limits.MaxRequestLineSize) : buffer);
+        if (reader.TryReadTo(out ReadOnlySpan<byte> requestLine, (byte)'\n'))
         {
             // Line should be long enough for HTTP/1.X and end with \r\n
             if (requestLine.Length > 10 && requestLine[requestLine.Length - 1] == (byte)'\r')
             {
                 httpVersion = HttpUtilities.GetKnownVersion(requestLine.Slice(requestLine.Length - 9, 8));
-                return true;
             }
+
+            return true;
         }
 
         // Couldn't find newline within max request line size so this isn't valid HTTP/1.x.
