@@ -1469,8 +1469,6 @@ public class RequestDelegateFactoryTests : LoggedTest
 
         var responseFeature = (TestHttpResponseFeature)httpContext.Features.Get<IHttpResponseFeature>()!;
 
-        var mockReader = new Mock<PipeReader>();
-
         var stream = new MemoryStream(requestBodyBytes);
         httpContext.Request.Body = stream;
 
