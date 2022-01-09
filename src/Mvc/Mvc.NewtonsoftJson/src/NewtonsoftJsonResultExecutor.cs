@@ -187,11 +187,19 @@ internal partial class NewtonsoftJsonResultExecutor : IActionResultExecutor<Json
 
     private static partial class Log
     {
-        [LoggerMessage(1, LogLevel.Information, "Executing JsonResult, writing value of type '{Type}'.", EventName = "JsonResultExecuting", SkipEnabledCheck = true)]
-        private static partial void JsonResultExecuting(ILogger logger, string? type);
-
-        [LoggerMessage(2, LogLevel.Debug, "Buffering IAsyncEnumerable instance of type '{Type}'.", EventName = "BufferingAsyncEnumerable", SkipEnabledCheck = true)]
+        [LoggerMessage(1, LogLevel.Debug, "Buffering IAsyncEnumerable instance of type '{Type}'.", EventName = "BufferingAsyncEnumerable", SkipEnabledCheck = true)]
         private static partial void BufferingAsyncEnumerable(ILogger logger, string? type);
+
+        public static void BufferingAsyncEnumerable(ILogger logger, object asyncEnumerable)
+        {
+            if (logger.IsEnabled(LogLevel.Debug))
+            {
+                BufferingAsyncEnumerable(logger, asyncEnumerable.GetType().FullName);
+            }
+        }
+
+        [LoggerMessage(2, LogLevel.Information, "Executing JsonResult, writing value of type '{Type}'.", EventName = "JsonResultExecuting", SkipEnabledCheck = true)]
+        private static partial void JsonResultExecuting(ILogger logger, string? type);
 
         public static void JsonResultExecuting(ILogger logger, object? value)
         {
@@ -199,14 +207,6 @@ internal partial class NewtonsoftJsonResultExecutor : IActionResultExecutor<Json
             {
                 var type = value == null ? "null" : value.GetType().FullName;
                 JsonResultExecuting(logger, type);
-            }
-        }
-
-        public static void BufferingAsyncEnumerable(ILogger logger, object asyncEnumerable)
-        {
-            if (logger.IsEnabled(LogLevel.Debug))
-            {
-                BufferingAsyncEnumerable(logger, asyncEnumerable.GetType().FullName);
             }
         }
     }
