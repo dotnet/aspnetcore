@@ -471,7 +471,10 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
                                     // TODO: Cache bytes
                                     await _context.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes(@"HTTP/1.1 400 Bad Request
 Connection: close
+Content-Type: text/plain
+Content-Length: 57
 
+An HTTP/1.x request was sent to an HTTP/2 only endpoint.
 "));
                                     await _context.Transport.Output.FlushAsync();
 
