@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 import { DotNet } from '@microsoft/dotnet-js-interop';
 
 const pendingRootComponentContainerNamePrefix = '__bl-dynamic-root:';
@@ -21,8 +24,7 @@ export const RootComponentsFunctions = {
     pendingRootComponentContainers.set(containerIdentifier, toElement);
 
     // Instruct .NET to add and render the new root component
-    const componentId = await getRequiredManager().invokeMethodAsync<number>(
-      'AddRootComponent', componentIdentifier, containerIdentifier);
+    const componentId = await getRequiredManager().invokeMethodAsync<number>('AddRootComponent', componentIdentifier, containerIdentifier);
     const component = new DynamicRootComponent(componentId, jsComponentParametersByIdentifier[componentIdentifier]);
     await component.setParameters(initialParameters);
     return component;

@@ -1,15 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Routing;
@@ -19,7 +13,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Net.Http.Headers;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
@@ -428,6 +421,52 @@ public abstract class JsonResultExecutorTestBase
                 iterated = true;
                 yield return i;
             }
+        }
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_AsyncEnumerableThrowsCustomOCE_SurfacesError()
+    {
+        var context = GetActionContext();
+        var cts = new CancellationTokenSource();
+        context.HttpContext.RequestAborted = cts.Token;
+        var result = new JsonResult(AsyncEnumerableThrows());
+        var executor = CreateExecutor();
+
+        // Act & Assert
+        await Assert.ThrowsAsync<OperationCanceledException>(() => executor.ExecuteAsync(context, result));
+
+        async IAsyncEnumerable<int> AsyncEnumerableThrows([EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            await Task.Yield();
+            yield return 1;
+            throw new OperationCanceledException();
+        }
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_AsyncEnumerableThrowsConnectionAbortedOCE_DoesNotSurfaceError()
+    {
+        var context = GetActionContext();
+        var cts = new CancellationTokenSource();
+        context.HttpContext.RequestAborted = cts.Token;
+        var result = new JsonResult(AsyncEnumerableThrows());
+        var executor = CreateExecutor();
+
+        // Act
+        await executor.ExecuteAsync(context, result);
+
+        // Assert
+        var written = GetWrittenBytes(context.HttpContext);
+        // System.Text.Json might write the '[' before cancellation is observed (utf-16 means 2 bytes per character)
+        Assert.InRange(written.Length, 0, 2);
+
+        async IAsyncEnumerable<int> AsyncEnumerableThrows([EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            await Task.Yield();
+            cts.Cancel();
+            cancellationToken.ThrowIfCancellationRequested();
+            yield return 1;
         }
     }
 

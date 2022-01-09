@@ -1,18 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Runtime.CompilerServices;
 using System.Xml.Linq;
 using NuGet.Versioning;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore;
@@ -109,22 +104,17 @@ public class TargetingPackTests
 
         Assert.All(dlls, path =>
         {
-            // Skip netstandard2.0 System.IO.Pipelines assembly. References have old versions.
-            var filename = Path.GetFileName(path);
-            if (!string.Equals("System.IO.Pipelines.dll", filename, StringComparison.OrdinalIgnoreCase))
+            using var fileStream = File.OpenRead(path);
+            using var peReader = new PEReader(fileStream, PEStreamOptions.Default);
+            var reader = peReader.GetMetadataReader(MetadataReaderOptions.Default);
+
+            Assert.All(reader.AssemblyReferences, handle =>
             {
-                using var fileStream = File.OpenRead(path);
-                using var peReader = new PEReader(fileStream, PEStreamOptions.Default);
-                var reader = peReader.GetMetadataReader(MetadataReaderOptions.Default);
+                var reference = reader.GetAssemblyReference(handle);
+                var result = (0 == reference.Version.Revision && 0 == reference.Version.Build);
 
-                Assert.All(reader.AssemblyReferences, handle =>
-                {
-                    var reference = reader.GetAssemblyReference(handle);
-                    var result = 0 == reference.Version.Revision;
-
-                    Assert.True(result, $"In {filename}, {reference.GetAssemblyName()} has unexpected version {reference.Version}.");
-                });
-            }
+                Assert.True(result, $"In {Path.GetFileName(path)}, {reference.GetAssemblyName()} has unexpected version {reference.Version}.");
+            });
         });
     }
 

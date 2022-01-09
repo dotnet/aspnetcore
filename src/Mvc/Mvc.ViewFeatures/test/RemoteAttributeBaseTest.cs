@@ -13,7 +13,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using Moq;
-using Xunit;
 using Resources = Microsoft.AspNetCore.Mvc.ViewFeatures.Test.Resources;
 
 namespace Microsoft.AspNetCore.Mvc;

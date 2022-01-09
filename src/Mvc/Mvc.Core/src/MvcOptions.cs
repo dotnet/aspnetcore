@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
@@ -120,7 +118,7 @@ public class MvcOptions : IEnumerable<ICompatibilitySwitch>
     /// </para>
     /// <para>
     /// MVC does not support non-nullable reference type annotations on type arguments and type parameter
-    /// contraints. The framework will not infer any validation attributes for generic-typed properties
+    /// constraints. The framework will not infer any validation attributes for generic-typed properties
     /// or collection elements.
     /// </para>
     /// </remarks>

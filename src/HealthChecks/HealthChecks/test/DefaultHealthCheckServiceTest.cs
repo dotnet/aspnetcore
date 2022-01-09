@@ -648,7 +648,10 @@ public class DefaultHealthCheckServiceTest
         {
             lock (_lock)
             {
-                if (_wasUsed) throw new InvalidOperationException("Should only used once");
+                if (_wasUsed)
+                {
+                    throw new InvalidOperationException("Should only used once");
+                }
                 _wasUsed = true;
             }
         }
@@ -740,7 +743,10 @@ public class DefaultHealthCheckServiceTest
 
         public void Dispose()
         {
-            if (IsDisposed) throw new InvalidOperationException("Dependency disposed multiple times.");
+            if (IsDisposed)
+            {
+                throw new InvalidOperationException("Dependency disposed multiple times.");
+            }
             IsDisposed = true;
         }
     }
@@ -751,7 +757,10 @@ public class DefaultHealthCheckServiceTest
 
         public ValueTask DisposeAsync()
         {
-            if (IsAsyncDisposed) throw new InvalidOperationException("Dependency disposed multiple times.");
+            if (IsAsyncDisposed)
+            {
+                throw new InvalidOperationException("Dependency disposed multiple times.");
+            }
             IsAsyncDisposed = true;
             return default;
         }
@@ -765,13 +774,19 @@ public class DefaultHealthCheckServiceTest
 
         public void Dispose()
         {
-            if (IsDisposed || IsAsyncDisposed) throw new InvalidOperationException("Dependency disposed multiple times.");
+            if (IsDisposed || IsAsyncDisposed)
+            {
+                throw new InvalidOperationException("Dependency disposed multiple times.");
+            }
             IsDisposed = true;
         }
 
         public ValueTask DisposeAsync()
         {
-            if (IsDisposed || IsAsyncDisposed) throw new InvalidOperationException("Dependency disposed multiple times.");
+            if (IsDisposed || IsAsyncDisposed)
+            {
+                throw new InvalidOperationException("Dependency disposed multiple times.");
+            }
             IsAsyncDisposed = true;
             return default;
         }

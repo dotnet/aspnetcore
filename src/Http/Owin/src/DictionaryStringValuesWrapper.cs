@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
@@ -24,8 +23,6 @@ internal class DictionaryStringValuesWrapper : IHeaderDictionary
     private KeyValuePair<string, string[]> Convert(KeyValuePair<string, StringValues> item) => new KeyValuePair<string, string[]>(item.Key, item.Value);
 
     private StringValues Convert(string[] item) => item;
-
-    private string[] Convert(StringValues item) => item;
 
     StringValues IHeaderDictionary.this[string key]
     {

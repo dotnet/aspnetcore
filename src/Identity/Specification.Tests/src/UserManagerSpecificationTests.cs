@@ -1,13 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -932,18 +928,18 @@ public abstract class UserManagerSpecificationTestBase<TUser, TKey>
     /// </summary>
     /// <returns>Task</returns>
     [Fact]
-    public virtual async Task CanFindUsersViaUserQuerable()
+    public virtual async Task CanFindUsersViaUserQueryable()
     {
         var mgr = CreateManager();
         if (mgr.SupportsQueryableUsers)
         {
-            var users = GenerateUsers("CanFindUsersViaUserQuerable", 4);
+            var users = GenerateUsers("CanFindUsersViaUserQueryable", 4);
             foreach (var u in users)
             {
                 IdentityResultAssert.IsSuccess(await mgr.CreateAsync(u));
             }
-            Assert.Equal(users.Count, mgr.Users.Count(UserNameStartsWithPredicate("CanFindUsersViaUserQuerable")));
-            Assert.Null(mgr.Users.FirstOrDefault(UserNameEqualsPredicate("bogus")));
+            Assert.Equal(users.Count, mgr.Users.Count(UserNameStartsWithPredicate("CanFindUsersViaUserQueryable")));
+            Assert.Empty(mgr.Users.Where(UserNameEqualsPredicate("bogus")));
         }
     }
 

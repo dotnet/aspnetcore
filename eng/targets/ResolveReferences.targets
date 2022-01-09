@@ -267,7 +267,7 @@
     Remove compile-time assets for packages that overlap Microsoft.Internal.Runtime.AspNetCore.Transport. Serviced packages
     may otherwise increase the referenced version. Avoid this because change reduces compatible runtime versions.
     That's not a big deal within the shared framework but can cause problems for shipped packages. Leave test
-    projects and Ignitor alone because they may transitively reference newer netstandard assemblies and need a
+    projects alone because they may transitively reference newer netstandard assemblies and need a
     net5.0 assembly with the same version. (This can happen in implementation projects but is less likely.)
   -->
   <Target Name="RemoveExtensionsCompileAssets"
@@ -275,7 +275,6 @@
       Condition=" '$(PkgMicrosoft_Internal_Runtime_AspNetCore_Transport)' != '' AND
           '$(IsServicingBuild)' == 'true' AND
           '$(IsImplementationProject)' == 'true' AND
-          '$(MSBuildProjectName)' != 'Ignitor' AND
           '$(MSBuildProjectName)' != 'Microsoft.AspNetCore.App.Runtime' AND
           ($(_CompileTfmUsingReferenceAssemblies) OR
            ('$(IsTargetingPackBuilding)' != 'false' AND '$(MSBuildProjectName)' == 'Microsoft.AspNetCore.App.Ref')) ">

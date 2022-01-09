@@ -3,11 +3,7 @@
 
 #nullable disable warnings
 
-using System;
-using System.IO;
 using System.Text;
-using System.Threading.Tasks;
-using Xunit;
 
 namespace Microsoft.AspNetCore.WebUtilities;
 

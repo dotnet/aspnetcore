@@ -1,12 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
-using System.Collections;
-using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
@@ -179,7 +175,8 @@ public class NewtonsoftJsonOutputFormatter : TextOutputFormatter
             {
                 value = await reader(value, context.HttpContext.RequestAborted);
             }
-            catch (OperationCanceledException) { }
+            catch (OperationCanceledException) when (context.HttpContext.RequestAborted.IsCancellationRequested) { }
+
             if (context.HttpContext.RequestAborted.IsCancellationRequested)
             {
                 return;
