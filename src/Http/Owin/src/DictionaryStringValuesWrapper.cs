@@ -24,8 +24,6 @@ internal class DictionaryStringValuesWrapper : IHeaderDictionary
 
     private StringValues Convert(string[] item) => item;
 
-    private string[] Convert(StringValues item) => item;
-
     StringValues IHeaderDictionary.this[string key]
     {
         get

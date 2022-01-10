@@ -76,8 +76,7 @@ public class IdentityUIScriptsTest : IDisposable
     [MemberData(nameof(ScriptWithFallbackSrcData))]
     public async Task IdentityUI_ScriptTags_FallbackSourceContent_Matches_CDNContent(ScriptTag scriptTag)
     {
-        var wwwrootDir = Path.Combine(GetProjectBasePath(), "wwwroot");
-
+        var wwwrootDir = Path.Combine(GetProjectBasePath(), "assets", scriptTag.Version);
         var cdnContent = await _httpClient.GetStringAsync(scriptTag.Src);
         var fallbackSrcContent = File.ReadAllText(
             Path.Combine(wwwrootDir, scriptTag.FallbackSrc.Replace("Identity", "").TrimStart('~').TrimStart('/')));
@@ -101,10 +100,10 @@ public class IdentityUIScriptsTest : IDisposable
 
     private static List<ScriptTag> GetScriptTags()
     {
-        var uiDirV4 = Path.Combine(GetProjectBasePath(), "Areas", "Identity", "Pages", "V5");
-        var cshtmlFiles = GetRazorFiles(uiDirV4);
-
         var scriptTags = new List<ScriptTag>();
+        var uiDirV4 = Path.Combine(GetProjectBasePath(), "Areas", "Identity", "Pages", "V4");
+        var uiDirV5 = Path.Combine(GetProjectBasePath(), "Areas", "Identity", "Pages", "V5");
+        var cshtmlFiles = GetRazorFiles(uiDirV4).Concat(GetRazorFiles(uiDirV5));
         foreach (var cshtmlFile in cshtmlFiles)
         {
             var tags = GetScriptTags(cshtmlFile);
@@ -135,7 +134,7 @@ public class IdentityUIScriptsTest : IDisposable
 
             scriptTags.Add(new ScriptTag
             {
-                Version = "V4",
+                Version = cshtmlFile.Contains("V4") ? "V4" : "V5",
                 Src = scriptElement.Source,
                 Integrity = scriptElement.Integrity,
                 FallbackSrc = fallbackSrcAttribute?.Value,

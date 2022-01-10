@@ -297,7 +297,7 @@ public class ProtectedUserStoreTest : SqlStoreTestBase<IdentityUser, IdentityRol
     /// </summary>
     /// <returns>Task</returns>
     [Fact]
-    public override Task CanFindUsersViaUserQuerable()
+    public override Task CanFindUsersViaUserQueryable()
         => Task.CompletedTask;
 
 }

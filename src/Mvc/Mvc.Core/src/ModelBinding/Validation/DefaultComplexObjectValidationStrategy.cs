@@ -105,7 +105,7 @@ internal class DefaultComplexObjectValidationStrategy : IValidationStrategy
             else
             {
                 var property = _properties[_index - _parameters.Count];
-                var propertyName = property.BinderModelName ?? property.PropertyName;
+                var propertyName = property.ValidationModelName ?? property.BinderModelName ?? property.PropertyName;
                 var key = ModelNames.CreatePropertyModelName(_key, propertyName);
 
                 if (_model == null)

@@ -21,13 +21,6 @@ internal class DataAnnotationsMetadataProvider :
     IDisplayMetadataProvider,
     IValidationMetadataProvider
 {
-    // The [Nullable] attribute is synthesized by the compiler. It's best to just compare the type name.
-    private const string NullableAttributeFullTypeName = "System.Runtime.CompilerServices.NullableAttribute";
-    private const string NullableFlagsFieldName = "NullableFlags";
-
-    private const string NullableContextAttributeFullName = "System.Runtime.CompilerServices.NullableContextAttribute";
-    private const string NullableContextFlagsFieldName = "Flag";
-
     private readonly IStringLocalizerFactory? _stringLocalizerFactory;
     private readonly MvcOptions _options;
     private readonly MvcDataAnnotationsLocalizationOptions _localizationOptions;
@@ -360,25 +353,9 @@ internal class DataAnnotationsMetadataProvider :
             else if (context.Key.MetadataKind == ModelMetadataKind.Property)
             {
                 var property = context.Key.PropertyInfo;
-                if (property is null)
+                if (property is not null)
                 {
-                    // PropertyInfo was unavailable on ModelIdentity prior to 3.1.
-                    // Making a cogent argument about the nullability of the property requires inspecting the declared type,
-                    // since looking at the runtime type may result in false positives: https://github.com/dotnet/aspnetcore/issues/14812
-                    // The only way we could arrive here is if the ModelMetadata was constructed using the non-default provider.
-                    // We'll cursorily examine the attributes on the property, but not the ContainerType to make a decision about it's nullability.
-
-                    if (HasNullableAttribute(context.PropertyAttributes!, out var propertyHasNullableAttribute))
-                    {
-                        addInferredRequiredAttribute = propertyHasNullableAttribute;
-                    }
-                }
-                else
-                {
-                    addInferredRequiredAttribute = IsNullableReferenceType(
-                        property.DeclaringType!,
-                        member: null,
-                        context.PropertyAttributes!);
+                    addInferredRequiredAttribute = IsRequired(context);
                 }
             }
             else if (context.Key.MetadataKind == ModelMetadataKind.Parameter)
@@ -387,11 +364,9 @@ internal class DataAnnotationsMetadataProvider :
                 // since the parameter will be optional.
                 if (!context.Key.ParameterInfo!.HasDefaultValue)
                 {
-                    addInferredRequiredAttribute = IsNullableReferenceType(
-                        context.Key.ParameterInfo!.Member.ReflectedType,
-                        context.Key.ParameterInfo.Member,
-                        context.ParameterAttributes!);
+                    addInferredRequiredAttribute = IsRequired(context);
                 }
+
             }
             else
             {
@@ -465,108 +440,16 @@ internal class DataAnnotationsMetadataProvider :
         return string.Empty;
     }
 
-    internal static bool IsNullableReferenceType(Type? containingType, MemberInfo? member, IEnumerable<object> attributes)
+    internal static bool IsRequired(ValidationMetadataProviderContext context)
     {
-        if (HasNullableAttribute(attributes, out var result))
+        var nullabilityContext = new NullabilityInfoContext();
+        var nullability = context.Key.MetadataKind switch
         {
-            return result;
-        }
-
-        return IsNullableBasedOnContext(containingType, member);
-    }
-
-    // Internal for testing
-    internal static bool HasNullableAttribute(IEnumerable<object> attributes, out bool isNullable)
-    {
-        // [Nullable] is compiler synthesized, comparing by name.
-        var nullableAttribute = attributes
-            .FirstOrDefault(a => string.Equals(a.GetType().FullName, NullableAttributeFullTypeName, StringComparison.Ordinal));
-        if (nullableAttribute == null)
-        {
-            isNullable = false;
-            return false; // [Nullable] not found
-        }
-
-        // We don't handle cases where generics and NNRT are used. This runs into a
-        // fundamental limitation of ModelMetadata - we use a single Type and Property/Parameter
-        // to look up the metadata. However when generics are involved and NNRT is in use
-        // the distance between the [Nullable] and member we're looking at is potentially
-        // unbounded.
-        //
-        // See: https://github.com/dotnet/roslyn/blob/master/docs/features/nullable-reference-types.md#annotations
-        if (nullableAttribute.GetType().GetField(NullableFlagsFieldName) is FieldInfo field &&
-            field.GetValue(nullableAttribute) is byte[] flags &&
-            flags.Length > 0 &&
-            flags[0] == 1) // First element is the property/parameter type.
-        {
-            isNullable = true;
-            return true; // [Nullable] found and type is an NNRT
-        }
-
-        isNullable = false;
-        return true; // [Nullable] found but type is not an NNRT
-    }
-
-    internal static bool IsNullableBasedOnContext(Type? containingType, MemberInfo? member)
-    {
-        if (containingType is null)
-        {
-            return false;
-        }
-
-        // For generic types, inspecting the nullability requirement additionally requires
-        // inspecting the nullability constraint on generic type parameters. This is fairly non-triviial
-        // so we'll just avoid calculating it. Users should still be able to apply an explicit [Required]
-        // attribute on these members.
-        if (containingType.IsGenericType)
-        {
-            return false;
-        }
-
-        // The [Nullable] and [NullableContext] attributes are not inherited.
-        //
-        // The [NullableContext] attribute can appear on a method or on the module.
-        var attributes = member?.GetCustomAttributes(inherit: false) ?? Array.Empty<object>();
-        var isNullable = AttributesHasNullableContext(attributes);
-        if (isNullable != null)
-        {
-            return isNullable.Value;
-        }
-
-        // Check on the containing type
-        var type = containingType;
-        do
-        {
-            attributes = type.GetCustomAttributes(inherit: false);
-            isNullable = AttributesHasNullableContext(attributes);
-            if (isNullable != null)
-            {
-                return isNullable.Value;
-            }
-
-            type = type.DeclaringType;
-        }
-        while (type != null);
-
-        // If we don't find the attribute on the declaring type then repeat at the module level
-        attributes = containingType.Module.GetCustomAttributes(inherit: false);
-        isNullable = AttributesHasNullableContext(attributes);
-        return isNullable ?? false;
-
-        bool? AttributesHasNullableContext(object[] attributes)
-        {
-            var nullableContextAttribute = attributes
-                .FirstOrDefault(a => string.Equals(a.GetType().FullName, NullableContextAttributeFullName, StringComparison.Ordinal));
-            if (nullableContextAttribute != null)
-            {
-                if (nullableContextAttribute.GetType().GetField(NullableContextFlagsFieldName) is FieldInfo field &&
-                    field.GetValue(nullableContextAttribute) is byte @byte)
-                {
-                    return @byte == 1; // [NullableContext] found
-                }
-            }
-
-            return null;
-        }
+            ModelMetadataKind.Parameter => nullabilityContext.Create(context.Key.ParameterInfo!),
+            ModelMetadataKind.Property => nullabilityContext.Create(context.Key.PropertyInfo!),
+            _ => null
+        };
+        var isOptional = nullability != null && nullability.ReadState != NullabilityState.NotNull;
+        return !isOptional;
     }
 }

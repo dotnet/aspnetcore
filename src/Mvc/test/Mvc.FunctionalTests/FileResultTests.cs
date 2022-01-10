@@ -289,6 +289,23 @@ public class FileResultTests : IClassFixture<MvcTestFixture<FilesWebSite.Startup
     }
 
     [Fact]
+    public async Task FileFromDisk_ReturnsFileFromSymlink()
+    {
+        // Arrange & Act
+        var response = await Client.GetAsync("http://localhost/DownloadFiles/DownloadFromDiskSymlink");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        Assert.NotNull(response.Content.Headers.ContentType);
+        Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
+
+        var body = await response.Content.ReadAsStringAsync();
+        Assert.NotNull(body);
+        Assert.Equal("This is a sample text file", body);
+    }
+
+    [Fact]
     public async Task FileFromStream_ReturnsFile()
     {
         // Arrange & Act

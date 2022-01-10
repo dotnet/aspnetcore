@@ -681,7 +681,10 @@ internal static class StringUtilities
         // is not called with an unvalidated string comparitor.
         try
         {
-            if (value is null) return false;
+            if (value is null)
+            {
+                return false;
+            }
             new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true).GetByteCount(value);
             return !value.Contains('\0');
         }

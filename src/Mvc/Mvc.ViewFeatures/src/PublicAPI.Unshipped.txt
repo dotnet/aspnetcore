@@ -1,1 +1,3 @@
 #nullable enable
+*REMOVED*Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TModel>.Model.get -> TModel?
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TModel>.Model.get -> TModel
