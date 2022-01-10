@@ -37,7 +37,6 @@
     <IsExternal>true</IsExternal>
     <MaxRetryCount Condition="'$(MaxRetryCount)' == ''">2</MaxRetryCount>
     <HelixAccessToken Condition="'$(_UseHelixOpenQueues)' != 'true'">$(HelixApiAccessToken)</HelixAccessToken>
-    <HelixTestConfigurationFilePath>$(RepoRoot)eng/test-configuration.json</HelixTestConfigurationFilePath>
     <IncludeDotNetCli>true</IncludeDotNetCli>
     <DotNetCliPackageType>sdk</DotNetCliPackageType>
     <DotNetCliVersion>$(NETCoreSdkVersion)</DotNetCliVersion>
@@ -57,23 +56,28 @@
     </AdditionalDotNetPackage>
   </ItemGroup>
 
-  <PropertyGroup Condition=" '$(ContinuousIntegrationBuild)' == 'true' ">
-    <HelixType>ci</HelixType>
-    <!-- Creator is not valid for internal queues -->
-    <Creator Condition="'$(_UseHelixOpenQueues)' == 'true'">aspnetcore</Creator>
-    <HelixBuild>$(BUILD_BUILDNUMBER).$(SYSTEM_JOBATTEMPT)</HelixBuild>
-    <WaitForWorkItemCompletion>true</WaitForWorkItemCompletion>
-    <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
-    <EnableXUnitReporter>true</EnableXUnitReporter>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(ContinuousIntegrationBuild)' != 'true' ">
-    <HelixType>dev</HelixType>
-    <!-- Creator is not valid for internal queues -->
-    <Creator Condition="'$(_UseHelixOpenQueues)' == 'true'">$(USERNAME)</Creator>
-    <Creator Condition="'$(USERNAME)' == '' AND '$(_UseHelixOpenQueues)' == 'true'">$(USER)</Creator>
-    <HelixBuild>$([System.DateTime]::Now.ToString('yyyyMMddHHmm'))</HelixBuild>
-  </PropertyGroup>
+  <Choose>
+    <When Condition=" '$(ContinuousIntegrationBuild)' == 'true' ">
+      <PropertyGroup>
+        <HelixType>ci</HelixType>
+        <!-- Creator is not valid for internal queues -->
+        <Creator Condition="'$(_UseHelixOpenQueues)' == 'true'">aspnetcore</Creator>
+        <HelixBuild>$(BUILD_BUILDNUMBER).$(SYSTEM_JOBATTEMPT)</HelixBuild>
+        <WaitForWorkItemCompletion>true</WaitForWorkItemCompletion>
+        <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
+        <EnableXUnitReporter>true</EnableXUnitReporter>
+      </PropertyGroup>
+    </When>
+    <Otherwise>
+      <PropertyGroup>
+        <HelixType>dev</HelixType>
+        <!-- Creator is not valid for internal queues -->
+        <Creator Condition="'$(_UseHelixOpenQueues)' == 'true'">$(USERNAME)</Creator>
+        <Creator Condition="'$(USERNAME)' == '' AND '$(_UseHelixOpenQueues)' == 'true'">$(USER)</Creator>
+        <HelixBuild>$([System.DateTime]::Now.ToString('yyyyMMddHHmm'))</HelixBuild>
+      </PropertyGroup>
+    </Otherwise>
+  </Choose>
 
   <!-- Items with the type "HelixProperties" will become arbitrary JSON associated with the job -->
   <!-- NOTE: These are global to the whole Job, so don't include project-specific content here. -->
@@ -88,11 +92,8 @@
     <HelixProperties Condition="'$(RunQuarantinedTests)' != 'true'" Include="runType" Value="unquarantined" />
   </ItemGroup>
 
-  <ItemGroup Condition="Exists('$(HelixTestConfigurationFilePath)')">
-    <HelixCorrelationPayload Include="$(HelixTestConfigurationFilePath)" AsArchive="false" />
-  </ItemGroup>
-
-  <Target Name="IncludeAspNetRuntime" BeforeTargets="Gather"
+  <!-- In outer (MultiQueue.targets) build, create correlation payload from runtime and ref layouts. -->
+  <Target Name="IncludeAspNetRuntime"
     Condition="'$(DoNotRequireSharedFxHelix)' != 'true' OR
     EXISTS('$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\Microsoft.AspNetCore.App.Runtime.$(TargetRuntimeIdentifier).$(SharedFxVersion).nupkg')">
     <MSBuild Projects="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
@@ -126,16 +127,33 @@
     <ZipDirectory Condition="Exists('$(OutputPath)\SharedFx.Layout')"
       SourceDirectory="$(OutputPath)\SharedFx.Layout"
       DestinationFile="$(OutputPath)\SharedFx.Layout.zip" Overwrite="true" />
-
-    <ItemGroup>
-      <HelixCorrelationPayload Include="$(OutputPath)\SharedFx.Layout.zip" Destination="$(DotNetCliDestination)" />
-    </ItemGroup>
   </Target>
 
-  <Target Name="Gather" BeforeTargets="Build">
-    <MSBuild Projects="@(ProjectToBuild)"
-              Targets="CreateHelixPayload"
-              SkipNonexistentTargets="true">
+  <PropertyGroup Condition=" '$(HelixTargetQueue)' == '' " >
+    <_HelixQueues Condition=" '$(HelixTargetQueues)' != '' ">$(HelixTargetQueues);</_HelixQueues>
+    <_HelixQueues Condition=" '$(_HelixQueues)' == '' ">@(HelixAvailableTargetQueue);<_HelixQueues>
+    <IsFirstQueue Condition="$(_HelixQueues.StartsWith('$(HelixTargetQueue);'))">true</IsFirstQueue>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(IsFirstQueue)' == 'true' ">
+    <GatherDependsOn Condition=" '$(DoNotRequireSharedFxHelix)' == 'true' ">IncludeAspNetRuntime</GatherDependsOn>
+    <GatherDependsOn
+        Condition=" '$(DoNotRequireSharedFxHelix)' != 'true' ">ResolveProjectReferences;IncludeAspNetRuntime</GatherDependsOn>
+  </PropertyGroup>
+
+  <!--
+    Add the correlation payload IncludeAspNetRuntime created in the first inner build.
+    Ignore Zip another run (e.g. with '$(DoNotRequireSharedFxHelix)' == 'true') may have created.
+  -->
+  <ItemGroup Condition=" '$(DoNotRequireSharedFxHelix)' != 'true' OR
+         EXISTS('$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\Microsoft.AspNetCore.App.Runtime.$(TargetRuntimeIdentifier).$(SharedFxVersion).nupkg') ">
+    <HelixCorrelationPayload Include="$(OutputPath)\SharedFx.Layout.zip" Destination="$(DotNetCliDestination)" />
+  </ItemGroup>
+
+  <!-- In inner (MonoQueue.targets) build(s), publish test projects and create work items for them. -->
+  <Target Name="Gather" BeforeTargets="CoreTest" Condition=" '$(HelixTargetQueue)' != '' "
+      DependsOnTargets="$(GatherDependsOn)">
+    <MSBuild Projects="@(ProjectToBuild)" Targets="CreateHelixPayload" SkipNonexistentTargets="true">
       <Output TaskParameter="TargetOutputs" ItemName="HelixWorkItem" />
     </MSBuild>
   </Target>

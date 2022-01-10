@@ -134,14 +134,15 @@
     </PropertyGroup>
   </Target>
 
-  <Target Name="_CreateHelixWorkItem" Condition="$(BuildHelixPayload)">
-    <PropertyGroup>
-      <!-- Extract the effective queue name from this format "(name)host@dockerimage". This is sometimes used in test code to skip tests.  -->
-      <_HelixFriendlyNameTargetQueue>$(HelixTargetQueue)</_HelixFriendlyNameTargetQueue>
-      <_HelixFriendlyNameTargetQueue Condition="$(HelixTargetQueue.Contains('@'))">$(HelixTargetQueue.Substring(1, $([MSBuild]::Subtract($(HelixTargetQueue.LastIndexOf(')')), 1))))</_HelixFriendlyNameTargetQueue>
-    </PropertyGroup>
+  <PropertyGroup Condition=" '$(HelixTargetQueue)' == '' " >
+    <_HelixQueues Condition=" '$(HelixTargetQueues)' != '' ">$(HelixTargetQueues);</_HelixQueues>
+    <_HelixQueues Condition=" '' == '' ">@(HelixAvailableTargetQueue);<_HelixQueues>
+    <IsFirstQueue Condition="$(_HelixQueues.StartsWith('$(HelixTargetQueue);'))">true</IsFirstQueue>
+  </PropertyGroup>
 
-    <!-- Important: If HelixTargetQueue is not removed here, then Publish will occur for every single queue type. And since Publish shouldn't depend on the queue we can just publish once -->
+  <!-- In first inner (MonoQueue.targets) build i.e. once per TFM, publish test project. -->
+  <Target Name="_PublishProject" Condition=" $(BuildHelixPayload) AND '$(IsFirstQueue)' == '' ">
+    <!-- Remove per-queue properties to avoid redoing previous builds. -->
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" RemoveProperties="HelixTargetQueue;TestRunId" />
 
     <!-- Isolate Helix tests from whatever happens to be in a parent directory. -->
@@ -179,6 +180,15 @@
         Retries="$(CopyRetryCount)"
         RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
         SkipUnchangedFiles="$(SkipCopyUnchangedFiles)" />
+  </Target>
+
+  <!-- In inner (MonoQueue.targets) builds i.e. per queue x per TFM, create per-queue work items. -->
+  <Target Name="_CreateHelixWorkItem" Condition=" $(BuildHelixPayload) ">
+    <PropertyGroup>
+      <!-- Extract the effective queue name from this format "(name)host@dockerimage". This is sometimes used in test code to skip tests.  -->
+      <_HelixFriendlyNameTargetQueue>$(HelixTargetQueue)</_HelixFriendlyNameTargetQueue>
+      <_HelixFriendlyNameTargetQueue Condition="$(HelixTargetQueue.Contains('@'))">$(HelixTargetQueue.Substring(1, $([MSBuild]::Subtract($(HelixTargetQueue.LastIndexOf(')')), 1))))</_HelixFriendlyNameTargetQueue>
+    </PropertyGroup>
 
     <ConvertToAbsolutePath Paths="$(PublishDir)">
       <Output TaskParameter="AbsolutePaths" PropertyName="PublishAbsoluteDir" />
@@ -201,7 +211,6 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="_CreateHelixPayloadInner" Returns="@(HelixWorkItem)" DependsOnTargets="_SetCreateHelixPayload;_CreateHelixWorkItem">
-  </Target>
-
+  <Target Name="_CreateHelixPayloadInner" Returns="@(HelixWorkItem)"
+      DependsOnTargets="_SetCreateHelixPayload;_PublishProject;_CreateHelixWorkItem" />
 </Project>
