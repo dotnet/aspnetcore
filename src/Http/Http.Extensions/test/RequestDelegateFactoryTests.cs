@@ -1381,6 +1381,11 @@ public class RequestDelegateFactoryTests : LoggedTest
     {
         get
         {
+            void ExplicitTestReadOnlySequence(HttpContext httpContext, [FromBody] ReadOnlySequence<byte> body)
+            {
+                httpContext.Items.Add("body", body.ToArray());
+            }
+
             void TestReadOnlySequence(HttpContext httpContext, ReadOnlySequence<byte> body)
             {
                 httpContext.Items.Add("body", body.ToArray());
@@ -1408,6 +1413,7 @@ public class RequestDelegateFactoryTests : LoggedTest
 
             return new[]
             {
+                new object[] { (Action<HttpContext, ReadOnlySequence<byte>>)ExplicitTestReadOnlySequence },
                 new object[] { (Action<HttpContext, ReadOnlySequence<byte>>)TestReadOnlySequence },
                 new object[] { (Action<HttpContext, Stream>)TestStream },
                 new object[] { (Func<HttpContext, PipeReader, Task>)TestPipeReader },
@@ -1505,6 +1511,51 @@ public class RequestDelegateFactoryTests : LoggedTest
         await requestDelegate(httpContext);
 
         Assert.Null(todoToBecomeNull);
+    }
+
+    [Fact]
+    public async Task RequestDelegateAllowsEmptyRawBodyGivenCorrectyConfiguredFromBodyParameter()
+    {
+        ReadOnlySequence<byte> bodyResult = new(new byte[] { 1, 2, 3, 4 });
+
+        void TestAction([FromBody(AllowEmpty = true)] ReadOnlySequence<byte> body)
+        {
+            bodyResult = body;
+        }
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Headers["Content-Type"] = "application/json";
+        httpContext.Request.Headers["Content-Length"] = "0";
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.True(bodyResult.IsEmpty);
+    }
+
+    [Fact]
+    public async Task RequestDelegateRawBodyNotInvokedIfBodyIsEmptyAndNotAllowed()
+    {
+        ReadOnlySequence<byte> bodyResult = new(new byte[] { 1, 2, 3, 4 });
+
+        void TestAction(ReadOnlySequence<byte> body)
+        {
+            bodyResult = body;
+        }
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Headers["Content-Type"] = "application/json";
+        httpContext.Request.Headers["Content-Length"] = "0";
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.False(bodyResult.IsEmpty);
     }
 
     [Fact]
