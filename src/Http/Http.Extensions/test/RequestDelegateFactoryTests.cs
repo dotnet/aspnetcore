@@ -1400,11 +1400,18 @@ public class RequestDelegateFactoryTests : LoggedTest
                 httpContext.Items.Add("body", ms.ToArray());
             }
 
+            void TestPipeReaderAndROS(HttpContext httpContext, ReadOnlySequence<byte> body, PipeReader reader)
+            {
+                httpContext.Items.Add("body", body.ToArray());
+                reader.AdvanceTo(body.End);
+            }
+
             return new[]
             {
                 new object[] { (Action<HttpContext, ReadOnlySequence<byte>>)TestReadOnlySequence },
                 new object[] { (Action<HttpContext, Stream>)TestStream },
                 new object[] { (Func<HttpContext, PipeReader, Task>)TestPipeReader },
+                new object[] { (Action<HttpContext, ReadOnlySequence<byte>, PipeReader>)TestPipeReaderAndROS },
             };
         }
     }
