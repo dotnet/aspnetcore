@@ -181,7 +181,7 @@ async function importDotnetJs(resourceLoader: WebAssemblyResourceLoader): Promis
     const resourceType: WebAssemblyBootResourceType = 'dotnetjs';
     const customSrc = resourceLoader.startOptions.loadBootResource(resourceType, dotnetJsResourceName, dotnetJsResourceName, dotnetJsContentHash);
     if (typeof (customSrc) === 'string') {
-      src = new URL(customSrc, location.href);
+      src = new URL(customSrc, document.baseURI);
     } else if (customSrc) {
       // Since we must load this via a import, it's only valid to supply a URI (and not a Request, say)
       throw new Error(`For a ${resourceType} resource, custom loaders must supply a URI string.`);
