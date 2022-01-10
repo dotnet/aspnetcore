@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable no-prototype-builtins */
 import { DotNet } from '@microsoft/dotnet-js-interop';
 import { attachDebuggerHotkey, hasDebuggingEnabled } from './MonoDebugger';
@@ -10,7 +12,7 @@ import { Platform, System_Array, Pointer, System_Object, System_String, HeapLock
 import { WebAssemblyBootResourceType } from '../WebAssemblyStartOptions';
 import { BootJsonData, ICUDataMode } from '../BootConfig';
 import { Blazor } from '../../GlobalExports';
-import { BINDINGType, CreateDotnetRuntimeType, DotnetModuleConfig, EmscriptenModule, MONOType } from 'dotnet';
+import { DotnetPublicAPI, BINDINGType, CreateDotnetRuntimeType, DotnetModuleConfig, EmscriptenModule, MONOType } from 'dotnet';
 
 // initially undefined and only fully initialized after createEmscriptenModuleInstance()
 export let BINDING: BINDINGType = <any>undefined;
@@ -48,17 +50,13 @@ function getValueU64(ptr: number) {
 }
 
 export const monoPlatform: Platform = {
-  start: function start(resourceLoader: WebAssemblyResourceLoader) {
-    return new Promise<void>((resolve, reject) => {
-      attachDebuggerHotkey(resourceLoader);
+  start: async function start(resourceLoader: WebAssemblyResourceLoader) {
+    attachDebuggerHotkey(resourceLoader);
 
-      createEmscriptenModuleInstance(resourceLoader, resolve, reject);
-    }).then(() => {
-      window['Module'] = Module;
-    });
+    await createEmscriptenModuleInstance(resourceLoader);
   },
 
-  callEntryPoint: async function callEntryPoint(assemblyName: string) : Promise<any> {
+  callEntryPoint: async function callEntryPoint(assemblyName: string): Promise<any> {
     const emptyArray = [[]];
 
     try {
@@ -162,7 +160,7 @@ export const monoPlatform: Platform = {
   },
 };
 
-function importDotnetJs(resourceLoader: WebAssemblyResourceLoader): Promise<CreateDotnetRuntimeType> {
+async function importDotnetJs(resourceLoader: WebAssemblyResourceLoader): Promise<CreateDotnetRuntimeType> {
   const browserSupportsNativeWebAssembly = typeof WebAssembly !== 'undefined' && WebAssembly.validate;
   if (!browserSupportsNativeWebAssembly) {
     throw new Error('This browser does not support WebAssembly.');
@@ -176,39 +174,49 @@ function importDotnetJs(resourceLoader: WebAssemblyResourceLoader): Promise<Crea
     .keys(resourceLoader.bootConfig.resources.runtime)
     .filter(n => n.startsWith('dotnet.') && n.endsWith('.js'))[0];
   const dotnetJsContentHash = resourceLoader.bootConfig.resources.runtime[dotnetJsResourceName];
-  let src = `./${dotnetJsResourceName}`;
+  let src = new URL(`_framework/${dotnetJsResourceName}`, document.baseURI);
 
   // Allow overriding the URI from which the dotnet.*.js file is loaded
   if (resourceLoader.startOptions.loadBootResource) {
     const resourceType: WebAssemblyBootResourceType = 'dotnetjs';
-    const customSrc = resourceLoader.startOptions.loadBootResource(resourceType, dotnetJsResourceName, src, dotnetJsContentHash);
+    const customSrc = resourceLoader.startOptions.loadBootResource(resourceType, dotnetJsResourceName, dotnetJsResourceName, dotnetJsContentHash);
     if (typeof (customSrc) === 'string') {
-      src = customSrc;
+      src = new URL(customSrc, location.href);
     } else if (customSrc) {
-      // Since we must load this via a <script> tag, it's only valid to supply a URI (and not a Request, say)
+      // Since we must load this via a import, it's only valid to supply a URI (and not a Request, say)
       throw new Error(`For a ${resourceType} resource, custom loaders must supply a URI string.`);
     }
   }
 
-  return new Promise((resolve, reject) => {
-    // GOTCHA: remove this callback once we switch to ES6
-    // this is callback we have in CJS version of the runtime
-    globalThis.__onDotnetRuntimeLoaded = (createDotnetRuntime) => {
-      delete globalThis.__onDotnetRuntimeLoaded;
-      resolve(createDotnetRuntime);
-    };
-    // this tells webpack to do dynamic import at runtime, not at compile time
-    import(/* webpackIgnore: true */ src).then(({ default: createDotnetRuntime }) => {
-      if (createDotnetRuntime) {
-        // this runs when loaded module was ES6
-        delete globalThis.__onDotnetRuntimeLoaded;
-        resolve(createDotnetRuntime);
-      }
-    }, reject);
+  // GOTCHA: remove this once runtime switched to ES6
+  // this is capturing the export via callback we have in CJS version of the runtime
+  let cjsExportResolve: (data: CreateDotnetRuntimeType) => void = <any>undefined;
+  const cjsExport = new Promise<CreateDotnetRuntimeType>((resolve) => {
+    cjsExportResolve = resolve;
   });
+  globalThis.__onDotnetRuntimeLoaded = (createDotnetRuntime) => {
+    delete globalThis.__onDotnetRuntimeLoaded;
+    cjsExportResolve(createDotnetRuntime);
+  };
+
+  const { default: createDotnetRuntime } = await import(/* webpackIgnore: true */ src.toString());
+  if (createDotnetRuntime) {
+    // this runs when loaded module was ES6
+    delete globalThis.__onDotnetRuntimeLoaded;
+    return createDotnetRuntime;
+  }
+
+  return await cjsExport;
 }
 
-async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoader, onReady: () => void, onError: (reason?: any) => void) {
+async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoader): Promise<DotnetPublicAPI> {
+  let runtimeReadyResolve: (data: DotnetPublicAPI) => void = <any>undefined;
+  let runtimeReadyReject: (reason?: any) => void = <any>undefined;
+  const runtimeReady = new Promise<DotnetPublicAPI>((resolve, reject) => {
+    runtimeReadyResolve = resolve;
+    runtimeReadyReject = reject;
+  });
+
 
   const dotnetJsBeingLoaded = importDotnetJs(resourceLoader);
   const resources = resourceLoader.bootConfig.resources;
@@ -264,7 +272,8 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
 
   const createDotnetRuntime = await dotnetJsBeingLoaded;
 
-  return await createDotnetRuntime(({ MONO: mono, BINDING: binding, Module: module }) => {
+  await createDotnetRuntime((api) => {
+    const { MONO: mono, BINDING: binding, Module: module } = api;
     Module = module;
     BINDING = binding;
     MONO = mono;
@@ -446,7 +455,7 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
       MONO.mono_wasm_load_runtime(appBinDirName, hasDebuggingEnabled() ? -1 : 0);
       MONO.mono_wasm_runtime_ready();
       attachInteropInvoker();
-      onReady();
+      runtimeReadyResolve(api);
     };
 
     async function addResourceAsAssembly(dependency: LoadingResource, loadAsName: string) {
@@ -460,12 +469,12 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
         // Load it into the Mono runtime
         const data = new Uint8Array(dataBuffer);
         const heapAddress = Module._malloc(data.length);
-        const heapMemory = new Uint8Array(Module.HEAPU8.buffer, <any>heapAddress, data.length);
+        const heapMemory = new Uint8Array(Module.HEAPU8.buffer, heapAddress as any, data.length);
         heapMemory.set(data);
         MONO.mono_wasm_add_assembly(loadAsName, heapAddress, data.length);
         MONO.loaded_files.push(toAbsoluteUrl(dependency.url));
       } catch (errorInfo) {
-        onError(errorInfo);
+        runtimeReadyReject(errorInfo);
         return;
       }
 
@@ -485,6 +494,8 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
 
     return dotnetModuleConfig;
   });
+
+  return await runtimeReady;
 }
 
 const anchorTagForAbsoluteUrlConversions = document.createElement('a');
