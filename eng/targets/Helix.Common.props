@@ -37,21 +37,21 @@
       <!-- aspnetcore-helix-matrix[-internal] (helix-matrix.yml) and RunHelix.ps1 -->
       <!-- aspnetcore-quarantined-tests (quarantined-tests.yml) and RunHelix.ps1 -RunQuarantinedTests -->
       <ItemGroup>
-        <!-- Linux -->
+        <!-- Linux 
         <HelixAvailableTargetQueue Include="Redhat.7.Amd64.Open" Platform="Linux" />
         <HelixAvailableTargetQueue Include="Ubuntu.2004.Amd64.Open" Platform="Linux" />
 
-        <!-- Containers -->
+        <!-- Containers 
         <HelixAvailableTargetQueue Include="$(HelixQueueAlpine314)" Platform="Linux" />
         <HelixAvailableTargetQueue Include="$(HelixQueueDebian11)" Platform="Linux" />
         <HelixAvailableTargetQueue Include="$(HelixQueueFedora34)" Platform="Linux" />
         <HelixAvailableTargetQueue Include="$(HelixQueueMariner)" Platform="Linux" />
         <HelixAvailableTargetQueue Include="$(HelixQueueArmDebian11)" Platform="Linux" />
 
-        <!-- Mac -->
+        <!-- Mac
         <HelixAvailableTargetQueue Include="OSX.1015.Amd64.Open" Platform="OSX" />
 
-        <!-- Windows -->
+        <!-- Windows
         <HelixAvailableTargetQueue Include="Windows.10.Amd64.Server20H2.Open" Platform="Windows" />
         <HelixAvailableTargetQueue Include="Windows.Amd64.Server2022.Open" Platform="Windows" />
 
