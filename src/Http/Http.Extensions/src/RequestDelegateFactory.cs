@@ -607,9 +607,6 @@ public static partial class RequestDelegateFactory
     private static Func<object?, HttpContext, Task> HandleRequestBodyAndCompileRequestDelegateForRawBody(Expression responseWritingMethodCall, FactoryContext factoryContext)
     {
         Debug.Assert(factoryContext.RequestBodyParameter is not null, "factoryContext.RequestBodyParameter is null for a body parameter.");
-
-        var bodyType = factoryContext.RequestBodyParameter.ParameterType;
-
         Debug.Assert(factoryContext.RequestBodyParameter.Name is not null, "CreateArgument() should throw if parameter.Name is null.");
 
         if (factoryContext.ParameterBinders.Count > 0)
