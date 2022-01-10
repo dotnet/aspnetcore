@@ -288,7 +288,6 @@ public class AuthorizeViewTest
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/31854")]
     public async Task RendersAuthorizingUntilAuthorizationCompletedAsync()
     {
         // Covers https://github.com/dotnet/aspnetcore/pull/31794
