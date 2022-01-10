@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.DotNet.Helix.Sdk" DefaultTargets="Test" TreatAsLocalProperty="ProjectToBuild">
-
   <PropertyGroup>
     <!--
       When invoking helix.proj for the whole repo with build.cmd, ProjectToBuild will be set to the path to this project.
@@ -24,7 +23,6 @@
     <IsExternal>true</IsExternal>
     <MaxRetryCount Condition="'$(MaxRetryCount)' == ''">2</MaxRetryCount>
     <HelixAccessToken Condition="'$(_UseHelixOpenQueues)' != 'true'">$(HelixApiAccessToken)</HelixAccessToken>
-    <HelixTestConfigurationFilePath>$(RepoRoot)eng/test-configuration.json</HelixTestConfigurationFilePath>
     <IncludeDotNetCli>true</IncludeDotNetCli>
     <DotNetCliPackageType>sdk</DotNetCliPackageType>
     <DotNetCliVersion>$(NETCoreSdkVersion)</DotNetCliVersion>
@@ -44,23 +42,28 @@
     </AdditionalDotNetPackage>
   </ItemGroup>
 
-  <PropertyGroup Condition=" '$(ContinuousIntegrationBuild)' == 'true' ">
-    <HelixType>ci</HelixType>
-    <!-- Creator is not valid for internal queues -->
-    <Creator Condition="'$(_UseHelixOpenQueues)' == 'true'">aspnetcore</Creator>
-    <HelixBuild>$(BUILD_BUILDNUMBER).$(SYSTEM_JOBATTEMPT)</HelixBuild>
-    <WaitForWorkItemCompletion>true</WaitForWorkItemCompletion>
-    <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
-    <EnableXUnitReporter>true</EnableXUnitReporter>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(ContinuousIntegrationBuild)' != 'true' ">
-    <HelixType>dev</HelixType>
-    <!-- Creator is not valid for internal queues -->
-    <Creator Condition="'$(_UseHelixOpenQueues)' == 'true'">$(USERNAME)</Creator>
-    <Creator Condition="'$(USERNAME)' == '' AND '$(_UseHelixOpenQueues)' == 'true'">$(USER)</Creator>
-    <HelixBuild>$([System.DateTime]::Now.ToString('yyyyMMddHHmm'))</HelixBuild>
-  </PropertyGroup>
+  <Choose>
+    <When Condition=" '$(ContinuousIntegrationBuild)' == 'true' ">
+      <PropertyGroup>
+        <HelixType>ci</HelixType>
+        <!-- Creator is not valid for internal queues -->
+        <Creator Condition="'$(_UseHelixOpenQueues)' == 'true'">aspnetcore</Creator>
+        <HelixBuild>$(BUILD_BUILDNUMBER).$(SYSTEM_JOBATTEMPT)</HelixBuild>
+        <WaitForWorkItemCompletion>true</WaitForWorkItemCompletion>
+        <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
+        <EnableXUnitReporter>true</EnableXUnitReporter>
+      </PropertyGroup>
+    </When>
+    <Otherwise>
+      <PropertyGroup>
+        <HelixType>dev</HelixType>
+        <!-- Creator is not valid for internal queues -->
+        <Creator Condition="'$(_UseHelixOpenQueues)' == 'true'">$(USERNAME)</Creator>
+        <Creator Condition="'$(USERNAME)' == '' AND '$(_UseHelixOpenQueues)' == 'true'">$(USER)</Creator>
+        <HelixBuild>$([System.DateTime]::Now.ToString('yyyyMMddHHmm'))</HelixBuild>
+      </PropertyGroup>
+    </Otherwise>
+  </Choose>
 
   <!-- Items with the type "HelixProperties" will become arbitrary JSON associated with the job -->
   <!-- NOTE: These are global to the whole Job, so don't include project-specific content here. -->
@@ -75,9 +78,26 @@
     <HelixProperties Condition="'$(RunQuarantinedTests)' != 'true'" Include="runType" Value="unquarantined" />
   </ItemGroup>
 
-  <ItemGroup Condition="Exists('$(HelixTestConfigurationFilePath)')">
-    <HelixCorrelationPayload Include="$(HelixTestConfigurationFilePath)" AsArchive="false" />
-  </ItemGroup>
+  <!--
+    In outer (not per-queue) builds, pass Restore along to all other projects. This covers CI builds because
+    helix.proj is the entry point in Helix jobs and Restore is therefore executed in this project. This does
+    not cover RunHelix.ps1 scenarios _directly_ because Restore is not executed in this project.
+  -->
+  <Target Name="RestoreProjectToBuild" BeforeTargets="Restore" Condition=" '$(HelixTargetQueue)' == '' ">
+    <MSBuild Projects="@(ProjectToBuild)" BuildInParallel="$(BuildInParallel)" Targets="Restore" />
+  </Target>
+
+  <!--
+    In outer (not per-queue) builds, pass Build along to all other projects. Invoke Pack instead because packages
+    are needed in some tests. This covers all builds because the default Test target depends on Build.
+  -->
+  <Target Name="RestoreProjectToBuild" BeforeTargets="Build" Condition=" '$(HelixTargetQueue)' == '' ">
+    <!-- Remove NoBuild property because CI jobs use -noBuild only to control Arcade's separate Build. -->
+    <MSBuild Projects="@(ProjectToBuild)"
+        BuildInParallel="$(BuildInParallel)"
+        RemoveProperties="NoBuild"
+        Targets="Pack" />
+  </Target>
 
   <Target Name="IncludeAspNetRuntime" BeforeTargets="Gather"
     Condition="'$(DoNotRequireSharedFxHelix)' != 'true' OR
@@ -121,10 +141,9 @@
 
   <Target Name="Gather" BeforeTargets="Build">
     <MSBuild Projects="@(ProjectToBuild)"
-              Targets="CreateHelixPayload"
-              SkipNonexistentTargets="true">
+             Targets="CreateHelixPayload"
+             SkipNonexistentTargets="true">
       <Output TaskParameter="TargetOutputs" ItemName="HelixWorkItem" />
     </MSBuild>
   </Target>
-
 </Project>
