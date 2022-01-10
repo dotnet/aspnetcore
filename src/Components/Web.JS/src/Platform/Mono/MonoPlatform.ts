@@ -188,6 +188,26 @@ async function importDotnetJs(resourceLoader: WebAssemblyResourceLoader): Promis
     }
   }
 
+  // For consistency with WebAssemblyResourceLoader, we only enforce SRI if caching is allowed
+  if (resourceLoader.bootConfig.cacheBootResources) {
+    try {
+      if (globalThis.navigator) {
+        const nav: any = globalThis.navigator;
+        if (nav.userAgentData && nav.userAgentData.brands && nav.userAgentData.brands.some((i: any) => i.brand === 'Chromium')) {
+          const scriptElem = document.createElement('link');
+          scriptElem.rel = 'modulepreload';
+          scriptElem.href = `_framework/${dotnetJsResourceName}`;
+          // it will make dynamic import fail if the hash doesn't match
+          scriptElem.integrity = dotnetJsContentHash;
+          scriptElem.crossOrigin = 'anonymous';
+          document.head.appendChild(scriptElem);
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
   // GOTCHA: remove this once runtime switched to ES6
   // this is capturing the export via callback we have in CJS version of the runtime
   let cjsExportResolve: (data: CreateDotnetRuntimeType) => void = <any>undefined;
