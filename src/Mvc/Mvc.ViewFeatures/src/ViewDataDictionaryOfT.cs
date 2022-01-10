@@ -86,16 +86,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         }
 
         /// <inheritdoc />
-        public new TModel? Model
+        public new TModel Model
         {
-            get
-            {
-                return (base.Model == null) ? default(TModel) : (TModel)base.Model;
-            }
-            set
-            {
-                base.Model = value;
-            }
+            get => (base.Model is null) ? default! : (TModel)base.Model;
+            set => base.Model = value;
         }
     }
 }
