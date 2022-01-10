@@ -629,12 +629,7 @@ public static partial class RequestDelegateFactory
                     boundValues[i] = await binders[i](httpContext);
                 }
 
-                var (bodyValue, successful) = await TryReadBodyAsync(httpContext);
-
-                if (!successful)
-                {
-                    return;
-                }
+                var bodyValue = await ReadBodyAsync(httpContext);
 
                 await continuation(target, httpContext, bodyValue, boundValues);
             };
@@ -647,18 +642,13 @@ public static partial class RequestDelegateFactory
 
             return async (target, httpContext) =>
             {
-                var (bodyValue, successful) = await TryReadBodyAsync(httpContext);
-
-                if (!successful)
-                {
-                    return;
-                }
+                var bodyValue = await ReadBodyAsync(httpContext);
 
                 await continuation(target, httpContext, bodyValue);
             };
         }
 
-        static async Task<(ReadOnlySequence<byte>, bool)> TryReadBodyAsync(HttpContext httpContext)
+        static async ValueTask<ReadOnlySequence<byte>> ReadBodyAsync(HttpContext httpContext)
         {
             var feature = httpContext.Features.Get<IHttpRequestBodyDetectionFeature>();
 
@@ -673,7 +663,7 @@ public static partial class RequestDelegateFactory
 
                     if (result.IsCompleted)
                     {
-                        return (buffer, true);
+                        return buffer;
                     }
 
                     // Buffer the body
@@ -681,7 +671,7 @@ public static partial class RequestDelegateFactory
                 }
             }
 
-            return (default, true);
+            return default;
         }
     }
 
