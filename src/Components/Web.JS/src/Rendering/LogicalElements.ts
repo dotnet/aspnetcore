@@ -82,7 +82,7 @@ export function toLogicalElement(element: Node, allowExistingContents?: boolean)
   return element as unknown as LogicalElement;
 }
 
-export function emptyLogicalElement(element: LogicalElement) {
+export function emptyLogicalElement(element: LogicalElement): void {
   const childrenArray = getLogicalChildrenArray(element);
   while (childrenArray.length) {
     removeLogicalChild(element, 0);
@@ -95,7 +95,7 @@ export function createAndInsertLogicalContainer(parent: LogicalElement, childInd
   return containerElement as any as LogicalElement;
 }
 
-export function insertLogicalChild(child: Node, parent: LogicalElement, childIndex: number) {
+export function insertLogicalChild(child: Node, parent: LogicalElement, childIndex: number): void {
   const childAsLogicalElement = child as any as LogicalElement;
   if (child instanceof Comment) {
     const existingGrandchildren = getLogicalChildrenArray(childAsLogicalElement);
@@ -135,7 +135,7 @@ export function insertLogicalChild(child: Node, parent: LogicalElement, childInd
   }
 }
 
-export function removeLogicalChild(parent: LogicalElement, childIndex: number) {
+export function removeLogicalChild(parent: LogicalElement, childIndex: number): void {
   const childrenArray = getLogicalChildrenArray(parent);
   const childToRemove = childrenArray.splice(childIndex, 1)[0];
 
@@ -173,18 +173,18 @@ export function getLogicalChild(parent: LogicalElement, childIndex: number): Log
 // browsers will fail to render the foreign object content. Here, we ensure that if
 // we encounter a `foreignObject` in the SVG, then all its children will be placed
 // under the XHTML namespace.
-export function isSvgElement(element: LogicalElement) {
+export function isSvgElement(element: LogicalElement): boolean {
   // Note: This check is intentionally case-sensitive since we expect this element
   // to appear as a child of an SVG element and SVGs are case-sensitive.
   const closestElement = getClosestDomElement(element) as any;
   return closestElement.namespaceURI === 'http://www.w3.org/2000/svg' && closestElement['tagName'] !== 'foreignObject';
 }
 
-export function getLogicalChildrenArray(element: LogicalElement) {
+export function getLogicalChildrenArray(element: LogicalElement): LogicalElement[] {
   return element[logicalChildrenPropname] as LogicalElement[];
 }
 
-export function permuteLogicalChildren(parent: LogicalElement, permutationList: PermutationListEntry[]) {
+export function permuteLogicalChildren(parent: LogicalElement, permutationList: PermutationListEntry[]): void {
   // The permutationList must represent a valid permutation, i.e., the list of 'from' indices
   // is distinct, and the list of 'to' indices is a permutation of it. The algorithm here
   // relies on that assumption.
@@ -201,7 +201,8 @@ export function permuteLogicalChildren(parent: LogicalElement, permutationList: 
 
   // Phase 2: insert markers
   permutationList.forEach((listEntry: PermutationListEntryWithTrackingData) => {
-    const marker = listEntry.moveToBeforeMarker = document.createComment('marker');
+    const marker = document.createComment('marker');
+    listEntry.moveToBeforeMarker = document.createComment('marker');
     const insertBeforeNode = siblings[listEntry.toSiblingIndex + 1] as any as Node;
     if (insertBeforeNode) {
       insertBeforeNode.parentNode!.insertBefore(marker, insertBeforeNode);
@@ -237,7 +238,7 @@ export function permuteLogicalChildren(parent: LogicalElement, permutationList: 
   });
 }
 
-export function getClosestDomElement(logicalElement: LogicalElement) {
+export function getClosestDomElement(logicalElement: LogicalElement): Element | (LogicalElement & DocumentFragment) {
   if (logicalElement instanceof Element || logicalElement instanceof DocumentFragment) {
     return logicalElement;
   } else if (logicalElement instanceof Comment) {

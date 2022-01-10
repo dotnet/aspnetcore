@@ -9,7 +9,7 @@ const currentBrowserIsChrome = (window as any).chrome
 let hasReferencedPdbs = false;
 let debugBuild = false;
 
-export function hasDebuggingEnabled() {
+export function hasDebuggingEnabled(): boolean {
   return (hasReferencedPdbs || debugBuild) && currentBrowserIsChrome;
 }
 

@@ -17,7 +17,8 @@ let shouldResetScrollAfterNextBatch = false;
 export function attachRootComponentToLogicalElement(browserRendererId: number, logicalElement: LogicalElement, componentId: number, appendContent: boolean): void {
   let browserRenderer = browserRenderers[browserRendererId];
   if (!browserRenderer) {
-    browserRenderer = browserRenderers[browserRendererId] = new BrowserRenderer(browserRendererId);
+    browserRenderer = new BrowserRenderer(browserRendererId);
+    browserRenderers[browserRendererId] = new BrowserRenderer(browserRendererId);
   }
 
   browserRenderer.attachRootComponentToLogicalElement(componentId, logicalElement, appendContent);
@@ -46,7 +47,7 @@ export function attachRootComponentToElement(elementSelector: string, componentI
   attachRootComponentToLogicalElement(browserRendererId || 0, toLogicalElement(element, /* allow existing contents */ true), componentId, appendContent);
 }
 
-export function getRendererer(browserRendererId: number) {
+export function getRendererer(browserRendererId: number): BrowserRenderer {
   return browserRenderers[browserRendererId];
 }
 
@@ -90,7 +91,7 @@ export function renderBatch(browserRendererId: number, batch: RenderBatch): void
   resetScrollIfNeeded();
 }
 
-export function resetScrollAfterNextBatch() {
+export function resetScrollAfterNextBatch(): void {
   shouldResetScrollAfterNextBatch = true;
 }
 

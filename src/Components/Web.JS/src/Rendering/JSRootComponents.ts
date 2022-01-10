@@ -7,7 +7,7 @@ const pendingRootComponentContainerNamePrefix = '__bl-dynamic-root:';
 const pendingRootComponentContainers = new Map<string, Element>();
 let nextPendingDynamicRootComponentIdentifier = 0;
 
-type ComponentParameters = object | null | undefined;
+type ComponentParameters = Record<string, unknown>
 
 let manager: DotNet.DotNetObject | undefined;
 let jsComponentParametersByIdentifier: JSComponentParametersByIdentifier;
