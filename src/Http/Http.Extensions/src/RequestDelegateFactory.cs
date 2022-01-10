@@ -50,6 +50,8 @@ public static partial class RequestDelegateFactory
 
     private static readonly ParameterExpression TargetExpr = Expression.Parameter(typeof(object), "target");
     private static readonly ParameterExpression BodyValueExpr = Expression.Parameter(typeof(object), "bodyValue");
+    private static readonly ParameterExpression RawBodyValueExpr = Expression.Parameter(typeof(ReadOnlySequence<byte>), "bodyValue");
+    private static readonly MemberExpression RawBodyIsEmptyExpr = Expression.Property(RawBodyValueExpr, typeof(ReadOnlySequence<byte>).GetProperty(nameof(ReadOnlySequence<byte>.IsEmpty))!);
     private static readonly ParameterExpression WasParamCheckFailureExpr = Expression.Variable(typeof(bool), "wasParamCheckFailure");
     private static readonly ParameterExpression BoundValuesArrayExpr = Expression.Parameter(typeof(object[]), "boundValues");
 
@@ -594,18 +596,103 @@ public static partial class RequestDelegateFactory
         {
             return HandleRequestBodyAndCompileRequestDelegateForForm(responseWritingMethodCall, factoryContext);
         }
-        else
+        else if (factoryContext.IsRawRequestBody)
         {
-            return HandleRequestBodyAndCompileRequestDelegateForOtherBody(responseWritingMethodCall, factoryContext);
+            return HandleRequestBodyAndCompileRequestDelegateForRawBody(responseWritingMethodCall, factoryContext);
         }
+
+        return HandleRequestBodyAndCompileRequestDelegateForJsonBody(responseWritingMethodCall, factoryContext);
     }
 
-    private static Func<object?, HttpContext, Task> HandleRequestBodyAndCompileRequestDelegateForOtherBody(Expression responseWritingMethodCall, FactoryContext factoryContext)
+    private static Func<object?, HttpContext, Task> HandleRequestBodyAndCompileRequestDelegateForRawBody(Expression responseWritingMethodCall, FactoryContext factoryContext)
     {
         Debug.Assert(factoryContext.RequestBodyParameter is not null, "factoryContext.RequestBodyParameter is null for a body parameter.");
 
         var bodyType = factoryContext.RequestBodyParameter.ParameterType;
-        var isRawBodyType = bodyType == typeof(ReadOnlySequence<byte>);
+
+        Debug.Assert(factoryContext.RequestBodyParameter.Name is not null, "CreateArgument() should throw if parameter.Name is null.");
+
+        if (factoryContext.ParameterBinders.Count > 0)
+        {
+            // We need to generate the code for reading from the body before calling into the delegate
+            var continuation = Expression.Lambda<Func<object?, HttpContext, ReadOnlySequence<byte>, object?[], Task>>(
+            responseWritingMethodCall, TargetExpr, HttpContextExpr, RawBodyValueExpr, BoundValuesArrayExpr).Compile();
+
+            // Looping over arrays is faster
+            var binders = factoryContext.ParameterBinders.ToArray();
+            var count = binders.Length;
+
+            return async (target, httpContext) =>
+            {
+                // Run these first so that they can potentially read and rewind the body
+                var boundValues = new object?[count];
+
+                for (var i = 0; i < count; i++)
+                {
+                    boundValues[i] = await binders[i](httpContext);
+                }
+
+                var (bodyValue, successful) = await TryReadBodyAsync(httpContext);
+
+                if (!successful)
+                {
+                    return;
+                }
+
+                await continuation(target, httpContext, bodyValue, boundValues);
+            };
+        }
+        else
+        {
+            // We need to generate the code for reading from the body before calling into the delegate
+            var continuation = Expression.Lambda<Func<object?, HttpContext, ReadOnlySequence<byte>, Task>>(
+            responseWritingMethodCall, TargetExpr, HttpContextExpr, RawBodyValueExpr).Compile();
+
+            return async (target, httpContext) =>
+            {
+                var (bodyValue, successful) = await TryReadBodyAsync(httpContext);
+
+                if (!successful)
+                {
+                    return;
+                }
+
+                await continuation(target, httpContext, bodyValue);
+            };
+        }
+
+        static async Task<(ReadOnlySequence<byte>, bool)> TryReadBodyAsync(HttpContext httpContext)
+        {
+            var feature = httpContext.Features.Get<IHttpRequestBodyDetectionFeature>();
+
+            if (feature?.CanHaveBody == true)
+            {
+                var bodyReader = httpContext.Request.BodyReader;
+
+                while (true)
+                {
+                    var result = await bodyReader.ReadAsync();
+                    var buffer = result.Buffer;
+
+                    if (result.IsCompleted)
+                    {
+                        return (buffer, true);
+                    }
+
+                    // Buffer the body
+                    bodyReader.AdvanceTo(buffer.Start, buffer.End);
+                }
+            }
+
+            return (default, true);
+        }
+    }
+
+    private static Func<object?, HttpContext, Task> HandleRequestBodyAndCompileRequestDelegateForJsonBody(Expression responseWritingMethodCall, FactoryContext factoryContext)
+    {
+        Debug.Assert(factoryContext.RequestBodyParameter is not null, "factoryContext.RequestBodyParameter is null for a body parameter.");
+
+        var bodyType = factoryContext.RequestBodyParameter.ParameterType;
         var parameterTypeName = TypeNameHelper.GetTypeDisplayName(factoryContext.RequestBodyParameter.ParameterType, fullName: false);
         var parameterName = factoryContext.RequestBodyParameter.Name;
 
@@ -634,7 +721,6 @@ public static partial class RequestDelegateFactory
                 var (bodyValue, successful) = await TryReadBodyAsync(
                     httpContext,
                     bodyType,
-                    isRawBodyType,
                     parameterTypeName,
                     parameterName,
                     factoryContext.AllowEmptyRequestBody,
@@ -659,7 +745,6 @@ public static partial class RequestDelegateFactory
                 var (bodyValue, successful) = await TryReadBodyAsync(
                     httpContext,
                     bodyType,
-                    isRawBodyType,
                     parameterTypeName,
                     parameterName,
                     factoryContext.AllowEmptyRequestBody,
@@ -677,7 +762,6 @@ public static partial class RequestDelegateFactory
         static async Task<(object? FormValue, bool Successful)> TryReadBodyAsync(
             HttpContext httpContext,
             Type bodyType,
-            bool isRawBodyType,
             string parameterTypeName,
             string parameterName,
             bool allowEmptyRequestBody,
@@ -695,25 +779,6 @@ public static partial class RequestDelegateFactory
 
             if (feature?.CanHaveBody == true)
             {
-                if (isRawBodyType)
-                {
-                    var bodyReader = httpContext.Request.BodyReader;
-
-                    while (true)
-                    {
-                        var result = await bodyReader.ReadAsync();
-                        var buffer = result.Buffer;
-
-                        if (result.IsCompleted)
-                        {
-                            return (buffer, true);
-                        }
-
-                        // Buffer the body
-                        bodyReader.AdvanceTo(buffer.Start, buffer.End);
-                    }
-                }
-
                 if (!httpContext.Request.HasJsonContentType())
                 {
                     Log.UnexpectedJsonContentType(httpContext, httpContext.Request.ContentType, throwOnBadRequest);
@@ -1210,7 +1275,12 @@ public static partial class RequestDelegateFactory
 
         factoryContext.RequestBodyParameter = parameter;
         factoryContext.AllowEmptyRequestBody = allowEmpty || isOptional;
-        factoryContext.Metadata.Add(new AcceptsMetadata(parameter.ParameterType, factoryContext.AllowEmptyRequestBody, DefaultAcceptsContentType));
+
+        // We can't infer the accept content type for raw bodies
+        if (!factoryContext.IsRawRequestBody)
+        {
+            factoryContext.Metadata.Add(new AcceptsMetadata(parameter.ParameterType, factoryContext.AllowEmptyRequestBody, DefaultAcceptsContentType));
+        }
 
         if (!factoryContext.AllowEmptyRequestBody)
         {
@@ -1223,6 +1293,8 @@ public static partial class RequestDelegateFactory
                 // }
                 factoryContext.ParamCheckExpressions.Add(Expression.Block(
                     Expression.IfThen(
+                        factoryContext.IsRawRequestBody ?
+                        RawBodyIsEmptyExpr :
                         Expression.Equal(BodyValueExpr, Expression.Constant(null)),
                         Expression.Block(
                             Expression.Assign(WasParamCheckFailureExpr, Expression.Constant(true)),
@@ -1247,7 +1319,9 @@ public static partial class RequestDelegateFactory
                 // }
                 var checkRequiredBodyBlock = Expression.Block(
                     Expression.IfThen(
-                    Expression.Equal(BodyValueExpr, Expression.Constant(null)),
+                    factoryContext.IsRawRequestBody ?
+                        RawBodyIsEmptyExpr :
+                        Expression.Equal(BodyValueExpr, Expression.Constant(null)),
                         Expression.Block(
                             Expression.Assign(WasParamCheckFailureExpr, Expression.Constant(true)),
                             Expression.Call(LogRequiredParameterNotProvidedMethod,
@@ -1265,10 +1339,20 @@ public static partial class RequestDelegateFactory
         }
         else if (parameter.HasDefaultValue)
         {
+            if (factoryContext.IsRawRequestBody)
+            {
+                return Expression.Coalesce(RawBodyValueExpr, Expression.Constant(parameter.DefaultValue));
+            }
+
             // Convert(bodyValue ?? SomeDefault, Todo)
             return Expression.Convert(
                 Expression.Coalesce(BodyValueExpr, Expression.Constant(parameter.DefaultValue)),
                 parameter.ParameterType);
+        }
+
+        if (factoryContext.IsRawRequestBody)
+        {
+            return RawBodyValueExpr;
         }
 
         // Convert(bodyValue, Todo)
@@ -1482,6 +1566,7 @@ public static partial class RequestDelegateFactory
         // Temporary State
         public ParameterInfo? RequestBodyParameter { get; set; }
         public bool AllowEmptyRequestBody { get; set; }
+        public bool IsRawRequestBody => RequestBodyParameter?.ParameterType == typeof(ReadOnlySequence<byte>);
 
         public bool UsingTempSourceString { get; set; }
         public List<ParameterExpression> ExtraLocals { get; } = new();
