@@ -178,7 +178,6 @@ function importDotnetJs(resourceLoader: WebAssemblyResourceLoader): Promise<Crea
   const dotnetJsContentHash = resourceLoader.bootConfig.resources.runtime[dotnetJsResourceName];
   let src = `./${dotnetJsResourceName}`;
 
-
   // Allow overriding the URI from which the dotnet.*.js file is loaded
   if (resourceLoader.startOptions.loadBootResource) {
     const resourceType: WebAssemblyBootResourceType = 'dotnetjs';
