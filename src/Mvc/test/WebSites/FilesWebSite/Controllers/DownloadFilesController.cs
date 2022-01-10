@@ -10,10 +10,12 @@ namespace FilesWebSite;
 public class DownloadFilesController : Controller
 {
     private readonly IWebHostEnvironment _hostingEnvironment;
+    private readonly string _testFilesPath;
 
     public DownloadFilesController(IWebHostEnvironment hostingEnvironment)
     {
         _hostingEnvironment = hostingEnvironment;
+        _testFilesPath = Path.Combine(Path.GetTempPath(), "test-files");
     }
 
     public IActionResult DownloadFromDisk()
@@ -47,7 +49,12 @@ public class DownloadFilesController : Controller
     public IActionResult DownloadFromDiskSymlink()
     {
         var path = Path.Combine(_hostingEnvironment.ContentRootPath, "sample.txt");
-        var symlink = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+        var symlink = Path.Combine(_testFilesPath, Path.GetRandomFileName());
+
+        if (!Directory.Exists(_testFilesPath))
+        {
+            Directory.CreateDirectory(_testFilesPath);
+        }
 
         var fileInfo = System.IO.File.CreateSymbolicLink(symlink, path);
 
@@ -104,5 +111,16 @@ public class DownloadFilesController : Controller
         var data = Encoding.UTF8.GetBytes("This is a sample text from a binary array");
         var entityTag = new EntityTagHeaderValue("\"Etag\"");
         return File(data, "text/plain", "downloadName.txt", lastModified: null, entityTag: entityTag, enableRangeProcessing: true);
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        try
+        {
+            Directory.Delete(Path.Combine(_testFilesPath), recursive: true);
+        }
+        catch { }
+
+        base.Dispose(disposing);
     }
 }
