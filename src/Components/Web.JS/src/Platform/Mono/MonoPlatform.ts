@@ -10,12 +10,12 @@ import { Platform, System_Array, Pointer, System_Object, System_String, HeapLock
 import { WebAssemblyBootResourceType } from '../WebAssemblyStartOptions';
 import { BootJsonData, ICUDataMode } from '../BootConfig';
 import { Blazor } from '../../GlobalExports';
-import { BINDINGType, CreateDotnetRuntimeType, DotnetModuleConfig, MONOType } from 'dotnet';
+import { BINDINGType, CreateDotnetRuntimeType, DotnetModuleConfig, EmscriptenModule, MONOType } from 'dotnet';
 
 // initially undefined and only fully initialized after createEmscriptenModuleInstance()
 export let BINDING: BINDINGType = <any>undefined;
 export let MONO: MONOType = <any>undefined;
-export let Module: DotnetModuleConfig = <any>undefined;
+export let Module: DotnetModuleConfig & EmscriptenModule = <any>undefined;
 
 const appBinDirName = 'appBinDir';
 const uint64HighOrderShift = Math.pow(2, 32);
