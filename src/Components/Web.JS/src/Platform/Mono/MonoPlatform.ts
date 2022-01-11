@@ -190,22 +190,15 @@ async function importDotnetJs(resourceLoader: WebAssemblyResourceLoader): Promis
 
   // For consistency with WebAssemblyResourceLoader, we only enforce SRI if caching is allowed
   if (resourceLoader.bootConfig.cacheBootResources) {
-    try {
-      if (globalThis.navigator) {
-        const nav: any = globalThis.navigator;
-        if (nav.userAgentData && nav.userAgentData.brands && nav.userAgentData.brands.some((i: any) => i.brand === 'Chromium')) {
-          const scriptElem = document.createElement('link');
-          scriptElem.rel = 'modulepreload';
-          scriptElem.href = src;
-          // it will make dynamic import fail if the hash doesn't match
-          scriptElem.integrity = dotnetJsContentHash;
-          scriptElem.crossOrigin = 'anonymous';
-          document.head.appendChild(scriptElem);
-        }
-      }
-    } catch (err) {
-      console.error(err);
-    }
+    const scriptElem = document.createElement('link');
+    scriptElem.rel = 'modulepreload';
+    scriptElem.href = src;
+    scriptElem.crossOrigin = 'anonymous';
+    // it will make dynamic import fail if the hash doesn't match
+    // It's currently only validated by chromium browsers
+    // Firefox doesn't break on it, but doesn't validate it either
+    scriptElem.integrity = dotnetJsContentHash;
+    document.head.appendChild(scriptElem);
   }
 
   // GOTCHA: remove this once runtime switched to ES6
@@ -231,8 +224,8 @@ async function importDotnetJs(resourceLoader: WebAssemblyResourceLoader): Promis
 }
 
 async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoader): Promise<DotnetPublicAPI> {
-  let runtimeReadyResolve: (data: DotnetPublicAPI) => void = <any>undefined;
-  let runtimeReadyReject: (reason?: any) => void = <any>undefined;
+  let runtimeReadyResolve: (data: DotnetPublicAPI) => void = undefined as any;
+  let runtimeReadyReject: (reason?: any) => void = undefined as any;
   const runtimeReady = new Promise<DotnetPublicAPI>((resolve, reject) => {
     runtimeReadyResolve = resolve;
     runtimeReadyReject = reject;
@@ -360,7 +353,7 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
                 for (let i = 0; i < resourcesToLoad.length; i++) {
                   BINDING.mono_obj_array_set(array, i, BINDING.js_typed_array_to_array(new Uint8Array(resourcesToLoad[i])));
                 }
-                return <any>array;
+                return array as any;
               };
             }
 
