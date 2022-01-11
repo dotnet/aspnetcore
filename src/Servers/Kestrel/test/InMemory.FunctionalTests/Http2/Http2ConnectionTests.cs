@@ -5275,8 +5275,6 @@ public class Http2ConnectionTests : Http2TestBase
     {
         await InitializeConnectionWithoutPrefaceAsync(_noopApplication);
 
-        _pair.Application.Output.Complete();
-
         await StopConnectionAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false);
     }
 
