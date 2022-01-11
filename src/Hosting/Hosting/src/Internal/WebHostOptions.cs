@@ -25,6 +25,7 @@ internal class WebHostOptions
         ContentRootPath = configuration[WebHostDefaults.ContentRootKey];
         PreventHostingStartup = WebHostUtilities.ParseBool(configuration, WebHostDefaults.PreventHostingStartupKey);
         SuppressStatusMessages = WebHostUtilities.ParseBool(configuration, WebHostDefaults.SuppressStatusMessagesKey);
+        ServerUrls = configuration[WebHostDefaults.ServerUrlsKey];
 
         // Search the primary assembly and configured assemblies.
         HostingStartupAssemblies = Split(ApplicationName, configuration[WebHostDefaults.HostingStartupAssembliesKey]);
@@ -38,29 +39,31 @@ internal class WebHostOptions
         }
     }
 
-    public string ApplicationName { get; set; }
+    public string ApplicationName { get; }
 
-    public bool PreventHostingStartup { get; set; }
+    public bool PreventHostingStartup { get; }
 
-    public bool SuppressStatusMessages { get; set; }
+    public bool SuppressStatusMessages { get; }
 
-    public IReadOnlyList<string> HostingStartupAssemblies { get; set; }
+    public IReadOnlyList<string> HostingStartupAssemblies { get; }
 
-    public IReadOnlyList<string> HostingStartupExcludeAssemblies { get; set; }
+    public IReadOnlyList<string> HostingStartupExcludeAssemblies { get; }
 
-    public bool DetailedErrors { get; set; }
+    public bool DetailedErrors { get; }
 
-    public bool CaptureStartupErrors { get; set; }
+    public bool CaptureStartupErrors { get; }
 
-    public string? Environment { get; set; }
+    public string? Environment { get; }
 
-    public string? StartupAssembly { get; set; }
+    public string? StartupAssembly { get; }
 
-    public string? WebRoot { get; set; }
+    public string? WebRoot { get; }
 
-    public string? ContentRootPath { get; set; }
+    public string? ContentRootPath { get; }
 
-    public TimeSpan ShutdownTimeout { get; set; } = TimeSpan.FromSeconds(5);
+    public TimeSpan ShutdownTimeout { get; } = TimeSpan.FromSeconds(5);
+
+    public string? ServerUrls { get; }
 
     public IEnumerable<string> GetFinalHostingStartupAssemblies()
     {

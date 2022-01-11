@@ -14,8 +14,12 @@ public class HostingEnvironmentExtensionsTests
     {
         IWebHostEnvironment env = new HostingEnvironment();
 
-        var webHostOptions = CreateWebHostOptions();
-        webHostOptions.WebRoot = "testroot";
+        var webHostOptions = CreateWebHostOptions(
+            new ConfigurationBuilder()
+                .AddInMemoryCollection(new Dictionary<string, string>()
+                {
+                    [WebHostDefaults.WebRootKey] = "testroot"
+                }).Build());
 
         env.Initialize(Path.GetFullPath("."), webHostOptions);
 
@@ -57,8 +61,12 @@ public class HostingEnvironmentExtensionsTests
         IWebHostEnvironment env = new HostingEnvironment();
         env.EnvironmentName = "SomeName";
 
-        var webHostOptions = CreateWebHostOptions();
-        webHostOptions.Environment = "NewName";
+        var webHostOptions = CreateWebHostOptions(
+            new ConfigurationBuilder()
+                .AddInMemoryCollection(new Dictionary<string, string>()
+                {
+                    [WebHostDefaults.EnvironmentKey] = "NewName"
+                }).Build());
 
         env.Initialize(Path.GetFullPath("."), webHostOptions);
 

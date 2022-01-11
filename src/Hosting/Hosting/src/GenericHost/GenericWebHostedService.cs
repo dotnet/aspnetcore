@@ -65,6 +65,12 @@ internal sealed partial class GenericWebHostService : IHostedService
         if (addresses != null && !addresses.IsReadOnly && addresses.Count == 0)
         {
             var urls = Configuration[WebHostDefaults.ServerUrlsKey];
+
+            if (string.IsNullOrEmpty(urls))
+            {
+                urls = Options.WebHostOptions.ServerUrls;
+            }
+
             if (!string.IsNullOrEmpty(urls))
             {
                 serverAddressesFeature!.PreferHostingUrls = WebHostUtilities.ParseBool(Configuration, WebHostDefaults.PreferHostingUrlsKey);
