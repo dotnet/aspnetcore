@@ -5,8 +5,8 @@
     <DataAnnotationsValidator />
 
     <p class="the-quiz">
-        Name a movie in which Steven Spielberg acted:
-        <input @bind="MovieName" class="@context.FieldCssClass(() => MovieName)" />
+        Name something you can put in a salad:
+        <input @bind="SaladIngredient" class="@context.FieldCssClass(() => SaladIngredient)" />
     </p>
 
     <button type="submit">Submit</button>
@@ -20,27 +20,27 @@
 </EditForm>
 
 @code {
-    [MovieQuizValidator]
-    public string MovieName { get; set; }
+    [SaladChefValidator]
+    public string SaladIngredient { get; set; }
 
-    public class MovieQuizValidatorAttribute : ValidationAttribute
+    public class SaladChefValidatorAttribute : ValidationAttribute
     {
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
-            var quizHost = validationContext.GetService<MovieQuizHost>();
-            if (quizHost == null) return new ValidationResult("Can't find moviehost");
-            if (quizHost.MoviesWhereStevenSpielbergActed.Contains(value.ToString()))
+            var saladChef= validationContext.GetService<SaladChef>();
+            if (saladChef == null) return new ValidationResult("Can't find SaladChef");
+            if (saladChef.ThingsYouCanPutInASalad.Contains(value.ToString()))
             {
                 return ValidationResult.Success;    
             }
-            return new ValidationResult("Steven Spielberg did not star in this movie");
+            return new ValidationResult("You should not put that in a salad!");
         }
     }
 
    
     //Simple class to check if DI can be used in Validation attributes
-    public class MovieQuizHost
+    public class SaladChef
     {
-        public string[] MoviesWhereStevenSpielbergActed = { "The Blues Brothers", "Gremlins", "Vanilla Sky", "Double Dare", "Goldmember" };
+        public string[] ThingsYouCanPutInASalad = { "Strawberries", "Pineapple", "Honeydew", "Watermelon", "Grapes" };
     }
 }

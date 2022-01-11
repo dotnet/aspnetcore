@@ -83,13 +83,13 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var submitButton = appElement.FindElement(By.CssSelector("button[type=submit]"));
         var messagesAccessor = CreateValidationMessagesAccessor(appElement);
 
-        userNameInput.SendKeys("Jaws\t");
+        userNameInput.SendKeys("Bacon\t");
         submitButton.Click();
         //We can only have this errormessage when DI is working
-        Browser.Equal(new[] { "Steven Spielberg did not star in this movie" }, messagesAccessor);
+        Browser.Equal(new[] { "You should not put that in a salad!" }, messagesAccessor);
 
         userNameInput.Clear();
-        userNameInput.SendKeys("Gremlins\t");
+        userNameInput.SendKeys("Watermelon\t");
         submitButton.Click();
         Browser.Empty(messagesAccessor);
     }
