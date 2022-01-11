@@ -432,7 +432,7 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
                 const pdb = pdbs && pdbs[i] ? new Uint8Array(pdbs[i] as ArrayBufferLike) : new Uint8Array();
                 BINDING.mono_obj_array_set(pdbBytes, i, BINDING.js_typed_array_to_array(pdb));
               }
-              return <any>pdbBytes;
+              return pdbBytes as any;
             };
           }
 
