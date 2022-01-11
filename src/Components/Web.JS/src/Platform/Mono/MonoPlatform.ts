@@ -419,7 +419,7 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
                 const assembly = assemblies[i] as ArrayBuffer;
                 BINDING.mono_obj_array_set(assemblyBytes, i, BINDING.js_typed_array_to_array(new Uint8Array(assembly)));
               }
-              return <any>assemblyBytes;
+              return assemblyBytes as any;
             };
 
             Blazor._internal.readLazyPdbs = () => {
