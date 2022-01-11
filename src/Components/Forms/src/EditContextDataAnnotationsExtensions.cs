@@ -35,8 +35,19 @@ public static class EditContextDataAnnotationsExtensions
     /// <returns>A disposable object whose disposal will remove DataAnnotations validation support from the <see cref="EditContext"/>.</returns>
     public static IDisposable EnableDataAnnotationsValidation(this EditContext editContext)
     {
-        return new DataAnnotationsEventSubscriptions(editContext);
+        return new DataAnnotationsEventSubscriptions(editContext, null);
     }
+    /// <summary>
+    /// Enables DataAnnotations validation support for the <see cref="EditContext"/>.
+    /// </summary>
+    /// <param name="editContext">The <see cref="EditContext"/>.</param>
+    /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to be used in the <see cref="ValidationContext"/>.</param>
+    /// <returns>A disposable object whose disposal will remove DataAnnotations validation support from the <see cref="EditContext"/>.</returns>
+    public static IDisposable EnableDataAnnotationsValidation(this EditContext editContext, IServiceProvider? serviceProvider)
+    {
+        return new DataAnnotationsEventSubscriptions(editContext, serviceProvider);
+    }
+
 
     private static event Action? OnClearCache;
 
@@ -50,11 +61,13 @@ public static class EditContextDataAnnotationsExtensions
         private static readonly ConcurrentDictionary<(Type ModelType, string FieldName), PropertyInfo?> _propertyInfoCache = new();
 
         private readonly EditContext _editContext;
+        private readonly IServiceProvider? _serviceProvider;
         private readonly ValidationMessageStore _messages;
 
-        public DataAnnotationsEventSubscriptions(EditContext editContext)
+        public DataAnnotationsEventSubscriptions(EditContext editContext, IServiceProvider? serviceProvider)
         {
             _editContext = editContext ?? throw new ArgumentNullException(nameof(editContext));
+            _serviceProvider = serviceProvider;
             _messages = new ValidationMessageStore(_editContext);
 
             _editContext.OnFieldChanged += OnFieldChanged;
@@ -72,7 +85,7 @@ public static class EditContextDataAnnotationsExtensions
             if (TryGetValidatableProperty(fieldIdentifier, out var propertyInfo))
             {
                 var propertyValue = propertyInfo.GetValue(fieldIdentifier.Model);
-                var validationContext = new ValidationContext(fieldIdentifier.Model)
+                var validationContext = new ValidationContext(fieldIdentifier.Model, _serviceProvider, null)
                 {
                     MemberName = propertyInfo.Name
                 };
@@ -93,7 +106,7 @@ public static class EditContextDataAnnotationsExtensions
 
         private void OnValidationRequested(object? sender, ValidationRequestedEventArgs e)
         {
-            var validationContext = new ValidationContext(_editContext.Model);
+            var validationContext = new ValidationContext(_editContext.Model, _serviceProvider, null);
             var validationResults = new List<ValidationResult>();
             Validator.TryValidateObject(_editContext.Model, validationContext, validationResults, true);
 
