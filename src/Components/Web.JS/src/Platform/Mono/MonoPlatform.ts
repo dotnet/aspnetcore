@@ -174,14 +174,14 @@ async function importDotnetJs(resourceLoader: WebAssemblyResourceLoader): Promis
     .keys(resourceLoader.bootConfig.resources.runtime)
     .filter(n => n.startsWith('dotnet.') && n.endsWith('.js'))[0];
   const dotnetJsContentHash = resourceLoader.bootConfig.resources.runtime[dotnetJsResourceName];
-  let src = new URL(`_framework/${dotnetJsResourceName}`, document.baseURI);
+  let src = `_framework/${dotnetJsResourceName}`;
 
   // Allow overriding the URI from which the dotnet.*.js file is loaded
   if (resourceLoader.startOptions.loadBootResource) {
     const resourceType: WebAssemblyBootResourceType = 'dotnetjs';
-    const customSrc = resourceLoader.startOptions.loadBootResource(resourceType, dotnetJsResourceName, dotnetJsResourceName, dotnetJsContentHash);
+    const customSrc = resourceLoader.startOptions.loadBootResource(resourceType, dotnetJsResourceName, src, dotnetJsContentHash);
     if (typeof (customSrc) === 'string') {
-      src = new URL(customSrc, document.baseURI);
+      src = customSrc;
     } else if (customSrc) {
       // Since we must load this via a import, it's only valid to supply a URI (and not a Request, say)
       throw new Error(`For a ${resourceType} resource, custom loaders must supply a URI string.`);
@@ -196,7 +196,7 @@ async function importDotnetJs(resourceLoader: WebAssemblyResourceLoader): Promis
         if (nav.userAgentData && nav.userAgentData.brands && nav.userAgentData.brands.some((i: any) => i.brand === 'Chromium')) {
           const scriptElem = document.createElement('link');
           scriptElem.rel = 'modulepreload';
-          scriptElem.href = `_framework/${dotnetJsResourceName}`;
+          scriptElem.href = src;
           // it will make dynamic import fail if the hash doesn't match
           scriptElem.integrity = dotnetJsContentHash;
           scriptElem.crossOrigin = 'anonymous';
@@ -219,7 +219,8 @@ async function importDotnetJs(resourceLoader: WebAssemblyResourceLoader): Promis
     cjsExportResolve(createDotnetRuntime);
   };
 
-  const { default: createDotnetRuntime } = await import(/* webpackIgnore: true */ src.toString());
+  const absoluteSrc = (new URL(src, document.baseURI)).toString();
+  const { default: createDotnetRuntime } = await import(/* webpackIgnore: true */ absoluteSrc);
   if (createDotnetRuntime) {
     // this runs when loaded module was ES6
     delete globalThis.__onDotnetRuntimeLoaded;
