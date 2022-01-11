@@ -1405,10 +1405,19 @@ public class RequestDelegateFactoryTests : LoggedTest
                 httpContext.Items.Add("body", ms.ToArray());
             }
 
-            void TestPipeReaderAndROS(HttpContext httpContext, ReadOnlySequence<byte> body, PipeReader reader)
+            async Task TestPipeReaderAndROS(HttpContext httpContext, ReadOnlySequence<byte> body, PipeReader reader)
             {
+                var result = await reader.ReadAsync();
                 httpContext.Items.Add("body", body.ToArray());
-                reader.AdvanceTo(body.End);
+                httpContext.Items.Add("bodyIsEmpty", result.IsCompleted);
+                reader.AdvanceTo(result.Buffer.End);
+            }
+
+            async Task TestStreamAndROS(HttpContext httpContext, ReadOnlySequence<byte> body, Stream stream)
+            {
+                int read = await stream.ReadAsync(new byte[1].AsMemory());
+                httpContext.Items.Add("body", body.ToArray());
+                httpContext.Items.Add("bodyIsEmpty", read == 0);
             }
 
             return new[]
@@ -1417,7 +1426,8 @@ public class RequestDelegateFactoryTests : LoggedTest
                 new object[] { (Action<HttpContext, ReadOnlySequence<byte>>)TestReadOnlySequence },
                 new object[] { (Action<HttpContext, Stream>)TestStream },
                 new object[] { (Func<HttpContext, PipeReader, Task>)TestPipeReader },
-                new object[] { (Action<HttpContext, ReadOnlySequence<byte>, PipeReader>)TestPipeReaderAndROS },
+                new object[] { (Func<HttpContext, ReadOnlySequence<byte>, PipeReader, Task>)TestPipeReaderAndROS },
+                new object[] { (Func<HttpContext, ReadOnlySequence<byte>, Stream, Task>)TestStreamAndROS },
             };
         }
     }
@@ -1451,6 +1461,10 @@ public class RequestDelegateFactoryTests : LoggedTest
         var rawRequestBody = httpContext.Items["body"];
         Assert.NotNull(rawRequestBody);
         Assert.Equal(requestBodyBytes, (byte[])rawRequestBody!);
+        if (httpContext.Items.TryGetValue("bodyIsEmpty", out var bodyIsEmpty))
+        {
+            Assert.True((bool)bodyIsEmpty!);
+        }
     }
 
     [Theory]

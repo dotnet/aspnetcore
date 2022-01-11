@@ -663,6 +663,10 @@ public static partial class RequestDelegateFactory
 
                     if (result.IsCompleted)
                     {
+                        // We're not buffering the body so we want to block consuming code from reading again
+                        // and getting weird errors. Treat further reads as a fully consumed body.
+                        httpContext.Request.Body = Stream.Null;
+
                         return buffer;
                     }
 
