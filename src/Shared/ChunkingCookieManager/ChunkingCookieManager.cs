@@ -232,7 +232,9 @@ internal class ChunkingCookieManager
     /// <param name="context"></param>
     /// <param name="key"></param>
     /// <param name="options"></param>
+#pragma warning disable CA1822 // Mark members as static - Shared src file
     public void DeleteCookie(HttpContext context, string key, CookieOptions options)
+#pragma warning restore CA1822 // Mark members as static
     {
         if (context == null)
         {

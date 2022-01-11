@@ -168,7 +168,7 @@ public class NavLink : ComponentBase, IDisposable
         builder.CloseElement();
     }
 
-    private string? CombineWithSpace(string? str1, string str2)
+    private static string? CombineWithSpace(string? str1, string str2)
         => str1 == null ? str2 : $"{str1} {str2}";
 
     private static bool IsStrictlyPrefixWithSeparator(string value, string prefix)

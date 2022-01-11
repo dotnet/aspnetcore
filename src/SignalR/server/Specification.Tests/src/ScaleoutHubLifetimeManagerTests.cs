@@ -27,7 +27,7 @@ public abstract class ScaleoutHubLifetimeManagerTests<TBackplane> : HubLifetimeM
     /// <returns></returns>
     public abstract HubLifetimeManager<Hub> CreateNewHubLifetimeManager(TBackplane backplane);
 
-    private async Task AssertMessageAsync(TestClient client)
+    private static async Task AssertMessageAsync(TestClient client)
     {
         var message = Assert.IsType<InvocationMessage>(await client.ReadAsync().DefaultTimeout());
         Assert.Equal("Hello", message.Target);

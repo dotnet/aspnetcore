@@ -88,7 +88,7 @@ internal class UrlRewriteFileParser
         ParseUrlAction(action, builder, stopProcessing);
     }
 
-    private void ParseMatch(XElement match, UrlRewriteRuleBuilder builder, PatternSyntax patternSyntax)
+    private static void ParseMatch(XElement match, UrlRewriteRuleBuilder builder, PatternSyntax patternSyntax)
     {
         var parsedInputString = match.Attribute(RewriteTags.Url)?.Value;
         if (parsedInputString == null)
@@ -250,7 +250,7 @@ internal class UrlRewriteFileParser
         builder.AddUrlAction(action);
     }
 
-    private bool ParseBool(XElement element, string rewriteTag, bool defaultValue)
+    private static bool ParseBool(XElement element, string rewriteTag, bool defaultValue)
     {
         bool result;
         var attribute = element.Attribute(rewriteTag);
@@ -265,7 +265,7 @@ internal class UrlRewriteFileParser
         return result;
     }
 
-    private TEnum ParseEnum<TEnum>(XElement element, string rewriteTag, TEnum defaultValue)
+    private static TEnum ParseEnum<TEnum>(XElement element, string rewriteTag, TEnum defaultValue)
         where TEnum : struct
     {
         TEnum enumResult = default(TEnum);

@@ -266,11 +266,11 @@ public class NewtonsoftJsonInputFormatter : TextInputFormatter, IInputFormatterE
             // {
             //     public B B { get; set; }
             // }
-            // class B 
+            // class B
             // {
             //     public C C { get; set; }
             // }
-            // class C 
+            // class C
             // {
             //     public string D { get; set; }
             // }
@@ -287,7 +287,7 @@ public class NewtonsoftJsonInputFormatter : TextInputFormatter, IInputFormatterE
             // The parsing error is reported as a JsonReaderException instead of as a JsonSerializationException like
             // for missing required properties. We use the exception type to filter out these errors and keep the path used
             // for the ModelStateDictionary key as "b.c.d" instead of "b.c.d.c"
-            // See https://github.com/dotnet/aspnetcore/issues/33451 
+            // See https://github.com/dotnet/aspnetcore/issues/33451
             var addMember = !string.IsNullOrEmpty(member) && eventArgs.ErrorContext.Error is JsonSerializationException;
 
             // There are still JsonSerilizationExceptions that set ErrorContext.Member but include it at the
@@ -384,7 +384,7 @@ public class NewtonsoftJsonInputFormatter : TextInputFormatter, IInputFormatterE
     protected virtual void ReleaseJsonSerializer(JsonSerializer serializer)
         => _jsonSerializerPool!.Return(serializer);
 
-    private ModelMetadata GetPathMetadata(ModelMetadata metadata, string path)
+    private static ModelMetadata GetPathMetadata(ModelMetadata metadata, string path)
     {
         var index = 0;
         while (index >= 0 && index < path.Length)

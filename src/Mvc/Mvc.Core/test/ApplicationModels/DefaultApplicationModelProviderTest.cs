@@ -357,7 +357,7 @@ public class DefaultApplicationModelProviderTest
         var typeInfo = typeof(StoreController).GetTypeInfo();
 
         // Act
-        var model = builder.CreateControllerModel(typeInfo);
+        var model = DefaultApplicationModelProvider.CreateControllerModel(typeInfo);
 
         // Assert
         var filter = Assert.Single(model.Filters);
@@ -374,7 +374,7 @@ public class DefaultApplicationModelProviderTest
         var typeInfo = typeof(NoFiltersController).GetTypeInfo();
 
         // Act
-        var model = builder.CreateControllerModel(typeInfo);
+        var model = DefaultApplicationModelProvider.CreateControllerModel(typeInfo);
 
         // Assert
         var filter = Assert.Single(model.Filters);
@@ -389,7 +389,7 @@ public class DefaultApplicationModelProviderTest
         var typeInfo = typeof(SomeFiltersController).GetTypeInfo();
 
         // Act
-        var model = builder.CreateControllerModel(typeInfo);
+        var model = DefaultApplicationModelProvider.CreateControllerModel(typeInfo);
 
         // Assert
         Assert.Single(model.Filters, f => f is ControllerActionFilter);
@@ -404,7 +404,7 @@ public class DefaultApplicationModelProviderTest
         var typeInfo = typeof(UnsupportedFiltersController).GetTypeInfo();
 
         // Act
-        var model = builder.CreateControllerModel(typeInfo);
+        var model = DefaultApplicationModelProvider.CreateControllerModel(typeInfo);
 
         // Assert
         Assert.Empty(model.Filters);
@@ -418,7 +418,7 @@ public class DefaultApplicationModelProviderTest
         var typeInfo = typeof(DerivedClassInheritingRoutesController).GetTypeInfo();
 
         // Act
-        var model = builder.CreateControllerModel(typeInfo);
+        var model = DefaultApplicationModelProvider.CreateControllerModel(typeInfo);
 
         // Assert
         var attributeRoutes = GetAttributeRoutes(model.Selectors);
@@ -440,7 +440,7 @@ public class DefaultApplicationModelProviderTest
         var typeInfo = typeof(DerivedClassHidingRoutesController).GetTypeInfo();
 
         // Act
-        var model = builder.CreateControllerModel(typeInfo);
+        var model = DefaultApplicationModelProvider.CreateControllerModel(typeInfo);
 
         // Assert
         var attributeRoutes = GetAttributeRoutes(model.Selectors);
@@ -466,7 +466,7 @@ public class DefaultApplicationModelProviderTest
         Assert.NotNull(method);
 
         // Act
-        var isValid = builder.IsAction(typeof(DerivedController).GetTypeInfo(), method);
+        var isValid = DefaultApplicationModelProvider.IsAction(typeof(DerivedController).GetTypeInfo(), method);
 
         // Assert
         Assert.Equal(expected, isValid);
@@ -481,7 +481,7 @@ public class DefaultApplicationModelProviderTest
         Assert.NotNull(method);
 
         // Act
-        var isValid = builder.IsAction(typeof(BaseController).GetTypeInfo(), method);
+        var isValid = DefaultApplicationModelProvider.IsAction(typeof(BaseController).GetTypeInfo(), method);
 
         // Assert
         Assert.False(isValid);
@@ -498,7 +498,7 @@ public class DefaultApplicationModelProviderTest
         Assert.NotNull(method);
 
         // Act
-        var isValid = builder.IsAction(typeof(DerivedController).GetTypeInfo(), method);
+        var isValid = DefaultApplicationModelProvider.IsAction(typeof(DerivedController).GetTypeInfo(), method);
 
         // Assert
         Assert.False(isValid);
@@ -514,7 +514,7 @@ public class DefaultApplicationModelProviderTest
         Assert.True(method.IsSpecialName);
 
         // Act
-        var isValid = builder.IsAction(typeof(OperatorOverloadingController).GetTypeInfo(), method);
+        var isValid = DefaultApplicationModelProvider.IsAction(typeof(OperatorOverloadingController).GetTypeInfo(), method);
 
         // Assert
         Assert.False(isValid);
@@ -529,7 +529,7 @@ public class DefaultApplicationModelProviderTest
         Assert.NotNull(method);
 
         // Act
-        var isValid = builder.IsAction(typeof(DerivedController).GetTypeInfo(), method);
+        var isValid = DefaultApplicationModelProvider.IsAction(typeof(DerivedController).GetTypeInfo(), method);
 
         // Assert
         Assert.False(isValid);
@@ -544,7 +544,7 @@ public class DefaultApplicationModelProviderTest
         Assert.NotNull(method);
 
         // Act
-        var isValid = builder.IsAction(typeof(DerivedController).GetTypeInfo(), method);
+        var isValid = DefaultApplicationModelProvider.IsAction(typeof(DerivedController).GetTypeInfo(), method);
 
         // Assert
         Assert.False(isValid);
@@ -565,7 +565,7 @@ public class DefaultApplicationModelProviderTest
         Assert.NotNull(method);
 
         // Act
-        var isValid = builder.IsAction(typeof(DerivedController).GetTypeInfo(), method);
+        var isValid = DefaultApplicationModelProvider.IsAction(typeof(DerivedController).GetTypeInfo(), method);
 
         // Assert
         Assert.False(isValid);
@@ -583,7 +583,7 @@ public class DefaultApplicationModelProviderTest
         Assert.NotNull(method);
 
         // Act
-        var isValid = builder.IsAction(typeInfo, method);
+        var isValid = DefaultApplicationModelProvider.IsAction(typeInfo, method);
 
         // Assert
         Assert.False(isValid);
@@ -604,7 +604,7 @@ public class DefaultApplicationModelProviderTest
         foreach (var method in methods)
         {
             // Act
-            var isValid = builder.IsAction(typeInfo, method);
+            var isValid = DefaultApplicationModelProvider.IsAction(typeInfo, method);
 
             // Assert
             Assert.True(isValid);
@@ -621,7 +621,7 @@ public class DefaultApplicationModelProviderTest
         Assert.NotNull(method);
 
         // Act
-        var isValid = builder.IsAction(typeInfo, method);
+        var isValid = DefaultApplicationModelProvider.IsAction(typeInfo, method);
 
         // Assert
         Assert.False(isValid);
@@ -637,7 +637,7 @@ public class DefaultApplicationModelProviderTest
         Assert.NotNull(method);
 
         // Act
-        var isValid = builder.IsAction(typeInfo, method);
+        var isValid = DefaultApplicationModelProvider.IsAction(typeInfo, method);
 
         // Assert
         Assert.True(isValid);
@@ -655,7 +655,7 @@ public class DefaultApplicationModelProviderTest
         Assert.NotNull(method);
 
         // Act
-        var isValid = builder.IsAction(typeInfo, method);
+        var isValid = DefaultApplicationModelProvider.IsAction(typeInfo, method);
 
         // Assert
         Assert.False(isValid);
@@ -676,7 +676,7 @@ public class DefaultApplicationModelProviderTest
         foreach (var method in methods)
         {
             // Act
-            var isValid = builder.IsAction(typeInfo, method);
+            var isValid = DefaultApplicationModelProvider.IsAction(typeInfo, method);
 
             // Assert
             Assert.True(isValid);
@@ -696,7 +696,7 @@ public class DefaultApplicationModelProviderTest
         foreach (var method in methods)
         {
             // Act
-            var isValid = builder.IsAction(typeInfo, method);
+            var isValid = DefaultApplicationModelProvider.IsAction(typeInfo, method);
 
             // Assert
             Assert.True(isValid);
@@ -717,7 +717,7 @@ public class DefaultApplicationModelProviderTest
         Assert.NotNull(method);
 
         // Act
-        var isValid = builder.IsAction(typeof(DerivedController).GetTypeInfo(), method);
+        var isValid = DefaultApplicationModelProvider.IsAction(typeof(DerivedController).GetTypeInfo(), method);
 
         // Assert
         Assert.False(isValid);

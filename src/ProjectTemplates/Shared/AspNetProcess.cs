@@ -226,7 +226,7 @@ public class AspNetProcess : IDisposable
 {string.Join(Environment.NewLine, buffer)}");
     }
 
-    private bool IsSuccessStatusCode(HttpResponseMessage response)
+    private static bool IsSuccessStatusCode(HttpResponseMessage response)
     {
         return response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.Redirect;
     }

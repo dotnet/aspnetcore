@@ -198,7 +198,7 @@ public class BodyModelBinder : IModelBinder
         _logger.DoneAttemptingToBindModel(bindingContext);
     }
 
-    private bool ShouldHandleException(IInputFormatter formatter)
+    private static bool ShouldHandleException(IInputFormatter formatter)
     {
         // Any explicit policy on the formatters overrides the default.
         var policy = (formatter as IInputFormatterExceptionPolicy)?.ExceptionPolicy ??

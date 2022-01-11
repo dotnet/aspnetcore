@@ -133,7 +133,7 @@ internal class ActionConstraintCache
         }
     }
 
-    private IReadOnlyList<IActionConstraint>? ExtractActionConstraints(List<ActionConstraintItem> items)
+    private static IReadOnlyList<IActionConstraint>? ExtractActionConstraints(List<ActionConstraintItem> items)
     {
         var count = 0;
         for (var i = 0; i < items.Count; i++)

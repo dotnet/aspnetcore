@@ -34,7 +34,7 @@ public class RedisProtocolTests
         var testData = _ackTestData[testName];
         var protocol = new RedisProtocol(CreateHubMessageSerializer(new List<IHubProtocol>()));
 
-        var decoded = protocol.ReadAck(testData.Encoded);
+        var decoded = RedisProtocol.ReadAck(testData.Encoded);
 
         Assert.Equal(testData.Decoded, decoded);
     }
@@ -46,7 +46,7 @@ public class RedisProtocolTests
         var testData = _ackTestData[testName];
         var protocol = new RedisProtocol(CreateHubMessageSerializer(new List<IHubProtocol>()));
 
-        var encoded = protocol.WriteAck(testData.Decoded);
+        var encoded = RedisProtocol.WriteAck(testData.Decoded);
 
         Assert.Equal(testData.Encoded, encoded);
     }
@@ -66,7 +66,7 @@ public class RedisProtocolTests
         var testData = _groupCommandTestData[testName];
         var protocol = new RedisProtocol(CreateHubMessageSerializer(new List<IHubProtocol>()));
 
-        var decoded = protocol.ReadGroupCommand(testData.Encoded);
+        var decoded = RedisProtocol.ReadGroupCommand(testData.Encoded);
 
         Assert.Equal(testData.Decoded.Id, decoded.Id);
         Assert.Equal(testData.Decoded.ServerName, decoded.ServerName);
@@ -82,7 +82,7 @@ public class RedisProtocolTests
         var testData = _groupCommandTestData[testName];
         var protocol = new RedisProtocol(CreateHubMessageSerializer(new List<IHubProtocol>()));
 
-        var encoded = protocol.WriteGroupCommand(testData.Decoded);
+        var encoded = RedisProtocol.WriteGroupCommand(testData.Decoded);
 
         Assert.Equal(testData.Encoded, encoded);
     }
@@ -144,7 +144,7 @@ public class RedisProtocolTests
 
         var expected = testData.Decoded();
 
-        var decoded = protocol.ReadInvocation(testData.Encoded);
+        var decoded = RedisProtocol.ReadInvocation(testData.Encoded);
 
         Assert.Equal(expected.ExcludedConnectionIds, decoded.ExcludedConnectionIds);
 

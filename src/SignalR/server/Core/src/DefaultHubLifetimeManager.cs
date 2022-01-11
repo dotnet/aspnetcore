@@ -96,7 +96,7 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
 
             if (message == null)
             {
-                message = CreateSerializedInvocationMessage(methodName, args);
+                message = DefaultHubLifetimeManager<THub>.CreateSerializedInvocationMessage(methodName, args);
             }
 
             var task = connection.WriteAsync(message, cancellationToken);
@@ -129,7 +129,7 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
 
     // Tasks and message are passed by ref so they can be lazily created inside the method post-filtering,
     // while still being re-usable when sending to multiple groups
-    private void SendToGroupConnections(string methodName, object?[] args, ConcurrentDictionary<string, HubConnectionContext> connections, Func<HubConnectionContext, object?, bool>? include, object? state, ref List<Task>? tasks, ref SerializedHubMessage? message, CancellationToken cancellationToken)
+    private static void SendToGroupConnections(string methodName, object?[] args, ConcurrentDictionary<string, HubConnectionContext> connections, Func<HubConnectionContext, object?, bool>? include, object? state, ref List<Task>? tasks, ref SerializedHubMessage? message, CancellationToken cancellationToken)
     {
         // foreach over ConcurrentDictionary avoids allocating an enumerator
         foreach (var connection in connections)
@@ -141,7 +141,7 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
 
             if (message == null)
             {
-                message = CreateSerializedInvocationMessage(methodName, args);
+                message = DefaultHubLifetimeManager<THub>.CreateSerializedInvocationMessage(methodName, args);
             }
 
             var task = connection.Value.WriteAsync(message, cancellationToken);
@@ -201,7 +201,7 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
             // group might be modified inbetween checking and sending
             List<Task>? tasks = null;
             SerializedHubMessage? message = null;
-            SendToGroupConnections(methodName, args, group, null, null, ref tasks, ref message, cancellationToken);
+            DefaultHubLifetimeManager<THub>.SendToGroupConnections(methodName, args, group, null, null, ref tasks, ref message, cancellationToken);
 
             if (tasks != null)
             {
@@ -229,7 +229,7 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
             var group = _groups[groupName];
             if (group != null)
             {
-                SendToGroupConnections(methodName, args, group, null, null, ref tasks, ref message, cancellationToken);
+                DefaultHubLifetimeManager<THub>.SendToGroupConnections(methodName, args, group, null, null, ref tasks, ref message, cancellationToken);
             }
         }
 
@@ -255,7 +255,7 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
             List<Task>? tasks = null;
             SerializedHubMessage? message = null;
 
-            SendToGroupConnections(methodName, args, group, (connection, state) => !((IReadOnlyList<string>)state!).Contains(connection.ConnectionId), excludedConnectionIds, ref tasks, ref message, cancellationToken);
+            DefaultHubLifetimeManager<THub>.SendToGroupConnections(methodName, args, group, (connection, state) => !((IReadOnlyList<string>)state!).Contains(connection.ConnectionId), excludedConnectionIds, ref tasks, ref message, cancellationToken);
 
             if (tasks != null)
             {
@@ -266,7 +266,7 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
         return Task.CompletedTask;
     }
 
-    private SerializedHubMessage CreateSerializedInvocationMessage(string methodName, object?[] args)
+    private static SerializedHubMessage CreateSerializedInvocationMessage(string methodName, object?[] args)
     {
         return new SerializedHubMessage(CreateInvocationMessage(methodName, args));
     }

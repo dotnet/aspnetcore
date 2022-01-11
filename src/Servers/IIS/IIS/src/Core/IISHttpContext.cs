@@ -651,7 +651,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
         Dispose(disposing: true);
     }
 
-    private void ThrowResponseAlreadyStartedException(string name)
+    private static void ThrowResponseAlreadyStartedException(string name)
     {
         throw new InvalidOperationException(CoreStrings.FormatParameterReadOnlyAfterResponseStarted(name));
     }

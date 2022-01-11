@@ -159,7 +159,7 @@ public class ViewComponentResultExecutor : IActionResultExecutor<ViewComponentRe
         }
     }
 
-    private void OnExecuting(ViewContext viewContext)
+    private static void OnExecuting(ViewContext viewContext)
     {
         var viewDataValuesProvider = viewContext.HttpContext.Features.Get<IViewDataValuesProviderFeature>();
         if (viewDataValuesProvider != null)
@@ -168,7 +168,7 @@ public class ViewComponentResultExecutor : IActionResultExecutor<ViewComponentRe
         }
     }
 
-    private Task<IHtmlContent> GetViewComponentResult(IViewComponentHelper viewComponentHelper, ILogger logger, ViewComponentResult result)
+    private static Task<IHtmlContent> GetViewComponentResult(IViewComponentHelper viewComponentHelper, ILogger logger, ViewComponentResult result)
     {
         if (result.ViewComponentType == null && result.ViewComponentName == null)
         {

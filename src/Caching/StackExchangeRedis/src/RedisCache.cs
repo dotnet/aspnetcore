@@ -406,7 +406,7 @@ public class RedisCache : IDistributedCache, IDisposable
         // TODO: Error handling
     }
 
-    private void MapMetadata(RedisValue[] results, out DateTimeOffset? absoluteExpiration, out TimeSpan? slidingExpiration)
+    private static void MapMetadata(RedisValue[] results, out DateTimeOffset? absoluteExpiration, out TimeSpan? slidingExpiration)
     {
         absoluteExpiration = null;
         slidingExpiration = null;

@@ -246,7 +246,7 @@ public class ConsumesAttribute :
             filter => filter.Filter is IConsumesActionConstraint).Filter == this;
     }
 
-    private MediaTypeCollection GetContentTypes(string firstArg, string[] args)
+    private static MediaTypeCollection GetContentTypes(string firstArg, string[] args)
     {
         var completeArgs = new List<string>(args.Length + 1);
         completeArgs.Add(firstArg);

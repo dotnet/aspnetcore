@@ -14,7 +14,7 @@ internal class CookieActionFactory
     /// </summary>
     /// <param name="flagValue">The flag</param>
     /// <returns>The action</returns>
-    public ChangeCookieAction Create(string flagValue)
+    public static ChangeCookieAction Create(string flagValue)
     {
         if (string.IsNullOrEmpty(flagValue))
         {

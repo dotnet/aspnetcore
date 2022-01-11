@@ -37,7 +37,7 @@ internal class CaseSensitiveTagHelperAttributeComparer : IEqualityComparer<TagHe
         return attribute.GetHashCode();
     }
 
-    private string GetString(object value)
+    private static string GetString(object value)
     {
         var htmlContent = value as IHtmlContent;
         if (htmlContent != null)

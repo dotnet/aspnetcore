@@ -743,7 +743,7 @@ public class SignInManager<TUser> where TUser : class
     /// <param name="userId">The user whose is logging in via 2fa.</param>
     /// <param name="loginProvider">The 2fa provider.</param>
     /// <returns>A <see cref="ClaimsPrincipal"/> containing the user 2fa information.</returns>
-    internal ClaimsPrincipal StoreTwoFactorInfo(string userId, string loginProvider)
+    internal static ClaimsPrincipal StoreTwoFactorInfo(string userId, string loginProvider)
     {
         var identity = new ClaimsIdentity(IdentityConstants.TwoFactorUserIdScheme);
         identity.AddClaim(new Claim(ClaimTypes.Name, userId));
