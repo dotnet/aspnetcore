@@ -3,7 +3,6 @@
 
 using System.Globalization;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 
 namespace TestServer;

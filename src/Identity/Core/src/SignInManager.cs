@@ -1,12 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -746,7 +743,7 @@ public class SignInManager<TUser> where TUser : class
     /// <param name="userId">The user whose is logging in via 2fa.</param>
     /// <param name="loginProvider">The 2fa provider.</param>
     /// <returns>A <see cref="ClaimsPrincipal"/> containing the user 2fa information.</returns>
-    internal ClaimsPrincipal StoreTwoFactorInfo(string userId, string loginProvider)
+    internal static ClaimsPrincipal StoreTwoFactorInfo(string userId, string loginProvider)
     {
         var identity = new ClaimsIdentity(IdentityConstants.TwoFactorUserIdScheme);
         identity.AddClaim(new Claim(ClaimTypes.Name, userId));

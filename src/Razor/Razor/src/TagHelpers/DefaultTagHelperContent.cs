@@ -1,10 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Html;
@@ -214,7 +211,7 @@ public class DefaultTagHelperContent : TagHelperContent
         }
     }
 
-    private void WriteToCore(object entry, TextWriter writer, HtmlEncoder encoder)
+    private static void WriteToCore(object entry, TextWriter writer, HtmlEncoder encoder)
     {
         if (entry == null)
         {
@@ -231,7 +228,7 @@ public class DefaultTagHelperContent : TagHelperContent
         }
     }
 
-    private void CopyToCore(object entry, IHtmlContentBuilder destination)
+    private static void CopyToCore(object entry, IHtmlContentBuilder destination)
     {
         if (entry == null)
         {
@@ -252,7 +249,7 @@ public class DefaultTagHelperContent : TagHelperContent
         }
     }
 
-    private void MoveToCore(object entry, IHtmlContentBuilder destination)
+    private static void MoveToCore(object entry, IHtmlContentBuilder destination)
     {
         if (entry == null)
         {
@@ -273,7 +270,7 @@ public class DefaultTagHelperContent : TagHelperContent
         }
     }
 
-    private bool IsEmptyOrWhiteSpaceCore(object entry, EmptyOrWhiteSpaceWriter writer)
+    private static bool IsEmptyOrWhiteSpaceCore(object entry, EmptyOrWhiteSpaceWriter writer)
     {
         if (entry == null)
         {

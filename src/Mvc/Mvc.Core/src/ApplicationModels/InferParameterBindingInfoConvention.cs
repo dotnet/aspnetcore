@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing.Template;
@@ -107,7 +106,7 @@ public class InferParameterBindingInfoConvention : IActionModelConvention
         return BindingSource.Query;
     }
 
-    private bool ParameterExistsInAnyRoute(ActionModel action, string parameterName)
+    private static bool ParameterExistsInAnyRoute(ActionModel action, string parameterName)
     {
         foreach (var selector in ActionAttributeRouteModel.FlattenSelectors(action))
         {

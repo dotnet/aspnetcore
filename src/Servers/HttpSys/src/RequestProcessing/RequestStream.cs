@@ -1,12 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Runtime.InteropServices;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
@@ -96,7 +92,7 @@ internal partial class RequestStream : Stream
         _requestContext.Abort();
     }
 
-    private void ValidateReadBuffer(byte[] buffer, int offset, int size)
+    private static void ValidateReadBuffer(byte[] buffer, int offset, int size)
     {
         if (buffer == null)
         {

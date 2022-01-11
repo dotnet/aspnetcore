@@ -61,7 +61,7 @@ internal abstract class CertificateManager
         AspNetHttpsCertificateVersion = version;
     }
 
-    public bool IsHttpsDevelopmentCertificate(X509Certificate2 certificate) =>
+    public static bool IsHttpsDevelopmentCertificate(X509Certificate2 certificate) =>
         certificate.Extensions.OfType<X509Extension>()
         .Any(e => string.Equals(AspNetHttpsOid, e.Oid?.Value, StringComparison.Ordinal));
 
@@ -445,7 +445,7 @@ internal abstract class CertificateManager
 
     protected abstract IList<X509Certificate2> GetCertificatesToRemove(StoreName storeName, StoreLocation storeLocation);
 
-    internal void ExportCertificate(X509Certificate2 certificate, string path, bool includePrivateKey, string? password, CertificateKeyExportFormat format)
+    internal static void ExportCertificate(X509Certificate2 certificate, string path, bool includePrivateKey, string? password, CertificateKeyExportFormat format)
     {
         if (Log.IsEnabled())
         {
@@ -698,7 +698,7 @@ internal abstract class CertificateManager
 
     internal abstract void CorrectCertificateState(X509Certificate2 candidate);
 
-    internal X509Certificate2 CreateSelfSignedCertificate(
+    internal static X509Certificate2 CreateSelfSignedCertificate(
         X500DistinguishedName subject,
         IEnumerable<X509Extension> extensions,
         DateTimeOffset notBefore,
@@ -715,7 +715,7 @@ internal abstract class CertificateManager
         var result = request.CreateSelfSigned(notBefore, notAfter);
         return result;
 
-        RSA CreateKeyMaterial(int minimumKeySize)
+        static RSA CreateKeyMaterial(int minimumKeySize)
         {
             var rsa = RSA.Create(minimumKeySize);
             if (rsa.KeySize < minimumKeySize)
@@ -780,7 +780,7 @@ internal abstract class CertificateManager
     }
 
     internal static string GetDescription(X509Certificate2 c) =>
-        $"{c.Thumbprint} - {c.Subject} - Valid from {c.NotBefore:u} to {c.NotAfter:u} - IsHttpsDevelopmentCertificate: {Instance.IsHttpsDevelopmentCertificate(c).ToString().ToLowerInvariant()} - IsExportable: {Instance.IsExportable(c).ToString().ToLowerInvariant()}";
+        $"{c.Thumbprint} - {c.Subject} - Valid from {c.NotBefore:u} to {c.NotAfter:u} - IsHttpsDevelopmentCertificate: {IsHttpsDevelopmentCertificate(c).ToString().ToLowerInvariant()} - IsExportable: {Instance.IsExportable(c).ToString().ToLowerInvariant()}";
 
     [EventSource(Name = "Dotnet-dev-certs")]
     public class CertificateManagerEventSource : EventSource
@@ -819,8 +819,8 @@ internal abstract class CertificateManager
         [Event(15, Level = EventLevel.Verbose, Message = "Selected certificate: {0}")]
         public void SelectedCertificate(string certificate) => WriteEvent(15, certificate);
 
-        [Event(16, Level = EventLevel.Verbose)]
-        public void NoValidCertificatesFound() => WriteEvent(16, "No valid certificates found.");
+        [Event(16, Level = EventLevel.Verbose, Message = "No valid certificates found.")]
+        public void NoValidCertificatesFound() => WriteEvent(16);
 
 
         [Event(17, Level = EventLevel.Verbose, Message = "Generating HTTPS development certificate.")]
@@ -862,8 +862,8 @@ internal abstract class CertificateManager
         [Event(29, Level = EventLevel.Verbose, Message = "Trusting the certificate to: {0}.")]
         public void TrustCertificateStart(string certificate) => WriteEvent(29, certificate);
 
-        [Event(30, Level = EventLevel.Verbose)]
-        public void TrustCertificateEnd() => WriteEvent(30, "Finished trusting the certificate.");
+        [Event(30, Level = EventLevel.Verbose, Message = "Finished trusting the certificate.")]
+        public void TrustCertificateEnd() => WriteEvent(30);
 
         [Event(31, Level = EventLevel.Error, Message = "An error has occurred while trusting the certificate: {0}.")]
         public void TrustCertificateError(string error) => WriteEvent(31, error);

@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -248,7 +246,7 @@ public class ConsumesAttribute :
             filter => filter.Filter is IConsumesActionConstraint).Filter == this;
     }
 
-    private MediaTypeCollection GetContentTypes(string firstArg, string[] args)
+    private static MediaTypeCollection GetContentTypes(string firstArg, string[] args)
     {
         var completeArgs = new List<string>(args.Length + 1);
         completeArgs.Add(firstArg);

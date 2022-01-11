@@ -3,11 +3,7 @@
 
 #nullable enable
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Formatters;
@@ -202,7 +198,7 @@ public class BodyModelBinder : IModelBinder
         _logger.DoneAttemptingToBindModel(bindingContext);
     }
 
-    private bool ShouldHandleException(IInputFormatter formatter)
+    private static bool ShouldHandleException(IInputFormatter formatter)
     {
         // Any explicit policy on the formatters overrides the default.
         var policy = (formatter as IInputFormatterExceptionPolicy)?.ExceptionPolicy ??

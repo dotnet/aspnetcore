@@ -3,7 +3,6 @@
 
 #nullable enable
 
-using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -60,7 +59,7 @@ public class HeaderModelBinderProvider : IModelBinderProvider
     }
 
     // Support binding only to simple types or collection of simple types.
-    private bool IsSimpleType(ModelMetadata modelMetadata)
+    private static bool IsSimpleType(ModelMetadata modelMetadata)
     {
         var metadata = modelMetadata.ElementMetadata ?? modelMetadata;
         return !metadata.IsComplexType;

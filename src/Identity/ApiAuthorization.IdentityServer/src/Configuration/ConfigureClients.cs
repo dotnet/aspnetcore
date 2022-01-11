@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using Duende.IdentityServer.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -63,7 +61,7 @@ internal class ConfigureClients : IConfigureOptions<ApiAuthorizationOptions>
         }
     }
 
-    private Client GetSPA(string name, ClientDefinition definition)
+    private static Client GetSPA(string name, ClientDefinition definition)
     {
         if (definition.RedirectUri == null ||
             !Uri.TryCreate(definition.RedirectUri, UriKind.Absolute, out var redirectUri))
@@ -99,14 +97,14 @@ internal class ConfigureClients : IConfigureOptions<ApiAuthorizationOptions>
         return client.Build();
     }
 
-    private Client GetNativeApp(string name, ClientDefinition definition)
+    private static Client GetNativeApp(string name, ClientDefinition definition)
     {
         var client = ClientBuilder.NativeApp(name)
             .FromConfiguration();
         return client.Build();
     }
 
-    private Client GetLocalSPA(string name, ClientDefinition definition)
+    private static Client GetLocalSPA(string name, ClientDefinition definition)
     {
         var client = ClientBuilder
             .IdentityServerSPA(name)

@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -89,7 +88,7 @@ internal class ConfigureIdentityResources : IConfigureOptions<ApiAuthorizationOp
         }
     }
 
-    private string[] ParseScopes(string scopes)
+    private static string[] ParseScopes(string scopes)
     {
         if (scopes == null)
         {

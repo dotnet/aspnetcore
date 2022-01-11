@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 /*
   A LogicalElement plays the same role as an Element instance from the point of view of the
   API consumer. Inserting and removing logical elements updates the browser DOM just the same.
@@ -173,7 +176,7 @@ export function getLogicalChild(parent: LogicalElement, childIndex: number): Log
 export function isSvgElement(element: LogicalElement) {
   // Note: This check is intentionally case-sensitive since we expect this element
   // to appear as a child of an SVG element and SVGs are case-sensitive.
-  var closestElement = getClosestDomElement(element) as any;
+  const closestElement = getClosestDomElement(element) as any;
   return closestElement.namespaceURI === 'http://www.w3.org/2000/svg' && closestElement['tagName'] !== 'foreignObject';
 }
 

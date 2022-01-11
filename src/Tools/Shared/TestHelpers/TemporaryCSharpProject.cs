@@ -76,12 +76,30 @@ public class TemporaryCSharpProject
     {
         var sb = new StringBuilder("<");
         sb.Append(item.Name).Append(' ');
-        if (item.Include != null) sb.Append(" Include=\"").Append(item.Include).Append('"');
-        if (item.Remove != null) sb.Append(" Remove=\"").Append(item.Remove).Append('"');
-        if (item.Update != null) sb.Append(" Update=\"").Append(item.Update).Append('"');
-        if (item.Exclude != null) sb.Append(" Exclude=\"").Append(item.Exclude).Append('"');
-        if (item.Condition != null) sb.Append(" Exclude=\"").Append(item.Condition).Append('"');
-        if (!item.Watch) sb.Append(" Watch=\"false\" ");
+        if (item.Include != null)
+        {
+            sb.Append(" Include=\"").Append(item.Include).Append('"');
+        }
+        if (item.Remove != null)
+        {
+            sb.Append(" Remove=\"").Append(item.Remove).Append('"');
+        }
+        if (item.Update != null)
+        {
+            sb.Append(" Update=\"").Append(item.Update).Append('"');
+        }
+        if (item.Exclude != null)
+        {
+            sb.Append(" Exclude=\"").Append(item.Exclude).Append('"');
+        }
+        if (item.Condition != null)
+        {
+            sb.Append(" Exclude=\"").Append(item.Condition).Append('"');
+        }
+        if (!item.Watch)
+        {
+            sb.Append(" Watch=\"false\" ");
+        }
         AddAdditionalAttributes(sb, item);
         sb.Append(" />");
         _items.Add(sb.ToString());

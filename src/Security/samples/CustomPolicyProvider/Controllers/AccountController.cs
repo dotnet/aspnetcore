@@ -22,7 +22,10 @@ public class AccountController : Controller
     [HttpPost]
     public async Task<IActionResult> Signin(string userName, DateTime? birthDate, string returnUrl = null)
     {
-        if (string.IsNullOrEmpty(userName)) return BadRequest("A user name is required");
+        if (string.IsNullOrEmpty(userName))
+        {
+            return BadRequest("A user name is required");
+        }
 
         // In a real-world application, user credentials would need validated before signing in
         var claims = new List<Claim>();

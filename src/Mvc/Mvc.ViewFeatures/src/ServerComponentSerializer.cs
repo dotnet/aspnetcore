@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.DataProtection;
@@ -47,7 +45,7 @@ internal class ServerComponentSerializer
         return (serverComponent.Sequence, Convert.ToBase64String(protectedBytes));
     }
 
-    internal IEnumerable<string> GetPreamble(ServerComponentMarker record)
+    internal static IEnumerable<string> GetPreamble(ServerComponentMarker record)
     {
         var serializedStartRecord = JsonSerializer.Serialize(
             record,
@@ -77,7 +75,7 @@ internal class ServerComponentSerializer
         }
     }
 
-    internal IEnumerable<string> GetEpilogue(ServerComponentMarker record)
+    internal static IEnumerable<string> GetEpilogue(ServerComponentMarker record)
     {
         var serializedStartRecord = JsonSerializer.Serialize(
             record.GetEndRecord(),

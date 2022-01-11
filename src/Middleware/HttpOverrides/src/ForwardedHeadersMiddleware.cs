@@ -1,12 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -417,7 +414,7 @@ public class ForwardedHeadersMiddleware
 
     // Empty was checked for by the caller
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private bool TryValidateHost(string host)
+    private static bool TryValidateHost(string host)
     {
         if (host[0] == '[')
         {
@@ -449,7 +446,7 @@ public class ForwardedHeadersMiddleware
 
     // The lead '[' was already checked
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private bool TryValidateIPv6Host(string hostText)
+    private static bool TryValidateIPv6Host(string hostText)
     {
         for (var i = 1; i < hostText.Length; i++)
         {
@@ -475,7 +472,7 @@ public class ForwardedHeadersMiddleware
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private bool TryValidateHostPort(string hostText, int offset)
+    private static bool TryValidateHostPort(string hostText, int offset)
     {
         if (offset == hostText.Length)
         {
@@ -507,7 +504,7 @@ public class ForwardedHeadersMiddleware
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private bool IsHex(char ch)
+    private static bool IsHex(char ch)
     {
         return IsNumeric(ch)
             || ('a' <= ch && ch <= 'f')

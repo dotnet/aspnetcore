@@ -1,15 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.IO.Compression;
 using System.IO.Pipelines;
-using System.Linq;
 using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -21,7 +15,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Net.Http.Headers;
-using Xunit;
 
 namespace Microsoft.AspNetCore.ResponseCompression.Tests;
 
@@ -1235,7 +1228,7 @@ public class ResponseCompressionMiddlewareTest
         Assert.True(read > 0);
     }
 
-    private async Task<(HttpResponseMessage, List<WriteContext>)> InvokeMiddleware(
+    private static async Task<(HttpResponseMessage, List<WriteContext>)> InvokeMiddleware(
         int uncompressedBodyLength,
         string[] requestAcceptEncodings,
         string responseType,
@@ -1294,7 +1287,7 @@ public class ResponseCompressionMiddlewareTest
         return (response, sink.Writes.ToList());
     }
 
-    private void CheckResponseCompressed(HttpResponseMessage response, long? expectedBodyLength, string expectedEncoding)
+    private static void CheckResponseCompressed(HttpResponseMessage response, long? expectedBodyLength, string expectedEncoding)
     {
         var containsVaryAcceptEncoding = false;
         foreach (var value in response.Headers.GetValues(HeaderNames.Vary))
@@ -1311,7 +1304,7 @@ public class ResponseCompressionMiddlewareTest
         Assert.Equal(expectedBodyLength, response.Content.Headers.ContentLength);
     }
 
-    private void CheckResponseNotCompressed(HttpResponseMessage response, long? expectedBodyLength, bool sendVaryHeader)
+    private static void CheckResponseNotCompressed(HttpResponseMessage response, long? expectedBodyLength, bool sendVaryHeader)
     {
         if (sendVaryHeader)
         {
@@ -1335,7 +1328,7 @@ public class ResponseCompressionMiddlewareTest
         Assert.Equal(expectedBodyLength, response.Content.Headers.ContentLength);
     }
 
-    private void AssertLog(WriteContext log, LogLevel level, string message)
+    private static void AssertLog(WriteContext log, LogLevel level, string message)
     {
         Assert.Equal(level, log.LogLevel);
         Assert.Equal(message, log.State.ToString());

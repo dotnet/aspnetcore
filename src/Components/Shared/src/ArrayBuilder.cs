@@ -3,14 +3,11 @@
 
 #nullable disable warnings
 
-using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-#if IGNITOR
-namespace Ignitor;
-#elif BLAZOR_WEBVIEW
+#if BLAZOR_WEBVIEW
 namespace Microsoft.AspNetCore.Components.WebView;
 #elif COMPONENTS_SERVER
 namespace Microsoft.AspNetCore.Components.Server.Circuits;

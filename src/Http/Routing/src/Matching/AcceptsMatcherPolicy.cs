@@ -257,7 +257,7 @@ internal sealed class AcceptsMatcherPolicy : MatcherPolicy, IEndpointComparerPol
             .ToArray();
     }
 
-    private Endpoint CreateRejectionEndpoint()
+    private static Endpoint CreateRejectionEndpoint()
     {
         return new Endpoint(
             (context) =>

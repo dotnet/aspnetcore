@@ -3,7 +3,6 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Microsoft.JSInterop;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
@@ -71,7 +70,7 @@ public class SignOutSessionStateManager
     [DynamicDependency(JsonSerialized, typeof(SignOutState))]
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "The correct members will be preserved by the above DynamicDependency.")]
     // This should use JSON source generation
-    private SignOutState DeserializeSignOutState(string result) => JsonSerializer.Deserialize<SignOutState>(result, _serializationOptions);
+    private static SignOutState DeserializeSignOutState(string result) => JsonSerializer.Deserialize<SignOutState>(result, _serializationOptions);
 
     private ValueTask ClearSignOutState()
     {

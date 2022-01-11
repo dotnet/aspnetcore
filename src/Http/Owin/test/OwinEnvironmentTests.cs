@@ -2,13 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Security.Claims;
-using System.Threading;
 using Microsoft.AspNetCore.Http;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Owin;
 

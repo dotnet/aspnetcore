@@ -255,7 +255,7 @@ public class Http2TrailerResetTests
               await h2Connection.StartStreamAsync(1, GetHeaders("/ConnectionRequestClose"), endStream: true);
 
               var goAwayFrame = await h2Connection.ReceiveFrameAsync();
-              h2Connection.VerifyGoAway(goAwayFrame, int.MaxValue, Http2ErrorCode.NO_ERROR);
+              Http2Utilities.VerifyGoAway(goAwayFrame, int.MaxValue, Http2ErrorCode.NO_ERROR);
 
               await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
               {

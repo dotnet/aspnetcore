@@ -3,8 +3,6 @@
 
 #nullable enable
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 
@@ -42,11 +40,11 @@ public class DefaultPropertyFilterProvider<TModel> : IPropertyFilterProvider
             }
 
             // We do not cache by default.
-            return GetPropertyFilterFromExpression(PropertyIncludeExpressions);
+            return DefaultPropertyFilterProvider<TModel>.GetPropertyFilterFromExpression(PropertyIncludeExpressions);
         }
     }
 
-    private Func<ModelMetadata, bool> GetPropertyFilterFromExpression(
+    private static Func<ModelMetadata, bool> GetPropertyFilterFromExpression(
         IEnumerable<Expression<Func<TModel, object>>> includeExpressions)
     {
         var expression = ModelBindingHelper.GetPropertyFilterExpression(includeExpressions.ToArray());

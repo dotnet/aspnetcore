@@ -1,15 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-
 namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite;
 
 internal class FileParser
 {
-    public IList<IRule> Parse(TextReader input)
+    public static IList<IRule> Parse(TextReader input)
     {
         string? line;
         var rules = new List<IRule>();
@@ -34,7 +30,7 @@ internal class FileParser
             {
                 continue;
             }
-            var tokens = tokenizer.Tokenize(line)!;
+            var tokens = Tokenizer.Tokenize(line)!;
             if (tokens.Count > 4)
             {
                 // This means the line didn't have an appropriate format, throw format exception
@@ -50,8 +46,8 @@ internal class FileParser
                 case "RewriteCond":
                     try
                     {
-                        var pattern = testStringParser.Parse(tokens[1]);
-                        var condActionParsed = conditionParser.ParseActionCondition(tokens[2]);
+                        var pattern = TestStringParser.Parse(tokens[1]);
+                        var condActionParsed = ConditionPatternParser.ParseActionCondition(tokens[2]);
 
                         var flags = new Flags();
                         if (tokens.Count == 4)
@@ -69,8 +65,8 @@ internal class FileParser
                 case "RewriteRule":
                     try
                     {
-                        var regex = regexParser.ParseRuleRegex(tokens[1]);
-                        var pattern = testStringParser.Parse(tokens[2]);
+                        var regex = RuleRegexParser.ParseRuleRegex(tokens[1]);
+                        var pattern = TestStringParser.Parse(tokens[2]);
 
                         Flags flags;
                         if (tokens.Count == 4)

@@ -218,7 +218,7 @@ public class BrowserFixture : IAsyncLifetime
         throw new InvalidOperationException("Couldn't create a Selenium remote driver client. The server is irresponsive", innerException);
     }
 
-    private string UserProfileDirectory(string context)
+    private static string UserProfileDirectory(string context)
     {
         if (string.IsNullOrEmpty(context))
         {

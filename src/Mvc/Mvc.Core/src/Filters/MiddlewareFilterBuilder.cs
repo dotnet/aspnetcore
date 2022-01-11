@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Concurrent;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -50,7 +49,7 @@ internal class MiddlewareFilterBuilder
         var nestedAppBuilder = ApplicationBuilder.New();
 
         // Get the 'Configure' method from the user provided type.
-        var configureDelegate = _configurationProvider.CreateConfigureDelegate(middlewarePipelineProviderType);
+        var configureDelegate = MiddlewareFilterConfigurationProvider.CreateConfigureDelegate(middlewarePipelineProviderType);
         configureDelegate(nestedAppBuilder);
 
         // The middleware resource filter, after receiving the request executes the user configured middleware

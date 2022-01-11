@@ -1,16 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.IO;
 using System.Net;
 using System.Runtime.InteropServices;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Primitives;
@@ -393,7 +388,7 @@ internal sealed class Response
         Headers.IsReadOnly = false; // Temporarily unlock
         if (StatusCode == (ushort)StatusCodes.Status401Unauthorized)
         {
-            RequestContext.Server.Options.Authentication.SetAuthenticationChallenge(RequestContext);
+            AuthenticationManager.SetAuthenticationChallenge(RequestContext);
         }
 
         var flags = HttpApiTypes.HTTP_FLAGS.NONE;

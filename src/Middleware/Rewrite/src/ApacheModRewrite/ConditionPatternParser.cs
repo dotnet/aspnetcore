@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Globalization;
 
 namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite;
@@ -26,7 +25,7 @@ internal class ConditionPatternParser
     /// </summary>
     /// <param name="condition">The CondPattern portion of a mod_rewrite RewriteCond.</param>
     /// <returns>A new parsed condition.</returns>
-    public ParsedModRewriteInput ParseActionCondition(string condition)
+    public static ParsedModRewriteInput ParseActionCondition(string condition)
     {
         if (condition == null)
         {

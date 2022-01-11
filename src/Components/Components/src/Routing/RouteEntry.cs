@@ -3,8 +3,6 @@
 
 #nullable disable warnings
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
@@ -126,7 +124,7 @@ internal class RouteEntry
         }
     }
 
-    private void AddDefaultValues(Dictionary<string, object> parameters, int templateIndex, TemplateSegment[] segments)
+    private static void AddDefaultValues(Dictionary<string, object> parameters, int templateIndex, TemplateSegment[] segments)
     {
         for (var i = templateIndex; i < segments.Length; i++)
         {
@@ -135,7 +133,7 @@ internal class RouteEntry
         }
     }
 
-    private bool RemainingSegmentsAreOptional(int index, TemplateSegment[] segments)
+    private static bool RemainingSegmentsAreOptional(int index, TemplateSegment[] segments)
     {
         for (var i = index; index < segments.Length - 1; index++)
         {

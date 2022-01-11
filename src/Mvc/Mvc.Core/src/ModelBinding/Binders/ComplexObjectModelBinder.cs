@@ -3,12 +3,9 @@
 
 #nullable enable
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.Extensions.Logging;
@@ -412,7 +409,7 @@ public sealed partial class ComplexObjectModelBinder : IModelBinder
         return (attemptedBinding, bindingSucceeded);
     }
 
-    internal bool CanBindItem(ModelBindingContext bindingContext, ModelMetadata propertyMetadata)
+    internal static bool CanBindItem(ModelBindingContext bindingContext, ModelMetadata propertyMetadata)
     {
         var metadataProviderFilter = bindingContext.ModelMetadata.PropertyFilterProvider?.PropertyFilter;
         if (metadataProviderFilter?.Invoke(propertyMetadata) == false)
@@ -439,7 +436,7 @@ public sealed partial class ComplexObjectModelBinder : IModelBinder
         return true;
     }
 
-    private async ValueTask<ModelBindingResult> BindPropertyAsync(
+    private static async ValueTask<ModelBindingResult> BindPropertyAsync(
         ModelBindingContext bindingContext,
         ModelMetadata property,
         IModelBinder propertyBinder,
@@ -484,7 +481,7 @@ public sealed partial class ComplexObjectModelBinder : IModelBinder
         return result;
     }
 
-    private async ValueTask<ModelBindingResult> BindParameterAsync(
+    private static async ValueTask<ModelBindingResult> BindParameterAsync(
         ModelBindingContext bindingContext,
         ModelMetadata parameter,
         IModelBinder parameterBinder,
@@ -690,7 +687,7 @@ public sealed partial class ComplexObjectModelBinder : IModelBinder
         return true;
     }
 
-    internal void SetProperty(
+    internal static void SetProperty(
         ModelBindingContext bindingContext,
         string modelName,
         ModelMetadata propertyMetadata,

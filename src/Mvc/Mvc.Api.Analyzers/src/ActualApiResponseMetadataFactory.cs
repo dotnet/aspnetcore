@@ -6,9 +6,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.FlowAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.AspNetCore.Mvc.Api.Analyzers;
@@ -65,6 +63,8 @@ public static class ActualApiResponseMetadataFactory
         var apiResponses = new List<ActualApiResponseMetadata>();
 
         var returnedValue = returnOperation.ReturnedValue;
+        var defaultStatusCodeAttributeSymbol = symbolCache.DefaultStatusCodeAttribute;
+
         if (returnedValue is null || returnedValue is IInvalidOperation)
         {
             return apiResponses;
@@ -129,8 +129,22 @@ public static class ActualApiResponseMetadataFactory
         }
 
         var defaultStatusCodeAttribute = statementReturnType
-            .GetAttributes(symbolCache.DefaultStatusCodeAttribute, inherit: true)
+            .GetAttributes(defaultStatusCodeAttributeSymbol, inherit: true)
             .FirstOrDefault();
+
+        // If the type is not annotated with a default status code, then examine
+        // the attributes on any invoked method returning the type.
+        if (defaultStatusCodeAttribute is null && returnedValue.Syntax is InvocationExpressionSyntax targetInvocation)
+        {
+            var methodOperation = returnOperation.SemanticModel.GetSymbolInfo(targetInvocation);
+            var methodSymbol = methodOperation.Symbol ?? methodOperation.CandidateSymbols.FirstOrDefault();
+            if (methodSymbol is not null)
+            {
+                defaultStatusCodeAttribute = methodSymbol
+                    .GetAttributes(defaultStatusCodeAttributeSymbol)
+                    .FirstOrDefault();
+            }
+        }
 
         var statusCode = GetDefaultStatusCode(defaultStatusCodeAttribute);
 

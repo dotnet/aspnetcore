@@ -3,8 +3,6 @@
 
 #nullable enable
 
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
@@ -12,7 +10,6 @@ using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
@@ -205,7 +202,7 @@ public class DefaultOutputFormatterSelector : OutputFormatterSelector
         return null;
     }
 
-    private IOutputFormatter? SelectFormatterUsingSortedAcceptHeaders(
+    private static IOutputFormatter? SelectFormatterUsingSortedAcceptHeaders(
         OutputFormatterCanWriteContext formatterContext,
         IList<IOutputFormatter> formatters,
         IList<MediaTypeSegmentWithQuality> sortedAcceptHeaders)
@@ -230,7 +227,7 @@ public class DefaultOutputFormatterSelector : OutputFormatterSelector
         return null;
     }
 
-    private IOutputFormatter? SelectFormatterUsingAnyAcceptableContentType(
+    private static IOutputFormatter? SelectFormatterUsingAnyAcceptableContentType(
         OutputFormatterCanWriteContext formatterContext,
         IList<IOutputFormatter> formatters,
         MediaTypeCollection acceptableContentTypes)
@@ -252,7 +249,7 @@ public class DefaultOutputFormatterSelector : OutputFormatterSelector
         return null;
     }
 
-    private IOutputFormatter? SelectFormatterUsingSortedAcceptHeadersAndContentTypes(
+    private static IOutputFormatter? SelectFormatterUsingSortedAcceptHeadersAndContentTypes(
         OutputFormatterCanWriteContext formatterContext,
         IList<IOutputFormatter> formatters,
         IList<MediaTypeSegmentWithQuality> sortedAcceptableContentTypes,
@@ -283,7 +280,7 @@ public class DefaultOutputFormatterSelector : OutputFormatterSelector
         return null;
     }
 
-    private void ValidateContentTypes(MediaTypeCollection contentTypes)
+    private static void ValidateContentTypes(MediaTypeCollection contentTypes)
     {
         for (var i = 0; i < contentTypes.Count; i++)
         {

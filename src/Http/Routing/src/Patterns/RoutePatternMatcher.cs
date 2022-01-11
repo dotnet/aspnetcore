@@ -3,7 +3,6 @@
 
 #nullable disable
 
-using System;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Patterns;
@@ -313,9 +312,11 @@ internal class RoutePatternMatcher
             {
                 var separator = (RoutePatternSeparatorPart)routeSegment.Parts[indexOfLastSegment - 1];
                 if (requestSegment.EndsWith(
-                separator.Content,
-                StringComparison.OrdinalIgnoreCase))
+                    separator.Content,
+                    StringComparison.OrdinalIgnoreCase))
+                {
                     return false;
+                }
 
                 return MatchComplexSegmentCore(
                     routeSegment,

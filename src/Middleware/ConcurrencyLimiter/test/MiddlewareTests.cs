@@ -1,11 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Threading.Tasks;
+using System.Threading.Tasks.Sources;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Testing;
-using Xunit;
 
 namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests;
 
@@ -185,7 +183,7 @@ public class MiddlewareTests
     {
         var flag = false;
 
-        var queue = new TestQueueForResettableBoolean();
+        var queue = new TestQueueForValueTask();
         var middleware = TestUtils.CreateTestMiddleware(
             queue,
             next: async context =>
@@ -194,25 +192,46 @@ public class MiddlewareTests
                 flag = true;
             });
 
-        queue.Source.Complete(true);
         await middleware.Invoke(new DefaultHttpContext());
 
         Assert.True(flag);
     }
 
-    private class TestQueueForResettableBoolean : IQueuePolicy
+    private class TestQueueForValueTask : IQueuePolicy
     {
-        public ResettableBooleanCompletionSource Source;
-        public TestQueueForResettableBoolean()
+        public TestValueResult Source;
+        public TestQueueForValueTask()
         {
-            Source = new ResettableBooleanCompletionSource(TestUtils.CreateStackPolicy(1));
+            Source = new TestValueResult();
         }
 
         public ValueTask<bool> TryEnterAsync()
         {
-            return Source.GetValueTask();
+            return new ValueTask<bool>(Source, 0);
         }
 
         public void OnExit() { }
+    }
+
+    private class TestValueResult : IValueTaskSource<bool>
+    {
+        private bool _getResultCalled;
+
+        public bool GetResult(short token)
+        {
+            Assert.False(_getResultCalled);
+            _getResultCalled = true;
+            return true;
+        }
+
+        public ValueTaskSourceStatus GetStatus(short token)
+        {
+            return ValueTaskSourceStatus.Succeeded;
+        }
+
+        public void OnCompleted(Action<object> continuation, object state, short token, ValueTaskSourceOnCompletedFlags flags)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

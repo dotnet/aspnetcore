@@ -1,15 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ViewComponents;
 
@@ -23,7 +19,7 @@ public class DefaultViewComponentHelperTest
         var descriptor = CreateDescriptorForType(typeof(ViewComponentSingleParam));
 
         // Act
-        var argumentDictionary = helper.GetArgumentDictionary(descriptor, null);
+        var argumentDictionary = DefaultViewComponentHelper.GetArgumentDictionary(descriptor, null);
 
         // Assert
         Assert.Equal(0, argumentDictionary.Count);
@@ -38,7 +34,7 @@ public class DefaultViewComponentHelperTest
         var descriptor = CreateDescriptorForType(typeof(ViewComponentSingleParam));
 
         // Act
-        var argumentDictionary = helper.GetArgumentDictionary(descriptor, new { a = 0 });
+        var argumentDictionary = DefaultViewComponentHelper.GetArgumentDictionary(descriptor, new { a = 0 });
 
         // Assert
         Assert.Collection(argumentDictionary,
@@ -58,7 +54,7 @@ public class DefaultViewComponentHelperTest
         var descriptor = CreateDescriptorForType(typeof(ViewComponentSingleParam));
 
         // Act
-        var argumentDictionary = helper.GetArgumentDictionary(descriptor, 0);
+        var argumentDictionary = DefaultViewComponentHelper.GetArgumentDictionary(descriptor, 0);
 
         // Assert
         Assert.Collection(argumentDictionary,
@@ -78,7 +74,7 @@ public class DefaultViewComponentHelperTest
         var descriptor = CreateDescriptorForType(typeof(ViewComponentMultipleParam));
 
         // Act
-        var argumentDictionary = helper.GetArgumentDictionary(descriptor, new { a = 0, b = "foo" });
+        var argumentDictionary = DefaultViewComponentHelper.GetArgumentDictionary(descriptor, new { a = 0, b = "foo" });
 
         // Assert
         Assert.Collection(argumentDictionary,
@@ -105,7 +101,7 @@ public class DefaultViewComponentHelperTest
         var expectedValue = new object();
 
         // Act
-        var argumentDictionary = helper.GetArgumentDictionary(descriptor, expectedValue);
+        var argumentDictionary = DefaultViewComponentHelper.GetArgumentDictionary(descriptor, expectedValue);
 
         // Assert
         Assert.Collection(argumentDictionary,
@@ -129,7 +125,7 @@ public class DefaultViewComponentHelperTest
             };
 
         // Act
-        var argumentDictionary = helper.GetArgumentDictionary(descriptor, arguments);
+        var argumentDictionary = DefaultViewComponentHelper.GetArgumentDictionary(descriptor, arguments);
 
         // Assert
         Assert.Collection(argumentDictionary,

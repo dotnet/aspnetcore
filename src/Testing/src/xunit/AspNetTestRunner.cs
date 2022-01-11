@@ -3,10 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Reflection;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
@@ -135,7 +132,7 @@ internal class AspNetTestRunner : XunitTestRunner
         return invoker.RunAsync();
     }
 
-    private RepeatAttribute GetRepeatAttribute(MethodInfo methodInfo)
+    private static RepeatAttribute GetRepeatAttribute(MethodInfo methodInfo)
     {
         var attributeCandidate = methodInfo.GetCustomAttribute<RepeatAttribute>();
         if (attributeCandidate != null)
@@ -152,7 +149,7 @@ internal class AspNetTestRunner : XunitTestRunner
         return methodInfo.DeclaringType.Assembly.GetCustomAttribute<RepeatAttribute>();
     }
 
-    private RetryAttribute GetRetryAttribute(MethodInfo methodInfo)
+    private static RetryAttribute GetRetryAttribute(MethodInfo methodInfo)
     {
         var attributeCandidate = methodInfo.GetCustomAttribute<RetryAttribute>();
         if (attributeCandidate != null)

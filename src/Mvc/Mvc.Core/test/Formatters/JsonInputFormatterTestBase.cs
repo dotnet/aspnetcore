@@ -1,22 +1,14 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.IO;
-using System.Linq;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Extensions.Logging.Testing;
-using Moq;
 using Newtonsoft.Json;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters;
 
@@ -133,6 +125,34 @@ public abstract class JsonInputFormatterTestBase : LoggedTest
     }
 
     [Fact]
+    public virtual async Task JsonFormatter_EscapedKeys()
+    {
+        var expectedKey = JsonFormatter_EscapedKeys_Expected;
+
+        // Arrange
+        var content = "[{\"It\\\"s a key\": 1234556}]";
+        var formatter = GetInputFormatter();
+
+        var contentBytes = Encoding.UTF8.GetBytes(content);
+        var httpContext = GetHttpContext(contentBytes);
+
+        var formatterContext = CreateInputFormatterContext(
+            typeof(IEnumerable<IDictionary<string, short>>), httpContext);
+
+        // Act
+        var result = await formatter.ReadAsync(formatterContext);
+
+        // Assert
+        Assert.True(result.HasError);
+        Assert.Collection(
+            formatterContext.ModelState.OrderBy(k => k.Key),
+            kvp =>
+            {
+                Assert.Equal(expectedKey, kvp.Key);
+            });
+    }
+
+    [Fact]
     public virtual async Task JsonFormatter_EscapedKeys_Bracket()
     {
         var expectedKey = JsonFormatter_EscapedKeys_Bracket_Expected;
@@ -160,12 +180,12 @@ public abstract class JsonInputFormatterTestBase : LoggedTest
     }
 
     [Fact]
-    public virtual async Task JsonFormatter_EscapedKeys()
+    public virtual async Task JsonFormatter_EscapedKeys_SingleQuote()
     {
-        var expectedKey = JsonFormatter_EscapedKeys_Expected;
+        var expectedKey = JsonFormatter_EscapedKeys_SingleQuote_Expected;
 
         // Arrange
-        var content = "[{\"It\\\"s a key\": 1234556}]";
+        var content = "[{\"It's a key\": 1234556}]";
         var formatter = GetInputFormatter();
 
         var contentBytes = Encoding.UTF8.GetBytes(content);
@@ -472,6 +492,30 @@ public abstract class JsonInputFormatterTestBase : LoggedTest
     }
 
     [Fact]
+    public virtual async Task ReadAsync_NestedParseError()
+    {
+        // Arrange
+        var formatter = GetInputFormatter();
+        var content = @"{ ""b"": { ""c"": { ""d"": efg } } }";
+        var contentBytes = Encoding.UTF8.GetBytes(content);
+        var httpContext = GetHttpContext(contentBytes);
+
+        var formatterContext = CreateInputFormatterContext(typeof(A), httpContext);
+
+        // Act
+        var result = await formatter.ReadAsync(formatterContext);
+
+        // Assert
+        Assert.True(result.HasError, "Model should have had an error!");
+        Assert.Collection(
+            formatterContext.ModelState.OrderBy(k => k.Key),
+            kvp =>
+            {
+                Assert.Equal(ReadAsync_NestedParseError_Expected, kvp.Key);
+            });
+    }
+
+    [Fact]
     public virtual async Task ReadAsync_RequiredAttribute()
     {
         // Arrange
@@ -564,6 +608,8 @@ public abstract class JsonInputFormatterTestBase : LoggedTest
 
     internal abstract string JsonFormatter_EscapedKeys_Bracket_Expected { get; }
 
+    internal abstract string JsonFormatter_EscapedKeys_SingleQuote_Expected { get; }
+
     internal abstract string JsonFormatter_EscapedKeys_Expected { get; }
 
     internal abstract string ReadAsync_ArrayOfObjects_HasCorrectKey_Expected { get; }
@@ -575,6 +621,8 @@ public abstract class JsonInputFormatterTestBase : LoggedTest
     internal abstract string ReadAsync_InvalidComplexArray_AddsOverflowErrorsToModelState_Expected { get; }
 
     internal abstract string ReadAsync_ComplexPoco_Expected { get; }
+
+    internal abstract string ReadAsync_NestedParseError_Expected { get; }
 
     protected abstract TextInputFormatter GetInputFormatter(bool allowInputFormatterExceptionMessages = true);
 
@@ -635,6 +683,21 @@ public abstract class JsonInputFormatterTestBase : LoggedTest
         public decimal Age { get; set; }
 
         public byte Small { get; set; }
+    }
+
+    class A
+    {
+        public B B { get; set; }
+    }
+
+    class B
+    {
+        public C C { get; set; }
+    }
+
+    class C
+    {
+        public string D { get; set; }
     }
 
     private class VerifyDisposeFileBufferingReadStream : FileBufferingReadStream

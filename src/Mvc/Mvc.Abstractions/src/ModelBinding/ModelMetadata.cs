@@ -1,15 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
@@ -497,6 +493,11 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
     /// Gets a value that determines if validators can be constructed using metadata exclusively defined on the property.
     /// </summary>
     internal virtual bool PropertyHasValidators => false;
+
+    /// <summary>
+    /// Gets the name of a model, if specified explicitly, to be used on <see cref="ValidationEntry"/>
+    /// </summary>
+    internal virtual string? ValidationModelName { get; }
 
     /// <summary>
     /// Throws if the ModelMetadata is for a record type with validation on properties.

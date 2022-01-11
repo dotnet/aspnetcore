@@ -1,10 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
@@ -103,7 +101,7 @@ public class PageResultExecutor : ViewExecutor
         return ExecuteAsync(viewContext, result.ContentType, result.StatusCode);
     }
 
-    private void OnExecuting(PageContext pageContext)
+    private static void OnExecuting(PageContext pageContext)
     {
         var viewDataValuesProvider = pageContext.HttpContext.Features.Get<IViewDataValuesProviderFeature>();
         if (viewDataValuesProvider != null)

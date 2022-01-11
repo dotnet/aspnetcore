@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.Extensions.Caching.SqlServer;
 
@@ -83,12 +82,12 @@ internal class SqlQueries
     public string DeleteExpiredCacheItems { get; }
 
     // From EF's SqlServerQuerySqlGenerator
-    private string DelimitIdentifier(string identifier)
+    private static string DelimitIdentifier(string identifier)
     {
         return "[" + identifier.Replace("]", "]]") + "]";
     }
 
-    private string EscapeLiteral(string literal)
+    private static string EscapeLiteral(string literal)
     {
         return literal.Replace("'", "''");
     }

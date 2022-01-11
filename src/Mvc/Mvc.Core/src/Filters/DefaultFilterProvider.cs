@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc.Core;
 
@@ -36,7 +35,7 @@ internal class DefaultFilterProvider : IFilterProvider
     {
     }
 
-    public void ProvideFilter(FilterProviderContext context, FilterItem filterItem)
+    public static void ProvideFilter(FilterProviderContext context, FilterItem filterItem)
     {
         if (filterItem.Filter != null)
         {
@@ -67,7 +66,7 @@ internal class DefaultFilterProvider : IFilterProvider
         }
     }
 
-    private void ApplyFilterToContainer(object actualFilter, IFilterMetadata filterMetadata)
+    private static void ApplyFilterToContainer(object actualFilter, IFilterMetadata filterMetadata)
     {
         Debug.Assert(actualFilter != null, "actualFilter should not be null");
         Debug.Assert(filterMetadata != null, "filterMetadata should not be null");

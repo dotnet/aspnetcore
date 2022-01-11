@@ -6,6 +6,10 @@ $platforms = @(
         VCPlatform = "x64";
     },
     @{
+        Platform = "ARM64";
+        VCPlatform = "ARM64";
+    },
+    @{
         Platform = "x86";
         VCPlatform = "Win32";
     }

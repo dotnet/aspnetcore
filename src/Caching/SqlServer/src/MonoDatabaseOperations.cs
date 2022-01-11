@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Data;
 using System.Threading;
 using System.Threading.Tasks;
@@ -111,8 +110,8 @@ internal class MonoDatabaseOperations : DatabaseOperations
     {
         var utcNow = SystemClock.UtcNow;
 
-        var absoluteExpiration = GetAbsoluteExpiration(utcNow, options);
-        ValidateOptions(options.SlidingExpiration, absoluteExpiration);
+        var absoluteExpiration = DatabaseOperations.GetAbsoluteExpiration(utcNow, options);
+        DatabaseOperations.ValidateOptions(options.SlidingExpiration, absoluteExpiration);
 
         using (var connection = new SqlConnection(ConnectionString))
         {
@@ -132,7 +131,7 @@ internal class MonoDatabaseOperations : DatabaseOperations
             }
             catch (SqlException ex)
             {
-                if (IsDuplicateKeyException(ex))
+                if (DatabaseOperations.IsDuplicateKeyException(ex))
                 {
                     // There is a possibility that multiple requests can try to add the same item to the cache, in
                     // which case we receive a 'duplicate key' exception on the primary key column.
@@ -151,8 +150,8 @@ internal class MonoDatabaseOperations : DatabaseOperations
 
         var utcNow = SystemClock.UtcNow;
 
-        var absoluteExpiration = GetAbsoluteExpiration(utcNow, options);
-        ValidateOptions(options.SlidingExpiration, absoluteExpiration);
+        var absoluteExpiration = DatabaseOperations.GetAbsoluteExpiration(utcNow, options);
+        DatabaseOperations.ValidateOptions(options.SlidingExpiration, absoluteExpiration);
 
         using (var connection = new SqlConnection(ConnectionString))
         {
@@ -172,7 +171,7 @@ internal class MonoDatabaseOperations : DatabaseOperations
             }
             catch (SqlException ex)
             {
-                if (IsDuplicateKeyException(ex))
+                if (DatabaseOperations.IsDuplicateKeyException(ex))
                 {
                     // There is a possibility that multiple requests can try to add the same item to the cache, in
                     // which case we receive a 'duplicate key' exception on the primary key column.

@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
@@ -116,7 +115,7 @@ public class FormatFilter : IFormatFilter, IResourceFilter, IResultFilter
         }
     }
 
-    private bool IsSuperSetOfAnySupportedMediaType(string contentType, MediaTypeCollection supportedMediaTypes)
+    private static bool IsSuperSetOfAnySupportedMediaType(string contentType, MediaTypeCollection supportedMediaTypes)
     {
         var parsedContentType = new MediaType(contentType);
         for (var i = 0; i < supportedMediaTypes.Count; i++)

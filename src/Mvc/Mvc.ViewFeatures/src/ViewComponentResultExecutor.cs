@@ -3,10 +3,8 @@
 
 #nullable enable
 
-using System;
 using System.Text;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Mvc.Formatters;
@@ -161,7 +159,7 @@ public class ViewComponentResultExecutor : IActionResultExecutor<ViewComponentRe
         }
     }
 
-    private void OnExecuting(ViewContext viewContext)
+    private static void OnExecuting(ViewContext viewContext)
     {
         var viewDataValuesProvider = viewContext.HttpContext.Features.Get<IViewDataValuesProviderFeature>();
         if (viewDataValuesProvider != null)
@@ -170,7 +168,7 @@ public class ViewComponentResultExecutor : IActionResultExecutor<ViewComponentRe
         }
     }
 
-    private Task<IHtmlContent> GetViewComponentResult(IViewComponentHelper viewComponentHelper, ILogger logger, ViewComponentResult result)
+    private static Task<IHtmlContent> GetViewComponentResult(IViewComponentHelper viewComponentHelper, ILogger logger, ViewComponentResult result)
     {
         if (result.ViewComponentType == null && result.ViewComponentName == null)
         {

@@ -365,11 +365,6 @@ internal readonly struct ReadOnlyMediaTypeHeaderValue
         }
     }
 
-    private static string CreateMediaTypeWithEncoding(StringSegment mediaType, Encoding encoding)
-    {
-        return $"{mediaType.Value}; charset={encoding.WebName}";
-    }
-
     private bool MatchesType(ReadOnlyMediaTypeHeaderValue set)
     {
         return set.MatchesAllTypes ||

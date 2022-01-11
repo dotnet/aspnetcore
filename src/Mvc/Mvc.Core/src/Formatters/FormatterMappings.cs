@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.Net.Http.Headers;
@@ -99,7 +97,7 @@ public class FormatterMappings
         return _map.Remove(format);
     }
 
-    private void ValidateContentType(MediaTypeHeaderValue contentType)
+    private static void ValidateContentType(MediaTypeHeaderValue contentType)
     {
         if (contentType.Type == "*" || contentType.SubType == "*")
         {
@@ -109,7 +107,7 @@ public class FormatterMappings
         }
     }
 
-    private string RemovePeriodIfPresent(string format)
+    private static string RemovePeriodIfPresent(string format)
     {
         if (string.IsNullOrEmpty(format))
         {

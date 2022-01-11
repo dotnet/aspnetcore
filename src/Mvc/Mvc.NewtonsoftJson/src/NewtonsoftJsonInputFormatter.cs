@@ -1,14 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
 using System.Globalization;
-using System.IO;
 using System.Runtime.ExceptionServices;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Microsoft.AspNetCore.WebUtilities;
@@ -232,32 +228,90 @@ public class NewtonsoftJsonInputFormatter : TextInputFormatter, IInputFormatterE
 
         void ErrorHandler(object? sender, Newtonsoft.Json.Serialization.ErrorEventArgs eventArgs)
         {
+            // Skipping error, if it's already marked as handled
+            // This allows user code to implement its own error handling
+            if (eventArgs.ErrorContext.Handled)
+            {
+                return;
+            }
+
             successful = false;
 
-            // When ErrorContext.Path does not include ErrorContext.Member, add Member to form full path.
+            // The following addMember logic is intended to append the names of missing required properties to the
+            // ModelStateDictionary key. Normally, just the ModelName and ErrorContext.Path is used for this key,
+            // but ErrorContext.Path does not include the missing required property name like we want it to.
+            // For example, given the following class and input missing the required "Name" property:
+            //
+            // class Person
+            // {
+            //     [JsonProperty(Required = Required.Always)]
+            //     public string Name { get; set; }
+            // }
+            //
+            // We will see the following ErrorContext:
+            //
+            // Error   {"Required property 'Name' not found in JSON. Path 'Person'..."} System.Exception {Newtonsoft.Json.JsonSerializationException}
+            // Member  "Name"   object {string}
+            // Path    "Person" string
+            //
+            // So we update the path used for the ModelStateDictionary key to be "Person.Name" instead of just "Person".
+            // See https://github.com/aspnet/Mvc/issues/8509
             var path = eventArgs.ErrorContext.Path;
-            var member = eventArgs.ErrorContext.Member?.ToString();
-            var addMember = !string.IsNullOrEmpty(member);
+            var member = eventArgs.ErrorContext.Member as string;
+
+            // There are some deserialization exceptions that include the member in the path but not at the end.
+            // For example, given the following classes and invalid input like { "b": { "c": { "d": abc } } }:
+            //
+            // class A
+            // {
+            //     public B B { get; set; }
+            // }
+            // class B
+            // {
+            //     public C C { get; set; }
+            // }
+            // class C
+            // {
+            //     public string D { get; set; }
+            // }
+            //
+            // We will see the following ErrorContext:
+            //
+            // Error   {"Unexpected character encountered while parsing value: b. Path 'b.c.d'..."} System.Exception {Newtonsoft.Json.JsonReaderException}
+            // Member  "c"     object {string}
+            // Path    "b.c.d" string
+            //
+            // Notice that Member "c" is in the middle of the Path "b.c.d". The error handler gets invoked for each level of nesting.
+            // null, "b", "c" and "d" are each a Member in different ErrorContexts all reporting the same parsing error.
+            //
+            // The parsing error is reported as a JsonReaderException instead of as a JsonSerializationException like
+            // for missing required properties. We use the exception type to filter out these errors and keep the path used
+            // for the ModelStateDictionary key as "b.c.d" instead of "b.c.d.c"
+            // See https://github.com/dotnet/aspnetcore/issues/33451
+            var addMember = !string.IsNullOrEmpty(member) && eventArgs.ErrorContext.Error is JsonSerializationException;
+
+            // There are still JsonSerilizationExceptions that set ErrorContext.Member but include it at the
+            // end of ErrorContext.Path already. The following logic attempts to filter these out.
             if (addMember)
             {
                 // Path.Member case (path.Length < member.Length) needs no further checks.
                 if (path.Length == member!.Length)
                 {
-                    // Add Member in Path.Memb case but not for Path.Path.
+                    // Add Member in Path.Member case but not for Path.Path.
                     addMember = !string.Equals(path, member, StringComparison.Ordinal);
                 }
                 else if (path.Length > member.Length)
                 {
-                    // Finally, check whether Path already ends with Member.
+                    // Finally, check whether Path already ends or starts with Member.
                     if (member[0] == '[')
                     {
                         addMember = !path.EndsWith(member, StringComparison.Ordinal);
                     }
                     else
                     {
-                        addMember = !path.EndsWith("." + member, StringComparison.Ordinal)
-                            && !path.EndsWith("['" + member + "']", StringComparison.Ordinal)
-                            && !path.EndsWith("[" + member + "]", StringComparison.Ordinal);
+                        addMember = !path.EndsWith($".{member}", StringComparison.Ordinal)
+                            && !path.EndsWith($"['{member}']", StringComparison.Ordinal)
+                            && !path.EndsWith($"[{member}]", StringComparison.Ordinal);
                     }
                 }
             }
@@ -330,7 +384,7 @@ public class NewtonsoftJsonInputFormatter : TextInputFormatter, IInputFormatterE
     protected virtual void ReleaseJsonSerializer(JsonSerializer serializer)
         => _jsonSerializerPool!.Return(serializer);
 
-    private ModelMetadata GetPathMetadata(ModelMetadata metadata, string path)
+    private static ModelMetadata GetPathMetadata(ModelMetadata metadata, string path)
     {
         var index = 0;
         while (index >= 0 && index < path.Length)

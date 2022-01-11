@@ -1,16 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
@@ -229,7 +222,7 @@ internal class W3CLoggingMiddleware
         }
     }
 
-    private bool AddToList(string[] elements, int index, string? value)
+    private static bool AddToList(string[] elements, int index, string? value)
     {
         value ??= string.Empty;
         elements[index] = ReplaceWhitespace(value.Trim());
