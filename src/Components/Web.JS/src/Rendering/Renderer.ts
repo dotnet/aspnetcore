@@ -18,7 +18,7 @@ export function attachRootComponentToLogicalElement(browserRendererId: number, l
   let browserRenderer = browserRenderers[browserRendererId];
   if (!browserRenderer) {
     browserRenderer = new BrowserRenderer(browserRendererId);
-    browserRenderers[browserRendererId] = new BrowserRenderer(browserRendererId);
+    browserRenderers[browserRendererId] = browserRenderer;
   }
 
   browserRenderer.attachRootComponentToLogicalElement(componentId, logicalElement, appendContent);

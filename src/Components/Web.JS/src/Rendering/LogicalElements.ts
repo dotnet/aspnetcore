@@ -202,7 +202,7 @@ export function permuteLogicalChildren(parent: LogicalElement, permutationList: 
   // Phase 2: insert markers
   permutationList.forEach((listEntry: PermutationListEntryWithTrackingData) => {
     const marker = document.createComment('marker');
-    listEntry.moveToBeforeMarker = document.createComment('marker');
+    listEntry.moveToBeforeMarker = marker;
     const insertBeforeNode = siblings[listEntry.toSiblingIndex + 1] as any as Node;
     if (insertBeforeNode) {
       insertBeforeNode.parentNode!.insertBefore(marker, insertBeforeNode);

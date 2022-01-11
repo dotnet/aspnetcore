@@ -32,7 +32,7 @@ function base64EncodeByteArray(data: Uint8Array) {
   for (let i = 0; i < data.length; i++) {
     charBytes[i] = String.fromCharCode(data[i]);
   }
-  const dataBase64Encoded = Buffer.from(charBytes.join(''), 'base64');
+  const dataBase64Encoded = btoa(charBytes.join(''));
   return dataBase64Encoded;
 }
 
