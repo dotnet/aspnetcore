@@ -34,7 +34,6 @@
   <ItemGroup>
     <YarnInputs Include="$(YarnWorkingDir)**" Exclude="$(YarnWorkingDir)node_modules\**;$(YarnWorkingDir)*.d.ts;$(YarnWorkingDir)dist\**" />
     <YarnOutputs Include="$(YarnWorkingDir)dist\$(Configuration)\AuthenticationService.js" />
-    <YarnOutputs Include="$(YarnWorkingDir)dist\$(Configuration)\AuthenticationService.js.map" Condition="'$(Configuration)' == 'Debug'" />
 
     <Content Remove="$(YarnWorkingDir)**" />
     <None Include="$(YarnWorkingDir)*" Exclude="$(YarnWorkingDir)node_modules\**" />
