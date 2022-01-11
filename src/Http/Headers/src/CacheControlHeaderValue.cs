@@ -728,12 +728,11 @@ public class CacheControlHeaderValue
         // We have a quoted string. Now verify that the string contains a list of valid tokens separated by ','.
         var current = 1; // skip the initial '"' character.
         var maxLength = valueString.Length - 1; // -1 because we don't want to parse the final '"'.
-        var separatorFound = false;
         var originalValueCount = destination == null ? 0 : destination.Count;
         while (current < maxLength)
         {
             current = HeaderUtilities.GetNextNonEmptyOrWhitespaceIndex(valueString, current, true,
-                out separatorFound);
+                out var separatorFound);
 
             if (current == maxLength)
             {

@@ -488,7 +488,7 @@ public class KnownHeaders
 
         private string NameTerm(string name, int offset, int count, string type, string suffix)
         {
-            GetMaskAndComp(name, offset, count, out var mask, out var comp);
+            GetMaskAndComp(name, offset, count, out var mask, out _);
 
             if (offset == 0)
             {
@@ -521,21 +521,21 @@ public class KnownHeaders
 
         private string EqualityTerm(string name, int offset, int count, string type, string suffix)
         {
-            GetMaskAndComp(name, offset, count, out var mask, out var comp);
+            GetMaskAndComp(name, offset, count, out _, out var comp);
 
             return $"0x{comp:x}{suffix}";
         }
 
         private string Term(string name, int offset, int count, string type, string suffix)
         {
-            GetMaskAndComp(name, offset, count, out var mask, out var comp);
+            GetMaskAndComp(name, offset, count, out _, out _);
 
             return $"({NameTerm(name, offset, count, type, suffix)} == {EqualityTerm(name, offset, count, type, suffix)})";
         }
 
         public string FirstNameIgnoreCaseSegment()
         {
-            var result = "";
+            string result;
             if (Name.Length >= 8)
             {
                 result = NameTerm(Name, 0, 8, "ulong", "uL");
@@ -658,7 +658,7 @@ public class KnownHeaders
 
         public string EqualIgnoreCaseBytesFirstTerm()
         {
-            var result = "";
+            string result;
             if (Name.Length >= 8)
             {
                 result = Term(Name, 0, 8, "ulong", "uL");

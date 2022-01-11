@@ -44,8 +44,8 @@ public static class IdentityEntityFrameworkBuilderExtensions
                 throw new InvalidOperationException(Resources.NotIdentityRole);
             }
 
-            Type userStoreType = null;
-            Type roleStoreType = null;
+            Type userStoreType;
+            Type roleStoreType;
             var identityContext = FindGenericBaseType(contextType, typeof(IdentityDbContext<,,,,,,,>));
             if (identityContext == null)
             {
@@ -72,7 +72,7 @@ public static class IdentityEntityFrameworkBuilderExtensions
         }
         else
         {   // No Roles
-            Type userStoreType = null;
+            Type userStoreType;
             var identityContext = FindGenericBaseType(contextType, typeof(IdentityUserContext<,,,,>));
             if (identityContext == null)
             {

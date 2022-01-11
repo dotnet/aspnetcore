@@ -10,7 +10,6 @@ internal static class FormatWeekHelper
     public static string GetFormattedWeek(ModelExplorer modelExplorer)
     {
         var value = modelExplorer.Model;
-        var metadata = modelExplorer.Metadata;
 
         if (value is DateTimeOffset dateTimeOffset)
         {

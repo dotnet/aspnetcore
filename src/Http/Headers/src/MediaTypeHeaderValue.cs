@@ -579,7 +579,7 @@ public class MediaTypeHeaderValue
 
         var current = startIndex + mediaTypeLength;
         current = current + HttpRuleParser.GetWhitespaceLength(input, current);
-        MediaTypeHeaderValue? mediaTypeHeader = null;
+        MediaTypeHeaderValue? mediaTypeHeader;
 
         // If we're not done and we have a parameter delimiter, then we have a list of parameters.
         if ((current < input.Length) && (input[current] == ';'))

@@ -49,7 +49,7 @@ internal class PhotinoWebViewManager : WebViewManager
         var hasFileExtension = url.LastIndexOf('.') > url.LastIndexOf('/');
 
         if (url.StartsWith(AppBaseUri, StringComparison.Ordinal)
-            && TryGetResponseContent(url, !hasFileExtension, out var statusCode, out var statusMessage, out var content, out var headers))
+            && TryGetResponseContent(url, !hasFileExtension, out _, out _, out var content, out var headers))
         {
             headers.TryGetValue("Content-Type", out contentType);
             return content;

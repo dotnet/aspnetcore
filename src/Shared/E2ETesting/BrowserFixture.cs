@@ -72,7 +72,7 @@ public class BrowserFixture : IAsyncLifetime
     public async Task DisposeAsync()
     {
         var browsers = await Task.WhenAll(_browsers.Values);
-        foreach (var (browser, log) in browsers)
+        foreach (var (browser, _) in browsers)
         {
             browser?.Quit();
             browser?.Dispose();

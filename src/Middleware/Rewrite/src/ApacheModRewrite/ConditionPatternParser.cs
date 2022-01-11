@@ -215,8 +215,7 @@ internal class ConditionPatternParser
         if (results.ConditionType == ConditionType.IntComp)
         {
             // If the type is an integer, verify operand is actually an int
-            int res;
-            if (!int.TryParse(results.Operand, NumberStyles.None, CultureInfo.InvariantCulture, out res))
+            if (!int.TryParse(results.Operand, NumberStyles.None, CultureInfo.InvariantCulture, out _))
             {
                 return false;
             }

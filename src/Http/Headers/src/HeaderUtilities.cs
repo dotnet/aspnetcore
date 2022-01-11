@@ -414,8 +414,6 @@ public static class HeaderUtilities
         var inputLength = input.Length;
         var current = startIndex;
         var limit = startIndex + _qualityValueMaxCharCount;
-
-        var intPart = 0;
         var decPart = 0;
         var decPow = 1;
 
@@ -426,6 +424,7 @@ public static class HeaderUtilities
 
         var ch = input[current];
 
+        int intPart;
         if (ch >= '0' && ch <= '1') // Only values between 0 and 1 are accepted, according to RFC
         {
             intPart = ch - '0';

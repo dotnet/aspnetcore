@@ -65,8 +65,7 @@ internal class RewriteRule : IRule
                 HostString host;
                 PathString pathString;
                 QueryString query;
-                FragmentString fragment;
-                UriHelper.FromAbsolute(result, out scheme, out host, out pathString, out query, out fragment);
+                UriHelper.FromAbsolute(result, out scheme, out host, out pathString, out query, out _);
 
                 request.Scheme = scheme;
                 request.Host = host;

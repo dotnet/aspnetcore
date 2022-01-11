@@ -198,6 +198,12 @@ dotnet_diagnostic.CA2200.severity = warning
 # CA2208: Instantiate argument exceptions correctly
 dotnet_diagnostic.CA2208.severity = warning
 
+# CA2245: Do not assign a property to itself
+dotnet_diagnostic.CA2245.severity = warning
+
+# CA2246: Assigning symbol and its member in the same statement
+dotnet_diagnostic.CA2246.severity = warning
+
 # IDE0005: Remove unnecessary usings
 dotnet_diagnostic.IDE0005.severity = warning
 
@@ -222,6 +228,9 @@ dotnet_diagnostic.IDE0051.severity = warning
 
 # IDE0055: All formatting rules
 dotnet_diagnostic.IDE0055.severity = warning
+
+# IDE0059: Unnecessary assignment to a value
+dotnet_diagnostic.IDE0059.severity = warning
 
 # IDE0073: File header
 dotnet_diagnostic.IDE0073.severity = warning
@@ -271,6 +280,8 @@ dotnet_diagnostic.CA2012.severity = suggestion
 dotnet_diagnostic.IDE0044.severity = suggestion
 # IDE0051: Remove unused private members
 dotnet_diagnostic.IDE0051.severity = suggestion
+# IDE0059: Unnecessary assignment to a value
+dotnet_diagnostic.IDE0059.severity = suggestion
 
 # CA2016: Forward the 'CancellationToken' parameter to methods that take one
 dotnet_diagnostic.CA2016.severity = suggestion
