@@ -131,7 +131,7 @@ internal partial class UrlGroup : IDisposable
 
     internal bool UnregisterPrefix(string uriPrefix)
     {
-        Log.UnregisteringPrefix(_logger, "Stop listening on prefix: {0}");
+        Log.UnregisteringPrefix(_logger, uriPrefix);
         CheckDisposed();
 
         var statusCode = HttpApi.HttpRemoveUrlFromUrlGroup(Id, uriPrefix, 0);
