@@ -546,7 +546,7 @@ internal class ControllerActionInvoker : ResourceInvoker, IActionInvoker
         {
             var parameterInfo = declaredParameterInfos[index];
 
-            if (!actionParameters.TryGetValue(parameterInfo.Name!, out var value))
+            if (!actionParameters.TryGetValue(parameterInfo.Name!, out var value) || value is null)
             {
                 value = actionMethodExecutor.GetDefaultValueForParameter(index);
             }
