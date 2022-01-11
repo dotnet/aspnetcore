@@ -35,7 +35,7 @@ public readonly struct DevelopmentCertificate
         var manager = CertificateManager.Instance;
         var certificate = manager.CreateAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1));
         var certificateThumbprint = certificate.Thumbprint;
-        manager.ExportCertificate(certificate, path: certificatePath, includePrivateKey: true, certificatePassword, CertificateKeyExportFormat.Pfx);
+        CertificateManager.ExportCertificate(certificate, path: certificatePath, includePrivateKey: true, certificatePassword, CertificateKeyExportFormat.Pfx);
 
         return certificateThumbprint;
     }

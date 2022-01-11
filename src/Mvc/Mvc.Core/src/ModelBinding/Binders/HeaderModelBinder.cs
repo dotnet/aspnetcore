@@ -107,7 +107,7 @@ public class HeaderModelBinder : IModelBinder
         _logger.DoneAttemptingToBindModel(bindingContext);
     }
 
-    private HeaderValueProvider GetHeaderValueProvider(string headerName, ModelBindingContext bindingContext)
+    private static HeaderValueProvider GetHeaderValueProvider(string headerName, ModelBindingContext bindingContext)
     {
         var request = bindingContext.HttpContext.Request;
 

@@ -97,7 +97,7 @@ public class NginxDeployer : SelfHostDeployer
         }
     }
 
-    private string GetUserName()
+    private static string GetUserName()
     {
         var retVal = Environment.GetEnvironmentVariable("LOGNAME")
             ?? Environment.GetEnvironmentVariable("USER")

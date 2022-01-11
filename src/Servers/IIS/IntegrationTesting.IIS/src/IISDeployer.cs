@@ -440,7 +440,7 @@ public class IISDeployer : IISDeployerBase
         }
     }
 
-    private void RetryServerManagerAction(Action<ServerManager> action)
+    private static void RetryServerManagerAction(Action<ServerManager> action)
     {
         List<Exception> exceptions = null;
         var sw = Stopwatch.StartNew();

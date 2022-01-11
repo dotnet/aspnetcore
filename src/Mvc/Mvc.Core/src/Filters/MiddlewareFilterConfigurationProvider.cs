@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters;
 /// </summary>
 internal class MiddlewareFilterConfigurationProvider
 {
-    public Action<IApplicationBuilder> CreateConfigureDelegate(Type configurationType)
+    public static Action<IApplicationBuilder> CreateConfigureDelegate(Type configurationType)
     {
         if (configurationType == null)
         {

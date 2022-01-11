@@ -5,7 +5,7 @@ namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite;
 
 internal class RuleRegexParser
 {
-    public ParsedModRewriteInput ParseRuleRegex(string regex)
+    public static ParsedModRewriteInput ParseRuleRegex(string regex)
     {
         if (string.IsNullOrEmpty(regex))
         {

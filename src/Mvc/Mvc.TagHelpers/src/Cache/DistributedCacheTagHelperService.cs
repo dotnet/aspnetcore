@@ -176,7 +176,7 @@ public class DistributedCacheTagHelperService : IDistributedCacheTagHelperServic
         return content;
     }
 
-    private byte[] Encode(byte[] value, byte[] serializedKey)
+    private static byte[] Encode(byte[] value, byte[] serializedKey)
     {
         using (var buffer = new MemoryStream())
         {
@@ -190,7 +190,7 @@ public class DistributedCacheTagHelperService : IDistributedCacheTagHelperServic
         }
     }
 
-    private byte[] Decode(byte[] value, byte[] expectedKey)
+    private static byte[] Decode(byte[] value, byte[] expectedKey)
     {
         byte[] decoded = null;
 

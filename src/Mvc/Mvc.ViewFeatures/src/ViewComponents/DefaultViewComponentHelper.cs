@@ -138,7 +138,7 @@ public class DefaultViewComponentHelper : IViewComponentHelper, IViewContextAwar
     }
 
     // Internal for testing
-    internal IDictionary<string, object?> GetArgumentDictionary(ViewComponentDescriptor descriptor, object? arguments)
+    internal static IDictionary<string, object?> GetArgumentDictionary(ViewComponentDescriptor descriptor, object? arguments)
     {
         if (arguments != null)
         {

@@ -92,13 +92,13 @@ public class CachedResponseBodyTests
         Assert.Equal(new byte[] { 1, 2, 3 }, receivedSegments.SelectMany(x => x).ToArray());
     }
 
-    async Task CopyDataAsync(CachedResponseBody body, PipeWriter writer, CancellationToken cancellationToken)
+    static async Task CopyDataAsync(CachedResponseBody body, PipeWriter writer, CancellationToken cancellationToken)
     {
         await body.CopyToAsync(writer, cancellationToken);
         await writer.CompleteAsync();
     }
 
-    async Task ReceiveDataAsync(PipeReader reader, List<byte[]> receivedSegments, CancellationToken cancellationToken)
+    static async Task ReceiveDataAsync(PipeReader reader, List<byte[]> receivedSegments, CancellationToken cancellationToken)
     {
         while (true)
         {

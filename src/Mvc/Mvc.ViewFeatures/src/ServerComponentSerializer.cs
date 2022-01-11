@@ -45,7 +45,7 @@ internal class ServerComponentSerializer
         return (serverComponent.Sequence, Convert.ToBase64String(protectedBytes));
     }
 
-    internal IEnumerable<string> GetPreamble(ServerComponentMarker record)
+    internal static IEnumerable<string> GetPreamble(ServerComponentMarker record)
     {
         var serializedStartRecord = JsonSerializer.Serialize(
             record,
@@ -75,7 +75,7 @@ internal class ServerComponentSerializer
         }
     }
 
-    internal IEnumerable<string> GetEpilogue(ServerComponentMarker record)
+    internal static IEnumerable<string> GetEpilogue(ServerComponentMarker record)
     {
         var serializedStartRecord = JsonSerializer.Serialize(
             record.GetEndRecord(),

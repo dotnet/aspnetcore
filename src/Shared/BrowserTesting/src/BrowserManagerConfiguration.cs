@@ -197,7 +197,7 @@ public class BrowserManagerConfiguration
         }
     }
 
-    private LaunchOptions LoadBrowserLaunchOptions(IConfiguration configuration) => new LaunchOptions
+    private static LaunchOptions LoadBrowserLaunchOptions(IConfiguration configuration) => new LaunchOptions
     {
         IgnoreDefaultArgs = BindArgumentMap(configuration.GetSection(nameof(LaunchOptions.IgnoreAllDefaultArgs))),
         ChromiumSandbox = configuration.GetValue<bool?>(nameof(LaunchOptions.ChromiumSandbox)),
@@ -221,7 +221,7 @@ public class BrowserManagerConfiguration
         Proxy = configuration.GetValue<ProxySettings>(nameof(LaunchOptions.Proxy))
     };
 
-    private T BindMultiValueMap<T>(IConfigurationSection processArgsMap, Func<Dictionary<string, HashSet<string>>, T> mapper)
+    private static T BindMultiValueMap<T>(IConfigurationSection processArgsMap, Func<Dictionary<string, HashSet<string>>, T> mapper)
     {
         // TODO: We need a way to pass in arguments that allows overriding values through our config system.
         // "Args": {
@@ -301,7 +301,7 @@ public class BrowserManagerConfiguration
         }
     }
 
-    private string[] BindArgumentMap(IConfigurationSection configuration) => configuration.Exists() switch
+    private static string[] BindArgumentMap(IConfigurationSection configuration) => configuration.Exists() switch
     {
         false => Array.Empty<string>(),
         true => configuration.Get<Dictionary<string, bool>>().Where(kvp => kvp.Value == true).Select(kvp => kvp.Key).ToArray()
@@ -342,7 +342,7 @@ public class BrowserManagerConfiguration
             StorageState = overrideOptions?.StorageState != default ? overrideOptions.StorageState : defaultOptions.StorageState
         };
 
-    private LaunchOptions Combine(LaunchOptions defaultOptions, LaunchOptions overrideOptions) =>
+    private static LaunchOptions Combine(LaunchOptions defaultOptions, LaunchOptions overrideOptions) =>
         new()
         {
             IgnoreDefaultArgs = overrideOptions.IgnoreDefaultArgs != default ? overrideOptions.IgnoreDefaultArgs : defaultOptions.IgnoreDefaultArgs,

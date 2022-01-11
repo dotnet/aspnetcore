@@ -52,7 +52,7 @@ public static class ApacheModRewriteOptionsExtensions
         {
             throw new ArgumentNullException(nameof(reader));
         }
-        var rules = new FileParser().Parse(reader);
+        var rules = FileParser.Parse(reader);
 
         foreach (var rule in rules)
         {
@@ -60,5 +60,4 @@ public static class ApacheModRewriteOptionsExtensions
         }
         return options;
     }
-
 }

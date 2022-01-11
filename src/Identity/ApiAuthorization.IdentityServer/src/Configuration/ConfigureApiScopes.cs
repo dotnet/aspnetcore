@@ -13,7 +13,7 @@ internal class ConfigureApiScopes : IPostConfigureOptions<ApiAuthorizationOption
         AddResourceScopesToApiScopes(options);
     }
 
-    private void AddResourceScopesToApiScopes(ApiAuthorizationOptions options)
+    private static void AddResourceScopesToApiScopes(ApiAuthorizationOptions options)
     {
         foreach (var resource in options.ApiResources)
         {

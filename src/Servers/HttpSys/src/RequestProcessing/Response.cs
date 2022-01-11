@@ -388,7 +388,7 @@ internal sealed class Response
         Headers.IsReadOnly = false; // Temporarily unlock
         if (StatusCode == (ushort)StatusCodes.Status401Unauthorized)
         {
-            RequestContext.Server.Options.Authentication.SetAuthenticationChallenge(RequestContext);
+            AuthenticationManager.SetAuthenticationChallenge(RequestContext);
         }
 
         var flags = HttpApiTypes.HTTP_FLAGS.NONE;

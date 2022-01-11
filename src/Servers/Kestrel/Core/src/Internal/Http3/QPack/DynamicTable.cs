@@ -28,12 +28,12 @@ internal class DynamicTable
     }
 
     // TODO
-    public void Insert(Span<byte> name, Span<byte> value)
+    public static void Insert(Span<byte> name, Span<byte> value)
     {
     }
 
     // TODO
-    public void Resize(int maxSize)
+    public static void Resize(int maxSize)
     {
     }
 

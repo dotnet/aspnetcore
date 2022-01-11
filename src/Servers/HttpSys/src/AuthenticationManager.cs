@@ -138,7 +138,7 @@ public sealed class AuthenticationManager
         return challenges;
     }
 
-    internal void SetAuthenticationChallenge(RequestContext context)
+    internal static void SetAuthenticationChallenge(RequestContext context)
     {
         IList<string> challenges = GenerateChallenges(context.Response.AuthenticationChallenges);
 

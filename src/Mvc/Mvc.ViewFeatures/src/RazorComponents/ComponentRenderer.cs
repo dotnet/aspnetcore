@@ -146,14 +146,14 @@ internal class ComponentRenderer : IComponentRenderer
             type);
 
         return new ComponentHtmlContent(
-            _serverComponentSerializer.GetPreamble(currentInvocation),
+            ServerComponentSerializer.GetPreamble(currentInvocation),
             result,
-            _serverComponentSerializer.GetEpilogue(currentInvocation));
+            ServerComponentSerializer.GetEpilogue(currentInvocation));
     }
 
     private async Task<IHtmlContent> PrerenderedWebAssemblyComponentAsync(HttpContext context, Type type, ParameterView parametersCollection)
     {
-        var currentInvocation = _WebAssemblyComponentSerializer.SerializeInvocation(
+        var currentInvocation = WebAssemblyComponentSerializer.SerializeInvocation(
             type,
             parametersCollection,
             prerendered: true);
@@ -164,9 +164,9 @@ internal class ComponentRenderer : IComponentRenderer
             type);
 
         return new ComponentHtmlContent(
-            _WebAssemblyComponentSerializer.GetPreamble(currentInvocation),
+            WebAssemblyComponentSerializer.GetPreamble(currentInvocation),
             result,
-            _WebAssemblyComponentSerializer.GetEpilogue(currentInvocation));
+            WebAssemblyComponentSerializer.GetEpilogue(currentInvocation));
     }
 
     private IHtmlContent NonPrerenderedServerComponent(HttpContext context, ServerComponentInvocationSequence invocationId, Type type, ParameterView parametersCollection)
@@ -178,14 +178,14 @@ internal class ComponentRenderer : IComponentRenderer
 
         var currentInvocation = _serverComponentSerializer.SerializeInvocation(invocationId, type, parametersCollection, prerendered: false);
 
-        return new ComponentHtmlContent(_serverComponentSerializer.GetPreamble(currentInvocation));
+        return new ComponentHtmlContent(ServerComponentSerializer.GetPreamble(currentInvocation));
     }
 
-    private IHtmlContent NonPrerenderedWebAssemblyComponent(HttpContext context, Type type, ParameterView parametersCollection)
+    private static IHtmlContent NonPrerenderedWebAssemblyComponent(HttpContext context, Type type, ParameterView parametersCollection)
     {
-        var currentInvocation = _WebAssemblyComponentSerializer.SerializeInvocation(type, parametersCollection, prerendered: false);
+        var currentInvocation = WebAssemblyComponentSerializer.SerializeInvocation(type, parametersCollection, prerendered: false);
 
-        return new ComponentHtmlContent(_WebAssemblyComponentSerializer.GetPreamble(currentInvocation));
+        return new ComponentHtmlContent(WebAssemblyComponentSerializer.GetPreamble(currentInvocation));
     }
 }
 

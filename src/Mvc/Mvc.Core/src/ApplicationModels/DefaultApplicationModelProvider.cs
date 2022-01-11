@@ -106,7 +106,7 @@ internal class DefaultApplicationModelProvider : IApplicationModelProvider
     /// </summary>
     /// <param name="typeInfo">The <see cref="TypeInfo"/>.</param>
     /// <returns>A <see cref="ControllerModel"/> for the given <see cref="TypeInfo"/>.</returns>
-    internal ControllerModel CreateControllerModel(TypeInfo typeInfo)
+    internal static ControllerModel CreateControllerModel(TypeInfo typeInfo)
     {
         if (typeInfo == null)
         {
@@ -388,7 +388,7 @@ internal class DefaultApplicationModelProvider : IApplicationModelProvider
     /// <remarks>
     /// Override this method to provide custom logic to determine which methods are considered actions.
     /// </remarks>
-    internal bool IsAction(TypeInfo typeInfo, MethodInfo methodInfo)
+    internal static bool IsAction(TypeInfo typeInfo, MethodInfo methodInfo)
     {
         if (typeInfo == null)
         {
@@ -482,7 +482,7 @@ internal class DefaultApplicationModelProvider : IApplicationModelProvider
         return parameterModel;
     }
 
-    private IList<SelectorModel> CreateSelectors(IList<object> attributes)
+    private static IList<SelectorModel> CreateSelectors(IList<object> attributes)
     {
         // Route attributes create multiple selector models, we want to split the set of
         // attributes based on these so each selector only has the attributes that affect it.
@@ -668,7 +668,7 @@ internal class DefaultApplicationModelProvider : IApplicationModelProvider
         return selectorModel;
     }
 
-    private bool IsIDisposableMethod(MethodInfo methodInfo)
+    private static bool IsIDisposableMethod(MethodInfo methodInfo)
     {
         // Ideally we do not want Dispose method to be exposed as an action. However there are some scenarios where a user
         // might want to expose a method with name "Dispose" (even though they might not be really disposing resources)
@@ -684,7 +684,7 @@ internal class DefaultApplicationModelProvider : IApplicationModelProvider
              declaringType.GetInterfaceMap(typeof(IDisposable)).TargetMethods[0] == baseMethodInfo);
     }
 
-    private bool IsSilentRouteAttribute(IRouteTemplateProvider routeTemplateProvider)
+    private static bool IsSilentRouteAttribute(IRouteTemplateProvider routeTemplateProvider)
     {
         return
             routeTemplateProvider.Template == null &&

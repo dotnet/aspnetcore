@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Rewrite.ApacheModRewrite;
@@ -28,7 +28,7 @@ public class FormatExceptionTests
     public void ThrowFormatExceptionWithCorrectMessage(string input, string expected)
     {
         // Arrange, Act, Assert
-        var ex = Assert.Throws<FormatException>(() => new FileParser().Parse(new StringReader(input)));
+        var ex = Assert.Throws<FormatException>(() => FileParser.Parse(new StringReader(input)));
         Assert.Equal(expected, ex.Message);
     }
 }

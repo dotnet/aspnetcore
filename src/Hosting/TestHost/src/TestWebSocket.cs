@@ -194,7 +194,7 @@ internal class TestWebSocket : WebSocket
         }
     }
 
-    private void ValidateSegment(ArraySegment<byte> buffer)
+    private static void ValidateSegment(ArraySegment<byte> buffer)
     {
         if (buffer.Array == null)
         {

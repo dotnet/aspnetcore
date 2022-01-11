@@ -272,7 +272,7 @@ internal class ResponseBody : Stream
         chunkIndex++;
     }
 
-    private void FreeDataBuffers(List<GCHandle> pinnedBuffers)
+    private static void FreeDataBuffers(List<GCHandle> pinnedBuffers)
     {
         foreach (var pin in pinnedBuffers)
         {

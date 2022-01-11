@@ -173,7 +173,7 @@ internal class ReflectedNegotiateState : INegotiateState
         _closeContext.Invoke(_instance, Array.Empty<object>());
     }
 
-    private bool IsCredentialError(SecurityStatusPalErrorCode error)
+    private static bool IsCredentialError(SecurityStatusPalErrorCode error)
     {
         return error == SecurityStatusPalErrorCode.LogonDenied ||
             error == SecurityStatusPalErrorCode.UnknownCredentials ||
@@ -185,7 +185,7 @@ internal class ReflectedNegotiateState : INegotiateState
             error == SecurityStatusPalErrorCode.BadBinding;
     }
 
-    private bool IsClientError(SecurityStatusPalErrorCode error)
+    private static bool IsClientError(SecurityStatusPalErrorCode error)
     {
         return error == SecurityStatusPalErrorCode.InvalidToken ||
             error == SecurityStatusPalErrorCode.CannotPack ||

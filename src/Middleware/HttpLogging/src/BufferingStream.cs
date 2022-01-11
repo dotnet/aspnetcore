@@ -179,7 +179,7 @@ internal abstract class BufferingStream : Stream, IBufferWriter<byte>
         return newSegment;
     }
 
-    private BufferSegment CreateSegment()
+    private static BufferSegment CreateSegment()
     {
         return new BufferSegment();
     }
