@@ -166,7 +166,7 @@ internal class SwaggathererApplication : CommandLineApplication
         }
     }
 
-    private bool HasComplexSegment(RouteEntry entry)
+    private static bool HasComplexSegment(RouteEntry entry)
     {
         for (var i = 0; i < entry.Template.Segments.Count; i++)
         {

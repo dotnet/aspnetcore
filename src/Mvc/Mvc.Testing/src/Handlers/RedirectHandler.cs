@@ -173,7 +173,7 @@ public class RedirectHandler : DelegatingHandler
         response.StatusCode == HttpStatusCode.RedirectKeepVerb ||
             (int)response.StatusCode == 308;
 
-    private bool IsRedirect(HttpResponseMessage response) =>
+    private static bool IsRedirect(HttpResponseMessage response) =>
         response.StatusCode == HttpStatusCode.MovedPermanently ||
             response.StatusCode == HttpStatusCode.Redirect ||
             response.StatusCode == HttpStatusCode.RedirectMethod ||

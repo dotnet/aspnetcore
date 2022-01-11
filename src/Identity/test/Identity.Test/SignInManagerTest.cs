@@ -370,7 +370,7 @@ public class SignInManagerTest
         {
             helper.Options.Tokens.AuthenticatorTokenProvider = providerName;
         }
-        var id = helper.StoreTwoFactorInfo(user.Id, null);
+        var id = SignInManager<PocoUser>.StoreTwoFactorInfo(user.Id, null);
         SetupSignIn(context, auth, user.Id, isPersistent);
         auth.Setup(a => a.AuthenticateAsync(context, IdentityConstants.TwoFactorUserIdScheme))
             .ReturnsAsync(AuthenticateResult.Success(new AuthenticationTicket(id, null, IdentityConstants.TwoFactorUserIdScheme))).Verifiable();
@@ -412,7 +412,7 @@ public class SignInManagerTest
         {
             helper.Options.Tokens.AuthenticatorTokenProvider = providerName;
         }
-        var id = helper.StoreTwoFactorInfo(user.Id, null);
+        var id = SignInManager<PocoUser>.StoreTwoFactorInfo(user.Id, null);
         auth.Setup(a => a.AuthenticateAsync(context, IdentityConstants.TwoFactorUserIdScheme))
             .ReturnsAsync(AuthenticateResult.Success(new AuthenticationTicket(id, null, IdentityConstants.TwoFactorUserIdScheme))).Verifiable();
 
@@ -447,7 +447,7 @@ public class SignInManagerTest
         var helper = SetupSignInManager(manager.Object, context);
         var twoFactorInfo = new SignInManager<PocoUser>.TwoFactorAuthenticationInfo { UserId = user.Id };
         var loginProvider = "loginprovider";
-        var id = helper.StoreTwoFactorInfo(user.Id, externalLogin ? loginProvider : null);
+        var id = SignInManager<PocoUser>.StoreTwoFactorInfo(user.Id, externalLogin ? loginProvider : null);
         if (externalLogin)
         {
             auth.Setup(a => a.SignInAsync(context,
@@ -590,7 +590,7 @@ public class SignInManagerTest
         var helper = SetupSignInManager(manager.Object, context);
         var twoFactorInfo = new SignInManager<PocoUser>.TwoFactorAuthenticationInfo { UserId = user.Id };
         var loginProvider = "loginprovider";
-        var id = helper.StoreTwoFactorInfo(user.Id, externalLogin ? loginProvider : null);
+        var id = SignInManager<PocoUser>.StoreTwoFactorInfo(user.Id, externalLogin ? loginProvider : null);
         if (externalLogin)
         {
             auth.Setup(a => a.SignInAsync(context,

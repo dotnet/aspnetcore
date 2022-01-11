@@ -33,7 +33,7 @@ public class TopLevelParameterNameAnalyzer : DiagnosticAnalyzer
         });
     }
 
-    private void InitializeWorker(CompilationStartAnalysisContext compilationStartAnalysisContext, SymbolCache symbolCache)
+    private static void InitializeWorker(CompilationStartAnalysisContext compilationStartAnalysisContext, SymbolCache symbolCache)
     {
         compilationStartAnalysisContext.RegisterSymbolAction(symbolAnalysisContext =>
         {

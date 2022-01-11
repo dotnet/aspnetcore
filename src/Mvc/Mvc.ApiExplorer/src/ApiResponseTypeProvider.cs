@@ -299,7 +299,7 @@ internal class ApiResponseTypeProvider
         return unwrappedType;
     }
 
-    private Type? GetRuntimeReturnType(Type? declaredReturnType)
+    private static Type? GetRuntimeReturnType(Type? declaredReturnType)
     {
         // If we get here, then a filter didn't give us an answer, so we need to figure out if we
         // want to use the declared return type.

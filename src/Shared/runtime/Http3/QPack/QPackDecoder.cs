@@ -710,7 +710,7 @@ namespace System.Net.Http.QPack
             _state = State.HeaderValueLength;
         }
 
-        private void OnIndexedHeaderNamePostBase(int index)
+        private static void OnIndexedHeaderNamePostBase(int index)
         {
             ThrowDynamicTableNotSupported();
             // TODO update with postbase index
@@ -718,7 +718,7 @@ namespace System.Net.Http.QPack
             // _state = State.HeaderValueLength;
         }
 
-        private void OnPostBaseIndex(int intResult, IHttpStreamHeadersHandler handler)
+        private static void OnPostBaseIndex(int intResult, IHttpStreamHeadersHandler handler)
         {
             ThrowDynamicTableNotSupported();
             // TODO

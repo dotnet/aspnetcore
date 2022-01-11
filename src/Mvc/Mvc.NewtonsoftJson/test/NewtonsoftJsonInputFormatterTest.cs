@@ -206,6 +206,12 @@ public class NewtonsoftJsonInputFormatterTest : JsonInputFormatterTestBase
         return base.JsonFormatter_EscapedKeys_Bracket();
     }
 
+    [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/39069")]
+    public override Task JsonFormatter_EscapedKeys_SingleQuote()
+    {
+        return base.JsonFormatter_EscapedKeys_SingleQuote();
+    }
+
     [Theory]
     [InlineData(" ", true, true)]
     [InlineData(" ", false, false)]
@@ -556,13 +562,17 @@ public class NewtonsoftJsonInputFormatterTest : JsonInputFormatterTestBase
 
     internal override string JsonFormatter_EscapedKeys_Expected => "[0]['It\"s a key']";
 
-    internal override string JsonFormatter_EscapedKeys_Bracket_Expected => "[0][\'It[s a key\']";
+    internal override string JsonFormatter_EscapedKeys_Bracket_Expected => "[0]['It[s a key']";
+
+    internal override string JsonFormatter_EscapedKeys_SingleQuote_Expected => "[0]['It\\'s a key']";
 
     internal override string ReadAsync_AddsModelValidationErrorsToModelState_Expected => "Age";
 
     internal override string ReadAsync_ArrayOfObjects_HasCorrectKey_Expected => "[2].Age";
 
     internal override string ReadAsync_ComplexPoco_Expected => "Person.Numbers[2]";
+
+    internal override string ReadAsync_NestedParseError_Expected => "b.c.d";
 
     internal override string ReadAsync_InvalidComplexArray_AddsOverflowErrorsToModelState_Expected => "names[1].Small";
 

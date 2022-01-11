@@ -128,7 +128,7 @@ public class ServerVariableTests
         Assert.Equal(expected, lookup);
     }
 
-    private HttpContext CreateTestHttpContext()
+    private static HttpContext CreateTestHttpContext()
     {
         var context = new DefaultHttpContext();
         context.Request.Method = HttpMethods.Get;
@@ -152,13 +152,13 @@ public class ServerVariableTests
         return new RewriteContext { HttpContext = context ?? CreateTestHttpContext() };
     }
 
-    private MatchResults CreateTestRuleMatch()
+    private static MatchResults CreateTestRuleMatch()
     {
         var match = Regex.Match("foo/bar/baz", "(.*)/(.*)/(.*)");
         return new MatchResults(match.Success, new BackReferenceCollection(match.Groups));
     }
 
-    private MatchResults CreateTestCondMatch()
+    private static MatchResults CreateTestCondMatch()
     {
         var match = Regex.Match("foo/bar/baz", "(.*)/(.*)/(.*)");
         return new MatchResults(match.Success, new BackReferenceCollection(match.Groups));

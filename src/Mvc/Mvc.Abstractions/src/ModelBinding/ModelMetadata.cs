@@ -495,6 +495,11 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
     internal virtual bool PropertyHasValidators => false;
 
     /// <summary>
+    /// Gets the name of a model, if specified explicitly, to be used on <see cref="ValidationEntry"/>
+    /// </summary>
+    internal virtual string? ValidationModelName { get; }
+
+    /// <summary>
     /// Throws if the ModelMetadata is for a record type with validation on properties.
     /// </summary>
     internal void ThrowIfRecordTypeHasValidationOnProperties()

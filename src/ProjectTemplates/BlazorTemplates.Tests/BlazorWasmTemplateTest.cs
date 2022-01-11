@@ -1,16 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.BrowserTesting;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Testing;
@@ -18,8 +13,6 @@ using Microsoft.Extensions.CommandLineUtils;
 using Newtonsoft.Json.Linq;
 using Microsoft.Playwright;
 using Templates.Test.Helpers;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace BlazorTemplates.Tests;
 
@@ -60,7 +53,7 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
         }
     }
 
-    private async Task<IPage> NavigateToPage(IBrowserContext browser, string listeningUri)
+    private static async Task<IPage> NavigateToPage(IBrowserContext browser, string listeningUri)
     {
         var page = await browser.NewPageAsync();
         await page.GotoAsync(listeningUri, new() { WaitUntil = WaitUntilState.NetworkIdle });
@@ -200,7 +193,7 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
         }
     }
 
-    private void ValidatePublishedServiceWorker(Project project)
+    private static void ValidatePublishedServiceWorker(Project project)
     {
         var publishDir = Path.Combine(project.TemplatePublishDir, "wwwroot");
 
@@ -416,7 +409,7 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
         }
     }
 
-    private async Task TestBasicNavigation(string appName, IPage page, bool usesAuth = false, bool skipFetchData = false)
+    private static async Task TestBasicNavigation(string appName, IPage page, bool usesAuth = false, bool skipFetchData = false)
     {
         await page.WaitForSelectorAsync("nav");
 
@@ -491,7 +484,7 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
         }
     }
 
-    private string ReadFile(string basePath, string path)
+    private static string ReadFile(string basePath, string path)
     {
         var fullPath = Path.Combine(basePath, path);
         var doesExist = File.Exists(fullPath);
@@ -500,7 +493,7 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
         return File.ReadAllText(Path.Combine(basePath, path));
     }
 
-    private void UpdatePublishedSettings(Project serverProject)
+    private static void UpdatePublishedSettings(Project serverProject)
     {
         // Hijack here the config file to use the development key during publish.
         var appSettings = JObject.Parse(File.ReadAllText(Path.Combine(serverProject.TemplateOutputDir, "appsettings.json")));

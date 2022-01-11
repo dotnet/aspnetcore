@@ -8,6 +8,10 @@
       <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|ARM64">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Debug|Any CPU">
       <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
@@ -19,6 +23,10 @@
     <ProjectConfiguration Include="Release|x64">
       <Configuration>Release</Configuration>
       <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM64">
+      <Configuration>Release</Configuration>
+      <Platform>ARM64</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Any CPU">
       <Configuration>Release</Configuration>
@@ -58,14 +66,14 @@
     <CharacterSet>Unicode</CharacterSet>
     <TargetName>gtest</TargetName>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64' OR '$(Configuration)|$(Platform)'=='Debug|Any CPU'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64' OR '$(Configuration)|$(Platform)'=='Debug|ARM64' OR '$(Configuration)|$(Platform)'=='Debug|Any CPU'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>$(PlatformToolsetVersion)</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <TargetName>gtestd</TargetName>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64' OR '$(Configuration)|$(Platform)'=='Release|Any CPU'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64' OR '$(Configuration)|$(Platform)'=='Release|ARM64' OR '$(Configuration)|$(Platform)'=='Release|Any CPU'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>$(PlatformToolsetVersion)</PlatformToolset>
@@ -110,7 +118,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64' OR '$(Configuration)|$(Platform)'=='Debug|Any CPU'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64' OR '$(Configuration)|$(Platform)'=='Debug|ARM64' OR '$(Configuration)|$(Platform)'=='Debug|Any CPU'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
@@ -149,7 +157,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64' OR '$(Configuration)|$(Platform)'=='Release|Any CPU'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64' OR '$(Configuration)|$(Platform)'=='Release|ARM64' OR '$(Configuration)|$(Platform)'=='Release|Any CPU'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>

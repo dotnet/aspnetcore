@@ -197,7 +197,7 @@ public class BrowserManagerConfiguration
         }
     }
 
-    private BrowserTypeLaunchOptions LoadBrowserLaunchOptions(IConfiguration configuration) => new BrowserTypeLaunchOptions
+    private static BrowserTypeLaunchOptions LoadBrowserLaunchOptions(IConfiguration configuration) => new BrowserTypeLaunchOptions
     {
         IgnoreDefaultArgs = BindArgumentMap(configuration.GetSection(nameof(BrowserTypeLaunchOptions.IgnoreAllDefaultArgs))),
         ChromiumSandbox = configuration.GetValue<bool?>(nameof(BrowserTypeLaunchOptions.ChromiumSandbox)),
@@ -218,7 +218,7 @@ public class BrowserManagerConfiguration
         Proxy = configuration.GetValue<Proxy>(nameof(BrowserTypeLaunchOptions.Proxy))
     };
 
-    private T BindMultiValueMap<T>(IConfigurationSection processArgsMap, Func<Dictionary<string, HashSet<string>>, T> mapper)
+    private static T BindMultiValueMap<T>(IConfigurationSection processArgsMap, Func<Dictionary<string, HashSet<string>>, T> mapper)
     {
         // TODO: We need a way to pass in arguments that allows overriding values through our config system.
         // "Args": {
@@ -298,7 +298,7 @@ public class BrowserManagerConfiguration
         }
     }
 
-    private string[] BindArgumentMap(IConfigurationSection configuration) => configuration.Exists() switch
+    private static string[] BindArgumentMap(IConfigurationSection configuration) => configuration.Exists() switch
     {
         false => Array.Empty<string>(),
         true => configuration.Get<Dictionary<string, bool>>().Where(kvp => kvp.Value == true).Select(kvp => kvp.Key).ToArray()
@@ -333,7 +333,7 @@ public class BrowserManagerConfiguration
             StorageState = overrideOptions?.StorageState != default ? overrideOptions.StorageState : defaultOptions.StorageState
         };
 
-    private BrowserTypeLaunchOptions Combine(BrowserTypeLaunchOptions defaultOptions, BrowserTypeLaunchOptions overrideOptions) =>
+    private static BrowserTypeLaunchOptions Combine(BrowserTypeLaunchOptions defaultOptions, BrowserTypeLaunchOptions overrideOptions) =>
         new()
         {
             IgnoreDefaultArgs = overrideOptions.IgnoreDefaultArgs != default ? overrideOptions.IgnoreDefaultArgs : defaultOptions.IgnoreDefaultArgs,

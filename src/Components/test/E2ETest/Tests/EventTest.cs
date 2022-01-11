@@ -176,8 +176,10 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Equal("dragstart,", () => output.Text);
     }
 
-    [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/32373")]
+    // Skipped because it will never pass because Selenium doesn't support this kind of event
+    // The linked issue tracks the desire to find a way of testing this
+    // There's no point quarantining it - we know it will always fail
+    [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/32373")]
     public void TouchEvent_CanTrigger()
     {
         Browser.MountTestComponent<TouchEventComponent>();

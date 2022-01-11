@@ -122,7 +122,7 @@ internal sealed partial class PageRouteModelFactory
         return true;
     }
 
-    private string GetViewEnginePath(string rootDirectory, string path)
+    private static string GetViewEnginePath(string rootDirectory, string path)
     {
         // rootDirectory = "/Pages/AllMyPages/"
         // path = "/Pages/AllMyPages/Home.cshtml"

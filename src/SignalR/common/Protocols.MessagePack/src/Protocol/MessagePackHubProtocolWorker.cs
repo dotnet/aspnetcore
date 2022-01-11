@@ -175,14 +175,14 @@ internal abstract class MessagePackHubProtocolWorker
         return ApplyHeaders(headers, new CompletionMessage(invocationId, error, result, hasResult));
     }
 
-    private CancelInvocationMessage CreateCancelInvocationMessage(ref MessagePackReader reader)
+    private static CancelInvocationMessage CreateCancelInvocationMessage(ref MessagePackReader reader)
     {
         var headers = ReadHeaders(ref reader);
         var invocationId = ReadInvocationId(ref reader);
         return ApplyHeaders(headers, new CancelInvocationMessage(invocationId));
     }
 
-    private CloseMessage CreateCloseMessage(ref MessagePackReader reader, int itemCount)
+    private static CloseMessage CreateCloseMessage(ref MessagePackReader reader, int itemCount)
     {
         var error = ReadString(ref reader, "error");
         var allowReconnect = false;
@@ -201,7 +201,7 @@ internal abstract class MessagePackHubProtocolWorker
         return new CloseMessage(error, allowReconnect);
     }
 
-    private Dictionary<string, string>? ReadHeaders(ref MessagePackReader reader)
+    private static Dictionary<string, string>? ReadHeaders(ref MessagePackReader reader)
     {
         var headerCount = ReadMapLength(ref reader, "headers");
         if (headerCount > 0)
@@ -222,7 +222,7 @@ internal abstract class MessagePackHubProtocolWorker
         }
     }
 
-    private string[]? ReadStreamIds(ref MessagePackReader reader)
+    private static string[]? ReadStreamIds(ref MessagePackReader reader)
     {
         var streamIdCount = ReadArrayLength(ref reader, "streamIds");
         List<string>? streams = null;
@@ -481,7 +481,7 @@ internal abstract class MessagePackHubProtocolWorker
         }
     }
 
-    private void WriteCancelInvocationMessage(CancelInvocationMessage message, ref MessagePackWriter writer)
+    private static void WriteCancelInvocationMessage(CancelInvocationMessage message, ref MessagePackWriter writer)
     {
         writer.WriteArrayHeader(3);
         writer.Write(HubProtocolConstants.CancelInvocationMessageType);
@@ -531,7 +531,7 @@ internal abstract class MessagePackHubProtocolWorker
         }
     }
 
-    private string ReadInvocationId(ref MessagePackReader reader) =>
+    private static string ReadInvocationId(ref MessagePackReader reader) =>
         ReadString(ref reader, "invocationId");
 
     private static bool ReadBoolean(ref MessagePackReader reader, string field)

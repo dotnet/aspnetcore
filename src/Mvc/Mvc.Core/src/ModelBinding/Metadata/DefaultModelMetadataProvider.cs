@@ -241,7 +241,7 @@ public class DefaultModelMetadataProvider : ModelMetadataProvider
         return new ModelMetadataCacheEntry(metadata, details);
     }
 
-    private DefaultMetadataDetails CreateSinglePropertyDetails(ModelMetadataIdentity propertyKey)
+    private static DefaultMetadataDetails CreateSinglePropertyDetails(ModelMetadataIdentity propertyKey)
     {
         var propertyHelpers = PropertyHelper.GetVisibleProperties(propertyKey.ContainerType!);
         for (var i = 0; i < propertyHelpers.Length; i++)
@@ -380,7 +380,7 @@ public class DefaultModelMetadataProvider : ModelMetadataProvider
         return propertyEntries.ToArray();
     }
 
-    private DefaultMetadataDetails CreateSinglePropertyDetails(
+    private static DefaultMetadataDetails CreateSinglePropertyDetails(
         ModelMetadataIdentity propertyKey,
         PropertyHelper propertyHelper)
     {

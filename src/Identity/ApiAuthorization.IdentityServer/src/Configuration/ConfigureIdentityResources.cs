@@ -88,7 +88,7 @@ internal class ConfigureIdentityResources : IConfigureOptions<ApiAuthorizationOp
         }
     }
 
-    private string[] ParseScopes(string scopes)
+    private static string[] ParseScopes(string scopes)
     {
         if (scopes == null)
         {
