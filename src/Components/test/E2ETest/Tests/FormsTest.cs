@@ -75,6 +75,26 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     }
 
     [Fact]
+    public void EditFormWorksWithDataAnnotationsValidatorAndDI()
+    {
+        var appElement = Browser.MountTestComponent<ValidationComponentDI>();
+        var form = appElement.FindElement(By.TagName("form"));
+        var userNameInput = appElement.FindElement(By.ClassName("the-quiz")).FindElement(By.TagName("input"));
+        var submitButton = appElement.FindElement(By.CssSelector("button[type=submit]"));
+        var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+
+        userNameInput.SendKeys("Jaws\t");
+        submitButton.Click();
+        //We can only have this errormessage when DI is working
+        Browser.Equal(new[] { "Steven Spielberg did not star in this movie" }, messagesAccessor);
+
+        userNameInput.Clear();
+        userNameInput.SendKeys("Gremlins\t");
+        submitButton.Click();
+        Browser.Empty(messagesAccessor);
+    }
+
+    [Fact]
     public void InputTextInteractsWithEditContext()
     {
         var appElement = MountTypicalValidationComponent();

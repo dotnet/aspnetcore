@@ -1,0 +1,46 @@
+﻿@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+
+<EditForm Model="@this" autocomplete="off">
+    <DataAnnotationsValidator />
+
+    <p class="the-quiz">
+        Name a movie in which Steven Spielberg acted:
+        <input @bind="MovieName" class="@context.FieldCssClass(() => MovieName)" />
+    </p>
+
+    <button type="submit">Submit</button>
+    <ul class="validation-errors">
+        @foreach (var message in context.GetValidationMessages())
+        {
+            <li class="validation-message">@message</li>
+        }
+    </ul>
+
+</EditForm>
+
+@code {
+    [MovieQuizValidator]
+    public string MovieName { get; set; }
+
+    public class MovieQuizValidatorAttribute : ValidationAttribute
+    {
+        protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+        {
+            var quizHost = validationContext.GetService<MovieQuizHost>();
+            if (quizHost == null) return new ValidationResult("Can't find moviehost");
+            if (quizHost.MoviesWhereStevenSpielbergActed.Contains(value.ToString()))
+            {
+                return ValidationResult.Success;    
+            }
+            return new ValidationResult("Steven Spielberg did not star in this movie");
+        }
+    }
+
+   
+    //Simple class to check if DI can be used in Validation attributes
+    public class MovieQuizHost
+    {
+        public string[] MoviesWhereStevenSpielbergActed = { "The Blues Brothers", "Gremlins", "Vanilla Sky", "Double Dare", "Goldmember" };
+    }
+}
