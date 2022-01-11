@@ -472,13 +472,13 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
                             {
                                 Log.PossibleInvalidHttpVersionDetected(ConnectionId, HttpVersion.Http2, detectedVersion);
 
-                                var responseBytes = InvalidHttp1xErrorResponseBytes ??= Encoding.ASCII.GetBytes(@"HTTP/1.1 400 Bad Request
-Connection: close
-Content-Type: text/plain
-Content-Length: 57
-
-An HTTP/1.x request was sent to an HTTP/2 only endpoint.
-");
+                                var responseBytes = InvalidHttp1xErrorResponseBytes ??= Encoding.ASCII.GetBytes(
+                                    "HTTP/1.1 400 Bad Request\r\n" +
+                                    "Connection: close\r\n" +
+                                    "Content-Type: text/plain\r\n" +
+                                    "Content-Length: 56\r\n" +
+                                    "\r\n" +
+                                    "An HTTP/1.x request was sent to an HTTP/2 only endpoint.");
 
                                 await _context.Transport.Output.WriteAsync(responseBytes);
 
@@ -494,6 +494,7 @@ An HTTP/1.x request was sent to an HTTP/2 only endpoint.
                         }
                     }
 
+                    // Tested all states. Return HTTP/2 protocol error.
                     if (state == ReadPrefaceState.None)
                     {
                         throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorInvalidPreface, Http2ErrorCode.PROTOCOL_ERROR);
@@ -502,7 +503,7 @@ An HTTP/1.x request was sent to an HTTP/2 only endpoint.
 
                 if (result.IsCompleted)
                 {
-                    throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorInvalidPreface, Http2ErrorCode.PROTOCOL_ERROR);
+                    return false;
                 }
             }
             finally

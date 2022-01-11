@@ -5255,7 +5255,7 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
-    public async Task StartTlsConnection_SendHttp1xRequest_ProtocolError()
+    public async Task StartTlsConnection_SendHttp1xRequest_NoError()
     {
         CreateConnection();
 
@@ -5266,27 +5266,18 @@ public class Http2ConnectionTests : Http2TestBase
         await InitializeConnectionWithoutPrefaceAsync(_noopApplication);
 
         await SendAsync(Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\n"));
-        _pair.Application.Output.Complete();
 
-        await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
-            ignoreNonGoAwayFrames: false,
-            expectedLastStreamId: 0,
-            expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR,
-            expectedErrorMessage: CoreStrings.Http2ErrorInvalidPreface);
+        await StopConnectionAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false);
     }
 
     [Fact]
-    public async Task StartConnection_SendNothing_ProtocolError()
+    public async Task StartConnection_SendNothing_NoError()
     {
         await InitializeConnectionWithoutPrefaceAsync(_noopApplication);
 
         _pair.Application.Output.Complete();
 
-        await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
-            ignoreNonGoAwayFrames: false,
-            expectedLastStreamId: 0,
-            expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR,
-            expectedErrorMessage: CoreStrings.Http2ErrorInvalidPreface);
+        await StopConnectionAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false);
     }
 
     public static TheoryData<byte[]> UpperCaseHeaderNameData
