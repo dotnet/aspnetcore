@@ -64,8 +64,10 @@ internal sealed partial class GenericWebHostService : IHostedService
         var addresses = serverAddressesFeature?.Addresses;
         if (addresses != null && !addresses.IsReadOnly && addresses.Count == 0)
         {
+            // We support reading "urls" from app configuration
             var urls = Configuration[WebHostDefaults.ServerUrlsKey];
 
+            // But fall back to host settings
             if (string.IsNullOrEmpty(urls))
             {
                 urls = Options.WebHostOptions.ServerUrls;
@@ -73,7 +75,18 @@ internal sealed partial class GenericWebHostService : IHostedService
 
             if (!string.IsNullOrEmpty(urls))
             {
-                serverAddressesFeature!.PreferHostingUrls = WebHostUtilities.ParseBool(Configuration, WebHostDefaults.PreferHostingUrlsKey);
+                // We support reading "preferHostingUrls" from app configuration
+                var preferHostingUrlsConfig = Configuration[WebHostDefaults.PreferHostingUrlsKey];
+
+                // But fall back to host settings
+                if (!string.IsNullOrEmpty(preferHostingUrlsConfig))
+                {
+                    serverAddressesFeature!.PreferHostingUrls = WebHostUtilities.ParseBool(preferHostingUrlsConfig);
+                }
+                else
+                {
+                    serverAddressesFeature!.PreferHostingUrls = Options.WebHostOptions.PreferHostingUrls;
+                }
 
                 foreach (var value in urls.Split(';', StringSplitOptions.RemoveEmptyEntries))
                 {

@@ -63,6 +63,30 @@ public class GenericWebHostBuilderTests
         Assert.Equal("TEST_URL", server.Addresses.Single());
     }
 
+    [Fact]
+    public void UseUrlsWorksAfterHostConfigurationSourcesAreCleared()
+    {
+        var server = new TestServer();
+
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseServer(server)
+                    .UseUrls("TEST_URL")
+                    .Configure(_ => { });
+            })
+            .ConfigureHostConfiguration(configBuilder =>
+            {
+                configBuilder.Sources.Clear();
+            })
+            .Build();
+
+        host.Start();
+
+        Assert.Equal("TEST_URL", server.Addresses.Single());
+    }
+
     private class TestServer : IServer, IServerAddressesFeature
     {
         public TestServer()

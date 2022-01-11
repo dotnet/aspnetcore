@@ -73,10 +73,9 @@ public class HostingEnvironmentExtensionsTests
         Assert.Equal("NewName", env.EnvironmentName);
     }
 
-    private WebHostOptions CreateWebHostOptions(IConfiguration configuration = null, string applicationNameFallback = null)
+    private WebHostOptions CreateWebHostOptions(IConfiguration configuration = null)
     {
         return new WebHostOptions(
-            configuration ?? Mock.Of<IConfiguration>(),
-            applicationNameFallback: applicationNameFallback);
+            configuration ?? Mock.Of<IConfiguration>());
     }
 }

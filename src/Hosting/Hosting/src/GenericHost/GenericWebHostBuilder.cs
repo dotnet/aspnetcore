@@ -121,7 +121,7 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
 
     private void ExecuteHostingStartups()
     {
-        var webHostOptions = new WebHostOptions(_config, Assembly.GetEntryAssembly()?.GetName().Name ?? string.Empty);
+        var webHostOptions = new WebHostOptions(_config);
 
         if (webHostOptions.PreventHostingStartup)
         {
@@ -385,11 +385,12 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
         return this;
     }
 
-    private static WebHostBuilderContext GetWebHostBuilderContext(HostBuilderContext context)
+    private WebHostBuilderContext GetWebHostBuilderContext(HostBuilderContext context)
     {
         if (!context.Properties.TryGetValue(typeof(WebHostBuilderContext), out var contextVal))
         {
-            var options = new WebHostOptions(context.Configuration, Assembly.GetEntryAssembly()?.GetName().Name ?? string.Empty);
+            // Use _config as a fallback for WebHostOptions in case the chained source was removed from the hosting IConfigurationBuilder.
+            var options = new WebHostOptions(context.Configuration, fallbackConfiguration: _config);
             var webHostBuilderContext = new WebHostBuilderContext
             {
                 Configuration = context.Configuration,
