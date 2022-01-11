@@ -210,7 +210,7 @@ async function importDotnetJs(resourceLoader: WebAssemblyResourceLoader): Promis
 
   // GOTCHA: remove this once runtime switched to ES6
   // this is capturing the export via callback we have in CJS version of the runtime
-  let cjsExportResolve: (data: CreateDotnetRuntimeType) => void = <any>undefined;
+  let cjsExportResolve: (data: CreateDotnetRuntimeType) => void = undefined as any;
   const cjsExport = new Promise<CreateDotnetRuntimeType>((resolve) => {
     cjsExportResolve = resolve;
   });
