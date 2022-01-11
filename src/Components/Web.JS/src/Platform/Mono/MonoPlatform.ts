@@ -17,7 +17,7 @@ import { DotnetPublicAPI, BINDINGType, CreateDotnetRuntimeType, DotnetModuleConf
 // initially undefined and only fully initialized after createEmscriptenModuleInstance()
 export let BINDING: BINDINGType = <any>undefined;
 export let MONO: MONOType = <any>undefined;
-export let Module: DotnetModuleConfig & EmscriptenModule = <any>undefined;
+export let Module: DotnetModuleConfig & EmscriptenModule = undefined as any;
 
 const appBinDirName = 'appBinDir';
 const uint64HighOrderShift = Math.pow(2, 32);
