@@ -238,7 +238,6 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
     runtimeReadyReject = reject;
   });
 
-
   const dotnetJsBeingLoaded = importDotnetJs(resourceLoader);
   const resources = resourceLoader.bootConfig.resources;
   const moduleConfig = (window['Module'] || {}) as typeof Module;
