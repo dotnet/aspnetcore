@@ -37,8 +37,8 @@
       <!-- aspnetcore-helix-matrix[-internal] (helix-matrix.yml) and RunHelix.ps1 -->
       <!-- aspnetcore-quarantined-tests (quarantined-tests.yml) and RunHelix.ps1 -RunQuarantinedTests -->
       <ItemGroup>
-        <!-- See what blows up since IIS Express isn't supported on arm64 and most of the IsWindowsOnlyTests depend on its setup scripts. -->
-        <HelixAvailableTargetQueue Include="Windows.10.Arm64v8.Open" Platform="Windows" />
+        <!-- See what blows up since IIS Express isn't supported on arm64 and only run Windows only tests for now -->
+        <HelixAvailableTargetQueue Include="Windows.10.Arm64v8.Open" Platform="Windows" Condition=" '$(IsWindowsOnlyTest)' != 'true' "/>
       </ItemGroup>
     </Otherwise>
   </Choose>
