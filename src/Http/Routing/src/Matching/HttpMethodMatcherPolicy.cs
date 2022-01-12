@@ -159,7 +159,7 @@ public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPo
             }
         }
 
-        if (needs405Endpoint == true)
+        if (needs405Endpoint == true && methods!=null)
         {
             // We saw some endpoints coming in, and we eliminated them all.
             httpContext.SetEndpoint(CreateRejectionEndpoint(methods!.OrderBy(m => m, StringComparer.OrdinalIgnoreCase)));
