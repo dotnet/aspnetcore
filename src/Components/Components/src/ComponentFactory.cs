@@ -14,7 +14,7 @@ internal sealed class ComponentFactory
     private const BindingFlags _injectablePropertyBindingFlags
         = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
-    private readonly ConcurrentDictionary<Type, Action<IServiceProvider, IComponent>> _cachedInitializers = new();
+    private static readonly ConcurrentDictionary<Type, Action<IServiceProvider, IComponent>> _cachedInitializers = new();
 
     private readonly IComponentActivator _componentActivator;
 
@@ -23,7 +23,7 @@ internal sealed class ComponentFactory
         _componentActivator = componentActivator ?? throw new ArgumentNullException(nameof(componentActivator));
     }
 
-    public void ClearCache() => _cachedInitializers.Clear();
+    public static void ClearCache() => _cachedInitializers.Clear();
 
     public IComponent InstantiateComponent(IServiceProvider serviceProvider, [DynamicallyAccessedMembers(Component)] Type componentType)
     {
@@ -38,7 +38,7 @@ internal sealed class ComponentFactory
         return component;
     }
 
-    private void PerformPropertyInjection(IServiceProvider serviceProvider, IComponent instance)
+    private static void PerformPropertyInjection(IServiceProvider serviceProvider, IComponent instance)
     {
         // This is thread-safe because _cachedInitializers is a ConcurrentDictionary.
         // We might generate the initializer more than once for a given type, but would
@@ -53,7 +53,7 @@ internal sealed class ComponentFactory
         initializer(serviceProvider, instance);
     }
 
-    private Action<IServiceProvider, IComponent> CreateInitializer([DynamicallyAccessedMembers(Component)] Type type)
+    private static Action<IServiceProvider, IComponent> CreateInitializer([DynamicallyAccessedMembers(Component)] Type type)
     {
         // Do all the reflection up front
         List<(string name, Type propertyType, PropertySetter setter)>? injectables = null;
