@@ -192,7 +192,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="NuGet.Frameworks" />
     <LatestPackageReference Include="NuGet.Versioning" />
     <LatestPackageReference Include="Photino.NET" />
-    <LatestPackageReference Include="PlaywrightSharp" />
+    <LatestPackageReference Include="Microsoft.Playwright" />
     <LatestPackageReference Include="Polly" />
     <LatestPackageReference Include="Polly.Extensions.Http" />
     <LatestPackageReference Include="Selenium.Support" />

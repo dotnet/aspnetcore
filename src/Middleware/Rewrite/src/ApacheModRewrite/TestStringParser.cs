@@ -29,7 +29,7 @@ internal class TestStringParser
     /// $1</param>
     /// <returns>A new <see cref="Pattern"/>, containing a list of <see cref="PatternSegment"/></returns>
     /// http://httpd.apache.org/docs/current/mod/mod_rewrite.html
-    public Pattern Parse(string testString)
+    public static Pattern Parse(string testString)
     {
         if (testString == null)
         {

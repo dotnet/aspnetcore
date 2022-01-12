@@ -110,7 +110,7 @@ public class WebSocketClient
         return webSocketFeature.ClientWebSocket;
     }
 
-    private string CreateRequestKey()
+    private static string CreateRequestKey()
     {
         byte[] data = new byte[16];
         RandomNumberGenerator.Fill(data);

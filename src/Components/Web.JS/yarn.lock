@@ -1209,10 +1209,8 @@
   dependencies:
     "@babel/types" "^7.3.0"
 
-"@types/emscripten@^1.39.5":
-  version "1.39.5"
-  resolved "https://registry.yarnpkg.com/@types/emscripten/-/emscripten-1.39.5.tgz#eb0fb1048301df980b6f8a5ec3d63f7d1572bb73"
-  integrity sha512-DIOOg+POSrYl+OlNRHQuIEqCd8DCtynG57H862UCce16nXJX7J8eWxNGgOcf8Eyge8zXeSs27mz1UcFu8L/L7g==
+"@types/dotnet@./@types/dotnet":
+  version "1.0.0"
 
 "@types/eslint-scope@^3.7.0":
   version "3.7.1"

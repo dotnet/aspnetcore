@@ -1627,7 +1627,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         return GenerateGroupsAndOptions(optionLabel, selectList, currentValues: null);
     }
 
-    private IHtmlContent GenerateGroupsAndOptions(
+    private static IHtmlContent GenerateGroupsAndOptions(
         string optionLabel,
         IEnumerable<SelectListItem> selectList,
         ICollection<string> currentValues)
@@ -1714,7 +1714,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         return listItemBuilder;
     }
 
-    private IHtmlContent GenerateOption(SelectListItem item, ICollection<string> currentValues)
+    private static IHtmlContent GenerateOption(SelectListItem item, ICollection<string> currentValues)
     {
         var selected = item.Selected;
         if (currentValues != null)

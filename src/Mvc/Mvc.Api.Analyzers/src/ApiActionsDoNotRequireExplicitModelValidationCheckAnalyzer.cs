@@ -33,7 +33,7 @@ public class ApiActionsDoNotRequireExplicitModelValidationCheckAnalyzer : Diagno
         });
     }
 
-    private void InitializeWorker(CompilationStartAnalysisContext context, ApiControllerSymbolCache symbolCache)
+    private static void InitializeWorker(CompilationStartAnalysisContext context, ApiControllerSymbolCache symbolCache)
     {
         context.RegisterOperationAction(operationAnalysisContext =>
         {
@@ -133,7 +133,7 @@ public class ApiActionsDoNotRequireExplicitModelValidationCheckAnalyzer : Diagno
         }, OperationKind.Conditional);
     }
 
-    private bool IsModelStateIsValidCheck(in ApiControllerSymbolCache symbolCache, IOperation condition)
+    private static bool IsModelStateIsValidCheck(in ApiControllerSymbolCache symbolCache, IOperation condition)
     {
         switch (condition.Kind)
         {
@@ -162,7 +162,7 @@ public class ApiActionsDoNotRequireExplicitModelValidationCheckAnalyzer : Diagno
         }
     }
 
-    private bool EvaluateBinaryOperator(
+    private static bool EvaluateBinaryOperator(
         in ApiControllerSymbolCache symbolCache,
         IOperation operation,
         IOperation otherOperation,

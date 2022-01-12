@@ -61,7 +61,7 @@ internal class DefaultPageHandlerMethodSelector : IPageHandlerMethodSelector
         return null;
     }
 
-    private List<HandlerMethodDescriptor> SelectHandlers(PageContext context)
+    private static List<HandlerMethodDescriptor> SelectHandlers(PageContext context)
     {
         var handlers = context.ActionDescriptor.HandlerMethods;
         var candidates = new List<HandlerMethodDescriptor>();

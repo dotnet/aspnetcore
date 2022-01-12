@@ -1495,8 +1495,10 @@ public partial class HubConnection : IAsyncDisposable
         }
     }
 
+#pragma warning disable CA1822 // Avoid different signatures based on TFM
     private OperationCanceledException GetOperationCanceledException(string message, Exception innerException, CancellationToken cancellationToken)
     {
+#pragma warning restore CA1822
 #if NETSTANDARD2_1 || NETCOREAPP
         return new OperationCanceledException(message, innerException, _state.StopCts.Token);
 #else

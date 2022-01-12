@@ -494,7 +494,7 @@ public class ContentDispositionHeaderValue
     }
 
     // Replaces characters not suitable for HTTP headers with '_' rather than MIME encoding them.
-    private StringSegment Sanitize(StringSegment input)
+    private static StringSegment Sanitize(StringSegment input)
     {
         var result = input;
 
@@ -573,7 +573,7 @@ public class ContentDispositionHeaderValue
     }
 
     // Attempt to decode MIME encoded strings
-    private bool TryDecodeMime(StringSegment input, [NotNullWhen(true)] out string? output)
+    private static bool TryDecodeMime(StringSegment input, [NotNullWhen(true)] out string? output)
     {
         Contract.Assert(input != null);
 

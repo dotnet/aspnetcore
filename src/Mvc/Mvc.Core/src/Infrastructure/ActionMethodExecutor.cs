@@ -216,7 +216,7 @@ internal abstract class ActionMethodExecutor
         }
     }
 
-    private IActionResult ConvertToActionResult(IActionResultTypeMapper mapper, object? returnValue, Type declaredType)
+    private static IActionResult ConvertToActionResult(IActionResultTypeMapper mapper, object? returnValue, Type declaredType)
     {
         var result = (returnValue as IActionResult) ?? mapper.Convert(returnValue, declaredType);
         if (result == null)

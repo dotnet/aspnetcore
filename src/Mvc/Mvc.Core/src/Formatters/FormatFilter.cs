@@ -115,7 +115,7 @@ public class FormatFilter : IFormatFilter, IResourceFilter, IResultFilter
         }
     }
 
-    private bool IsSuperSetOfAnySupportedMediaType(string contentType, MediaTypeCollection supportedMediaTypes)
+    private static bool IsSuperSetOfAnySupportedMediaType(string contentType, MediaTypeCollection supportedMediaTypes)
     {
         var parsedContentType = new MediaType(contentType);
         for (var i = 0; i < supportedMediaTypes.Count; i++)

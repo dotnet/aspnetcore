@@ -149,7 +149,7 @@ internal sealed class ManifestStaticWebAssetFileProvider : IFileProvider
         }
     }
 
-    private string Normalize(string path)
+    private static string Normalize(string path)
     {
         return path.Replace('\\', '/');
     }

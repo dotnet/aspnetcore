@@ -105,7 +105,8 @@ dotnet_diagnostic.CA1810.severity = suggestion
 dotnet_diagnostic.CA1821.severity = warning
 
 # CA1822: Make member static
-dotnet_diagnostic.CA1822.severity = suggestion
+dotnet_diagnostic.CA1822.severity = warning
+dotnet_code_quality.CA1822.api_surface = private, internal
 
 # CA1823: Avoid unused private fields
 dotnet_diagnostic.CA1823.severity = warning
@@ -239,6 +240,8 @@ dotnet_diagnostic.CA1507.severity = suggestion
 dotnet_diagnostic.CA1802.severity = suggestion
 # CA1805: Do not initialize unnecessarily
 dotnet_diagnostic.CA1805.severity = suggestion
+# CA1822: Make member static
+dotnet_diagnostic.CA1822.severity = suggestion
 # CA1823: Avoid zero-length array allocations
 dotnet_diagnostic.CA1825.severity = suggestion
 # CA1826: Do not use Enumerable methods on indexable collections. Instead use the collection directly
@@ -278,6 +281,8 @@ dotnet_diagnostic.CA2016.severity = suggestion
 # Defaults for content in the shared src/ and shared runtime dir
 
 [{**/Shared/runtime/**.{cs,vb},src/Shared/test/Shared.Tests/runtime/**.{cs,vb},**/microsoft.extensions.hostfactoryresolver.sources/**.{cs,vb}}]
+# CA1822: Make member static
+dotnet_diagnostic.CA1822.severity = silent
 # IDE0011: Use braces
 dotnet_diagnostic.IDE0011.severity = silent
 # IDE0055: Fix formatting

@@ -173,7 +173,7 @@ namespace {_spec.GetterNamespace}
             _context.AddSource($"HubServerProxy.{classSpec.ClassTypeName}.g.cs", SourceText.From(proxy.ToString(), Encoding.UTF8));
         }
 
-        private string GetSpecificCall(MethodSpec methodSpec)
+        private static string GetSpecificCall(MethodSpec methodSpec)
         {
             if (methodSpec.Stream.HasFlag(StreamSpec.ServerToClient) &&
                 !methodSpec.Stream.HasFlag(StreamSpec.AsyncEnumerable))

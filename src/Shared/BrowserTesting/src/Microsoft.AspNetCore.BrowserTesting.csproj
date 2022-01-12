@@ -9,8 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="PlaywrightSharp" Condition="'$(IsPlaywrightAvailable)' == 'true'" />
-    <Reference Include="PlaywrightSharp" ExcludeAssets="build" Condition="'$(IsPlaywrightAvailable)' != 'true'" />
+    <Reference Include="Microsoft.Playwright" Condition="'$(IsPlaywrightAvailable)' == 'true'" />
+    <Reference Include="Microsoft.Playwright" ExcludeAssets="build" Condition="'$(IsPlaywrightAvailable)' != 'true'" />
     <Reference Include="Microsoft.AspNetCore.Testing" />
   </ItemGroup>
 

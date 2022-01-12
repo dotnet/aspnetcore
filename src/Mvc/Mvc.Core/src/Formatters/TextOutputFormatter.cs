@@ -212,7 +212,7 @@ public abstract class TextOutputFormatter : OutputFormatter
 
     // There's no allocation-free way to sort an IList and we may have to filter anyway,
     // so we're going to have to live with the copy + insertion sort.
-    private IList<StringWithQualityHeaderValue> Sort(IList<StringWithQualityHeaderValue> values)
+    private static IList<StringWithQualityHeaderValue> Sort(IList<StringWithQualityHeaderValue> values)
     {
         var sortNeeded = false;
 

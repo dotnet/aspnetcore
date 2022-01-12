@@ -214,7 +214,7 @@ internal sealed class HotReloadAgent : IDisposable
         }
     }
 
-    private Type[] GetMetadataUpdateTypes(IReadOnlyList<UpdateDelta> deltas)
+    private static Type[] GetMetadataUpdateTypes(IReadOnlyList<UpdateDelta> deltas)
     {
         List<Type>? types = null;
 

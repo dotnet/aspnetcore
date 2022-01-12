@@ -1,11 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
 using System.Net.Http.HPack;
 using System.Net.Http.QPack;
 using System.Reflection;
@@ -450,7 +447,7 @@ public class KnownHeaders
         public string SetBit() => $"_bits |= {"0x" + (1L << Index).ToString("x", CultureInfo.InvariantCulture)}L";
         public string ClearBit() => $"_bits &= ~{"0x" + (1L << Index).ToString("x", CultureInfo.InvariantCulture)}L";
 
-        private string ResolveIdentifier(string name)
+        private static string ResolveIdentifier(string name)
         {
             // Check the 3 lowercase headers
             switch (name)
@@ -473,7 +470,7 @@ public class KnownHeaders
             return identifier;
         }
 
-        private void GetMaskAndComp(string name, int offset, int count, out ulong mask, out ulong comp)
+        private static void GetMaskAndComp(string name, int offset, int count, out ulong mask, out ulong comp)
         {
             mask = 0;
             comp = 0;
@@ -486,7 +483,7 @@ public class KnownHeaders
             }
         }
 
-        private string NameTerm(string name, int offset, int count, string type, string suffix)
+        private static string NameTerm(string name, int offset, int count, string type, string suffix)
         {
             GetMaskAndComp(name, offset, count, out var mask, out var comp);
 
@@ -519,14 +516,14 @@ public class KnownHeaders
 
         }
 
-        private string EqualityTerm(string name, int offset, int count, string type, string suffix)
+        private static string EqualityTerm(string name, int offset, int count, string type, string suffix)
         {
             GetMaskAndComp(name, offset, count, out var mask, out var comp);
 
             return $"0x{comp:x}{suffix}";
         }
 
-        private string Term(string name, int offset, int count, string type, string suffix)
+        private static string Term(string name, int offset, int count, string type, string suffix)
         {
             GetMaskAndComp(name, offset, count, out var mask, out var comp);
 

@@ -179,7 +179,7 @@ public class TestMatrix : IEnumerable<object[]>
         }
     }
 
-    private bool CheckTfmIsSupportedForServer(string tfm, ServerType server)
+    private static bool CheckTfmIsSupportedForServer(string tfm, ServerType server)
     {
         // Not a combination we test
         return !(Tfm.Matches(Tfm.Net462, tfm) && ServerType.Nginx == server);
@@ -245,7 +245,7 @@ public class TestMatrix : IEnumerable<object[]>
         }
     }
 
-    private string SkipIfArchitectureNotSupportedOnCurrentSystem(RuntimeArchitecture arch)
+    private static string SkipIfArchitectureNotSupportedOnCurrentSystem(RuntimeArchitecture arch)
     {
         if (arch == RuntimeArchitecture.x64)
         {
@@ -258,7 +258,7 @@ public class TestMatrix : IEnumerable<object[]>
         return OperatingSystem.IsWindows() ? null : $"No {arch} available for non-Windows systems.";
     }
 
-    private bool IsArchitectureSupportedOnServer(RuntimeArchitecture arch, ServerType server)
+    private static bool IsArchitectureSupportedOnServer(RuntimeArchitecture arch, ServerType server)
     {
         // No x86 Mac/Linux runtime, don't generate a test variation that will always be skipped.
         return !(arch == RuntimeArchitecture.x86 && ServerType.Nginx == server);

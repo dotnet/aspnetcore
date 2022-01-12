@@ -104,7 +104,7 @@ public class TagHelpersInCodeBlocksAnalyzer : DiagnosticAnalyzer
         });
     }
 
-    private bool IsTagHelperRunnerRunAsync(IMethodSymbol method, SymbolCache symbolCache)
+    private static bool IsTagHelperRunnerRunAsync(IMethodSymbol method, SymbolCache symbolCache)
     {
         if (!SymbolEqualityComparer.Default.Equals(method, symbolCache.TagHelperRunnerRunAsyncMethodSymbol))
         {
@@ -114,7 +114,7 @@ public class TagHelpersInCodeBlocksAnalyzer : DiagnosticAnalyzer
         return true;
     }
 
-    private bool IsParentMethod(IOperation operation)
+    private static bool IsParentMethod(IOperation operation)
     {
         if (operation.Kind == OperationKind.LocalFunction)
         {
