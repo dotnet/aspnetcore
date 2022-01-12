@@ -55,7 +55,7 @@ internal static class HttpHelpers
                             o.Listen(IPAddress.Parse("127.0.0.1"), 0, listenOptions =>
                             {
                                 listenOptions.Protocols = protocol ?? HttpProtocols.Http3;
-                                if (skipHttps ?? false)
+                                if (skipHttps ?? true)
                                 {
                                     listenOptions.UseHttps();
                                 }
