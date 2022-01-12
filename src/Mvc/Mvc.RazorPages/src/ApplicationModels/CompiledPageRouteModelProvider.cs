@@ -73,7 +73,7 @@ internal class CompiledPageRouteModelProvider : IPageRouteModelProvider
             }
         }
 
-        bool IsRazorPage(CompiledViewDescriptor viewDescriptor)
+        static bool IsRazorPage(CompiledViewDescriptor viewDescriptor)
         {
             if (viewDescriptor.Item != null)
             {

@@ -89,7 +89,7 @@ internal class PipeWriterStream : Stream
 
         return default;
 
-        async ValueTask WriteSlowAsync(ValueTask<FlushResult> flushTask)
+        static async ValueTask WriteSlowAsync(ValueTask<FlushResult> flushTask)
         {
             var flushResult = await flushTask;
 

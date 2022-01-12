@@ -98,11 +98,7 @@ public class PageInformation : IDisposable
 
             var logMessage = $"[{_page.Url}]{Environment.NewLine}      {messageText}{Environment.NewLine}      ({location})";
 
-            _logger.Log(MapLogLevel(message.Type), logMessage);
-
-            BrowserConsoleLogs.Add(new LogEntry(messageText, message.Type));
-
-            LogLevel MapLogLevel(string messageType) => messageType switch
+            var logLevel = message.Type switch
             {
                 "info" => LogLevel.Information,
                 "verbose" => LogLevel.Debug,
@@ -110,6 +106,9 @@ public class PageInformation : IDisposable
                 "error" => LogLevel.Error,
                 _ => LogLevel.Information
             };
+            _logger.Log(logLevel, logMessage);
+
+            BrowserConsoleLogs.Add(new LogEntry(messageText, message.Type));
         }
         catch
         {

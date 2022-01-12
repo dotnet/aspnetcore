@@ -380,7 +380,7 @@ public class KnownHeaders
             firstTermVar = "";
         }
 
-        string GenerateIfBody(KnownHeader header, string extraIndent = "")
+        static string GenerateIfBody(KnownHeader header, string extraIndent = "")
         {
             if (header.Name == HeaderNames.ContentLength)
             {
