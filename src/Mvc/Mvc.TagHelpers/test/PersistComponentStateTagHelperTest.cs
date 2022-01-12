@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -180,7 +181,7 @@ public class PersistComponentStateTagHelperTest
     {
         var htmlContent = new HtmlContentBuilder().AppendHtml("Hello world");
         var renderer = Mock.Of<IComponentRenderer>(c =>
-            c.RenderComponentAsync(It.IsAny<ViewContext>(), It.IsAny<Type>(), It.IsAny<RenderMode>(), It.IsAny<object>()) == Task.FromResult<IHtmlContent>(htmlContent));
+            c.RenderComponentAsync(It.IsAny<ViewContext>(), It.IsAny<Type>(), It.IsAny<RenderMode>(), It.IsAny<object>()) == new ValueTask<IHtmlContent>(htmlContent));
 
         var httpContext = new DefaultHttpContext
         {
@@ -191,6 +192,7 @@ public class PersistComponentStateTagHelperTest
                 .AddSingleton(_ephemeralProvider)
                 .AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance)
                 .AddSingleton(HtmlEncoder.Default)
+                .AddScoped<IViewBufferScope, TestViewBufferScope>()
                 .BuildServiceProvider(),
         };
 

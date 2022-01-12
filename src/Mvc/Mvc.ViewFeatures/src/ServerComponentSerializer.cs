@@ -4,6 +4,7 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Html;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 
@@ -45,49 +46,25 @@ internal class ServerComponentSerializer
         return (serverComponent.Sequence, Convert.ToBase64String(protectedBytes));
     }
 
-    internal static IEnumerable<string> GetPreamble(ServerComponentMarker record)
+    internal static void AppendPreamble(IHtmlContentBuilder htmlContentBuilder, ServerComponentMarker record)
     {
         var serializedStartRecord = JsonSerializer.Serialize(
             record,
             ServerComponentSerializationSettings.JsonSerializationOptions);
 
-        if (record.PrerenderId != null)
-        {
-            return PrerenderedStart(serializedStartRecord);
-        }
-        else
-        {
-            return NonPrerenderedSequence(serializedStartRecord);
-        }
-
-        static IEnumerable<string> PrerenderedStart(string startRecord)
-        {
-            yield return "<!--Blazor:";
-            yield return startRecord;
-            yield return "-->";
-        }
-
-        static IEnumerable<string> NonPrerenderedSequence(string record)
-        {
-            yield return "<!--Blazor:";
-            yield return record;
-            yield return "-->";
-        }
+        htmlContentBuilder.AppendHtml("<!--Blazor:");
+        htmlContentBuilder.AppendHtml(serializedStartRecord);
+        htmlContentBuilder.AppendHtml("-->");
     }
 
-    internal static IEnumerable<string> GetEpilogue(ServerComponentMarker record)
+    internal static void AppendEpilogue(IHtmlContentBuilder htmlContentBuilder, ServerComponentMarker record)
     {
-        var serializedStartRecord = JsonSerializer.Serialize(
+        var endRecord = JsonSerializer.Serialize(
             record.GetEndRecord(),
             ServerComponentSerializationSettings.JsonSerializationOptions);
 
-        return PrerenderEnd(serializedStartRecord);
-
-        static IEnumerable<string> PrerenderEnd(string endRecord)
-        {
-            yield return "<!--Blazor:";
-            yield return endRecord;
-            yield return "-->";
-        }
+        htmlContentBuilder.AppendHtml("<!--Blazor:");
+        htmlContentBuilder.AppendHtml(endRecord);
+        htmlContentBuilder.AppendHtml("-->");
     }
 }
