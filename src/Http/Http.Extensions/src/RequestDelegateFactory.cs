@@ -629,9 +629,18 @@ public static partial class RequestDelegateFactory
                     boundValues[i] = await binders[i](httpContext);
                 }
 
-                var bodyValue = await ReadBodyAsync(httpContext);
+                var stream = httpContext.Request.Body;
 
-                await continuation(target, httpContext, bodyValue, boundValues);
+                try
+                {
+                    var bodyValue = await ReadBodyAsync(httpContext);
+
+                    await continuation(target, httpContext, bodyValue, boundValues);
+                }
+                finally
+                {
+                    httpContext.Request.Body = stream;
+                }
             };
         }
         else
@@ -642,9 +651,18 @@ public static partial class RequestDelegateFactory
 
             return async (target, httpContext) =>
             {
-                var bodyValue = await ReadBodyAsync(httpContext);
+                var stream = httpContext.Request.Body;
 
-                await continuation(target, httpContext, bodyValue);
+                try
+                {
+                    var bodyValue = await ReadBodyAsync(httpContext);
+
+                    await continuation(target, httpContext, bodyValue);
+                }
+                finally
+                {
+                    httpContext.Request.Body = stream;
+                }
             };
         }
 

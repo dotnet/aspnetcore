@@ -1458,6 +1458,8 @@ public class RequestDelegateFactoryTests : LoggedTest
 
         await requestDelegate(httpContext);
 
+        Assert.Same(httpContext.Request.Body, stream);
+
         var rawRequestBody = httpContext.Items["body"];
         Assert.NotNull(rawRequestBody);
         Assert.Equal(requestBodyBytes, (byte[])rawRequestBody!);
