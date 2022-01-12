@@ -79,7 +79,7 @@ class Program
         }
     }
 
-    private async Task<string> GetJwtToken(string userId)
+    private static async Task<string> GetJwtToken(string userId)
     {
         var httpResponse = await new HttpClient().GetAsync(ServerUrl + $"/generatetoken?user={userId}");
         httpResponse.EnsureSuccessStatusCode();

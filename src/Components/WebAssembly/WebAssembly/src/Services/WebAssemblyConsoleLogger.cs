@@ -106,7 +106,7 @@ internal class WebAssemblyConsoleLogger<T> : ILogger<T>, ILogger
         }
     }
 
-    private void CreateDefaultLogMessage(StringBuilder logBuilder, LogLevel logLevel, string logName, int eventId, string message, Exception? exception)
+    private static void CreateDefaultLogMessage(StringBuilder logBuilder, LogLevel logLevel, string logName, int eventId, string message, Exception? exception)
     {
         logBuilder.Append(GetLogLevelString(logLevel));
         logBuilder.Append(_loglevelPadding);

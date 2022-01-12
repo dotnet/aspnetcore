@@ -92,7 +92,7 @@ internal partial class RequestStream : Stream
         _requestContext.Abort();
     }
 
-    private void ValidateReadBuffer(byte[] buffer, int offset, int size)
+    private static void ValidateReadBuffer(byte[] buffer, int offset, int size)
     {
         if (buffer == null)
         {

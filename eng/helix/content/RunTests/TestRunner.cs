@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 #if INSTALLPLAYWRIGHT
-using PlaywrightSharp;
+using Microsoft.Playwright;
 #endif
 
 namespace RunTests
@@ -55,9 +55,6 @@ namespace RunTests
                 var playwrightBrowsers = Environment.GetEnvironmentVariable("PLAYWRIGHT_BROWSERS_PATH");
                 Console.WriteLine($"Setting PLAYWRIGHT_BROWSERS_PATH: {playwrightBrowsers}");
                 EnvironmentVariables.Add("PLAYWRIGHT_BROWSERS_PATH", playwrightBrowsers);
-                var playrightDriver = Environment.GetEnvironmentVariable("PLAYWRIGHT_DRIVER_PATH");
-                Console.WriteLine($"Setting PLAYWRIGHT_DRIVER_PATH: {playrightDriver}");
-                EnvironmentVariables.Add("PLAYWRIGHT_DRIVER_PATH", playrightDriver);
 #else
                 Console.WriteLine($"Skipping setting PLAYWRIGHT_BROWSERS_PATH");
 #endif
@@ -112,8 +109,10 @@ namespace RunTests
         {
             try
             {
-                Console.WriteLine($"Installing Playwright to Browsers: {Environment.GetEnvironmentVariable("PLAYWRIGHT_BROWSERS_PATH")} Driver: {Environment.GetEnvironmentVariable("PLAYWRIGHT_DRIVER_PATH")}");
-                await Playwright.InstallAsync(Environment.GetEnvironmentVariable("PLAYWRIGHT_BROWSERS_PATH"), Environment.GetEnvironmentVariable("PLAYWRIGHT_DRIVER_PATH"));
+                Console.WriteLine($"Installing Playwright Browsers to {Environment.GetEnvironmentVariable("PLAYWRIGHT_BROWSERS_PATH")}");
+
+                var exitCode = Microsoft.Playwright.Program.Main(new[] { "install" });
+
                 DisplayContents(Environment.GetEnvironmentVariable("PLAYWRIGHT_BROWSERS_PATH"));
                 return true;
             }

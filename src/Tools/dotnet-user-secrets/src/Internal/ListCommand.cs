@@ -51,7 +51,7 @@ internal class ListCommand : ICommand
         }
     }
 
-    private void ReportJson(CommandContext context)
+    private static void ReportJson(CommandContext context)
     {
         var jObject = new JObject();
         foreach (var item in context.SecretStore.AsEnumerable())

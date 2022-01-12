@@ -19,7 +19,7 @@ public class ConsumesConstraintForFormFileParameterConventionTest
         var convention = GetConvention();
 
         // Act
-        convention.AddMultipartFormDataConsumesAttribute(action);
+        ConsumesConstraintForFormFileParameterConvention.AddMultipartFormDataConsumesAttribute(action);
 
         // Assert
         var attribute = Assert.Single(action.Filters);
@@ -40,7 +40,7 @@ public class ConsumesConstraintForFormFileParameterConventionTest
         var convention = GetConvention();
 
         // Act
-        convention.AddMultipartFormDataConsumesAttribute(action);
+        ConsumesConstraintForFormFileParameterConvention.AddMultipartFormDataConsumesAttribute(action);
 
         // Assert
         var attribute = Assert.Single(action.Filters);

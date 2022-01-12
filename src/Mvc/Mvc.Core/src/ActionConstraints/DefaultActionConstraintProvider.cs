@@ -35,7 +35,7 @@ internal class DefaultActionConstraintProvider : IActionConstraintProvider
     {
     }
 
-    private void ProvideConstraint(ActionConstraintItem item, IServiceProvider services)
+    private static void ProvideConstraint(ActionConstraintItem item, IServiceProvider services)
     {
         // Don't overwrite anything that was done by a previous provider.
         if (item.Constraint != null)

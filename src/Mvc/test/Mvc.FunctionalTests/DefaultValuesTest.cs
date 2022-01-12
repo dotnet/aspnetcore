@@ -99,4 +99,18 @@ public class DefaultValuesTest : IClassFixture<MvcTestFixture<BasicWebSite.Start
         // Assert
         Assert.Equal(expected, response);
     }
+
+    [Fact]
+    public async Task EchoValue_DefaultParameterValue_ForGlobbedPath()
+    {
+        // Arrange
+        var expected = $"index.html";
+        var url = "http://localhost/DefaultValues/EchoValue_DefaultParameterValue_ForGlobbedPath";
+
+        // Act
+        var response = await Client.GetStringAsync(url);
+
+        // Assert
+        Assert.Equal(expected, response);
+    }
 }

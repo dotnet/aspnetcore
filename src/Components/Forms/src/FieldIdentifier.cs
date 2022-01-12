@@ -109,7 +109,7 @@ public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
         fieldName = memberExpression.Member.Name;
 
         // Get a reference to the model object
-        // i.e., given an value like "(something).MemberName", determine the runtime value of "(something)",
+        // i.e., given a value like "(something).MemberName", determine the runtime value of "(something)",
         if (memberExpression.Expression is ConstantExpression constantExpression)
         {
             if (constantExpression.Value is null)

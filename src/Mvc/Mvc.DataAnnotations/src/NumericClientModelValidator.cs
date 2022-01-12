@@ -32,7 +32,7 @@ internal class NumericClientModelValidator : IClientModelValidator
         }
     }
 
-    private string GetErrorMessage(ModelMetadata modelMetadata)
+    private static string GetErrorMessage(ModelMetadata modelMetadata)
     {
         if (modelMetadata == null)
         {

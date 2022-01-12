@@ -101,7 +101,7 @@ public class PageResultExecutor : ViewExecutor
         return ExecuteAsync(viewContext, result.ContentType, result.StatusCode);
     }
 
-    private void OnExecuting(PageContext pageContext)
+    private static void OnExecuting(PageContext pageContext)
     {
         var viewDataValuesProvider = pageContext.HttpContext.Features.Get<IViewDataValuesProviderFeature>();
         if (viewDataValuesProvider != null)

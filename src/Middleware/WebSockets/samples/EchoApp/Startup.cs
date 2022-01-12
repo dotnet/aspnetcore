@@ -74,7 +74,7 @@ public class Startup
         await webSocket.CloseAsync(webSocket.CloseStatus.Value, webSocket.CloseStatusDescription, CancellationToken.None);
     }
 
-    private void LogFrame(ILogger logger, WebSocket webSocket, ValueWebSocketReceiveResult frame, byte[] buffer)
+    private static void LogFrame(ILogger logger, WebSocket webSocket, ValueWebSocketReceiveResult frame, byte[] buffer)
     {
         var close = frame.MessageType == WebSocketMessageType.Close;
         string message;

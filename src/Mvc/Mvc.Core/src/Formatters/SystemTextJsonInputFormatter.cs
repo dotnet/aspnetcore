@@ -130,7 +130,7 @@ public partial class SystemTextJsonInputFormatter : TextInputFormatter, IInputFo
         return new InputFormatterException(jsonException.Message, jsonException);
     }
 
-    private (Stream inputStream, bool usesTranscodingStream) GetInputStream(HttpContext httpContext, Encoding encoding)
+    private static (Stream inputStream, bool usesTranscodingStream) GetInputStream(HttpContext httpContext, Encoding encoding)
     {
         if (encoding.CodePage == Encoding.UTF8.CodePage)
         {

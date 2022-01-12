@@ -21,7 +21,7 @@ internal class IdentityPageModelConvention<TUser> : IPageApplicationModelConvent
         model.ModelType = templateInstance.GetTypeInfo();
     }
 
-    private void ValidateTemplate(Type template)
+    private static void ValidateTemplate(Type template)
     {
         if (template.IsAbstract || !template.IsGenericTypeDefinition)
         {
