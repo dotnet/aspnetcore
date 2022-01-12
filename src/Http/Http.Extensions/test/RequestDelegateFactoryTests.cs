@@ -1460,6 +1460,19 @@ public class RequestDelegateFactoryTests : LoggedTest
 
         Assert.Same(httpContext.Request.Body, stream);
 
+        // Assert that we can read the body from both the pipe reader and Stream after executing
+        httpContext.Request.Body.Position = 0;
+        byte[] data = new byte[requestBodyBytes.Length];
+        int read = await httpContext.Request.Body.ReadAsync(data.AsMemory());
+        Assert.Equal(read, data.Length);
+        Assert.Equal(requestBodyBytes, data);
+
+        httpContext.Request.Body.Position = 0;
+        var result = await httpContext.Request.BodyReader.ReadAsync();
+        Assert.Equal(requestBodyBytes.Length, result.Buffer.Length);
+        Assert.Equal(requestBodyBytes, result.Buffer.ToArray());
+        httpContext.Request.BodyReader.AdvanceTo(result.Buffer.End);
+
         var rawRequestBody = httpContext.Items["body"];
         Assert.NotNull(rawRequestBody);
         Assert.Equal(requestBodyBytes, (byte[])rawRequestBody!);
