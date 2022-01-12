@@ -542,7 +542,7 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
         return false;
     }
 
-    private bool IsPreface(in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
+    private static bool IsPreface(in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
     {
         consumed = buffer.Start;
         examined = buffer.End;
