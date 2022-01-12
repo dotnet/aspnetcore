@@ -17,7 +17,7 @@ public class Http2RequestTests : LoggedTest
     public async Task GET_NoTLS_Http11RequestToHttp2Endpoint_400Result()
     {
         // Arrange
-        var builder = CreateHostBuilder(c => Task.CompletedTask, protocol: HttpProtocols.Http2);
+        var builder = CreateHostBuilder(c => Task.CompletedTask, protocol: HttpProtocols.Http2, plaintext: true);
 
         using (var host = builder.Build())
         using (var client = HttpHelpers.CreateClient())
@@ -37,8 +37,8 @@ public class Http2RequestTests : LoggedTest
         }
     }
 
-    private IHostBuilder CreateHostBuilder(RequestDelegate requestDelegate, HttpProtocols? protocol = null, Action<KestrelServerOptions> configureKestrel = null)
+    private IHostBuilder CreateHostBuilder(RequestDelegate requestDelegate, HttpProtocols? protocol = null, Action<KestrelServerOptions> configureKestrel = null, bool? plaintext = null)
     {
-        return HttpHelpers.CreateHostBuilder(AddTestLogging, requestDelegate, protocol, configureKestrel);
+        return HttpHelpers.CreateHostBuilder(AddTestLogging, requestDelegate, protocol, configureKestrel, plaintext);
     }
 }

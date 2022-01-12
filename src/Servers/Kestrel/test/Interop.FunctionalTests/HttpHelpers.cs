@@ -42,7 +42,7 @@ internal static class HttpHelpers
         return new HttpMessageInvoker(handler);
     }
 
-    public static IHostBuilder CreateHostBuilder(Action<IServiceCollection> configureServices, RequestDelegate requestDelegate, HttpProtocols? protocol = null, Action<KestrelServerOptions> configureKestrel = null, bool? skipHttps = null)
+    public static IHostBuilder CreateHostBuilder(Action<IServiceCollection> configureServices, RequestDelegate requestDelegate, HttpProtocols? protocol = null, Action<KestrelServerOptions> configureKestrel = null, bool? plaintext = null)
     {
         return new HostBuilder()
             .ConfigureWebHost(webHostBuilder =>
@@ -55,7 +55,7 @@ internal static class HttpHelpers
                             o.Listen(IPAddress.Parse("127.0.0.1"), 0, listenOptions =>
                             {
                                 listenOptions.Protocols = protocol ?? HttpProtocols.Http3;
-                                if (skipHttps ?? true)
+                                if (!(plaintext ?? false))
                                 {
                                     listenOptions.UseHttps();
                                 }
