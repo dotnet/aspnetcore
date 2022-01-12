@@ -29,5 +29,5 @@ export function setApplicationIsTerminated(): void {
 
 interface IpcMessage {
   messageType: string;
-  args: any[];
+  args: unknown[];
 }

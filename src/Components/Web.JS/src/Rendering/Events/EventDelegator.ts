@@ -156,7 +156,7 @@ export class EventDelegator {
 
     // Scan up the element hierarchy, looking for any matching registered event handlers
     let candidateEventTarget = path.shift();
-    let eventArgs: any = null; // Populate lazily
+    let eventArgs: unknown = null; // Populate lazily
     let eventArgsIsPopulated = false;
     const eventIsNonBubbling = Object.prototype.hasOwnProperty.call(nonBubblingEvents, eventName);
     let stopPropagationWasRequested = false;
@@ -377,6 +377,6 @@ function eventIsDisabledOnElement(element: Element, rawBrowserEventName: string)
   // We want to replicate the normal DOM event behavior that, for 'interactive' elements
   // with a 'disabled' attribute, certain mouse events are suppressed
   return (element instanceof HTMLButtonElement || element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement || element instanceof HTMLSelectElement)
-    && disableableEventNames.hasOwnProperty(rawBrowserEventName)
+    && Object.prototype.hasOwnProperty.call(disableableEventNames, rawBrowserEventName)
     && element.disabled;
 }

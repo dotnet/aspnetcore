@@ -41,9 +41,10 @@ export function sendLocationChanged(uri: string, intercepted: boolean): Promise<
   return Promise.resolve(); // Like in Blazor Server, we only issue the notification here - there's no need to wait for a response
 }
 
-function send(messageType: string, ...args: any[]) {
+function send(messageType: string, ...args: unknown[]) {
   const serializedMessage = trySerializeMessage(messageType, args);
   if (serializedMessage) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (window.external as any).sendMessage(serializedMessage);
   }
 }

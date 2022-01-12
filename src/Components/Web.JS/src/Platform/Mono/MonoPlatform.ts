@@ -667,9 +667,11 @@ class MonoHeapLock implements HeapLock {
   // Within a given heap lock, it's safe to cache decoded strings since the memory can't change
   stringCache = new Map<number, string | null>();
 
+  // eslint-disable-next-line @typescript-eslint/ban-types
   private postReleaseActions?: Function[];
 
-  enqueuePostReleaseAction(callback: Function) {
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  enqueuePostReleaseAction(callback: Function): void {
     if (!this.postReleaseActions) {
       this.postReleaseActions = [];
     }

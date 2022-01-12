@@ -41,6 +41,7 @@ export function startIpcReceiver(): void {
     'Navigate': navigationManagerFunctions.navigateTo,
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (window.external as any).receiveMessage((message: string) => {
     const parsedMessage = tryDeserializeMessage(message);
     if (parsedMessage) {

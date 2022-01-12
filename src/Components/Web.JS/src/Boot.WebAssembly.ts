@@ -29,6 +29,7 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   started = true;
 
   if (inAuthRedirectIframe()) {
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     await new Promise(() => {}); // See inAuthRedirectIframe for explanation
   }
 
@@ -110,7 +111,7 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
 
   Blazor._internal.getPersistedState = () => BINDING.js_string_to_mono_string(discoverPersistedState(document) || '');
 
-  Blazor._internal.attachRootComponentToElement = (selector, componentId, rendererId) => {
+  Blazor._internal.attachRootComponentToElement = (selector, componentId, rendererId: any) => {
     const element = componentAttacher.resolveRegisteredElement(selector);
     if (!element) {
       attachRootComponentToElement(selector, componentId, rendererId);
@@ -186,7 +187,7 @@ function endInvokeDotNetFromJS(callId: System_String, success: System_Boolean, r
 }
 
 function receiveByteArray(id: System_Int, data: System_Array<System_Byte>): void {
-  const idLong = id as any as number;
+  const idLong = id as unknown as number;
   const dataByteArray = monoPlatform.toUint8Array(data);
   DotNet.jsCallDispatcher.receiveByteArray(idLong, dataByteArray);
 }

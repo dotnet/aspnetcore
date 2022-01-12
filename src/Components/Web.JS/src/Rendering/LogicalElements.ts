@@ -92,11 +92,11 @@ export function emptyLogicalElement(element: LogicalElement): void {
 export function createAndInsertLogicalContainer(parent: LogicalElement, childIndex: number): LogicalElement {
   const containerElement = document.createComment('!');
   insertLogicalChild(containerElement, parent, childIndex);
-  return containerElement as any as LogicalElement;
+  return containerElement as unknown as LogicalElement;
 }
 
 export function insertLogicalChild(child: Node, parent: LogicalElement, childIndex: number): void {
-  const childAsLogicalElement = child as any as LogicalElement;
+  const childAsLogicalElement = child as unknown as LogicalElement;
   if (child instanceof Comment) {
     const existingGrandchildren = getLogicalChildrenArray(childAsLogicalElement);
     if (existingGrandchildren && getLogicalChildrenArray(childAsLogicalElement).length > 0) {
@@ -217,7 +217,7 @@ export function permuteLogicalChildren(parent: LogicalElement, permutationList: 
     const parentDomNode = insertBefore.parentNode!;
     const elementToMove = listEntry.moveRangeStart!;
     const moveEndNode = listEntry.moveRangeEnd!;
-    let nextToMove = elementToMove as any as Node | null;
+    let nextToMove = elementToMove as unknown as Node | null;
     while (nextToMove) {
       const nextNext = nextToMove.nextSibling;
       parentDomNode.insertBefore(nextToMove, insertBefore);
