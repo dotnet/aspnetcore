@@ -3,16 +3,17 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "bootstrap": "^4.6.0",
-    "jquery": "^3.6.0",
+    "bootstrap": "~4.6.1",
+    "jquery": "~3.6.0",
     "merge": "^2.1.1",
-    "oidc-client": "^1.11.5",
-    "react": "^16.0.0",
-    "react-dom": "^16.0.0",
+    "oidc-client": "~1.11.5",
+    "react": "~16.14.0",
+    "react-dom": "~16.14.0",
     "react-router-bootstrap": "^0.25.0",
-    "react-router-dom": "^5.1.2",
-    "reactstrap": "^8.4.1",
-    "rimraf": "^2.6.2"
+    "react-router": "~5.2.1",
+    "react-router-dom": "~5.3.0",
+    "reactstrap": "~8.10.1",
+    "rimraf": "^3.0.2"
   },
   "devDependencies": {
     "ajv": "^6.12.6",
@@ -20,7 +21,7 @@
     "eslint-config-react-app": "^5.2.1",
     "eslint-plugin-jsx-a11y": "^6.4.1",
     "nan": "^2.15.0",
-    "react-scripts": "^4.0.3",
+    "react-scripts": "^5.0.0",
     "typescript": "^3.9.10"
   },
   "eslintConfig": {
