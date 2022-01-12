@@ -5,13 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using PlaywrightSharp;
+using Microsoft.Playwright;
 
 namespace Microsoft.AspNetCore.BrowserTesting;
 
 public class PageInformation : IDisposable
 {
-    private readonly Page _page;
+    private readonly IPage _page;
     private readonly ILogger<PageInformation> _logger;
 
     public List<string> FailedRequests { get; } = new();
@@ -22,7 +22,7 @@ public class PageInformation : IDisposable
 
     public List<IWebSocket> WebSockets { get; set; } = new();
 
-    public PageInformation(Page page, ILogger<PageInformation> logger)
+    public PageInformation(IPage page, ILogger<PageInformation> logger)
     {
         page.Console += RecordConsoleMessage;
         page.PageError += RecordPageError;
@@ -34,16 +34,16 @@ public class PageInformation : IDisposable
         _ = LogPageVideoPath();
     }
 
-    private void CaptureWebSocket(object sender, WebSocketEventArgs e)
+    private void CaptureWebSocket(object sender, IWebSocket e)
     {
-        WebSockets.Add(e.WebSocket);
+        WebSockets.Add(e);
     }
 
     private async Task LogPageVideoPath()
     {
         try
         {
-            var path = _page.Video != null ? await _page.Video.GetPathAsync() : null;
+            var path = _page.Video != null ? await _page.Video.PathAsync() : null;
             if (path != null)
             {
                 _logger.LogInformation($"Page video recorded at: {path}");
@@ -63,41 +63,40 @@ public class PageInformation : IDisposable
         _page.RequestFailed -= RecordFailedRequest;
     }
 
-    private void RecordFailedRequest(object sender, RequestFailedEventArgs e)
+    private void RecordFailedRequest(object sender, IRequest e)
     {
         try
         {
-            _logger.LogError(e.FailureText);
+            _logger.LogError(e.Failure);
         }
         catch
         {
         }
-        FailedRequests.Add(e.FailureText);
+        FailedRequests.Add(e.Failure);
     }
 
-    private void RecordPageError(object sender, PageErrorEventArgs e)
+    private void RecordPageError(object sender, string e)
     {
         // There needs to be a bit of experimentation with this, but message should be a good start.
         try
         {
-            _logger.LogError(e.Message);
+            _logger.LogError(e);
         }
         catch
         {
         }
 
-        PageErrors.Add(e.Message);
+        PageErrors.Add(e);
     }
 
-    private void RecordConsoleMessage(object sender, ConsoleEventArgs e)
+    private void RecordConsoleMessage(object sender, IConsoleMessage message)
     {
         try
         {
-            var message = e.Message;
             var messageText = message.Text.Replace(Environment.NewLine, $"{Environment.NewLine}      ");
             var location = message.Location;
 
-            var logMessage = $"[{_page.Url}]{Environment.NewLine}      {messageText}{Environment.NewLine}      ({location.URL}:{location.LineNumber}:{location.ColumnNumber})";
+            var logMessage = $"[{_page.Url}]{Environment.NewLine}      {messageText}{Environment.NewLine}      ({location})";
 
             _logger.Log(MapLogLevel(message.Type), logMessage);
 

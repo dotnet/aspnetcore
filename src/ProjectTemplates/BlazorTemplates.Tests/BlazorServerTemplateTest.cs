@@ -8,7 +8,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.BrowserTesting;
 using Microsoft.AspNetCore.Testing;
-using PlaywrightSharp;
+using Microsoft.Playwright;
 using ProjectTemplates.Tests.Infrastructure;
 using Templates.Test.Helpers;
 using Xunit;
@@ -136,20 +136,31 @@ public class BlazorServerTemplateTest : BlazorTemplateTest
 
     private async Task TestBasicNavigation(Project project, IPage page)
     {
-        var socket = BrowserContextInfo.Pages[page].WebSockets.SingleOrDefault() ??
-            (await page.WaitForEventAsync(PageEvent.WebSocket)).WebSocket;
+        var socket = await page.WaitForWebSocketAsync();
+
+        var framesReceived = 0;
+        var framesSent = 0;
+
+        void FrameReceived(object sender, IWebSocketFrame frame) { framesReceived++; }
+        void FrameSent(object sender, IWebSocketFrame frame) { framesSent++; }
+
+        socket.FrameReceived += FrameReceived;
+        socket.FrameSent += FrameSent;
 
         // Receive render batch
-        await socket.WaitForEventAsync(WebSocketEvent.FrameReceived);
-        await socket.WaitForEventAsync(WebSocketEvent.FrameSent);
+        await page.WaitForWebSocketAsync(new() { Predicate = (s) => framesReceived == 1 });
+        await page.WaitForWebSocketAsync(new() { Predicate = (s) => framesSent == 1 });
 
         // JS interop call to intercept navigation
-        await socket.WaitForEventAsync(WebSocketEvent.FrameReceived);
-        await socket.WaitForEventAsync(WebSocketEvent.FrameSent);
+        await page.WaitForWebSocketAsync(new() { Predicate = (s) => framesReceived == 2 });
+        await page.WaitForWebSocketAsync(new() { Predicate = (s) => framesSent == 2 });
+
+        socket.FrameReceived -= FrameReceived;
+        socket.FrameSent -= FrameSent;
 
         await page.WaitForSelectorAsync("nav");
         // <title> element gets project ID injected into it during template execution
-        Assert.Equal("Index", (await page.GetTitleAsync()).Trim());
+        Assert.Equal("Index", (await page.TitleAsync()).Trim());
 
         // Initially displays the home page
         await page.WaitForSelectorAsync("h1 >> text=Hello, world!");
@@ -168,7 +179,7 @@ public class BlazorServerTemplateTest : BlazorTemplateTest
 
         // Asynchronously loads and displays the table of weather forecasts
         await page.WaitForSelectorAsync("table>tbody>tr");
-        Assert.Equal(5, (await page.QuerySelectorAllAsync("p+table>tbody>tr")).Count());
+        Assert.Equal(5, await page.Locator("p+table>tbody>tr").CountAsync());
     }
 
     [Theory]
