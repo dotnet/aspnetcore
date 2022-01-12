@@ -630,16 +630,37 @@ public static partial class RequestDelegateFactory
                 }
 
                 var stream = httpContext.Request.Body;
+                IRequestBodyPipeFeature? requestBodyPipe = null;
 
                 try
                 {
-                    var bodyValue = await ReadBodyAsync(httpContext);
+                    var reader = httpContext.Request.BodyReader;
 
-                    await continuation(target, httpContext, bodyValue, boundValues);
+                    var body = await ReadBodyAsync(httpContext, reader);
+
+                    // We're not buffering the body so we want to block consuming code from reading again
+                    // and getting weird errors. Treat further reads as a fully consumed body.
+                    httpContext.Request.Body = Stream.Null;
+
+                    // User code overrode the PipeReader
+                    if (reader == httpContext.Request.BodyReader)
+                    {
+                        requestBodyPipe = httpContext.Features.Get<IRequestBodyPipeFeature>();
+                        httpContext.Features.Set<IRequestBodyPipeFeature>(new RequestBodyPipeFeature(PipeReader.Create(Stream.Null)));
+                    }
+
+                    await continuation(target, httpContext, body, boundValues);
+
+                    reader.AdvanceTo(body.End);
                 }
                 finally
                 {
                     httpContext.Request.Body = stream;
+
+                    if (requestBodyPipe is not null)
+                    {
+                        httpContext.Features.Set(requestBodyPipe);
+                    }
                 }
             };
         }
@@ -652,44 +673,59 @@ public static partial class RequestDelegateFactory
             return async (target, httpContext) =>
             {
                 var stream = httpContext.Request.Body;
+                IRequestBodyPipeFeature? requestBodyPipe = null;
 
                 try
                 {
-                    var bodyValue = await ReadBodyAsync(httpContext);
+                    var reader = httpContext.Request.BodyReader;
 
-                    await continuation(target, httpContext, bodyValue);
+                    var body = await ReadBodyAsync(httpContext, reader);
+
+                    // We're not buffering the body so we want to block consuming code from reading again
+                    // and getting weird errors. Treat further reads as a fully consumed body.
+                    httpContext.Request.Body = Stream.Null;
+
+                    // User code overrode the PipeReader
+                    if (reader == httpContext.Request.BodyReader)
+                    {
+                        requestBodyPipe = httpContext.Features.Get<IRequestBodyPipeFeature>();
+                        httpContext.Features.Set<IRequestBodyPipeFeature>(new RequestBodyPipeFeature(PipeReader.Create(Stream.Null)));
+                    }
+
+                    await continuation(target, httpContext, body);
+
+                    reader.AdvanceTo(body.End);
                 }
                 finally
                 {
                     httpContext.Request.Body = stream;
+
+                    if (requestBodyPipe is not null)
+                    {
+                        httpContext.Features.Set(requestBodyPipe);
+                    }
                 }
             };
         }
 
-        static async ValueTask<ReadOnlySequence<byte>> ReadBodyAsync(HttpContext httpContext)
+        static async ValueTask<ReadOnlySequence<byte>> ReadBodyAsync(HttpContext httpContext, PipeReader reader)
         {
             var feature = httpContext.Features.Get<IHttpRequestBodyDetectionFeature>();
 
             if (feature?.CanHaveBody == true)
             {
-                var bodyReader = httpContext.Request.BodyReader;
-
                 while (true)
                 {
-                    var result = await bodyReader.ReadAsync();
+                    var result = await reader.ReadAsync();
                     var buffer = result.Buffer;
 
                     if (result.IsCompleted)
                     {
-                        // We're not buffering the body so we want to block consuming code from reading again
-                        // and getting weird errors. Treat further reads as a fully consumed body.
-                        httpContext.Request.Body = Stream.Null;
-
                         return buffer;
                     }
 
                     // Buffer the body
-                    bodyReader.AdvanceTo(buffer.Start, buffer.End);
+                    reader.AdvanceTo(buffer.Start, buffer.End);
                 }
             }
 
@@ -1562,6 +1598,15 @@ public static partial class RequestDelegateFactory
     private static async Task ExecuteResultWriteResponse(IResult? result, HttpContext httpContext)
     {
         await EnsureRequestResultNotNull(result).ExecuteAsync(httpContext);
+    }
+
+    private sealed class RequestBodyPipeFeature : IRequestBodyPipeFeature
+    {
+        public RequestBodyPipeFeature(PipeReader pipeReader)
+        {
+            Reader = pipeReader;
+        }
+        public PipeReader Reader { get; set; }
     }
 
     private class FactoryContext
