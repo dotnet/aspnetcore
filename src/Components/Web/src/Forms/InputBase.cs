@@ -271,7 +271,7 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
     /// <summary>
     /// Returns a dictionary with the same values as the specified <paramref name="source"/>.
     /// </summary>
-    /// <returns>true, if a new dictrionary with copied values was created. false - otherwise.</returns>
+    /// <returns>true, if a new dictionary with copied values was created. false - otherwise.</returns>
     private static bool ConvertToDictionary(IReadOnlyDictionary<string, object>? source, out Dictionary<string, object> result)
     {
         var newDictionaryCreated = true;
