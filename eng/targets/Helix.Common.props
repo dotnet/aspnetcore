@@ -33,12 +33,17 @@
         <HelixAvailableTargetQueue Include="Windows.Amd64.Server2022.Open" Platform="Windows" />
       </ItemGroup>
     </When>
+    <When Condition=" '$(IsHelixWindowsArmCheck)' == 'true' ">
+      <ItemGroup>
+        <!-- aspnetcore-helix-matrix[-internal] (helix-matrix.yml) arm64 job -->
+        <HelixAvailableTargetQueue Include="Windows.10.Arm64v8.Open" Platform="Windows" />
+      </ItemGroup>
+    </When>
     <Otherwise>
       <!-- aspnetcore-helix-matrix[-internal] (helix-matrix.yml) and RunHelix.ps1 -->
       <!-- aspnetcore-quarantined-tests (quarantined-tests.yml) and RunHelix.ps1 -RunQuarantinedTests -->
       <ItemGroup>
         <!-- See what blows up since IIS Express isn't supported on arm64 -->
-        <HelixAvailableTargetQueue Include="Windows.10.Arm64v8.Open" Platform="Windows" />
       </ItemGroup>
     </Otherwise>
   </Choose>
