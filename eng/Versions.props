@@ -9,7 +9,7 @@
     <AspNetCoreMajorVersion>5</AspNetCoreMajorVersion>
     <AspNetCoreMinorVersion>0</AspNetCoreMinorVersion>
     <AspNetCorePatchVersion>14</AspNetCorePatchVersion>
-    <ValidateBaseline>false</ValidateBaseline>
+    <ValidateBaseline>true</ValidateBaseline>
     <!--
         When StabilizePackageVersion is set to 'true', this branch will produce stable outputs for 'Shipping' packages
     -->
@@ -136,7 +136,7 @@
     <MicrosoftEntityFrameworkCorePackageVersion>5.0.14</MicrosoftEntityFrameworkCorePackageVersion>
     <MicrosoftEntityFrameworkCoreDesignPackageVersion>5.0.14</MicrosoftEntityFrameworkCoreDesignPackageVersion>
     <!-- Packages from dotnet/arcade -->
-    <MicrosoftDotNetBuildTasksInstallersPackageVersion>5.0.0-beta.21552.7</MicrosoftDotNetBuildTasksInstallersPackageVersion>
+    <MicrosoftDotNetBuildTasksInstallersPackageVersion>5.0.0-beta.21565.1</MicrosoftDotNetBuildTasksInstallersPackageVersion>
   </PropertyGroup>
   <!--
 
@@ -238,7 +238,7 @@
     <!-- Packages from 2.1, 2.2, and 3.1 branches used for site extension build. -->
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension21PackageVersion>2.1.1</MicrosoftAspNetCoreAzureAppServicesSiteExtension21PackageVersion>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension22PackageVersion>2.2.0</MicrosoftAspNetCoreAzureAppServicesSiteExtension22PackageVersion>
-    <MicrosoftAspNetCoreAzureAppServicesSiteExtension31PackageVersion>3.1.21-servicing-21523-9</MicrosoftAspNetCoreAzureAppServicesSiteExtension31PackageVersion>
+    <MicrosoftAspNetCoreAzureAppServicesSiteExtension31PackageVersion>3.1.22-servicing-21579-4</MicrosoftAspNetCoreAzureAppServicesSiteExtension31PackageVersion>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension31x64PackageVersion>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension31PackageVersion)</MicrosoftAspNetCoreAzureAppServicesSiteExtension31x64PackageVersion>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension31x86PackageVersion>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension31PackageVersion)</MicrosoftAspNetCoreAzureAppServicesSiteExtension31x86PackageVersion>
     <!-- 3rd party dependencies -->
@@ -267,9 +267,9 @@
     <NewtonsoftJsonBsonPackageVersion>1.0.2</NewtonsoftJsonBsonPackageVersion>
     <NewtonsoftJsonPackageVersion>12.0.2</NewtonsoftJsonPackageVersion>
     <NSwagApiDescriptionClientPackageVersion>13.0.4</NSwagApiDescriptionClientPackageVersion>
-    <SeleniumSupportPackageVersion>4.0.0</SeleniumSupportPackageVersion>
-    <SeleniumWebDriverChromeDriverPackageVersion>95.0.4638.1700</SeleniumWebDriverChromeDriverPackageVersion>
-    <SeleniumWebDriverPackageVersion>4.0.0</SeleniumWebDriverPackageVersion>
+    <SeleniumSupportPackageVersion>4.1.0</SeleniumSupportPackageVersion>
+    <SeleniumWebDriverChromeDriverPackageVersion>97.0.4692.7100</SeleniumWebDriverChromeDriverPackageVersion>
+    <SeleniumWebDriverPackageVersion>4.1.0</SeleniumWebDriverPackageVersion>
     <SerilogExtensionsLoggingPackageVersion>1.4.0</SerilogExtensionsLoggingPackageVersion>
     <SerilogSinksFilePackageVersion>4.0.0</SerilogSinksFilePackageVersion>
     <StackExchangeRedisPackageVersion>2.0.593</StackExchangeRedisPackageVersion>
@@ -287,7 +287,7 @@
   <!-- Restore feeds -->
   <PropertyGroup Label="Restore feeds">
     <!-- In an orchestrated build, this may be overridden to other Azure feeds. -->
-    <DotNetAssetRootUrl Condition="'$(DotNetAssetRootUrl)'==''">https://dotnetcli.blob.core.windows.net/dotnet/</DotNetAssetRootUrl>
+    <DotNetAssetRootUrl Condition="'$(DotNetAssetRootUrl)'==''">https://dotnetcli.azureedge.net/dotnet/</DotNetAssetRootUrl>
     <DotNetPrivateAssetRootUrl Condition="'$(DotNetPrivateAssetRootUrl)'==''">https://dotnetclimsrc.blob.core.windows.net/dotnet/</DotNetPrivateAssetRootUrl>
   </PropertyGroup>
 </Project>
