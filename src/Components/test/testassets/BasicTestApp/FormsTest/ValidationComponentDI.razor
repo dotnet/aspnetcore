@@ -27,8 +27,7 @@
     {
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
-            var saladChef= validationContext.GetService<SaladChef>();
-            if (saladChef == null) return new ValidationResult("Can't find SaladChef");
+            var saladChef= validationContext.GetRequiredService<SaladChef>();
             if (saladChef.ThingsYouCanPutInASalad.Contains(value.ToString()))
             {
                 return ValidationResult.Success;    
@@ -36,9 +35,8 @@
             return new ValidationResult("You should not put that in a salad!");
         }
     }
-
    
-    //Simple class to check if DI can be used in Validation attributes
+    // Simple class to check if DI can be used in Validation attributes
     public class SaladChef
     {
         public string[] ThingsYouCanPutInASalad = { "Strawberries", "Pineapple", "Honeydew", "Watermelon", "Grapes" };
