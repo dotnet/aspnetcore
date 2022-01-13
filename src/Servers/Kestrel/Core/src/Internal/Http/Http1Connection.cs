@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpOutputAborter
 {
-    internal static ReadOnlySpan<byte> Http2GoAwayProtocolErrorBytes => new byte[17] { 0, 0, 8, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 };
+    internal static ReadOnlySpan<byte> Http2GoAwayProtocolErrorBytes => new byte[17] { 0, 0, 8, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13 };
 
     private const byte ByteAsterisk = (byte)'*';
     private const byte ByteForwardSlash = (byte)'/';
@@ -730,6 +730,8 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
     {
         const int PrefaceLineLength = 18;
 
+        // Only check for HTTP/2 preface on non-TLS connection.
+        // When TLS is used then ALPN is used to negotiate correct version.
         if (ConnectionFeatures.Get<ITlsHandshakeFeature>() == null)
         {
             // If there is an unrecognized HTTP version, it is the first request on the connection, and the request line
@@ -745,6 +747,8 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
                     Log.PossibleInvalidHttpVersionDetected(ConnectionId, Http.HttpVersion.Http11, Http.HttpVersion.Http2);
 
                     _context.Transport.Output.Write(Http2GoAwayProtocolErrorBytes);
+
+                    // Aborting the connection here stops Http1Connection from writing HTTP/1.1 response.
                     CancelRequestAbortedToken();
                 }
             }
