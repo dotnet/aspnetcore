@@ -27,7 +27,7 @@
     {
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
-            var saladChef= validationContext.GetRequiredService<SaladChef>();
+            var saladChef = validationContext.GetRequiredService<SaladChef>();
             if (saladChef.ThingsYouCanPutInASalad.Contains(value.ToString()))
             {
                 return ValidationResult.Success;    
