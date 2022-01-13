@@ -205,7 +205,7 @@ public sealed class CompositeEndpointDataSource : EndpointDataSource
             }
             return sb.ToString();
 
-            IEnumerable<string> FormatValues(IEnumerable<KeyValuePair<string, object?>> values)
+            static IEnumerable<string> FormatValues(IEnumerable<KeyValuePair<string, object?>> values)
             {
                 return values.Select(
                     kvp =>

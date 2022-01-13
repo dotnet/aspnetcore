@@ -198,12 +198,12 @@ public class WebHostBuilder : IWebHostBuilder
             throw;
         }
 
-        IServiceProvider GetProviderFromFactory(IServiceCollection collection)
+        static IServiceProvider GetProviderFromFactory(IServiceCollection collection)
         {
             var provider = collection.BuildServiceProvider();
             var factory = provider.GetService<IServiceProviderFactory<IServiceCollection>>();
 
-            if (factory != null && !(factory is DefaultServiceProviderFactory))
+            if (factory != null && factory is not DefaultServiceProviderFactory)
             {
                 using (provider)
                 {

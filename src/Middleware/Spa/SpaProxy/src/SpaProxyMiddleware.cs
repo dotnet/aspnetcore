@@ -68,7 +68,7 @@ internal class SpaProxyMiddleware
             context.Response.Redirect(_options.Value.ServerUrl);
         }
 
-        string GenerateSpaLaunchPage(SpaDevelopmentServerOptions options)
+        static string GenerateSpaLaunchPage(SpaDevelopmentServerOptions options)
         {
             return $@"
 <!DOCTYPE html>

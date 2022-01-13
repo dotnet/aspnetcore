@@ -47,7 +47,7 @@ public static class AuthenticationBuilderExtensions
 
         return builder;
 
-        IdentityServerJwtBearerOptionsConfiguration JwtBearerOptionsFactory(IServiceProvider sp)
+        static IdentityServerJwtBearerOptionsConfiguration JwtBearerOptionsFactory(IServiceProvider sp)
         {
             var schemeName = IdentityServerJwtConstants.IdentityServerJwtBearerScheme;
 
@@ -58,5 +58,4 @@ public static class AuthenticationBuilderExtensions
             return new IdentityServerJwtBearerOptionsConfiguration(schemeName, apiName, localApiDescriptor);
         }
     }
-
 }

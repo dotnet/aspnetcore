@@ -207,7 +207,7 @@ public static class AzureADB2CAuthenticationBuilderExtensions
                 apm.FeatureProviders.Add(new AzureADB2CAccountControllerFeatureProvider());
             });
 
-        bool HasSameName(string left, string right) => string.Equals(left, right, StringComparison.Ordinal);
+        static bool HasSameName(string left, string right) => string.Equals(left, right, StringComparison.Ordinal);
     }
 
     private static IEnumerable<ApplicationPart> GetAdditionalParts()

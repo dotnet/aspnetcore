@@ -233,6 +233,9 @@ dotnet_diagnostic.IDE0055.severity = warning
 # IDE0059: Unnecessary assignment to a value
 dotnet_diagnostic.IDE0059.severity = warning
 
+# IDE0062: Make local function static
+dotnet_diagnostic.IDE0062.severity = warning
+
 # IDE0073: File header
 dotnet_diagnostic.IDE0073.severity = warning
 file_header_template = Licensed to the .NET Foundation under one or more agreements.\nThe .NET Foundation licenses this file to you under the MIT license.
@@ -285,6 +288,8 @@ dotnet_diagnostic.IDE0044.severity = suggestion
 dotnet_diagnostic.IDE0051.severity = suggestion
 # IDE0059: Unnecessary assignment to a value
 dotnet_diagnostic.IDE0059.severity = suggestion
+# IDE0062: Make local function static
+dotnet_diagnostic.IDE0062.severity = suggestion
 
 # CA2016: Forward the 'CancellationToken' parameter to methods that take one
 dotnet_diagnostic.CA2016.severity = suggestion
@@ -298,6 +303,8 @@ dotnet_diagnostic.CA1822.severity = silent
 dotnet_diagnostic.IDE0011.severity = silent
 # IDE0055: Fix formatting
 dotnet_diagnostic.IDE0055.severity = silent
+# IDE0062: Make local function static
+dotnet_diagnostic.IDE0062.severity = silent
 # IDE0161: Convert to file-scoped namespace
 dotnet_diagnostic.IDE0161.severity = silent
 
