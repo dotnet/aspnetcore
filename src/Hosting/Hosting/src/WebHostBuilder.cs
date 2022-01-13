@@ -220,7 +220,7 @@ public class WebHostBuilder : IWebHostBuilder
     {
         hostingStartupErrors = null;
 
-        _options = new WebHostOptions(_config, Assembly.GetEntryAssembly()?.GetName().Name ?? string.Empty);
+        _options = new WebHostOptions(_config);
 
         if (!_options.PreventHostingStartup)
         {
