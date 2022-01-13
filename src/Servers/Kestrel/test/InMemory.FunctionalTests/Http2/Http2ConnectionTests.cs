@@ -241,7 +241,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withStreamId: 1);
 
             // TriggerTick will trigger the stream to be returned to the pool so we can assert it
-            TriggerTick(_serviceContext.MockSystemClock.UtcNow);
+            TriggerTick();
 
             // Stream has been returned to the pool
             Assert.Equal(1, _connection.StreamPool.Count);
@@ -259,7 +259,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withStreamId: 3);
 
             // TriggerTick will trigger the stream to be returned to the pool so we can assert it
-            TriggerTick(_serviceContext.MockSystemClock.UtcNow);
+            TriggerTick();
 
             // Stream has been returned to the pool
             Assert.Equal(1, _connection.StreamPool.Count);
