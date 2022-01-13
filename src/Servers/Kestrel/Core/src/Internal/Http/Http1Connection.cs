@@ -8,6 +8,7 @@ using System.IO.Pipelines;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -41,6 +42,9 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
     private Uri? _parsedAbsoluteRequestTarget;
 
     private long _remainingRequestHeadersBytesAllowed;
+
+    // Tracks whether a HTTP/2 preface was detected during the first request.
+    private bool _http2PrefaceDetected;
 
     public Http1Connection(HttpConnectionContext context)
     {
@@ -746,13 +750,22 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
                 {
                     Log.PossibleInvalidHttpVersionDetected(ConnectionId, Http.HttpVersion.Http11, Http.HttpVersion.Http2);
 
-                    _context.Transport.Output.Write(Http2GoAwayHttp11RequiredBytes);
-
-                    // Aborting the connection here stops Http1Connection from writing HTTP/1.1 response.
-                    CancelRequestAbortedToken();
+                    // Can't write GOAWAY here. Set flag so TryProduceInvalidRequestResponse writes GOAWAY.
+                    _http2PrefaceDetected = true;
                 }
             }
         }
+    }
+
+    protected override Task TryProduceInvalidRequestResponse()
+    {
+        if (_http2PrefaceDetected)
+        {
+            _context.Transport.Output.Write(Http2GoAwayHttp11RequiredBytes);
+            return _context.Transport.Output.FlushAsync().GetAsTask();
+        }
+
+        return base.TryProduceInvalidRequestResponse();
     }
 
     void IRequestProcessor.Tick(DateTimeOffset now) { }
