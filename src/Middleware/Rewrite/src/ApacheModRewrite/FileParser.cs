@@ -12,12 +12,7 @@ internal class FileParser
         var builder = new RuleBuilder();
         var lineNum = 0;
 
-        // parsers
-        var testStringParser = new TestStringParser();
-        var conditionParser = new ConditionPatternParser();
-        var regexParser = new RuleRegexParser();
         var flagsParser = new FlagParser();
-        var tokenizer = new Tokenizer();
 
         while ((line = input.ReadLine()) != null)
         {
