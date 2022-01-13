@@ -447,9 +447,8 @@ internal class DfaMatcherBuilder : MatcherBuilder
 
     private static void AddLiteralNode(bool includeLabel, List<DfaNode> nextParents, DfaNode parent, string literal)
     {
-        DfaNode next = null;
         if (parent.Literals == null ||
-            !parent.Literals.TryGetValue(literal, out next))
+            !parent.Literals.TryGetValue(literal, out var next))
         {
             next = new DfaNode()
             {

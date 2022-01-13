@@ -268,7 +268,7 @@ internal class UrlRewriteFileParser
     private static TEnum ParseEnum<TEnum>(XElement element, string rewriteTag, TEnum defaultValue)
         where TEnum : struct
     {
-        TEnum enumResult = default(TEnum);
+        TEnum enumResult;
         var attribute = element.Attribute(rewriteTag);
         if (attribute == null)
         {

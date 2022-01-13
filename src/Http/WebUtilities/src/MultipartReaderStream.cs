@@ -271,9 +271,6 @@ internal sealed class MultipartReaderStream : Stream
     // 2:      BBBBB
     private bool SubMatch(ArraySegment<byte> segment1, byte[] matchBytes, out int matchOffset, out int matchCount)
     {
-        // clear matchCount to zero
-        matchCount = 0;
-
         // case 1: does segment1 fully contain matchBytes?
         {
             var matchBytesLengthMinusOne = matchBytes.Length - 1;
@@ -297,6 +294,7 @@ internal sealed class MultipartReaderStream : Stream
         // case 2: does segment1 end with the start of matchBytes?
         var segmentEnd = segment1.Offset + segment1.Count;
 
+        // clear matchCount to zero
         matchCount = 0;
         for (; matchOffset < segmentEnd; matchOffset++)
         {

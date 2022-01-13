@@ -49,7 +49,7 @@ public class JwtBearerHandler : AuthenticationHandler<JwtBearerOptions>
     /// <returns></returns>
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-        string? token = null;
+        string? token;
         try
         {
             // Give application opportunity to find from a different location, adjust, or reject token

@@ -142,7 +142,6 @@ internal sealed class TimeLimitedDataProtector : ITimeLimitedDataProtector
             throw new ArgumentNullException(nameof(protectedData));
         }
 
-        DateTimeOffset expiration; // unused
-        return Unprotect(protectedData, out expiration);
+        return Unprotect(protectedData, out _);
     }
 }

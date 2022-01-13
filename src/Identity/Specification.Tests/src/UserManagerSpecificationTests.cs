@@ -192,7 +192,7 @@ public abstract class UserManagerSpecificationTestBase<TUser, TKey>
         var manager = CreateManager();
         var user = CreateTestUser();
         IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
-        var userId = await manager.GetUserIdAsync(user);
+        await manager.GetUserIdAsync(user);
     }
 
     /// <summary>
@@ -324,7 +324,7 @@ public abstract class UserManagerSpecificationTestBase<TUser, TKey>
         var user = CreateTestUser("UpdatePassword");
         IdentityResultAssert.IsSuccess(await manager.CreateAsync(user, "password"));
         Assert.True(await manager.CheckPasswordAsync(user, "password"));
-        var userId = await manager.GetUserIdAsync(user);
+        await manager.GetUserIdAsync(user);
 
         SetUserPasswordHash(user, manager.PasswordHasher.HashPassword(user, "New"));
         IdentityResultAssert.IsSuccess(await manager.UpdateAsync(user));
@@ -711,7 +711,7 @@ public abstract class UserManagerSpecificationTestBase<TUser, TKey>
         {
             IdentityResultAssert.IsSuccess(await manager.AddClaimAsync(user, c));
         }
-        var userId = await manager.GetUserIdAsync(user);
+        await manager.GetUserIdAsync(user);
         var userClaims = await manager.GetClaimsAsync(user);
         Assert.Equal(3, userClaims.Count);
         IdentityResultAssert.IsSuccess(await manager.RemoveClaimAsync(user, claims[0]));
@@ -997,7 +997,7 @@ public abstract class UserManagerSpecificationTestBase<TUser, TKey>
         Assert.NotNull(stamp);
         var token = await manager.GeneratePasswordResetTokenAsync(user);
         Assert.NotNull(token);
-        var userId = await manager.GetUserIdAsync(user);
+        await manager.GetUserIdAsync(user);
         IdentityResultAssert.IsSuccess(await manager.ResetPasswordAsync(user, token, newPassword));
         Assert.False(await manager.CheckPasswordAsync(user, password));
         Assert.True(await manager.CheckPasswordAsync(user, newPassword));
@@ -1065,7 +1065,7 @@ public abstract class UserManagerSpecificationTestBase<TUser, TKey>
         var user2 = CreateTestUser();
         IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
         IdentityResultAssert.IsSuccess(await manager.CreateAsync(user2));
-        var userId = await manager.GetUserIdAsync(user);
+        await manager.GetUserIdAsync(user);
         var token = await manager.GenerateUserTokenAsync(user, "Static", "test");
 
         Assert.True(await manager.VerifyUserTokenAsync(user, "Static", "test", token));
@@ -1095,7 +1095,7 @@ public abstract class UserManagerSpecificationTestBase<TUser, TKey>
         IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
         var token = await manager.GenerateEmailConfirmationTokenAsync(user);
         Assert.NotNull(token);
-        var userId = await manager.GetUserIdAsync(user);
+        await manager.GetUserIdAsync(user);
         IdentityResultAssert.IsSuccess(await manager.ConfirmEmailAsync(user, token));
         Assert.True(await manager.IsEmailConfirmedAsync(user));
         IdentityResultAssert.IsSuccess(await manager.SetEmailAsync(user, null));
@@ -1387,7 +1387,7 @@ public abstract class UserManagerSpecificationTestBase<TUser, TKey>
         var user = CreateTestUser(phoneNumber: "123-456-7890");
         IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
         var token1 = await manager.GenerateChangePhoneNumberTokenAsync(user, "111-111-1111");
-        Assert.True(int.TryParse(token1, out var ignored));
+        Assert.True(int.TryParse(token1, out _));
     }
 
     /// <summary>
@@ -1474,7 +1474,7 @@ public abstract class UserManagerSpecificationTestBase<TUser, TKey>
         IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
         const string num1 = "111-123-4567";
         const string num2 = "111-111-1111";
-        var userId = await manager.GetUserIdAsync(user);
+        await manager.GetUserIdAsync(user);
         var token1 = await manager.GenerateChangePhoneNumberTokenAsync(user, num1);
 
         var token2 = await manager.GenerateChangePhoneNumberTokenAsync(user, num2);
@@ -1805,7 +1805,7 @@ public abstract class UserManagerSpecificationTestBase<TUser, TKey>
         var manager = CreateManager();
         var user = CreateTestUser();
         IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
-        var userId = await manager.GetUserIdAsync(user);
+        await manager.GetUserIdAsync(user);
         var factors = await manager.GetValidTwoFactorProvidersAsync(user);
         Assert.NotNull(factors);
         Assert.False(factors.Any());

@@ -142,7 +142,7 @@ internal abstract class ResourceInvoker
     internal ValueTask ReleaseResourcesCore(IDisposable? scope)
     {
         Exception? releaseException = null;
-        ValueTask releaseResult = default;
+        ValueTask releaseResult;
         try
         {
             releaseResult = ReleaseResources();

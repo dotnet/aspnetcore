@@ -336,7 +336,6 @@ internal static unsafe class DpapiSecretSerializerHelper
 
         NCryptDescriptorHandle descriptorHandle;
         LocalAllocHandle unprotectedDataHandle;
-        uint cbUnprotectedData;
         var ntstatus = UnsafeNativeMethods.NCryptUnprotectSecret(
             phDescriptor: out descriptorHandle,
             dwFlags: NCRYPT_UNPROTECT_NO_DECRYPT,
@@ -345,7 +344,7 @@ internal static unsafe class DpapiSecretSerializerHelper
             pMemPara: IntPtr.Zero,
             hWnd: IntPtr.Zero,
             ppbData: out unprotectedDataHandle,
-            pcbData: out cbUnprotectedData);
+            pcbData: out _);
         UnsafeNativeMethods.ThrowExceptionForNCryptStatus(ntstatus);
         CryptoUtil.AssertSafeHandleIsValid(descriptorHandle);
 

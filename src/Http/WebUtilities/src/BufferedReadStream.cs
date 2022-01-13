@@ -422,7 +422,7 @@ public class BufferedReadStream : Stream
     private static void ValidateBuffer(byte[] buffer, int offset, int count)
     {
         // Delegate most of our validation.
-        var ignored = new ArraySegment<byte>(buffer, offset, count);
+        _ = new ArraySegment<byte>(buffer, offset, count);
         if (count == 0)
         {
             throw new ArgumentOutOfRangeException(nameof(count), "The value must be greater than zero.");

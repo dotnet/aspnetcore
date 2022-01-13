@@ -80,7 +80,7 @@ public readonly struct HostString : IEquatable<HostString>
     {
         get
         {
-            GetParts(_value, out var host, out var port);
+            GetParts(_value, out var host, out _);
 
             return host.ToString();
         }
@@ -94,7 +94,7 @@ public readonly struct HostString : IEquatable<HostString>
     {
         get
         {
-            GetParts(_value, out var host, out var port);
+            GetParts(_value, out _, out var port);
 
             if (!StringSegment.IsNullOrEmpty(port)
                 && int.TryParse(port.AsSpan(), NumberStyles.None, CultureInfo.InvariantCulture, out var p))

@@ -51,7 +51,7 @@ public class IISExpressDeployer : IISDeployerBase
             // and contentRoot points to the project directory so you get things like static assets.
             // For a published app both point to the publish directory.
             var dllRoot = CheckIfPublishIsRequired();
-            var contentRoot = string.Empty;
+            string contentRoot;
             if (DeploymentParameters.PublishApplicationBeforeDeployment)
             {
                 DotnetPublish();
@@ -66,7 +66,7 @@ public class IISExpressDeployer : IISDeployerBase
                 var executableExtension = DeploymentParameters.ApplicationType == ApplicationType.Portable ? ".dll" : ".exe";
                 var entryPoint = Path.Combine(dllRoot, DeploymentParameters.ApplicationName + executableExtension);
 
-                var executableName = string.Empty;
+                string executableName;
                 var executableArgs = string.Empty;
 
                 if (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.CoreClr && DeploymentParameters.ApplicationType == ApplicationType.Portable)

@@ -66,7 +66,6 @@ internal class ApplicationModelFactory
         Func<ApplicationModel, ControllerModel, ActionModel, SelectorModel, TResult> flattener)
     {
         var results = new List<TResult>();
-        var errors = new Dictionary<MethodInfo, IList<string>>();
 
         var actionsByMethod = new Dictionary<MethodInfo, List<(ActionModel, SelectorModel)>>();
         var actionsByRouteName = new Dictionary<string, List<(ActionModel, SelectorModel)>>(StringComparer.OrdinalIgnoreCase);

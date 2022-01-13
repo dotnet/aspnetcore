@@ -160,7 +160,7 @@ internal
 
             switch (message)
             {
-                case StreamItemMessage result:
+                case StreamItemMessage:
                     throw new NotSupportedException("Use 'StreamAsync' to call a streaming method");
                 case CompletionMessage completion:
                     return completion;

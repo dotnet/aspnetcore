@@ -68,7 +68,7 @@ internal static class AcceptHeaderParser
             return true;
         }
 
-        var currentIndex = GetNextNonEmptyOrWhitespaceIndex(value, index, out var separatorFound);
+        var currentIndex = GetNextNonEmptyOrWhitespaceIndex(value, index, out _);
 
         if (currentIndex == value.Length)
         {
@@ -84,7 +84,7 @@ internal static class AcceptHeaderParser
         // In case we don't find the next separator, we simply advance the cursor to the
         // end of the string to signal that we are done parsing.
         var result = default(MediaTypeSegmentWithQuality);
-        var length = 0;
+        int length;
         try
         {
             length = GetMediaTypeWithQualityLength(value, currentIndex, out result);
@@ -108,7 +108,7 @@ internal static class AcceptHeaderParser
         }
 
         currentIndex = currentIndex + length;
-        currentIndex = GetNextNonEmptyOrWhitespaceIndex(value, currentIndex, out separatorFound);
+        currentIndex = GetNextNonEmptyOrWhitespaceIndex(value, currentIndex, out var separatorFound);
 
         // If we've not reached the end of the string, then we must have a separator.
         // E. g application/json, text/plain <- We must be at ',' otherwise, we've failed parsing.

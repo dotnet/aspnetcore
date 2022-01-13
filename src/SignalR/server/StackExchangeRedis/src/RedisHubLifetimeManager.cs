@@ -85,12 +85,11 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
         var feature = new RedisFeature();
         connection.Features.Set<IRedisFeature>(feature);
 
-        var connectionTask = Task.CompletedTask;
         var userTask = Task.CompletedTask;
 
         _connections.Add(connection);
 
-        connectionTask = SubscribeToConnection(connection);
+        var connectionTask = SubscribeToConnection(connection);
 
         if (!string.IsNullOrEmpty(connection.UserIdentifier))
         {

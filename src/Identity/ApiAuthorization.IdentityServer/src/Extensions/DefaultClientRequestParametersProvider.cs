@@ -26,12 +26,12 @@ internal class DefaultClientRequestParametersProvider : IClientRequestParameters
     {
         var client = Options.Value.Clients[clientId];
         var authority = context.GetIdentityServerIssuerUri();
-        var responseType = "";
         if (!client.Properties.TryGetValue(ApplicationProfilesPropertyNames.Profile, out var type))
         {
             throw new InvalidOperationException($"Can't determine the type for the client '{clientId}'");
         }
 
+        string responseType;
         switch (type)
         {
             case ApplicationProfiles.IdentityServerSPA:

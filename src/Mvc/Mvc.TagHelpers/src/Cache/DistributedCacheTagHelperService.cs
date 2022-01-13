@@ -161,7 +161,7 @@ public class DistributedCacheTagHelperService : IDistributedCacheTagHelperServic
                     // Remove the worker task before setting the result.
                     // If the result is null, other threads would potentially
                     // acquire it otherwise.
-                    _workers.TryRemove(key, out result);
+                    _workers.TryRemove(key, out _);
 
                     // Notify all other awaiters to render the content
                     tcs.TrySetResult(content);

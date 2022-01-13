@@ -125,9 +125,9 @@ internal static class RequestUriBuilder
         int byte2 = 0, byte3 = 0, byte4 = 0;
 
         // anticipate more bytes
-        var currentDecodeBits = 0;
-        var byteCount = 1;
-        var expectValueMin = 0;
+        int currentDecodeBits;
+        int byteCount;
+        int expectValueMin;
         if ((byte1 & 0xE0) == 0xC0)
         {
             // 110x xxxx, expect one more byte

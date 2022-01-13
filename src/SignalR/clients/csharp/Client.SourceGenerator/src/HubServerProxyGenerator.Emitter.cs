@@ -105,7 +105,7 @@ namespace {_spec.GetterNamespace}
                 signature.Append(')');
 
                 // Prepare method body
-                var body = "";
+                string body;
                 if (methodSpec.Support != SupportClassification.Supported)
                 {
                     body = methodSpec.SupportHint is null
