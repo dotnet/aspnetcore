@@ -440,7 +440,6 @@ override Microsoft.AspNetCore.Components.Forms.InputText.TryParseValueFromString
 override Microsoft.AspNetCore.Components.Forms.InputTextArea.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
 override Microsoft.AspNetCore.Components.Forms.InputTextArea.TryParseValueFromString(string? value, out string? result, out string? validationErrorMessage) -> bool
 override Microsoft.AspNetCore.Components.Forms.InputTime<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
-override Microsoft.AspNetCore.Components.Forms.InputTime<TValue>.FormatValueAsString(TValue? value) -> string?
 override Microsoft.AspNetCore.Components.Forms.InputTime<TValue>.TryParseValueFromString(string? value, out TValue result, out string? validationErrorMessage) -> bool
 override Microsoft.AspNetCore.Components.Forms.ValidationMessage<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
 override Microsoft.AspNetCore.Components.Forms.ValidationMessage<TValue>.OnParametersSet() -> void
