@@ -4626,6 +4626,7 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/39492")]
     public async Task StopProcessingNextRequestSendsGracefulGOAWAYThenFinalGOAWAYWhenAllStreamsComplete()
     {
         await InitializeConnectionAsync(_echoApplication);
