@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpOutputAborter
 {
-    internal static ReadOnlySpan<byte> Http2GoAwayProtocolErrorBytes => new byte[17] { 0, 0, 8, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13 };
+    internal static ReadOnlySpan<byte> Http2GoAwayHttp11RequiredBytes => new byte[17] { 0, 0, 8, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13 };
 
     private const byte ByteAsterisk = (byte)'*';
     private const byte ByteForwardSlash = (byte)'/';
@@ -746,7 +746,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
                 {
                     Log.PossibleInvalidHttpVersionDetected(ConnectionId, Http.HttpVersion.Http11, Http.HttpVersion.Http2);
 
-                    _context.Transport.Output.Write(Http2GoAwayProtocolErrorBytes);
+                    _context.Transport.Output.Write(Http2GoAwayHttp11RequiredBytes);
 
                     // Aborting the connection here stops Http1Connection from writing HTTP/1.1 response.
                     CancelRequestAbortedToken();

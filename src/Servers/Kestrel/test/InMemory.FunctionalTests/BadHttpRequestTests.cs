@@ -206,7 +206,7 @@ public class BadHttpRequestTests : LoggedTest
 
                 var data = await client.Stream.ReadAtLeastLengthAsync(17);
 
-                Assert.Equal(Http1Connection.Http2GoAwayProtocolErrorBytes.ToArray(), data);
+                Assert.Equal(Http1Connection.Http2GoAwayHttp11RequiredBytes.ToArray(), data);
             }
         }
     }
