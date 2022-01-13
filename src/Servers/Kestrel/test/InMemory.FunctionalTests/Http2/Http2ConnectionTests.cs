@@ -4655,6 +4655,7 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/39479")]
     public async Task AcceptNewStreamsDuringClosingConnection()
     {
         await InitializeConnectionAsync(_echoApplication);
