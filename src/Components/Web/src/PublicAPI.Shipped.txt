@@ -121,6 +121,12 @@ Microsoft.AspNetCore.Components.Forms.InputTextArea
 Microsoft.AspNetCore.Components.Forms.InputTextArea.Element.get -> Microsoft.AspNetCore.Components.ElementReference?
 Microsoft.AspNetCore.Components.Forms.InputTextArea.Element.set -> void
 Microsoft.AspNetCore.Components.Forms.InputTextArea.InputTextArea() -> void
+Microsoft.AspNetCore.Components.Forms.InputTime<TValue>
+Microsoft.AspNetCore.Components.Forms.InputTime<TValue>.Element.get -> Microsoft.AspNetCore.Components.ElementReference?
+Microsoft.AspNetCore.Components.Forms.InputTime<TValue>.Element.set -> void
+Microsoft.AspNetCore.Components.Forms.InputTime<TValue>.InputTime() -> void
+Microsoft.AspNetCore.Components.Forms.InputTime<TValue>.ParsingErrorMessage.get -> string!
+Microsoft.AspNetCore.Components.Forms.InputTime<TValue>.ParsingErrorMessage.set -> void
 Microsoft.AspNetCore.Components.Forms.RemoteBrowserFileStreamOptions
 Microsoft.AspNetCore.Components.Forms.RemoteBrowserFileStreamOptions.MaxBufferSize.get -> int
 Microsoft.AspNetCore.Components.Forms.RemoteBrowserFileStreamOptions.MaxBufferSize.set -> void
@@ -433,6 +439,9 @@ override Microsoft.AspNetCore.Components.Forms.InputText.BuildRenderTree(Microso
 override Microsoft.AspNetCore.Components.Forms.InputText.TryParseValueFromString(string? value, out string? result, out string? validationErrorMessage) -> bool
 override Microsoft.AspNetCore.Components.Forms.InputTextArea.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
 override Microsoft.AspNetCore.Components.Forms.InputTextArea.TryParseValueFromString(string? value, out string? result, out string? validationErrorMessage) -> bool
+override Microsoft.AspNetCore.Components.Forms.InputTime<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
+override Microsoft.AspNetCore.Components.Forms.InputTime<TValue>.FormatValueAsString(TValue? value) -> string?
+override Microsoft.AspNetCore.Components.Forms.InputTime<TValue>.TryParseValueFromString(string? value, out TValue result, out string? validationErrorMessage) -> bool
 override Microsoft.AspNetCore.Components.Forms.ValidationMessage<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
 override Microsoft.AspNetCore.Components.Forms.ValidationMessage<TValue>.OnParametersSet() -> void
 override Microsoft.AspNetCore.Components.Forms.ValidationSummary.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
