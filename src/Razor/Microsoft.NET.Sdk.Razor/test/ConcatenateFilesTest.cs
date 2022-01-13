@@ -323,8 +323,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             Assert.Equal(lastModified, File.GetLastWriteTimeUtc(expectedFile));
         }
 
-        [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/25623")]
+        [Fact(Skip="https://github.com/dotnet/aspnetcore/issues/25623")]
         public void BundlesScopedCssFiles_UpdatesBundleWhenContentsChange()
         {
             // Arrange
