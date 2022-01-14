@@ -67,7 +67,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
             }
         }
 
-        bool IsInValidNamespace(INamespaceSymbol? @namespace)
+        static bool IsInValidNamespace(INamespaceSymbol? @namespace)
         {
             if (@namespace != null && !@namespace.IsGlobalNamespace)
             {

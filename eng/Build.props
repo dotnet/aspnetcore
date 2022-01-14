@@ -16,25 +16,25 @@
     <!-- Exclude the websockets samples for now because they use classic .csproj, which is not yet supported in our build. -->
     <ProjectToExclude Include="$(RepoRoot)src\Middleware\WebSockets\samples\**\*.csproj" />
 
-    <!-- These projects are meant to be executed by tests. -->
-    <ProjectToExclude Include="
-                      $(RepoRoot)src\Tools\dotnet-watch\test\TestProjects\**\*.csproj;
-                      $(RepoRoot)src\Tools\Tests.Common\TestProjects\**\*.csproj;
-                      $(RepoRoot)src\Razor\Razor.Design\test\testassets\**\*.*proj;
-                      $(RepoRoot)src\Razor\test\testassets\**\*.*proj;
-                      $(RepoRoot)src\Components\Web.JS\node_modules\**\*.*proj;
-                      $(RepoRoot)src\Components\WebAssembly\Sdk\testassets\**\*.csproj;
-                      " />
+    <!-- These projects are meant to be referenced only by tests. -->
+    <ProjectToExclude Include="$(RepoRoot)src\**\testassets\**\*.*proj"
+      Exclude="$(RepoRoot)src\Components\WebAssembly\testassets\WasmLinkerTest\*.*proj;
+               $(RepoRoot)src\Components\WebView\Samples\PhotinoPlatform\testassets\PhotinoTestApp\*.*proj;
+               $(RepoRoot)src\Http\Routing\test\testassets\RoutingSandbox\*.*proj;
+               $(RepoRoot)src\Security\Authentication\Negotiate\test\testassets\Negotiate.Client\*.*proj;
+               $(RepoRoot)src\Security\Authentication\Negotiate\test\testassets\Negotiate.Server\*.*proj;
+               " />
 
     <!-- These projects are not meant to be built in this repo. In the Installers case, must explicitly opt in. -->
     <!-- On the other hand, the main spa-templates project is just another project in this repo. -->
     <ProjectToExclude Include="
                       $(RepoRoot)src\submodules\googletest\**\*.*proj;
                       $(RepoRoot)src\submodules\MessagePack-CSharp\**\*.*proj;
-                      $(RepoRoot)src\Installers\**\*.*proj;
-                      $(RepoRoot)src\SignalR\clients\ts\**\node_modules\**\*.*proj;
-                      $(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\content\**\*.*proj;
                       $(RepoRoot)src\submodules\spa-templates\src\content\**\*.csproj;
+                      $(RepoRoot)src\Components\Web.JS\node_modules\**\*.*proj;
+                      $(RepoRoot)src\Installers\**\*.*proj;
+                      $(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\content\**\*.*proj;
+                      $(RepoRoot)src\SignalR\clients\ts\**\node_modules\**\*.*proj;
                       " />
 
     <!-- Exclude the benchmarks because they use <PackageReference>. -->
@@ -105,8 +105,9 @@
       <ItemGroup Condition=" '$(TargetOsName)' == 'win' AND ('$(TargetArchitecture)' == 'x86' OR '$(TargetArchitecture)' == 'x64') ">
         <NativeProjects Include="$(RepoRoot)src\**\*.vcxproj" Exclude="@(ProjectToExclude)" AdditionalProperties="Platform=x64" />
         <NativeProjects Include="$(RepoRoot)src\**\*.vcxproj" Exclude="@(ProjectToExclude)" AdditionalProperties="Platform=Win32" />
+        <NativeProjects Include="$(RepoRoot)src\**\*.vcxproj" Exclude="@(ProjectToExclude)" AdditionalProperties="Platform=arm64" />
       </ItemGroup>
-
+      
       <ItemGroup>
         <ProjectToBuild Condition=" $(BuildNative) " Include="@(NativeProjects)" Exclude="@(ProjectToExclude)" />
         <ProjectToExclude Condition=" !$(BuildNative) " Include="@(NativeProjects)" />

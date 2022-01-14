@@ -421,9 +421,13 @@ public class OpenIdConnectTests
                 {
                     nonceTime = DateTime.FromBinary(Convert.ToInt64(timestamp, CultureInfo.InvariantCulture));
                     if ((nonceTime >= DateTime.UtcNow) && ((DateTime.MaxValue - nonceTime) < nonceLifetime))
+                    {
                         nonceTime = DateTime.MaxValue;
+                    }
                     else
+                    {
                         nonceTime += nonceLifetime;
+                    }
                 }
                 catch
                 {

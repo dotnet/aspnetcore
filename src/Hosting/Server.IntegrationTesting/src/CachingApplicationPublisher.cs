@@ -47,7 +47,7 @@ public class CachingApplicationPublisher : ApplicationPublisher, IDisposable
         return new PublishedApplication(CopyPublishedOutput(publishedApplication, logger), logger);
     }
 
-    private string CopyPublishedOutput(PublishedApplication application, ILogger logger)
+    private static string CopyPublishedOutput(PublishedApplication application, ILogger logger)
     {
         var target = CreateTempDirectory();
 

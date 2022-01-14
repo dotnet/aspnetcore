@@ -430,7 +430,7 @@ internal class Http3Connection : IHttp3StreamLifetimeHandler, IRequestProcessor
         }
     }
 
-    private ConnectionAbortedException CreateConnectionAbortError(Exception? error, bool clientAbort)
+    private static ConnectionAbortedException CreateConnectionAbortError(Exception? error, bool clientAbort)
     {
         if (error is ConnectionAbortedException abortedException)
         {

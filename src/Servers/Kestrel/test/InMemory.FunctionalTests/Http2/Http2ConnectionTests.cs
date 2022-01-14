@@ -6,13 +6,14 @@ using System.Collections;
 using System.Globalization;
 using System.Net.Http;
 using System.Net.Http.HPack;
+using System.Net.Security;
+using System.Security.Authentication;
 using System.Text;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
@@ -360,6 +361,7 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/39477")]
     public async Task StreamPool_MultipleStreamsConcurrent_StreamsReturnedToPool()
     {
         await InitializeConnectionAsync(_echoApplication);
@@ -4624,6 +4626,7 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/39492")]
     public async Task StopProcessingNextRequestSendsGracefulGOAWAYThenFinalGOAWAYWhenAllStreamsComplete()
     {
         await InitializeConnectionAsync(_echoApplication);
@@ -4654,6 +4657,7 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/39479")]
     public async Task AcceptNewStreamsDuringClosingConnection()
     {
         await InitializeConnectionAsync(_echoApplication);
@@ -5209,6 +5213,72 @@ public class Http2ConnectionTests : Http2TestBase
                     CoreStrings.FormatHttp2ErrorStreamClosed(finalFrameType, streamId: 1),
                     CoreStrings.FormatHttp2ErrorStreamAborted(finalFrameType, streamId: 1)
             });
+    }
+
+    [Fact]
+    public async Task StartConnection_SendPreface_ReturnSettings()
+    {
+        await InitializeConnectionWithoutPrefaceAsync(_noopApplication);
+
+        await SendAsync(Http2Connection.ClientPreface);
+
+        await ExpectAsync(Http2FrameType.SETTINGS,
+            withLength: 3 * Http2FrameReader.SettingSize,
+            withFlags: 0,
+            withStreamId: 0);
+
+        await StopConnectionAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: true);
+    }
+
+    [Fact]
+    public async Task StartConnection_SendHttp1xRequest_ReturnHttp11Status400()
+    {
+        await InitializeConnectionWithoutPrefaceAsync(_noopApplication);
+
+        await SendAsync(Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\n"));
+
+        var data = await ReadAllAsync();
+
+        Assert.NotNull(Http2Connection.InvalidHttp1xErrorResponseBytes);
+        Assert.Equal(Http2Connection.InvalidHttp1xErrorResponseBytes, data);
+    }
+
+    [Fact]
+    public async Task StartConnection_SendHttp1xRequest_ExceedsRequestLineLimit_ProtocolError()
+    {
+        await InitializeConnectionWithoutPrefaceAsync(_noopApplication);
+
+        await SendAsync(Encoding.ASCII.GetBytes($"GET /{new string('a', _connection.Limits.MaxRequestLineSize)} HTTP/1.1\r\n"));
+
+        await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
+            ignoreNonGoAwayFrames: false,
+            expectedLastStreamId: 0,
+            expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR,
+            expectedErrorMessage: CoreStrings.Http2ErrorInvalidPreface);
+    }
+
+    [Fact]
+    public async Task StartTlsConnection_SendHttp1xRequest_NoError()
+    {
+        CreateConnection();
+
+        var tlsHandshakeMock = new Mock<ITlsHandshakeFeature>();
+        tlsHandshakeMock.SetupGet(m => m.Protocol).Returns(SslProtocols.Tls12);
+        _connection.ConnectionFeatures.Set<ITlsHandshakeFeature>(tlsHandshakeMock.Object);
+
+        await InitializeConnectionWithoutPrefaceAsync(_noopApplication);
+
+        await SendAsync(Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\n"));
+
+        await StopConnectionAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false);
+    }
+
+    [Fact]
+    public async Task StartConnection_SendNothing_NoError()
+    {
+        await InitializeConnectionWithoutPrefaceAsync(_noopApplication);
+
+        await StopConnectionAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false);
     }
 
     public static TheoryData<byte[]> UpperCaseHeaderNameData

@@ -234,8 +234,6 @@ public class Project : IDisposable
 
     internal async Task<ProcessResult> RunDotNetEfUpdateDatabaseAsync()
     {
-        var assembly = typeof(ProjectFactoryFixture).Assembly;
-
         var args = "--verbose --no-build database update";
 
         // Only run one instance of 'dotnet new' at once, as a workaround for

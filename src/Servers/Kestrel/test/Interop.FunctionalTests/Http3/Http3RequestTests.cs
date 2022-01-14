@@ -88,7 +88,7 @@ public class Http3RequestTests : LoggedTest
         }, protocol: protocol);
 
         using (var host = builder.Build())
-        using (var client = Http3Helpers.CreateClient())
+        using (var client = HttpHelpers.CreateClient())
         {
             await host.StartAsync().DefaultTimeout();
 
@@ -190,7 +190,7 @@ public class Http3RequestTests : LoggedTest
         }, protocol: protocol);
 
         using (var host = builder.Build())
-        using (var client = Http3Helpers.CreateClient())
+        using (var client = HttpHelpers.CreateClient())
         {
             await host.StartAsync();
 
@@ -229,7 +229,7 @@ public class Http3RequestTests : LoggedTest
         }, protocol: protocol);
 
         using (var host = builder.Build())
-        using (var client = Http3Helpers.CreateClient())
+        using (var client = HttpHelpers.CreateClient())
         {
             await host.StartAsync();
 
@@ -273,7 +273,7 @@ public class Http3RequestTests : LoggedTest
         });
 
         using (var host = builder.Build())
-        using (var client = Http3Helpers.CreateClient())
+        using (var client = HttpHelpers.CreateClient())
         {
             await host.StartAsync().DefaultTimeout();
 
@@ -341,7 +341,7 @@ public class Http3RequestTests : LoggedTest
         }, protocol: protocol);
 
         using (var host = builder.Build())
-        using (var client = Http3Helpers.CreateClient())
+        using (var client = HttpHelpers.CreateClient())
         {
             await host.StartAsync().DefaultTimeout();
 
@@ -393,7 +393,6 @@ public class Http3RequestTests : LoggedTest
     [MsQuicSupported]
     [InlineData(HttpProtocols.Http3)]
     [InlineData(HttpProtocols.Http2)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/35070")]
     public async Task POST_ServerAbort_ClientReceivesAbort(HttpProtocols protocol)
     {
         // Arrange
@@ -414,7 +413,7 @@ public class Http3RequestTests : LoggedTest
         }, protocol: protocol);
 
         using (var host = builder.Build())
-        using (var client = Http3Helpers.CreateClient())
+        using (var client = HttpHelpers.CreateClient())
         {
             await host.StartAsync().DefaultTimeout();
 
@@ -480,7 +479,7 @@ public class Http3RequestTests : LoggedTest
         }, protocol: protocol);
 
         using (var host = builder.Build())
-        using (var client = Http3Helpers.CreateClient())
+        using (var client = HttpHelpers.CreateClient())
         {
             await host.StartAsync().DefaultTimeout();
 
@@ -526,7 +525,7 @@ public class Http3RequestTests : LoggedTest
         });
 
         using (var host = builder.Build())
-        using (var client = Http3Helpers.CreateClient(expect100ContinueTimeout: TimeSpan.FromMinutes(20)))
+        using (var client = HttpHelpers.CreateClient(expect100ContinueTimeout: TimeSpan.FromMinutes(20)))
         {
             await host.StartAsync().DefaultTimeout();
 
@@ -591,7 +590,7 @@ public class Http3RequestTests : LoggedTest
         });
 
         using (var host = builder.Build())
-        using (var client = Http3Helpers.CreateClient())
+        using (var client = HttpHelpers.CreateClient())
         {
             await host.StartAsync();
 
@@ -901,7 +900,7 @@ public class Http3RequestTests : LoggedTest
         });
 
         using (var host = builder.Build())
-        using (var client = Http3Helpers.CreateClient())
+        using (var client = HttpHelpers.CreateClient())
         {
             await host.StartAsync();
 
@@ -954,7 +953,7 @@ public class Http3RequestTests : LoggedTest
         });
 
         using (var host = builder.Build())
-        using (var client = Http3Helpers.CreateClient())
+        using (var client = HttpHelpers.CreateClient())
         {
             await host.StartAsync();
 
@@ -1020,7 +1019,7 @@ public class Http3RequestTests : LoggedTest
         });
 
         using (var host = builder.Build())
-        using (var client = Http3Helpers.CreateClient())
+        using (var client = HttpHelpers.CreateClient())
         {
             await host.StartAsync();
 
@@ -1073,7 +1072,7 @@ public class Http3RequestTests : LoggedTest
         });
 
         using (var host = builder.Build())
-        using (var client = Http3Helpers.CreateClient())
+        using (var client = HttpHelpers.CreateClient())
         {
             await host.StartAsync();
 
@@ -1134,7 +1133,7 @@ public class Http3RequestTests : LoggedTest
             });
 
         using (var host = builder.Build())
-        using (var client = Http3Helpers.CreateClient())
+        using (var client = HttpHelpers.CreateClient())
         {
             await host.StartAsync();
 
@@ -1199,7 +1198,7 @@ public class Http3RequestTests : LoggedTest
         {
             await host.StartAsync();
 
-            var client = Http3Helpers.CreateClient();
+            var client = HttpHelpers.CreateClient();
             try
             {
                 var port = host.GetPort();
@@ -1259,7 +1258,7 @@ public class Http3RequestTests : LoggedTest
             });
 
         using (var host = builder.Build())
-        using (var client = Http3Helpers.CreateClient())
+        using (var client = HttpHelpers.CreateClient())
         {
             await host.StartAsync();
 
@@ -1364,7 +1363,7 @@ public class Http3RequestTests : LoggedTest
             });
 
         using (var host = builder.Build())
-        using (var client = Http3Helpers.CreateClient())
+        using (var client = HttpHelpers.CreateClient())
         {
             await host.StartAsync();
 
@@ -1441,7 +1440,7 @@ public class Http3RequestTests : LoggedTest
         });
 
         using (var host = builder.Build())
-        using (var client = Http3Helpers.CreateClient())
+        using (var client = HttpHelpers.CreateClient())
         {
             await host.StartAsync();
 
@@ -1473,7 +1472,6 @@ public class Http3RequestTests : LoggedTest
     [MsQuicSupported]
     [InlineData(HttpProtocols.Http3)]
     [InlineData(HttpProtocols.Http2)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/35070")]
     public async Task GET_GracefulServerShutdown_AbortRequestsAfterHostTimeout(HttpProtocols protocol)
     {
         // Arrange
@@ -1499,7 +1497,7 @@ public class Http3RequestTests : LoggedTest
         }, protocol: protocol);
 
         using (var host = builder.Build())
-        using (var client = Http3Helpers.CreateClient())
+        using (var client = HttpHelpers.CreateClient())
         {
             await host.StartAsync().DefaultTimeout();
 
@@ -1595,7 +1593,7 @@ public class Http3RequestTests : LoggedTest
         }, protocol: protocol);
 
         using (var host = builder.Build())
-        using (var client = Http3Helpers.CreateClient())
+        using (var client = HttpHelpers.CreateClient())
         {
             await host.StartAsync().DefaultTimeout();
 
@@ -1640,6 +1638,6 @@ public class Http3RequestTests : LoggedTest
 
     private IHostBuilder CreateHostBuilder(RequestDelegate requestDelegate, HttpProtocols? protocol = null, Action<KestrelServerOptions> configureKestrel = null)
     {
-        return Http3Helpers.CreateHostBuilder(AddTestLogging, requestDelegate, protocol, configureKestrel);
+        return HttpHelpers.CreateHostBuilder(AddTestLogging, requestDelegate, protocol, configureKestrel);
     }
 }

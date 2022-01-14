@@ -66,8 +66,7 @@ internal class RewriteAction : UrlAction
             HostString host;
             PathString path;
             QueryString query;
-            FragmentString fragment;
-            UriHelper.FromAbsolute(pattern, out scheme, out host, out path, out query, out fragment);
+            UriHelper.FromAbsolute(pattern, out scheme, out host, out path, out query, out _);
 
             if (query.HasValue)
             {

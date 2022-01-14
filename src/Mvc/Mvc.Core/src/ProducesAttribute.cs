@@ -107,7 +107,7 @@ public class ProducesAttribute : Attribute, IResultFilter, IOrderedFilter, IApiR
         }
     }
 
-    private MediaTypeCollection GetContentTypes(string firstArg, string[] args)
+    private static MediaTypeCollection GetContentTypes(string firstArg, string[] args)
     {
         var completeArgs = new List<string>(args.Length + 1);
         completeArgs.Add(firstArg);

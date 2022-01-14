@@ -40,7 +40,7 @@ public class ConsumesConstraintForFormFileParameterConvention : IActionModelConv
     protected virtual bool ShouldApply(ActionModel action) => true;
 
     // Internal for unit testing
-    internal void AddMultipartFormDataConsumesAttribute(ActionModel action)
+    internal static void AddMultipartFormDataConsumesAttribute(ActionModel action)
     {
         // Add a ConsumesAttribute if the request does not explicitly specify one.
         if (action.Filters.OfType<IConsumesActionConstraint>().Any())

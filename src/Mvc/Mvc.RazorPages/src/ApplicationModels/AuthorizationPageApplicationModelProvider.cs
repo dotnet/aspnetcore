@@ -44,7 +44,7 @@ internal class AuthorizationPageApplicationModelProvider : IPageApplicationModel
         {
             pageModel.Filters.Add(AuthorizationApplicationModelProvider.GetFilter(_policyProvider, authorizeData));
         }
-        foreach (var attribute in pageModel.HandlerTypeAttributes.OfType<IAllowAnonymous>())
+        foreach (var _ in pageModel.HandlerTypeAttributes.OfType<IAllowAnonymous>())
         {
             pageModel.Filters.Add(new AllowAnonymousFilter());
         }

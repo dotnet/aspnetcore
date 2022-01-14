@@ -86,12 +86,11 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
         var feature = new RedisFeature();
         connection.Features.Set<IRedisFeature>(feature);
 
-        var connectionTask = Task.CompletedTask;
         var userTask = Task.CompletedTask;
 
         _connections.Add(connection);
 
-        connectionTask = SubscribeToConnection(connection);
+        var connectionTask = SubscribeToConnection(connection);
 
         if (!string.IsNullOrEmpty(connection.UserIdentifier))
         {
@@ -362,7 +361,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
         var id = Interlocked.Increment(ref _internalId);
         var ack = _ackHandler.CreateAck(id);
         // Send Add/Remove Group to other servers and wait for an ack or timeout
-        var message = _protocol.WriteGroupCommand(new RedisGroupCommand(id, _serverName, action, groupName, connectionId));
+        var message = RedisProtocol.WriteGroupCommand(new RedisGroupCommand(id, _serverName, action, groupName, connectionId));
         await PublishAsync(_channels.GroupManagement, message);
 
         await ack;
@@ -399,7 +398,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
             {
                 RedisLog.ReceivedFromChannel(_logger, _channels.All);
 
-                var invocation = _protocol.ReadInvocation((byte[])channelMessage.Message);
+                var invocation = RedisProtocol.ReadInvocation((byte[])channelMessage.Message);
 
                 var tasks = new List<Task>(_connections.Count);
 
@@ -427,7 +426,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
         {
             try
             {
-                var groupMessage = _protocol.ReadGroupCommand((byte[])channelMessage.Message);
+                var groupMessage = RedisProtocol.ReadGroupCommand((byte[])channelMessage.Message);
 
                 var connection = _connections[groupMessage.ConnectionId];
                 if (connection == null)
@@ -447,7 +446,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
                 }
 
                 // Send an ack to the server that sent the original command.
-                await PublishAsync(_channels.Ack(groupMessage.ServerName), _protocol.WriteAck(groupMessage.Id));
+                await PublishAsync(_channels.Ack(groupMessage.ServerName), RedisProtocol.WriteAck(groupMessage.Id));
             }
             catch (Exception ex)
             {
@@ -462,7 +461,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
         var channel = await _bus!.SubscribeAsync(_channels.Ack(_serverName));
         channel.OnMessage(channelMessage =>
         {
-            var ackId = _protocol.ReadAck((byte[])channelMessage.Message);
+            var ackId = RedisProtocol.ReadAck((byte[])channelMessage.Message);
 
             _ackHandler.TriggerAck(ackId);
         });
@@ -476,7 +475,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
         var channel = await _bus!.SubscribeAsync(connectionChannel);
         channel.OnMessage(channelMessage =>
         {
-            var invocation = _protocol.ReadInvocation((byte[])channelMessage.Message);
+            var invocation = RedisProtocol.ReadInvocation((byte[])channelMessage.Message);
             return connection.WriteAsync(invocation.Message).AsTask();
         });
     }
@@ -493,7 +492,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
             {
                 try
                 {
-                    var invocation = _protocol.ReadInvocation((byte[])channelMessage.Message);
+                    var invocation = RedisProtocol.ReadInvocation((byte[])channelMessage.Message);
 
                     var tasks = new List<Task>(subscriptions.Count);
                     foreach (var userConnection in subscriptions)
@@ -519,7 +518,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
         {
             try
             {
-                var invocation = _protocol.ReadInvocation((byte[])channelMessage.Message);
+                var invocation = RedisProtocol.ReadInvocation((byte[])channelMessage.Message);
 
                 var tasks = new List<Task>(groupConnections.Count);
                 foreach (var groupConnection in groupConnections)

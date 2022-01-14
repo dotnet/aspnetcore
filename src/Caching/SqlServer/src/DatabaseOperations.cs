@@ -120,8 +120,8 @@ internal class DatabaseOperations : IDatabaseOperations
     {
         var utcNow = SystemClock.UtcNow;
 
-        var absoluteExpiration = GetAbsoluteExpiration(utcNow, options);
-        ValidateOptions(options.SlidingExpiration, absoluteExpiration);
+        var absoluteExpiration = DatabaseOperations.GetAbsoluteExpiration(utcNow, options);
+        DatabaseOperations.ValidateOptions(options.SlidingExpiration, absoluteExpiration);
 
         using (var connection = new SqlConnection(ConnectionString))
         using (var upsertCommand = new SqlCommand(SqlQueries.SetCacheItem, connection))
@@ -141,7 +141,7 @@ internal class DatabaseOperations : IDatabaseOperations
             }
             catch (SqlException ex)
             {
-                if (IsDuplicateKeyException(ex))
+                if (DatabaseOperations.IsDuplicateKeyException(ex))
                 {
                     // There is a possibility that multiple requests can try to add the same item to the cache, in
                     // which case we receive a 'duplicate key' exception on the primary key column.
@@ -160,8 +160,8 @@ internal class DatabaseOperations : IDatabaseOperations
 
         var utcNow = SystemClock.UtcNow;
 
-        var absoluteExpiration = GetAbsoluteExpiration(utcNow, options);
-        ValidateOptions(options.SlidingExpiration, absoluteExpiration);
+        var absoluteExpiration = DatabaseOperations.GetAbsoluteExpiration(utcNow, options);
+        DatabaseOperations.ValidateOptions(options.SlidingExpiration, absoluteExpiration);
 
         using (var connection = new SqlConnection(ConnectionString))
         using (var upsertCommand = new SqlCommand(SqlQueries.SetCacheItem, connection))
@@ -181,7 +181,7 @@ internal class DatabaseOperations : IDatabaseOperations
             }
             catch (SqlException ex)
             {
-                if (IsDuplicateKeyException(ex))
+                if (DatabaseOperations.IsDuplicateKeyException(ex))
                 {
                     // There is a possibility that multiple requests can try to add the same item to the cache, in
                     // which case we receive a 'duplicate key' exception on the primary key column.
@@ -285,7 +285,7 @@ internal class DatabaseOperations : IDatabaseOperations
         return value;
     }
 
-    protected bool IsDuplicateKeyException(SqlException ex)
+    protected static bool IsDuplicateKeyException(SqlException ex)
     {
         if (ex.Errors != null)
         {
@@ -294,7 +294,7 @@ internal class DatabaseOperations : IDatabaseOperations
         return false;
     }
 
-    protected DateTimeOffset? GetAbsoluteExpiration(DateTimeOffset utcNow, DistributedCacheEntryOptions options)
+    protected static DateTimeOffset? GetAbsoluteExpiration(DateTimeOffset utcNow, DistributedCacheEntryOptions options)
     {
         // calculate absolute expiration
         DateTimeOffset? absoluteExpiration = null;
@@ -314,7 +314,7 @@ internal class DatabaseOperations : IDatabaseOperations
         return absoluteExpiration;
     }
 
-    protected void ValidateOptions(TimeSpan? slidingExpiration, DateTimeOffset? absoluteExpiration)
+    protected static void ValidateOptions(TimeSpan? slidingExpiration, DateTimeOffset? absoluteExpiration)
     {
         if (!slidingExpiration.HasValue && !absoluteExpiration.HasValue)
         {

@@ -124,7 +124,7 @@ internal class LoginWith2faModel<TUser> : LoginWith2faModel where TUser : class
 
         var result = await _signInManager.TwoFactorAuthenticatorSignInAsync(authenticatorCode, rememberMe, Input.RememberMachine);
 
-        var userId = await _userManager.GetUserIdAsync(user);
+        await _userManager.GetUserIdAsync(user);
 
         if (result.Succeeded)
         {

@@ -33,7 +33,7 @@ public class AttributesShouldNotBeAppliedToPageModelAnalyzer : DiagnosticAnalyze
         });
     }
 
-    private void InitializeWorker(CompilationStartAnalysisContext compilationStartAnalysisContext, TypeCache typeCache)
+    private static void InitializeWorker(CompilationStartAnalysisContext compilationStartAnalysisContext, TypeCache typeCache)
     {
         compilationStartAnalysisContext.RegisterSymbolAction(symbolAnalysisContext =>
         {
@@ -64,7 +64,7 @@ public class AttributesShouldNotBeAppliedToPageModelAnalyzer : DiagnosticAnalyze
         }, SymbolKind.NamedType);
     }
 
-    private bool IsPageHandlerMethod(IMethodSymbol method)
+    private static bool IsPageHandlerMethod(IMethodSymbol method)
     {
         return method.MethodKind == MethodKind.Ordinary &&
             !method.IsStatic &&

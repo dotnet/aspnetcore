@@ -38,7 +38,7 @@ public class LoggingHandler : DelegatingHandler
             var readAsStreamAsync = await response.Content.ReadAsStreamAsync();
             var buffer = new byte[_maxBodyLogSize];
             var offset = 0;
-            var count = 0;
+            int count;
             do
             {
                 count = await readAsStreamAsync.ReadAsync(buffer.AsMemory(offset));

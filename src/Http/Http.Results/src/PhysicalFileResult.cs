@@ -105,6 +105,14 @@ internal sealed partial class PhysicalFileResult : FileResult, IResult
         public FileInfoWrapper(string path)
         {
             var fileInfo = new FileInfo(path);
+
+            // It means we are dealing with a symlink and need to get the information
+            // from the target file instead.
+            if (fileInfo.Exists && !string.IsNullOrEmpty(fileInfo.LinkTarget))
+            {
+                fileInfo = (FileInfo?)fileInfo.ResolveLinkTarget(returnFinalTarget: true) ?? fileInfo;
+            }
+
             Exists = fileInfo.Exists;
             Length = fileInfo.Length;
             LastWriteTimeUtc = fileInfo.LastWriteTimeUtc;

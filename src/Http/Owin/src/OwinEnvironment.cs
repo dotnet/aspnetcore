@@ -152,16 +152,14 @@ public class OwinEnvironment : IDictionary<string, object>
 
     bool IDictionary<string, object>.ContainsKey(string key)
     {
-        object value;
-        return ((IDictionary<string, object>)this).TryGetValue(key, out value);
+        return ((IDictionary<string, object>)this).TryGetValue(key, out _);
     }
 
     ICollection<string> IDictionary<string, object>.Keys
     {
         get
         {
-            object value;
-            return _entries.Where(pair => pair.Value.TryGet(_context, out value))
+            return _entries.Where(pair => pair.Value.TryGet(_context, out _))
                 .Select(pair => pair.Key).Concat(_context.Items.Keys.Select(key => Convert.ToString(key, CultureInfo.InvariantCulture))).ToList();
         }
     }

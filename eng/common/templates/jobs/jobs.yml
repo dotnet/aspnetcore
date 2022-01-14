@@ -87,13 +87,3 @@ jobs:
         runAsPublic: ${{ parameters.runAsPublic }}
         publishUsingPipelines: ${{ parameters.enablePublishUsingPipelines }}
         enablePublishBuildArtifacts: ${{ parameters.enablePublishBuildArtifacts }}
-
-  - ${{ if eq(parameters.graphFileGeneration.enabled, true) }}:
-    - template: ../job/generate-graph-files.yml
-      parameters:
-        continueOnError: ${{ parameters.continueOnError }}
-        includeToolset: ${{ parameters.graphFileGeneration.includeToolset }}
-        dependsOn:
-          - Asset_Registry_Publish
-        pool:
-          vmImage: 'windows-2019'

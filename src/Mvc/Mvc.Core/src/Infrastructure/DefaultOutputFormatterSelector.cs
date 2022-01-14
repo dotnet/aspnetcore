@@ -202,7 +202,7 @@ public class DefaultOutputFormatterSelector : OutputFormatterSelector
         return null;
     }
 
-    private IOutputFormatter? SelectFormatterUsingSortedAcceptHeaders(
+    private static IOutputFormatter? SelectFormatterUsingSortedAcceptHeaders(
         OutputFormatterCanWriteContext formatterContext,
         IList<IOutputFormatter> formatters,
         IList<MediaTypeSegmentWithQuality> sortedAcceptHeaders)
@@ -227,7 +227,7 @@ public class DefaultOutputFormatterSelector : OutputFormatterSelector
         return null;
     }
 
-    private IOutputFormatter? SelectFormatterUsingAnyAcceptableContentType(
+    private static IOutputFormatter? SelectFormatterUsingAnyAcceptableContentType(
         OutputFormatterCanWriteContext formatterContext,
         IList<IOutputFormatter> formatters,
         MediaTypeCollection acceptableContentTypes)
@@ -249,7 +249,7 @@ public class DefaultOutputFormatterSelector : OutputFormatterSelector
         return null;
     }
 
-    private IOutputFormatter? SelectFormatterUsingSortedAcceptHeadersAndContentTypes(
+    private static IOutputFormatter? SelectFormatterUsingSortedAcceptHeadersAndContentTypes(
         OutputFormatterCanWriteContext formatterContext,
         IList<IOutputFormatter> formatters,
         IList<MediaTypeSegmentWithQuality> sortedAcceptableContentTypes,
@@ -280,7 +280,7 @@ public class DefaultOutputFormatterSelector : OutputFormatterSelector
         return null;
     }
 
-    private void ValidateContentTypes(MediaTypeCollection contentTypes)
+    private static void ValidateContentTypes(MediaTypeCollection contentTypes)
     {
         for (var i = 0; i < contentTypes.Count; i++)
         {

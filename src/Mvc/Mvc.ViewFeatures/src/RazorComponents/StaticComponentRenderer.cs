@@ -71,7 +71,7 @@ internal class StaticComponentRenderer
 
         return _initialized;
 
-        async Task InitializeCore(HttpContext httpContext)
+        static async Task InitializeCore(HttpContext httpContext)
         {
             var navigationManager = (IHostEnvironmentNavigationManager)httpContext.RequestServices.GetRequiredService<NavigationManager>();
             navigationManager?.Initialize(GetContextBaseUri(httpContext.Request), GetFullUri(httpContext.Request));
@@ -90,7 +90,7 @@ internal class StaticComponentRenderer
         }
     }
 
-    private string GetFullUri(HttpRequest request)
+    private static string GetFullUri(HttpRequest request)
     {
         return UriHelper.BuildAbsolute(
             request.Scheme,
@@ -100,7 +100,7 @@ internal class StaticComponentRenderer
             request.QueryString);
     }
 
-    private string GetContextBaseUri(HttpRequest request)
+    private static string GetContextBaseUri(HttpRequest request)
     {
         var result = UriHelper.BuildAbsolute(request.Scheme, request.Host, request.PathBase);
 

@@ -34,7 +34,6 @@ public class JSRootComponentsTest : ServerTestBase<ToggleExecutionModeServerFixt
     [InlineData(false, true)]
     [InlineData(true, false)]
     [InlineData(true, true)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/38613")]
     public void CanAddAndDisposeRootComponents(bool intoBlazorUi, bool attachShadowRoot)
     {
         var message = app.FindElement(By.Id("message"));
@@ -50,7 +49,7 @@ public class JSRootComponentsTest : ServerTestBase<ToggleExecutionModeServerFixt
 
         // They render and work
         var containerId = intoBlazorUi ? "container-rendered-by-blazor" : "root-container-1";
-        var dynamicRootContainer = Browser.FindElement(By.Id(containerId));
+        ISearchContext dynamicRootContainer = Browser.FindElement(By.Id(containerId));
         if (attachShadowRoot)
         {
             dynamicRootContainer = GetShadowRoot(dynamicRootContainer);
@@ -274,9 +273,9 @@ public class JSRootComponentsTest : ServerTestBase<ToggleExecutionModeServerFixt
         Browser.Equal(hasGlobalError ? "block" : "none", () => globalErrorUi.GetCssValue("display"));
     }
 
-    IWebElement GetShadowRoot(IWebElement element)
+    ShadowRoot GetShadowRoot(ISearchContext element)
     {
         var result = ((IJavaScriptExecutor)Browser).ExecuteScript("return arguments[0].shadowRoot", element);
-        return (IWebElement)result;
+        return (ShadowRoot)result;
     }
 }

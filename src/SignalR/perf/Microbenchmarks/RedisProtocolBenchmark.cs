@@ -42,8 +42,8 @@ public class RedisProtocolBenchmark
         _excludedConnectionIdsSmall = GenerateIds(2);
         _excludedConnectionIdsLarge = GenerateIds(20);
 
-        _writtenAck = _protocol.WriteAck(42);
-        _writtenGroupCommand = _protocol.WriteGroupCommand(_groupCommand);
+        _writtenAck = RedisProtocol.WriteAck(42);
+        _writtenGroupCommand = RedisProtocol.WriteGroupCommand(_groupCommand);
         _writtenInvocationNoExclusions = _protocol.WriteInvocation(_methodName, _args, null);
         _writtenInvocationSmallExclusions = _protocol.WriteInvocation(_methodName, _args, _excludedConnectionIdsSmall);
         _writtenInvocationLargeExclusions = _protocol.WriteInvocation(_methodName, _args, _excludedConnectionIdsLarge);
@@ -52,13 +52,13 @@ public class RedisProtocolBenchmark
     [Benchmark]
     public void WriteAck()
     {
-        _protocol.WriteAck(42);
+        RedisProtocol.WriteAck(42);
     }
 
     [Benchmark]
     public void WriteGroupCommand()
     {
-        _protocol.WriteGroupCommand(_groupCommand);
+        RedisProtocol.WriteGroupCommand(_groupCommand);
     }
 
     [Benchmark]
@@ -82,31 +82,31 @@ public class RedisProtocolBenchmark
     [Benchmark]
     public void ReadAck()
     {
-        _protocol.ReadAck(_writtenAck);
+        RedisProtocol.ReadAck(_writtenAck);
     }
 
     [Benchmark]
     public void ReadGroupCommand()
     {
-        _protocol.ReadGroupCommand(_writtenGroupCommand);
+        RedisProtocol.ReadGroupCommand(_writtenGroupCommand);
     }
 
     [Benchmark]
     public void ReadInvocationNoExclusions()
     {
-        _protocol.ReadInvocation(_writtenInvocationNoExclusions);
+        RedisProtocol.ReadInvocation(_writtenInvocationNoExclusions);
     }
 
     [Benchmark]
     public void ReadInvocationSmallExclusions()
     {
-        _protocol.ReadInvocation(_writtenInvocationSmallExclusions);
+        RedisProtocol.ReadInvocation(_writtenInvocationSmallExclusions);
     }
 
     [Benchmark]
     public void ReadInvocationLargeExclusions()
     {
-        _protocol.ReadInvocation(_writtenInvocationLargeExclusions);
+        RedisProtocol.ReadInvocation(_writtenInvocationLargeExclusions);
     }
 
     private static IReadOnlyList<string> GenerateIds(int count)

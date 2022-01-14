@@ -132,7 +132,7 @@ public class KeyValuePairModelBinderTest
         var binder = new KeyValuePairModelBinder<int, string>(innerBinder, innerBinder, NullLoggerFactory.Instance);
 
         // Act
-        var result = await binder.TryBindStrongModel<int>(bindingContext, innerBinder, "Key", "someName.Key");
+        var result = await KeyValuePairModelBinder<int, string>.TryBindStrongModel<int>(bindingContext, innerBinder, "Key", "someName.Key");
 
         // Assert
         Assert.Equal(innerResult, result);

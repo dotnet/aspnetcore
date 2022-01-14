@@ -304,8 +304,7 @@ public class OwinFeatureCollection :
     {
         get
         {
-            object obj;
-            return Environment.TryGetValue(OwinConstants.WebSocket.AcceptAlt, out obj);
+            return Environment.TryGetValue(OwinConstants.WebSocket.AcceptAlt, out _);
         }
     }
 

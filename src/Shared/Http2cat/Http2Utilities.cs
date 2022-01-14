@@ -910,7 +910,7 @@ internal class Http2Utilities : IHttpStreamHeadersHandler
         Assert.Equal(length, frame.PayloadLength);
     }
 
-    internal void VerifyGoAway(Http2Frame frame, int expectedLastStreamId, Http2ErrorCode expectedErrorCode)
+    internal static void VerifyGoAway(Http2Frame frame, int expectedLastStreamId, Http2ErrorCode expectedErrorCode)
     {
         Assert.Equal(Http2FrameType.GOAWAY, frame.Type);
         Assert.Equal(8, frame.PayloadLength);

@@ -125,31 +125,31 @@ public class InputParserTests
         Assert.Equal(expectedValue, result);
     }
 
-    private RewriteContext CreateTestRewriteContext()
+    private static RewriteContext CreateTestRewriteContext()
     {
         var context = new DefaultHttpContext();
         return new RewriteContext { HttpContext = context, StaticFileProvider = null, Logger = NullLogger.Instance };
     }
 
-    private BackReferenceCollection CreateTestRuleBackReferences()
+    private static BackReferenceCollection CreateTestRuleBackReferences()
     {
         var match = Regex.Match("foo/bar/baz", "(.*)/(.*)/(.*)");
         return new BackReferenceCollection(match.Groups);
     }
 
-    private BackReferenceCollection CreateTestCondBackReferences()
+    private static BackReferenceCollection CreateTestCondBackReferences()
     {
         var match = Regex.Match("foo/bar/baz", "(.*)/(.*)/(.*)");
         return new BackReferenceCollection(match.Groups);
     }
 
-    private MatchResults CreateRewriteMapRuleMatch(string input)
+    private static MatchResults CreateRewriteMapRuleMatch(string input)
     {
         var match = Regex.Match(input, "([^/]*)/?(.*)");
         return new MatchResults(match.Success, new BackReferenceCollection(match.Groups));
     }
 
-    private MatchResults CreateRewriteMapConditionMatch(string input)
+    private static MatchResults CreateRewriteMapConditionMatch(string input)
     {
         var match = Regex.Match(input, "(.+)");
         return new MatchResults(match.Success, new BackReferenceCollection(match.Groups));

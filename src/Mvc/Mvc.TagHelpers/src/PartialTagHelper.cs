@@ -118,12 +118,10 @@ public class PartialTagHelper : TagHelper
 
         var result = FindView(Name);
         var viewSearchedLocations = result.SearchedLocations;
-        var fallBackViewSearchedLocations = Enumerable.Empty<string>();
 
         if (!result.Success && !string.IsNullOrEmpty(FallbackName))
         {
             result = FindView(FallbackName);
-            fallBackViewSearchedLocations = result.SearchedLocations;
         }
 
         if (!result.Success)

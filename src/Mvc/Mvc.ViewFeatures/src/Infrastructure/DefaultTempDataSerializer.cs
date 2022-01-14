@@ -25,7 +25,7 @@ internal class DefaultTempDataSerializer : TempDataSerializer
         return DeserializeDictionary(rootElement);
     }
 
-    private IDictionary<string, object> DeserializeDictionary(JsonElement rootElement)
+    private static IDictionary<string, object> DeserializeDictionary(JsonElement rootElement)
     {
         var deserialized = new Dictionary<string, object>(StringComparer.Ordinal);
 

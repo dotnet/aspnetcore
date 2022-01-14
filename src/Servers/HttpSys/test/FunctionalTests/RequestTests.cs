@@ -442,7 +442,10 @@ public class RequestTests
         {
             for (var i = 0; i < 32; i++)
             {
-                if (i == 9 || i == 10) continue; // \t and \r are allowed by Http.Sys.
+                if (i == 9 || i == 10)
+                {
+                    continue; // \t and \r are allowed by Http.Sys.
+                }
                 var response = await SendSocketRequestAsync(root, "/" + (char)i);
                 var responseStatusCode = response.Substring(9); // Skip "HTTP/1.1 "
                 Assert.True(string.Equals("400", responseStatusCode), i.ToString("X2", CultureInfo.InvariantCulture));

@@ -63,7 +63,7 @@ public class ValidatorCache
         return validators;
     }
 
-    private IReadOnlyList<IModelValidator> GetValidatorsFromEntry(CacheEntry entry, ModelMetadata metadata, IModelValidatorProvider validationProvider)
+    private static IReadOnlyList<IModelValidator> GetValidatorsFromEntry(CacheEntry entry, ModelMetadata metadata, IModelValidatorProvider validationProvider)
     {
         if (entry.Validators != null)
         {
@@ -91,13 +91,13 @@ public class ValidatorCache
         return ExtractValidators(items);
     }
 
-    private void ExecuteProvider(IModelValidatorProvider validatorProvider, ModelMetadata metadata, List<ValidatorItem> items)
+    private static void ExecuteProvider(IModelValidatorProvider validatorProvider, ModelMetadata metadata, List<ValidatorItem> items)
     {
         var context = new ModelValidatorProviderContext(metadata, items);
         validatorProvider.CreateValidators(context);
     }
 
-    private IReadOnlyList<IModelValidator> ExtractValidators(List<ValidatorItem> items)
+    private static IReadOnlyList<IModelValidator> ExtractValidators(List<ValidatorItem> items)
     {
         var count = 0;
         for (var i = 0; i < items.Count; i++)

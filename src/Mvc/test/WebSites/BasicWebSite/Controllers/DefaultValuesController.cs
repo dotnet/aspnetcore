@@ -27,4 +27,11 @@ public class DefaultValuesController : Controller
     {
         return $"{guid}, {timeSpan}";
     }
+
+    [HttpGet]
+    [Route("/[controller]/EchoValue_DefaultParameterValue_ForGlobbedPath/{**path}")]
+    public string EchoValue_DefaultParameterValue_ForGlobbedPath(string path = "index.html")
+    {
+        return path;
+    }
 }

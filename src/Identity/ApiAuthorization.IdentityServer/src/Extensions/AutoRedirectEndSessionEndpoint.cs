@@ -56,7 +56,7 @@ internal class AutoRedirectEndSessionEndpoint : IEndpointHandler
 
         var client = result.ValidatedRequest?.Client;
         if (client != null &&
-            client.Properties.TryGetValue(ApplicationProfilesPropertyNames.Profile, out var type))
+            client.Properties.TryGetValue(ApplicationProfilesPropertyNames.Profile, out _))
         {
             var signInScheme = _identityServerOptions.Value.Authentication.CookieAuthenticationScheme;
             if (signInScheme != null)
@@ -82,7 +82,7 @@ internal class AutoRedirectEndSessionEndpoint : IEndpointHandler
         }
     }
 
-    private async Task<NameValueCollection> GetParametersAsync(HttpRequest request)
+    private static async Task<NameValueCollection> GetParametersAsync(HttpRequest request)
     {
         if (HttpMethods.IsGet(request.Method))
         {
@@ -95,7 +95,7 @@ internal class AutoRedirectEndSessionEndpoint : IEndpointHandler
         }
     }
 
-    private IEndpointResult ValidateRequest(HttpRequest request)
+    private static IEndpointResult ValidateRequest(HttpRequest request)
     {
         if (!HttpMethods.IsPost(request.Method) && !HttpMethods.IsGet(request.Method))
         {

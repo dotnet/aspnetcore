@@ -286,7 +286,7 @@ public class InputTagHelper : TagHelper
         {
             if (modelExplorer.Model != null)
             {
-                if (!bool.TryParse(modelExplorer.Model.ToString(), out var potentialBool))
+                if (!bool.TryParse(modelExplorer.Model.ToString(), out _))
                 {
                     throw new InvalidOperationException(Resources.FormatInputTagHelper_InvalidStringResult(
                         ForAttributeName,

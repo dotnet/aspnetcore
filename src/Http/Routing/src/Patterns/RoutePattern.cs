@@ -160,6 +160,6 @@ public sealed class RoutePattern
     [DebuggerDisplay("{DebuggerToString(),nq}")]
     private class RequiredValueAnySentinal
     {
-        private string DebuggerToString() => "*any*";
+        private static string DebuggerToString() => "*any*";
     }
 }

@@ -258,7 +258,7 @@ internal class EncoderStreamReader
         OnString(nextState: State.Ready);
         var headerNameSpan = new Span<byte>(_headerName, 0, _headerNameLength);
         var headerValueSpan = new Span<byte>(_headerValueOctets, 0, _headerValueLength);
-        _dynamicTable.Insert(headerNameSpan, headerValueSpan);
+        DynamicTable.Insert(headerNameSpan, headerValueSpan);
     }
 
     private void OnString(State nextState)
@@ -307,7 +307,7 @@ internal class EncoderStreamReader
     private void OnDynamicTableCapacity(int dynamicTableSize)
     {
         // Call Decoder to update the table size.
-        _dynamicTable.Resize(dynamicTableSize);
+        DynamicTable.Resize(dynamicTableSize);
         _state = State.Ready;
     }
 

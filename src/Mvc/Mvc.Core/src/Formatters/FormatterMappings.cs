@@ -97,7 +97,7 @@ public class FormatterMappings
         return _map.Remove(format);
     }
 
-    private void ValidateContentType(MediaTypeHeaderValue contentType)
+    private static void ValidateContentType(MediaTypeHeaderValue contentType)
     {
         if (contentType.Type == "*" || contentType.SubType == "*")
         {
@@ -107,7 +107,7 @@ public class FormatterMappings
         }
     }
 
-    private string RemovePeriodIfPresent(string format)
+    private static string RemovePeriodIfPresent(string format)
     {
         if (string.IsNullOrEmpty(format))
         {

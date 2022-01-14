@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 // See the details of the component serialization protocol in WebAssemblyComponentDeserializer.cs on the Components solution.
 internal class WebAssemblyComponentSerializer
 {
-    public WebAssemblyComponentMarker SerializeInvocation(Type type, ParameterView parameters, bool prerendered)
+    public static WebAssemblyComponentMarker SerializeInvocation(Type type, ParameterView parameters, bool prerendered)
     {
         var assembly = type.Assembly.GetName().Name;
         var typeFullName = type.FullName;
@@ -24,7 +24,7 @@ internal class WebAssemblyComponentSerializer
             WebAssemblyComponentMarker.NonPrerendered(assembly, typeFullName, serializedDefinitions, serializedValues);
     }
 
-    internal IEnumerable<string> GetPreamble(WebAssemblyComponentMarker record)
+    internal static IEnumerable<string> GetPreamble(WebAssemblyComponentMarker record)
     {
         var serializedStartRecord = JsonSerializer.Serialize(
             record,
@@ -54,7 +54,7 @@ internal class WebAssemblyComponentSerializer
         }
     }
 
-    internal IEnumerable<string> GetEpilogue(WebAssemblyComponentMarker record)
+    internal static IEnumerable<string> GetEpilogue(WebAssemblyComponentMarker record)
     {
         var serializedStartRecord = JsonSerializer.Serialize(
             record.GetEndRecord(),

@@ -272,7 +272,7 @@ internal class ResponseBody : Stream
         chunkIndex++;
     }
 
-    private void FreeDataBuffers(List<GCHandle> pinnedBuffers)
+    private static void FreeDataBuffers(List<GCHandle> pinnedBuffers)
     {
         foreach (var pin in pinnedBuffers)
         {
@@ -315,7 +315,7 @@ internal class ResponseBody : Stream
 
         // Make sure all validation is performed before this computes the headers
         var flags = ComputeLeftToWrite(data.Count);
-        uint statusCode = 0;
+        uint statusCode;
         var chunked = _requestContext.Response.BoundaryType == BoundaryType.Chunked;
         var asyncResult = new ResponseStreamAsyncResult(this, data, chunked, cancellationToken);
         uint bytesSent = 0;

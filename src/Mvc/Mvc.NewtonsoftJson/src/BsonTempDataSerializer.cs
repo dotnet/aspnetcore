@@ -149,7 +149,7 @@ internal class BsonTempDataSerializer : TempDataSerializer
         }
     }
 
-    public void EnsureObjectCanBeSerialized(object item)
+    public static void EnsureObjectCanBeSerialized(object item)
     {
         item = item ?? throw new ArgumentNullException(nameof(item));
 

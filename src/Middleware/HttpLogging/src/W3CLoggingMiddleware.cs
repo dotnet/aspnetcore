@@ -222,7 +222,7 @@ internal class W3CLoggingMiddleware
         }
     }
 
-    private bool AddToList(string[] elements, int index, string? value)
+    private static bool AddToList(string[] elements, int index, string? value)
     {
         value ??= string.Empty;
         elements[index] = ReplaceWhitespace(value.Trim());

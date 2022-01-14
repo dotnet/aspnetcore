@@ -47,7 +47,10 @@ public class RequestResponseTests
         var stringBuilder = new StringBuilder("/RequestPath/");
         for (var i = 32; i < 127; i++)
         {
-            if (i == 43) continue; // %2B "+" gives a 404.11 (URL_DOUBLE_ESCAPED)
+            if (i == 43)
+            {
+                continue; // %2B "+" gives a 404.11 (URL_DOUBLE_ESCAPED)
+            }
             stringBuilder.Append("%");
             stringBuilder.Append(i.ToString("X2", CultureInfo.InvariantCulture));
         }
@@ -96,7 +99,10 @@ public class RequestResponseTests
     {
         for (var i = 0; i < 32; i++)
         {
-            if (i == 9 || i == 10) continue; // \t and \r are allowed by Http.Sys.
+            if (i == 9 || i == 10)
+            {
+                continue; // \t and \r are allowed by Http.Sys.
+            }
             var response = await SendSocketRequestAsync("/" + (char)i);
             Assert.True(string.Equals(400, response.Status), i.ToString("X2", CultureInfo.InvariantCulture) + ";" + response);
         }

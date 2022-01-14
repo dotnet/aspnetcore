@@ -52,4 +52,31 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         helpLinkUri: "https://aka.ms/aspnet/analyzers");
+
+    internal static readonly DiagnosticDescriptor DoNotUseConfigureWebHostWithConfigureHostBuilder = new(
+        "ASP0008",
+        "Do not use ConfigureWebHost with WebApplicationBuilder.Host",
+        "ConfigureWebHost cannot be used with WebApplicationBuilder.Host",
+        "Usage",
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        helpLinkUri: "https://aka.ms/aspnet/analyzers");
+
+    internal static readonly DiagnosticDescriptor DoNotUseConfigureWithConfigureWebHostBuilder = new(
+        "ASP0009",
+        "Do not use Configure with WebApplicationBuilder.WebHost",
+        "Configure cannot be used with WebApplicationBuilder.WebHost",
+        "Usage",
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        helpLinkUri: "https://aka.ms/aspnet/analyzers");
+
+    internal static readonly DiagnosticDescriptor DoNotUseUseStartupWithConfigureWebHostBuilder = new(
+        "ASP0010",
+        "Do not use UseStartup with WebApplicationBuilder.WebHost",
+        "UseStartup cannot be used with WebApplicationBuilder.WebHost",
+        "Usage",
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        helpLinkUri: "https://aka.ms/aspnet/analyzers");
 }

@@ -1405,11 +1405,9 @@ public class WebHostBuilderTests
         await host.StopAsync();
     }
 
-    private WebHostOptions CreateWebHostOptions(IConfiguration configuration, string applicationNameFallback = null)
+    private WebHostOptions CreateWebHostOptions(IConfiguration configuration)
     {
-        return new WebHostOptions(
-            configuration,
-            applicationNameFallback: applicationNameFallback);
+        return new WebHostOptions(configuration);
     }
 
     private class StartOrder
