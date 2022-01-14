@@ -49,7 +49,9 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup>
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolsetVersion Condition="'$(VisualStudioVersion)' == '17.0' ">v143</PlatformToolsetVersion>
+    <PlatformToolsetVersion Condition="'$(PlatformToolsetVersion)' == ''">v142</PlatformToolsetVersion>
+    <PlatformToolset>$(PlatformToolsetVersion)</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
