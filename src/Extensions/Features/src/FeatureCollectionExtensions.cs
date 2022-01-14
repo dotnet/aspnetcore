@@ -25,7 +25,7 @@ public static class FeatureCollectionExtensions
             throw new ArgumentNullException(nameof(featureCollection));
         }
 
-        return featureCollection.Get<TFeature>() ?? throw new InvalidOperationException($"Feature {typeof(TFeature)} is not present.");
+        return featureCollection.Get<TFeature>() ?? throw new InvalidOperationException($"Feature '{typeof(TFeature)}' is not present.");
     }
 
     /// <summary>
@@ -47,6 +47,6 @@ public static class FeatureCollectionExtensions
             throw new ArgumentNullException(nameof(key));
         }
 
-        return featureCollection[key] ?? throw new InvalidOperationException($"Feature {key} is not present.");
+        return featureCollection[key] ?? throw new InvalidOperationException($"Feature '{key}' is not present.");
     }
 }
