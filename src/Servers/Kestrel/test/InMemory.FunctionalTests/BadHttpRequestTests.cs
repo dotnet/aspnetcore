@@ -202,11 +202,12 @@ public class BadHttpRequestTests : LoggedTest
         {
             using (var client = server.CreateConnection())
             {
-                await client.Stream.WriteAsync(Core.Internal.Http2.Http2Connection.ClientPreface.ToArray());
+                await client.Stream.WriteAsync(Core.Internal.Http2.Http2Connection.ClientPreface.ToArray()).DefaultTimeout();
 
                 var data = await client.Stream.ReadAtLeastLengthAsync(17);
 
                 Assert.Equal(Http1Connection.Http2GoAwayHttp11RequiredBytes.ToArray(), data);
+                Assert.Empty(await client.Stream.ReadUntilEndAsync().DefaultTimeout());
             }
         }
     }
