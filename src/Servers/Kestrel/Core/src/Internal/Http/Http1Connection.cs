@@ -732,7 +732,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
     private void DetectHttp2Preface(ReadOnlySequence<byte> requestData, BadHttpRequestException ex)
 #pragma warning restore CS0618 // Type or member is obsolete
     {
-        const int PrefaceLineLength = 18;
+        const int PrefaceLineLength = 16;
 
         // Only check for HTTP/2 preface on non-TLS connection.
         // When TLS is used then ALPN is used to negotiate correct version.
