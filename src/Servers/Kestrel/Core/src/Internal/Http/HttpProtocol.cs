@@ -990,7 +990,9 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
 
     protected virtual Task TryProduceInvalidRequestResponse()
     {
-        // If _requestAborted is set, the connection has already been closed.
+        Debug.Assert(_requestRejectedException != null);
+
+        // If _connectionAborted is set, the connection has already been closed.
         if (!_connectionAborted)
         {
             return ProduceEnd();
