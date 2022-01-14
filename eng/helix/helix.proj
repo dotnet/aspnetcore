@@ -29,6 +29,9 @@
     <DotNetCliVersion>$(NETCoreSdkVersion)</DotNetCliVersion>
     <DotNetCliChannel>Current</DotNetCliChannel>
 
+    <ArchiveExtension>.tar.gz</ArchiveExtension>
+    <ArchiveExtension Condition="'$(IsWindowsHelixQueue)' == 'true'">.zip</ArchiveExtension>
+
     <!-- Similar to ProjectLayout.props in the Arcade SDK. The Helix SDK contains nothing similar. -->
     <OutputPath Condition=" '$(OutputPath)' == '' ">$(RepoRoot)artifacts\bin\$(MSBuildProjectName)\</OutputPath>
   </PropertyGroup>
@@ -37,10 +40,11 @@
   <ItemGroup>
     <!--
       Use the BrowserDebugHost transport package as a sentinel for the non-shipping version of the NETCoreApp shared framework.
+      !temporary! e.g. https://dotnetclimsrc.blob.core.windows.net/dotnet/Runtime/6.0.2-servicing.22060.12/dotnet-runtime-6.0.2-win-x86.zip?{token}
     -->
-    <AdditionalDotNetPackage Include="$(MicrosoftNETCoreBrowserDebugHostTransportVersion)">
-      <PackageType>runtime</PackageType>
-    </AdditionalDotNetPackage>
+    <HelixCorrelationPayload Include="dotnet-cli"
+        Destination="dotnet-cli"
+        Uri="https://dotnetclimsrc.blob.core.windows.net/dotnet/Runtime/$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-$(DotNetCliRuntime)$(ArchiveExtension)$([System.Environment]::GetEnvironmentVariable('DotNetCliMsrcReadSasToken'))" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(ContinuousIntegrationBuild)' == 'true' ">
