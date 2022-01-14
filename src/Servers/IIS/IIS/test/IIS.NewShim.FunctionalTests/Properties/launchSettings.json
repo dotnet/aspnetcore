@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "IIS.NewShim.FunctionalTests": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}
