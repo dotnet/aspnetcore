@@ -646,7 +646,6 @@ public class Http2Tests : LoggedTest
     }
 
     [ConditionalFact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/29126")]
     [MinimumOSVersion(OperatingSystems.Windows, VersionForReset)]
     public async Task Reset_BeforeResponse_Resets()
     {
