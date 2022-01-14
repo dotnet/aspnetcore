@@ -11,5 +11,7 @@ internal sealed class UpdateDelta
 
     public byte[] ILDelta { get; set; } = default!;
 
+    public byte[]? PdbBytes { get; set; }
+
     public int[]? UpdatedTypes { get; set; }
 }
