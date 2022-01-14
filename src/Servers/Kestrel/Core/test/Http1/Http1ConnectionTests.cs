@@ -202,6 +202,22 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
             count++;
         }
 
+        static bool TryReadResponse(ReadResult read, out SequencePosition consumed, out SequencePosition examined)
+        {
+            consumed = read.Buffer.Start;
+            examined = read.Buffer.End;
+
+            SequenceReader<byte> reader = new SequenceReader<byte>(read.Buffer);
+            if (reader.TryReadTo(out ReadOnlySequence<byte> _, new byte[] { (byte)'\r', (byte)'\n', (byte)'\r', (byte)'\n' }, advancePastDelimiter: true))
+            {
+                consumed = reader.Position;
+                examined = reader.Position;
+                return true;
+            }
+
+            return false;
+        }
+
         var nextId = feature.TraceIdentifier;
         Assert.Equal($"{connectionId}:00000001", nextId);
 
@@ -219,22 +235,6 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
 
         _http1Connection.StopProcessingNextRequest();
         await requestProcessingTask.DefaultTimeout();
-    }
-
-    private static bool TryReadResponse(ReadResult read, out SequencePosition consumed, out SequencePosition examined)
-    {
-        consumed = read.Buffer.Start;
-        examined = read.Buffer.End;
-
-        SequenceReader<byte> reader = new SequenceReader<byte>(read.Buffer);
-        if (reader.TryReadTo(out ReadOnlySequence<byte> _, new byte[] { (byte)'\r', (byte)'\n', (byte)'\r', (byte)'\n' }, advancePastDelimiter: true))
-        {
-            consumed = reader.Position;
-            examined = reader.Position;
-            return true;
-        }
-
-        return false;
     }
 
     [Fact]
