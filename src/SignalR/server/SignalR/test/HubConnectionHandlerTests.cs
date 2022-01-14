@@ -4710,6 +4710,118 @@ public class HubConnectionHandlerTests : VerifiableLoggedTest
     }
 
     [Fact]
+    public async Task ServiceResolvedWithoutAttribute_WithSettingEnabledGlobally()
+    {
+        var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
+        {
+            provider.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+                options.EnableInferredFromServiceParameters = true;
+            });
+            provider.AddSingleton<Service1>();
+        });
+        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ServicesHub>>();
+
+        using (var client = new TestClient())
+        {
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+            var res = await client.InvokeAsync(nameof(ServicesHub.ServiceWithoutAttribute)).DefaultTimeout();
+            Assert.Equal(1L, res.Result);
+        }
+    }
+
+    [Fact]
+    public async Task ServiceResolvedWithoutAttribute_WithHubSpecificSettingEnabled()
+    {
+        var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
+        {
+            provider.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+            }).AddHubOptions<ServicesHub>(options =>
+            {
+                options.EnableInferredFromServiceParameters = true;
+            });
+            provider.AddSingleton<Service1>();
+        });
+        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ServicesHub>>();
+
+        using (var client = new TestClient())
+        {
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+            var res = await client.InvokeAsync(nameof(ServicesHub.ServiceWithoutAttribute)).DefaultTimeout();
+            Assert.Equal(1L, res.Result);
+        }
+    }
+
+    [Fact]
+    public async Task ServiceNotResolvedWithAndWithoutAttribute()
+    {
+        var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
+        {
+            provider.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+            });
+            provider.AddSingleton<Service1>();
+            provider.AddSingleton<Service2>();
+        });
+        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ServicesHub>>();
+
+        using (var client = new TestClient())
+        {
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+            var res = await client.InvokeAsync(nameof(ServicesHub.ServiceWithAndWithoutAttribute)).DefaultTimeout();
+            Assert.Equal("Failed to invoke 'ServiceWithAndWithoutAttribute' due to an error on the server. InvalidDataException: Invocation provides 0 argument(s) but target expects 1.", res.Error);
+        }
+    }
+
+    [Fact]
+    public async Task ServiceResolvedWithAndWithoutAttribute_WithOptionEnabled()
+    {
+        var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
+        {
+            provider.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+                options.EnableInferredFromServiceParameters = true;
+            });
+            provider.AddSingleton<Service1>();
+            provider.AddSingleton<Service2>();
+        });
+        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ServicesHub>>();
+
+        using (var client = new TestClient())
+        {
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+            var res = await client.InvokeAsync(nameof(ServicesHub.ServiceWithAndWithoutAttribute)).DefaultTimeout();
+            Assert.Equal(1L, res.Result);
+        }
+    }
+
+    [Fact]
+    public async Task ServiceNotResolvedIfNotInDI_WithOptionEnabled()
+    {
+        var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
+        {
+            provider.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+                options.EnableInferredFromServiceParameters = true;
+            });
+        });
+        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ServicesHub>>();
+
+        using (var client = new TestClient())
+        {
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+            var res = await client.InvokeAsync(nameof(ServicesHub.ServiceWithoutAttribute)).DefaultTimeout();
+            Assert.Equal("Failed to invoke 'ServiceWithoutAttribute' due to an error on the server. InvalidDataException: Invocation provides 0 argument(s) but target expects 1.", res.Error);
+        }
+    }
+
+    [Fact]
     public void TooManyParametersWithServiceThrows()
     {
         var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>

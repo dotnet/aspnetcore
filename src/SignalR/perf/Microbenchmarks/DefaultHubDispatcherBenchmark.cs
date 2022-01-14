@@ -33,6 +33,7 @@ public class DefaultHubDispatcherBenchmark
             serviceScopeFactory,
             new HubContext<TestHub>(new DefaultHubLifetimeManager<TestHub>(NullLogger<DefaultHubLifetimeManager<TestHub>>.Instance)),
             enableDetailedErrors: false,
+            enableInferredFromServiceParameters: false,
             new Logger<DefaultHubDispatcher<TestHub>>(NullLoggerFactory.Instance),
             hubFilters: null);
 

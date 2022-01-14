@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.SignalR.Internal;
@@ -26,7 +27,7 @@ internal class HubMethodDescriptor
     // bitset to store which parameters come from DI up to 64 arguments
     private ulong _isServiceArgument;
 
-    public HubMethodDescriptor(ObjectMethodExecutor methodExecutor, IEnumerable<IAuthorizeData> policies)
+    public HubMethodDescriptor(ObjectMethodExecutor methodExecutor, IServiceProviderIsService? serviceProviderIsService, IEnumerable<IAuthorizeData> policies)
     {
         MethodExecutor = methodExecutor;
 
@@ -78,7 +79,8 @@ internal class HubMethodDescriptor
                 HasSyntheticArguments = true;
                 return false;
             }
-            else if (p.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType)))
+            else if (p.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType)) ||
+                serviceProviderIsService?.IsService(p.ParameterType) == true)
             {
                 if (index >= 64)
                 {

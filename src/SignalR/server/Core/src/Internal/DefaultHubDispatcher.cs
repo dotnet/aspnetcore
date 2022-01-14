@@ -28,13 +28,13 @@ internal partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> where TH
     private readonly Func<HubLifetimeContext, Exception?, Task>? _onDisconnectedMiddleware;
 
     public DefaultHubDispatcher(IServiceScopeFactory serviceScopeFactory, IHubContext<THub> hubContext, bool enableDetailedErrors,
-        ILogger<DefaultHubDispatcher<THub>> logger, List<IHubFilter>? hubFilters)
+        bool enableInferredFromServiceParameters, ILogger<DefaultHubDispatcher<THub>> logger, List<IHubFilter>? hubFilters)
     {
         _serviceScopeFactory = serviceScopeFactory;
         _hubContext = hubContext;
         _enableDetailedErrors = enableDetailedErrors;
         _logger = logger;
-        DiscoverHubMethods();
+        DiscoverHubMethods(enableInferredFromServiceParameters);
 
         var count = hubFilters?.Count ?? 0;
         if (count != 0)
@@ -648,11 +648,19 @@ internal partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> where TH
         }
     }
 
-    private void DiscoverHubMethods()
+    private void DiscoverHubMethods(bool enableInferredFromServiceParameters)
     {
         var hubType = typeof(THub);
         var hubTypeInfo = hubType.GetTypeInfo();
         var hubName = hubType.Name;
+
+        using var scope = _serviceScopeFactory.CreateScope();
+
+        IServiceProviderIsService? serviceProviderIsService = null;
+        if (enableInferredFromServiceParameters)
+        {
+            serviceProviderIsService = scope.ServiceProvider.GetService<IServiceProviderIsService>();
+        }
 
         foreach (var methodInfo in HubReflectionHelper.GetHubMethods(hubType))
         {
@@ -672,7 +680,7 @@ internal partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> where TH
 
             var executor = ObjectMethodExecutor.Create(methodInfo, hubTypeInfo);
             var authorizeAttributes = methodInfo.GetCustomAttributes<AuthorizeAttribute>(inherit: true);
-            _methods[methodName] = new HubMethodDescriptor(executor, authorizeAttributes);
+            _methods[methodName] = new HubMethodDescriptor(executor, serviceProviderIsService, authorizeAttributes);
 
             Log.HubMethodBound(_logger, hubName, methodName);
         }

@@ -1281,6 +1281,11 @@ public class ServicesHub : TestHub
         return 1;
     }
 
+    public int ServiceWithAndWithoutAttribute(Service1 service, [FromService] Service2 service2)
+    {
+        return 1;
+    }
+
     public async Task Stream(ChannelReader<int> channelReader)
     {
         while (await channelReader.WaitToReadAsync())
