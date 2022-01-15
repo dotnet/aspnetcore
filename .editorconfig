@@ -282,6 +282,8 @@ dotnet_diagnostic.CA1846.severity = suggestion
 dotnet_diagnostic.CA2008.severity = suggestion
 # CA2012: Use ValueTask correctly
 dotnet_diagnostic.CA2012.severity = suggestion
+# IDE0005: Remove unnecessary usings
+dotnet_diagnostic.IDE0005.severity = suggestion
 # IDE0044: Make field readonly
 dotnet_diagnostic.IDE0044.severity = suggestion
 # IDE0051: Remove unused private members
