@@ -71,9 +71,9 @@
     </When>
     <Otherwise>
       <PropertyGroup>
-        <IsArm64HelixQueue Condition="$(HelixTargetQueue.Contains('Arm64'))">true</IsArm64HelixQueue>
-        <IsWindowsHelixQueue Condition="$(HelixTargetQueue.Contains('Windows'))">true</IsWindowsHelixQueue>
-        <IsMacHelixQueue Condition="$(HelixTargetQueue.Contains('OSX'))">true</IsMacHelixQueue>
+        <IsArm64HelixQueue>$(HelixTargetQueue.Contains('Arm64'))</IsArm64HelixQueue>
+        <IsWindowsHelixQueue>$(HelixTargetQueue.Contains('Windows'))</IsWindowsHelixQueue>
+        <IsMacHelixQueue>$(HelixTargetQueue.Contains('OSX'))</IsMacHelixQueue>
       </PropertyGroup>
     </Otherwise>
   </Choose>

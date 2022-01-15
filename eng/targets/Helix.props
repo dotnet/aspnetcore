@@ -19,14 +19,6 @@
     <TestDependsOnAspNetRuntime>true</TestDependsOnAspNetRuntime>
   </PropertyGroup>
 
-  <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' OR '$(IsWindowsOnlyTest)' == 'true' ">
-    <HelixProjectPlatform Include="Windows" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' != '.NETFramework' AND '$(IsWindowsOnlyTest)' != 'true' ">
-    <HelixProjectPlatform Include="@(HelixAvailablePlatform)" />
-  </ItemGroup>
-
   <ItemGroup>
     <HelixContent Include="$(RepoRoot)eng\helix\content\**\*" Exclude="$(RepoRoot)eng\helix\content\*.in" />
   </ItemGroup>
