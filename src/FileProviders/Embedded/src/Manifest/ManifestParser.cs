@@ -65,7 +65,6 @@ internal static class ManifestParser
         var rootDirectory = ManifestDirectory.CreateRootDirectory(entriesList.ToArray());
 
         return new EmbeddedFilesManifest(rootDirectory);
-
     }
 
     private static void ValidateEntries(List<ManifestEntry> entriesList)

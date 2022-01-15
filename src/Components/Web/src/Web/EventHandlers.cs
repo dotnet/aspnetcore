@@ -7,7 +7,6 @@ namespace Microsoft.AspNetCore.Components.Web;
 /// Holds <see cref="EventHandler"/> attributes to configure the mappings between event names and
 /// event argument types.
 /// </summary>
-
 // Focus events
 [EventHandler("onfocus", typeof(FocusEventArgs), true, true)]
 [EventHandler("onblur", typeof(FocusEventArgs), true, true)]

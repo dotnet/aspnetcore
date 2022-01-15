@@ -315,7 +315,6 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
 
         if (buffer.Length > 0)
         {
-
             writer.WriteBeginChunkBytes(buffer.Length);
             writer.Write(buffer);
             writer.WriteEndChunkBytes();

@@ -63,7 +63,6 @@ internal static class ILEmitTrieFactory
         (string text, int destination)[] entries,
         bool? vectorize)
     {
-
         vectorize = vectorize ?? ShouldVectorize(entries);
 
         // See comments on Locals for details

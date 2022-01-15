@@ -284,7 +284,6 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
                 Assert.False(metadata.IsDefaultResponse);
                 Assert.Equal(204, metadata.StatusCode);
                 AnalyzerAssert.DiagnosticLocation(testSource.MarkerLocations["MM1"], metadata.ReturnOperation.Syntax.GetLocation());
-
             },
             metadata =>
             {

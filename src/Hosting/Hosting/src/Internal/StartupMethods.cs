@@ -22,5 +22,4 @@ internal class StartupMethods
     public object? StartupInstance { get; }
     public Func<IServiceCollection, IServiceProvider> ConfigureServicesDelegate { get; }
     public Action<IApplicationBuilder> ConfigureDelegate { get; }
-
 }

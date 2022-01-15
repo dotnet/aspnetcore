@@ -2126,7 +2126,6 @@ public class DefaultApiDescriptionProviderTest
 
     private void ReturnsVoid()
     {
-
     }
 
     private IActionResult ReturnsActionResult()
@@ -2596,7 +2595,6 @@ public class DefaultApiDescriptionProviderTest
 
     private interface ITestService
     {
-
     }
 
     private class FromFormFileAttribute : Attribute, IBindingSourceMetadata

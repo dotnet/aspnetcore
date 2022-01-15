@@ -20,7 +20,6 @@ namespace Microsoft.Extensions.Internal;
 /// <summary>
 /// Helper code for the various activator services.
 /// </summary>
-
 #if ActivatorUtilities_In_DependencyInjection
 public
 #else

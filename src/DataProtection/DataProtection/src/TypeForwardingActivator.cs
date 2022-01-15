@@ -82,6 +82,5 @@ internal class TypeForwardingActivator : SimpleActivator
 
         // No version left
         return forwardedTypeName;
-
     }
 }

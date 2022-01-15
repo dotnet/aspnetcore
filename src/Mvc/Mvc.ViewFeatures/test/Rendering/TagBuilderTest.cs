@@ -234,7 +234,6 @@ public class TagBuilderTest
 
         // Assert
         Assert.Equal("<p />", HtmlContentUtilities.HtmlContentToString(tag));
-
     }
 
     [Fact]

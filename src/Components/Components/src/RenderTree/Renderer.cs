@@ -99,7 +99,6 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
 
     internal HotReloadManager HotReloadManager { get; set; } = HotReloadManager.Default;
 
-
     private static IComponentActivator GetComponentActivatorOrDefault(IServiceProvider serviceProvider)
     {
         return serviceProvider.GetService<IComponentActivator>()
@@ -711,7 +710,6 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         return batch != null ?
             Task.WhenAll(batch) :
             Task.CompletedTask;
-
     }
 
     private async Task InvokeRenderCompletedCallsAfterUpdateDisplayTask(

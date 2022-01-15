@@ -366,7 +366,6 @@ internal class DataAnnotationsMetadataProvider :
                 {
                     addInferredRequiredAttribute = IsRequired(context);
                 }
-
             }
             else
             {

@@ -317,7 +317,6 @@ public sealed class AfterPageFilterOnPageHandlerExecutingEventData : EventData
     /// <summary>
     /// The <see cref="PageHandlerExecutingContext"/>.
     /// </summary>
-
     public PageHandlerExecutingContext HandlerExecutingContext { get; }
 
     /// <summary>
@@ -609,7 +608,6 @@ public sealed class AfterPageFilterOnPageHandlerSelectedEventData : EventData
     /// <param name="actionDescriptor">The <see cref="CompiledPageActionDescriptor"/>.</param>
     /// <param name="handlerSelectedContext">The <see cref="PageHandlerSelectedContext"/>.</param>
     /// <param name="filter">The <see cref="IPageFilter"/>.</param>
-
     public AfterPageFilterOnPageHandlerSelectedEventData(CompiledPageActionDescriptor actionDescriptor, PageHandlerSelectedContext handlerSelectedContext, IPageFilter filter)
     {
         ActionDescriptor = actionDescriptor;

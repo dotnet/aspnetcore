@@ -81,7 +81,6 @@ public class ConsumesAttribute :
         ContentTypes = GetContentTypes(contentType, otherContentTypes);
         _contentTypes = GetAllContentTypes(contentType, otherContentTypes);
         _requestType = requestType;
-
     }
 
     // The value used is a non default value so that it avoids getting mixed with other action constraints

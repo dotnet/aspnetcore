@@ -76,7 +76,6 @@ public class RazorViewEngine : IRazorViewEngine
         _logger = loggerFactory.CreateLogger<RazorViewEngine>();
         _diagnosticListener = diagnosticListener;
         ViewLookupCache = new MemoryCache(new MemoryCacheOptions());
-
     }
 
     internal void ClearCache()

@@ -18,7 +18,6 @@ internal static class AwaitableThreadPool
     {
         public void GetResult()
         {
-
         }
 
         public Awaitable GetAwaiter() => this;

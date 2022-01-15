@@ -23,7 +23,6 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             try
             {
                 await product.Update();
-
             }
             catch
             {
@@ -42,7 +41,6 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         public static void Update(int id, Product product)
         {
-
         }
     }
 

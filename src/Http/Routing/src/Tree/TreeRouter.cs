@@ -88,7 +88,6 @@ public partial class TreeRouter : IRouter
 
         foreach (var entry in linkGenerationEntries)
         {
-
             var binder = new TemplateBinder(urlEncoder, objectPool, entry.RouteTemplate, entry.Defaults);
             var outboundMatch = new OutboundMatch() { Entry = entry, TemplateBinder = binder };
             outboundMatches.Add(outboundMatch);

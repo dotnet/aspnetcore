@@ -22,7 +22,6 @@ internal sealed class HostingEventSource : EventSource
     internal HostingEventSource()
         : this("Microsoft.AspNetCore.Hosting")
     {
-
     }
 
     // Used for testing

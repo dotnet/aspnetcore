@@ -41,7 +41,6 @@ public class QueryBuilder : IEnumerable<KeyValuePair<string, string>>
     public QueryBuilder(IEnumerable<KeyValuePair<string, StringValues>> parameters)
         : this(parameters.SelectMany(kvp => kvp.Value, (kvp, v) => KeyValuePair.Create(kvp.Key, v ?? string.Empty)))
     {
-
     }
 
     /// <summary>

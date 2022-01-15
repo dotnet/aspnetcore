@@ -412,7 +412,6 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
             ReadResult readResult = default;
             try
             {
-
                 do
                 {
                     var firstWrite = true;

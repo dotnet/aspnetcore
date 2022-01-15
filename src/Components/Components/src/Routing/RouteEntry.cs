@@ -71,7 +71,6 @@ internal class RouteEntry
             {
                 if (templateSegment.Constraints.Length == 0)
                 {
-
                     // Unconstrained catch all, we can stop early
                     parameters ??= new(StringComparer.OrdinalIgnoreCase);
                     parameters[templateSegment.Value] = string.Join('/', context.Segments, pathIndex, context.Segments.Length - pathIndex);

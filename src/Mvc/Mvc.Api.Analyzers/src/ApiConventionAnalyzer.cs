@@ -89,7 +89,6 @@ public class ApiConventionAnalyzer : DiagnosticAnalyzer
                         declaredMetadata.StatusCode));
                 }
             }
-
         }, OperationKind.MethodBody);
     }
 

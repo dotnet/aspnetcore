@@ -63,5 +63,4 @@ public class FileMultipartSection
     /// Gets the name of the file from the section
     /// </summary>
     public string FileName { get; }
-
 }

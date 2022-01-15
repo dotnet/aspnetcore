@@ -471,7 +471,6 @@ public class ControllerTest
 
     private class TestableController : Controller
     {
-
     }
 
     private class DisposableObject : IDisposable

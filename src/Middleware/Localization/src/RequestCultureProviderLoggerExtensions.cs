@@ -8,7 +8,6 @@ namespace Microsoft.AspNetCore.Localization;
 
 internal static partial class RequestCultureProviderLoggerExtensions
 {
-
     [LoggerMessage(1, LogLevel.Debug, "{requestCultureProvider} returned the following unsupported cultures '{cultures}'.", EventName = "UnsupportedCulture")]
     public static partial void UnsupportedCultures(this ILogger logger, string requestCultureProvider, IList<StringSegment> cultures);
 
