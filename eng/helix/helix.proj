@@ -40,11 +40,11 @@
   <ItemGroup>
     <!--
       Use the BrowserDebugHost transport package as a sentinel for the non-shipping version of the NETCoreApp shared framework.
-      !temporary! e.g. https://dotnetclimsrc.blob.core.windows.net/dotnet/Runtime/6.0.2-servicing.22060.12/dotnet-runtime-6.0.2-win-x86.zip?{token}
+      !temporary! e.g. https://dotnetbuilds.blob.core.windows.net/internal/Runtime/6.0.2-servicing.22060.12/dotnet-runtime-6.0.2-win-x86.zip?{token}
     -->
     <HelixCorrelationPayload Include="dotnet-cli"
         Destination="dotnet-cli"
-        Uri="https://dotnetclimsrc.blob.core.windows.net/dotnet/Runtime/$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-$(DotNetCliRuntime)$(ArchiveExtension)$([System.Environment]::GetEnvironmentVariable('DotNetCliMsrcReadSasToken'))" />
+        Uri="https://dotnetbuilds.blob.core.windows.net/internal/Runtime/$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-$(DotNetCliRuntime)$(ArchiveExtension)$([System.Environment]::GetEnvironmentVariable('DotNetBuildsInternalReadSasToken'))" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(ContinuousIntegrationBuild)' == 'true' ">
