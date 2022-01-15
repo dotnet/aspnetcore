@@ -179,7 +179,7 @@ public abstract class ApplicationDeployer : IDisposable
 
     protected void StartTimer()
     {
-        Logger.LogInformation($"Deploying {DeploymentParameters.ToString()}");
+        Logger.LogInformation($"Deploying {DeploymentParameters}");
         _stopwatch.Start();
     }
 

@@ -89,7 +89,7 @@ internal static class ManifestParser
         if (element.NodeType != XmlNodeType.Element)
         {
             throw new InvalidOperationException($"Invalid manifest format. Expected a 'File' or a 'Directory' node:" +
-                $" '{element.ToString()}'");
+                $" '{element}'");
         }
 
         if (string.Equals(element.Name.LocalName, "File", StringComparison.Ordinal))
