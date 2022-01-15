@@ -107,7 +107,7 @@ internal class LoginWithRecoveryCodeModel<TUser> : LoginWithRecoveryCodeModel wh
 
         var result = await _signInManager.TwoFactorRecoveryCodeSignInAsync(recoveryCode);
 
-        var userId = await _userManager.GetUserIdAsync(user);
+        await _userManager.GetUserIdAsync(user);
 
         if (result.Succeeded)
         {

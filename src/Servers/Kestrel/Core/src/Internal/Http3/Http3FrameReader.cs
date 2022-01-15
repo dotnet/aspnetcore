@@ -23,9 +23,8 @@ internal class Http3FrameReader
     {
         framePayload = ReadOnlySequence<byte>.Empty;
         SequencePosition consumed;
-        SequencePosition examined;
 
-        var type = VariableLengthIntegerHelper.GetInteger(readableBuffer, out consumed, out examined);
+        var type = VariableLengthIntegerHelper.GetInteger(readableBuffer, out consumed, out _);
         if (type == -1)
         {
             return false;
@@ -33,7 +32,7 @@ internal class Http3FrameReader
 
         var firstLengthBuffer = readableBuffer.Slice(consumed);
 
-        var length = VariableLengthIntegerHelper.GetInteger(firstLengthBuffer, out consumed, out examined);
+        var length = VariableLengthIntegerHelper.GetInteger(firstLengthBuffer, out consumed, out _);
 
         // Make sure the whole frame is buffered
         if (length == -1)

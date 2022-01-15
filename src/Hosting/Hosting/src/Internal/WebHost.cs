@@ -275,7 +275,7 @@ internal sealed partial class WebHost : IWebHost, IAsyncDisposable
                 var urls = _config[WebHostDefaults.ServerUrlsKey] ?? _config[DeprecatedServerUrlsKey];
                 if (!string.IsNullOrEmpty(urls))
                 {
-                    serverAddressesFeature!.PreferHostingUrls = WebHostUtilities.ParseBool(_config, WebHostDefaults.PreferHostingUrlsKey);
+                    serverAddressesFeature!.PreferHostingUrls = WebHostUtilities.ParseBool(_config[WebHostDefaults.PreferHostingUrlsKey]);
 
                     foreach (var value in urls.Split(';', StringSplitOptions.RemoveEmptyEntries))
                     {

@@ -42,7 +42,7 @@ public class Http3TlsTests : LoggedTest
         });
 
         using var host = builder.Build();
-        using var client = Http3Helpers.CreateClient();
+        using var client = HttpHelpers.CreateClient();
 
         await host.StartAsync().DefaultTimeout();
 
@@ -90,7 +90,7 @@ public class Http3TlsTests : LoggedTest
         });
 
         using var host = builder.Build();
-        using var client = Http3Helpers.CreateClient(includeClientCert: true);
+        using var client = HttpHelpers.CreateClient(includeClientCert: true);
 
         await host.StartAsync().DefaultTimeout();
 
@@ -133,7 +133,7 @@ public class Http3TlsTests : LoggedTest
         });
 
         using var host = builder.Build();
-        using var client = Http3Helpers.CreateClient(includeClientCert: true);
+        using var client = HttpHelpers.CreateClient(includeClientCert: true);
 
         await host.StartAsync().DefaultTimeout();
 
@@ -183,7 +183,7 @@ public class Http3TlsTests : LoggedTest
         });
 
         using var host = builder.Build();
-        using var client = Http3Helpers.CreateClient(includeClientCert: true);
+        using var client = HttpHelpers.CreateClient(includeClientCert: true);
 
         await host.StartAsync().DefaultTimeout();
 
@@ -235,7 +235,7 @@ public class Http3TlsTests : LoggedTest
         });
 
         using var host = builder.Build();
-        using var client = Http3Helpers.CreateClient(includeClientCert: false);
+        using var client = HttpHelpers.CreateClient(includeClientCert: false);
 
         await host.StartAsync().DefaultTimeout();
 
@@ -270,7 +270,7 @@ public class Http3TlsTests : LoggedTest
         });
 
         using var host = builder.Build();
-        using var client = Http3Helpers.CreateClient();
+        using var client = HttpHelpers.CreateClient();
 
         var exception = await Assert.ThrowsAsync<NotSupportedException>(() =>
             host.StartAsync().DefaultTimeout());
@@ -279,6 +279,6 @@ public class Http3TlsTests : LoggedTest
 
     private IHostBuilder CreateHostBuilder(RequestDelegate requestDelegate, HttpProtocols? protocol = null, Action<KestrelServerOptions> configureKestrel = null)
     {
-        return Http3Helpers.CreateHostBuilder(AddTestLogging, requestDelegate, protocol, configureKestrel);
+        return HttpHelpers.CreateHostBuilder(AddTestLogging, requestDelegate, protocol, configureKestrel);
     }
 }

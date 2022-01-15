@@ -15,9 +15,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace Interop.FunctionalTests.Http3;
+namespace Interop.FunctionalTests;
 
-public static class Http3Helpers
+internal static class HttpHelpers
 {
     public static HttpMessageInvoker CreateClient(TimeSpan? idleTimeout = null, TimeSpan? expect100ContinueTimeout = null, bool includeClientCert = false)
     {
@@ -42,7 +42,7 @@ public static class Http3Helpers
         return new HttpMessageInvoker(handler);
     }
 
-    public static IHostBuilder CreateHostBuilder(Action<IServiceCollection> configureServices, RequestDelegate requestDelegate, HttpProtocols? protocol = null, Action<KestrelServerOptions> configureKestrel = null)
+    public static IHostBuilder CreateHostBuilder(Action<IServiceCollection> configureServices, RequestDelegate requestDelegate, HttpProtocols? protocol = null, Action<KestrelServerOptions> configureKestrel = null, bool? plaintext = null)
     {
         return new HostBuilder()
             .ConfigureWebHost(webHostBuilder =>
@@ -55,7 +55,10 @@ public static class Http3Helpers
                             o.Listen(IPAddress.Parse("127.0.0.1"), 0, listenOptions =>
                             {
                                 listenOptions.Protocols = protocol ?? HttpProtocols.Http3;
-                                listenOptions.UseHttps();
+                                if (!(plaintext ?? false))
+                                {
+                                    listenOptions.UseHttps();
+                                }
                             });
                         }
                         else

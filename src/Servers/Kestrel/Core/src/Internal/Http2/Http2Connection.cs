@@ -8,6 +8,7 @@ using System.IO.Pipelines;
 using System.Net.Http;
 using System.Net.Http.HPack;
 using System.Security.Authentication;
+using System.Text;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -23,6 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStreamHeadersHandler, IRequestProcessor
 {
     public static ReadOnlySpan<byte> ClientPreface => ClientPrefaceBytes;
+    public static byte[]? InvalidHttp1xErrorResponseBytes;
 
     private const PseudoHeaderFields _mandatoryRequestPseudoHeaderFields =
         PseudoHeaderFields.Method | PseudoHeaderFields.Path | PseudoHeaderFields.Scheme;
@@ -402,8 +404,40 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
         }
     }
 
+    [Flags]
+    private enum ReadPrefaceState
+    {
+        None = 0,
+        Preface = 1,
+        Http1x = 2,
+        All = Preface | Http1x
+    }
+
     private async Task<bool> TryReadPrefaceAsync()
     {
+        // HTTP/1.x and HTTP/2 support connections without TLS. That means ALPN hasn't been used to ensure both sides are
+        // using the same protocol. A common problem is someone using HTTP/1.x to talk to a HTTP/2 only endpoint.
+        //
+        // HTTP/2 starts a connection with a preface. This method reads and validates it. If the connection doesn't start
+        // with the preface, and it isn't using TLS, then we attempt to detect what the client is trying to do and send
+        // back a friendly error message.
+        //
+        // Outcomes from this method:
+        // 1. Successfully read HTTP/2 preface. Connection continues to be established.
+        // 2. Detect HTTP/1.x request. Send back HTTP/1.x 400 response.
+        // 3. Unknown content. Report HTTP/2 PROTOCOL_ERROR to client.
+        // 4. Timeout while waiting for content.
+        //
+        // Future improvement: Detect TLS frame. Useful for people starting TLS connection with a non-TLS endpoint.
+        var state = ReadPrefaceState.All;
+
+        // With TLS, ALPN should have already errored if the wrong HTTP version is used.
+        // Only perform additional validation if endpoint doesn't use TLS.
+        if (ConnectionFeatures.Get<ITlsHandshakeFeature>() != null)
+        {
+            state ^= ReadPrefaceState.Http1x;
+        }
+
         while (_isClosed == 0)
         {
             var result = await Input.ReadAsync();
@@ -415,9 +449,55 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
             {
                 if (!readableBuffer.IsEmpty)
                 {
-                    if (ParsePreface(readableBuffer, out consumed, out examined))
+                    if (state.HasFlag(ReadPrefaceState.Preface))
                     {
-                        return true;
+                        if (readableBuffer.Length >= ClientPreface.Length)
+                        {
+                            if (IsPreface(readableBuffer, out consumed, out examined))
+                            {
+                                return true;
+                            }
+                            else
+                            {
+                                state ^= ReadPrefaceState.Preface;
+                            }
+                        }
+                    }
+
+                    if (state.HasFlag(ReadPrefaceState.Http1x))
+                    {
+                        if (ParseHttp1x(readableBuffer, out var detectedVersion))
+                        {
+                            if (detectedVersion == HttpVersion.Http10 || detectedVersion == HttpVersion.Http11)
+                            {
+                                Log.PossibleInvalidHttpVersionDetected(ConnectionId, HttpVersion.Http2, detectedVersion);
+
+                                var responseBytes = InvalidHttp1xErrorResponseBytes ??= Encoding.ASCII.GetBytes(
+                                    "HTTP/1.1 400 Bad Request\r\n" +
+                                    "Connection: close\r\n" +
+                                    "Content-Type: text/plain\r\n" +
+                                    "Content-Length: 56\r\n" +
+                                    "\r\n" +
+                                    "An HTTP/1.x request was sent to an HTTP/2 only endpoint.");
+
+                                await _context.Transport.Output.WriteAsync(responseBytes);
+
+                                // Close connection here so a GOAWAY frame isn't written.
+                                TryClose();
+
+                                return false;
+                            }
+                            else
+                            {
+                                state ^= ReadPrefaceState.Http1x;
+                            }
+                        }
+                    }
+
+                    // Tested all states. Return HTTP/2 protocol error.
+                    if (state == ReadPrefaceState.None)
+                    {
+                        throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorInvalidPreface, Http2ErrorCode.PROTOCOL_ERROR);
                     }
                 }
 
@@ -437,22 +517,44 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
         return false;
     }
 
-    private static bool ParsePreface(in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
+    private bool ParseHttp1x(ReadOnlySequence<byte> buffer, out HttpVersion httpVersion)
+    {
+        httpVersion = HttpVersion.Unknown;
+
+        var reader = new SequenceReader<byte>(buffer.Length > Limits.MaxRequestLineSize ? buffer.Slice(0, Limits.MaxRequestLineSize) : buffer);
+        if (reader.TryReadTo(out ReadOnlySpan<byte> requestLine, (byte)'\n'))
+        {
+            // Line should be long enough for HTTP/1.X and end with \r\n
+            if (requestLine.Length > 10 && requestLine[requestLine.Length - 1] == (byte)'\r')
+            {
+                httpVersion = HttpUtilities.GetKnownVersion(requestLine.Slice(requestLine.Length - 9, 8));
+            }
+
+            return true;
+        }
+
+        // Couldn't find newline within max request line size so this isn't valid HTTP/1.x.
+        if (buffer.Length > Limits.MaxRequestLineSize)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool IsPreface(in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
     {
         consumed = buffer.Start;
         examined = buffer.End;
 
-        if (buffer.Length < ClientPreface.Length)
-        {
-            return false;
-        }
+        Debug.Assert(buffer.Length >= ClientPreface.Length, "Not enough content to match preface.");
 
         var preface = buffer.Slice(0, ClientPreface.Length);
         var span = preface.ToSpan();
 
         if (!span.SequenceEqual(ClientPreface))
         {
-            throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorInvalidPreface, Http2ErrorCode.PROTOCOL_ERROR);
+            return false;
         }
 
         consumed = examined = preface.End;

@@ -40,7 +40,7 @@ internal class AzureADB2COpenIDConnectEventHandlers
 
     private string BuildIssuerAddress(RedirectContext context, string defaultPolicy, string policy)
     {
-        if (!_policyToIssuerAddress.TryGetValue(policy, out var issuerAddress))
+        if (!_policyToIssuerAddress.TryGetValue(policy, out _))
         {
             _policyToIssuerAddress[policy] = context.ProtocolMessage.IssuerAddress.ToLowerInvariant()
                 .Replace($"/{defaultPolicy.ToLowerInvariant()}/", $"/{policy.ToLowerInvariant()}/");

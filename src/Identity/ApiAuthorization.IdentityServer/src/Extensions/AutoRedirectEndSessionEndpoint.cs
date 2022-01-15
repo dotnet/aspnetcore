@@ -56,7 +56,7 @@ internal class AutoRedirectEndSessionEndpoint : IEndpointHandler
 
         var client = result.ValidatedRequest?.Client;
         if (client != null &&
-            client.Properties.TryGetValue(ApplicationProfilesPropertyNames.Profile, out var type))
+            client.Properties.TryGetValue(ApplicationProfilesPropertyNames.Profile, out _))
         {
             var signInScheme = _identityServerOptions.Value.Authentication.CookieAuthenticationScheme;
             if (signInScheme != null)

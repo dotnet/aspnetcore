@@ -187,11 +187,10 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
         }
 
         // Argument checking will be done by the callee
-        bool requiresMigration, wasRevoked; // unused
         return DangerousUnprotect(protectedData,
             ignoreRevocationErrors: false,
-            requiresMigration: out requiresMigration,
-            wasRevoked: out wasRevoked);
+            requiresMigration: out _,
+            wasRevoked: out _);
     }
 
     private byte[] UnprotectCore(byte[] protectedData, bool allowOperationsOnRevokedKeys, out UnprotectStatus status)

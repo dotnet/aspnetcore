@@ -489,7 +489,7 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
 
     internal KeyValuePair<IXmlRepository, IXmlEncryptor?> GetFallbackKeyRepositoryEncryptorPair()
     {
-        IXmlRepository? repository = null;
+        IXmlRepository? repository;
         IXmlEncryptor? encryptor = null;
 
         // If we're running in Azure Web Sites, the key repository goes in the %HOME% directory.

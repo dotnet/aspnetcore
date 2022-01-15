@@ -435,7 +435,7 @@ public class ContentDispositionHeaderValue
         }
         else
         {
-            var processedValue = StringSegment.Empty;
+            StringSegment processedValue;
             if (parameter.EndsWith("*", StringComparison.Ordinal))
             {
                 processedValue = Encode5987(value);

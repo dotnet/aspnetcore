@@ -54,7 +54,7 @@ internal class ActionConstraintMatcherPolicy : MatcherPolicy, IEndpointSelectorP
 
         return false;
 
-        bool HasSignificantActionConstraint(IList<IActionConstraintMetadata> constraints)
+        static bool HasSignificantActionConstraint(IList<IActionConstraintMetadata> constraints)
         {
             for (var i = 0; i < constraints.Count; i++)
             {

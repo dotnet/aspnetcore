@@ -196,7 +196,6 @@ public abstract class FileStreamResultTestBase
         var readStream = new MemoryStream(byteArray);
 
         var httpContext = GetHttpContext();
-        var requestHeaders = httpContext.Request.GetTypedHeaders();
         httpContext.Request.Headers.Range = rangeString;
         httpContext.Request.Method = HttpMethods.Get;
         httpContext.Response.Body = new MemoryStream();

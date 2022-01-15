@@ -118,9 +118,9 @@ internal class UrlDecoder
         int byte2 = 0, byte3 = 0, byte4 = 0;
 
         // anticipate more bytes
-        var currentDecodeBits = 0;
-        var byteCount = 1;
-        var expectValueMin = 0;
+        int currentDecodeBits;
+        int byteCount;
+        int expectValueMin;
         if ((byte1 & 0xE0) == 0xC0)
         {
             // 110x xxxx, expect one more byte
@@ -454,9 +454,9 @@ internal class UrlDecoder
         }
 
         // anticipate more code units
-        var currentDecodeBits = 0;
-        var codeUnitCount = 1;
-        var expectValueMin = 0;
+        int currentDecodeBits;
+        int codeUnitCount;
+        int expectValueMin;
         if ((codeUnit1 & 0xE0) == 0xC0)
         {
             // 110x xxxx, expect one more code unit

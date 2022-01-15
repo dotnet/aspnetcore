@@ -233,10 +233,9 @@ public class GlobbingUrlBuilder
             var result = 0;
             var xEnumerator = new StringTokenizer(xNoExt, PathSeparator).GetEnumerator();
             var yEnumerator = new StringTokenizer(yNoExt, PathSeparator).GetEnumerator();
-            StringSegment ySegment;
             while (TryGetNextSegment(ref xEnumerator, out var xSegment))
             {
-                if (!TryGetNextSegment(ref yEnumerator, out ySegment))
+                if (!TryGetNextSegment(ref yEnumerator, out var ySegment))
                 {
                     // Different path depths (right is shorter), so shallower path wins.
                     return 1;
@@ -259,7 +258,7 @@ public class GlobbingUrlBuilder
                     StringComparison.Ordinal);
             }
 
-            if (TryGetNextSegment(ref yEnumerator, out ySegment))
+            if (TryGetNextSegment(ref yEnumerator, out _))
             {
                 // Different path depths (left is shorter). Shallower path wins.
                 return -1;

@@ -115,7 +115,7 @@ public class RangeItemHeaderValue
         }
 
         // Empty segments are allowed, so skip all delimiter-only segments (e.g. ", ,").
-        var current = HeaderUtilities.GetNextNonEmptyOrWhitespaceIndex(input, startIndex, true, out var separatorFound);
+        var current = HeaderUtilities.GetNextNonEmptyOrWhitespaceIndex(input, startIndex, true, separatorFound: out _);
         // It's OK if we didn't find leading separator characters. Ignore 'separatorFound'.
 
         if (current == input.Length)
@@ -135,7 +135,7 @@ public class RangeItemHeaderValue
             rangeCollection!.Add(range!);
 
             current = current + rangeLength;
-            current = HeaderUtilities.GetNextNonEmptyOrWhitespaceIndex(input, current, true, out separatorFound);
+            current = HeaderUtilities.GetNextNonEmptyOrWhitespaceIndex(input, current, true, out var separatorFound);
 
             // If the string is not consumed, we must have a delimiter, otherwise the string is not a valid
             // range list.

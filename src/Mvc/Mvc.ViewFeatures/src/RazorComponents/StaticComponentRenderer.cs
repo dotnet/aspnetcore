@@ -71,7 +71,7 @@ internal class StaticComponentRenderer
 
         return _initialized;
 
-        async Task InitializeCore(HttpContext httpContext)
+        static async Task InitializeCore(HttpContext httpContext)
         {
             var navigationManager = (IHostEnvironmentNavigationManager)httpContext.RequestServices.GetRequiredService<NavigationManager>();
             navigationManager?.Initialize(GetContextBaseUri(httpContext.Request), GetFullUri(httpContext.Request));

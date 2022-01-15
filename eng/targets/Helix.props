@@ -10,35 +10,14 @@
 
   <PropertyGroup>
     <HelixTimeout>00:30:00</HelixTimeout>
-    <!-- Do not attempt to override global property. -->
-    <RunQuarantinedTests Condition=" '$(RunQuarantinedTests)' == '' ">false</RunQuarantinedTests>
-
-    <IsArm64HelixQueue>false</IsArm64HelixQueue>
-    <IsWindowsHelixQueue>false</IsWindowsHelixQueue>
-    <IsMacHelixQueue>false</IsMacHelixQueue>
-
     <HelixTestName>$(MSBuildProjectName)--$(TargetFramework)</HelixTestName>
     <LoggingTestingDisableFileLogging Condition="'$(IsHelixJob)' == 'true'">false</LoggingTestingDisableFileLogging>
     <NodeVersion>16.11.0</NodeVersion>
+
     <!-- Have all tests depend on the latest runtimes until we get a net7.0 SDK -->
     <TestDependsOnAspNetPackages>true</TestDependsOnAspNetPackages>
     <TestDependsOnAspNetRuntime>true</TestDependsOnAspNetRuntime>
   </PropertyGroup>
-
-  <!-- Override a few properties in innermost (Publish) build for Helix submission. -->
-  <PropertyGroup Condition=" '$(HelixTargetQueue)' != '' ">
-    <IsArm64HelixQueue Condition="$(HelixTargetQueue.Contains('Arm64'))">true</IsArm64HelixQueue>
-    <IsWindowsHelixQueue Condition="$(HelixTargetQueue.Contains('Windows'))">true</IsWindowsHelixQueue>
-    <IsMacHelixQueue Condition="$(HelixTargetQueue.Contains('OSX'))">true</IsMacHelixQueue>
-  </PropertyGroup>
-
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
-    <HelixProjectPlatform Include="Windows" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">
-    <HelixProjectPlatform Include="@(HelixAvailablePlatform)" />
-  </ItemGroup>
 
   <ItemGroup>
     <HelixContent Include="$(RepoRoot)eng\helix\content\**\*" Exclude="$(RepoRoot)eng\helix\content\*.in" />
