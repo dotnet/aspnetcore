@@ -25,8 +25,8 @@
   <!-- Shared framework definitely exists when this target runs. Test asset builds require shared Fx. -->
   <Target Name="PublishTestAssets" BeforeTargets="Publish;RunTests;Test">
     <ItemGroup>
-      <_ProjectsToPublish Include="..\testassets\**\*.csproj"
-          AdditionalProperties="PublishDir=$(PublishDir)%(Filename)" />
+      <_ProjectsToPublish Include="..\testassets\**\*.csproj" />
+      <_ProjectsToPublish AdditionalProperties="PublishDir=$(PublishDir)%(Filename)" />
     </ItemGroup>
 
     <!-- Separate invocations to ensure Publish sees restored setup. -->
