@@ -580,7 +580,6 @@ internal abstract class MessagePackHubProtocolWorker
         {
             throw new InvalidDataException($"Reading map length for '{field}' failed.", ex);
         }
-
     }
 
     private static long ReadArrayLength(ref MessagePackReader reader, string field)

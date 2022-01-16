@@ -347,7 +347,6 @@ public class TemplateBinder
             }
             else if (_defaults != null && _defaults.TryGetValue(parameter.Name, out var defaultValue))
             {
-
                 // Add the default value only if there isn't already a new value for it and
                 // only if it actually has a default value.
                 slots[i] = new KeyValuePair<string, object?>(key, defaultValue);

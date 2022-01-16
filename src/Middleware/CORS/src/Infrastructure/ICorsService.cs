@@ -26,5 +26,4 @@ public interface ICorsService
     /// <param name="result">The <see cref="CorsResult"/> used to read the allowed values.</param>
     /// <param name="response">The <see cref="HttpResponse"/> associated with the current call.</param>
     void ApplyResult(CorsResult result, HttpResponse response);
-
 }

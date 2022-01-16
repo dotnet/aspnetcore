@@ -28,7 +28,6 @@ internal sealed class DefaultTemplateBinderFactory : TemplateBinderFactory
 
         _policyFactory = policyFactory;
         _pool = pool;
-
     }
 
     public override TemplateBinder Create(RouteTemplate template, RouteValueDictionary defaults)

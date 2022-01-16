@@ -260,7 +260,6 @@ public readonly struct ParameterView
     /// <summary>
     /// An enumerator that iterates through a <see cref="ParameterView"/>.
     /// </summary>
-
     // Note that this intentionally does not implement IEnumerator<>. This is the same pattern as Span<>.Enumerator
     // it's valid to foreach over a type that doesn't implement IEnumerator<>.
     public struct Enumerator

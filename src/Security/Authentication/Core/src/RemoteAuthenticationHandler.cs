@@ -15,7 +15,6 @@ namespace Microsoft.AspNetCore.Authentication;
 /// provider.
 /// </summary>
 /// <typeparam name="TOptions">The type for the options used to configure the authentication handler.</typeparam>
-
 public abstract class RemoteAuthenticationHandler<TOptions> : AuthenticationHandler<TOptions>, IAuthenticationRequestHandler
     where TOptions : RemoteAuthenticationOptions, new()
 {

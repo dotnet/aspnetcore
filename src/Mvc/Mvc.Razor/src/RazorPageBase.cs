@@ -249,7 +249,6 @@ public abstract class RazorPageBase : IRazorPage
         // We need to replace the ViewContext's Writer to ensure that all content (including content written
         // from HTML helpers) is redirected.
         viewContext.Writer = _valueBuffer;
-
     }
 
     /// <summary>

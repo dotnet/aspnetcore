@@ -68,7 +68,6 @@ public sealed class DotNetObjectReference<TValue> : IDotNetObjectReference, IDis
             ThrowIfDisposed();
             _jsRuntime = value;
         }
-
     }
 
     object IDotNetObjectReference.Value => Value;

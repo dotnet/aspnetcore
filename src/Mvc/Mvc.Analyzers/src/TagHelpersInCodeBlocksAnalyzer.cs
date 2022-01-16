@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
@@ -90,7 +90,6 @@ public class TagHelpersInCodeBlocksAnalyzer : DiagnosticAnalyzer
                 {
                     capturedDiagnosticLocations.Add(parent.Syntax.GetLocation());
                 }
-
             }, OperationKind.Await);
 
             startBlockContext.RegisterOperationBlockEndAction(context =>
@@ -147,7 +146,6 @@ public class TagHelpersInCodeBlocksAnalyzer : DiagnosticAnalyzer
         public IMethodSymbol TagHelperRunnerRunAsyncMethodSymbol { get; }
 
         public INamedTypeSymbol TaskType { get; }
-
 
         public static bool TryCreate(Compilation compilation, out SymbolCache symbolCache)
         {

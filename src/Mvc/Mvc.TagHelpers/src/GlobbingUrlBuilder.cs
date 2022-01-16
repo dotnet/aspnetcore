@@ -364,7 +364,6 @@ public class GlobbingUrlBuilder
         {
             return string.Equals(Include, other.Include, StringComparison.Ordinal) &&
                 string.Equals(Exclude, other.Exclude, StringComparison.Ordinal);
-
         }
 
         public override int GetHashCode()

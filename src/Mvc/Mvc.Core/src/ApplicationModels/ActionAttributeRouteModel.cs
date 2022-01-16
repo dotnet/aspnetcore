@@ -176,7 +176,6 @@ internal static class ActionAttributeRouteModel
                     yield return (route, actionSelectorModel, controllerSelector);
                 }
             }
-
             else
             {
                 var route = AttributeRouteModel.CombineAttributeRouteModel(

@@ -32,7 +32,6 @@ internal class TemplateSegment
         {
             if (Value.IndexOf(':') < 0)
             {
-
                 // Set the IsOptional flag to true for segments that contain
                 // a parameter with no type constraints but optionality set
                 // via the '?' token.

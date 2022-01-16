@@ -89,6 +89,5 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
 
         [LoggerMessage(2, LogLevel.Debug, "Received notification that the URI has changed to {Uri} with isIntercepted={IsIntercepted}", EventName = "ReceivedLocationChangedNotification")]
         public static partial void ReceivedLocationChangedNotification(ILogger logger, string uri, bool isIntercepted);
-
     }
 }

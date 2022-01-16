@@ -374,14 +374,12 @@ internal class ViewBuffer : IHtmlContentBuilder
                 // Now we can return the source page, and it can be reused in the scope of this request.
                 Array.Clear(page.Buffer, 0, page.Count);
                 _bufferScope.ReturnSegment(page.Buffer);
-
             }
             else
             {
                 // Otherwise, let's just add the source page to the other buffer.
                 destination.AddPage(page);
             }
-
         }
 
         Clear();

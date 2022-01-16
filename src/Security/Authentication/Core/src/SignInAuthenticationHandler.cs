@@ -40,5 +40,4 @@ public abstract class SignInAuthenticationHandler<TOptions> : SignOutAuthenticat
     /// <param name="properties"></param>
     /// <returns>A Task.</returns>
     protected abstract Task HandleSignInAsync(ClaimsPrincipal user, AuthenticationProperties? properties);
-
 }

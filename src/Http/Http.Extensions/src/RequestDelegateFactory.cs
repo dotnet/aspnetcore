@@ -1226,7 +1226,6 @@ public static partial class RequestDelegateFactory
                 );
                 factoryContext.ParamCheckExpressions.Add(checkRequiredBodyBlock);
             }
-
         }
         else if (parameter.HasDefaultValue)
         {

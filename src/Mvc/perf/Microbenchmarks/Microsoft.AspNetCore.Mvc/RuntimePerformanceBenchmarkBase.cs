@@ -65,7 +65,6 @@ public class RuntimePerformanceBenchmarkBase
                 await ExecuteAsync(viewContext, contentType, statusCode);
                 await stringWriter.FlushAsync();
             }
-
         }
     }
 

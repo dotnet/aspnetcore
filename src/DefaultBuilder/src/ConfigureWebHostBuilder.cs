@@ -121,7 +121,6 @@ public sealed class ConfigureWebHostBuilder : IWebHostBuilder, ISupportsStartup
         {
             // Disallow changing any host configuration
             throw new NotSupportedException($"The web root changed from \"{HostingPathResolver.ResolvePath(previousWebRoot, previousContentRoot)}\" to \"{HostingPathResolver.ResolvePath(value, previousContentRoot)}\". Changing the host configuration using WebApplicationBuilder.WebHost is not supported. Use WebApplication.CreateBuilder(WebApplicationOptions) instead.");
-
         }
         else if (string.Equals(key, WebHostDefaults.ApplicationKey, StringComparison.OrdinalIgnoreCase) &&
                 !string.Equals(previousApplication, value, StringComparison.OrdinalIgnoreCase))

@@ -376,7 +376,6 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
 
         // write full <key> element
         _logger.AnExceptionOccurredWhileProcessingElementDebug(keyElement, error);
-
     }
 
     IKey IInternalXmlKeyManager.CreateNewKey(Guid keyId, DateTimeOffset creationDate, DateTimeOffset activationDate, DateTimeOffset expirationDate)

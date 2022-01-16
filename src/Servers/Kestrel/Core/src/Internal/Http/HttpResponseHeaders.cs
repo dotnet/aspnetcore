@@ -177,5 +177,4 @@ internal sealed partial class HttpResponseHeaders : HttpHeaders
             _next = _currentBits != 0 ? BitOperations.TrailingZeroCount(_currentBits) : -1;
         }
     }
-
 }

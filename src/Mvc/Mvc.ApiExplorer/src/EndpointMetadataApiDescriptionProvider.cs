@@ -352,7 +352,6 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
                 {
                     supportedResponseTypes.Add(apiResponseType);
                 }
-
             }
         }
         else

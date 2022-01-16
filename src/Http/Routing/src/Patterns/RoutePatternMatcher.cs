@@ -468,7 +468,6 @@ internal class RoutePatternMatcher
                     // For these segments all parameters must have non-empty values. If the parameter
                     // has an empty value it's not a match.
                     return false;
-
                 }
                 else
                 {

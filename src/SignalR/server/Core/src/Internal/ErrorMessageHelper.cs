@@ -10,7 +10,6 @@ internal static class ErrorMessageHelper
         if (exception is HubException || includeExceptionDetails)
         {
             return $"{message} {exception.GetType().Name}: {exception.Message}";
-
         }
 
         return message;

@@ -42,7 +42,6 @@ public class RolesAuthorizationRequirement : AuthorizationHandler<RolesAuthoriza
     /// </summary>
     /// <param name="context">The authorization context.</param>
     /// <param name="requirement">The requirement to evaluate.</param>
-
     protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, RolesAuthorizationRequirement requirement)
     {
         if (context.User != null)

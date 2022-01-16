@@ -331,7 +331,6 @@ internal class StartupLoader
                     methodNameWithEnv,
                     methodNameWithNoEnv,
                     startupType.FullName));
-
             }
             return null;
         }

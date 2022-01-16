@@ -145,7 +145,6 @@ internal sealed class HttpRequestStream : Stream
                 _pipeReader.AdvanceTo(consumed);
             }
         }
-
     }
 
     /// <inheritdoc />

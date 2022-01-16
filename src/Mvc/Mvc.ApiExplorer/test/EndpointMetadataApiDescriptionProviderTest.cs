@@ -614,7 +614,6 @@ public class EndpointMetadataApiDescriptionProviderTest
                 Assert.Equal(typeof(InferredJsonClass), responseType.Type);
                 Assert.Equal(200, responseType.StatusCode);
                 Assert.Equal(new[] { "application/json" }, GetSortedMediaTypes(responseType));
-
             },
             responseType =>
             {
@@ -665,7 +664,6 @@ public class EndpointMetadataApiDescriptionProviderTest
                 Assert.Equal(typeof(InferredJsonClass), responseType.Type);
                 Assert.Equal(200, responseType.StatusCode);
                 Assert.Equal(new[] { "application/json" }, GetSortedMediaTypes(responseType));
-
             },
             responseType =>
             {
@@ -764,7 +762,6 @@ public class EndpointMetadataApiDescriptionProviderTest
                 Assert.Equal(typeof(InferredJsonClass), responseType.Type);
                 Assert.Equal(200, responseType.StatusCode);
                 Assert.Equal(new[] { "application/json" }, GetSortedMediaTypes(responseType));
-
             });
     }
 

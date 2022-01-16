@@ -397,5 +397,4 @@ internal static partial class FileResultHelper
             EventName = "NotEnabledForRangeProcessing")]
         public static partial void NotEnabledForRangeProcessing(ILogger logger);
     }
-
 }
