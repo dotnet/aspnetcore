@@ -129,6 +129,9 @@
     <IsPackable Condition="'$(IsPackable)' == '' AND ('$(IsImplementationProject)' == 'true' OR '$(IsAnalyzersProject)' == 'true') ">true</IsPackable>
     <IsPackable Condition="'$(IsPackable)' == '' ">false</IsPackable>
 
+    <!-- Avoid need for separate Pack execution (from Arcade SDK) in CI builds. IsPackable now has final value. -->
+    <GeneratePackageOnBuild Condition=" '$(ContinuousIntegrationBuild)' == 'true' ">$(IsPackable)</GeneratePackageOnBuild>
+
     <BuildHelixPayload Condition="'$(BuildHelixPayload)' == '' AND $(IsTestProject) ">true</BuildHelixPayload>
     <SkipTests Condition="'$(SkipHelixReadyTests)' == 'true' AND '$(BuildHelixPayload)' == 'true'">true</SkipTests>
   </PropertyGroup>
