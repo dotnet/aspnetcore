@@ -47,7 +47,6 @@
     <SharedFxProductName>$(Product) $(SharedFxVersion) Shared Framework</SharedFxProductName>
 
     <TargetingPackVersion>$(SharedFxVersion)</TargetingPackVersion>
-    <TargetingPackVersion Condition=" ! $(IsTargetingPackBuilding) ">$(TargetingPackVersionPrefix)</TargetingPackVersion>
 
     <PackageVersion Condition=" '$(NoSemVer20)' == 'true' ">$(SiteExtensionVersion)</PackageVersion>
   </PropertyGroup>
