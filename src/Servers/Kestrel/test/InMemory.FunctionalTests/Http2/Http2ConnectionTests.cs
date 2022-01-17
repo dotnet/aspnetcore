@@ -3695,8 +3695,6 @@ public class Http2ConnectionTests : Http2TestBase
         await WaitForConnectionStopAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false);
     }
 
-    public static readonly IEnumerable<object[]> DummyData = Enumerable.Range(0, 5000).Select(i => new object[] { i }).ToArray();
-
     [Fact]
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/39520")]
     public async Task GOAWAY_Received_SetsConnectionStateToClosingAndWaitForAllStreamsToComplete()
