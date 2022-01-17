@@ -138,6 +138,7 @@
     <TargetingPackName>Microsoft.AspNetCore.App.Ref</TargetingPackName>
     <RuntimeInstallerBaseName>aspnetcore-runtime</RuntimeInstallerBaseName>
     <TargetingPackInstallerBaseName>aspnetcore-targeting-pack</TargetingPackInstallerBaseName>
+    <IsTargetingPackBuilding>true</IsTargetingPackBuilding>
 
     <!--
       Archives and installers using this prefix are intended for internal use only.

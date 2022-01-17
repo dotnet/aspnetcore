@@ -18,6 +18,7 @@ public class TargetingPackTests
     private readonly string _targetingPackTfm;
     private readonly string _targetingPackRoot;
     private readonly ITestOutputHelper _output;
+    private readonly bool _isTargetingPackBuilding;
 
     public TargetingPackTests(ITestOutputHelper output)
     {
@@ -32,11 +33,17 @@ public class TargetingPackTests
             "packs",
             "Microsoft.AspNetCore.App.Ref",
             TestData.GetTestDataValue("TargetingPackVersion"));
+        _isTargetingPackBuilding = bool.Parse(TestData.GetTestDataValue("IsTargetingPackBuilding"));
     }
 
     [Fact]
     public void TargetingPackContainsListedAssemblies()
     {
+        if (!_isTargetingPackBuilding)
+        {
+            return;
+        }
+
         var actualAssemblies = Directory.GetFiles(Path.Combine(_targetingPackRoot, "ref", _targetingPackTfm), "*.dll")
             .Select(Path.GetFileNameWithoutExtension)
             .ToHashSet();
@@ -62,6 +69,11 @@ public class TargetingPackTests
     [Fact]
     public void RefAssembliesHaveExpectedAssemblyVersions()
     {
+        if (!_isTargetingPackBuilding)
+        {
+            return;
+        }
+
         IEnumerable<string> dlls = Directory.GetFiles(Path.Combine(_targetingPackRoot, "ref", _targetingPackTfm), "*.dll", SearchOption.AllDirectories);
         Assert.NotEmpty(dlls);
 
@@ -82,6 +94,11 @@ public class TargetingPackTests
     [Fact]
     public void RefAssemblyReferencesHaveExpectedAssemblyVersions()
     {
+        if (!_isTargetingPackBuilding)
+        {
+            return;
+        }
+
         IEnumerable<string> dlls = Directory.GetFiles(Path.Combine(_targetingPackRoot, "ref", _targetingPackTfm), "*.dll", SearchOption.AllDirectories);
         Assert.NotEmpty(dlls);
 
@@ -104,6 +121,11 @@ public class TargetingPackTests
     [Fact]
     public void PackageOverridesContainsCorrectEntries()
     {
+        if (!_isTargetingPackBuilding)
+        {
+            return;
+        }
+
         var packageOverridePath = Path.Combine(_targetingPackRoot, "data", "PackageOverrides.txt");
 
         AssertEx.FileExists(packageOverridePath);
@@ -163,6 +185,11 @@ public class TargetingPackTests
     [Fact]
     public void AssembliesAreReferenceAssemblies()
     {
+        if (!_isTargetingPackBuilding)
+        {
+            return;
+        }
+
         IEnumerable<string> dlls = Directory.GetFiles(Path.Combine(_targetingPackRoot, "ref"), "*.dll", SearchOption.AllDirectories);
         Assert.NotEmpty(dlls);
 
@@ -192,6 +219,11 @@ public class TargetingPackTests
     [Fact]
     public void PlatformManifestListsAllFiles()
     {
+        if (!_isTargetingPackBuilding)
+        {
+            return;
+        }
+
         var platformManifestPath = Path.Combine(_targetingPackRoot, "data", "PlatformManifest.txt");
         var expectedAssemblies = TestData.GetSharedFxDependencies()
             .Split(';', StringSplitOptions.RemoveEmptyEntries)
@@ -257,6 +289,11 @@ public class TargetingPackTests
     [Fact]
     public void FrameworkListListsContainsCorrectEntries()
     {
+        if (!_isTargetingPackBuilding)
+        {
+            return;
+        }
+
         var frameworkListPath = Path.Combine(_targetingPackRoot, "data", "FrameworkList.xml");
         var expectedAssemblies = TestData.GetTargetingPackDependencies()
             .Split(';', StringSplitOptions.RemoveEmptyEntries)
@@ -324,7 +361,7 @@ public class TargetingPackTests
     [Fact]
     public void FrameworkListListsContainsCorrectPaths()
     {
-        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))
+        if (!_isTargetingPackBuilding || string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))
         {
             return;
         }
@@ -366,7 +403,7 @@ public class TargetingPackTests
     [Fact]
     public void FrameworkListListsContainsAnalyzerLanguage()
     {
-        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))
+        if (!_isTargetingPackBuilding || string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))
         {
             return;
         }
