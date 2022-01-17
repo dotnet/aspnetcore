@@ -25,15 +25,9 @@
     <HostingStartupRuntimeStoreTargets Include="$(DefaultNetCoreTargetFramework)" Runtime="$(TargetRuntimeIdentifier)" />
 
     <ProjectReference Include="..\..\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj"
-        Condition=" $(IsTargetingPackBuilding) ">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
-        Condition=" !$(IsTargetingPackBuilding) ">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
-    </ProjectReference>
+      Private="false"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
 
   <!-- Cannot assume this project and Microsoft.AspNetCore.AzureAppServices.HostingStartup have the same package version. -->
