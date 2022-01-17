@@ -3697,11 +3697,10 @@ public class Http2ConnectionTests : Http2TestBase
 
     public static readonly IEnumerable<object[]> DummyData = Enumerable.Range(0, 5000).Select(i => new object[] { i }).ToArray();
 
-    [Theory]
-    [MemberData(nameof(DummyData))]
-    public async Task GOAWAY_Received_SetsConnectionStateToClosingAndWaitForAllStreamsToComplete(int i)
+    [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/39520")]
+    public async Task GOAWAY_Received_SetsConnectionStateToClosingAndWaitForAllStreamsToComplete()
     {
-        Console.WriteLine(i);
         await InitializeConnectionAsync(_echoApplication);
 
         // Start some streams
