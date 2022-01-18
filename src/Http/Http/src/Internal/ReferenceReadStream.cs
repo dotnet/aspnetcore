@@ -123,6 +123,9 @@ internal sealed class ReferenceReadStream : Stream
         throw new NotSupportedException();
     }
 
+    public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
+        => throw new NotSupportedException();
+
     public override void SetLength(long value)
     {
         throw new NotSupportedException();

@@ -54,4 +54,9 @@ internal abstract class ReadOnlyStream : Stream
     {
         throw new NotSupportedException();
     }
+
+    public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
+    {
+        throw new NotSupportedException();
+    }
 }

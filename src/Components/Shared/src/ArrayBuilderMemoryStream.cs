@@ -51,12 +51,26 @@ internal sealed class ArrayBuilderMemoryStream : Stream
     public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         => throw new NotSupportedException();
 
+    public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken)
+        => throw new NotSupportedException();
+
     /// <inheritdoc />
     public override void Write(byte[] buffer, int offset, int count)
     {
         ValidateArguments(buffer, offset, count);
 
         ArrayBuilder.Append(buffer, offset, count);
+    }
+
+    public override void Write(ReadOnlySpan<byte> buffer)
+    {
+        ArrayBuilder.Append(buffer);
+    }
+
+    public override ValueTask WriteAsync(ReadOnlyMemory<byte> memory, CancellationToken cancellationToken)
+    {
+        ArrayBuilder.Append(memory.Span);
+        return default;
     }
 
     /// <inheritdoc />
