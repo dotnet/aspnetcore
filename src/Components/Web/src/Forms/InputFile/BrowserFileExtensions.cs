@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <param name="browserFile">The <see cref="IBrowserFile"/> to convert to a new image file.</param>
         /// <param name="format">The new image format.</param>
         /// <param name="maxWidth">The maximum image width.</param>
-        /// <param name="maxHeight">The maximum image height</param>
+        /// <param name="maxHeight">The maximum image height.</param>
         /// <returns>A <see cref="ValueTask"/> representing the completion of the operation.</returns>
         public static ValueTask<IBrowserFile> RequestImageFileAsync(this IBrowserFile browserFile, string format, int maxWidth, int maxHeight)
         {
@@ -47,8 +47,12 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <param name="browserFile">The <see cref="IBrowserFile"/> to convert to a new image file.</param>
         /// <param name="format">The new image format.</param>
         /// <param name="maxWidth">The maximum image width.</param>
-        /// <param name="maxHeight">The maximum image height</param>
-        /// <param name="quality">The quality of the image</param>
+        /// <param name="maxHeight">The maximum image height.</param>
+        /// <param name="quality">
+        /// A Number between 0 and 1 indicating the image quality to be used when creating images using file formats that support 
+        /// lossy compression (such as image/jpeg or image/webp). A user agent will use its default quality value if this option is not specified, 
+        /// or if the number is outside the allowed range.
+        /// </param>
         /// <returns>A <see cref="ValueTask"/> representing the completion of the operation.</returns>
         public static ValueTask<IBrowserFile> RequestImageFileAsync(this IBrowserFile browserFile, string format, int maxWidth, int maxHeight, double? quality)
         {
