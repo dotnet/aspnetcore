@@ -11,6 +11,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 // See the details of the component serialization protocol in ServerComponentDeserializer.cs on the Components solution.
 internal class ServerComponentSerializer
 {
+    public const int PreambleBufferSize = 3;
+
     private readonly ITimeLimitedDataProtector _dataProtector;
 
     public ServerComponentSerializer(IDataProtectionProvider dataProtectionProvider) =>
@@ -46,6 +48,9 @@ internal class ServerComponentSerializer
         return (serverComponent.Sequence, Convert.ToBase64String(protectedBytes));
     }
 
+    /// <remarks>
+    /// Remember to update <see cref="PreambleBufferSize"/> if the number of entries being appended in this function changes.
+    /// </remarks>
     internal static void AppendPreamble(IHtmlContentBuilder htmlContentBuilder, ServerComponentMarker record)
     {
         var serializedStartRecord = JsonSerializer.Serialize(

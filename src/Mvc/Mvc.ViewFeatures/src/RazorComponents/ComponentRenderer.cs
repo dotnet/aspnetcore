@@ -181,7 +181,7 @@ internal sealed class ComponentRenderer : IComponentRenderer
 
         var currentInvocation = _serverComponentSerializer.SerializeInvocation(invocationId, type, parametersCollection, prerendered: false);
 
-        var viewBuffer = new ViewBuffer(_viewBufferScope, nameof(ComponentRenderer), 16); // Preamble is fixed size
+        var viewBuffer = new ViewBuffer(_viewBufferScope, nameof(ComponentRenderer), ServerComponentSerializer.PreambleBufferSize);
         ServerComponentSerializer.AppendPreamble(viewBuffer, currentInvocation);
         return viewBuffer;
     }
@@ -189,7 +189,7 @@ internal sealed class ComponentRenderer : IComponentRenderer
     private IHtmlContent NonPrerenderedWebAssemblyComponent(HttpContext context, Type type, ParameterView parametersCollection)
     {
         var currentInvocation = WebAssemblyComponentSerializer.SerializeInvocation(type, parametersCollection, prerendered: false);
-        var viewBuffer = new ViewBuffer(_viewBufferScope, nameof(ComponentRenderer), 16); // Preamble is fixed size
+        var viewBuffer = new ViewBuffer(_viewBufferScope, nameof(ComponentRenderer), ServerComponentSerializer.PreambleBufferSize);
         WebAssemblyComponentSerializer.AppendPreamble(viewBuffer, currentInvocation);
         return viewBuffer;
     }
