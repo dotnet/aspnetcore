@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <returns>A <see cref="ValueTask"/> representing the completion of the operation.</returns>
         public static ValueTask<IBrowserFile> RequestImageFileAsync(this IBrowserFile browserFile, string format, int maxWidth, int maxHeight)
         {
-            return browserFile.RequestImageFileAsync(format, maxWidth, maxHeight, null);
+            return browserFile.RequestImageFileAsync(format, maxWidth, maxHeight, quality: null);
         }
         
         /// <summary>
