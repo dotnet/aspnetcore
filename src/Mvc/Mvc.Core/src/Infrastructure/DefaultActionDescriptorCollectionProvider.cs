@@ -16,6 +16,7 @@ internal class DefaultActionDescriptorCollectionProvider : ActionDescriptorColle
 {
     private readonly IActionDescriptorProvider[] _actionDescriptorProviders;
     private readonly IActionDescriptorChangeProvider[] _actionDescriptorChangeProviders;
+    private readonly ILogger _logger;
 
     // The lock is used to protect WRITES to the following (do not need to protect reads once initialized).
     private readonly object _lock;
@@ -23,12 +24,11 @@ internal class DefaultActionDescriptorCollectionProvider : ActionDescriptorColle
     private IChangeToken? _changeToken;
     private CancellationTokenSource? _cancellationTokenSource;
     private int _version;
-    private readonly ILogger _logger;
 
     public DefaultActionDescriptorCollectionProvider(
         IEnumerable<IActionDescriptorProvider> actionDescriptorProviders,
         IEnumerable<IActionDescriptorChangeProvider> actionDescriptorChangeProviders,
-        ILoggerFactory loggerFactory)
+        ILogger<DefaultActionDescriptorCollectionProvider> logger)
     {
         _actionDescriptorProviders = actionDescriptorProviders
             .OrderBy(p => p.Order)
@@ -38,7 +38,7 @@ internal class DefaultActionDescriptorCollectionProvider : ActionDescriptorColle
 
         _lock = new object();
 
-        _logger = loggerFactory.CreateLogger<DefaultActionDescriptorCollectionProvider>();
+        _logger = logger;
 
         // IMPORTANT: this needs to be the last thing we do in the constructor. Change notifications can happen immediately!
         ChangeToken.OnChange(
