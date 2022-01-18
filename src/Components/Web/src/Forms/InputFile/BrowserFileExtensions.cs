@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// Contains helper methods for <see cref="IBrowserFile"/>.
     /// </summary>
     public static class BrowserFileExtensions
-    {        
+    {
         /// <summary>
         /// Attempts to convert the current image file to a new one of the specified file type and maximum file dimensions.
         /// <para>
