@@ -40,6 +40,11 @@ internal partial class HttpConnectionManager : IBeforeShutdown
         appLifetime.ApplicationStopping.Register(() => _ = CloseConnections());
     }
 
+    public void Start()
+    {
+        // Start the timer loop
+        _ = ExecuteTimerLoop();
+    }
 
     internal bool TryGetConnection(string id, [NotNullWhen(true)] out HttpConnectionContext? connection)
     {

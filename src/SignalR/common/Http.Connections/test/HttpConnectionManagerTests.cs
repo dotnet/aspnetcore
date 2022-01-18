@@ -425,15 +425,12 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
     {
         using (StartVerifiableLog())
         {
-
             var connectionManager = CreateConnectionManager(LoggerFactory);
             var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             connectionManager.Register(() => tcs.Task);
 
-            var connectionManager = CreateConnectionManager(LoggerFactory, beforeShutdown: beforeShutdown);
-
+            var connection = connectionManager.CreateConnection();
             var closeTask = connectionManager.CloseConnections();
-
 
             var result = await connection.Application.Output.FlushAsync();
             // Shutdown callback prevents close from being called on the connection
@@ -448,125 +445,126 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
         }
     }
 
-        [Fact]
-        public async Task ShutdownCallbackCanHaveMultipleCallbacks()
+    [Fact]
+    public async Task ShutdownCallbackCanHaveMultipleCallbacks()
+    {
+        using (StartVerifiableLog())
         {
-            using (StartVerifiableLog())
+            var connectionManager = CreateConnectionManager(LoggerFactory);
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var count = 0;
+            connectionManager.Register(() =>
             {
-                var connectionManager = CreateConnectionManager(LoggerFactory);
-                var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-                var count = 0;
-                connectionManager.Register(() =>
-                {
-                    ++count;
-                    return tcs.Task;
-                });
-                connectionManager.Register(() => {
-                    ++count;
-                    return Task.CompletedTask;
-                });
-
-                var connection = connectionManager.CreateConnection();
-
-                var closeTask = connectionManager.CloseConnections();
-
-                var result = await connection.Application.Output.FlushAsync();
-                // Shutdown callback prevents close from being called on the connection
-                Assert.False(result.IsCompleted);
-                Assert.False(closeTask.IsCompleted);
-
-                Assert.Equal(1, count);
-                tcs.SetResult();
-                await closeTask.DefaultTimeout();
-                Assert.Equal(2, count);
-
-                result = await connection.Application.Output.FlushAsync();
-                Assert.True(result.IsCompleted);
-            }
-        }
-
-        [Fact]
-        public async Task ShutdownCallbackThrowIgnored()
-        {
-            using (StartVerifiableLog())
+                ++count;
+                return tcs.Task;
+            });
+            connectionManager.Register(() =>
             {
-                var connectionManager = CreateConnectionManager(LoggerFactory);
-                var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-                connectionManager.Register(() => throw new Exception());
-                connectionManager.Register(() => tcs.Task);
+                ++count;
+                return Task.CompletedTask;
+            });
 
-                var connection = connectionManager.CreateConnection();
+            var connection = connectionManager.CreateConnection();
 
-                var closeTask = connectionManager.CloseConnections();
+            var closeTask = connectionManager.CloseConnections();
 
-                var result = await connection.Application.Output.FlushAsync();
-                // Shutdown callback prevents close from being called on the connection
-                Assert.False(result.IsCompleted);
-                Assert.False(closeTask.IsCompleted);
+            var result = await connection.Application.Output.FlushAsync();
+            // Shutdown callback prevents close from being called on the connection
+            Assert.False(result.IsCompleted);
+            Assert.False(closeTask.IsCompleted);
 
-                tcs.SetResult();
-                await closeTask.DefaultTimeout();
+            Assert.Equal(1, count);
+            tcs.SetResult();
+            await closeTask.DefaultTimeout();
+            Assert.Equal(2, count);
 
-                result = await connection.Application.Output.FlushAsync();
-                Assert.True(result.IsCompleted);
-            }
+            result = await connection.Application.Output.FlushAsync();
+            Assert.True(result.IsCompleted);
         }
+    }
 
-        [Fact]
-        public async Task ShutdownCallbackCanRemoveRegistration()
+    [Fact]
+    public async Task ShutdownCallbackThrowIgnored()
+    {
+        using (StartVerifiableLog())
         {
-            using (StartVerifiableLog())
-            {
-                var connectionManager = CreateConnectionManager(LoggerFactory);
-                var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-                connectionManager.Register(() => throw new Exception());
-                var disposable = connectionManager.Register(() => tcs.Task);
-                disposable.Dispose();
+            var connectionManager = CreateConnectionManager(LoggerFactory);
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            connectionManager.Register(() => throw new Exception());
+            connectionManager.Register(() => tcs.Task);
 
+            var connection = connectionManager.CreateConnection();
 
-                var connection = connectionManager.CreateConnection();
+            var closeTask = connectionManager.CloseConnections();
 
-                var closeTask = connectionManager.CloseConnections();
+            var result = await connection.Application.Output.FlushAsync();
+            // Shutdown callback prevents close from being called on the connection
+            Assert.False(result.IsCompleted);
+            Assert.False(closeTask.IsCompleted);
 
-                var result = await connection.Application.Output.FlushAsync();
+            tcs.SetResult();
+            await closeTask.DefaultTimeout();
 
-                Assert.True(result.IsCompleted);
-                Assert.True(closeTask.IsCompleted);
-
-                await closeTask.DefaultTimeout();
-            }
+            result = await connection.Application.Output.FlushAsync();
+            Assert.True(result.IsCompleted);
         }
+    }
 
-        [Fact]
-        public async Task ShutdownCallbackThrowLogged()
+    [Fact]
+    public async Task ShutdownCallbackCanRemoveRegistration()
+    {
+        using (StartVerifiableLog())
         {
-            using (StartVerifiableLog())
-            {
-                var connectionManager = CreateConnectionManager(LoggerFactory);
-                var thrownException = new Exception("test ex");
-                connectionManager.Register(() => throw thrownException);
+            var connectionManager = CreateConnectionManager(LoggerFactory);
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            connectionManager.Register(() => throw new Exception());
+            var disposable = connectionManager.Register(() => tcs.Task);
+            disposable.Dispose();
 
-                var connection = connectionManager.CreateConnection();
 
-                var closeTask = connectionManager.CloseConnections();
+            var connection = connectionManager.CreateConnection();
 
-                var result = await connection.Application.Output.FlushAsync();
-                await closeTask.DefaultTimeout();
-                Assert.True(result.IsCompleted);
+            var closeTask = connectionManager.CloseConnections();
 
-                var writes = TestSink.Writes.ToArray();
-                var wc = Assert.Single(writes.Where(w => w.EventId.Name == "ErrorFromShutdownCallbacks"));
-                var ex = Assert.IsType<AggregateException>(wc.Exception);
-                Assert.Equal(thrownException, ex.InnerException);
-            }
+            var result = await connection.Application.Output.FlushAsync();
+
+            Assert.True(result.IsCompleted);
+            Assert.True(closeTask.IsCompleted);
+
+            await closeTask.DefaultTimeout();
         }
+    }
 
-        private static HttpConnectionManager CreateConnectionManager(ILoggerFactory loggerFactory,
-            IHostApplicationLifetime lifetime = null, ConnectionOptions options = null)
+    [Fact]
+    public async Task ShutdownCallbackThrowLogged()
+    {
+        using (StartVerifiableLog())
         {
-            lifetime = lifetime ?? new EmptyApplicationLifetime();
-            return new HttpConnectionManager(loggerFactory, lifetime, Options.Create(options ?? new ConnectionOptions()));
+            var connectionManager = CreateConnectionManager(LoggerFactory);
+            var thrownException = new Exception("test ex");
+            connectionManager.Register(() => throw thrownException);
+
+            var connection = connectionManager.CreateConnection();
+
+            var closeTask = connectionManager.CloseConnections();
+
+            var result = await connection.Application.Output.FlushAsync();
+            await closeTask.DefaultTimeout();
+            Assert.True(result.IsCompleted);
+
+            var writes = TestSink.Writes.ToArray();
+            var wc = Assert.Single(writes.Where(w => w.EventId.Name == "ErrorFromShutdownCallbacks"));
+            var ex = Assert.IsType<AggregateException>(wc.Exception);
+            Assert.Equal(thrownException, ex.InnerException);
         }
+    }
+
+    private static HttpConnectionManager CreateConnectionManager(ILoggerFactory loggerFactory,
+        IHostApplicationLifetime lifetime = null, ConnectionOptions options = null)
+    {
+        lifetime = lifetime ?? new EmptyApplicationLifetime();
+        return new HttpConnectionManager(loggerFactory, lifetime, Options.Create(options ?? new ConnectionOptions()));
+    }
 
     [Flags]
     public enum ConnectionStates
