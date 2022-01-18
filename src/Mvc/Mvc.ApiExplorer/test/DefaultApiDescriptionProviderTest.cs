@@ -243,6 +243,40 @@ public class DefaultApiDescriptionProviderTest
         }
     }
 
+    [Theory]
+    [InlineData("api/products/{id}", nameof(BindingSource.Path), nameof(BindingSource.Path))]
+    [InlineData("api/products", nameof(BindingSource.Path), nameof(BindingSource.ModelBinding))]
+    [InlineData("api/products", nameof(BindingSource.Body), nameof(BindingSource.Body))]
+    public void GetApiDescription_WithInferredBindingSource(
+        string template,
+        string inferredBindingSourceName,
+        string expectedBindingSourceName)
+    {
+        // Arrange
+        var action = CreateActionDescriptor(nameof(FromModelBinding));
+        action.AttributeRouteInfo = new AttributeRouteInfo { Template = template };
+
+        foreach (var actionParameter in action.Parameters)
+        {
+            actionParameter.BindingInfo = new BindingInfo()
+            {
+                BindingSource = new BindingSource(inferredBindingSourceName, displayName: null, isGreedy: false, isFromRequest: true)
+            };
+        }
+
+        var expectedBindingSource = new BindingSource(expectedBindingSourceName, displayName: null, isGreedy: false, isFromRequest: true);
+
+        // Act
+        var descriptions = GetApiDescriptions(action);
+
+        // Assert
+        var description = Assert.Single(descriptions);
+
+        var parameter = Assert.Single(description.ParameterDescriptions);
+        Assert.Equal(expectedBindingSource, parameter.Source);
+        Assert.Equal("id", parameter.Name);
+    }
+
     [Fact]
     public void GetApiDescription_ParameterDescription_IncludesParameterDescriptor()
     {
