@@ -92,6 +92,7 @@ internal static class MvcCoreLoggerExtensions
     private static readonly Action<ILogger, string, string, Exception> _redirectToRouteResultExecuting;
 
     private static readonly Action<ILogger, string[], Exception> _noActionsMatched;
+    private static readonly Action<ILogger, Exception> _noActionDescriptors;
 
     private static readonly Action<ILogger, string, Exception> _redirectToPageResultExecuting;
 
@@ -410,6 +411,11 @@ internal static class MvcCoreLoggerExtensions
             new EventId(3, "NoActionsMatched"),
             "No actions matched the current request. Route values: {RouteValues}",
             SkipEnabledCheckLogOptions);
+
+        _noActionDescriptors = LoggerMessage.Define(
+            LogLevel.Warning,
+            new EventId(1, "NoActionDescriptors"),
+            "No action descriptors detected, make sure your application is configured correctly or include additional Application parts. See more at https://aka.ms/aspnet/mvc/app-parts");
 
         _featureNotFound = LoggerMessage.Define(
             LogLevel.Warning,
@@ -907,6 +913,10 @@ internal static class MvcCoreLoggerExtensions
             }
             _noActionsMatched(logger, routeValues, null);
         }
+    }
+    public static void NoActionDescriptors(this ILogger logger)
+    {
+        _noActionDescriptors(logger, null);
     }
 
     public static void ChallengeResultExecuting(this ILogger logger, IList<string> schemes)

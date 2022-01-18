@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -22,10 +23,12 @@ internal class DefaultActionDescriptorCollectionProvider : ActionDescriptorColle
     private IChangeToken? _changeToken;
     private CancellationTokenSource? _cancellationTokenSource;
     private int _version;
+    private readonly ILogger _logger;
 
     public DefaultActionDescriptorCollectionProvider(
         IEnumerable<IActionDescriptorProvider> actionDescriptorProviders,
-        IEnumerable<IActionDescriptorChangeProvider> actionDescriptorChangeProviders)
+        IEnumerable<IActionDescriptorChangeProvider> actionDescriptorChangeProviders,
+        ILoggerFactory loggerFactory)
     {
         _actionDescriptorProviders = actionDescriptorProviders
             .OrderBy(p => p.Order)
@@ -34,6 +37,8 @@ internal class DefaultActionDescriptorCollectionProvider : ActionDescriptorColle
         _actionDescriptorChangeProviders = actionDescriptorChangeProviders.ToArray();
 
         _lock = new object();
+
+        _logger = loggerFactory.CreateLogger<DefaultActionDescriptorCollectionProvider>();
 
         // IMPORTANT: this needs to be the last thing we do in the constructor. Change notifications can happen immediately!
         ChangeToken.OnChange(
@@ -122,6 +127,13 @@ internal class DefaultActionDescriptorCollectionProvider : ActionDescriptorColle
             for (var i = _actionDescriptorProviders.Length - 1; i >= 0; i--)
             {
                 _actionDescriptorProviders[i].OnProvidersExecuted(context);
+            }
+
+            if (context.Results.Count == 0)
+            {
+                // Emit a log message if after all providers still no action
+                // descriptors detected in the context.
+                _logger.NoActionDescriptors();
             }
 
             // The sequence for an update is important because we don't want anyone to obtain
