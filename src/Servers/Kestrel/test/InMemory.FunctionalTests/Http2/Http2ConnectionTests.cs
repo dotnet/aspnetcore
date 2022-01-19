@@ -5219,7 +5219,7 @@ public class Http2ConnectionTests : Http2TestBase
     [Fact]
     public async Task StartConnection_SendPreface_ReturnSettings()
     {
-        await InitializeConnectionWithoutPrefaceAsync(_noopApplication);
+        InitializeConnectionWithoutPreface(_noopApplication);
 
         await SendAsync(Http2Connection.ClientPreface);
 
@@ -5234,7 +5234,7 @@ public class Http2ConnectionTests : Http2TestBase
     [Fact]
     public async Task StartConnection_SendHttp1xRequest_ReturnHttp11Status400()
     {
-        await InitializeConnectionWithoutPrefaceAsync(_noopApplication);
+        InitializeConnectionWithoutPreface(_noopApplication);
 
         await SendAsync(Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\n"));
 
@@ -5247,7 +5247,7 @@ public class Http2ConnectionTests : Http2TestBase
     [Fact]
     public async Task StartConnection_SendHttp1xRequest_ExceedsRequestLineLimit_ProtocolError()
     {
-        await InitializeConnectionWithoutPrefaceAsync(_noopApplication);
+        InitializeConnectionWithoutPreface(_noopApplication);
 
         await SendAsync(Encoding.ASCII.GetBytes($"GET /{new string('a', _connection.Limits.MaxRequestLineSize)} HTTP/1.1\r\n"));
 
@@ -5267,7 +5267,7 @@ public class Http2ConnectionTests : Http2TestBase
         tlsHandshakeMock.SetupGet(m => m.Protocol).Returns(SslProtocols.Tls12);
         _connection.ConnectionFeatures.Set<ITlsHandshakeFeature>(tlsHandshakeMock.Object);
 
-        await InitializeConnectionWithoutPrefaceAsync(_noopApplication);
+        InitializeConnectionWithoutPreface(_noopApplication);
 
         await SendAsync(Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\n"));
 
@@ -5277,7 +5277,7 @@ public class Http2ConnectionTests : Http2TestBase
     [Fact]
     public async Task StartConnection_SendNothing_NoError()
     {
-        await InitializeConnectionWithoutPrefaceAsync(_noopApplication);
+        InitializeConnectionWithoutPreface(_noopApplication);
 
         await StopConnectionAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false);
     }
