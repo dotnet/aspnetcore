@@ -144,7 +144,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
             var span = reader.UnreadSpan;
             while (span.Length > 0)
             {
-                var ch1 = (byte)0;
+                byte ch1;
                 var ch2 = (byte)0;
                 var readAhead = 0;
 
