@@ -13,7 +13,7 @@ public class DataAnnotationsValidator : ComponentBase, IDisposable
 
     [CascadingParameter] EditContext? CurrentEditContext { get; set; }
 
-    [Inject] private IServiceProvider ServiceProvider { get; set; }
+    [Inject] private IServiceProvider ServiceProvider { get; set; } = default!;
 
     /// <inheritdoc />
     protected override void OnInitialized()
