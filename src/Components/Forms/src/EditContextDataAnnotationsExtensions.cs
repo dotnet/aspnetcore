@@ -46,6 +46,10 @@ public static class EditContextDataAnnotationsExtensions
     /// <returns>A disposable object whose disposal will remove DataAnnotations validation support from the <see cref="EditContext"/>.</returns>
     public static IDisposable EnableDataAnnotationsValidation(this EditContext editContext, IServiceProvider serviceProvider)
     {
+        if (serviceProvider == null)
+        {
+            throw new ArgumentNullException(nameof(serviceProvider));
+        }
         return new DataAnnotationsEventSubscriptions(editContext, serviceProvider);
     }
 
