@@ -12,7 +12,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
-internal class DefaultActionDescriptorCollectionProvider : ActionDescriptorCollectionProvider
+internal partial class DefaultActionDescriptorCollectionProvider : ActionDescriptorCollectionProvider
 {
     private readonly IActionDescriptorProvider[] _actionDescriptorProviders;
     private readonly IActionDescriptorChangeProvider[] _actionDescriptorChangeProviders;
@@ -133,7 +133,7 @@ internal class DefaultActionDescriptorCollectionProvider : ActionDescriptorColle
             {
                 // Emit a log message if after all providers still no action
                 // descriptors detected in the context.
-                _logger.NoActionDescriptors();
+                Log.NoActionDescriptors(_logger);
             }
 
             // The sequence for an update is important because we don't want anyone to obtain
@@ -167,5 +167,15 @@ internal class DefaultActionDescriptorCollectionProvider : ActionDescriptorColle
             // Step 4 - might be null if it's the first time.
             oldCancellationTokenSource?.Cancel();
         }
+    }
+
+    public static partial class Log
+    {
+        [LoggerMessage(
+            EventId = 1,
+            EventName = "NoActionDescriptors",
+            Level = LogLevel.Information,
+            Message = "No action descriptors found. This may indicate an incorrectly configured application or missing application parts. To learn more, visit https://aka.ms/aspnet/mvc/app-parts")]
+        public static partial void NoActionDescriptors(ILogger logger);
     }
 }

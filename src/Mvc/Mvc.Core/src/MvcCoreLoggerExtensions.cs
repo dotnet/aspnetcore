@@ -909,13 +909,6 @@ internal static partial class MvcCoreLoggerExtensions
         }
     }
 
-    [LoggerMessage(
-        EventId = 1,
-        EventName = "NoActionDescriptors",
-        Level = LogLevel.Information,
-        Message = "No action descriptors found. This may indicate an incorrectly configured application or missing application parts. To learn more, visit https://aka.ms/aspnet/mvc/app-parts")]
-    public static partial void NoActionDescriptors(this ILogger logger);
-
     public static void ChallengeResultExecuting(this ILogger logger, IList<string> schemes)
     {
         if (logger.IsEnabled(LogLevel.Information))
