@@ -139,11 +139,6 @@
     <RuntimeInstallerBaseName>aspnetcore-runtime</RuntimeInstallerBaseName>
     <TargetingPackInstallerBaseName>aspnetcore-targeting-pack</TargetingPackInstallerBaseName>
 
-    <!-- This is used to produce targeting pack installers/packages once per major.minor. -->
-    <IsTargetingPackBuilding
-        Condition=" '$(IsTargetingPackBuilding)' == '' AND '$(AspNetCorePatchVersion)' != '0' ">false</IsTargetingPackBuilding>
-    <IsTargetingPackBuilding Condition=" '$(IsTargetingPackBuilding)' == '' ">true</IsTargetingPackBuilding>
-
     <!--
       Archives and installers using this prefix are intended for internal use only.
       For example, this .zip is used to handoff bits to partner teams who then incorporate our shared frameworks

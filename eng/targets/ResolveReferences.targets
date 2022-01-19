@@ -253,8 +253,7 @@
   -->
   <ItemGroup Condition=" '$(MSBuildProjectName)' != 'Microsoft.AspNetCore.App.Runtime' AND
       '$(MSBuildProjectName)' != 'RepoTasks' AND
-      ($(_CompileTfmUsingReferenceAssemblies) OR
-       ('$(IsTargetingPackBuilding)' != 'false' AND '$(MSBuildProjectName)' == 'Microsoft.AspNetCore.App.Ref')) ">
+      ($(_CompileTfmUsingReferenceAssemblies) OR '$(MSBuildProjectName)' == 'Microsoft.AspNetCore.App.Ref') ">
     <PackageReference Include="Microsoft.Internal.Runtime.AspNetCore.Transport"
         Version="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)"
         IsImplicitlyDefined="true"
@@ -276,8 +275,7 @@
           '$(IsServicingBuild)' == 'true' AND
           '$(IsImplementationProject)' == 'true' AND
           '$(MSBuildProjectName)' != 'Microsoft.AspNetCore.App.Runtime' AND
-          ($(_CompileTfmUsingReferenceAssemblies) OR
-           ('$(IsTargetingPackBuilding)' != 'false' AND '$(MSBuildProjectName)' == 'Microsoft.AspNetCore.App.Ref')) ">
+          ($(_CompileTfmUsingReferenceAssemblies) OR '$(MSBuildProjectName)' == 'Microsoft.AspNetCore.App.Ref') ">
     <ItemGroup>
       <ResolvedCompileFileDefinitions Remove="@(ResolvedCompileFileDefinitions)"
           Condition=" '%(NuGetPackageId)' != 'Microsoft.Internal.Runtime.AspNetCore.Transport' AND

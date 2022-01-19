@@ -37,7 +37,7 @@
   <Target Name="Pack" />
 
   <Target Name="RpmBuild" DependsOnTargets="$(RpmBuildDependsOn)"
-      Condition="!( '$(IsTargetingPackBuilding)' == 'false' AND '$(MSBuildProjectName)' == 'Rpm.TargetingPack' )">
+      Condition=" '$(MSBuildProjectName)' != 'Rpm.TargetingPack' ">
     <!-- Create layout: Create changelog -->
     <PropertyGroup>
       <ChangeLogProps>DATE=$([System.DateTime]::UtcNow.ToString(ddd MMM dd yyyy))</ChangeLogProps>

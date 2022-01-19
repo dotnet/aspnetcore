@@ -4,7 +4,6 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsPackable>true</IsPackable>
-    <IsPackable Condition="'$(IsTargetingPackBuilding)' == 'false'">false</IsPackable>
     <PackageId>$(TargetingPackName)</PackageId>
     <VersionPrefix>$(TargetingPackVersionPrefix)</VersionPrefix>
 
@@ -89,8 +88,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   </PropertyGroup>
 
   <PropertyGroup>
-    <!-- If this project won't produce a package, don't bother building anything. -->
-    <BuildDependsOn Condition="'$(IsTargetingPackBuilding)' != 'false'">
+    <BuildDependsOn>
       $(BuildDependsOn);
       _ResolveTargetingPackContent;
       GeneratePackageOverrides;
@@ -99,9 +97,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       _InstallTargetingPackIntoLocalDotNet;
       _CreateTargetingPackArchive;
     </BuildDependsOn>
-
-    <!-- No-op when in source build -->
-    <BuildDependsOn Condition="'$(IsTargetingPackBuilding)' == 'false'"/>
   </PropertyGroup>
 
   <!-- Override the default MSBuild targets so that nothing is returned from the project since it represents a collection of assemblies. -->

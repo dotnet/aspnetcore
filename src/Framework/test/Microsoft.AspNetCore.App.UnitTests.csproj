@@ -56,10 +56,6 @@
       <_Parameter2>$(TargetingPackLayoutRoot)</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
-      <_Parameter1>IsTargetingPackBuilding</_Parameter1>
-      <_Parameter2>$(IsTargetingPackBuilding)</_Parameter2>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
       <_Parameter1>VerifyAncmBinary</_Parameter1>
       <_Parameter2>$(VerifyAncmBinary)</_Parameter2>
     </AssemblyAttribute>
@@ -72,12 +68,6 @@
 
   <ItemGroup>
     <ProjectReference Include="$(RepoRoot)\src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj"
-      Condition=" $(IsTargetingPackBuilding) "
-      Private="false"
-      ReferenceOutputAssembly="false"
-      SkipGetTargetFrameworkProperties="true" />
-    <ProjectReference Include="$(RepoRoot)\src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
-      Condition=" !$(IsTargetingPackBuilding) "
       Private="false"
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true" />
