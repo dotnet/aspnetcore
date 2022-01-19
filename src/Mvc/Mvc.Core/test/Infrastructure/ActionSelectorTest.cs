@@ -975,7 +975,8 @@ public class ActionSelectorTest
         var actionDescriptorProvider = GetActionDescriptorProvider();
         var actionDescriptorCollectionProvider = new DefaultActionDescriptorCollectionProvider(
             new[] { actionDescriptorProvider },
-            Enumerable.Empty<IActionDescriptorChangeProvider>());
+            Enumerable.Empty<IActionDescriptorChangeProvider>(),
+            NullLogger<DefaultActionDescriptorCollectionProvider>.Instance);
 
         var actionConstraintProviders = new[]
         {
@@ -1134,7 +1135,8 @@ public class ActionSelectorTest
     {
         var descriptorProvider = new DefaultActionDescriptorCollectionProvider(
             Enumerable.Empty<IActionDescriptorProvider>(),
-            Enumerable.Empty<IActionDescriptorChangeProvider>());
+            Enumerable.Empty<IActionDescriptorChangeProvider>(),
+            NullLogger<DefaultActionDescriptorCollectionProvider>.Instance);
         return new ActionConstraintCache(descriptorProvider, actionConstraintProviders.AsEnumerable() ?? new List<IActionConstraintProvider>());
     }
 
