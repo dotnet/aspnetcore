@@ -484,6 +484,14 @@ public class ComplexTypeModelBinder : IModelBinder
             var modelType = bindingContext.ModelType;
             if (modelType.IsAbstract || modelType.GetConstructor(Type.EmptyTypes) == null)
             {
+                // If the model is not a top-level object, we can't examine the defined constructor
+                // to evaluate if the non-null property has been set so we do not provide this as a valid
+                // alternative.
+                if (!bindingContext.IsTopLevelObject)
+                {
+                    throw new InvalidOperationException(Resources.FormatComplexTypeModelBinder_NoParameterlessConstructor_ForType(modelType.FullName));
+                }
+
                 var metadata = bindingContext.ModelMetadata;
                 switch (metadata.MetadataKind)
                 {
