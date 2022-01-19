@@ -173,8 +173,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   <Target Name="GeneratePackageOverrides"
           Condition=" '$(IsServicingBuild)' != 'true' "
           DependsOnTargets="_ResolveTargetingPackContent"
-          Inputs="$(MSBuildAllProjects)"
-          Outputs="$(ReferencePackageOverridesPath">
+          Inputs="@(RefPackContent)"
+          Outputs="$(ReferencePackageOverridesPath)">
     <ItemGroup>
       <!-- Use package version for non-Runtime references. -->
       <_AspNetCoreAppPackageOverrides Include="@(AspNetCoreReferenceAssemblyPath->'%(NuGetPackageId)|%(NuGetPackageVersion)')"
@@ -251,7 +251,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   <Target Name="IncludeFrameworkListFile"
           DependsOnTargets="_ResolveTargetingPackContent"
           BeforeTargets="_GetPackageFiles"
-          Condition="'$(PackageTargetRuntime)' == '' AND '$(ManifestsPackagePath)' != ''">
+          Inputs="@(RefPackContent)"
+          Outputs="$(FrameworkListOutputPath)">
     <RepoTasks.CreateFrameworkListFile
       Files="@(RefPackContent)"
       TargetFile="$(FrameworkListOutputPath)"
@@ -262,5 +263,4 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <_PackageFiles Include="@(RefPackContent)" />
     </ItemGroup>
   </Target>
-
 </Project>

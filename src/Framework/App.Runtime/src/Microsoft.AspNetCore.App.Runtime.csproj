@@ -557,9 +557,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
   <Target Name="IncludeFrameworkListFile"
           DependsOnTargets="_ResolveSharedFrameworkContent"
-          BeforeTargets="_GetPackageFiles"
-          Condition="'$(ManifestsPackagePath)' != ''">
-
+          BeforeTargets="_GetPackageFiles">
     <ItemGroup>
       <SharedFxContent Condition="'%(SharedFxContent.Extension)' == '.dll'">
         <PackagePath Condition="'%(SharedFxContent.IsNativeImage)' == 'true'">$(NativeAssetsPackagePath)</PackagePath>
@@ -582,7 +580,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   <Target Name="IncludeVersionFile"
           DependsOnTargets="GenerateSharedFxVersionsFiles"
           BeforeTargets="_GetPackageFiles">
-
     <ItemGroup>
       <None Include="$(VersionTxtFileIntermediateOutputPath)" Pack="true" PackagePath="." />
     </ItemGroup>
