@@ -1,7 +1,8 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Primitives;
 using Moq;
 
@@ -22,7 +23,8 @@ public class DefaultActionDescriptorCollectionProviderTest
 
         var actionDescriptorCollectionProvider = new DefaultActionDescriptorCollectionProvider(
             new[] { actionDescriptorProvider1, actionDescriptorProvider2 },
-            Enumerable.Empty<IActionDescriptorChangeProvider>());
+            Enumerable.Empty<IActionDescriptorChangeProvider>(),
+            NullLogger<DefaultActionDescriptorCollectionProvider>.Instance);
 
         // Act
         var collection = actionDescriptorCollectionProvider.ActionDescriptors;
@@ -44,7 +46,8 @@ public class DefaultActionDescriptorCollectionProviderTest
 
         var actionDescriptorCollectionProvider = new DefaultActionDescriptorCollectionProvider(
             new[] { actionDescriptorProvider },
-            Enumerable.Empty<IActionDescriptorChangeProvider>());
+            Enumerable.Empty<IActionDescriptorChangeProvider>(),
+            NullLogger<DefaultActionDescriptorCollectionProvider>.Instance);
 
         // Act - 1
         var collection1 = actionDescriptorCollectionProvider.ActionDescriptors;
@@ -93,7 +96,8 @@ public class DefaultActionDescriptorCollectionProviderTest
         var changeProvider = new TestChangeProvider();
         var actionDescriptorCollectionProvider = new DefaultActionDescriptorCollectionProvider(
             new[] { actionDescriptorProvider.Object },
-            new[] { changeProvider });
+            new[] { changeProvider },
+            NullLogger<DefaultActionDescriptorCollectionProvider>.Instance);
 
         // Act - 1
         var changeToken1 = actionDescriptorCollectionProvider.GetChangeToken();

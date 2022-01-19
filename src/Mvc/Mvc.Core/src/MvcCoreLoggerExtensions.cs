@@ -23,7 +23,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc;
 
-internal static class MvcCoreLoggerExtensions
+internal static partial class MvcCoreLoggerExtensions
 {
     public const string ActionFilter = "Action Filter";
     private static readonly string[] _noFilters = new[] { "None" };
