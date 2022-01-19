@@ -83,6 +83,12 @@ internal class NonDisposableStream : Stream
     }
 
     /// <inheritdoc />
+    public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken)
+    {
+        return _innerStream.ReadAsync(buffer, cancellationToken);
+    }
+
+    /// <inheritdoc />
     public override IAsyncResult BeginRead(
         byte[] buffer,
         int offset,
@@ -161,6 +167,12 @@ internal class NonDisposableStream : Stream
     public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
         return _innerStream.WriteAsync(buffer, offset, count, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
+    {
+        return _innerStream.WriteAsync(buffer, cancellationToken);
     }
 
     /// <inheritdoc />

@@ -72,5 +72,10 @@ public class NonSeekableReadStream : Stream
         count = Math.Max(count, 1);
         return _inner.ReadAsync(buffer, offset, count, cancellationToken);
     }
+
+    public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken)
+    {
+        return _inner.ReadAsync(buffer, cancellationToken);
+    }
 }
 

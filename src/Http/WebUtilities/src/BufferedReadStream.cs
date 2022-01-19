@@ -190,6 +190,12 @@ public class BufferedReadStream : Stream
     }
 
     /// <inheritdoc/>
+    public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
+    {
+        return _inner.WriteAsync(buffer, cancellationToken);
+    }
+
+    /// <inheritdoc/>
     public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
         return _inner.WriteAsync(buffer, offset, count, cancellationToken);

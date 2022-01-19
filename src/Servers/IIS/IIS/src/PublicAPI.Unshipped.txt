@@ -1,1 +1,2 @@
 #nullable enable
+override Microsoft.AspNetCore.Server.IIS.Core.WriteOnlyStream.ReadAsync(System.Memory<byte> buffer, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<int>

@@ -58,7 +58,7 @@ internal class PipeWriterStream : Stream
         return WriteCoreAsync(buffer.AsMemory(offset, count), cancellationToken).AsTask();
     }
 
-#if NETCOREAPP
+#if NETCOREAPP || NETSTANDARD2_1_OR_GREATER
     public override ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
     {
         return WriteCoreAsync(source, cancellationToken);
