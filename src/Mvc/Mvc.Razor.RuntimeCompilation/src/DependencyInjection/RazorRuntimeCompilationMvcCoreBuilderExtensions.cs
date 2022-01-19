@@ -86,16 +86,15 @@ public static class RazorRuntimeCompilationMvcCoreBuilderExtensions
 
         if (actionDescriptorProvider != null)
         {
+            // RuntimeCompilation registers an instance of PageActionDescriptorProvider(PageADP). CompiledPageADP and runtime compilation
+            // cannot co-exist since CompiledPageADP will attempt to resolve action descriptors for lazily compiled views (such as for
+            // ones from non-physical file providers). We'll instead remove CompiledPageActionDescriptors from the DI container if present.
             services.Remove(actionDescriptorProvider);
-
-            // Add PageActionDescriptorProvider and the matcher policy that supports runtime compilation.
-            // We only want to add support for this if we know AddRazorPages was called. In the absence of this, several services registered by Razor Pages
-            // will be absent. We'll use the presence of the CompiledPageActionDescriptorProvider service as a poor way to test this.
-            services.TryAddEnumerable(
-                ServiceDescriptor.Singleton<IActionDescriptorProvider, PageActionDescriptorProvider>());
-
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, PageLoaderMatcherPolicy>());
         }
+
+        services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IActionDescriptorProvider, PageActionDescriptorProvider>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, PageLoaderMatcherPolicy>());
 
         services.TryAddSingleton<RuntimeCompilationFileProvider>();
         services.TryAddSingleton<RazorReferenceManager>();
