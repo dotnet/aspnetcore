@@ -45,20 +45,5 @@ namespace Microsoft.Extensions.DependencyInjection
             serviceDescriptor = Assert.Single(services, service => service.ServiceType == typeof(MatcherPolicy));
             Assert.Equal(typeof(PageLoaderMatcherPolicy), serviceDescriptor.ImplementationType);
         }
-
-        [Fact]
-        public void AddServices_DoesNotPageActionDescriptor_IfItWasNotPreviouslyFound()
-        {
-            // we want to make sure Page specific featurees are only added if AddRazorPages was called by the user.
-            // Arrange
-            var services = new ServiceCollection();
-
-            // Act
-            RazorRuntimeCompilationMvcCoreBuilderExtensions.AddServices(services);
-
-            // Assert
-            Assert.Empty(services.Where(service => service.ServiceType == typeof(IActionDescriptorProvider)));
-            Assert.Empty(services.Where(service => service.ServiceType == typeof(MatcherPolicy)));
-        }
     }
 }

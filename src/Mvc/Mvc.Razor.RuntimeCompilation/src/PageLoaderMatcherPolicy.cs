@@ -7,20 +7,27 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Matching;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
     internal class PageLoaderMatcherPolicy : MatcherPolicy, IEndpointSelectorPolicy
     {
-        private readonly PageLoader _loader;
+        private PageLoader? _loader;
 
-        public PageLoaderMatcherPolicy(PageLoader loader)
+        /// <remarks>
+        /// The <see cref="PageLoader"/> service is configured by <c>app.AddRazorPages()</c>.
+        /// If the app is configured as <c>app.AddControllersWithViews().AddRazorRuntimeCompilation()</c>, the <see cref="PageLoader"/>
+        /// service will not be registered. Since Razor Pages is not a pre-req for runtime compilation, we'll defer reading the service
+        /// until we need to load a page in the body of <see cref="ApplyAsync(HttpContext, CandidateSet)"/>.
+        /// </remarks>
+        public PageLoaderMatcherPolicy()
+            : this(loader: null)
         {
-            if (loader == null)
-            {
-                throw new ArgumentNullException(nameof(loader));
-            }
+        }
 
+        public PageLoaderMatcherPolicy(PageLoader? loader)
+        {
             _loader = loader;
         }
 
@@ -76,6 +83,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 var page = endpoint.Metadata.GetMetadata<PageActionDescriptor>();
                 if (page != null)
                 {
+                    _loader ??= httpContext.RequestServices.GetRequiredService<PageLoader>();
+
                     // We found an endpoint instance that has a PageActionDescriptor, but not a
                     // CompiledPageActionDescriptor. Update the CandidateSet.
                     var compiled = _loader.LoadAsync(page, endpoint.Metadata);
@@ -88,7 +97,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     {
                         // In the most common case, GetOrAddAsync will return a synchronous result.
                         // Avoid going async since this is a fairly hot path.
-                        return ApplyAsyncAwaited(candidates, compiled, i);
+                        return ApplyAsyncAwaited(_loader, candidates, compiled, i);
                     }
                 }
             }
@@ -96,7 +105,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             return Task.CompletedTask;
         }
 
-        private async Task ApplyAsyncAwaited(CandidateSet candidates, Task<CompiledPageActionDescriptor> actionDescriptorTask, int index)
+        private static async Task ApplyAsyncAwaited(PageLoader pageLoader, CandidateSet candidates, Task<CompiledPageActionDescriptor> actionDescriptorTask, int index)
         {
             var compiled = await actionDescriptorTask;
 
@@ -115,7 +124,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 var page = endpoint.Metadata.GetMetadata<PageActionDescriptor>();
                 if (page != null)
                 {
-                    compiled = await _loader.LoadAsync(page, endpoint.Metadata);
+                    compiled = await pageLoader.LoadAsync(page, endpoint.Metadata);
 
                     candidates.ReplaceEndpoint(i, compiled.Endpoint, candidates[i].Values);
                 }
