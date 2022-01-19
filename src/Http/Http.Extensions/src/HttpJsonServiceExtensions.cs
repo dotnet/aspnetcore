@@ -2,27 +2,29 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http.Json;
-using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Http;
+namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
 /// Extension methods to configure JSON serialization behavior.
 /// </summary>
-public static class HttpJsonServiceExtensions
+public static class RouteHandlerJsonServiceExtensions
 {
+#pragma warning disable CS0419 // Ambiguous reference in cref attribute
     /// <summary>
     /// Configures options used for reading and writing JSON by route handlers.
     /// </summary>
     /// <remarks>
     /// The options configured here will only affect JSON returned and processed
-    /// from route handlers, not controllers.
+    /// from route handlers, not controllers, when using <see cref="System.Net.Http.Json.HttpContentJsonExtensions.ReadFromJsonAsync" />
+    /// and <see cref="Microsoft.AspNetCore.Http.HttpResponseJsonExtensions.WriteAsJsonAsync" />.
     /// </remarks>
     /// <param name="services">The <see cref="IServiceCollection" /> to configure options on.</param>
     /// <param name="configureOptions">The <see cref="Action{JsonOptions}"/> to configure the
     /// <see cref="JsonOptions"/>.</param>
     /// <returns>The modified <see cref="IServiceCollection"/>.</returns>
-    public static IServiceCollection ConfigureHttpJsonOptions(this IServiceCollection services, Action<JsonOptions> configureOptions)
+#pragma warning restore CS0419 // Ambiguous reference in cref attribute
+    public static IServiceCollection ConfigureRouteHandlerJsonOptions(this IServiceCollection services, Action<JsonOptions> configureOptions)
     {
         services.Configure<JsonOptions>(configureOptions);
         return services;
