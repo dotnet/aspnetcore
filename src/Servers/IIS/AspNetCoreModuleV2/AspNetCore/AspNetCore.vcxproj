@@ -205,14 +205,14 @@
       <AdditionalIncludeDirectories>..\IISLib;.\Inc;..\CommonLib;;C:\Github\aspnetcore\.dotnet\packs\Microsoft.NETCore.App.Host.win-x64\7.0.0-alpha.1.21612.5\runtimes\win-x64\native</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <SDLCheck>true</SDLCheck>
+      <SDLCheck>false</SDLCheck>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <PreprocessKeepComments>false</PreprocessKeepComments>
-      <ExceptionHandling>SyncCThrow</ExceptionHandling>
+      <ExceptionHandling>Sync</ExceptionHandling>
       <StructMemberAlignment>8Bytes</StructMemberAlignment>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
-      <OmitDefaultLibName>true</OmitDefaultLibName>
+      <OmitDefaultLibName>false</OmitDefaultLibName>
       <CompileAs>CompileAsCpp</CompileAs>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>

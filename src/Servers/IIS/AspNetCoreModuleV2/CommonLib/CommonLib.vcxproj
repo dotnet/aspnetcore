@@ -178,7 +178,7 @@
       <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
-      <ConformanceMode>true</ConformanceMode>
+      <ConformanceMode>Default</ConformanceMode>
       <AdditionalIncludeDirectories>..\iislib;C:\Github\aspnetcore\.dotnet\packs\Microsoft.NETCore.App.Host.win-x64\7.0.0-alpha.1.21612.5\runtimes\win-x64\native;</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalUsingDirectories>
@@ -187,6 +187,12 @@
       <ShowIncludes>false</ShowIncludes>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ForcedIncludeFiles>stdafx.h</ForcedIncludeFiles>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</WholeProgramOptimization>
+      <RuntimeTypeInfo Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</RuntimeTypeInfo>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CompileAsCpp</CompileAs>
+      <StringPooling Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</StringPooling>
+      <StructMemberAlignment Condition="'$(Configuration)|$(Platform)'=='Release|x64'">8Bytes</StructMemberAlignment>
+      <ControlFlowGuard Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Guard</ControlFlowGuard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
