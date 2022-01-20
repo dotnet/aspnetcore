@@ -7,10 +7,8 @@ using System.Collections;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Mvc.Abstractions;
-using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -39,9 +37,6 @@ internal static partial class MvcCoreLoggerExtensions
     private static readonly Action<ILogger, string, double, Exception> _pageExecuted;
 
     private static readonly Action<ILogger, string[], Exception> _challengeResultExecuting;
-
-    private static readonly Action<ILogger, string, Exception> _contentResultExecuting;
-
     private static readonly Action<ILogger, string, ModelValidationState, Exception> _actionMethodExecuting;
     private static readonly Action<ILogger, string, string[], Exception> _actionMethodExecutingWithArguments;
     private static readonly Action<ILogger, string, string, double, Exception> _actionMethodExecuted;
@@ -49,64 +44,25 @@ internal static partial class MvcCoreLoggerExtensions
     private static readonly Action<ILogger, string, string[], Exception> _logFilterExecutionPlan;
     private static readonly Action<ILogger, string, string, Type, Exception> _beforeExecutingMethodOnFilter;
     private static readonly Action<ILogger, string, string, Type, Exception> _afterExecutingMethodOnFilter;
-    private static readonly Action<ILogger, Type, Exception> _beforeExecutingActionResult;
-    private static readonly Action<ILogger, Type, Exception> _afterExecutingActionResult;
-
-    private static readonly Action<ILogger, string, Exception> _ambiguousActions;
-    private static readonly Action<ILogger, string, string, IActionConstraint, Exception> _constraintMismatch;
-
     private static readonly Action<ILogger, string, string, string, Exception> _executingFileResult;
     private static readonly Action<ILogger, string, string, Exception> _executingFileResultWithNoFileName;
-    private static readonly Action<ILogger, Exception> _notEnabledForRangeProcessing;
-    private static readonly Action<ILogger, Exception> _writingRangeToBody;
-    private static readonly Action<ILogger, object, Exception> _authorizationFailure;
-    private static readonly Action<ILogger, object, Exception> _resourceFilterShortCircuit;
     private static readonly Action<ILogger, object, Exception> _resultFilterShortCircuit;
     private static readonly Action<ILogger, object, Exception> _actionFilterShortCircuit;
     private static readonly Action<ILogger, object, Exception> _exceptionFilterShortCircuit;
 
     private static readonly Action<ILogger, string[], Exception> _forbidResultExecuting;
-    private static readonly Action<ILogger, string, ClaimsPrincipal, Exception> _signInResultExecuting;
     private static readonly Action<ILogger, string[], Exception> _signOutResultExecuting;
-
-    private static readonly Action<ILogger, int, Exception> _httpStatusCodeResultExecuting;
-
-    private static readonly Action<ILogger, string, Exception> _localRedirectResultExecuting;
-
     private static readonly Action<ILogger, string, string, Exception> _objectResultExecuting;
     private static readonly Action<ILogger, IEnumerable<string>, Exception> _noFormatter;
     private static readonly Action<ILogger, IOutputFormatter, string, Exception> _formatterSelected;
-    private static readonly Action<ILogger, string, Exception> _skippedContentNegotiation;
-    private static readonly Action<ILogger, Exception> _noAcceptForNegotiation;
-    private static readonly Action<ILogger, IEnumerable<MediaTypeSegmentWithQuality>, Exception> _noFormatterFromNegotiation;
-
     private static readonly Action<ILogger, IInputFormatter, string, Exception> _inputFormatterSelected;
     private static readonly Action<ILogger, IInputFormatter, string, Exception> _inputFormatterRejected;
     private static readonly Action<ILogger, string, Exception> _noInputFormatterSelected;
     private static readonly Action<ILogger, string, string, Exception> _removeFromBodyAttribute;
-
-    private static readonly Action<ILogger, string, Exception> _redirectResultExecuting;
-
-    private static readonly Action<ILogger, string, Exception> _redirectToActionResultExecuting;
-
-    private static readonly Action<ILogger, string, string, Exception> _redirectToRouteResultExecuting;
-
     private static readonly Action<ILogger, string[], Exception> _noActionsMatched;
-
-    private static readonly Action<ILogger, string, Exception> _redirectToPageResultExecuting;
-
-    private static readonly Action<ILogger, Exception> _featureNotFound;
-    private static readonly Action<ILogger, Exception> _featureIsReadOnly;
-    private static readonly Action<ILogger, string, Exception> _maxRequestBodySizeSet;
-    private static readonly Action<ILogger, Exception> _requestBodySizeLimitDisabled;
-
-    private static readonly Action<ILogger, Exception> _cannotApplyRequestFormLimits;
-    private static readonly Action<ILogger, Exception> _appliedRequestFormLimits;
-
     private static readonly Action<ILogger, Exception> _modelStateInvalidFilterExecuting;
 
     private static readonly Action<ILogger, MethodInfo, string, string, Exception> _inferredParameterSource;
-    private static readonly Action<ILogger, IModelBinderProvider[], Exception> _registeredModelBinderProviders;
     private static readonly Action<ILogger, string, Type, string, Type, Exception> _foundNoValueForPropertyInRequest;
     private static readonly Action<ILogger, string, string, Type, Exception> _foundNoValueForParameterInRequest;
     private static readonly Action<ILogger, string, Type, Exception> _foundNoValueInRequest;
@@ -115,9 +71,7 @@ internal static partial class MvcCoreLoggerExtensions
     private static readonly Action<ILogger, string, Type, Exception> _noPublicSettableProperties;
     private static readonly Action<ILogger, Type, Exception> _cannotBindToComplexType;
     private static readonly Action<ILogger, string, Type, Exception> _cannotBindToFilesCollectionDueToUnsupportedContentType;
-    private static readonly Action<ILogger, Type, Exception> _cannotCreateHeaderModelBinder;
     private static readonly Action<ILogger, Type, Exception> _cannotCreateHeaderModelBinderCompatVersion_2_0;
-    private static readonly Action<ILogger, Exception> _noFilesFoundInRequest;
     private static readonly Action<ILogger, string, string, Exception> _noNonIndexBasedFormatFoundForCollection;
     private static readonly Action<ILogger, string, string, string, string, string, string, Exception> _attemptingToBindCollectionUsingIndices;
     private static readonly Action<ILogger, string, string, string, string, string, string, Exception> _attemptingToBindCollectionOfKeyValuePair;
@@ -136,22 +90,10 @@ internal static partial class MvcCoreLoggerExtensions
     private static readonly Action<ILogger, Type, string, Type, Exception> _doneAttemptingToValidateProperty;
     private static readonly Action<ILogger, string, Type, Exception> _attemptingToValidateParameter;
     private static readonly Action<ILogger, string, Type, Exception> _doneAttemptingToValidateParameter;
-    private static readonly Action<ILogger, string, Exception> _unsupportedFormatFilterContentType;
     private static readonly Action<ILogger, string, MediaTypeCollection, Exception> _actionDoesNotSupportFormatFilterContentType;
-    private static readonly Action<ILogger, string, Exception> _cannotApplyFormatFilterContentType;
-    private static readonly Action<ILogger, Exception> _actionDoesNotExplicitlySpecifyContentTypes;
-    private static readonly Action<ILogger, IEnumerable<MediaTypeSegmentWithQuality>, Exception> _selectingOutputFormatterUsingAcceptHeader;
-    private static readonly Action<ILogger, EntityTagHeaderValue, Exception> _ifMatchPreconditionFailed;
     private static readonly Action<ILogger, DateTimeOffset?, DateTimeOffset?, Exception> _ifUnmodifiedSincePreconditionFailed;
     private static readonly Action<ILogger, DateTimeOffset?, DateTimeOffset?, Exception> _ifRangeLastModifiedPreconditionFailed;
     private static readonly Action<ILogger, EntityTagHeaderValue, EntityTagHeaderValue, Exception> _ifRangeETagPreconditionFailed;
-    private static readonly Action<ILogger, IEnumerable<MediaTypeSegmentWithQuality>, MediaTypeCollection, Exception> _selectingOutputFormatterUsingAcceptHeaderAndExplicitContentTypes;
-    private static readonly Action<ILogger, Exception> _selectingOutputFormatterWithoutUsingContentTypes;
-    private static readonly Action<ILogger, MediaTypeCollection, Exception> _selectingOutputFormatterUsingContentTypes;
-    private static readonly Action<ILogger, Exception> _selectingFirstCanWriteFormatter;
-    private static readonly Action<ILogger, Type, Type, Type, Exception> _notMostEffectiveFilter;
-    private static readonly Action<ILogger, IEnumerable<IOutputFormatter>, Exception> _registeredOutputFormatters;
-
     private static readonly Action<ILogger, Type, int?, Type, Exception> _transformingClientError;
 
     static MvcCoreLoggerExtensions()
@@ -204,12 +146,6 @@ internal static partial class MvcCoreLoggerExtensions
             new EventId(1, "ChallengeResultExecuting"),
             "Executing ChallengeResult with authentication schemes ({Schemes}).",
             SkipEnabledCheckLogOptions);
-
-        _contentResultExecuting = LoggerMessage.Define<string>(
-            LogLevel.Information,
-            new EventId(1, "ContentResultExecuting"),
-            "Executing ContentResult with HTTP Response ContentType of {ContentType}");
-
         _actionMethodExecuting = LoggerMessage.Define<string, ModelValidationState>(
             LogLevel.Information,
             new EventId(1, "ActionMethodExecuting"),
@@ -243,27 +179,6 @@ internal static partial class MvcCoreLoggerExtensions
             LogLevel.Trace,
             new EventId(3, "AfterExecutingMethodOnFilter"),
             "{FilterType}: After executing {Method} on filter {Filter}.");
-
-        _beforeExecutingActionResult = LoggerMessage.Define<Type>(
-            LogLevel.Trace,
-            new EventId(4, "BeforeExecutingActionResult"),
-            "Before executing action result {ActionResult}.");
-
-        _afterExecutingActionResult = LoggerMessage.Define<Type>(
-            LogLevel.Trace,
-            new EventId(5, "AfterExecutingActionResult"),
-            "After executing action result {ActionResult}.");
-
-        _ambiguousActions = LoggerMessage.Define<string>(
-            LogLevel.Error,
-            new EventId(1, "AmbiguousActions"),
-            "Request matched multiple actions resulting in ambiguity. Matching actions: {AmbiguousActions}");
-
-        _constraintMismatch = LoggerMessage.Define<string, string, IActionConstraint>(
-            LogLevel.Debug,
-            new EventId(2, "ConstraintMismatch"),
-            "Action '{ActionName}' with id '{ActionId}' did not match the constraint '{ActionConstraint}'");
-
         _executingFileResult = LoggerMessage.Define<string, string, string>(
             LogLevel.Information,
             new EventId(1, "ExecutingFileResult"),
@@ -275,17 +190,6 @@ internal static partial class MvcCoreLoggerExtensions
             new EventId(2, "ExecutingFileResultWithNoFileName"),
             "Executing {FileResultType}, sending file with download name '{FileDownloadName}' ...",
             SkipEnabledCheckLogOptions);
-
-        _authorizationFailure = LoggerMessage.Define<object>(
-            LogLevel.Information,
-            new EventId(3, "AuthorizationFailure"),
-            "Authorization failed for the request at filter '{AuthorizationFilter}'.");
-
-        _resourceFilterShortCircuit = LoggerMessage.Define<object>(
-            LogLevel.Debug,
-            new EventId(4, "ResourceFilterShortCircuit"),
-            "Request was short circuited at resource filter '{ResourceFilter}'.");
-
         _resultFilterShortCircuit = LoggerMessage.Define<object>(
             LogLevel.Debug,
             new EventId(5, "ResultFilterShortCircuit"),
@@ -306,28 +210,11 @@ internal static partial class MvcCoreLoggerExtensions
             new EventId(1, "ForbidResultExecuting"),
             formatString: $"Executing {nameof(ForbidResult)} with authentication schemes ({{Schemes}}).",
             SkipEnabledCheckLogOptions);
-
-        _signInResultExecuting = LoggerMessage.Define<string, ClaimsPrincipal>(
-            LogLevel.Information,
-            new EventId(1, "SignInResultExecuting"),
-            formatString: $"Executing {nameof(SignInResult)} with authentication scheme ({{Scheme}}) and the following principal: {{Principal}}.");
-
         _signOutResultExecuting = LoggerMessage.Define<string[]>(
             LogLevel.Information,
             new EventId(1, "SignOutResultExecuting"),
             formatString: $"Executing {nameof(SignOutResult)} with authentication schemes ({{Schemes}}).",
             SkipEnabledCheckLogOptions);
-
-        _httpStatusCodeResultExecuting = LoggerMessage.Define<int>(
-            LogLevel.Information,
-            new EventId(1, "HttpStatusCodeResultExecuting"),
-            "Executing StatusCodeResult, setting HTTP status code {StatusCode}");
-
-        _localRedirectResultExecuting = LoggerMessage.Define<string>(
-            LogLevel.Information,
-            new EventId(1, "LocalRedirectResultExecuting"),
-            "Executing LocalRedirectResult, redirecting to {Destination}.");
-
         _noFormatter = LoggerMessage.Define<IEnumerable<string>>(
             LogLevel.Warning,
             new EventId(1, "NoFormatter"),
@@ -345,22 +232,6 @@ internal static partial class MvcCoreLoggerExtensions
             new EventId(2, "FormatterSelected"),
             "Selected output formatter '{OutputFormatter}' and content type '{ContentType}' to write the response.",
             SkipEnabledCheckLogOptions);
-
-        _skippedContentNegotiation = LoggerMessage.Define<string>(
-            LogLevel.Debug,
-            new EventId(3, "SkippedContentNegotiation"),
-            "Skipped content negotiation as content type '{ContentType}' is explicitly set for the response.");
-
-        _noAcceptForNegotiation = LoggerMessage.Define(
-            LogLevel.Debug,
-            new EventId(4, "NoAcceptForNegotiation"),
-            "No information found on request to perform content negotiation.");
-
-        _noFormatterFromNegotiation = LoggerMessage.Define<IEnumerable<MediaTypeSegmentWithQuality>>(
-            LogLevel.Debug,
-            new EventId(5, "NoFormatterFromNegotiation"),
-            "Could not find an output formatter based on content negotiation. Accepted types were ({AcceptTypes})");
-
         _inputFormatterSelected = LoggerMessage.Define<IInputFormatter, string>(
             LogLevel.Debug,
             new EventId(1, "InputFormatterSelected"),
@@ -384,63 +255,11 @@ internal static partial class MvcCoreLoggerExtensions
             new EventId(4, "RemoveFromBodyAttribute"),
             "To use model binding, remove the [FromBody] attribute from the property or parameter named '{ModelName}' with model type '{ModelType}'.",
             SkipEnabledCheckLogOptions);
-
-        _redirectResultExecuting = LoggerMessage.Define<string>(
-            LogLevel.Information,
-            new EventId(1, "RedirectResultExecuting"),
-            "Executing RedirectResult, redirecting to {Destination}.");
-
-        _redirectToActionResultExecuting = LoggerMessage.Define<string>(
-            LogLevel.Information,
-            new EventId(1, "RedirectToActionResultExecuting"),
-            "Executing RedirectResult, redirecting to {Destination}.");
-
-        _redirectToRouteResultExecuting = LoggerMessage.Define<string, string>(
-            LogLevel.Information,
-            new EventId(1, "RedirectToRouteResultExecuting"),
-            "Executing RedirectToRouteResult, redirecting to {Destination} from route {RouteName}.");
-
-        _redirectToPageResultExecuting = LoggerMessage.Define<string>(
-            LogLevel.Information,
-            new EventId(1, "RedirectToPageResultExecuting"),
-            "Executing RedirectToPageResult, redirecting to {Page}.");
-
         _noActionsMatched = LoggerMessage.Define<string[]>(
             LogLevel.Debug,
             new EventId(3, "NoActionsMatched"),
             "No actions matched the current request. Route values: {RouteValues}",
             SkipEnabledCheckLogOptions);
-
-        _featureNotFound = LoggerMessage.Define(
-            LogLevel.Warning,
-            new EventId(1, "FeatureNotFound"),
-            "A request body size limit could not be applied. This server does not support the IHttpRequestBodySizeFeature.");
-
-        _featureIsReadOnly = LoggerMessage.Define(
-            LogLevel.Warning,
-            new EventId(2, "FeatureIsReadOnly"),
-            "A request body size limit could not be applied. The IHttpRequestBodySizeFeature for the server is read-only.");
-
-        _maxRequestBodySizeSet = LoggerMessage.Define<string>(
-            LogLevel.Debug,
-            new EventId(3, "MaxRequestBodySizeSet"),
-            "The maximum request body size has been set to {RequestSize}.");
-
-        _requestBodySizeLimitDisabled = LoggerMessage.Define(
-            LogLevel.Debug,
-            new EventId(3, "RequestBodySizeLimitDisabled"),
-            "The request body size limit has been disabled.");
-
-        _cannotApplyRequestFormLimits = LoggerMessage.Define(
-            LogLevel.Warning,
-            new EventId(1, "CannotApplyRequestFormLimits"),
-            "Unable to apply configured form options since the request form has already been read.");
-
-        _appliedRequestFormLimits = LoggerMessage.Define(
-            LogLevel.Debug,
-            new EventId(2, "AppliedRequestFormLimits"),
-            "Applied the configured form options on the current request.");
-
         _modelStateInvalidFilterExecuting = LoggerMessage.Define(
             LogLevel.Debug,
             new EventId(1, "ModelStateInvalidFilterExecuting"),
@@ -451,72 +270,10 @@ internal static partial class MvcCoreLoggerExtensions
             new EventId(1, "InferredParameterSource"),
             "Inferred binding source for '{ParameterName}` on `{ActionName}` as {BindingSource}.",
             SkipEnabledCheckLogOptions);
-
-        _unsupportedFormatFilterContentType = LoggerMessage.Define<string>(
-            LogLevel.Debug,
-            new EventId(1, "UnsupportedFormatFilterContentType"),
-            "Could not find a media type for the format '{FormatFilterContentType}'.");
-
         _actionDoesNotSupportFormatFilterContentType = LoggerMessage.Define<string, MediaTypeCollection>(
             LogLevel.Debug,
             new EventId(2, "ActionDoesNotSupportFormatFilterContentType"),
             "Current action does not support the content type '{FormatFilterContentType}'. The supported content types are '{SupportedMediaTypes}'.");
-
-        _cannotApplyFormatFilterContentType = LoggerMessage.Define<string>(
-            LogLevel.Debug,
-            new EventId(3, "CannotApplyFormatFilterContentType"),
-            "Cannot apply content type '{FormatFilterContentType}' to the response as current action had explicitly set a preferred content type.");
-
-        _notMostEffectiveFilter = LoggerMessage.Define<Type, Type, Type>(
-            LogLevel.Debug,
-            new EventId(4, "NotMostEffectiveFilter"),
-            "Execution of filter {OverriddenFilter} is preempted by filter {OverridingFilter} which is the most effective filter implementing policy {FilterPolicy}.");
-
-        _actionDoesNotExplicitlySpecifyContentTypes = LoggerMessage.Define(
-            LogLevel.Debug,
-            new EventId(5, "ActionDoesNotExplicitlySpecifyContentTypes"),
-            "Current action does not explicitly specify any content types for the response.");
-
-        _selectingOutputFormatterUsingAcceptHeader = LoggerMessage.Define<IEnumerable<MediaTypeSegmentWithQuality>>(
-            LogLevel.Debug,
-            new EventId(6, "SelectingOutputFormatterUsingAcceptHeader"),
-            "Attempting to select an output formatter based on Accept header '{AcceptHeader}'.");
-
-        _selectingOutputFormatterUsingAcceptHeaderAndExplicitContentTypes = LoggerMessage.Define<IEnumerable<MediaTypeSegmentWithQuality>, MediaTypeCollection>(
-            LogLevel.Debug,
-            new EventId(7, "SelectingOutputFormatterUsingAcceptHeaderAndExplicitContentTypes"),
-            "Attempting to select an output formatter based on Accept header '{AcceptHeader}' and explicitly specified content types '{ExplicitContentTypes}'. The content types in the accept header must be a subset of the explicitly set content types.");
-
-        _selectingOutputFormatterWithoutUsingContentTypes = LoggerMessage.Define(
-            LogLevel.Debug,
-            new EventId(8, "SelectingOutputFormatterWithoutUsingContentTypes"),
-            "Attempting to select an output formatter without using a content type as no explicit content types were specified for the response.");
-
-        _selectingOutputFormatterUsingContentTypes = LoggerMessage.Define<MediaTypeCollection>(
-            LogLevel.Debug,
-            new EventId(9, "SelectingOutputFormatterUsingContentTypes"),
-            "Attempting to select the first output formatter in the output formatters list which supports a content type from the explicitly specified content types '{ExplicitContentTypes}'.");
-
-        _selectingFirstCanWriteFormatter = LoggerMessage.Define(
-            LogLevel.Debug,
-            new EventId(10, "SelectingFirstCanWriteFormatter"),
-            "Attempting to select the first formatter in the output formatters list which can write the result.");
-
-        _registeredOutputFormatters = LoggerMessage.Define<IEnumerable<IOutputFormatter>>(
-            LogLevel.Debug,
-            new EventId(11, "RegisteredOutputFormatters"),
-            "List of registered output formatters, in the following order: {OutputFormatters}");
-
-        _writingRangeToBody = LoggerMessage.Define(
-            LogLevel.Debug,
-            new EventId(17, "WritingRangeToBody"),
-            "Writing the requested range of bytes to the body...");
-
-        _registeredModelBinderProviders = LoggerMessage.Define<IModelBinderProvider[]>(
-            LogLevel.Debug,
-            new EventId(12, "RegisteredModelBinderProviders"),
-            "Registered model binder providers, in the following order: {ModelBinderProviders}");
-
         _attemptingToBindPropertyModel = LoggerMessage.Define<Type, string, Type, string>(
            LogLevel.Debug,
             new EventId(13, "AttemptingToBindPropertyModel"),
@@ -555,17 +312,6 @@ internal static partial class MvcCoreLoggerExtensions
            LogLevel.Debug,
             new EventId(19, "CannotBindToFilesCollectionDueToUnsupportedContentType"),
            "Could not bind to model with name '{ModelName}' and type '{ModelType}' as the request did not have a content type of either 'application/x-www-form-urlencoded' or 'multipart/form-data'.");
-
-        _cannotCreateHeaderModelBinder = LoggerMessage.Define<Type>(
-           LogLevel.Debug,
-            new EventId(20, "CannotCreateHeaderModelBinder"),
-           "Could not create a binder for type '{ModelType}' as this binder only supports simple types (like string, int, bool, enum) or a collection of simple types.");
-
-        _noFilesFoundInRequest = LoggerMessage.Define(
-            LogLevel.Debug,
-            new EventId(21, "NoFilesFoundInRequest"),
-            "No files found in the request to bind the model to.");
-
         _attemptingToBindParameter = LoggerMessage.Define<string, Type>(
             LogLevel.Debug,
             new EventId(22, "AttemptingToBindParameter"),
@@ -629,12 +375,6 @@ internal static partial class MvcCoreLoggerExtensions
             LogLevel.Debug,
             new EventId(33, "NoKeyValueFormatForDictionaryModelBinder"),
             "Attempting to bind model with name '{ModelName}' using the format {ModelName}[key1]=value1&{ModelName}[key2]=value2");
-
-        _ifMatchPreconditionFailed = LoggerMessage.Define<EntityTagHeaderValue>(
-            LogLevel.Debug,
-            new EventId(34, "IfMatchPreconditionFailed"),
-            "Current request's If-Match header check failed as the file's current etag '{CurrentETag}' does not match with any of the supplied etags.");
-
         _ifUnmodifiedSincePreconditionFailed = LoggerMessage.Define<DateTimeOffset?, DateTimeOffset?>(
             LogLevel.Debug,
             new EventId(35, "IfUnmodifiedSincePreconditionFailed"),
@@ -649,12 +389,6 @@ internal static partial class MvcCoreLoggerExtensions
             LogLevel.Debug,
             new EventId(37, "IfRangeETagPreconditionFailed"),
             "Could not serve range as the file's current etag '{CurrentETag}' does not match the If-Range etag '{IfRangeETag}'.");
-
-        _notEnabledForRangeProcessing = LoggerMessage.Define(
-            LogLevel.Debug,
-            new EventId(38, "NotEnabledForRangeProcessing"),
-            $"The file result has not been enabled for processing range requests. To enable it, set the property '{nameof(FileResult.EnableRangeProcessing)}' on the result to 'true'.");
-
         _attemptingToBindProperty = LoggerMessage.Define<Type, string, Type>(
             LogLevel.Debug,
             new EventId(39, "AttemptingToBindProperty"),
@@ -718,39 +452,6 @@ internal static partial class MvcCoreLoggerExtensions
             LogLevel.Trace,
             new EventId(49, "ClientErrorResultFilter"),
             "Replacing {InitialActionResultType} with status code {StatusCode} with {ReplacedActionResultType}.");
-    }
-
-    public static void RegisteredOutputFormatters(this ILogger logger, IEnumerable<IOutputFormatter> outputFormatters)
-    {
-        _registeredOutputFormatters(logger, outputFormatters, null);
-    }
-
-    public static void SelectingOutputFormatterUsingAcceptHeaderAndExplicitContentTypes(
-        this ILogger logger,
-        IEnumerable<MediaTypeSegmentWithQuality> acceptHeader,
-        MediaTypeCollection mediaTypeCollection)
-    {
-        _selectingOutputFormatterUsingAcceptHeaderAndExplicitContentTypes(logger, acceptHeader, mediaTypeCollection, null);
-    }
-
-    public static void SelectingOutputFormatterUsingAcceptHeader(this ILogger logger, IEnumerable<MediaTypeSegmentWithQuality> acceptHeader)
-    {
-        _selectingOutputFormatterUsingAcceptHeader(logger, acceptHeader, null);
-    }
-
-    public static void SelectingOutputFormatterUsingContentTypes(this ILogger logger, MediaTypeCollection mediaTypeCollection)
-    {
-        _selectingOutputFormatterUsingContentTypes(logger, mediaTypeCollection, null);
-    }
-
-    public static void SelectingOutputFormatterWithoutUsingContentTypes(this ILogger logger)
-    {
-        _selectingOutputFormatterWithoutUsingContentTypes(logger, null);
-    }
-
-    public static void SelectFirstCanWriteFormatter(this ILogger logger)
-    {
-        _selectingFirstCanWriteFormatter(logger, null);
     }
 
     public static IDisposable ActionScope(this ILogger logger, ActionDescriptor action)
@@ -917,21 +618,6 @@ internal static partial class MvcCoreLoggerExtensions
         }
     }
 
-    public static void ContentResultExecuting(this ILogger logger, string contentType)
-    {
-        _contentResultExecuting(logger, contentType, null);
-    }
-
-    public static void BeforeExecutingActionResult(this ILogger logger, IActionResult actionResult)
-    {
-        _beforeExecutingActionResult(logger, actionResult.GetType(), null);
-    }
-
-    public static void AfterExecutingActionResult(this ILogger logger, IActionResult actionResult)
-    {
-        _afterExecutingActionResult(logger, actionResult.GetType(), null);
-    }
-
     public static void ActionMethodExecuting(this ILogger logger, ControllerContext context, object[] arguments)
     {
         if (logger.IsEnabled(LogLevel.Information))
@@ -963,20 +649,6 @@ internal static partial class MvcCoreLoggerExtensions
         }
     }
 
-    public static void AmbiguousActions(this ILogger logger, string actionNames)
-    {
-        _ambiguousActions(logger, actionNames, null);
-    }
-
-    public static void ConstraintMismatch(
-        this ILogger logger,
-        string actionName,
-        string actionId,
-        IActionConstraint actionConstraint)
-    {
-        _constraintMismatch(logger, actionName, actionId, actionConstraint, null);
-    }
-
     public static void ExecutingFileResult(this ILogger logger, FileResult fileResult)
     {
         if (logger.IsEnabled(LogLevel.Information))
@@ -993,30 +665,6 @@ internal static partial class MvcCoreLoggerExtensions
             var fileResultType = fileResult.GetType().Name;
             _executingFileResult(logger, fileResultType, fileName, fileResult.FileDownloadName, null);
         }
-    }
-
-    public static void NotEnabledForRangeProcessing(this ILogger logger)
-    {
-        _notEnabledForRangeProcessing(logger, null);
-    }
-
-    public static void WritingRangeToBody(this ILogger logger)
-    {
-        _writingRangeToBody(logger, null);
-    }
-
-    public static void AuthorizationFailure(
-        this ILogger logger,
-        IFilterMetadata filter)
-    {
-        _authorizationFailure(logger, filter, null);
-    }
-
-    public static void ResourceFilterShortCircuited(
-        this ILogger logger,
-        IFilterMetadata filter)
-    {
-        _resourceFilterShortCircuit(logger, filter, null);
     }
 
     public static void ResultFilterShortCircuited(
@@ -1048,27 +696,12 @@ internal static partial class MvcCoreLoggerExtensions
         }
     }
 
-    public static void SignInResultExecuting(this ILogger logger, string authenticationScheme, ClaimsPrincipal principal)
-    {
-        _signInResultExecuting(logger, authenticationScheme, principal, null);
-    }
-
     public static void SignOutResultExecuting(this ILogger logger, IList<string> authenticationSchemes)
     {
         if (logger.IsEnabled(LogLevel.Information))
         {
             _signOutResultExecuting(logger, authenticationSchemes.ToArray(), null);
         }
-    }
-
-    public static void HttpStatusCodeResultExecuting(this ILogger logger, int statusCode)
-    {
-        _httpStatusCodeResultExecuting(logger, statusCode, null);
-    }
-
-    public static void LocalRedirectResultExecuting(this ILogger logger, string destination)
-    {
-        _localRedirectResultExecuting(logger, destination, null);
     }
 
     public static void ObjectResultExecuting(this ILogger logger, ObjectResult result, object value)
@@ -1109,21 +742,6 @@ internal static partial class MvcCoreLoggerExtensions
             var contentType = Convert.ToString(context.ContentType, CultureInfo.InvariantCulture);
             _formatterSelected(logger, outputFormatter, contentType, null);
         }
-    }
-
-    public static void SkippedContentNegotiation(this ILogger logger, string contentType)
-    {
-        _skippedContentNegotiation(logger, contentType, null);
-    }
-
-    public static void NoAcceptForNegotiation(this ILogger logger)
-    {
-        _noAcceptForNegotiation(logger, null);
-    }
-
-    public static void NoFormatterFromNegotiation(this ILogger logger, IList<MediaTypeSegmentWithQuality> acceptTypes)
-    {
-        _noFormatterFromNegotiation(logger, acceptTypes, null);
     }
 
     public static void InputFormatterSelected(
@@ -1167,80 +785,12 @@ internal static partial class MvcCoreLoggerExtensions
         }
     }
 
-    public static void RedirectResultExecuting(this ILogger logger, string destination)
-    {
-        _redirectResultExecuting(logger, destination, null);
-    }
-
-    public static void RedirectToActionResultExecuting(this ILogger logger, string destination)
-    {
-        _redirectToActionResultExecuting(logger, destination, null);
-    }
-
-    public static void RedirectToRouteResultExecuting(this ILogger logger, string destination, string routeName)
-    {
-        _redirectToRouteResultExecuting(logger, destination, routeName, null);
-    }
-
-    public static void RedirectToPageResultExecuting(this ILogger logger, string page)
-        => _redirectToPageResultExecuting(logger, page, null);
-
-    public static void FeatureNotFound(this ILogger logger)
-    {
-        _featureNotFound(logger, null);
-    }
-
-    public static void FeatureIsReadOnly(this ILogger logger)
-    {
-        _featureIsReadOnly(logger, null);
-    }
-
-    public static void MaxRequestBodySizeSet(this ILogger logger, string requestSize)
-    {
-        _maxRequestBodySizeSet(logger, requestSize, null);
-    }
-
-    public static void RequestBodySizeLimitDisabled(this ILogger logger)
-    {
-        _requestBodySizeLimitDisabled(logger, null);
-    }
-
-    public static void CannotApplyRequestFormLimits(this ILogger logger)
-    {
-        _cannotApplyRequestFormLimits(logger, null);
-    }
-
-    public static void AppliedRequestFormLimits(this ILogger logger)
-    {
-        _appliedRequestFormLimits(logger, null);
-    }
-
-    public static void NotMostEffectiveFilter(this ILogger logger, Type overridenFilter, Type overridingFilter, Type policyType)
-    {
-        _notMostEffectiveFilter(logger, overridenFilter, overridingFilter, policyType, null);
-    }
-
-    public static void UnsupportedFormatFilterContentType(this ILogger logger, string format)
-    {
-        _unsupportedFormatFilterContentType(logger, format, null);
-    }
-
     public static void ActionDoesNotSupportFormatFilterContentType(
         this ILogger logger,
         string format,
         MediaTypeCollection supportedMediaTypes)
     {
         _actionDoesNotSupportFormatFilterContentType(logger, format, supportedMediaTypes, null);
-    }
-
-    public static void CannotApplyFormatFilterContentType(this ILogger logger, string format)
-    {
-        _cannotApplyFormatFilterContentType(logger, format, null);
-    }
-
-    public static void ActionDoesNotExplicitlySpecifyContentTypes(this ILogger logger)
-    {
-        _actionDoesNotExplicitlySpecifyContentTypes(logger, null);
     }
 
     public static void ModelStateInvalidFilterExecuting(this ILogger logger) => _modelStateInvalidFilterExecuting(logger, null);
@@ -1254,11 +804,6 @@ internal static partial class MvcCoreLoggerExtensions
         {
             _inferredParameterSource(logger, parameterModel.Action.ActionMethod, parameterModel.ParameterName, bindingSource.DisplayName, null);
         }
-    }
-
-    public static void IfMatchPreconditionFailed(this ILogger logger, EntityTagHeaderValue etag)
-    {
-        _ifMatchPreconditionFailed(logger, etag, null);
     }
 
     public static void IfUnmodifiedSincePreconditionFailed(
@@ -1283,11 +828,6 @@ internal static partial class MvcCoreLoggerExtensions
         EntityTagHeaderValue ifRangeTag)
     {
         _ifRangeETagPreconditionFailed(logger, currentETag, ifRangeTag, null);
-    }
-
-    public static void RegisteredModelBinderProviders(this ILogger logger, IModelBinderProvider[] providers)
-    {
-        _registeredModelBinderProviders(logger, providers, null);
     }
 
     public static void FoundNoValueInRequest(this ILogger logger, ModelBindingContext bindingContext)
@@ -1345,16 +885,6 @@ internal static partial class MvcCoreLoggerExtensions
     public static void CannotCreateHeaderModelBinderCompatVersion_2_0(this ILogger logger, Type modelType)
     {
         _cannotCreateHeaderModelBinderCompatVersion_2_0(logger, modelType, null);
-    }
-
-    public static void CannotCreateHeaderModelBinder(this ILogger logger, Type modelType)
-    {
-        _cannotCreateHeaderModelBinder(logger, modelType, null);
-    }
-
-    public static void NoFilesFoundInRequest(this ILogger logger)
-    {
-        _noFilesFoundInRequest(logger, null);
     }
 
     public static void AttemptingToBindModel(this ILogger logger, ModelBindingContext bindingContext)

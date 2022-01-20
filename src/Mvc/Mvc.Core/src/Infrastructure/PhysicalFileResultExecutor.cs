@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 /// <summary>
 /// A <see cref="IActionResultExecutor{PhysicalFileResult}"/> for <see cref="PhysicalFileResult"/>.
 /// </summary>
-public class PhysicalFileResultExecutor : FileResultExecutorBase, IActionResultExecutor<PhysicalFileResult>
+public partial class PhysicalFileResultExecutor : FileResultExecutorBase, IActionResultExecutor<PhysicalFileResult>
 {
     /// <summary>
     /// Initializes a new instance of <see cref="PhysicalFileResultExecutor"/>.
@@ -97,7 +97,7 @@ public class PhysicalFileResultExecutor : FileResultExecutorBase, IActionResultE
 
         if (range != null)
         {
-            logger.WritingRangeToBody();
+            Log.WritingRangeToBody(logger);
         }
 
         if (range != null)
@@ -176,5 +176,11 @@ public class PhysicalFileResultExecutor : FileResultExecutorBase, IActionResultE
         /// When the file was last modified.
         /// </summary>
         public DateTimeOffset LastModified { get; set; }
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(17, LogLevel.Debug, "Writing the requested range of bytes to the body...", EventName = "WritingRangeToBody")]
+        public static partial void WritingRangeToBody(ILogger logger);
     }
 }

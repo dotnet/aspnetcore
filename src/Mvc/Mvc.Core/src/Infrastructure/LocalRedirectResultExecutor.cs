@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 /// <summary>
 /// A <see cref="IActionResultExecutor{LocalRedirectResult}"/> that handles <see cref="LocalRedirectResult"/>.
 /// </summary>
-public class LocalRedirectResultExecutor : IActionResultExecutor<LocalRedirectResult>
+public partial class LocalRedirectResultExecutor : IActionResultExecutor<LocalRedirectResult>
 {
     private readonly ILogger _logger;
     private readonly IUrlHelperFactory _urlHelperFactory;
@@ -61,7 +61,7 @@ public class LocalRedirectResultExecutor : IActionResultExecutor<LocalRedirectRe
         }
 
         var destinationUrl = urlHelper.Content(result.Url);
-        _logger.LocalRedirectResultExecuting(destinationUrl);
+        Log.LocalRedirectResultExecuting(_logger, destinationUrl);
 
         if (result.PreserveMethod)
         {
@@ -75,5 +75,11 @@ public class LocalRedirectResultExecutor : IActionResultExecutor<LocalRedirectRe
         }
 
         return Task.CompletedTask;
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(1, LogLevel.Information, "Executing LocalRedirectResult, redirecting to {Destination}.", EventName = "LocalRedirectResultExecuting")]
+        public static partial void LocalRedirectResultExecuting(ILogger logger, string destination);
     }
 }

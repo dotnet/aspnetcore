@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers;
 /// Initializes and processes the <see cref="ITagHelperComponent"/>s added to the
 /// <see cref="ITagHelperComponentManager.Components"/> in the specified order.
 /// </summary>
-public abstract class TagHelperComponentTagHelper : TagHelper
+public abstract partial class TagHelperComponentTagHelper : TagHelper
 {
     private readonly ILogger _logger;
     private readonly IEnumerable<ITagHelperComponent> _components;
@@ -75,7 +75,7 @@ public abstract class TagHelperComponentTagHelper : TagHelper
             component.Init(context);
             if (_logger.IsEnabled(LogLevel.Debug))
             {
-                _logger.TagHelperComponentInitialized(component.GetType().FullName!);
+                Log.TagHelperComponentInitialized(_logger, component.GetType().FullName!);
             }
         }
     }
@@ -88,8 +88,17 @@ public abstract class TagHelperComponentTagHelper : TagHelper
             await component.ProcessAsync(context, output);
             if (_logger.IsEnabled(LogLevel.Debug))
             {
-                _logger.TagHelperComponentProcessed(component.GetType().FullName!);
+                Log.TagHelperComponentProcessed(_logger, component.GetType().FullName!);
             }
         }
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(2, LogLevel.Debug, "Tag helper component '{ComponentName}' initialized.", EventName = "TagHelperComponentInitialized")]
+        public static partial void TagHelperComponentInitialized(ILogger logger, string componentName);
+
+        [LoggerMessage(3, LogLevel.Debug, "Tag helper component '{ComponentName}' processed.", EventName = "TagHelperComponentProcessed")]
+        public static partial void TagHelperComponentProcessed(ILogger logger, string componentName);
     }
 }

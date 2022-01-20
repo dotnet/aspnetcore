@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters;
 
-internal class ValidateAntiforgeryTokenAuthorizationFilter : IAsyncAuthorizationFilter, IAntiforgeryPolicy
+internal partial class ValidateAntiforgeryTokenAuthorizationFilter : IAsyncAuthorizationFilter, IAntiforgeryPolicy
 {
     private readonly IAntiforgery _antiforgery;
     private readonly ILogger _logger;
@@ -32,7 +32,7 @@ internal class ValidateAntiforgeryTokenAuthorizationFilter : IAsyncAuthorization
 
         if (!context.IsEffectivePolicy<IAntiforgeryPolicy>(this))
         {
-            _logger.NotMostEffectiveFilter(typeof(IAntiforgeryPolicy));
+            Log.NotMostEffectiveFilter(_logger, typeof(IAntiforgeryPolicy));
             return;
         }
 
@@ -44,7 +44,7 @@ internal class ValidateAntiforgeryTokenAuthorizationFilter : IAsyncAuthorization
             }
             catch (AntiforgeryValidationException exception)
             {
-                _logger.AntiforgeryTokenInvalid(exception.Message, exception);
+                Log.AntiforgeryTokenInvalid(_logger, exception.Message, exception);
                 context.Result = new AntiforgeryValidationFailedResult();
             }
         }
@@ -58,5 +58,14 @@ internal class ValidateAntiforgeryTokenAuthorizationFilter : IAsyncAuthorization
         }
 
         return true;
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(1, LogLevel.Information, "Antiforgery token validation failed. {Message}", EventName = "AntiforgeryTokenInvalid")]
+        public static partial void AntiforgeryTokenInvalid(ILogger logger, string message, Exception exception);
+
+        [LoggerMessage(2, LogLevel.Trace, "Skipping the execution of current filter as its not the most effective filter implementing the policy {FilterPolicy}.", EventName = "NotMostEffectiveFilter")]
+        public static partial void NotMostEffectiveFilter(ILogger logger, Type filterPolicy);
     }
 }

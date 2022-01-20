@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 /// <summary>
 /// A <see cref="IActionResultExecutor{ViewComponentResult}"/> for <see cref="ViewComponentResult"/>.
 /// </summary>
-public class ViewComponentResultExecutor : IActionResultExecutor<ViewComponentResult>
+public partial class ViewComponentResultExecutor : IActionResultExecutor<ViewComponentResult>
 {
     private readonly HtmlEncoder _htmlEncoder;
     private readonly HtmlHelperOptions _htmlHelperOptions;
@@ -178,13 +178,24 @@ public class ViewComponentResultExecutor : IActionResultExecutor<ViewComponentRe
         }
         else if (result.ViewComponentType == null)
         {
-            logger.ViewComponentResultExecuting(result.ViewComponentName);
+            Log.ViewComponentResultExecuting(logger, result.ViewComponentName);
             return viewComponentHelper.InvokeAsync(result.ViewComponentName!, result.Arguments);
         }
         else
         {
-            logger.ViewComponentResultExecuting(result.ViewComponentType);
+            Log.ViewComponentResultExecuting(_logger, result.ViewComponentType);
             return viewComponentHelper.InvokeAsync(result.ViewComponentType, result.Arguments);
+        }
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(1, LogLevel.Information, "Executing ViewComponentResult, running {ViewComponentName}.", EventName = "ViewComponentResultExecuting")]
+        public static partial void ViewComponentResultExecuting(ILogger logger, string? viewComponentName);
+
+        public static void ViewComponentResultExecuting(ILogger logger, Type viewComponentType)
+        {
+            ViewComponentResultExecuting(logger, viewComponentType.Name);
         }
     }
 }
