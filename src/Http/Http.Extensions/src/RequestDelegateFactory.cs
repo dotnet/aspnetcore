@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Buffers;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO.Pipelines;
@@ -50,8 +49,6 @@ public static partial class RequestDelegateFactory
 
     private static readonly ParameterExpression TargetExpr = Expression.Parameter(typeof(object), "target");
     private static readonly ParameterExpression BodyValueExpr = Expression.Parameter(typeof(object), "bodyValue");
-    private static readonly ParameterExpression RawBodyValueExpr = Expression.Parameter(typeof(ReadOnlySequence<byte>), "bodyValue");
-    private static readonly MemberExpression RawBodyIsEmptyExpr = Expression.Property(RawBodyValueExpr, typeof(ReadOnlySequence<byte>).GetProperty(nameof(ReadOnlySequence<byte>.IsEmpty))!);
     private static readonly ParameterExpression WasParamCheckFailureExpr = Expression.Variable(typeof(bool), "wasParamCheckFailure");
     private static readonly ParameterExpression BoundValuesArrayExpr = Expression.Parameter(typeof(object[]), "boundValues");
 
@@ -596,141 +593,8 @@ public static partial class RequestDelegateFactory
         {
             return HandleRequestBodyAndCompileRequestDelegateForForm(responseWritingMethodCall, factoryContext);
         }
-        else if (factoryContext.IsRawRequestBody)
-        {
-            return HandleRequestBodyAndCompileRequestDelegateForRawBody(responseWritingMethodCall, factoryContext);
-        }
 
         return HandleRequestBodyAndCompileRequestDelegateForJsonBody(responseWritingMethodCall, factoryContext);
-    }
-
-    private static Func<object?, HttpContext, Task> HandleRequestBodyAndCompileRequestDelegateForRawBody(Expression responseWritingMethodCall, FactoryContext factoryContext)
-    {
-        Debug.Assert(factoryContext.RequestBodyParameter is not null, "factoryContext.RequestBodyParameter is null for a body parameter.");
-        Debug.Assert(factoryContext.RequestBodyParameter.Name is not null, "CreateArgument() should throw if parameter.Name is null.");
-
-        if (factoryContext.ParameterBinders.Count > 0)
-        {
-            // We need to generate the code for reading from the body before calling into the delegate
-            var continuation = Expression.Lambda<Func<object?, HttpContext, ReadOnlySequence<byte>, object?[], Task>>(
-            responseWritingMethodCall, TargetExpr, HttpContextExpr, RawBodyValueExpr, BoundValuesArrayExpr).Compile();
-
-            // Looping over arrays is faster
-            var binders = factoryContext.ParameterBinders.ToArray();
-            var count = binders.Length;
-
-            return async (target, httpContext) =>
-            {
-                // Run these first so that they can potentially read and rewind the body
-                var boundValues = new object?[count];
-
-                for (var i = 0; i < count; i++)
-                {
-                    boundValues[i] = await binders[i](httpContext);
-                }
-
-                var stream = httpContext.Request.Body;
-                IRequestBodyPipeFeature? requestBodyPipe = null;
-
-                try
-                {
-                    var reader = httpContext.Request.BodyReader;
-
-                    var body = await ReadBodyAsync(httpContext, reader);
-
-                    // We're not buffering the body so we want to block consuming code from reading again
-                    // and getting weird errors. Treat further reads as a fully consumed body.
-                    httpContext.Request.Body = Stream.Null;
-
-                    // User code overrode the PipeReader
-                    if (reader == httpContext.Request.BodyReader)
-                    {
-                        requestBodyPipe = httpContext.Features.Get<IRequestBodyPipeFeature>();
-                        httpContext.Features.Set<IRequestBodyPipeFeature>(new RequestBodyPipeFeature(PipeReader.Create(Stream.Null)));
-                    }
-
-                    await continuation(target, httpContext, body, boundValues);
-
-                    reader.AdvanceTo(body.End);
-                }
-                finally
-                {
-                    httpContext.Request.Body = stream;
-
-                    if (requestBodyPipe is not null)
-                    {
-                        httpContext.Features.Set(requestBodyPipe);
-                    }
-                }
-            };
-        }
-        else
-        {
-            // We need to generate the code for reading from the body before calling into the delegate
-            var continuation = Expression.Lambda<Func<object?, HttpContext, ReadOnlySequence<byte>, Task>>(
-            responseWritingMethodCall, TargetExpr, HttpContextExpr, RawBodyValueExpr).Compile();
-
-            return async (target, httpContext) =>
-            {
-                var stream = httpContext.Request.Body;
-                IRequestBodyPipeFeature? requestBodyPipe = null;
-
-                try
-                {
-                    var reader = httpContext.Request.BodyReader;
-
-                    var body = await ReadBodyAsync(httpContext, reader);
-
-                    // We're not buffering the body so we want to block consuming code from reading again
-                    // and getting weird errors. Treat further reads as a fully consumed body.
-                    httpContext.Request.Body = Stream.Null;
-
-                    // User code overrode the PipeReader
-                    if (reader == httpContext.Request.BodyReader)
-                    {
-                        requestBodyPipe = httpContext.Features.Get<IRequestBodyPipeFeature>();
-                        httpContext.Features.Set<IRequestBodyPipeFeature>(new RequestBodyPipeFeature(PipeReader.Create(Stream.Null)));
-                    }
-
-                    await continuation(target, httpContext, body);
-
-                    reader.AdvanceTo(body.End);
-                }
-                finally
-                {
-                    httpContext.Request.Body = stream;
-
-                    if (requestBodyPipe is not null)
-                    {
-                        httpContext.Features.Set(requestBodyPipe);
-                    }
-                }
-            };
-        }
-
-        static async ValueTask<ReadOnlySequence<byte>> ReadBodyAsync(HttpContext httpContext, PipeReader reader)
-        {
-            var feature = httpContext.Features.Get<IHttpRequestBodyDetectionFeature>();
-
-            if (feature?.CanHaveBody == true)
-            {
-                while (true)
-                {
-                    var result = await reader.ReadAsync();
-                    var buffer = result.Buffer;
-
-                    if (result.IsCompleted)
-                    {
-                        return buffer;
-                    }
-
-                    // Buffer the body
-                    reader.AdvanceTo(buffer.Start, buffer.End);
-                }
-            }
-
-            return default;
-        }
     }
 
     private static Func<object?, HttpContext, Task> HandleRequestBodyAndCompileRequestDelegateForJsonBody(Expression responseWritingMethodCall, FactoryContext factoryContext)
@@ -1338,8 +1202,6 @@ public static partial class RequestDelegateFactory
                 // }
                 factoryContext.ParamCheckExpressions.Add(Expression.Block(
                     Expression.IfThen(
-                        factoryContext.IsRawRequestBody ?
-                        RawBodyIsEmptyExpr :
                         Expression.Equal(BodyValueExpr, Expression.Constant(null)),
                         Expression.Block(
                             Expression.Assign(WasParamCheckFailureExpr, Expression.Constant(true)),
@@ -1364,8 +1226,6 @@ public static partial class RequestDelegateFactory
                 // }
                 var checkRequiredBodyBlock = Expression.Block(
                     Expression.IfThen(
-                    factoryContext.IsRawRequestBody ?
-                        RawBodyIsEmptyExpr :
                         Expression.Equal(BodyValueExpr, Expression.Constant(null)),
                         Expression.Block(
                             Expression.Assign(WasParamCheckFailureExpr, Expression.Constant(true)),
@@ -1384,20 +1244,10 @@ public static partial class RequestDelegateFactory
         }
         else if (parameter.HasDefaultValue)
         {
-            if (factoryContext.IsRawRequestBody)
-            {
-                return Expression.Coalesce(RawBodyValueExpr, Expression.Constant(parameter.DefaultValue));
-            }
-
             // Convert(bodyValue ?? SomeDefault, Todo)
             return Expression.Convert(
                 Expression.Coalesce(BodyValueExpr, Expression.Constant(parameter.DefaultValue)),
                 parameter.ParameterType);
-        }
-
-        if (factoryContext.IsRawRequestBody)
-        {
-            return RawBodyValueExpr;
         }
 
         // Convert(bodyValue, Todo)
@@ -1620,7 +1470,7 @@ public static partial class RequestDelegateFactory
         // Temporary State
         public ParameterInfo? RequestBodyParameter { get; set; }
         public bool AllowEmptyRequestBody { get; set; }
-        public bool IsRawRequestBody => RequestBodyParameter?.ParameterType == typeof(ReadOnlySequence<byte>);
+        public bool IsRawRequestBody => RequestBodyParameter?.ParameterType == typeof(ReadOnlySpan<byte>);
 
         public bool UsingTempSourceString { get; set; }
         public List<ParameterExpression> ExtraLocals { get; } = new();
