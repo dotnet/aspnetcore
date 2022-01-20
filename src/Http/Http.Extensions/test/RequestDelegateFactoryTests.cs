@@ -1447,10 +1447,6 @@ public class RequestDelegateFactoryTests : LoggedTest
         var rawRequestBody = httpContext.Items["body"];
         Assert.NotNull(rawRequestBody);
         Assert.Equal(requestBodyBytes, (byte[])rawRequestBody!);
-        if (httpContext.Items.TryGetValue("bodyIsEmpty", out var bodyIsEmpty))
-        {
-            Assert.True((bool)bodyIsEmpty!);
-        }
     }
 
     [Theory]
@@ -1496,10 +1492,6 @@ public class RequestDelegateFactoryTests : LoggedTest
         var rawRequestBody = httpContext.Items["body"];
         Assert.NotNull(rawRequestBody);
         Assert.Equal(requestBodyBytes, (byte[])rawRequestBody!);
-        if (httpContext.Items.TryGetValue("bodyIsEmpty", out var bodyIsEmpty))
-        {
-            Assert.True((bool)bodyIsEmpty!);
-        }
     }
 
     class PipeRequestBodyFeature : IRequestBodyPipeFeature
