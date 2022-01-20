@@ -593,8 +593,10 @@ public static partial class RequestDelegateFactory
         {
             return HandleRequestBodyAndCompileRequestDelegateForForm(responseWritingMethodCall, factoryContext);
         }
-
-        return HandleRequestBodyAndCompileRequestDelegateForJson(responseWritingMethodCall, factoryContext);
+        else
+        {
+            return HandleRequestBodyAndCompileRequestDelegateForJson(responseWritingMethodCall, factoryContext);
+        }
     }
 
     private static Func<object?, HttpContext, Task> HandleRequestBodyAndCompileRequestDelegateForJson(Expression responseWritingMethodCall, FactoryContext factoryContext)
