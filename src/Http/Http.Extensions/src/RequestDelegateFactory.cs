@@ -205,7 +205,7 @@ public static partial class RequestDelegateFactory
         if (factoryContext.JsonRequestBodyParameter is not null &&
             factoryContext.FirstFormRequestBodyParameter is not null)
         {
-            var errorMessage = BuildErrorMessageForFormAndBodyParameters(factoryContext);
+            var errorMessage = BuildErrorMessageForFormAndJsonBodyParameters(factoryContext);
             throw new InvalidOperationException(errorMessage);
         }
         if (factoryContext.HasMultipleBodyParameters)
@@ -594,10 +594,10 @@ public static partial class RequestDelegateFactory
             return HandleRequestBodyAndCompileRequestDelegateForForm(responseWritingMethodCall, factoryContext);
         }
 
-        return HandleRequestBodyAndCompileRequestDelegateForJsonBody(responseWritingMethodCall, factoryContext);
+        return HandleRequestBodyAndCompileRequestDelegateForJson(responseWritingMethodCall, factoryContext);
     }
 
-    private static Func<object?, HttpContext, Task> HandleRequestBodyAndCompileRequestDelegateForJsonBody(Expression responseWritingMethodCall, FactoryContext factoryContext)
+    private static Func<object?, HttpContext, Task> HandleRequestBodyAndCompileRequestDelegateForJson(Expression responseWritingMethodCall, FactoryContext factoryContext)
     {
         Debug.Assert(factoryContext.JsonRequestBodyParameter is not null, "factoryContext.RequestBodyParameter is null for a body parameter.");
 
@@ -1692,7 +1692,7 @@ public static partial class RequestDelegateFactory
         return errorMessage.ToString();
     }
 
-    private static string BuildErrorMessageForFormAndBodyParameters(FactoryContext factoryContext)
+    private static string BuildErrorMessageForFormAndJsonBodyParameters(FactoryContext factoryContext)
     {
         var errorMessage = new StringBuilder();
         errorMessage.AppendLine("An action cannot use both form and JSON body parameters.");
