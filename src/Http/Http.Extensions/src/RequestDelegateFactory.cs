@@ -202,7 +202,7 @@ public static partial class RequestDelegateFactory
             var errorMessage = BuildErrorMessageForInferredBodyParameter(factoryContext);
             throw new InvalidOperationException(errorMessage);
         }
-        if (factoryContext.RequestBodyParameter is not null &&
+        if (factoryContext.JsonRequestBodyParameter is not null &&
             factoryContext.FirstFormRequestBodyParameter is not null)
         {
             var errorMessage = BuildErrorMessageForFormAndBodyParameters(factoryContext);
@@ -560,7 +560,7 @@ public static partial class RequestDelegateFactory
 
     private static Func<object?, HttpContext, Task> HandleRequestBodyAndCompileRequestDelegate(Expression responseWritingMethodCall, FactoryContext factoryContext)
     {
-        if (factoryContext.RequestBodyParameter is null && !factoryContext.ReadForm)
+        if (factoryContext.JsonRequestBodyParameter is null && !factoryContext.ReadForm)
         {
             if (factoryContext.ParameterBinders.Count > 0)
             {
@@ -599,11 +599,11 @@ public static partial class RequestDelegateFactory
 
     private static Func<object?, HttpContext, Task> HandleRequestBodyAndCompileRequestDelegateForJsonBody(Expression responseWritingMethodCall, FactoryContext factoryContext)
     {
-        Debug.Assert(factoryContext.RequestBodyParameter is not null, "factoryContext.RequestBodyParameter is null for a body parameter.");
+        Debug.Assert(factoryContext.JsonRequestBodyParameter is not null, "factoryContext.RequestBodyParameter is null for a body parameter.");
 
-        var bodyType = factoryContext.RequestBodyParameter.ParameterType;
-        var parameterTypeName = TypeNameHelper.GetTypeDisplayName(factoryContext.RequestBodyParameter.ParameterType, fullName: false);
-        var parameterName = factoryContext.RequestBodyParameter.Name;
+        var bodyType = factoryContext.JsonRequestBodyParameter.ParameterType;
+        var parameterTypeName = TypeNameHelper.GetTypeDisplayName(factoryContext.JsonRequestBodyParameter.ParameterType, fullName: false);
+        var parameterName = factoryContext.JsonRequestBodyParameter.Name;
 
         Debug.Assert(parameterName is not null, "CreateArgument() should throw if parameter.Name is null.");
 
@@ -1166,7 +1166,7 @@ public static partial class RequestDelegateFactory
 
     private static Expression BindParameterFromBody(ParameterInfo parameter, bool allowEmpty, FactoryContext factoryContext)
     {
-        if (factoryContext.RequestBodyParameter is not null)
+        if (factoryContext.JsonRequestBodyParameter is not null)
         {
             factoryContext.HasMultipleBodyParameters = true;
             var parameterName = parameter.Name;
@@ -1182,14 +1182,10 @@ public static partial class RequestDelegateFactory
 
         var isOptional = IsOptionalParameter(parameter, factoryContext);
 
-        factoryContext.RequestBodyParameter = parameter;
+        factoryContext.JsonRequestBodyParameter = parameter;
         factoryContext.AllowEmptyRequestBody = allowEmpty || isOptional;
 
-        // We can't infer the accept content type for raw bodies
-        if (!factoryContext.IsRawRequestBody)
-        {
-            factoryContext.Metadata.Add(new AcceptsMetadata(parameter.ParameterType, factoryContext.AllowEmptyRequestBody, DefaultAcceptsContentType));
-        }
+        factoryContext.Metadata.Add(new AcceptsMetadata(parameter.ParameterType, factoryContext.AllowEmptyRequestBody, DefaultAcceptsContentType));
 
         if (!factoryContext.AllowEmptyRequestBody)
         {
@@ -1450,15 +1446,6 @@ public static partial class RequestDelegateFactory
         await EnsureRequestResultNotNull(result).ExecuteAsync(httpContext);
     }
 
-    private sealed class RequestBodyPipeFeature : IRequestBodyPipeFeature
-    {
-        public RequestBodyPipeFeature(PipeReader pipeReader)
-        {
-            Reader = pipeReader;
-        }
-        public PipeReader Reader { get; set; }
-    }
-
     private class FactoryContext
     {
         // Options
@@ -1468,9 +1455,8 @@ public static partial class RequestDelegateFactory
         public bool DisableInferredFromBody { get; init; }
 
         // Temporary State
-        public ParameterInfo? RequestBodyParameter { get; set; }
+        public ParameterInfo? JsonRequestBodyParameter { get; set; }
         public bool AllowEmptyRequestBody { get; set; }
-        public bool IsRawRequestBody => RequestBodyParameter?.ParameterType == typeof(ReadOnlySpan<byte>);
 
         public bool UsingTempSourceString { get; set; }
         public List<ParameterExpression> ExtraLocals { get; } = new();
@@ -1709,7 +1695,7 @@ public static partial class RequestDelegateFactory
     private static string BuildErrorMessageForFormAndBodyParameters(FactoryContext factoryContext)
     {
         var errorMessage = new StringBuilder();
-        errorMessage.AppendLine("An action cannot use both form and body parameters.");
+        errorMessage.AppendLine("An action cannot use both form and JSON body parameters.");
         errorMessage.AppendLine("Below is the list of parameters that we found: ");
         errorMessage.AppendLine();
         errorMessage.AppendLine(FormattableString.Invariant($"{"Parameter",-20}| {"Source",-30}"));
