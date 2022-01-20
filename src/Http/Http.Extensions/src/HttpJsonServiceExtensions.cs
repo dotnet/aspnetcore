@@ -16,7 +16,7 @@ public static class RouteHandlerJsonServiceExtensions
     /// </summary>
     /// <remarks>
     /// The options configured here will only affect JSON returned and processed
-    /// from route handlers, not controllers, when using <see cref="System.Net.Http.Json.HttpContentJsonExtensions.ReadFromJsonAsync" />
+    /// from route handlers, not controllers, when using <see cref="Microsoft.AspNetCore.Http.HttpRequestJsonExtensions.ReadFromJsonAsync" />
     /// and <see cref="Microsoft.AspNetCore.Http.HttpResponseJsonExtensions.WriteAsJsonAsync" />.
     /// </remarks>
     /// <param name="services">The <see cref="IServiceCollection" /> to configure options on.</param>
