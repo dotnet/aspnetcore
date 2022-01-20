@@ -12,10 +12,13 @@ public class EchoConnectionHandler : ConnectionHandler
     public override async Task OnConnectedAsync(ConnectionContext connection)
     {
         var context = connection.GetHttpContext();
-        // The 'withCredentials' tests wont send a cookie for cross-site requests
-        if (!context.WebSockets.IsWebSocketRequest && !context.Request.Cookies.ContainsKey("testCookie"))
+        // The 'withCredentials' tests test if the connection is established, they don't send any messages
+        if (context.Request.Query.TryGetValue("withCredentials", out var value))
         {
-            return;
+            if (value == "true")
+            {
+                return;
+            }
         }
 
         while (true)

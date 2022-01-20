@@ -166,7 +166,7 @@ describe("connection", () => {
                         TestLogger.saveLogsAndReset();
 
                         // The server will set some response headers for the '/negotiate' endpoint
-                        const connection = new HttpConnection(USED_ECHOENDPOINT_URL, {
+                        const connection = new HttpConnection(USED_ECHOENDPOINT_URL + '?withCredentials=true', {
                             ...commonOptions,
                             httpClient,
                             transport: transportType,
