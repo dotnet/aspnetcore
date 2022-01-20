@@ -183,7 +183,7 @@ public partial class ViewComponentResultExecutor : IActionResultExecutor<ViewCom
         }
         else
         {
-            Log.ViewComponentResultExecuting(_logger, result.ViewComponentType);
+            Log.ViewComponentResultExecuting(logger, result.ViewComponentType);
             return viewComponentHelper.InvokeAsync(result.ViewComponentType, result.Arguments);
         }
     }
