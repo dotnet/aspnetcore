@@ -599,7 +599,7 @@ public static partial class RequestDelegateFactory
 
     private static Func<object?, HttpContext, Task> HandleRequestBodyAndCompileRequestDelegateForJson(Expression responseWritingMethodCall, FactoryContext factoryContext)
     {
-        Debug.Assert(factoryContext.JsonRequestBodyParameter is not null, "factoryContext.RequestBodyParameter is null for a body parameter.");
+        Debug.Assert(factoryContext.JsonRequestBodyParameter is not null, "factoryContext.JsonRequestBodyParameter is null for a JSON body.");
 
         var bodyType = factoryContext.JsonRequestBodyParameter.ParameterType;
         var parameterTypeName = TypeNameHelper.GetTypeDisplayName(factoryContext.JsonRequestBodyParameter.ParameterType, fullName: false);
@@ -1184,7 +1184,6 @@ public static partial class RequestDelegateFactory
 
         factoryContext.JsonRequestBodyParameter = parameter;
         factoryContext.AllowEmptyRequestBody = allowEmpty || isOptional;
-
         factoryContext.Metadata.Add(new AcceptsMetadata(parameter.ParameterType, factoryContext.AllowEmptyRequestBody, DefaultAcceptsContentType));
 
         if (!factoryContext.AllowEmptyRequestBody)
