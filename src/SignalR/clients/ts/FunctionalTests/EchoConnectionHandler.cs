@@ -3,7 +3,6 @@
 
 using System.Buffers;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Http.Connections;
 
 namespace FunctionalTests;
 
@@ -11,16 +10,6 @@ public class EchoConnectionHandler : ConnectionHandler
 {
     public override async Task OnConnectedAsync(ConnectionContext connection)
     {
-        var context = connection.GetHttpContext();
-        // The 'withCredentials' tests test if the connection is established, they don't send any messages
-        if (context.Request.Query.TryGetValue("withCredentials", out var value))
-        {
-            if (value == "true")
-            {
-                return;
-            }
-        }
-
         while (true)
         {
             var result = await connection.Transport.Input.ReadAsync();
