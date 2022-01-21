@@ -202,3 +202,70 @@ a {
     border: 0;
     margin: 0;
 }
+
+@media (prefers-color-scheme: dark) {
+    body {
+        color: #dcdcdc;
+        background-color: #222;
+    }
+
+    h1 {
+        color: #9dacb8;
+    }
+
+    h3 {
+        color: #c7c7c7;
+    }
+
+    #header {
+        border-top-color: #444;
+        border-bottom-color: #444;
+    }
+
+    #header .selected {
+        color: #222;
+    }
+
+    #stackpage .details {
+        color: #000;
+    }
+
+    #stackpage .stackerror {
+        border-bottom-color: #444;
+    }
+
+    #stackpage .source ol li {
+        background-color: #1c1c1c;
+    }
+
+    #stackpage .frame .source .highlight {
+        border-left-color: #C53731;
+    }
+
+    #stackpage .frame .source .highlight li span {
+        color: #C53731;
+    }
+
+    #stackpage .source ol.collapsible li span {
+        color: #9B9B9B;
+    }
+
+    #routingpage .subheader {
+        border-bottom-color: #444;
+    }
+
+    .page th, .page td {
+        border-right-color: #444;
+        border-bottom-color: #444;
+    }
+
+    .rawExceptionBlock {
+        border-top-color: #444;
+        border-bottom-color: #444;
+    }
+
+    .expandCollapseButton {
+        background-color: #444;
+        color: inherit;
+    }
+}
