@@ -9,6 +9,8 @@ namespace FunctionalTests
 {
     public class EchoConnectionHandler : ConnectionHandler
     {
+        public override async Task OnConnectedAsync(ConnectionContext connection)
+        {
             while (true)
             {
                 var result = await connection.Transport.Input.ReadAsync();
