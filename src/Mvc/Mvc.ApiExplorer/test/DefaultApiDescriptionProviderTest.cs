@@ -244,13 +244,14 @@ public class DefaultApiDescriptionProviderTest
     }
 
     [Theory]
-    [InlineData("api/products/{id}", nameof(BindingSource.Path), nameof(BindingSource.Path))]
-    [InlineData("api/products", nameof(BindingSource.Path), nameof(BindingSource.ModelBinding))]
-    [InlineData("api/products", nameof(BindingSource.Body), nameof(BindingSource.Body))]
+    [InlineData("api/products/{id}", nameof(BindingSource.Path), true)]
+    [InlineData("api/products", nameof(BindingSource.Path), false)]
+    [InlineData("api/products", nameof(BindingSource.Body), true)]
+    [InlineData("api/products", nameof(BindingSource.Query), true)]
     public void GetApiDescription_WithInferredBindingSource(
         string template,
         string inferredBindingSourceName,
-        string expectedBindingSourceName)
+        bool inferredParameterShouldBeIncluded)
     {
         // Arrange
         var action = CreateActionDescriptor(nameof(FromModelBinding));
@@ -264,7 +265,7 @@ public class DefaultApiDescriptionProviderTest
             };
         }
 
-        var expectedBindingSource = new BindingSource(expectedBindingSourceName, displayName: null, isGreedy: false, isFromRequest: true);
+        var expectedBindingSource = new BindingSource(inferredBindingSourceName, displayName: null, isGreedy: false, isFromRequest: true);
 
         // Act
         var descriptions = GetApiDescriptions(action);
@@ -272,9 +273,14 @@ public class DefaultApiDescriptionProviderTest
         // Assert
         var description = Assert.Single(descriptions);
 
-        var parameter = Assert.Single(description.ParameterDescriptions);
-        Assert.Equal(expectedBindingSource, parameter.Source);
-        Assert.Equal("id", parameter.Name);
+        Assert.Equal(inferredParameterShouldBeIncluded, description.ParameterDescriptions.Count == 1);
+
+        if (inferredParameterShouldBeIncluded)
+        {
+            var parameter = Assert.Single(description.ParameterDescriptions);
+            Assert.Equal(expectedBindingSource, parameter.Source);
+            Assert.Equal("id", parameter.Name);
+        }
     }
 
     [Fact]

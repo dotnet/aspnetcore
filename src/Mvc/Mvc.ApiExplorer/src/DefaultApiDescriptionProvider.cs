@@ -241,6 +241,7 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
             routeParameters.Add(routeParameter.Name!, CreateRouteInfo(routeParameter));
         }
 
+        var inferredPathParametersToRemove = new List<ApiParameterDescription>();
         foreach (var parameter in context.Results)
         {
             if (parameter.Source == BindingSource.Path ||
@@ -269,12 +270,19 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
                         // If we didn't see the parameter in the route and no FromRoute metadata is set, it probably means
                         // the parameter binding source was inferred (InferParameterBindingInfoConvention)  
                         // probably because another route to this action contains it as route parameter.
-                        // let's switch it to ModelBinding
-                        parameter.Source = BindingSource.ModelBinding;
+                        // let's add it to be removed from the API description
+                        inferredPathParametersToRemove.Add(parameter);
                     }
 
                 }
             }
+        }
+
+        // Remove all parameters detected as Inferred FromPath
+        // but that are not in the route
+        foreach (var inferredParameter in inferredPathParametersToRemove)
+        {
+            context.Results.Remove(inferredParameter);
         }
 
         // Lastly, create a parameter representation for each route parameter that did not find
