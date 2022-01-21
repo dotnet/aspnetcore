@@ -1,5 +1,8 @@
 blank_issues_enabled: true
 contact_links:
+  - name: Issue with Razor tooling
+    url:  https://github.com/dotnet/razor-tooling/issues/new/choose
+    about: Please open issues relating to Razor tooling in dotnet/razor-tooling.
   - name: Issue with .NET runtime or core .NET libraries
     url:  https://github.com/dotnet/runtime/issues/new/choose
     about: Please open issues relating to the .NET runtime or core .NET libraries in dotnet/runtime.

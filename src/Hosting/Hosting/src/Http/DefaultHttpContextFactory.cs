@@ -3,101 +3,99 @@
 
 #nullable enable
 
-using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Http
+namespace Microsoft.AspNetCore.Http;
+
+/// <summary>
+/// A factory for creating <see cref="HttpContext" /> instances.
+/// </summary>
+public class DefaultHttpContextFactory : IHttpContextFactory
 {
+    private readonly IHttpContextAccessor? _httpContextAccessor;
+    private readonly FormOptions _formOptions;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
+
+    // This takes the IServiceProvider because it needs to support an ever expanding
+    // set of services that flow down into HttpContext features
     /// <summary>
-    /// A factory for creating <see cref="HttpContext" /> instances.
+    /// Creates a factory for creating <see cref="HttpContext" /> instances.
     /// </summary>
-    public class DefaultHttpContextFactory : IHttpContextFactory
+    /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to be used when retrieving services.</param>
+    public DefaultHttpContextFactory(IServiceProvider serviceProvider)
     {
-        private readonly IHttpContextAccessor? _httpContextAccessor;
-        private readonly FormOptions _formOptions;
-        private readonly IServiceScopeFactory _serviceScopeFactory;
+        // May be null
+        _httpContextAccessor = serviceProvider.GetService<IHttpContextAccessor>();
+        _formOptions = serviceProvider.GetRequiredService<IOptions<FormOptions>>().Value;
+        _serviceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
+    }
 
-        // This takes the IServiceProvider because it needs to support an ever expanding
-        // set of services that flow down into HttpContext features
-        /// <summary>
-        /// Creates a factory for creating <see cref="HttpContext" /> instances.
-        /// </summary>
-        /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to be used when retrieving services.</param>
-        public DefaultHttpContextFactory(IServiceProvider serviceProvider)
+    internal IHttpContextAccessor? HttpContextAccessor => _httpContextAccessor;
+
+    /// <summary>
+    /// Create an <see cref="HttpContext"/> instance given an <paramref name="featureCollection" />.
+    /// </summary>
+    /// <param name="featureCollection"></param>
+    /// <returns>An initialized <see cref="HttpContext"/> object.</returns>
+    public HttpContext Create(IFeatureCollection featureCollection)
+    {
+        if (featureCollection is null)
         {
-            // May be null
-            _httpContextAccessor = serviceProvider.GetService<IHttpContextAccessor>();
-            _formOptions = serviceProvider.GetRequiredService<IOptions<FormOptions>>().Value;
-            _serviceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
+            throw new ArgumentNullException(nameof(featureCollection));
         }
 
-        internal IHttpContextAccessor? HttpContextAccessor => _httpContextAccessor;
+        var httpContext = new DefaultHttpContext(featureCollection);
+        Initialize(httpContext);
+        return httpContext;
+    }
 
-        /// <summary>
-        /// Create an <see cref="HttpContext"/> instance given an <paramref name="featureCollection" />.
-        /// </summary>
-        /// <param name="featureCollection"></param>
-        /// <returns>An initialized <see cref="HttpContext"/> object.</returns>
-        public HttpContext Create(IFeatureCollection featureCollection)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal void Initialize(DefaultHttpContext httpContext, IFeatureCollection featureCollection)
+    {
+        Debug.Assert(featureCollection != null);
+        Debug.Assert(httpContext != null);
+
+        httpContext.Initialize(featureCollection);
+
+        Initialize(httpContext);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private DefaultHttpContext Initialize(DefaultHttpContext httpContext)
+    {
+        if (_httpContextAccessor != null)
         {
-            if (featureCollection is null)
-            {
-                throw new ArgumentNullException(nameof(featureCollection));
-            }
-
-            var httpContext = new DefaultHttpContext(featureCollection);
-            Initialize(httpContext);
-            return httpContext;
+            _httpContextAccessor.HttpContext = httpContext;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal void Initialize(DefaultHttpContext httpContext, IFeatureCollection featureCollection)
+        httpContext.FormOptions = _formOptions;
+        httpContext.ServiceScopeFactory = _serviceScopeFactory;
+
+        return httpContext;
+    }
+
+    /// <summary>
+    /// Clears the current <see cref="HttpContext" />.
+    /// </summary>
+    public void Dispose(HttpContext httpContext)
+    {
+        if (_httpContextAccessor != null)
         {
-            Debug.Assert(featureCollection != null);
-            Debug.Assert(httpContext != null);
+            _httpContextAccessor.HttpContext = null;
+        }
+    }
 
-            httpContext.Initialize(featureCollection);
-
-            Initialize(httpContext);
+    internal void Dispose(DefaultHttpContext httpContext)
+    {
+        if (_httpContextAccessor != null)
+        {
+            _httpContextAccessor.HttpContext = null;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private DefaultHttpContext Initialize(DefaultHttpContext httpContext)
-        {
-            if (_httpContextAccessor != null)
-            {
-                _httpContextAccessor.HttpContext = httpContext;
-            }
-
-            httpContext.FormOptions = _formOptions;
-            httpContext.ServiceScopeFactory = _serviceScopeFactory;
-
-            return httpContext;
-        }
-
-        /// <summary>
-        /// Clears the current <see cref="HttpContext" />.
-        /// </summary>
-        public void Dispose(HttpContext httpContext)
-        {
-            if (_httpContextAccessor != null)
-            {
-                _httpContextAccessor.HttpContext = null;
-            }
-        }
-
-        internal void Dispose(DefaultHttpContext httpContext)
-        {
-            if (_httpContextAccessor != null)
-            {
-                _httpContextAccessor.HttpContext = null;
-            }
-
-            httpContext.Uninitialize();
-        }
+        httpContext.Uninitialize();
     }
 }

@@ -3,56 +3,53 @@
 
 #nullable enable
 
-using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
+namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
+
+/// <summary>
+/// An <see cref="IModelBinder"/> for models which specify an <see cref="IModelBinder"/> using
+/// <see cref="BindingInfo.BinderType"/>.
+/// </summary>
+public class BinderTypeModelBinder : IModelBinder
 {
+    private readonly ObjectFactory _factory;
+
     /// <summary>
-    /// An <see cref="IModelBinder"/> for models which specify an <see cref="IModelBinder"/> using
-    /// <see cref="BindingInfo.BinderType"/>.
+    /// Creates a new <see cref="BinderTypeModelBinder"/>.
     /// </summary>
-    public class BinderTypeModelBinder : IModelBinder
+    /// <param name="binderType">The <see cref="Type"/> of the <see cref="IModelBinder"/>.</param>
+    public BinderTypeModelBinder(Type binderType)
     {
-        private readonly ObjectFactory _factory;
-
-        /// <summary>
-        /// Creates a new <see cref="BinderTypeModelBinder"/>.
-        /// </summary>
-        /// <param name="binderType">The <see cref="Type"/> of the <see cref="IModelBinder"/>.</param>
-        public BinderTypeModelBinder(Type binderType)
+        if (binderType == null)
         {
-            if (binderType == null)
-            {
-                throw new ArgumentNullException(nameof(binderType));
-            }
-
-            if (!typeof(IModelBinder).IsAssignableFrom(binderType))
-            {
-                throw new ArgumentException(
-                    Resources.FormatBinderType_MustBeIModelBinder(
-                        binderType.FullName,
-                        typeof(IModelBinder).FullName),
-                    nameof(binderType));
-            }
-
-            _factory = ActivatorUtilities.CreateFactory(binderType, Type.EmptyTypes);
+            throw new ArgumentNullException(nameof(binderType));
         }
 
-        /// <inheritdoc />
-        public async Task BindModelAsync(ModelBindingContext bindingContext)
+        if (!typeof(IModelBinder).IsAssignableFrom(binderType))
         {
-            if (bindingContext == null)
-            {
-                throw new ArgumentNullException(nameof(bindingContext));
-            }
-
-            var requestServices = bindingContext.HttpContext.RequestServices;
-            var binder = (IModelBinder)_factory(requestServices, arguments: null);
-
-            await binder.BindModelAsync(bindingContext);
+            throw new ArgumentException(
+                Resources.FormatBinderType_MustBeIModelBinder(
+                    binderType.FullName,
+                    typeof(IModelBinder).FullName),
+                nameof(binderType));
         }
+
+        _factory = ActivatorUtilities.CreateFactory(binderType, Type.EmptyTypes);
+    }
+
+    /// <inheritdoc />
+    public async Task BindModelAsync(ModelBindingContext bindingContext)
+    {
+        if (bindingContext == null)
+        {
+            throw new ArgumentNullException(nameof(bindingContext));
+        }
+
+        var requestServices = bindingContext.HttpContext.RequestServices;
+        var binder = (IModelBinder)_factory(requestServices, arguments: null);
+
+        await binder.BindModelAsync(bindingContext);
     }
 }

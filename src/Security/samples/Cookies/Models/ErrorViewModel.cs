@@ -3,12 +3,11 @@
 
 using System;
 
-namespace AuthSamples.Cookies.Models
-{
-    public class ErrorViewModel
-    {
-        public string RequestId { get; set; }
+namespace AuthSamples.Cookies.Models;
 
-        public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
-    }
+public class ErrorViewModel
+{
+    public string RequestId { get; set; }
+
+    public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
 }

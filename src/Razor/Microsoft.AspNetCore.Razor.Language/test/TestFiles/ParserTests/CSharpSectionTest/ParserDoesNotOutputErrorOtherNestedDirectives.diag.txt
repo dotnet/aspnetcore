@@ -1,2 +1,0 @@
-(1,17): Error RZ2005: The 'inherits` directive must appear at the start of the line.
-(1,30): Error RZ1017: Unexpected literal following the 'inherits' directive. Expected 'line break'.

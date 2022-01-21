@@ -4,16 +4,15 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace SecurityWebSite.Controllers
+namespace SecurityWebSite.Controllers;
+
+public class AuthorizedActionsController : ControllerBase
 {
-    public class AuthorizedActionsController : ControllerBase
-    {
-        [AllowAnonymous]
-        public IActionResult ActionWithoutAllowAnonymous() => Ok();
+    [AllowAnonymous]
+    public IActionResult ActionWithoutAllowAnonymous() => Ok();
 
-        public IActionResult ActionWithoutAuthAttribute() => Ok();
+    public IActionResult ActionWithoutAuthAttribute() => Ok();
 
-        [Authorize("RequireClaimB")]
-        public IActionResult ActionWithAuthAttribute() => Ok();
-    }
+    [Authorize("RequireClaimB")]
+    public IActionResult ActionWithAuthAttribute() => Ok();
 }

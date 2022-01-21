@@ -1,11 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Mvc.TagHelpers.PersistComponentStateTagHelper
-Microsoft.AspNetCore.Mvc.TagHelpers.PersistComponentStateTagHelper.PersistComponentStateTagHelper() -> void
-Microsoft.AspNetCore.Mvc.TagHelpers.PersistComponentStateTagHelper.PersistenceMode.get -> Microsoft.AspNetCore.Mvc.TagHelpers.PersistenceMode?
-Microsoft.AspNetCore.Mvc.TagHelpers.PersistComponentStateTagHelper.PersistenceMode.set -> void
-Microsoft.AspNetCore.Mvc.TagHelpers.PersistenceMode
-Microsoft.AspNetCore.Mvc.TagHelpers.PersistenceMode.Server = 0 -> Microsoft.AspNetCore.Mvc.TagHelpers.PersistenceMode
-Microsoft.AspNetCore.Mvc.TagHelpers.PersistenceMode.WebAssembly = 1 -> Microsoft.AspNetCore.Mvc.TagHelpers.PersistenceMode
-~Microsoft.AspNetCore.Mvc.TagHelpers.PersistComponentStateTagHelper.ViewContext.get -> Microsoft.AspNetCore.Mvc.Rendering.ViewContext
-~Microsoft.AspNetCore.Mvc.TagHelpers.PersistComponentStateTagHelper.ViewContext.set -> void
-~override Microsoft.AspNetCore.Mvc.TagHelpers.PersistComponentStateTagHelper.ProcessAsync(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput output) -> System.Threading.Tasks.Task

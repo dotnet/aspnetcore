@@ -40,11 +40,15 @@ public class WeatherForecastController : ControllerBase
     public WeatherForecastController(ILogger<WeatherForecastController> logger,
                             IDownstreamWebApi downstreamWebApi)
     {
-            _logger = logger;
+        _logger = logger;
         _downstreamWebApi = downstreamWebApi;
     }
 
+#if (EnableOpenAPI)
+    [HttpGet(Name = "GetWeatherForecast")]
+#else
     [HttpGet]
+#endif
     public async Task<IEnumerable<WeatherForecast>> Get()
     {
         using var response = await _downstreamWebApi.CallWebApiForUserAsync("DownstreamApi").ConfigureAwait(false);
@@ -74,11 +78,15 @@ public class WeatherForecastController : ControllerBase
     public WeatherForecastController(ILogger<WeatherForecastController> logger,
                                         GraphServiceClient graphServiceClient)
     {
-            _logger = logger;
+        _logger = logger;
         _graphServiceClient = graphServiceClient;
     }
 
+#if (EnableOpenAPI)
+    [HttpGet(Name = "GetWeatherForecast")]
+#else
     [HttpGet]
+#endif
     public async Task<IEnumerable<WeatherForecast>> Get()
     {
         var user = await _graphServiceClient.Me.Request().GetAsync();
@@ -97,7 +105,11 @@ public class WeatherForecastController : ControllerBase
         _logger = logger;
     }
 
+#if (EnableOpenAPI)
+    [HttpGet(Name = "GetWeatherForecast")]
+#else
     [HttpGet]
+#endif
     public IEnumerable<WeatherForecast> Get()
     {
         return Enumerable.Range(1, 5).Select(index => new WeatherForecast

@@ -1,35 +1,30 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Authorization.Test
+namespace Microsoft.AspNetCore.Authorization.Test;
+
+public class OperationAuthorizationRequirementTests
 {
-    public class OperationAuthorizationRequirementTests
+    private OperationAuthorizationRequirement CreateRequirement(string name)
     {
-        private OperationAuthorizationRequirement CreateRequirement(string name)
+        return new OperationAuthorizationRequirement()
         {
-            return new OperationAuthorizationRequirement()
-            {
-                Name = name
-            };
-        }
+            Name = name
+        };
+    }
 
-        [Fact]
-        public void ToString_ShouldReturnFormatValue()
-        {
-            // Arrange
-            var requirement = CreateRequirement("Custom");
+    [Fact]
+    public void ToString_ShouldReturnFormatValue()
+    {
+        // Arrange
+        var requirement = CreateRequirement("Custom");
 
-            // Act
-            var formattedValue = requirement.ToString();
+        // Act
+        var formattedValue = requirement.ToString();
 
-            // Assert
-            Assert.Equal("OperationAuthorizationRequirement:Name=Custom", formattedValue);
-        }
+        // Assert
+        Assert.Equal("OperationAuthorizationRequirement:Name=Custom", formattedValue);
     }
 }

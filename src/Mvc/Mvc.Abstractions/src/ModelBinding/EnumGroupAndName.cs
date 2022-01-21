@@ -1,70 +1,67 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
+namespace Microsoft.AspNetCore.Mvc.ModelBinding;
 
-namespace Microsoft.AspNetCore.Mvc.ModelBinding
+/// <summary>
+/// An abstraction used when grouping enum values for <see cref="ModelMetadata.EnumGroupedDisplayNamesAndValues"/>.
+/// </summary>
+public readonly struct EnumGroupAndName
 {
+    private readonly Func<string> _name;
+
     /// <summary>
-    /// An abstraction used when grouping enum values for <see cref="ModelMetadata.EnumGroupedDisplayNamesAndValues"/>.
+    /// Initializes a new instance of the <see cref="EnumGroupAndName"/> structure. This constructor should
+    /// not be used in any site where localization is important.
     /// </summary>
-    public readonly struct EnumGroupAndName
+    /// <param name="group">The group name.</param>
+    /// <param name="name">The name.</param>
+    public EnumGroupAndName(string group, string name)
     {
-        private readonly Func<string> _name;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="EnumGroupAndName"/> structure. This constructor should
-        /// not be used in any site where localization is important.
-        /// </summary>
-        /// <param name="group">The group name.</param>
-        /// <param name="name">The name.</param>
-        public EnumGroupAndName(string group, string name)
+        if (group == null)
         {
-            if (group == null)
-            {
-                throw new ArgumentNullException(nameof(group));
-            }
-
-            if (name == null)
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
-
-            Group = group;
-            _name = () => name;
+            throw new ArgumentNullException(nameof(group));
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="EnumGroupAndName"/> structure.
-        /// </summary>
-        /// <param name="group">The group name.</param>
-        /// <param name="name">A <see cref="Func{String}"/> which will return the name.</param>
-        public EnumGroupAndName(
-            string group,
-            Func<string> name)
+        if (name == null)
         {
-            if (group == null)
-            {
-                throw new ArgumentNullException(nameof(group));
-            }
-
-            if (name == null)
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
-
-            Group = group;
-            _name = name;
+            throw new ArgumentNullException(nameof(name));
         }
 
-        /// <summary>
-        /// Gets the Group name.
-        /// </summary>
-        public string Group { get; }
-
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        public string Name => _name();
+        Group = group;
+        _name = () => name;
     }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="EnumGroupAndName"/> structure.
+    /// </summary>
+    /// <param name="group">The group name.</param>
+    /// <param name="name">A <see cref="Func{String}"/> which will return the name.</param>
+    public EnumGroupAndName(
+        string group,
+        Func<string> name)
+    {
+        if (group == null)
+        {
+            throw new ArgumentNullException(nameof(group));
+        }
+
+        if (name == null)
+        {
+            throw new ArgumentNullException(nameof(name));
+        }
+
+        Group = group;
+        _name = name;
+    }
+
+    /// <summary>
+    /// Gets the Group name.
+    /// </summary>
+    public string Group { get; }
+
+    /// <summary>
+    /// Gets the name.
+    /// </summary>
+    public string Name => _name();
 }

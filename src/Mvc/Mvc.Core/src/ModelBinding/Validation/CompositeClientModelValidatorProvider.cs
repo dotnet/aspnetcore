@@ -3,50 +3,47 @@
 
 #nullable enable
 
-using System;
-using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
+namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+
+/// <summary>
+/// Aggregate of <see cref="IClientModelValidatorProvider"/>s that delegates to its underlying providers.
+/// </summary>
+public class CompositeClientModelValidatorProvider : IClientModelValidatorProvider
 {
     /// <summary>
-    /// Aggregate of <see cref="IClientModelValidatorProvider"/>s that delegates to its underlying providers.
+    /// Initializes a new instance of <see cref="CompositeClientModelValidatorProvider"/>.
     /// </summary>
-    public class CompositeClientModelValidatorProvider : IClientModelValidatorProvider
+    /// <param name="providers">
+    /// A collection of <see cref="IClientModelValidatorProvider"/> instances.
+    /// </param>
+    public CompositeClientModelValidatorProvider(IEnumerable<IClientModelValidatorProvider> providers)
     {
-        /// <summary>
-        /// Initializes a new instance of <see cref="CompositeClientModelValidatorProvider"/>.
-        /// </summary>
-        /// <param name="providers">
-        /// A collection of <see cref="IClientModelValidatorProvider"/> instances.
-        /// </param>
-        public CompositeClientModelValidatorProvider(IEnumerable<IClientModelValidatorProvider> providers)
+        if (providers == null)
         {
-            if (providers == null)
-            {
-                throw new ArgumentNullException(nameof(providers));
-            }
-
-            ValidatorProviders = new List<IClientModelValidatorProvider>(providers);
+            throw new ArgumentNullException(nameof(providers));
         }
 
-        /// <summary>
-        /// Gets a list of <see cref="IClientModelValidatorProvider"/> instances.
-        /// </summary>
-        public IReadOnlyList<IClientModelValidatorProvider> ValidatorProviders { get; }
+        ValidatorProviders = new List<IClientModelValidatorProvider>(providers);
+    }
 
-        /// <inheritdoc />
-        public void CreateValidators(ClientValidatorProviderContext context)
+    /// <summary>
+    /// Gets a list of <see cref="IClientModelValidatorProvider"/> instances.
+    /// </summary>
+    public IReadOnlyList<IClientModelValidatorProvider> ValidatorProviders { get; }
+
+    /// <inheritdoc />
+    public void CreateValidators(ClientValidatorProviderContext context)
+    {
+        if (context == null)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            throw new ArgumentNullException(nameof(context));
+        }
 
-            // Perf: Avoid allocations
-            for (var i = 0; i < ValidatorProviders.Count; i++)
-            {
-                ValidatorProviders[i].CreateValidators(context);
-            }
+        // Perf: Avoid allocations
+        for (var i = 0; i < ValidatorProviders.Count; i++)
+        {
+            ValidatorProviders[i].CreateValidators(context);
         }
     }
 }

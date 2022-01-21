@@ -2,19 +2,17 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore;
-using Microsoft.AspNetCore.Hosting;
 
-namespace SocialSample
+namespace SocialSample;
+
+public static class Program
 {
-    public static class Program
+    public static void Main(string[] args)
     {
-        public static void Main(string[] args)
-        {
-            var host = WebHost.CreateDefaultBuilder(args)
-                .UseStartup<Startup>()
-                .Build();
+        var host = WebHost.CreateDefaultBuilder(args)
+            .UseStartup<Startup>()
+            .Build();
 
-            host.Run();
-        }
+        host.Run();
     }
 }

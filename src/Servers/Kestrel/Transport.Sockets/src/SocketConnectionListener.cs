@@ -1,191 +1,109 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Buffers;
-using System.ComponentModel;
 using System.Diagnostics;
-using System.IO.Pipelines;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal;
+using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
+
+internal sealed class SocketConnectionListener : IConnectionListener
 {
-    internal sealed class SocketConnectionListener : IConnectionListener
+    private readonly SocketConnectionContextFactory _factory;
+    private readonly ILogger _logger;
+    private Socket? _listenSocket;
+    private readonly SocketTransportOptions _options;
+
+    public EndPoint EndPoint { get; private set; }
+
+    internal SocketConnectionListener(
+        EndPoint endpoint,
+        SocketTransportOptions options,
+        ILoggerFactory loggerFactory)
     {
-        private readonly MemoryPool<byte> _memoryPool;
-        private readonly int _settingsCount;
-        private readonly Settings[] _settings;
-        private readonly ISocketsTrace _trace;
-        private Socket? _listenSocket;
-        private int _settingsIndex;
-        private readonly SocketTransportOptions _options;
+        EndPoint = endpoint;
+        _options = options;
+        var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets");
+        _logger = logger;
+        _factory = new SocketConnectionContextFactory(new SocketConnectionFactoryOptions(options), logger);
+    }
 
-        public EndPoint EndPoint { get; private set; }
-
-        internal SocketConnectionListener(
-            EndPoint endpoint,
-            SocketTransportOptions options,
-            ISocketsTrace trace)
+    internal void Bind()
+    {
+        if (_listenSocket != null)
         {
-            EndPoint = endpoint;
-            _trace = trace;
-            _options = options;
-            _memoryPool = _options.MemoryPoolFactory();
-            var ioQueueCount = options.IOQueueCount;
-
-            var maxReadBufferSize = _options.MaxReadBufferSize ?? 0;
-            var maxWriteBufferSize = _options.MaxWriteBufferSize ?? 0;
-            var applicationScheduler = options.UnsafePreferInlineScheduling ? PipeScheduler.Inline : PipeScheduler.ThreadPool;
-
-            if (ioQueueCount > 0)
-            {
-                _settingsCount = ioQueueCount;
-                _settings = new Settings[_settingsCount];
-
-                for (var i = 0; i < _settingsCount; i++)
-                {
-                    var transportScheduler = options.UnsafePreferInlineScheduling ? PipeScheduler.Inline : new IOQueue();
-                    // https://github.com/aspnet/KestrelHttpServer/issues/2573
-                    var awaiterScheduler = OperatingSystem.IsWindows() ? transportScheduler : PipeScheduler.Inline;
-
-                    _settings[i] = new Settings
-                    {
-                        Scheduler = transportScheduler,
-                        InputOptions = new PipeOptions(_memoryPool, applicationScheduler, transportScheduler, maxReadBufferSize, maxReadBufferSize / 2, useSynchronizationContext: false),
-                        OutputOptions = new PipeOptions(_memoryPool, transportScheduler, applicationScheduler, maxWriteBufferSize, maxWriteBufferSize / 2, useSynchronizationContext: false),
-                        SocketSenderPool = new SocketSenderPool(awaiterScheduler)
-                    };
-                }
-            }
-            else
-            {
-                var transportScheduler = options.UnsafePreferInlineScheduling ? PipeScheduler.Inline : PipeScheduler.ThreadPool;
-                // https://github.com/aspnet/KestrelHttpServer/issues/2573
-                var awaiterScheduler = OperatingSystem.IsWindows() ? transportScheduler : PipeScheduler.Inline;
-
-                var directScheduler = new Settings[]
-                {
-                    new Settings
-                    {
-                        Scheduler = transportScheduler,
-                        InputOptions = new PipeOptions(_memoryPool, applicationScheduler, transportScheduler, maxReadBufferSize, maxReadBufferSize / 2, useSynchronizationContext: false),
-                        OutputOptions = new PipeOptions(_memoryPool, transportScheduler, applicationScheduler, maxWriteBufferSize, maxWriteBufferSize / 2, useSynchronizationContext: false),
-                        SocketSenderPool = new SocketSenderPool(awaiterScheduler)
-                    }
-                };
-
-                _settingsCount = directScheduler.Length;
-                _settings = directScheduler;
-            }
+            throw new InvalidOperationException(SocketsStrings.TransportAlreadyBound);
         }
 
-        internal void Bind()
+        Socket listenSocket;
+        try
         {
-            if (_listenSocket != null)
-            {
-                throw new InvalidOperationException(SocketsStrings.TransportAlreadyBound);
-            }
+            listenSocket = _options.CreateBoundListenSocket(EndPoint);
+        }
+        catch (SocketException e) when (e.SocketErrorCode == SocketError.AddressAlreadyInUse)
+        {
+            throw new AddressInUseException(e.Message, e);
+        }
 
-            Socket listenSocket;
+        Debug.Assert(listenSocket.LocalEndPoint != null);
+        EndPoint = listenSocket.LocalEndPoint;
+
+        listenSocket.Listen(_options.Backlog);
+
+        _listenSocket = listenSocket;
+    }
+
+    public async ValueTask<ConnectionContext?> AcceptAsync(CancellationToken cancellationToken = default)
+    {
+        while (true)
+        {
             try
             {
-                listenSocket = _options.CreateBoundListenSocket(EndPoint);
+                Debug.Assert(_listenSocket != null, "Bind must be called first.");
+
+                var acceptSocket = await _listenSocket.AcceptAsync(cancellationToken);
+
+                // Only apply no delay to Tcp based endpoints
+                if (acceptSocket.LocalEndPoint is IPEndPoint)
+                {
+                    acceptSocket.NoDelay = _options.NoDelay;
+                }
+
+                return _factory.Create(acceptSocket);
             }
-            catch (SocketException e) when (e.SocketErrorCode == SocketError.AddressAlreadyInUse)
+            catch (ObjectDisposedException)
             {
-                throw new AddressInUseException(e.Message, e);
+                // A call was made to UnbindAsync/DisposeAsync just return null which signals we're done
+                return null;
             }
-
-            Debug.Assert(listenSocket.LocalEndPoint != null);
-            EndPoint = listenSocket.LocalEndPoint;
-
-            listenSocket.Listen(_options.Backlog);
-
-            _listenSocket = listenSocket;
-        }
-
-        public async ValueTask<ConnectionContext?> AcceptAsync(CancellationToken cancellationToken = default)
-        {
-            while (true)
+            catch (SocketException e) when (e.SocketErrorCode == SocketError.OperationAborted)
             {
-                try
-                {
-                    Debug.Assert(_listenSocket != null, "Bind must be called first.");
-
-                    var acceptSocket = await _listenSocket.AcceptAsync(cancellationToken);
-
-                    // Only apply no delay to Tcp based endpoints
-                    if (acceptSocket.LocalEndPoint is IPEndPoint)
-                    {
-                        acceptSocket.NoDelay = _options.NoDelay;
-                    }
-
-                    var setting = _settings[_settingsIndex];
-
-                    var connection = new SocketConnection(acceptSocket,
-                        _memoryPool,
-                        setting.Scheduler,
-                        _trace,
-                        setting.SocketSenderPool,
-                        setting.InputOptions,
-                        setting.OutputOptions,
-                        waitForData: _options.WaitForDataBeforeAllocatingBuffer);
-
-                    _settingsIndex = (_settingsIndex + 1) % _settingsCount;
-
-                    return connection;
-                }
-                catch (ObjectDisposedException)
-                {
-                    // A call was made to UnbindAsync/DisposeAsync just return null which signals we're done
-                    return null;
-                }
-                catch (SocketException e) when (e.SocketErrorCode == SocketError.OperationAborted)
-                {
-                    // A call was made to UnbindAsync/DisposeAsync just return null which signals we're done
-                    return null;
-                }
-                catch (SocketException)
-                {
-                    // The connection got reset while it was in the backlog, so we try again.
-                    _trace.ConnectionReset(connectionId: "(null)");
-                }
+                // A call was made to UnbindAsync/DisposeAsync just return null which signals we're done
+                return null;
             }
-        }
-
-        public ValueTask UnbindAsync(CancellationToken cancellationToken = default)
-        {
-            _listenSocket?.Dispose();
-            return default;
-        }
-
-        public ValueTask DisposeAsync()
-        {
-            _listenSocket?.Dispose();
-
-            // Dispose the memory pool
-            _memoryPool.Dispose();
-
-            // Dispose any pooled senders
-            foreach (var setting in _settings)
+            catch (SocketException)
             {
-                setting.SocketSenderPool.Dispose();
+                // The connection got reset while it was in the backlog, so we try again.
+                SocketsLog.ConnectionReset(_logger, connectionId: "(null)");
             }
-
-            return default;
         }
+    }
 
-        private class Settings
-        {
-            public PipeScheduler Scheduler { get; init; } = default!;
-            public PipeOptions InputOptions { get; init; } = default!;
-            public PipeOptions OutputOptions { get; init; } = default!;
-            public SocketSenderPool SocketSenderPool { get; init; } = default!;
-        }
+    public ValueTask UnbindAsync(CancellationToken cancellationToken = default)
+    {
+        _listenSocket?.Dispose();
+        return default;
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        _listenSocket?.Dispose();
+
+        _factory.Dispose();
+
+        return default;
     }
 }

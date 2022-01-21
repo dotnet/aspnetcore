@@ -2,47 +2,43 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Authorization;
-using Microsoft.Extensions.DependencyInjection;
 
-namespace SecurityWebSite
+namespace SecurityWebSite;
+
+public class StartupWithGlobalAuthFilterWithoutEndpointRouting
 {
-    public class StartupWithGlobalAuthFilterWithoutEndpointRouting
+    public void ConfigureServices(IServiceCollection services)
     {
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services
-                .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-                .AddCookie()
-                .AddJwtBearer(options =>
-                {
-                    options.TokenValidationParameters = BearerAuth.CreateTokenValidationParameters();
-                });
-
-            services.AddAuthorization(options =>
+        services
+            .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+            .AddCookie()
+            .AddJwtBearer(options =>
             {
-                options.AddPolicy("RequireClaimA", policy => policy.RequireClaim("ClaimA"));
-                options.AddPolicy("RequireClaimB", policy => policy.RequireClaim("ClaimB"));
+                options.TokenValidationParameters = BearerAuth.CreateTokenValidationParameters();
             });
 
-            services.AddMvc(o =>
-            {
-                o.EnableEndpointRouting = false;
-                o.Filters.Add(new AuthorizeFilter("RequireClaimA"));
-            })
-            .AddRazorPagesOptions(options =>
-            {
-                options.Conventions.AllowAnonymousToPage("/AllowAnonymousPageViaConvention");
-                options.Conventions.AuthorizePage("/AuthorizePageViaConvention", "RequireClaimB");
-            });
-        }
-
-        public void Configure(IApplicationBuilder app)
+        services.AddAuthorization(options =>
         {
-            app.UseAuthentication();
-            app.UseMvcWithDefaultRoute();
-        }
+            options.AddPolicy("RequireClaimA", policy => policy.RequireClaim("ClaimA"));
+            options.AddPolicy("RequireClaimB", policy => policy.RequireClaim("ClaimB"));
+        });
+
+        services.AddMvc(o =>
+        {
+            o.EnableEndpointRouting = false;
+            o.Filters.Add(new AuthorizeFilter("RequireClaimA"));
+        })
+        .AddRazorPagesOptions(options =>
+        {
+            options.Conventions.AllowAnonymousToPage("/AllowAnonymousPageViaConvention");
+            options.Conventions.AuthorizePage("/AuthorizePageViaConvention", "RequireClaimB");
+        });
+    }
+
+    public void Configure(IApplicationBuilder app)
+    {
+        app.UseAuthentication();
+        app.UseMvcWithDefaultRoute();
     }
 }

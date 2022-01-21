@@ -1,159 +1,155 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
 using System.Diagnostics;
-using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
+
+internal class PagedBufferedTextWriter : TextWriter
 {
-    internal class PagedBufferedTextWriter : TextWriter
+    private readonly TextWriter _inner;
+    private readonly PagedCharBuffer _charBuffer;
+
+    public PagedBufferedTextWriter(ArrayPool<char> pool, TextWriter inner)
     {
-        private readonly TextWriter _inner;
-        private readonly PagedCharBuffer _charBuffer;
+        _charBuffer = new PagedCharBuffer(new ArrayPoolBufferSource(pool));
+        _inner = inner;
+    }
 
-        public PagedBufferedTextWriter(ArrayPool<char> pool, TextWriter inner)
+    public override Encoding Encoding => _inner.Encoding;
+
+    public override void Flush()
+    {
+        // Don't do anything. We'll call FlushAsync.
+    }
+
+    public override Task FlushAsync() => FlushAsyncCore();
+
+    // private non-virtual for internal calling.
+    // It first does a fast check to see if async is necessary, we inline this check.
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private Task FlushAsyncCore()
+    {
+        var length = _charBuffer.Length;
+        if (length == 0)
         {
-            _charBuffer = new PagedCharBuffer(new ArrayPoolBufferSource(pool));
-            _inner = inner;
+            // If nothing sync buffered return CompletedTask,
+            // so we can fast-path skip async state-machine creation
+            return Task.CompletedTask;
         }
 
-        public override Encoding Encoding => _inner.Encoding;
+        return FlushAsyncAwaited();
+    }
 
-        public override void Flush()
+    private async Task FlushAsyncAwaited()
+    {
+        var length = _charBuffer.Length;
+        Debug.Assert(length > 0);
+
+        var pages = _charBuffer.Pages;
+        var count = pages.Count;
+        for (var i = 0; i < count; i++)
         {
-            // Don't do anything. We'll call FlushAsync.
-        }
-
-        public override Task FlushAsync() => FlushAsyncCore();
-
-        // private non-virtual for internal calling.
-        // It first does a fast check to see if async is necessary, we inline this check.
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Task FlushAsyncCore()
-        {
-            var length = _charBuffer.Length;
-            if (length == 0)
+            var page = pages[i];
+            var pageLength = Math.Min(length, page.Length);
+            if (pageLength != 0)
             {
-                // If nothing sync buffered return CompletedTask,
-                // so we can fast-path skip async state-machine creation
-                return Task.CompletedTask;
+                await _inner.WriteAsync(page, index: 0, count: pageLength);
             }
 
-            return FlushAsyncAwaited();
+            length -= pageLength;
         }
 
-        private async Task FlushAsyncAwaited()
+        Debug.Assert(length == 0);
+        _charBuffer.Clear();
+    }
+
+    public override void Write(char value)
+    {
+        _charBuffer.Append(value);
+    }
+
+    public override void Write(char[] buffer)
+    {
+        if (buffer == null)
         {
-            var length = _charBuffer.Length;
-            Debug.Assert(length > 0);
-
-            var pages = _charBuffer.Pages;
-            var count = pages.Count;
-            for (var i = 0; i < count; i++)
-            {
-                var page = pages[i];
-                var pageLength = Math.Min(length, page.Length);
-                if (pageLength != 0)
-                {
-                    await _inner.WriteAsync(page, index: 0, count: pageLength);
-                }
-
-                length -= pageLength;
-            }
-
-            Debug.Assert(length == 0);
-            _charBuffer.Clear();
+            return;
         }
 
-        public override void Write(char value)
+        _charBuffer.Append(buffer, 0, buffer.Length);
+    }
+
+    public override void Write(char[] buffer, int index, int count)
+    {
+        if (buffer == null)
         {
-            _charBuffer.Append(value);
+            throw new ArgumentNullException(nameof(buffer));
         }
 
-        public override void Write(char[] buffer)
+        _charBuffer.Append(buffer, index, count);
+    }
+
+    public override void Write(string value)
+    {
+        if (value == null)
         {
-            if (buffer == null)
-            {
-                return;
-            }
-
-            _charBuffer.Append(buffer, 0, buffer.Length);
+            return;
         }
 
-        public override void Write(char[] buffer, int index, int count)
-        {
-            if (buffer == null)
-            {
-                throw new ArgumentNullException(nameof(buffer));
-            }
+        _charBuffer.Append(value);
+    }
 
-            _charBuffer.Append(buffer, index, count);
-        }
+    public override Task WriteAsync(char value)
+    {
+        var flushTask = FlushAsyncCore();
 
-        public override void Write(string value)
-        {
-            if (value == null)
-            {
-                return;
-            }
+        return flushTask.IsCompletedSuccessfully ?
+            _inner.WriteAsync(value) :
+            WriteAsyncAwaited(flushTask, value);
+    }
 
-            _charBuffer.Append(value);
-        }
+    private async Task WriteAsyncAwaited(Task flushTask, char value)
+    {
+        await flushTask;
+        await _inner.WriteAsync(value);
+    }
 
-        public override Task WriteAsync(char value)
-        {
-            var flushTask = FlushAsyncCore();
+    public override Task WriteAsync(char[] buffer, int index, int count)
+    {
+        var flushTask = FlushAsyncCore();
 
-            return flushTask.IsCompletedSuccessfully ?
-                _inner.WriteAsync(value) :
-                WriteAsyncAwaited(flushTask, value);
-        }
+        return flushTask.IsCompletedSuccessfully ?
+            _inner.WriteAsync(buffer, index, count) :
+            WriteAsyncAwaited(flushTask, buffer, index, count);
+    }
 
-        private async Task WriteAsyncAwaited(Task flushTask, char value)
-        {
-            await flushTask;
-            await _inner.WriteAsync(value);
-        }
+    private async Task WriteAsyncAwaited(Task flushTask, char[] buffer, int index, int count)
+    {
+        await flushTask;
+        await _inner.WriteAsync(buffer, index, count);
+    }
 
-        public override Task WriteAsync(char[] buffer, int index, int count)
-        {
-            var flushTask = FlushAsyncCore();
+    public override Task WriteAsync(string value)
+    {
+        var flushTask = FlushAsyncCore();
 
-            return flushTask.IsCompletedSuccessfully ?
-                _inner.WriteAsync(buffer, index, count) :
-                WriteAsyncAwaited(flushTask, buffer, index, count);
-        }
+        return flushTask.IsCompletedSuccessfully ?
+            _inner.WriteAsync(value) :
+            WriteAsyncAwaited(flushTask, value);
+    }
 
-        private async Task WriteAsyncAwaited(Task flushTask, char[] buffer, int index, int count)
-        {
-            await flushTask;
-            await _inner.WriteAsync(buffer, index, count);
-        }
+    private async Task WriteAsyncAwaited(Task flushTask, string value)
+    {
+        await flushTask;
+        await _inner.WriteAsync(value);
+    }
 
-        public override Task WriteAsync(string value)
-        {
-            var flushTask = FlushAsyncCore();
-
-            return flushTask.IsCompletedSuccessfully ?
-                _inner.WriteAsync(value) :
-                WriteAsyncAwaited(flushTask, value);
-        }
-
-        private async Task WriteAsyncAwaited(Task flushTask, string value)
-        {
-            await flushTask;
-            await _inner.WriteAsync(value);
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            base.Dispose(disposing);
-            _charBuffer.Dispose();
-        }
+    protected override void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+        _charBuffer.Dispose();
     }
 }

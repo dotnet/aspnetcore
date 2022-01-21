@@ -1,19 +1,27 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 import { DotNet } from '@microsoft/dotnet-js-interop';
 import { EventDescriptor } from './Events/EventDelegator';
-import { enableJSRootComponents, JSComponentInfoByInitializer } from './JSRootComponents';
+import { enableJSRootComponents, JSComponentParametersByIdentifier, JSComponentIdentifiersByInitializer } from './JSRootComponents';
 
 const interopMethodsByRenderer = new Map<number, DotNet.DotNetObject>();
 
-export function attachWebRendererInterop(rendererId: number, interopMethods: DotNet.DotNetObject, hasJSComponents: boolean, jsRootComponents: JSComponentInfoByInitializer) {
+export function attachWebRendererInterop(
+  rendererId: number,
+  interopMethods: DotNet.DotNetObject,
+  jsComponentParameters: JSComponentParametersByIdentifier,
+  jsComponentInitializers: JSComponentIdentifiersByInitializer,
+): void {
   if (interopMethodsByRenderer.has(rendererId)) {
     throw new Error(`Interop methods are already registered for renderer ${rendererId}`);
   }
 
   interopMethodsByRenderer.set(rendererId, interopMethods);
 
-  if (hasJSComponents) {
+  if (Object.keys(jsComponentParameters).length > 0) {
     const manager = getInteropMethods(rendererId);
-    enableJSRootComponents(manager, jsRootComponents);
+    enableJSRootComponents(manager, jsComponentParameters, jsComponentInitializers);
   }
 }
 
@@ -36,6 +44,6 @@ function getInteropMethods(rendererId: number): DotNet.DotNetObject {
 // On some hosting platforms, we may need to defer the event dispatch, so they can register this middleware to do so
 type DispatchEventMiddlware = (browserRendererId: number, eventHandlerId: number, continuation: () => void) => void;
 let dispatchEventMiddleware: DispatchEventMiddlware = (browserRendererId, eventHandlerId, continuation) => continuation();
-export function setDispatchEventMiddleware(middleware: DispatchEventMiddlware) {
+export function setDispatchEventMiddleware(middleware: DispatchEventMiddlware): void {
   dispatchEventMiddleware = middleware;
 }

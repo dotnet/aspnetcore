@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -10,101 +9,100 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.FileProviders;
 
-namespace Microsoft.AspNetCore.Mvc.Razor.Infrastructure
+namespace Microsoft.AspNetCore.Mvc.Razor.Infrastructure;
+
+/// <summary>
+/// Provides version hash for a specified file.
+/// </summary>
+internal class DefaultFileVersionProvider : IFileVersionProvider
 {
-    /// <summary>
-    /// Provides version hash for a specified file.
-    /// </summary>
-    internal class DefaultFileVersionProvider : IFileVersionProvider
+    private const string VersionKey = "v";
+    private static readonly char[] QueryStringAndFragmentTokens = new[] { '?', '#' };
+
+    public DefaultFileVersionProvider(
+        IWebHostEnvironment hostingEnvironment,
+        TagHelperMemoryCacheProvider cacheProvider)
     {
-        private const string VersionKey = "v";
-        private static readonly char[] QueryStringAndFragmentTokens = new [] { '?', '#' };
-
-        public DefaultFileVersionProvider(
-            IWebHostEnvironment hostingEnvironment,
-            TagHelperMemoryCacheProvider cacheProvider)
+        if (hostingEnvironment == null)
         {
-            if (hostingEnvironment == null)
-            {
-                throw new ArgumentNullException(nameof(hostingEnvironment));
-            }
-
-            if (cacheProvider == null)
-            {
-                throw new ArgumentNullException(nameof(cacheProvider));
-            }
-
-            FileProvider = hostingEnvironment.WebRootFileProvider;
-            Cache = cacheProvider.Cache;
+            throw new ArgumentNullException(nameof(hostingEnvironment));
         }
 
-        public IFileProvider FileProvider { get; }
-
-        public IMemoryCache Cache { get; }
-
-        public string AddFileVersionToPath(PathString requestPathBase, string path)
+        if (cacheProvider == null)
         {
-            if (path == null)
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
+            throw new ArgumentNullException(nameof(cacheProvider));
+        }
 
-            var resolvedPath = path;
+        FileProvider = hostingEnvironment.WebRootFileProvider;
+        Cache = cacheProvider.Cache;
+    }
 
-            var queryStringOrFragmentStartIndex = path.IndexOfAny(QueryStringAndFragmentTokens);
-            if (queryStringOrFragmentStartIndex != -1)
-            {
-                resolvedPath = path.Substring(0, queryStringOrFragmentStartIndex);
-            }
+    public IFileProvider FileProvider { get; }
 
-            if (Uri.TryCreate(resolvedPath, UriKind.Absolute, out var uri) && !uri.IsFile)
-            {
-                // Don't append version if the path is absolute.
-                return path;
-            }
+    public IMemoryCache Cache { get; }
 
-            if (Cache.TryGetValue(path, out string value))
-            {
-                return value;
-            }
+    public string AddFileVersionToPath(PathString requestPathBase, string path)
+    {
+        if (path == null)
+        {
+            throw new ArgumentNullException(nameof(path));
+        }
 
-            var cacheEntryOptions = new MemoryCacheEntryOptions();
-            cacheEntryOptions.AddExpirationToken(FileProvider.Watch(resolvedPath));
-            var fileInfo = FileProvider.GetFileInfo(resolvedPath);
+        var resolvedPath = path;
 
-            if (!fileInfo.Exists &&
-                requestPathBase.HasValue &&
-                resolvedPath.StartsWith(requestPathBase.Value, StringComparison.OrdinalIgnoreCase))
-            {
-                var requestPathBaseRelativePath = resolvedPath.Substring(requestPathBase.Value.Length);
-                cacheEntryOptions.AddExpirationToken(FileProvider.Watch(requestPathBaseRelativePath));
-                fileInfo = FileProvider.GetFileInfo(requestPathBaseRelativePath);
-            }
+        var queryStringOrFragmentStartIndex = path.IndexOfAny(QueryStringAndFragmentTokens);
+        if (queryStringOrFragmentStartIndex != -1)
+        {
+            resolvedPath = path.Substring(0, queryStringOrFragmentStartIndex);
+        }
 
-            if (fileInfo.Exists)
-            {
-                value = QueryHelpers.AddQueryString(path, VersionKey, GetHashForFile(fileInfo));
-            }
-            else
-            {
-                // if the file is not in the current server.
-                value = path;
-            }
+        if (Uri.TryCreate(resolvedPath, UriKind.Absolute, out var uri) && !uri.IsFile)
+        {
+            // Don't append version if the path is absolute.
+            return path;
+        }
 
-            cacheEntryOptions.SetSize(value.Length * sizeof(char));
-            value = Cache.Set(path, value, cacheEntryOptions);
+        if (Cache.TryGetValue(path, out string value))
+        {
             return value;
         }
 
-        private static string GetHashForFile(IFileInfo fileInfo)
+        var cacheEntryOptions = new MemoryCacheEntryOptions();
+        cacheEntryOptions.AddExpirationToken(FileProvider.Watch(resolvedPath));
+        var fileInfo = FileProvider.GetFileInfo(resolvedPath);
+
+        if (!fileInfo.Exists &&
+            requestPathBase.HasValue &&
+            resolvedPath.StartsWith(requestPathBase.Value, StringComparison.OrdinalIgnoreCase))
         {
-            using (var sha256 = SHA256.Create())
+            var requestPathBaseRelativePath = resolvedPath.Substring(requestPathBase.Value.Length);
+            cacheEntryOptions.AddExpirationToken(FileProvider.Watch(requestPathBaseRelativePath));
+            fileInfo = FileProvider.GetFileInfo(requestPathBaseRelativePath);
+        }
+
+        if (fileInfo.Exists)
+        {
+            value = QueryHelpers.AddQueryString(path, VersionKey, GetHashForFile(fileInfo));
+        }
+        else
+        {
+            // if the file is not in the current server.
+            value = path;
+        }
+
+        cacheEntryOptions.SetSize(value.Length * sizeof(char));
+        value = Cache.Set(path, value, cacheEntryOptions);
+        return value;
+    }
+
+    private static string GetHashForFile(IFileInfo fileInfo)
+    {
+        using (var sha256 = SHA256.Create())
+        {
+            using (var readStream = fileInfo.CreateReadStream())
             {
-                using (var readStream = fileInfo.CreateReadStream())
-                {
-                    var hash = sha256.ComputeHash(readStream);
-                    return WebEncoders.Base64UrlEncode(hash);
-                }
+                var hash = sha256.ComputeHash(readStream);
+                return WebEncoders.Base64UrlEncode(hash);
             }
         }
     }

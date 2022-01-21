@@ -46,8 +46,7 @@
     -->
     <MSBuild Projects="$(RepoRoot)src\SignalR\clients\ts\FunctionalTests\SignalR.Npm.FunctionalTests.npmproj"
         Properties="DisableYarnCheck=true;ExcludeFromBuild=false"
-        Targets="_GetPackageVersionInfo"
-        SkipNonexistentProjects="false">
+        Targets="_GetPackageVersionInfo">
       <Output TaskParameter="TargetOutputs" ItemName="_ResolvedPackageVersionInfo" />
     </MSBuild>
 
@@ -94,8 +93,7 @@
     -->
     <MSBuild Projects="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
         Properties="DisableYarnCheck=true;ExcludeFromBuild=false"
-        Targets="_GetPackageVersionInfo"
-        SkipNonexistentProjects="false">
+        Targets="_GetPackageVersionInfo">
       <Output TaskParameter="TargetOutputs" ItemName="_ResolvedProductVersionInfo" />
     </MSBuild>
 

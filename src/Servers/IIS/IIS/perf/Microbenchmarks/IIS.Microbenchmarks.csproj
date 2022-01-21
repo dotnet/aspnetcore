@@ -27,9 +27,10 @@
   <ItemGroup>
     <ProjectReference Include="..\..\test\IISExpress.FunctionalTests\IISExpress.FunctionalTests.csproj" />
     <ProjectReference Include="..\..\test\IIS.Tests\IIS.Tests.csproj" />
-    <ProjectReference Include="..\..\test\testassets\InProcessWebSite\InProcessWebSite.csproj">
-      <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
-    </ProjectReference>
+    <ProjectReference Include="..\..\test\testassets\InProcessWebSite\InProcessWebSite.csproj"
+      Private="false"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true" />
     <ProjectReference Include="$(RepoRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
   </ItemGroup>
 

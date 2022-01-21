@@ -1,34 +1,32 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Text;
-using Xunit;
 
-namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel
+namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
+
+public class CngCbcAuthenticatedEncryptorDescriptorTests
 {
-    public class CngCbcAuthenticatedEncryptorDescriptorTests
+    [Fact]
+    public void ExportToXml_WithProviders_ProducesCorrectPayload()
     {
-        [Fact]
-        public void ExportToXml_WithProviders_ProducesCorrectPayload()
+        // Arrange
+        var masterKey = Convert.ToBase64String(Encoding.UTF8.GetBytes("[PLACEHOLDER]"));
+        var descriptor = new CngCbcAuthenticatedEncryptorDescriptor(new CngCbcAuthenticatedEncryptorConfiguration()
         {
-            // Arrange
-            var masterKey = Convert.ToBase64String(Encoding.UTF8.GetBytes("[PLACEHOLDER]"));
-            var descriptor = new CngCbcAuthenticatedEncryptorDescriptor(new CngCbcAuthenticatedEncryptorConfiguration()
-            {
-                EncryptionAlgorithm = "enc-alg",
-                EncryptionAlgorithmKeySize = 2048,
-                EncryptionAlgorithmProvider = "enc-alg-prov",
-                HashAlgorithm = "hash-alg",
-                HashAlgorithmProvider = "hash-alg-prov"
-            }, masterKey.ToSecret());
+            EncryptionAlgorithm = "enc-alg",
+            EncryptionAlgorithmKeySize = 2048,
+            EncryptionAlgorithmProvider = "enc-alg-prov",
+            HashAlgorithm = "hash-alg",
+            HashAlgorithmProvider = "hash-alg-prov"
+        }, masterKey.ToSecret());
 
-            // Act
-            var retVal = descriptor.ExportToXml();
+        // Act
+        var retVal = descriptor.ExportToXml();
 
-            // Assert
-            Assert.Equal(typeof(CngCbcAuthenticatedEncryptorDescriptorDeserializer), retVal.DeserializerType);
-            var expectedXml = $@"
+        // Assert
+        Assert.Equal(typeof(CngCbcAuthenticatedEncryptorDescriptorDeserializer), retVal.DeserializerType);
+        var expectedXml = $@"
                 <descriptor>
                   <encryption algorithm='enc-alg' keyLength='2048' provider='enc-alg-prov' />
                   <hash algorithm='hash-alg' provider='hash-alg-prov' />
@@ -36,27 +34,27 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
                     <value>{masterKey}</value>
                   </masterKey>
                 </descriptor>";
-            XmlAssert.Equal(expectedXml, retVal.SerializedDescriptorElement);
-        }
+        XmlAssert.Equal(expectedXml, retVal.SerializedDescriptorElement);
+    }
 
-        [Fact]
-        public void ExportToXml_WithoutProviders_ProducesCorrectPayload()
+    [Fact]
+    public void ExportToXml_WithoutProviders_ProducesCorrectPayload()
+    {
+        // Arrange
+        var masterKey = Convert.ToBase64String(Encoding.UTF8.GetBytes("[PLACEHOLDER]"));
+        var descriptor = new CngCbcAuthenticatedEncryptorDescriptor(new CngCbcAuthenticatedEncryptorConfiguration()
         {
-            // Arrange
-            var masterKey = Convert.ToBase64String(Encoding.UTF8.GetBytes("[PLACEHOLDER]"));
-            var descriptor = new CngCbcAuthenticatedEncryptorDescriptor(new CngCbcAuthenticatedEncryptorConfiguration()
-            {
-                EncryptionAlgorithm = "enc-alg",
-                EncryptionAlgorithmKeySize = 2048,
-                HashAlgorithm = "hash-alg"
-            }, masterKey.ToSecret());
+            EncryptionAlgorithm = "enc-alg",
+            EncryptionAlgorithmKeySize = 2048,
+            HashAlgorithm = "hash-alg"
+        }, masterKey.ToSecret());
 
-            // Act
-            var retVal = descriptor.ExportToXml();
+        // Act
+        var retVal = descriptor.ExportToXml();
 
-            // Assert
-            Assert.Equal(typeof(CngCbcAuthenticatedEncryptorDescriptorDeserializer), retVal.DeserializerType);
-            var expectedXml = $@"
+        // Assert
+        Assert.Equal(typeof(CngCbcAuthenticatedEncryptorDescriptorDeserializer), retVal.DeserializerType);
+        var expectedXml = $@"
                 <descriptor>
                   <encryption algorithm='enc-alg' keyLength='2048' />
                   <hash algorithm='hash-alg' />
@@ -64,7 +62,6 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
                     <value>{masterKey}</value>
                   </masterKey>
                 </descriptor>";
-            XmlAssert.Equal(expectedXml, retVal.SerializedDescriptorElement);
-        }
+        XmlAssert.Equal(expectedXml, retVal.SerializedDescriptorElement);
     }
 }

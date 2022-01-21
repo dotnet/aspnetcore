@@ -2,20 +2,18 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc
+namespace Microsoft.AspNetCore.Mvc;
+
+public class UnprocessableEntityResultTests
 {
-    public class UnprocessableEntityResultTests
+    [Fact]
+    public void UnprocessableEntityResult_InitializesStatusCode()
     {
-        [Fact]
-        public void UnprocessableEntityResult_InitializesStatusCode()
-        {
-            // Arrange & act
-            var result = new UnprocessableEntityResult();
+        // Arrange & act
+        var result = new UnprocessableEntityResult();
 
-            // Assert
-            Assert.Equal(StatusCodes.Status422UnprocessableEntity, result.StatusCode);
-        }
+        // Assert
+        Assert.Equal(StatusCodes.Status422UnprocessableEntity, result.StatusCode);
     }
 }

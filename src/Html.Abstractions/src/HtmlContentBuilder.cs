@@ -1,206 +1,202 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Text.Encodings.Web;
 
-namespace Microsoft.AspNetCore.Html
+namespace Microsoft.AspNetCore.Html;
+
+/// <summary>
+/// An <see cref="IHtmlContentBuilder"/> implementation using an in memory list.
+/// </summary>
+[DebuggerDisplay("{DebuggerToString()}")]
+public class HtmlContentBuilder : IHtmlContentBuilder
 {
     /// <summary>
-    /// An <see cref="IHtmlContentBuilder"/> implementation using an in memory list.
+    /// Creates a new <see cref="HtmlContentBuilder"/>.
     /// </summary>
-    [DebuggerDisplay("{DebuggerToString()}")]
-    public class HtmlContentBuilder : IHtmlContentBuilder
+    public HtmlContentBuilder()
+        : this(new List<object>())
     {
-        /// <summary>
-        /// Creates a new <see cref="HtmlContentBuilder"/>.
-        /// </summary>
-        public HtmlContentBuilder()
-            : this(new List<object>())
+    }
+
+    /// <summary>
+    /// Creates a new <see cref="HtmlContentBuilder"/> with the given initial capacity.
+    /// </summary>
+    /// <param name="capacity">The initial capacity of the backing store.</param>
+    public HtmlContentBuilder(int capacity)
+        : this(new List<object>(capacity))
+    {
+    }
+
+    /// <summary>
+    /// Gets the number of elements in the <see cref="HtmlContentBuilder"/>.
+    /// </summary>
+    public int Count => Entries.Count;
+
+    /// <summary>
+    /// Creates a new <see cref="HtmlContentBuilder"/> with the given list of entries.
+    /// </summary>
+    /// <param name="entries">
+    /// The list of entries. The <see cref="HtmlContentBuilder"/> will use this list without making a copy.
+    /// </param>
+    public HtmlContentBuilder(IList<object> entries)
+    {
+        if (entries == null)
         {
+            throw new ArgumentNullException(nameof(entries));
         }
 
-        /// <summary>
-        /// Creates a new <see cref="HtmlContentBuilder"/> with the given initial capacity.
-        /// </summary>
-        /// <param name="capacity">The initial capacity of the backing store.</param>
-        public HtmlContentBuilder(int capacity)
-            : this(new List<object>(capacity))
+        Entries = entries;
+    }
+
+    // This is not List<IHtmlContent> because that would lead to wrapping all strings to IHtmlContent
+    // which is not space performant.
+    //
+    // In general unencoded strings are added here. We're optimizing for that case, and allocating
+    // a wrapper when encoded strings are used.
+    //
+    // internal for testing.
+    internal IList<object> Entries { get; }
+
+    /// <inheritdoc />
+    public IHtmlContentBuilder Append(string? unencoded)
+    {
+        if (!string.IsNullOrEmpty(unencoded))
         {
+            Entries.Add(unencoded);
         }
 
-        /// <summary>
-        /// Gets the number of elements in the <see cref="HtmlContentBuilder"/>.
-        /// </summary>
-        public int Count => Entries.Count;
+        return this;
+    }
 
-        /// <summary>
-        /// Creates a new <see cref="HtmlContentBuilder"/> with the given list of entries.
-        /// </summary>
-        /// <param name="entries">
-        /// The list of entries. The <see cref="HtmlContentBuilder"/> will use this list without making a copy.
-        /// </param>
-        public HtmlContentBuilder(IList<object> entries)
+    /// <inheritdoc />
+    public IHtmlContentBuilder AppendHtml(IHtmlContent? htmlContent)
+    {
+        if (htmlContent == null)
         {
-            if (entries == null)
-            {
-                throw new ArgumentNullException(nameof(entries));
-            }
-
-            Entries = entries;
-        }
-
-        // This is not List<IHtmlContent> because that would lead to wrapping all strings to IHtmlContent
-        // which is not space performant.
-        //
-        // In general unencoded strings are added here. We're optimizing for that case, and allocating
-        // a wrapper when encoded strings are used.
-        //
-        // internal for testing.
-        internal IList<object> Entries { get; }
-
-        /// <inheritdoc />
-        public IHtmlContentBuilder Append(string? unencoded)
-        {
-            if (!string.IsNullOrEmpty(unencoded))
-            {
-                Entries.Add(unencoded);
-            }
-
             return this;
         }
 
-        /// <inheritdoc />
-        public IHtmlContentBuilder AppendHtml(IHtmlContent? htmlContent)
-        {
-            if (htmlContent == null)
-            {
-                return this;
-            }
+        Entries.Add(htmlContent);
+        return this;
+    }
 
-            Entries.Add(htmlContent);
-            return this;
+    /// <inheritdoc />
+    public IHtmlContentBuilder AppendHtml(string? encoded)
+    {
+        if (!string.IsNullOrEmpty(encoded))
+        {
+            Entries.Add(new HtmlString(encoded));
         }
 
-        /// <inheritdoc />
-        public IHtmlContentBuilder AppendHtml(string? encoded)
-        {
-            if (!string.IsNullOrEmpty(encoded))
-            {
-                Entries.Add(new HtmlString(encoded));
-            }
+        return this;
+    }
 
-            return this;
+    /// <inheritdoc />
+    public IHtmlContentBuilder Clear()
+    {
+        Entries.Clear();
+        return this;
+    }
+
+    /// <inheritdoc />
+    public void CopyTo(IHtmlContentBuilder destination)
+    {
+        if (destination == null)
+        {
+            throw new ArgumentNullException(nameof(destination));
         }
 
-        /// <inheritdoc />
-        public IHtmlContentBuilder Clear()
+        var count = Entries.Count;
+        for (var i = 0; i < count; i++)
         {
-            Entries.Clear();
-            return this;
-        }
+            var entry = Entries[i];
 
-        /// <inheritdoc />
-        public void CopyTo(IHtmlContentBuilder destination)
-        {
-            if (destination == null)
+            if (entry is string entryAsString)
             {
-                throw new ArgumentNullException(nameof(destination));
+                destination.Append(entryAsString);
             }
-
-            var count = Entries.Count;
-            for (var i = 0; i < count; i++)
+            else if (entry is IHtmlContentContainer entryAsContainer)
             {
-                var entry = Entries[i];
-
-                if (entry is string entryAsString)
-                {
-                    destination.Append(entryAsString);
-                }
-                else if (entry is IHtmlContentContainer entryAsContainer)
-                {
-                    // Since we're copying, do a deep flatten.
-                    entryAsContainer.CopyTo(destination);
-                }
-                else
-                {
-                    // Only string, IHtmlContent values can be added to the buffer.
-                    destination.AppendHtml((IHtmlContent)entry);
-                }
+                // Since we're copying, do a deep flatten.
+                entryAsContainer.CopyTo(destination);
+            }
+            else
+            {
+                // Only string, IHtmlContent values can be added to the buffer.
+                destination.AppendHtml((IHtmlContent)entry);
             }
         }
+    }
 
-        /// <inheritdoc />
-        public void MoveTo(IHtmlContentBuilder destination)
+    /// <inheritdoc />
+    public void MoveTo(IHtmlContentBuilder destination)
+    {
+        if (destination == null)
         {
-            if (destination == null)
-            {
-                throw new ArgumentNullException(nameof(destination));
-            }
-
-            var count = Entries.Count;
-            for (var i = 0; i < count; i++)
-            {
-                var entry = Entries[i];
-
-                if (entry is string entryAsString)
-                {
-                    destination.Append(entryAsString);
-                }
-                else if (entry is IHtmlContentContainer entryAsContainer)
-                {
-                    // Since we're moving, do a deep flatten.
-                    entryAsContainer.MoveTo(destination);
-                }
-                else
-                {
-                    // Only string, IHtmlContent values can be added to the buffer.
-                    destination.AppendHtml((IHtmlContent)entry);
-                }
-            }
-
-            Entries.Clear();
+            throw new ArgumentNullException(nameof(destination));
         }
 
-        /// <inheritdoc />
-        public void WriteTo(TextWriter writer, HtmlEncoder encoder)
+        var count = Entries.Count;
+        for (var i = 0; i < count; i++)
         {
-            if (writer == null)
+            var entry = Entries[i];
+
+            if (entry is string entryAsString)
             {
-                throw new ArgumentNullException(nameof(writer));
+                destination.Append(entryAsString);
             }
-
-            if (encoder == null)
+            else if (entry is IHtmlContentContainer entryAsContainer)
             {
-                throw new ArgumentNullException(nameof(encoder));
+                // Since we're moving, do a deep flatten.
+                entryAsContainer.MoveTo(destination);
             }
-
-            var count = Entries.Count;
-            for (var i = 0; i < count; i++)
+            else
             {
-                var entry = Entries[i];
-
-                var entryAsString = entry as string;
-                if (entryAsString != null)
-                {
-                    encoder.Encode(writer, entryAsString);
-                }
-                else
-                {
-                    // Only string, IHtmlContent values can be added to the buffer.
-                    ((IHtmlContent)entry).WriteTo(writer, encoder);
-                }
+                // Only string, IHtmlContent values can be added to the buffer.
+                destination.AppendHtml((IHtmlContent)entry);
             }
         }
 
-        private string DebuggerToString()
+        Entries.Clear();
+    }
+
+    /// <inheritdoc />
+    public void WriteTo(TextWriter writer, HtmlEncoder encoder)
+    {
+        if (writer == null)
         {
-            using var writer = new StringWriter();
-            WriteTo(writer, HtmlEncoder.Default);
-            return writer.ToString();
+            throw new ArgumentNullException(nameof(writer));
         }
+
+        if (encoder == null)
+        {
+            throw new ArgumentNullException(nameof(encoder));
+        }
+
+        var count = Entries.Count;
+        for (var i = 0; i < count; i++)
+        {
+            var entry = Entries[i];
+
+            var entryAsString = entry as string;
+            if (entryAsString != null)
+            {
+                encoder.Encode(writer, entryAsString);
+            }
+            else
+            {
+                // Only string, IHtmlContent values can be added to the buffer.
+                ((IHtmlContent)entry).WriteTo(writer, encoder);
+            }
+        }
+    }
+
+    private string DebuggerToString()
+    {
+        using var writer = new StringWriter();
+        WriteTo(writer, HtmlEncoder.Default);
+        return writer.ToString();
     }
 }

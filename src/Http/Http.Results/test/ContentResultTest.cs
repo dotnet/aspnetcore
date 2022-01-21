@@ -1,46 +1,43 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Net.Http.Headers;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Http.Result
+namespace Microsoft.AspNetCore.Http.Result;
+
+public class ContentResultTest
 {
-    public class ContentResultTest
+    [Fact]
+    public async Task ContentResult_ExecuteAsync_Response_NullContent_SetsContentTypeAndEncoding()
     {
-        [Fact]
-        public async Task ContentResult_ExecuteAsync_Response_NullContent_SetsContentTypeAndEncoding()
+        // Arrange
+        var contentResult = new ContentResult
         {
-            // Arrange
-            var contentResult = new ContentResult
+            Content = null,
+            ContentType = new MediaTypeHeaderValue("text/plain")
             {
-                Content = null,
-                ContentType = new MediaTypeHeaderValue("text/plain")
-                {
-                    Encoding = Encoding.Unicode
-                }.ToString()
-            };
-            var httpContext = GetHttpContext();
+                Encoding = Encoding.Unicode
+            }.ToString()
+        };
+        var httpContext = GetHttpContext();
 
-            // Act
-            await contentResult.ExecuteAsync(httpContext);
+        // Act
+        await contentResult.ExecuteAsync(httpContext);
 
-            // Assert
-            Assert.Equal("text/plain; charset=utf-16", httpContext.Response.ContentType);
-        }
+        // Assert
+        Assert.Equal("text/plain; charset=utf-16", httpContext.Response.ContentType);
+    }
 
-        public static TheoryData<MediaTypeHeaderValue, string, string, string, byte[]> ContentResultContentTypeData
+    public static TheoryData<MediaTypeHeaderValue, string, string, string, byte[]> ContentResultContentTypeData
+    {
+        get
         {
-            get
-            {
-                // contentType, content, responseContentType, expectedContentType, expectedData
-                return new TheoryData<MediaTypeHeaderValue, string, string, string, byte[]>
+            // contentType, content, responseContentType, expectedContentType, expectedData
+            return new TheoryData<MediaTypeHeaderValue, string, string, string, byte[]>
                 {
                     {
                         null,
@@ -99,54 +96,53 @@ namespace Microsoft.AspNetCore.Http.Result
                         new byte[] { 97, 98, 99, 100 }
                     },
                 };
-            }
         }
+    }
 
-        [Theory]
-        [MemberData(nameof(ContentResultContentTypeData))]
-        public async Task ContentResult_ExecuteAsync_SetContentTypeAndEncoding_OnResponse(
-            MediaTypeHeaderValue contentType,
-            string content,
-            string responseContentType,
-            string expectedContentType,
-            byte[] expectedContentData)
+    [Theory]
+    [MemberData(nameof(ContentResultContentTypeData))]
+    public async Task ContentResult_ExecuteAsync_SetContentTypeAndEncoding_OnResponse(
+        MediaTypeHeaderValue contentType,
+        string content,
+        string responseContentType,
+        string expectedContentType,
+        byte[] expectedContentData)
+    {
+        // Arrange
+        var contentResult = new ContentResult
         {
-            // Arrange
-            var contentResult = new ContentResult
-            {
-                Content = content,
-                ContentType = contentType?.ToString()
-            };
-            var httpContext = GetHttpContext();
-            var memoryStream = new MemoryStream();
-            httpContext.Response.Body = memoryStream;
-            httpContext.Response.ContentType = responseContentType;
+            Content = content,
+            ContentType = contentType?.ToString()
+        };
+        var httpContext = GetHttpContext();
+        var memoryStream = new MemoryStream();
+        httpContext.Response.Body = memoryStream;
+        httpContext.Response.ContentType = responseContentType;
 
-            // Act
-            await contentResult.ExecuteAsync(httpContext);
+        // Act
+        await contentResult.ExecuteAsync(httpContext);
 
-            // Assert
-            var finalResponseContentType = httpContext.Response.ContentType;
-            Assert.Equal(expectedContentType, finalResponseContentType);
-            Assert.Equal(expectedContentData, memoryStream.ToArray());
-            Assert.Equal(expectedContentData.Length, httpContext.Response.ContentLength);
-        }
+        // Assert
+        var finalResponseContentType = httpContext.Response.ContentType;
+        Assert.Equal(expectedContentType, finalResponseContentType);
+        Assert.Equal(expectedContentData, memoryStream.ToArray());
+        Assert.Equal(expectedContentData.Length, httpContext.Response.ContentLength);
+    }
 
-        private static IServiceCollection CreateServices()
-        {
-            var services = new ServiceCollection();
-            services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
-            return services;
-        }
+    private static IServiceCollection CreateServices()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
+        return services;
+    }
 
-        private static HttpContext GetHttpContext()
-        {
-            var services = CreateServices();
+    private static HttpContext GetHttpContext()
+    {
+        var services = CreateServices();
 
-            var httpContext = new DefaultHttpContext();
-            httpContext.RequestServices = services.BuildServiceProvider();
+        var httpContext = new DefaultHttpContext();
+        httpContext.RequestServices = services.BuildServiceProvider();
 
-            return httpContext;
-        }
+        return httpContext;
     }
 }

@@ -2,10 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 // This namespace for test resources with alternative RootNamespace
-namespace MyNamespace
+namespace MyNamespace;
+
+public class Model
 {
-    public class Model
-    {
-        
-    }
+
 }

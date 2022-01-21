@@ -11,6 +11,7 @@
       "src\\Hosting\\Hosting\\src\\Microsoft.AspNetCore.Hosting.csproj",
       "src\\Hosting\\Server.Abstractions\\src\\Microsoft.AspNetCore.Hosting.Server.Abstractions.csproj",
       "src\\Hosting\\Server.IntegrationTesting\\src\\Microsoft.AspNetCore.Server.IntegrationTesting.csproj",
+      "src\\Hosting\\TestHost\\src\\Microsoft.AspNetCore.TestHost.csproj",
       "src\\Http\\Authentication.Abstractions\\src\\Microsoft.AspNetCore.Authentication.Abstractions.csproj",
       "src\\Http\\Authentication.Core\\src\\Microsoft.AspNetCore.Authentication.Core.csproj",
       "src\\Http\\Headers\\src\\Microsoft.Net.Http.Headers.csproj",
@@ -35,7 +36,8 @@
       "src\\Servers\\Kestrel\\Core\\src\\Microsoft.AspNetCore.Server.Kestrel.Core.csproj",
       "src\\Servers\\Kestrel\\Kestrel\\src\\Microsoft.AspNetCore.Server.Kestrel.csproj",
       "src\\Servers\\Kestrel\\Transport.Quic\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.csproj",
-      "src\\Servers\\Kestrel\\Transport.Sockets\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj"
+      "src\\Servers\\Kestrel\\Transport.Sockets\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj",
+      "src\\Testing\\src\\Microsoft.AspNetCore.Testing.csproj"
     ]
   }
 }

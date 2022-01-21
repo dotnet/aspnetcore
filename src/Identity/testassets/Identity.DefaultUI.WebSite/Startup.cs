@@ -3,14 +3,12 @@
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 
-namespace Identity.DefaultUI.WebSite
+namespace Identity.DefaultUI.WebSite;
+
+public class Startup : StartupBase<IdentityUser, IdentityDbContext>
 {
-    public class Startup : StartupBase<IdentityUser, IdentityDbContext>
+    public Startup(IConfiguration configuration) : base(configuration)
     {
-        public Startup(IConfiguration configuration) : base(configuration)
-        {
-        }
     }
 }

@@ -68,8 +68,8 @@ else
         forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("sample-data/weather.json");
         #endif*@
     }
-
     @*#if (!Hosted)
+
     public class WeatherForecast
     {
         public DateTime Date { get; set; }

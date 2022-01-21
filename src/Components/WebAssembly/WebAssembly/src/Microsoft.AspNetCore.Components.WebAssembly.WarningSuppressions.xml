@@ -17,12 +17,6 @@
       <argument>ILLink</argument>
       <argument>IL2026</argument>
       <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.AspNetCore.Components.Web.WebEventData.ParseEventArgsJson(Microsoft.AspNetCore.Components.RenderTree.Renderer,System.Text.Json.JsonSerializerOptions,System.UInt64,System.String,System.Text.Json.JsonElement)</property>
-    </attribute>
-    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
-      <argument>ILLink</argument>
-      <argument>IL2026</argument>
-      <property name="Scope">member</property>
       <property name="Target">M:Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder.InitializeRegisteredRootComponents(Microsoft.JSInterop.IJSUnmarshalledRuntime)</property>
     </attribute>
     <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
@@ -36,6 +30,12 @@
       <argument>IL2026</argument>
       <property name="Scope">member</property>
       <property name="Target">M:Microsoft.Extensions.HotReload.HotReloadAgent.&lt;TopologicalSort&gt;g__Visit|10_0(System.Reflection.Assembly[],System.Reflection.Assembly,System.Collections.Generic.List{System.Reflection.Assembly},System.Collections.Generic.HashSet{System.String})</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.Extensions.HotReload.HotReloadAgent.GetMetadataUpdateTypes(System.Collections.Generic.IReadOnlyList{Microsoft.Extensions.HotReload.UpdateDelta})</property>
     </attribute>
     <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
       <argument>ILLink</argument>

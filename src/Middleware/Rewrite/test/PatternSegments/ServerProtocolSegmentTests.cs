@@ -4,25 +4,23 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Rewrite.PatternSegments;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Rewrite.Tests.PatternSegments
+namespace Microsoft.AspNetCore.Rewrite.Tests.PatternSegments;
+
+public class ServerProtocolSegmentTests
 {
-    public class ServerProtocolSegmentTests
+    [Fact]
+    public void ServerProtocol_AssertSegmentIsCorrect()
     {
-        [Fact]
-        public void ServerProtocol_AssertSegmentIsCorrect()
-        {
-            // Arrange
-            var segement = new ServerProtocolSegment();
-            var context = new RewriteContext { HttpContext = new DefaultHttpContext() };
-            context.HttpContext.Features.Set<IHttpRequestFeature>(new HttpRequestFeature { Protocol = "http" });
+        // Arrange
+        var segement = new ServerProtocolSegment();
+        var context = new RewriteContext { HttpContext = new DefaultHttpContext() };
+        context.HttpContext.Features.Set<IHttpRequestFeature>(new HttpRequestFeature { Protocol = "http" });
 
-            // Act
-            var results = segement.Evaluate(context, null, null);
+        // Act
+        var results = segement.Evaluate(context, null, null);
 
-            // Assert
-            Assert.Equal("http", results);
-        }
+        // Assert
+        Assert.Equal("http", results);
     }
 }

@@ -1,83 +1,79 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using System.IO.Pipelines;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+
+internal class BodyControl
 {
-    internal class BodyControl
+    private static readonly ThrowingWasUpgradedWriteOnlyStream _throwingResponseStream
+        = new ThrowingWasUpgradedWriteOnlyStream();
+    private readonly HttpResponseStream _response;
+    private readonly HttpResponsePipeWriter _responseWriter;
+    private readonly HttpRequestPipeReader _requestReader;
+    private readonly HttpRequestStream _request;
+    private readonly HttpRequestPipeReader _emptyRequestReader;
+    private readonly WrappingStream _upgradeableResponse;
+    private readonly HttpRequestStream _emptyRequest;
+    private readonly Stream _upgradeStream;
+
+    public BodyControl(IHttpBodyControlFeature bodyControl, IHttpResponseControl responseControl)
     {
-        private static readonly ThrowingWasUpgradedWriteOnlyStream _throwingResponseStream
-            = new ThrowingWasUpgradedWriteOnlyStream();
-        private readonly HttpResponseStream _response;
-        private readonly HttpResponsePipeWriter _responseWriter;
-        private readonly HttpRequestPipeReader _requestReader;
-        private readonly HttpRequestStream _request;
-        private readonly HttpRequestPipeReader _emptyRequestReader;
-        private readonly WrappingStream _upgradeableResponse;
-        private readonly HttpRequestStream _emptyRequest;
-        private readonly Stream _upgradeStream;
+        _requestReader = new HttpRequestPipeReader();
+        _request = new HttpRequestStream(bodyControl, _requestReader);
+        _emptyRequestReader = new HttpRequestPipeReader();
+        _emptyRequest = new HttpRequestStream(bodyControl, _emptyRequestReader);
 
-        public BodyControl(IHttpBodyControlFeature bodyControl, IHttpResponseControl responseControl)
+        _responseWriter = new HttpResponsePipeWriter(responseControl);
+        _response = new HttpResponseStream(bodyControl, _responseWriter);
+        _upgradeableResponse = new WrappingStream(_response);
+        _upgradeStream = new HttpUpgradeStream(_request, _response);
+    }
+
+    public bool CanHaveBody { get; private set; }
+
+    public Stream Upgrade()
+    {
+        // causes writes to context.Response.Body to throw
+        _upgradeableResponse.SetInnerStream(_throwingResponseStream);
+        // _upgradeStream always uses _response
+        return _upgradeStream;
+    }
+
+    public (Stream request, Stream response, PipeReader reader, PipeWriter writer) Start(MessageBody body)
+    {
+        CanHaveBody = !body.IsEmpty;
+        _requestReader.StartAcceptingReads(body);
+        _emptyRequestReader.StartAcceptingReads(MessageBody.ZeroContentLengthClose);
+        _responseWriter.StartAcceptingWrites();
+
+        if (body.RequestUpgrade)
         {
-            _requestReader = new HttpRequestPipeReader();
-            _request = new HttpRequestStream(bodyControl, _requestReader);
-            _emptyRequestReader = new HttpRequestPipeReader();
-            _emptyRequest = new HttpRequestStream(bodyControl, _emptyRequestReader);
-
-            _responseWriter = new HttpResponsePipeWriter(responseControl);
-            _response = new HttpResponseStream(bodyControl, _responseWriter);
-            _upgradeableResponse = new WrappingStream(_response);
-            _upgradeStream = new HttpUpgradeStream(_request, _response);
+            // until Upgrade() is called, context.Response.Body should use the normal output stream
+            _upgradeableResponse.SetInnerStream(_response);
+            // upgradeable requests should never have a request body
+            return (_emptyRequest, _upgradeableResponse, _emptyRequestReader, _responseWriter);
         }
-
-        public bool CanHaveBody { get; private set; }
-
-        public Stream Upgrade()
+        else
         {
-            // causes writes to context.Response.Body to throw
-            _upgradeableResponse.SetInnerStream(_throwingResponseStream);
-            // _upgradeStream always uses _response
-            return _upgradeStream;
+            return (_request, _response, _requestReader, _responseWriter);
         }
+    }
 
-        public (Stream request, Stream response, PipeReader reader, PipeWriter writer) Start(MessageBody body)
-        {
-            CanHaveBody = !body.IsEmpty;
-            _requestReader.StartAcceptingReads(body);
-            _emptyRequestReader.StartAcceptingReads(MessageBody.ZeroContentLengthClose);
-            _responseWriter.StartAcceptingWrites();
+    public Task StopAsync()
+    {
+        _requestReader.StopAcceptingReads();
+        _emptyRequestReader.StopAcceptingReads();
+        return _responseWriter.StopAcceptingWritesAsync();
+    }
 
-            if (body.RequestUpgrade)
-            {
-                // until Upgrade() is called, context.Response.Body should use the normal output stream
-                _upgradeableResponse.SetInnerStream(_response);
-                // upgradeable requests should never have a request body
-                return (_emptyRequest, _upgradeableResponse, _emptyRequestReader, _responseWriter);
-            }
-            else
-            {
-                return (_request, _response, _requestReader, _responseWriter);
-            }
-        }
-
-        public Task StopAsync()
-        {
-            _requestReader.StopAcceptingReads();
-            _emptyRequestReader.StopAcceptingReads();
-            return _responseWriter.StopAcceptingWritesAsync();
-        }
-
-        public void Abort(Exception error)
-        {
-            _requestReader.Abort(error);
-            _emptyRequestReader.Abort(error);
-            _responseWriter.Abort();
-        }
+    public void Abort(Exception error)
+    {
+        _requestReader.Abort(error);
+        _emptyRequestReader.Abort(error);
+        _responseWriter.Abort();
     }
 }

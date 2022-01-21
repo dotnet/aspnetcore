@@ -76,7 +76,7 @@ describe('DefaultReconnectDisplay', () => {
         expect(display.loader.style.display).toBe('none');
     });
 
-    it('update message with current attempt', () => { 
+    it('update message with current attempt', () => {
         const maxRetires = 6;
         const display = new DefaultReconnectDisplay('test-dialog-id', maxRetires, testDocument, NullLogger.instance);
 

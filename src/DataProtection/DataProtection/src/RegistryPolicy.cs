@@ -5,24 +5,23 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
 
-namespace Microsoft.AspNetCore.DataProtection
+namespace Microsoft.AspNetCore.DataProtection;
+
+internal class RegistryPolicy
 {
-    internal class RegistryPolicy
+    public RegistryPolicy(
+        AlgorithmConfiguration? configuration,
+        IEnumerable<IKeyEscrowSink> keyEscrowSinks,
+        int? defaultKeyLifetime)
     {
-        public RegistryPolicy(
-            AlgorithmConfiguration? configuration,
-            IEnumerable<IKeyEscrowSink> keyEscrowSinks,
-            int? defaultKeyLifetime)
-        {
-            EncryptorConfiguration = configuration;
-            KeyEscrowSinks = keyEscrowSinks;
-            DefaultKeyLifetime = defaultKeyLifetime;
-        }
-
-        public AlgorithmConfiguration? EncryptorConfiguration { get; }
-
-        public IEnumerable<IKeyEscrowSink> KeyEscrowSinks { get; }
-
-        public int? DefaultKeyLifetime { get; }
+        EncryptorConfiguration = configuration;
+        KeyEscrowSinks = keyEscrowSinks;
+        DefaultKeyLifetime = defaultKeyLifetime;
     }
+
+    public AlgorithmConfiguration? EncryptorConfiguration { get; }
+
+    public IEnumerable<IKeyEscrowSink> KeyEscrowSinks { get; }
+
+    public int? DefaultKeyLifetime { get; }
 }

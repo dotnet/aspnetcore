@@ -1,336 +1,330 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.HttpLogging
+namespace Microsoft.AspNetCore.HttpLogging;
+
+internal partial class FileLoggerProcessor : IAsyncDisposable
 {
-    internal partial class FileLoggerProcessor : IAsyncDisposable
+    private const int _maxQueuedMessages = 1024;
+
+    private string _path;
+    private string _fileName;
+    private int? _maxFileSize;
+    private int? _maxRetainedFiles;
+    private int _fileNumber;
+    private bool _maxFilesReached;
+    private TimeSpan _flushInterval;
+    private W3CLoggingFields _fields;
+    private DateTime _today;
+    private bool _firstFile = true;
+
+    private readonly IOptionsMonitor<W3CLoggerOptions> _options;
+    private readonly BlockingCollection<string> _messageQueue = new BlockingCollection<string>(_maxQueuedMessages);
+    private readonly ILogger _logger;
+    private readonly List<string> _currentBatch = new List<string>();
+    private readonly Task _outputTask;
+    private readonly CancellationTokenSource _cancellationTokenSource;
+
+    // Internal to allow for testing
+    internal ISystemDateTime SystemDateTime { get; set; } = new SystemDateTime();
+
+    private readonly object _pathLock = new object();
+
+    public FileLoggerProcessor(IOptionsMonitor<W3CLoggerOptions> options, IHostEnvironment environment, ILoggerFactory factory)
     {
-        private const int _maxQueuedMessages = 1024;
+        _logger = factory.CreateLogger(typeof(FileLoggerProcessor));
 
-        private string _path;
-        private string _fileName;
-        private int? _maxFileSize;
-        private int? _maxRetainedFiles;
-        private int _fileNumber;
-        private bool _maxFilesReached;
-        private TimeSpan _flushInterval;
-        private W3CLoggingFields _fields;
-        private DateTime _today = DateTime.Now;
-        private bool _firstFile = true;
+        _options = options;
+        var loggerOptions = _options.CurrentValue;
 
-        private readonly IOptionsMonitor<W3CLoggerOptions> _options;
-        private readonly BlockingCollection<string> _messageQueue = new BlockingCollection<string>(_maxQueuedMessages);
-        private readonly ILogger _logger;
-        private readonly List<string> _currentBatch = new List<string>();
-        private readonly Task _outputTask;
-        private readonly CancellationTokenSource _cancellationTokenSource;
-
-        private readonly object _pathLock = new object();
-
-        public FileLoggerProcessor(IOptionsMonitor<W3CLoggerOptions> options, IHostEnvironment environment, ILoggerFactory factory)
+        _path = loggerOptions.LogDirectory;
+        // If user supplies no LogDirectory, default to {ContentRoot}/logs.
+        // If user supplies a relative path, use {ContentRoot}/{LogDirectory}.
+        // If user supplies a full path, use that.
+        if (string.IsNullOrEmpty(_path))
         {
-            _logger = factory.CreateLogger(typeof(FileLoggerProcessor));
-
-            _options = options;
-            var loggerOptions = _options.CurrentValue;
-
-            _path = loggerOptions.LogDirectory;
-            // If user supplies no LogDirectory, default to {ContentRoot}/logs.
-            // If user supplies a relative path, use {ContentRoot}/{LogDirectory}.
-            // If user supplies a full path, use that.
-            if (string.IsNullOrEmpty(_path))
-            {
-                _path = Path.Join(environment.ContentRootPath, "logs");
-            }
-            else if (!Path.IsPathRooted(_path))
-            {
-                _path = Path.Join(environment.ContentRootPath, _path);
-            }
-
-            _fileName = loggerOptions.FileName;
-            _maxFileSize = loggerOptions.FileSizeLimit;
-            _maxRetainedFiles = loggerOptions.RetainedFileCountLimit;
-            _flushInterval = loggerOptions.FlushInterval;
-            _fields = loggerOptions.LoggingFields;
-            _options.OnChange(options =>
-            {
-                lock (_pathLock)
-                {
-                    // Clear the cached settings.
-                    loggerOptions = options;
-
-                    // Move to a new file if the fields have changed
-                    if (_fields != loggerOptions.LoggingFields)
-                    {
-                        _fileNumber++;
-                        if (_fileNumber >= W3CLoggerOptions.MaxFileCount)
-                        {
-                            _maxFilesReached = true;
-                            Log.MaxFilesReached(_logger);
-                        }
-                        _fields = loggerOptions.LoggingFields;
-                    }
-
-                    if (!string.IsNullOrEmpty(loggerOptions.LogDirectory))
-                    {
-                        _path = loggerOptions.LogDirectory;
-                    }
-
-                    _fileName = loggerOptions.FileName;
-                    _maxFileSize = loggerOptions.FileSizeLimit;
-                    _maxRetainedFiles = loggerOptions.RetainedFileCountLimit;
-                    _flushInterval = loggerOptions.FlushInterval;
-                }
-            });
-
-            // Start message queue processor
-            _cancellationTokenSource = new CancellationTokenSource();
-            _outputTask = Task.Run(ProcessLogQueue);
+            _path = Path.Join(environment.ContentRootPath, "logs");
+        }
+        else if (!Path.IsPathRooted(_path))
+        {
+            _path = Path.Join(environment.ContentRootPath, _path);
         }
 
-        public void EnqueueMessage(string message)
+        _fileName = loggerOptions.FileName;
+        _maxFileSize = loggerOptions.FileSizeLimit;
+        _maxRetainedFiles = loggerOptions.RetainedFileCountLimit;
+        _flushInterval = loggerOptions.FlushInterval;
+        _fields = loggerOptions.LoggingFields;
+        _options.OnChange(options =>
         {
-            if (!_messageQueue.IsAddingCompleted)
+            lock (_pathLock)
             {
-                try
-                {
-                    _messageQueue.Add(message);
-                    return;
-                }
-                catch (InvalidOperationException) { }
-            }
-        }
+                // Clear the cached settings.
+                loggerOptions = options;
 
-        private async Task ProcessLogQueue()
-        {
-            while (!_cancellationTokenSource.IsCancellationRequested)
-            {
-                while (_messageQueue.TryTake(out var message))
-                {
-                    _currentBatch.Add(message);
-                }
-                if (_currentBatch.Count > 0)
-                {
-                    try
-                    {
-                        await WriteMessagesAsync(_currentBatch, _cancellationTokenSource.Token);
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.WriteMessagesFailed(_logger, ex);
-                    }
-
-                    _currentBatch.Clear();
-                }
-                else
-                {
-                    try
-                    {
-                        await Task.Delay(_flushInterval, _cancellationTokenSource.Token);
-                    }
-                    catch
-                    {
-                        // Exit if task was canceled
-                        return;
-                    }
-                }
-            }
-        }
-
-        private async Task WriteMessagesAsync(List<string> messages, CancellationToken cancellationToken)
-        {
-            // Files are written up to _maxFileSize before rolling to a new file
-            DateTime today = DateTime.Now;
-            var fullName = GetFullName(today);
-            // Don't write to an incomplete file left around by a previous FileLoggerProcessor
-            if (_firstFile)
-            {
-                while (File.Exists(fullName))
+                // Move to a new file if the fields have changed
+                if (_fields != loggerOptions.LoggingFields)
                 {
                     _fileNumber++;
                     if (_fileNumber >= W3CLoggerOptions.MaxFileCount)
                     {
+                        _maxFilesReached = true;
+                        Log.MaxFilesReached(_logger);
+                    }
+                    _fields = loggerOptions.LoggingFields;
+                }
+
+                if (!string.IsNullOrEmpty(loggerOptions.LogDirectory))
+                {
+                    _path = loggerOptions.LogDirectory;
+                }
+
+                _fileName = loggerOptions.FileName;
+                _maxFileSize = loggerOptions.FileSizeLimit;
+                _maxRetainedFiles = loggerOptions.RetainedFileCountLimit;
+                _flushInterval = loggerOptions.FlushInterval;
+            }
+        });
+
+        _today = SystemDateTime.Now;
+
+        // Start message queue processor
+        _cancellationTokenSource = new CancellationTokenSource();
+        _outputTask = Task.Run(ProcessLogQueue);
+    }
+
+    public void EnqueueMessage(string message)
+    {
+        if (!_messageQueue.IsAddingCompleted)
+        {
+            try
+            {
+                _messageQueue.Add(message);
+                return;
+            }
+            catch (InvalidOperationException) { }
+        }
+    }
+
+    private async Task ProcessLogQueue()
+    {
+        while (!_cancellationTokenSource.IsCancellationRequested)
+        {
+            while (_messageQueue.TryTake(out var message))
+            {
+                _currentBatch.Add(message);
+            }
+            if (_currentBatch.Count > 0)
+            {
+                try
+                {
+                    await WriteMessagesAsync(_currentBatch, _cancellationTokenSource.Token);
+                }
+                catch (Exception ex)
+                {
+                    Log.WriteMessagesFailed(_logger, ex);
+                }
+
+                _currentBatch.Clear();
+            }
+            else
+            {
+                try
+                {
+                    await Task.Delay(_flushInterval, _cancellationTokenSource.Token);
+                }
+                catch
+                {
+                    // Exit if task was canceled
+                    return;
+                }
+            }
+        }
+    }
+
+    private async Task WriteMessagesAsync(List<string> messages, CancellationToken cancellationToken)
+    {
+        // Files are written up to _maxFileSize before rolling to a new file
+        DateTime today = SystemDateTime.Now;
+        var fullName = GetFullName(today);
+        // Don't write to an incomplete file left around by a previous FileLoggerProcessor
+        if (_firstFile)
+        {
+            while (File.Exists(fullName))
+            {
+                _fileNumber++;
+                if (_fileNumber >= W3CLoggerOptions.MaxFileCount)
+                {
+                    _maxFilesReached = true;
+                    // Return early if log directory is already full
+                    Log.MaxFilesReached(_logger);
+                    return;
+                }
+                fullName = GetFullName(today);
+            }
+        }
+        _firstFile = false;
+        if (_maxFilesReached)
+        {
+            // Return early if we've already logged that today's file limit has been reached.
+            // Need to do this check after the call to GetFullName(), since it resets _maxFilesReached
+            // when a new day starts.
+            return;
+        }
+        var fileInfo = new FileInfo(fullName);
+
+        if (!TryCreateDirectory())
+        {
+            // return early if we fail to create the directory
+            return;
+        }
+        var streamWriter = GetStreamWriter(fullName);
+
+        try
+        {
+            foreach (var message in messages)
+            {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
+                fileInfo.Refresh();
+                // Roll to new file if _maxFileSize is reached
+                // _maxFileSize could be less than the length of the file header - in that case we still write the first log message before rolling.
+                if (fileInfo.Exists && fileInfo.Length > _maxFileSize)
+                {
+                    streamWriter.Dispose();
+                    _fileNumber++;
+                    if (_fileNumber >= W3CLoggerOptions.MaxFileCount)
+                    {
+                        streamWriter = null;
                         _maxFilesReached = true;
                         // Return early if log directory is already full
                         Log.MaxFilesReached(_logger);
                         return;
                     }
                     fullName = GetFullName(today);
-                }
-            }
-            _firstFile = false;
-            if (_maxFilesReached)
-            {
-                // Return early if we've already logged that today's file limit has been reached.
-                // Need to do this check after the call to GetFullName(), since it resets _maxFilesReached
-                // when a new day starts.
-                return;
-            }
-            var fileInfo = new FileInfo(fullName);
-
-            if (!TryCreateDirectory())
-            {
-                // return early if we fail to create the directory
-                return;
-            }
-            var streamWriter = GetStreamWriter(fullName);
-
-            try
-            {
-                foreach (var message in messages)
-                {
-                    if (cancellationToken.IsCancellationRequested)
+                    fileInfo = new FileInfo(fullName);
+                    if (!TryCreateDirectory())
                     {
+                        streamWriter = null;
+                        // return early if we fail to create the directory
                         return;
                     }
-                    fileInfo.Refresh();
-                    // Roll to new file if _maxFileSize is reached
-                    // _maxFileSize could be less than the length of the file header - in that case we still write the first log message before rolling.
-                    if (fileInfo.Exists && fileInfo.Length > _maxFileSize)
-                    {
-                        streamWriter.Dispose();
-                        _fileNumber++;
-                        if (_fileNumber >= W3CLoggerOptions.MaxFileCount)
-                        {
-                            streamWriter = null;
-                            _maxFilesReached = true;
-                            // Return early if log directory is already full
-                            Log.MaxFilesReached(_logger);
-                            return;
-                        }
-                        fullName = GetFullName(today);
-                        fileInfo = new FileInfo(fullName);
-                        if (!TryCreateDirectory())
-                        {
-                            streamWriter = null;
-                            // return early if we fail to create the directory
-                            return;
-                        }
-                        streamWriter = GetStreamWriter(fullName);
-                    }
-                    if (!fileInfo.Exists || fileInfo.Length == 0)
-                    {
-                        await OnFirstWrite(streamWriter, cancellationToken);
-                    }
-
-                    await WriteMessageAsync(message, streamWriter, cancellationToken);
+                    streamWriter = GetStreamWriter(fullName);
                 }
-            }
-            finally
-            {
-                RollFiles();
-                streamWriter?.Dispose();
-            }
-
-        }
-
-        internal bool TryCreateDirectory()
-        {
-            if (!Directory.Exists(_path))
-            {
-                try
+                if (!fileInfo.Exists || fileInfo.Length == 0)
                 {
-                    Directory.CreateDirectory(_path);
-                    return true;
+                    await OnFirstWrite(streamWriter, cancellationToken);
                 }
-                catch (Exception ex)
-                {
-                    Log.CreateDirectoryFailed(_logger, _path, ex);
-                    return false;
-                }
+
+                await WriteMessageAsync(message, streamWriter, cancellationToken);
             }
-            return true;
+        }
+        finally
+        {
+            RollFiles();
+            streamWriter?.Dispose();
         }
 
-        // Virtual for testing
-        internal virtual async Task WriteMessageAsync(string message, StreamWriter streamWriter, CancellationToken cancellationToken)
+    }
+
+    internal bool TryCreateDirectory()
+    {
+        if (!Directory.Exists(_path))
         {
-            if (cancellationToken.IsCancellationRequested)
+            try
             {
-                return;
+                Directory.CreateDirectory(_path);
+                return true;
             }
-            await streamWriter.WriteLineAsync(message.AsMemory(), cancellationToken);
-            await streamWriter.FlushAsync();
-        }
-
-        // Virtual for testing
-        internal virtual StreamWriter GetStreamWriter(string fileName)
-        {
-            return File.AppendText(fileName);
-        }
-
-        private void RollFiles()
-        {
-            if (_maxRetainedFiles > 0)
+            catch (Exception ex)
             {
-                lock (_pathLock)
-                {
-                    var files = new DirectoryInfo(_path)
-                        .GetFiles(_fileName + "*")
-                        .OrderByDescending(f => f.Name)
-                        .Skip(_maxRetainedFiles.Value);
-
-                    foreach (var item in files)
-                    {
-                        item.Delete();
-                    }
-                }
+                Log.CreateDirectoryFailed(_logger, _path, ex);
+                return false;
             }
         }
+        return true;
+    }
 
-        public async ValueTask DisposeAsync()
+    // Virtual for testing
+    internal virtual async Task WriteMessageAsync(string message, StreamWriter streamWriter, CancellationToken cancellationToken)
+    {
+        if (cancellationToken.IsCancellationRequested)
         {
-            _cancellationTokenSource.Cancel();
-            _messageQueue.CompleteAdding();
-            await _outputTask;
+            return;
         }
+        await streamWriter.WriteLineAsync(message.AsMemory(), cancellationToken);
+        await streamWriter.FlushAsync();
+    }
 
-        private string GetFullName(DateTime date)
+    // Virtual for testing
+    internal virtual StreamWriter GetStreamWriter(string fileName)
+    {
+        return File.AppendText(fileName);
+    }
+
+    private void RollFiles()
+    {
+        if (_maxRetainedFiles > 0)
         {
             lock (_pathLock)
             {
-                if ((date.Date - _today.Date).Days != 0)
+                var files = new DirectoryInfo(_path)
+                    .GetFiles(_fileName + "*")
+                    .OrderByDescending(f => f.Name)
+                    .Skip(_maxRetainedFiles.Value);
+
+                foreach (var item in files)
                 {
-                    _today = date;
-                    _fileNumber = 0;
-                    _maxFilesReached = false;
+                    item.Delete();
                 }
-                return Path.Combine(_path, FormattableString.Invariant($"{_fileName}{date.Year:0000}{date.Month:00}{date.Day:00}.{_fileNumber:0000}.txt"));
             }
-        }
-
-        public virtual Task OnFirstWrite(StreamWriter streamWriter, CancellationToken cancellationToken)
-        {
-            return Task.CompletedTask;
-        }
-
-        private static partial class Log
-        {
-
-            [LoggerMessage(1, LogLevel.Debug, "Failed to write all messages.", EventName = "WriteMessagesFailed")]
-            public static partial void WriteMessagesFailed(ILogger logger, Exception ex);
-
-            [LoggerMessage(2, LogLevel.Debug, "Failed to create directory {Path}.", EventName = "CreateDirectoryFailed")]
-            public static partial void CreateDirectoryFailed(ILogger logger, string path, Exception ex);
-
-            [LoggerMessage(3, LogLevel.Warning, "Limit of 10000 files per day has been reached", EventName = "MaxFilesReached")]
-            public static partial void MaxFilesReached(ILogger logger);
         }
     }
 
+    public async ValueTask DisposeAsync()
+    {
+        _cancellationTokenSource.Cancel();
+        _messageQueue.CompleteAdding();
+        await _outputTask;
+    }
+
+    private string GetFullName(DateTime date)
+    {
+        lock (_pathLock)
+        {
+            if ((date.Date - _today.Date).Days != 0)
+            {
+                _today = date;
+                _fileNumber = 0;
+                _maxFilesReached = false;
+            }
+            return Path.Combine(_path, FormattableString.Invariant($"{_fileName}{date.Year:0000}{date.Month:00}{date.Day:00}.{_fileNumber:0000}.txt"));
+        }
+    }
+
+    public virtual Task OnFirstWrite(StreamWriter streamWriter, CancellationToken cancellationToken)
+    {
+        return Task.CompletedTask;
+    }
+
+    private static partial class Log
+    {
+
+        [LoggerMessage(1, LogLevel.Debug, "Failed to write all messages.", EventName = "WriteMessagesFailed")]
+        public static partial void WriteMessagesFailed(ILogger logger, Exception ex);
+
+        [LoggerMessage(2, LogLevel.Debug, "Failed to create directory {Path}.", EventName = "CreateDirectoryFailed")]
+        public static partial void CreateDirectoryFailed(ILogger logger, string path, Exception ex);
+
+        [LoggerMessage(3, LogLevel.Warning, "Limit of 10000 files per day has been reached", EventName = "MaxFilesReached")]
+        public static partial void MaxFilesReached(ILogger logger);
+    }
 }

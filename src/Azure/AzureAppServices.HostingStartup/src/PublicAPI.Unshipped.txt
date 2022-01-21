@@ -1,2 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.AzureAppServices.HostingStartup.AzureAppServicesHostingStartup.Configure(Microsoft.AspNetCore.Hosting.IWebHostBuilder! builder) -> void

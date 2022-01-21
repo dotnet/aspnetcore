@@ -6,32 +6,31 @@ using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
+namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests;
+
+public class VersionStartup
 {
-    public class VersionStartup
+    public void ConfigureServices(IServiceCollection services)
     {
-        public void ConfigureServices(IServiceCollection services)
+        services.AddSignalR(options =>
         {
-            services.AddSignalR(options =>
-            {
-                options.EnableDetailedErrors = true;
-            });
+            options.EnableDetailedErrors = true;
+        });
 
-            services.RemoveAll<IHubProtocol>();
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<IHubProtocol>(new VersionedJsonHubProtocol(1000)));
+        services.RemoveAll<IHubProtocol>();
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IHubProtocol>(new VersionedJsonHubProtocol(1000)));
 
-            services.AddAuthentication();
-        }
+        services.AddAuthentication();
+    }
 
-        public void Configure(IApplicationBuilder app)
+    public void Configure(IApplicationBuilder app)
+    {
+        app.UseRouting();
+        app.UseAuthentication();
+
+        app.UseEndpoints(endpoints =>
         {
-            app.UseRouting();
-            app.UseAuthentication();
-
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapHub<VersionHub>("/version");
-            });
-        }
+            endpoints.MapHub<VersionHub>("/version");
+        });
     }
 }

@@ -6,38 +6,37 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
 
-namespace Microsoft.AspNetCore.Analyzers
+namespace Microsoft.AspNetCore.Analyzers;
+
+internal class ServicesAnalyzer
 {
-    internal class ServicesAnalyzer
+    private readonly StartupAnalysisBuilder _context;
+
+    public ServicesAnalyzer(StartupAnalysisBuilder context)
     {
-        private readonly StartupAnalysisBuilder _context;
+        _context = context;
+    }
 
-        public ServicesAnalyzer(StartupAnalysisBuilder context)
+    public void AnalyzeConfigureServices(OperationBlockStartAnalysisContext context)
+    {
+        var configureServicesMethod = (IMethodSymbol)context.OwningSymbol;
+        var services = ImmutableArray.CreateBuilder<ServicesItem>();
+        context.RegisterOperationAction(context =>
         {
-            _context = context;
-        }
+            // We're looking for usage of extension methods, so we need to look at the 'this' parameter
+            // rather than invocation.Instance.
+            if (context.Operation is IInvocationOperation invocation &&
+            invocation.Instance == null &&
+            invocation.Arguments.Length >= 1 &&
+            SymbolEqualityComparer.Default.Equals(invocation.Arguments[0].Parameter?.Type, _context.StartupSymbols.IServiceCollection))
+            {
+                services.Add(new ServicesItem(invocation));
+            }
+        }, OperationKind.Invocation);
 
-        public void AnalyzeConfigureServices(OperationBlockStartAnalysisContext context)
+        context.RegisterOperationBlockEndAction(context =>
         {
-            var configureServicesMethod = (IMethodSymbol)context.OwningSymbol;
-            var services = ImmutableArray.CreateBuilder<ServicesItem>();
-            context.RegisterOperationAction(context =>
-            {
-                // We're looking for usage of extension methods, so we need to look at the 'this' parameter
-                // rather than invocation.Instance.
-                if (context.Operation is IInvocationOperation invocation &&
-                    invocation.Instance == null &&
-                    invocation.Arguments.Length >= 1 &&
-                    SymbolEqualityComparer.Default.Equals(invocation.Arguments[0].Parameter?.Type, _context.StartupSymbols.IServiceCollection))
-                {
-                    services.Add(new ServicesItem(invocation));
-                }
-            }, OperationKind.Invocation);
-
-            context.RegisterOperationBlockEndAction(context =>
-            {
-                _context.ReportAnalysis(new ServicesAnalysis(configureServicesMethod, services.ToImmutable()));
-            });
-        }
+            _context.ReportAnalysis(new ServicesAnalysis(configureServicesMethod, services.ToImmutable()));
+        });
     }
 }

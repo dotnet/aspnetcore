@@ -19,273 +19,272 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
+
+public class AddressBinderTests
 {
-    public class AddressBinderTests
+    [Theory]
+    [InlineData("http://10.10.10.10:5000/", "10.10.10.10", 5000)]
+    [InlineData("http://[::1]:5000", "::1", 5000)]
+    [InlineData("http://[::1]", "::1", 80)]
+    [InlineData("http://127.0.0.1", "127.0.0.1", 80)]
+    [InlineData("https://127.0.0.1", "127.0.0.1", 443)]
+    public void CorrectIPEndpointsAreCreated(string address, string expectedAddress, int expectedPort)
     {
-        [Theory]
-        [InlineData("http://10.10.10.10:5000/", "10.10.10.10", 5000)]
-        [InlineData("http://[::1]:5000", "::1", 5000)]
-        [InlineData("http://[::1]", "::1", 80)]
-        [InlineData("http://127.0.0.1", "127.0.0.1", 80)]
-        [InlineData("https://127.0.0.1", "127.0.0.1", 443)]
-        public void CorrectIPEndpointsAreCreated(string address, string expectedAddress, int expectedPort)
-        {
-            Assert.True(AddressBinder.TryCreateIPEndPoint(
-                BindingAddress.Parse(address), out var endpoint));
-            Assert.NotNull(endpoint);
-            Assert.Equal(IPAddress.Parse(expectedAddress), endpoint.Address);
-            Assert.Equal(expectedPort, endpoint.Port);
-        }
+        Assert.True(AddressBinder.TryCreateIPEndPoint(
+            BindingAddress.Parse(address), out var endpoint));
+        Assert.NotNull(endpoint);
+        Assert.Equal(IPAddress.Parse(expectedAddress), endpoint.Address);
+        Assert.Equal(expectedPort, endpoint.Port);
+    }
 
-        [Theory]
-        [InlineData("http://*")]
-        [InlineData("http://*:5000")]
-        [InlineData("http://+:80")]
-        [InlineData("http://+")]
-        [InlineData("http://randomhost:6000")]
-        [InlineData("http://randomhost")]
-        [InlineData("https://randomhost")]
-        public void DoesNotCreateIPEndPointOnInvalidIPAddress(string address)
-        {
-            Assert.False(AddressBinder.TryCreateIPEndPoint(
-                BindingAddress.Parse(address), out var endpoint));
-        }
+    [Theory]
+    [InlineData("http://*")]
+    [InlineData("http://*:5000")]
+    [InlineData("http://+:80")]
+    [InlineData("http://+")]
+    [InlineData("http://randomhost:6000")]
+    [InlineData("http://randomhost")]
+    [InlineData("https://randomhost")]
+    public void DoesNotCreateIPEndPointOnInvalidIPAddress(string address)
+    {
+        Assert.False(AddressBinder.TryCreateIPEndPoint(
+            BindingAddress.Parse(address), out var endpoint));
+    }
 
-        [Theory]
-        [InlineData("*")]
-        [InlineData("randomhost")]
-        [InlineData("+")]
-        [InlineData("contoso.com")]
-        public void ParseAddressDefaultsToAnyIPOnInvalidIPAddress(string host)
-        {
-            var listenOptions = AddressBinder.ParseAddress($"http://{host}", out var https);
-            Assert.IsType<AnyIPListenOptions>(listenOptions);
-            Assert.IsType<IPEndPoint>(listenOptions.EndPoint);
-            Assert.Equal(IPAddress.IPv6Any, listenOptions.IPEndPoint.Address);
-            Assert.Equal(80, listenOptions.IPEndPoint.Port);
-            Assert.False(https);
-        }
+    [Theory]
+    [InlineData("*")]
+    [InlineData("randomhost")]
+    [InlineData("+")]
+    [InlineData("contoso.com")]
+    public void ParseAddressDefaultsToAnyIPOnInvalidIPAddress(string host)
+    {
+        var listenOptions = AddressBinder.ParseAddress($"http://{host}", out var https);
+        Assert.IsType<AnyIPListenOptions>(listenOptions);
+        Assert.IsType<IPEndPoint>(listenOptions.EndPoint);
+        Assert.Equal(IPAddress.IPv6Any, listenOptions.IPEndPoint.Address);
+        Assert.Equal(80, listenOptions.IPEndPoint.Port);
+        Assert.False(https);
+    }
 
-        [Fact]
-        public void ParseAddressLocalhost()
-        {
-            var listenOptions = AddressBinder.ParseAddress("http://localhost", out var https);
-            Assert.IsType<LocalhostListenOptions>(listenOptions);
-            Assert.IsType<IPEndPoint>(listenOptions.EndPoint);
-            Assert.Equal(IPAddress.Loopback, listenOptions.IPEndPoint.Address);
-            Assert.Equal(80, listenOptions.IPEndPoint.Port);
-            Assert.False(https);
-        }
+    [Fact]
+    public void ParseAddressLocalhost()
+    {
+        var listenOptions = AddressBinder.ParseAddress("http://localhost", out var https);
+        Assert.IsType<LocalhostListenOptions>(listenOptions);
+        Assert.IsType<IPEndPoint>(listenOptions.EndPoint);
+        Assert.Equal(IPAddress.Loopback, listenOptions.IPEndPoint.Address);
+        Assert.Equal(80, listenOptions.IPEndPoint.Port);
+        Assert.False(https);
+    }
 
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Windows, SkipReason = "tmp/kestrel-test.sock is not valid for windows. Unix socket path must be absolute.")]
-        public void ParseAddressUnixPipe()
-        {
-            var listenOptions = AddressBinder.ParseAddress("http://unix:/tmp/kestrel-test.sock", out var https);
-            Assert.IsType<UnixDomainSocketEndPoint>(listenOptions.EndPoint);
-            Assert.Equal("/tmp/kestrel-test.sock", listenOptions.SocketPath);
-            Assert.False(https);
-        }
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows, SkipReason = "tmp/kestrel-test.sock is not valid for windows. Unix socket path must be absolute.")]
+    public void ParseAddressUnixPipe()
+    {
+        var listenOptions = AddressBinder.ParseAddress("http://unix:/tmp/kestrel-test.sock", out var https);
+        Assert.IsType<UnixDomainSocketEndPoint>(listenOptions.EndPoint);
+        Assert.Equal("/tmp/kestrel-test.sock", listenOptions.SocketPath);
+        Assert.False(https);
+    }
 
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Windows has drive letters and volume separator (c:), testing this url on unix or osx provides completely different output.")]
-        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_RS4)]
-        public void ParseAddressUnixPipeOnWindows()
-        {
-            var listenOptions = AddressBinder.ParseAddress(@"http://unix:/c:/foo/bar/pipe.socket", out var https);
-            Assert.IsType<UnixDomainSocketEndPoint>(listenOptions.EndPoint);
-            Assert.Equal("c:/foo/bar/pipe.socket", listenOptions.SocketPath);
-            Assert.False(https);
-        }
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Windows has drive letters and volume separator (c:), testing this url on unix or osx provides completely different output.")]
+    [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_RS4)]
+    public void ParseAddressUnixPipeOnWindows()
+    {
+        var listenOptions = AddressBinder.ParseAddress(@"http://unix:/c:/foo/bar/pipe.socket", out var https);
+        Assert.IsType<UnixDomainSocketEndPoint>(listenOptions.EndPoint);
+        Assert.Equal("c:/foo/bar/pipe.socket", listenOptions.SocketPath);
+        Assert.False(https);
+    }
 
-        [Theory]
-        [InlineData("http://10.10.10.10:5000/", "10.10.10.10", 5000, false)]
-        [InlineData("http://[::1]:5000", "::1", 5000, false)]
-        [InlineData("http://[::1]", "::1", 80, false)]
-        [InlineData("http://127.0.0.1", "127.0.0.1", 80, false)]
-        [InlineData("https://127.0.0.1", "127.0.0.1", 443, true)]
-        public void ParseAddressIP(string address, string ip, int port, bool isHttps)
-        {
-            var listenOptions = AddressBinder.ParseAddress(address, out var https);
-            Assert.IsType<IPEndPoint>(listenOptions.EndPoint);
-            Assert.Equal(IPAddress.Parse(ip), listenOptions.IPEndPoint.Address);
-            Assert.Equal(port, listenOptions.IPEndPoint.Port);
-            Assert.Equal(isHttps, https);
-        }
+    [Theory]
+    [InlineData("http://10.10.10.10:5000/", "10.10.10.10", 5000, false)]
+    [InlineData("http://[::1]:5000", "::1", 5000, false)]
+    [InlineData("http://[::1]", "::1", 80, false)]
+    [InlineData("http://127.0.0.1", "127.0.0.1", 80, false)]
+    [InlineData("https://127.0.0.1", "127.0.0.1", 443, true)]
+    public void ParseAddressIP(string address, string ip, int port, bool isHttps)
+    {
+        var listenOptions = AddressBinder.ParseAddress(address, out var https);
+        Assert.IsType<IPEndPoint>(listenOptions.EndPoint);
+        Assert.Equal(IPAddress.Parse(ip), listenOptions.IPEndPoint.Address);
+        Assert.Equal(port, listenOptions.IPEndPoint.Port);
+        Assert.Equal(isHttps, https);
+    }
 
-        [Fact]
-        public async Task WrapsAddressInUseExceptionAsIOException()
-        {
-            var addresses = new ServerAddressesFeature();
-            addresses.InternalCollection.Add("http://localhost:5000");
-            var options = new KestrelServerOptions();
+    [Fact]
+    public async Task WrapsAddressInUseExceptionAsIOException()
+    {
+        var addresses = new ServerAddressesFeature();
+        addresses.InternalCollection.Add("http://localhost:5000");
+        var options = new KestrelServerOptions();
 
-            var addressBindContext = TestContextFactory.CreateAddressBindContext(
-                addresses,
-                options,
-                NullLogger.Instance,
-                endpoint => throw new AddressInUseException("already in use"));
+        var addressBindContext = TestContextFactory.CreateAddressBindContext(
+            addresses,
+            options,
+            NullLogger.Instance,
+            endpoint => throw new AddressInUseException("already in use"));
 
-            await Assert.ThrowsAsync<IOException>(() =>
-                AddressBinder.BindAsync(options.ListenOptions, addressBindContext, CancellationToken.None));
-        }
+        await Assert.ThrowsAsync<IOException>(() =>
+            AddressBinder.BindAsync(options.ListenOptions, addressBindContext, CancellationToken.None));
+    }
 
-        [Fact]
-        public void LogsWarningWhenHostingAddressesAreOverridden()
-        {
-            var logger = new TestApplicationErrorLogger();
+    [Fact]
+    public void LogsWarningWhenHostingAddressesAreOverridden()
+    {
+        var logger = new TestApplicationErrorLogger();
 
-            var overriddenAddress = "http://localhost:5000";
-            var addresses = new ServerAddressesFeature();
-            addresses.InternalCollection.Add(overriddenAddress);
+        var overriddenAddress = "http://localhost:5000";
+        var addresses = new ServerAddressesFeature();
+        addresses.InternalCollection.Add(overriddenAddress);
 
-            var options = new KestrelServerOptions();
-            options.ListenAnyIP(8080);
+        var options = new KestrelServerOptions();
+        options.ListenAnyIP(8080);
 
-            var addressBindContext = TestContextFactory.CreateAddressBindContext(
-                addresses,
-                options,
-                logger,
-                endpoint => Task.CompletedTask);
+        var addressBindContext = TestContextFactory.CreateAddressBindContext(
+            addresses,
+            options,
+            logger,
+            endpoint => Task.CompletedTask);
 
-            var bindTask = AddressBinder.BindAsync(options.ListenOptions, addressBindContext, CancellationToken.None);
-            Assert.True(bindTask.IsCompletedSuccessfully);
+        var bindTask = AddressBinder.BindAsync(options.ListenOptions, addressBindContext, CancellationToken.None);
+        Assert.True(bindTask.IsCompletedSuccessfully);
 
-            var log = Assert.Single(logger.Messages);
-            Assert.Equal(LogLevel.Warning, log.LogLevel);
-            Assert.Equal(CoreStrings.FormatOverridingWithKestrelOptions(overriddenAddress), log.Message);
-        }
+        var log = Assert.Single(logger.Messages);
+        Assert.Equal(LogLevel.Warning, log.LogLevel);
+        Assert.Equal(CoreStrings.FormatOverridingWithKestrelOptions(overriddenAddress), log.Message);
+    }
 
-        [Fact]
-        public void LogsInformationWhenKestrelAddressesAreOverridden()
-        {
-            var logger = new TestApplicationErrorLogger();
+    [Fact]
+    public void LogsInformationWhenKestrelAddressesAreOverridden()
+    {
+        var logger = new TestApplicationErrorLogger();
 
-            var overriddenAddress = "http://localhost:5000";
-            var addresses = new ServerAddressesFeature();
-            addresses.InternalCollection.Add(overriddenAddress);
+        var overriddenAddress = "http://localhost:5000";
+        var addresses = new ServerAddressesFeature();
+        addresses.InternalCollection.Add(overriddenAddress);
 
-            var options = new KestrelServerOptions();
-            options.ListenAnyIP(8080);
+        var options = new KestrelServerOptions();
+        options.ListenAnyIP(8080);
 
-            var addressBindContext = TestContextFactory.CreateAddressBindContext(
-                addresses,
-                options,
-                logger,
-                endpoint => Task.CompletedTask);
+        var addressBindContext = TestContextFactory.CreateAddressBindContext(
+            addresses,
+            options,
+            logger,
+            endpoint => Task.CompletedTask);
 
-            addressBindContext.ServerAddressesFeature.PreferHostingUrls = true;
+        addressBindContext.ServerAddressesFeature.PreferHostingUrls = true;
 
-            var bindTask = AddressBinder.BindAsync(options.ListenOptions, addressBindContext, CancellationToken.None);
-            Assert.True(bindTask.IsCompletedSuccessfully);
+        var bindTask = AddressBinder.BindAsync(options.ListenOptions, addressBindContext, CancellationToken.None);
+        Assert.True(bindTask.IsCompletedSuccessfully);
 
-            var log = Assert.Single(logger.Messages);
-            Assert.Equal(LogLevel.Information, log.LogLevel);
-            Assert.Equal(CoreStrings.FormatOverridingWithPreferHostingUrls(nameof(addressBindContext.ServerAddressesFeature.PreferHostingUrls), overriddenAddress), log.Message);
-        }
+        var log = Assert.Single(logger.Messages);
+        Assert.Equal(LogLevel.Information, log.LogLevel);
+        Assert.Equal(CoreStrings.FormatOverridingWithPreferHostingUrls(nameof(addressBindContext.ServerAddressesFeature.PreferHostingUrls), overriddenAddress), log.Message);
+    }
 
-        [Fact]
-        public async Task FlowsCancellationTokenToCreateBinddingCallback()
-        {
-            var addresses = new ServerAddressesFeature();
-            addresses.InternalCollection.Add("http://localhost:5000");
-            var options = new KestrelServerOptions();
+    [Fact]
+    public async Task FlowsCancellationTokenToCreateBinddingCallback()
+    {
+        var addresses = new ServerAddressesFeature();
+        addresses.InternalCollection.Add("http://localhost:5000");
+        var options = new KestrelServerOptions();
 
-            var addressBindContext = TestContextFactory.CreateAddressBindContext(
-                addresses,
-                options,
-                NullLogger.Instance,
-                (endpoint, cancellationToken) =>
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    return Task.CompletedTask;
-                });
-
-            await Assert.ThrowsAsync<OperationCanceledException>(() =>
-                AddressBinder.BindAsync(options.ListenOptions, addressBindContext, new CancellationToken(true)));
-        }
-
-        [Theory]
-        [InlineData("http://*:80")]
-        [InlineData("http://+:80")]
-        [InlineData("http://contoso.com:80")]
-        public async Task FallbackToIPv4WhenIPv6AnyBindFails(string address)
-        {
-            var logger = new MockLogger();
-            var addresses = new ServerAddressesFeature();
-            addresses.InternalCollection.Add(address);
-            var options = new KestrelServerOptions();
-
-            var ipV6Attempt = false;
-            var ipV4Attempt = false;
-
-            var addressBindContext = TestContextFactory.CreateAddressBindContext(
-                addresses,
-                options,
-                logger,
-                endpoint =>
-                {
-                    if (endpoint.IPEndPoint.Address == IPAddress.IPv6Any)
-                    {
-                        ipV6Attempt = true;
-                        throw new InvalidOperationException("EAFNOSUPPORT");
-                    }
-
-                    if (endpoint.IPEndPoint.Address == IPAddress.Any)
-                    {
-                        ipV4Attempt = true;
-                    }
-
-                    return Task.CompletedTask;
-                });
-
-            await AddressBinder.BindAsync(options.ListenOptions, addressBindContext, CancellationToken.None);
-
-            Assert.True(ipV4Attempt, "Should have attempted to bind to IPAddress.Any");
-            Assert.True(ipV6Attempt, "Should have attempted to bind to IPAddress.IPv6Any");
-            Assert.Contains(logger.Messages, f => f.Equals(CoreStrings.FormatFallbackToIPv4Any(80)));
-        }
-
-        [Fact]
-        public async Task DefaultAddressBinderWithoutDevCertButHttpsConfiguredBindsToHttpsPorts()
-        {
-            var x509Certificate2 = TestResources.GetTestCertificate();
-            var logger = new MockLogger();
-            var addresses = new ServerAddressesFeature();
-            var services = new ServiceCollection();
-            services.AddLogging();
-            var options = new KestrelServerOptions()
+        var addressBindContext = TestContextFactory.CreateAddressBindContext(
+            addresses,
+            options,
+            NullLogger.Instance,
+            (endpoint, cancellationToken) =>
             {
-                // This stops the dev cert from being loaded
-                IsDevCertLoaded = true,
-                ApplicationServices = services.BuildServiceProvider()
-            };
-
-            options.ConfigureEndpointDefaults(e =>
-            {
-                if (e.IPEndPoint.Port == 5001)
-                {
-                    e.UseHttps(new HttpsConnectionAdapterOptions { ServerCertificate = x509Certificate2 });
-                }
+                cancellationToken.ThrowIfCancellationRequested();
+                return Task.CompletedTask;
             });
 
-            var endpoints = new List<ListenOptions>();
+        await Assert.ThrowsAsync<OperationCanceledException>(() =>
+            AddressBinder.BindAsync(options.ListenOptions, addressBindContext, new CancellationToken(true)));
+    }
 
-            var addressBindContext = TestContextFactory.CreateAddressBindContext(
-                addresses,
-                options,
-                logger,
-                listenOptions =>
+    [Theory]
+    [InlineData("http://*:80")]
+    [InlineData("http://+:80")]
+    [InlineData("http://contoso.com:80")]
+    public async Task FallbackToIPv4WhenIPv6AnyBindFails(string address)
+    {
+        var logger = new MockLogger();
+        var addresses = new ServerAddressesFeature();
+        addresses.InternalCollection.Add(address);
+        var options = new KestrelServerOptions();
+
+        var ipV6Attempt = false;
+        var ipV4Attempt = false;
+
+        var addressBindContext = TestContextFactory.CreateAddressBindContext(
+            addresses,
+            options,
+            logger,
+            endpoint =>
+            {
+                if (endpoint.IPEndPoint.Address.Equals(IPAddress.IPv6Any))
                 {
-                    endpoints.Add(listenOptions);
-                    return Task.CompletedTask;
-                });
+                    ipV6Attempt = true;
+                    throw new InvalidOperationException("EAFNOSUPPORT");
+                }
 
-            await AddressBinder.BindAsync(options.ListenOptions, addressBindContext, CancellationToken.None);
+                if (endpoint.IPEndPoint.Address.Equals(IPAddress.Any))
+                {
+                    ipV4Attempt = true;
+                }
 
-            Assert.Contains(endpoints, e => e.IPEndPoint.Port == 5000 && !e.IsTls);
-            Assert.Contains(endpoints, e => e.IPEndPoint.Port == 5001 && e.IsTls);
-        }
+                return Task.CompletedTask;
+            });
+
+        await AddressBinder.BindAsync(options.ListenOptions, addressBindContext, CancellationToken.None);
+
+        Assert.True(ipV4Attempt, "Should have attempted to bind to IPAddress.Any");
+        Assert.True(ipV6Attempt, "Should have attempted to bind to IPAddress.IPv6Any");
+        Assert.Contains(logger.Messages, f => f.Equals(CoreStrings.FormatFallbackToIPv4Any(80)));
+    }
+
+    [Fact]
+    public async Task DefaultAddressBinderWithoutDevCertButHttpsConfiguredBindsToHttpsPorts()
+    {
+        var x509Certificate2 = TestResources.GetTestCertificate();
+        var logger = new MockLogger();
+        var addresses = new ServerAddressesFeature();
+        var services = new ServiceCollection();
+        services.AddLogging();
+        var options = new KestrelServerOptions()
+        {
+            // This stops the dev cert from being loaded
+            IsDevCertLoaded = true,
+            ApplicationServices = services.BuildServiceProvider()
+        };
+
+        options.ConfigureEndpointDefaults(e =>
+        {
+            if (e.IPEndPoint.Port == 5001)
+            {
+                e.UseHttps(new HttpsConnectionAdapterOptions { ServerCertificate = x509Certificate2 });
+            }
+        });
+
+        var endpoints = new List<ListenOptions>();
+
+        var addressBindContext = TestContextFactory.CreateAddressBindContext(
+            addresses,
+            options,
+            logger,
+            listenOptions =>
+            {
+                endpoints.Add(listenOptions);
+                return Task.CompletedTask;
+            });
+
+        await AddressBinder.BindAsync(options.ListenOptions, addressBindContext, CancellationToken.None);
+
+        Assert.Contains(endpoints, e => e.IPEndPoint.Port == 5000 && !e.IsTls);
+        Assert.Contains(endpoints, e => e.IPEndPoint.Port == 5001 && e.IsTls);
     }
 }

@@ -16,155 +16,154 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 
-namespace StaticFilesAuth
+namespace StaticFilesAuth;
+
+public class Startup
 {
-    public class Startup
+    public Startup(IConfiguration configuration, IWebHostEnvironment hostingEnvironment)
     {
-        public Startup(IConfiguration configuration, IWebHostEnvironment hostingEnvironment)
+        Configuration = configuration;
+        HostingEnvironment = hostingEnvironment;
+    }
+
+    public IConfiguration Configuration { get; }
+
+    public IWebHostEnvironment HostingEnvironment { get; }
+
+    // This method gets called by the runtime. Use this method to add services to the container.
+    public void ConfigureServices(IServiceCollection services)
+    {
+        services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+            .AddCookie();
+
+        services.AddAuthorization(options =>
         {
-            Configuration = configuration;
-            HostingEnvironment = hostingEnvironment;
-        }
+            var basePath = Path.Combine(HostingEnvironment.ContentRootPath, "PrivateFiles");
+            var usersPath = Path.Combine(basePath, "Users");
 
-        public IConfiguration Configuration { get; }
-
-        public IWebHostEnvironment HostingEnvironment { get; }
-
-        // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-                .AddCookie();
-
-            services.AddAuthorization(options =>
+            // When using this policy users are only authorized to access the base directory, the Users directory,
+            // and their own directory under Users.
+            options.AddPolicy("files", builder =>
             {
-                var basePath = Path.Combine(HostingEnvironment.ContentRootPath, "PrivateFiles");
-                var usersPath = Path.Combine(basePath, "Users");
-
-                // When using this policy users are only authorized to access the base directory, the Users directory,
-                // and their own directory under Users.
-                options.AddPolicy("files", builder =>
+                builder.RequireAuthenticatedUser().RequireAssertion(context =>
                 {
-                    builder.RequireAuthenticatedUser().RequireAssertion(context =>
+                    var userName = context.User.Identity.Name;
+                    userName = userName?.Split('@').FirstOrDefault();
+                    if (userName == null)
                     {
-                        var userName = context.User.Identity.Name;
-                        userName = userName?.Split('@').FirstOrDefault();
-                        if (userName == null)
-                        {
-                            return false;
-                        }
-                        if (context.Resource is Endpoint endpoint)
-                        {
-                            var userPath = Path.Combine(usersPath, userName);
+                        return false;
+                    }
+                    if (context.Resource is Endpoint endpoint)
+                    {
+                        var userPath = Path.Combine(usersPath, userName);
 
-                            var directory = endpoint.Metadata.GetMetadata<DirectoryInfo>();
-                            if (directory != null)
-                            {
-                                return string.Equals(directory.FullName, basePath, StringComparison.OrdinalIgnoreCase)
-                                    || string.Equals(directory.FullName, usersPath, StringComparison.OrdinalIgnoreCase)
-                                    || string.Equals(directory.FullName, userPath, StringComparison.OrdinalIgnoreCase)
-                                    || directory.FullName.StartsWith(userPath + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
-                            }
-
-                            throw new InvalidOperationException($"Missing file system metadata.");
+                        var directory = endpoint.Metadata.GetMetadata<DirectoryInfo>();
+                        if (directory != null)
+                        {
+                            return string.Equals(directory.FullName, basePath, StringComparison.OrdinalIgnoreCase)
+                                || string.Equals(directory.FullName, usersPath, StringComparison.OrdinalIgnoreCase)
+                                || string.Equals(directory.FullName, userPath, StringComparison.OrdinalIgnoreCase)
+                                || directory.FullName.StartsWith(userPath + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
                         }
 
-                        throw new InvalidOperationException($"Unknown resource type '{context.Resource.GetType()}'");
-                    });
+                        throw new InvalidOperationException($"Missing file system metadata.");
+                    }
+
+                    throw new InvalidOperationException($"Unknown resource type '{context.Resource.GetType()}'");
                 });
             });
+        });
 
-            services.AddMvc();
+        services.AddMvc();
+    }
+
+    // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IAuthorizationService authorizationService)
+    {
+        if (env.IsDevelopment())
+        {
+            app.UseDeveloperExceptionPage();
+        }
+        else
+        {
+            app.UseExceptionHandler("/Home/Error");
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IAuthorizationService authorizationService)
+        // Serve files from wwwroot without authentication or authorization.
+        app.UseStaticFiles();
+
+        app.UseAuthentication();
+
+        var files = new PhysicalFileProvider(Path.Combine(env.ContentRootPath, "PrivateFiles"));
+
+        app.Map("/MapAuthenticatedFiles", branch =>
         {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-            else
-            {
-                app.UseExceptionHandler("/Home/Error");
-            }
+            branch.Use((context, next) => { SetFileEndpoint(context, files, null); return next(context); });
+            branch.UseAuthorization();
+            SetupFileServer(branch, files);
+        });
+        app.Map("/MapImperativeFiles", branch =>
+        {
+            branch.Use((context, next) => { SetFileEndpoint(context, files, "files"); return next(context); });
+            branch.UseAuthorization();
+            SetupFileServer(branch, files);
+        });
 
-            // Serve files from wwwroot without authentication or authorization.
-            app.UseStaticFiles();
+        app.UseRouting();
 
-            app.UseAuthentication();
+        app.UseAuthentication();
+        app.UseAuthorization();
 
-            var files = new PhysicalFileProvider(Path.Combine(env.ContentRootPath, "PrivateFiles"));
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapDefaultControllerRoute();
+        });
+    }
 
-            app.Map("/MapAuthenticatedFiles", branch =>
-            {
-                branch.Use((context, next) => { SetFileEndpoint(context, files, null); return next(context); });
-                branch.UseAuthorization();
-                SetupFileServer(branch, files);
-            });
-            app.Map("/MapImperativeFiles", branch =>
-            {
-                branch.Use((context, next) => { SetFileEndpoint(context, files, "files"); return next(context); });
-                branch.UseAuthorization();
-                SetupFileServer(branch, files);
-            });
+    private void SetupFileServer(IApplicationBuilder builder, IFileProvider files)
+    {
+        builder.UseFileServer(new FileServerOptions()
+        {
+            EnableDirectoryBrowsing = true,
+            FileProvider = files
+        });
+    }
 
-            app.UseRouting();
+    private static void SetFileEndpoint(HttpContext context, PhysicalFileProvider files, string policy)
+    {
+        var fileSystemPath = GetFileSystemPath(files, context.Request.Path);
+        if (fileSystemPath != null)
+        {
+            var metadata = new List<object>();
+            metadata.Add(new DirectoryInfo(Path.GetDirectoryName(fileSystemPath)));
+            metadata.Add(new AuthorizeAttribute(policy));
 
-            app.UseAuthentication();
-            app.UseAuthorization();
+            var endpoint = new Endpoint(
+                c => throw new InvalidOperationException("Static file middleware should return file request."),
+                new EndpointMetadataCollection(metadata),
+                context.Request.Path);
 
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapDefaultControllerRoute();
-            });
+            context.SetEndpoint(endpoint);
         }
+    }
 
-        private void SetupFileServer(IApplicationBuilder builder, IFileProvider files)
+    private static string GetFileSystemPath(PhysicalFileProvider files, string path)
+    {
+        var fileInfo = files.GetFileInfo(path);
+        if (fileInfo.Exists)
         {
-            builder.UseFileServer(new FileServerOptions()
-            {
-                EnableDirectoryBrowsing = true,
-                FileProvider = files
-            });
+            return Path.Join(files.Root, path);
         }
-
-        private static void SetFileEndpoint(HttpContext context, PhysicalFileProvider files, string policy)
+        else
         {
-            var fileSystemPath = GetFileSystemPath(files, context.Request.Path);
-            if (fileSystemPath != null)
-            {
-                var metadata = new List<object>();
-                metadata.Add(new DirectoryInfo(Path.GetDirectoryName(fileSystemPath)));
-                metadata.Add(new AuthorizeAttribute(policy));
-
-                var endpoint = new Endpoint(
-                    c => throw new InvalidOperationException("Static file middleware should return file request."),
-                    new EndpointMetadataCollection(metadata),
-                    context.Request.Path);
-
-                context.SetEndpoint(endpoint);
-            }
-        }
-
-        private static string GetFileSystemPath(PhysicalFileProvider files, string path)
-        {
-            var fileInfo = files.GetFileInfo(path);
-            if (fileInfo.Exists)
+            // https://github.com/aspnet/Home/issues/2537
+            var dir = files.GetDirectoryContents(path);
+            if (dir.Exists)
             {
                 return Path.Join(files.Root, path);
             }
-            else
-            {
-                // https://github.com/aspnet/Home/issues/2537
-                var dir = files.GetDirectoryContents(path);
-                if (dir.Exists)
-                {
-                    return Path.Join(files.Root, path);
-                }
-            }
-
-            return null;
         }
+
+        return null;
     }
 }

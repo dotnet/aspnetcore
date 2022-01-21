@@ -1,8 +1,11 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 /* eslint-disable array-element-newline */
 import { DotNet } from '@microsoft/dotnet-js-interop';
 import { Blazor } from './GlobalExports';
 import * as Environment from './Environment';
-import { byteArrayBeingTransferred, monoPlatform } from './Platform/Mono/MonoPlatform';
+import { byteArrayBeingTransferred, Module, BINDING, monoPlatform } from './Platform/Mono/MonoPlatform';
 import { renderBatch, getRendererer, attachRootComponentToElement, attachRootComponentToLogicalElement } from './Rendering/Renderer';
 import { SharedMemoryRenderBatch } from './Rendering/RenderBatch/SharedMemoryRenderBatch';
 import { shouldAutoStart } from './BootCommon';
@@ -14,8 +17,8 @@ import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
 import { discoverComponents, discoverPersistedState, WebAssemblyComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
 import { setDispatchEventMiddleware } from './Rendering/WebRendererInteropMethods';
+import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.WebAssembly';
 
-declare var Module: EmscriptenModule;
 let started = false;
 
 async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
@@ -24,6 +27,10 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
     throw new Error('Blazor has already started.');
   }
   started = true;
+
+  if (inAuthRedirectIframe()) {
+    await new Promise(() => {}); // See inAuthRedirectIframe for explanation
+  }
 
   setDispatchEventMiddleware((browserRendererId, eventHandlerId, continuation) => {
     // It's extremely unusual, but an event can be raised while we're in the middle of synchronously applying a
@@ -36,8 +43,8 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
     }
   });
 
-  Blazor._internal.applyHotReload = (id: string, metadataDelta: string, ilDeta: string) => {
-    DotNet.invokeMethod('Microsoft.AspNetCore.Components.WebAssembly', 'ApplyHotReloadDelta', id, metadataDelta, ilDeta);
+  Blazor._internal.applyHotReload = (id: string, metadataDelta: string, ilDelta: string, pdbDelta: string | undefined) => {
+    DotNet.invokeMethod('Microsoft.AspNetCore.Components.WebAssembly', 'ApplyHotReloadDelta', id, metadataDelta, ilDelta, pdbDelta);
   };
 
   Blazor._internal.getApplyUpdateCapabilities = () => DotNet.invokeMethod('Microsoft.AspNetCore.Components.WebAssembly', 'GetApplyUpdateCapabilities');
@@ -80,11 +87,13 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
     );
   });
 
-  // Get the custom environment setting if defined
-  const environment = options?.environment;
+  const candidateOptions = options ?? {};
+
+  // Get the custom environment setting and blazorBootJson loader if defined
+  const environment = candidateOptions.environment;
 
   // Fetch the resources and prepare the Mono runtime
-  const bootConfigPromise = BootConfigResult.initAsync(environment);
+  const bootConfigPromise = BootConfigResult.initAsync(candidateOptions.loadBootResource, environment);
 
   // Leverage the time while we are loading boot.config.json from the network to discover any potentially registered component on
   // the document.
@@ -110,10 +119,13 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
     }
   };
 
-  const bootConfigResult = await bootConfigPromise;
+  const bootConfigResult: BootConfigResult = await bootConfigPromise;
+  const jsInitializer = await fetchAndInvokeInitializers(bootConfigResult.bootConfig, candidateOptions);
+
   const [resourceLoader] = await Promise.all([
-    WebAssemblyResourceLoader.initAsync(bootConfigResult.bootConfig, options || {}),
-    WebAssemblyConfigLoader.initAsync(bootConfigResult)]);
+    WebAssemblyResourceLoader.initAsync(bootConfigResult.bootConfig, candidateOptions || {}),
+    WebAssemblyConfigLoader.initAsync(bootConfigResult),
+  ]);
 
   try {
     await platform.start(resourceLoader);
@@ -123,6 +135,9 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
 
   // Start up the application
   platform.callEntryPoint(resourceLoader.bootConfig.entryAssembly);
+  // At this point .NET has been initialized (and has yielded), we can't await the promise becasue it will
+  // only end when the app finishes running
+  jsInitializer.invokeAfterStartedCallbacks(Blazor);
 }
 
 function invokeJSFromDotNet(callInfo: Pointer, arg0: any, arg1: any, arg2: any): any {
@@ -150,10 +165,13 @@ function invokeJSFromDotNet(callInfo: Pointer, arg0: any, arg1: any, arg2: any):
         return result;
       case DotNet.JSCallResultType.JSObjectReference:
         return DotNet.createJSObjectReference(result).__jsObjectId;
-      case DotNet.JSCallResultType.JSStreamReference:
+      case DotNet.JSCallResultType.JSStreamReference: {
         const streamReference = DotNet.createJSStreamReference(result);
         const resultJson = JSON.stringify(streamReference);
         return BINDING.js_string_to_mono_string(resultJson);
+      }
+      case DotNet.JSCallResultType.JSVoidResult:
+        return null;
       default:
         throw new Error(`Invalid JS call result type '${resultType}'.`);
     }
@@ -180,6 +198,22 @@ function retrieveByteArray(): System_Object {
 
   const typedArray = BINDING.js_typed_array_to_array(byteArrayBeingTransferred);
   return typedArray;
+}
+
+function inAuthRedirectIframe(): boolean {
+  // We don't want the .NET runtime to start up a second time inside the AuthenticationService.ts iframe. It uses resources
+  // unnecessarily and can lead to errors (#37355), plus the behavior is not well defined as the frame will be terminated shortly.
+  // So, if we're in that situation, block the startup process indefinitely so that anything chained to Blazor.start never happens.
+  // The detection logic here is based on the equivalent check in AuthenticationService.ts.
+  // TODO: Later we want AuthenticationService.ts to become responsible for doing this via a JS initializer. Doing it here is a
+  //       tactical fix for .NET 6 so we don't have to change how authentication is initialized.
+  if (window.parent !== window && !window.opener && window.frameElement) {
+    const settingsJson = window.sessionStorage && window.sessionStorage['Microsoft.AspNetCore.Components.WebAssembly.Authentication.CachedAuthSettings'];
+    const settings = settingsJson && JSON.parse(settingsJson);
+    return settings && settings.redirect_uri && location.href.startsWith(settings.redirect_uri);
+  }
+
+  return false;
 }
 
 Blazor.start = boot;

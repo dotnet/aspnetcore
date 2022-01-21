@@ -5,27 +5,26 @@
 
 using System.Text.Json;
 
-namespace Microsoft.AspNetCore.Components.Web
-{
-    internal static class FocusEventArgsReader
-    {
-        private static readonly JsonEncodedText Type = JsonEncodedText.Encode("type");
+namespace Microsoft.AspNetCore.Components.Web;
 
-        internal static FocusEventArgs Read(JsonElement jsonElement)
+internal static class FocusEventArgsReader
+{
+    private static readonly JsonEncodedText Type = JsonEncodedText.Encode("type");
+
+    internal static FocusEventArgs Read(JsonElement jsonElement)
+    {
+        var eventArgs = new FocusEventArgs();
+        foreach (var property in jsonElement.EnumerateObject())
         {
-            var eventArgs = new FocusEventArgs();
-            foreach (var property in jsonElement.EnumerateObject())
+            if (property.NameEquals(Type.EncodedUtf8Bytes))
             {
-                if (property.NameEquals(Type.EncodedUtf8Bytes))
-                {
-                    eventArgs.Type = property.Value.GetString()!;
-                }
-                else
-                {
-                    throw new JsonException($"Unknown property {property.Name}");
-                }
+                eventArgs.Type = property.Value.GetString()!;
             }
-            return eventArgs;
+            else
+            {
+                throw new JsonException($"Unknown property {property.Name}");
+            }
         }
+        return eventArgs;
     }
 }

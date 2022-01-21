@@ -1,111 +1,108 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Routing
+namespace Microsoft.AspNetCore.Routing;
+
+internal sealed class EndpointNameAddressScheme : IEndpointAddressScheme<string>, IDisposable
 {
-    internal sealed class EndpointNameAddressScheme : IEndpointAddressScheme<string>, IDisposable
+    private readonly DataSourceDependentCache<Dictionary<string, Endpoint[]>> _cache;
+
+    public EndpointNameAddressScheme(EndpointDataSource dataSource)
     {
-        private readonly DataSourceDependentCache<Dictionary<string, Endpoint[]>> _cache;
+        _cache = new DataSourceDependentCache<Dictionary<string, Endpoint[]>>(dataSource, Initialize);
+    }
 
-        public EndpointNameAddressScheme(EndpointDataSource dataSource)
+    // Internal for tests
+    internal Dictionary<string, Endpoint[]> Entries => _cache.EnsureInitialized();
+
+    public IEnumerable<Endpoint> FindEndpoints(string address)
+    {
+        if (address == null)
         {
-            _cache = new DataSourceDependentCache<Dictionary<string, Endpoint[]>>(dataSource, Initialize);
+            throw new ArgumentNullException(nameof(address));
         }
 
-        // Internal for tests
-        internal Dictionary<string, Endpoint[]> Entries => _cache.EnsureInitialized();
+        // Capture the current value of the cache
+        var entries = Entries;
 
-        public IEnumerable<Endpoint> FindEndpoints(string address)
+        entries.TryGetValue(address, out var result);
+        return result ?? Array.Empty<Endpoint>();
+    }
+
+    private static Dictionary<string, Endpoint[]> Initialize(IReadOnlyList<Endpoint> endpoints)
+    {
+        // Collect duplicates as we go, blow up on startup if we find any.
+        var hasDuplicates = false;
+
+        var entries = new Dictionary<string, Endpoint[]>(StringComparer.Ordinal);
+        for (var i = 0; i < endpoints.Count; i++)
         {
-            if (address == null)
+            var endpoint = endpoints[i];
+
+            var endpointName = GetEndpointName(endpoint);
+            if (endpointName == null)
             {
-                throw new ArgumentNullException(nameof(address));
+                continue;
             }
 
-            // Capture the current value of the cache
-            var entries = Entries;
+            if (!entries.TryGetValue(endpointName, out var existing))
+            {
+                // This isn't a duplicate (so far)
+                entries[endpointName] = new[] { endpoint };
+                continue;
+            }
 
-            entries.TryGetValue(address, out var result);
-            return result ?? Array.Empty<Endpoint>();
+            // Ok this is a duplicate, because we have two endpoints with the same name. Bail out, because we
+            // are just going to throw, we don't need to finish collecting data.
+            hasDuplicates = true;
+            break;
         }
 
-        private static Dictionary<string, Endpoint[]> Initialize(IReadOnlyList<Endpoint> endpoints)
+        if (!hasDuplicates)
         {
-            // Collect duplicates as we go, blow up on startup if we find any.
-            var hasDuplicates = false;
+            // No duplicates, success!
+            return entries;
+        }
 
-            var entries = new Dictionary<string, Endpoint[]>(StringComparer.Ordinal);
-            for (var i = 0; i < endpoints.Count; i++)
+        // OK we need to report some duplicates.
+        var duplicates = endpoints
+            .GroupBy(e => GetEndpointName(e))
+            .Where(g => g.Key != null && g.Count() > 1);
+
+        var builder = new StringBuilder();
+        builder.AppendLine(Resources.DuplicateEndpointNameHeader);
+
+        foreach (var group in duplicates)
+        {
+            builder.AppendLine();
+            builder.AppendLine(Resources.FormatDuplicateEndpointNameEntry(group.Key));
+
+            foreach (var endpoint in group)
             {
-                var endpoint = endpoints[i];
-
-                var endpointName = GetEndpointName(endpoint);
-                if (endpointName == null)
-                {
-                    continue;
-                }
-
-                if (!entries.TryGetValue(endpointName, out var existing))
-                {
-                    // This isn't a duplicate (so far)
-                    entries[endpointName] = new[] { endpoint };
-                    continue;
-                }
-
-                // Ok this is a duplicate, because we have two endpoints with the same name. Bail out, because we
-                // are just going to throw, we don't need to finish collecting data.
-                hasDuplicates = true;
-                break;
-            }
-
-            if (!hasDuplicates)
-            {
-                // No duplicates, success!
-                return entries;
-            }
-
-            // OK we need to report some duplicates.
-            var duplicates = endpoints
-                .GroupBy(e => GetEndpointName(e))
-                .Where(g => g.Key != null && g.Count() > 1);
-
-            var builder = new StringBuilder();
-            builder.AppendLine(Resources.DuplicateEndpointNameHeader);
-
-            foreach (var group in duplicates)
-            {
-                builder.AppendLine();
-                builder.AppendLine(Resources.FormatDuplicateEndpointNameEntry(group.Key));
-
-                foreach (var endpoint in group)
-                {
-                    builder.AppendLine(endpoint.DisplayName);
-                }
-            }
-
-            throw new InvalidOperationException(builder.ToString());
-
-            string? GetEndpointName(Endpoint endpoint)
-            {
-                if (endpoint.Metadata.GetMetadata<ISuppressLinkGenerationMetadata>()?.SuppressLinkGeneration == true)
-                {
-                    // Skip anything that's suppressed for linking.
-                    return null;
-                }
-
-                return endpoint.Metadata.GetMetadata<IEndpointNameMetadata>()?.EndpointName;
+                builder.AppendLine(endpoint.DisplayName);
             }
         }
 
-        public void Dispose()
+        throw new InvalidOperationException(builder.ToString());
+
+        static string? GetEndpointName(Endpoint endpoint)
         {
-            _cache.Dispose();
+            if (endpoint.Metadata.GetMetadata<ISuppressLinkGenerationMetadata>()?.SuppressLinkGeneration == true)
+            {
+                // Skip anything that's suppressed for linking.
+                return null;
+            }
+
+            return endpoint.Metadata.GetMetadata<IEndpointNameMetadata>()?.EndpointName;
         }
+    }
+
+    public void Dispose()
+    {
+        _cache.Dispose();
     }
 }

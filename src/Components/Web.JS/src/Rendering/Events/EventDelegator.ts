@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 import { EventFieldInfo } from './EventFieldInfo';
 import { eventNameAliasRegisteredCallbacks, getBrowserEventName, getEventNameAliases, getEventTypeOptions } from './EventTypes';
 import { dispatchEvent } from '../WebRendererInteropMethods';
@@ -5,27 +8,52 @@ import { dispatchEvent } from '../WebRendererInteropMethods';
 const nonBubblingEvents = toLookup([
   'abort',
   'blur',
+  'canplay',
+  'canplaythrough',
   'change',
+  'cuechange',
+  'durationchange',
+  'emptied',
+  'ended',
   'error',
   'focus',
   'load',
+  'loadeddata',
+  'loadedmetadata',
   'loadend',
   'loadstart',
   'mouseenter',
   'mouseleave',
+  'pause',
+  'play',
+  'playing',
   'progress',
+  'ratechange',
   'reset',
   'scroll',
+  'seeked',
+  'seeking',
+  'stalled',
   'submit',
-  'unload',
+  'suspend',
+  'timeupdate',
   'toggle',
+  'unload',
+  'volumechange',
+  'waiting',
   'DOMNodeInsertedIntoDocument',
   'DOMNodeRemovedFromDocument',
 ]);
 
 const alwaysPreventDefaultEvents: { [eventType: string]: boolean } = { submit: true };
 
-const disableableEventNames = toLookup(['click', 'dblclick', 'mousedown', 'mousemove', 'mouseup']);
+const disableableEventNames = toLookup([
+  'click',
+  'dblclick',
+  'mousedown',
+  'mousemove',
+  'mouseup',
+]);
 
 // Responsible for adding/removing the eventInfo on an expando property on DOM elements, and
 // calling an EventInfoStore that deals with registering/unregistering the underlying delegated
@@ -159,7 +187,7 @@ export class EventDelegator {
           dispatchEvent(this.browserRendererId, {
             eventHandlerId: handlerInfo.eventHandlerId,
             eventName: eventName,
-            eventFieldInfo: EventFieldInfo.fromEvent(handlerInfo.renderingComponentId, browserEvent)
+            eventFieldInfo: EventFieldInfo.fromEvent(handlerInfo.renderingComponentId, browserEvent),
           }, eventArgs);
         }
 
@@ -284,7 +312,9 @@ class EventHandlerInfosForElement {
   // that name at any one time.
   // So to keep things simple, only track one EventHandlerInfo per (element, eventName)
   private handlers: { [eventName: string]: EventHandlerInfo } = {};
+
   private preventDefaultFlags: { [eventName: string]: boolean } | null = null;
+
   private stopPropagationFlags: { [eventName: string]: boolean } | null = null;
 
   public getHandler(eventName: string): EventHandlerInfo | null {

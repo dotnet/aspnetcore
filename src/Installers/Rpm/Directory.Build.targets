@@ -36,8 +36,7 @@
   <Target Name="Build" DependsOnTargets="RpmBuild" />
   <Target Name="Pack" />
 
-  <Target Name="RpmBuild" DependsOnTargets="$(RpmBuildDependsOn)"
-      Condition="!( '$(IsTargetingPackBuilding)' == 'false' AND '$(MSBuildProjectName)' == 'Rpm.TargetingPack' )">
+  <Target Name="RpmBuild" DependsOnTargets="$(RpmBuildDependsOn)">
     <!-- Create layout: Create changelog -->
     <PropertyGroup>
       <ChangeLogProps>DATE=$([System.DateTime]::UtcNow.ToString(ddd MMM dd yyyy))</ChangeLogProps>
@@ -77,6 +76,14 @@
       <FpmArgs Include="&quot;$(PackageContentRoot)=$(RpmPackageInstallRoot)&quot;" />
     </ItemGroup>
 
-    <Exec Command="fpm @(FpmArgs,' ')" />
+    <Exec Command="scl enable rh-ruby25 'fpm @(FpmArgs,' ')'" />
+
+    <Copy SourceFiles="$(TargetPath)"
+          DestinationFiles="$(CblMarinerTargetPath)"
+          OverwriteReadOnlyFiles="True"
+          SkipUnchangedFiles="False"
+          UseHardlinksIfPossible="False" />
+
+    <Message Text="$(TargetPath) -> $(CblMarinerTargetPath)" Importance="high" />
   </Target>
 </Project>

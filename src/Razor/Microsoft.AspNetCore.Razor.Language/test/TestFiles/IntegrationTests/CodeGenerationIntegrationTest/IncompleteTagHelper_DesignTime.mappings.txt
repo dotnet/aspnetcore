@@ -1,5 +1,0 @@
-Source Location: (14:0,14 [17] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteTagHelper.cshtml)
-|"*, TestAssembly"|
-Generated Location: (1025:18,37 [17] )
-|"*, TestAssembly"|
-

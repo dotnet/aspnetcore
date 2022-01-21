@@ -3,240 +3,429 @@
 
 #nullable enable
 
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace Microsoft.AspNetCore.Mvc.ViewFeatures
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
+
+/// <summary>
+/// A dictionary for HTML attributes.
+/// </summary>
+public class AttributeDictionary : IDictionary<string, string?>, IReadOnlyDictionary<string, string?>
 {
-    /// <summary>
-    /// A dictionary for HTML attributes.
-    /// </summary>
-    public class AttributeDictionary : IDictionary<string, string?>, IReadOnlyDictionary<string, string?>
+    private List<KeyValuePair<string, string?>>? _items;
+
+    /// <inheritdoc />
+    public string? this[string key]
     {
-        private List<KeyValuePair<string, string?>>? _items;
-
-        /// <inheritdoc />
-        public string? this[string key]
+        get
         {
-            get
+            if (key == null)
             {
-                if (key == null)
-                {
-                    throw new ArgumentNullException(nameof(key));
-                }
-
-                var index = Find(key);
-                if (index < 0)
-                {
-                    throw new KeyNotFoundException();
-                }
-                else
-                {
-                    return Get(index).Value;
-                }
+                throw new ArgumentNullException(nameof(key));
             }
 
-            set
+            var index = Find(key);
+            if (index < 0)
             {
-                if (key == null)
-                {
-                    throw new ArgumentNullException(nameof(key));
-                }
-
-                var item = new KeyValuePair<string, string?>(key, value);
-                var index = Find(key);
-                if (index < 0)
-                {
-                    Insert(~index, item);
-                }
-                else
-                {
-                    Set(index, item);
-                }
+                throw new KeyNotFoundException();
+            }
+            else
+            {
+                return Get(index).Value;
             }
         }
 
-        /// <inheritdoc />
-        public int Count => _items == null ? 0 : _items.Count;
-
-        /// <inheritdoc />
-        public bool IsReadOnly => false;
-
-        /// <inheritdoc />
-        public ICollection<string> Keys => new KeyCollection(this);
-
-        /// <inheritdoc />
-        public ICollection<string?> Values => new ValueCollection(this);
-
-        /// <inheritdoc />
-        IEnumerable<string> IReadOnlyDictionary<string, string?>.Keys => new KeyCollection(this);
-
-        /// <inheritdoc />
-        IEnumerable<string?> IReadOnlyDictionary<string, string?>.Values => new ValueCollection(this);
-
-        private KeyValuePair<string, string?> Get(int index)
+        set
         {
-            Debug.Assert(index >= 0 && index < Count && _items != null);
-            return _items[index];
-        }
-
-        private void Set(int index, KeyValuePair<string, string?> value)
-        {
-            Debug.Assert(index >= 0 && index <= Count);
-            Debug.Assert(value.Key != null);
-
-            if (_items == null)
+            if (key == null)
             {
-                _items = new List<KeyValuePair<string, string?>>();
+                throw new ArgumentNullException(nameof(key));
             }
 
-            _items[index] = value;
-        }
-
-        private void Insert(int index, KeyValuePair<string, string?> value)
-        {
-            Debug.Assert(index >= 0 && index <= Count);
-            Debug.Assert(value.Key != null);
-
-            if (_items == null)
-            {
-                _items = new List<KeyValuePair<string, string?>>();
-            }
-
-            _items.Insert(index, value);
-        }
-
-        private void Remove(int index)
-        {
-            Debug.Assert(index >= 0 && index < Count);
-
-            Debug.Assert(_items != null);
-            _items.RemoveAt(index);
-        }
-
-        // This API is a lot like List<T>.BinarySearch https://msdn.microsoft.com/en-us/library/3f90y839(v=vs.110).aspx
-        // If an item is not found, we return the compliment of where it belongs. Then we don't need to search again
-        // to do something with it.
-        private int Find(string key)
-        {
-            Debug.Assert(key != null);
-
-            if (Count == 0)
-            {
-                return ~0;
-            }
-
-            var start = 0;
-            var end = Count - 1;
-
-            while (start <= end)
-            {
-                var pivot = start + (end - start >> 1);
-
-                var compare = StringComparer.OrdinalIgnoreCase.Compare(Get(pivot).Key, key);
-                if (compare == 0)
-                {
-                    return pivot;
-                }
-                if (compare < 0)
-                {
-                    start = pivot + 1;
-                }
-                else
-                {
-                    end = pivot - 1;
-                }
-            }
-
-            return ~start;
-        }
-
-        /// <inheritdoc />
-        public void Clear()
-        {
-            if (_items != null)
-            {
-                _items.Clear();
-            }
-        }
-
-        /// <inheritdoc />
-        public void Add(KeyValuePair<string, string?> item)
-        {
-            if (item.Key == null)
-            {
-                throw new ArgumentException(
-                    Resources.FormatPropertyOfTypeCannotBeNull(
-                        nameof(KeyValuePair<string, string?>.Key),
-                        nameof(KeyValuePair<string, string?>)),
-                    nameof(item));
-            }
-
-            var index = Find(item.Key);
+            var item = new KeyValuePair<string, string?>(key, value);
+            var index = Find(key);
             if (index < 0)
             {
                 Insert(~index, item);
             }
             else
             {
-                throw new InvalidOperationException(Resources.FormatDictionary_DuplicateKey(item.Key));
+                Set(index, item);
             }
         }
+    }
 
-        /// <inheritdoc />
-        public void Add(string key, string? value)
+    /// <inheritdoc />
+    public int Count => _items == null ? 0 : _items.Count;
+
+    /// <inheritdoc />
+    public bool IsReadOnly => false;
+
+    /// <inheritdoc />
+    public ICollection<string> Keys => new KeyCollection(this);
+
+    /// <inheritdoc />
+    public ICollection<string?> Values => new ValueCollection(this);
+
+    /// <inheritdoc />
+    IEnumerable<string> IReadOnlyDictionary<string, string?>.Keys => new KeyCollection(this);
+
+    /// <inheritdoc />
+    IEnumerable<string?> IReadOnlyDictionary<string, string?>.Values => new ValueCollection(this);
+
+    private KeyValuePair<string, string?> Get(int index)
+    {
+        Debug.Assert(index >= 0 && index < Count && _items != null);
+        return _items[index];
+    }
+
+    private void Set(int index, KeyValuePair<string, string?> value)
+    {
+        Debug.Assert(index >= 0 && index <= Count);
+        Debug.Assert(value.Key != null);
+
+        if (_items == null)
         {
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-
-            Add(new KeyValuePair<string, string?>(key, value));
+            _items = new List<KeyValuePair<string, string?>>();
         }
 
-        /// <inheritdoc />
-        public bool Contains(KeyValuePair<string, string?> item)
-        {
-            if (item.Key == null)
-            {
-                throw new ArgumentException(
-                    Resources.FormatPropertyOfTypeCannotBeNull(
-                        nameof(KeyValuePair<string, string?>.Key),
-                        nameof(KeyValuePair<string, string?>)),
-                    nameof(item));
-            }
+        _items[index] = value;
+    }
 
-            var index = Find(item.Key);
-            if (index < 0)
+    private void Insert(int index, KeyValuePair<string, string?> value)
+    {
+        Debug.Assert(index >= 0 && index <= Count);
+        Debug.Assert(value.Key != null);
+
+        if (_items == null)
+        {
+            _items = new List<KeyValuePair<string, string?>>();
+        }
+
+        _items.Insert(index, value);
+    }
+
+    private void Remove(int index)
+    {
+        Debug.Assert(index >= 0 && index < Count);
+
+        Debug.Assert(_items != null);
+        _items.RemoveAt(index);
+    }
+
+    // This API is a lot like List<T>.BinarySearch https://msdn.microsoft.com/en-us/library/3f90y839(v=vs.110).aspx
+    // If an item is not found, we return the compliment of where it belongs. Then we don't need to search again
+    // to do something with it.
+    private int Find(string key)
+    {
+        Debug.Assert(key != null);
+
+        if (Count == 0)
+        {
+            return ~0;
+        }
+
+        var start = 0;
+        var end = Count - 1;
+
+        while (start <= end)
+        {
+            var pivot = start + (end - start >> 1);
+
+            var compare = StringComparer.OrdinalIgnoreCase.Compare(Get(pivot).Key, key);
+            if (compare == 0)
             {
-                return false;
+                return pivot;
+            }
+            if (compare < 0)
+            {
+                start = pivot + 1;
             }
             else
             {
-                return string.Equals(item.Value, Get(index).Value, StringComparison.OrdinalIgnoreCase);
+                end = pivot - 1;
             }
         }
 
-        /// <inheritdoc />
-        public bool ContainsKey(string key)
+        return ~start;
+    }
+
+    /// <inheritdoc />
+    public void Clear()
+    {
+        if (_items != null)
         {
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
+            _items.Clear();
+        }
+    }
 
-            if (Count == 0)
-            {
-                return false;
-            }
+    /// <inheritdoc />
+    public void Add(KeyValuePair<string, string?> item)
+    {
+        if (item.Key == null)
+        {
+            throw new ArgumentException(
+                Resources.FormatPropertyOfTypeCannotBeNull(
+                    nameof(KeyValuePair<string, string?>.Key),
+                    nameof(KeyValuePair<string, string?>)),
+                nameof(item));
+        }
 
-            return Find(key) >= 0;
+        var index = Find(item.Key);
+        if (index < 0)
+        {
+            Insert(~index, item);
+        }
+        else
+        {
+            throw new InvalidOperationException(Resources.FormatDictionary_DuplicateKey(item.Key));
+        }
+    }
+
+    /// <inheritdoc />
+    public void Add(string key, string? value)
+    {
+        if (key == null)
+        {
+            throw new ArgumentNullException(nameof(key));
+        }
+
+        Add(new KeyValuePair<string, string?>(key, value));
+    }
+
+    /// <inheritdoc />
+    public bool Contains(KeyValuePair<string, string?> item)
+    {
+        if (item.Key == null)
+        {
+            throw new ArgumentException(
+                Resources.FormatPropertyOfTypeCannotBeNull(
+                    nameof(KeyValuePair<string, string?>.Key),
+                    nameof(KeyValuePair<string, string?>)),
+                nameof(item));
+        }
+
+        var index = Find(item.Key);
+        if (index < 0)
+        {
+            return false;
+        }
+        else
+        {
+            return string.Equals(item.Value, Get(index).Value, StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    /// <inheritdoc />
+    public bool ContainsKey(string key)
+    {
+        if (key == null)
+        {
+            throw new ArgumentNullException(nameof(key));
+        }
+
+        if (Count == 0)
+        {
+            return false;
+        }
+
+        return Find(key) >= 0;
+    }
+
+    /// <inheritdoc />
+    public void CopyTo(KeyValuePair<string, string?>[] array, int arrayIndex)
+    {
+        if (array == null)
+        {
+            throw new ArgumentNullException(nameof(array));
+        }
+
+        if (arrayIndex < 0 || arrayIndex >= array.Length)
+        {
+            throw new IndexOutOfRangeException();
+        }
+
+        for (var i = 0; i < Count; i++)
+        {
+            array[arrayIndex + i] = Get(i);
+        }
+    }
+
+    /// <inheritdoc />
+    public Enumerator GetEnumerator()
+    {
+        return new Enumerator(this);
+    }
+
+    /// <inheritdoc />
+    public bool Remove(KeyValuePair<string, string?> item)
+    {
+        if (item.Key == null)
+        {
+            throw new ArgumentException(
+                Resources.FormatPropertyOfTypeCannotBeNull(
+                    nameof(KeyValuePair<string, string?>.Key),
+                    nameof(KeyValuePair<string, string?>)),
+                nameof(item));
+        }
+
+        var index = Find(item.Key);
+        if (index < 0)
+        {
+            return false;
+        }
+        else if (string.Equals(item.Value, Get(index).Value, StringComparison.OrdinalIgnoreCase))
+        {
+            Remove(index);
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    /// <inheritdoc />
+    public bool Remove(string key)
+    {
+        if (key == null)
+        {
+            throw new ArgumentNullException(nameof(key));
+        }
+
+        var index = Find(key);
+        if (index < 0)
+        {
+            return false;
+        }
+        else
+        {
+            Remove(index);
+            return true;
+        }
+    }
+
+    /// <inheritdoc />
+    public bool TryGetValue(string key, out string? value)
+    {
+        if (key == null)
+        {
+            throw new ArgumentNullException(nameof(key));
+        }
+
+        var index = Find(key);
+        if (index < 0)
+        {
+            value = null;
+            return false;
+        }
+        else
+        {
+            value = Get(index).Value;
+            return true;
+        }
+    }
+
+    /// <inheritdoc />
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
+
+    /// <inheritdoc />
+    IEnumerator<KeyValuePair<string, string?>> IEnumerable<KeyValuePair<string, string?>>.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
+
+    /// <summary>
+    /// An enumerator for <see cref="AttributeDictionary"/>.
+    /// </summary>
+    public struct Enumerator : IEnumerator<KeyValuePair<string, string?>>
+    {
+        private readonly AttributeDictionary _attributes;
+
+        private int _index;
+
+        /// <summary>
+        /// Creates a new <see cref="Enumerator"/>.
+        /// </summary>
+        /// <param name="attributes">The <see cref="AttributeDictionary"/>.</param>
+        public Enumerator(AttributeDictionary attributes)
+        {
+            _attributes = attributes;
+
+            _index = -1;
         }
 
         /// <inheritdoc />
-        public void CopyTo(KeyValuePair<string, string?>[] array, int arrayIndex)
+        public KeyValuePair<string, string?> Current => _attributes.Get(_index);
+
+        /// <inheritdoc />
+        object IEnumerator.Current => Current;
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+        }
+
+        /// <inheritdoc />
+        public bool MoveNext()
+        {
+            _index++;
+            return _index < _attributes.Count;
+        }
+
+        /// <inheritdoc />
+        public void Reset()
+        {
+            _index = -1;
+        }
+    }
+
+    private class KeyCollection : ICollection<string>
+    {
+        private readonly AttributeDictionary _attributes;
+
+        public KeyCollection(AttributeDictionary attributes)
+        {
+            _attributes = attributes;
+        }
+
+        public int Count => _attributes.Count;
+
+        public bool IsReadOnly => true;
+
+        public void Add(string item)
+        {
+            throw new NotSupportedException();
+        }
+
+        public void Clear()
+        {
+            throw new NotSupportedException();
+        }
+
+        public bool Contains(string item)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            for (var i = 0; i < _attributes.Count; i++)
+            {
+                if (string.Equals(item, _attributes.Get(i).Key, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public void CopyTo(string[] array, int arrayIndex)
         {
             if (array == null)
             {
@@ -248,112 +437,38 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 throw new IndexOutOfRangeException();
             }
 
-            for (var i = 0; i < Count; i++)
+            for (var i = 0; i < _attributes.Count; i++)
             {
-                array[arrayIndex + i] = Get(i);
+                array[arrayIndex + i] = _attributes.Get(i).Key;
             }
         }
 
-        /// <inheritdoc />
         public Enumerator GetEnumerator()
         {
-            return new Enumerator(this);
+            return new Enumerator(_attributes);
         }
 
-        /// <inheritdoc />
-        public bool Remove(KeyValuePair<string, string?> item)
+        public bool Remove(string item)
         {
-            if (item.Key == null)
-            {
-                throw new ArgumentException(
-                    Resources.FormatPropertyOfTypeCannotBeNull(
-                        nameof(KeyValuePair<string, string?>.Key),
-                        nameof(KeyValuePair<string, string?>)),
-                    nameof(item));
-            }
-
-            var index = Find(item.Key);
-            if (index < 0)
-            {
-                return false;
-            }
-            else if (string.Equals(item.Value, Get(index).Value, StringComparison.OrdinalIgnoreCase))
-            {
-                Remove(index);
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            throw new NotSupportedException();
         }
 
-        /// <inheritdoc />
-        public bool Remove(string key)
+        IEnumerator<string> IEnumerable<string>.GetEnumerator()
         {
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-
-            var index = Find(key);
-            if (index < 0)
-            {
-                return false;
-            }
-            else
-            {
-                Remove(index);
-                return true;
-            }
+            return GetEnumerator();
         }
 
-        /// <inheritdoc />
-        public bool TryGetValue(string key, out string? value)
-        {
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-
-            var index = Find(key);
-            if (index < 0)
-            {
-                value = null;
-                return false;
-            }
-            else
-            {
-                value = Get(index).Value;
-                return true;
-            }
-        }
-
-        /// <inheritdoc />
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
         }
 
-        /// <inheritdoc />
-        IEnumerator<KeyValuePair<string, string?>> IEnumerable<KeyValuePair<string, string?>>.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        /// <summary>
-        /// An enumerator for <see cref="AttributeDictionary"/>.
-        /// </summary>
-        public struct Enumerator : IEnumerator<KeyValuePair<string, string?>>
+        public struct Enumerator : IEnumerator<string?>
         {
             private readonly AttributeDictionary _attributes;
 
             private int _index;
 
-            /// <summary>
-            /// Creates a new <see cref="Enumerator"/>.
-            /// </summary>
-            /// <param name="attributes">The <see cref="AttributeDictionary"/>.</param>
             public Enumerator(AttributeDictionary attributes)
             {
                 _attributes = attributes;
@@ -361,249 +476,131 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 _index = -1;
             }
 
-            /// <inheritdoc />
-            public KeyValuePair<string, string?> Current => _attributes.Get(_index);
+            public string Current => _attributes.Get(_index).Key;
 
-            /// <inheritdoc />
             object IEnumerator.Current => Current;
 
-            /// <inheritdoc />
             public void Dispose()
             {
             }
 
-            /// <inheritdoc />
             public bool MoveNext()
             {
                 _index++;
                 return _index < _attributes.Count;
             }
 
-            /// <inheritdoc />
             public void Reset()
             {
                 _index = -1;
             }
         }
+    }
 
-        private class KeyCollection : ICollection<string>
+    private class ValueCollection : ICollection<string?>
+    {
+        private readonly AttributeDictionary _attributes;
+
+        public ValueCollection(AttributeDictionary attributes)
         {
-            private readonly AttributeDictionary _attributes;
+            _attributes = attributes;
+        }
 
-            public KeyCollection(AttributeDictionary attributes)
+        public int Count => _attributes.Count;
+
+        public bool IsReadOnly => true;
+
+        public void Add(string? item)
+        {
+            throw new NotSupportedException();
+        }
+
+        public void Clear()
+        {
+            throw new NotSupportedException();
+        }
+
+        public bool Contains(string? item)
+        {
+            for (var i = 0; i < _attributes.Count; i++)
             {
-                _attributes = attributes;
-            }
-
-            public int Count => _attributes.Count;
-
-            public bool IsReadOnly => true;
-
-            public void Add(string item)
-            {
-                throw new NotSupportedException();
-            }
-
-            public void Clear()
-            {
-                throw new NotSupportedException();
-            }
-
-            public bool Contains(string item)
-            {
-                if (item == null)
+                if (string.Equals(item, _attributes.Get(i).Value, StringComparison.OrdinalIgnoreCase))
                 {
-                    throw new ArgumentNullException(nameof(item));
-                }
-
-                for (var i = 0; i < _attributes.Count; i++)
-                {
-                    if (string.Equals(item, _attributes.Get(i).Key, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return true;
-                    }
-                }
-
-                return false;
-            }
-
-            public void CopyTo(string[] array, int arrayIndex)
-            {
-                if (array == null)
-                {
-                    throw new ArgumentNullException(nameof(array));
-                }
-
-                if (arrayIndex < 0 || arrayIndex >= array.Length)
-                {
-                    throw new IndexOutOfRangeException();
-                }
-
-                for (var i = 0; i < _attributes.Count; i++)
-                {
-                    array[arrayIndex + i] = _attributes.Get(i).Key;
+                    return true;
                 }
             }
 
-            public Enumerator GetEnumerator()
+            return false;
+        }
+
+        public void CopyTo(string?[] array, int arrayIndex)
+        {
+            if (array == null)
             {
-                return new Enumerator(_attributes);
+                throw new ArgumentNullException(nameof(array));
             }
 
-            public bool Remove(string item)
+            if (arrayIndex < 0 || arrayIndex >= array.Length)
             {
-                throw new NotSupportedException();
+                throw new IndexOutOfRangeException();
             }
 
-            IEnumerator<string> IEnumerable<string>.GetEnumerator()
+            for (var i = 0; i < _attributes.Count; i++)
             {
-                return GetEnumerator();
-            }
-
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                return GetEnumerator();
-            }
-
-            public struct Enumerator : IEnumerator<string?>
-            {
-                private readonly AttributeDictionary _attributes;
-
-                private int _index;
-
-                public Enumerator(AttributeDictionary attributes)
-                {
-                    _attributes = attributes;
-
-                    _index = -1;
-                }
-
-                public string Current => _attributes.Get(_index).Key;
-
-                object IEnumerator.Current => Current;
-
-                public void Dispose()
-                {
-                }
-
-                public bool MoveNext()
-                {
-                    _index++;
-                    return _index < _attributes.Count;
-                }
-
-                public void Reset()
-                {
-                    _index = -1;
-                }
+                array[arrayIndex + i] = _attributes.Get(i).Value;
             }
         }
 
-        private class ValueCollection : ICollection<string?>
+        public Enumerator GetEnumerator()
+        {
+            return new Enumerator(_attributes);
+        }
+
+        public bool Remove(string? item)
+        {
+            throw new NotSupportedException();
+        }
+
+        IEnumerator<string?> IEnumerable<string?>.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        public struct Enumerator : IEnumerator<string?>
         {
             private readonly AttributeDictionary _attributes;
 
-            public ValueCollection(AttributeDictionary attributes)
+            private int _index;
+
+            public Enumerator(AttributeDictionary attributes)
             {
                 _attributes = attributes;
+
+                _index = -1;
             }
 
-            public int Count => _attributes.Count;
+            public string? Current => _attributes.Get(_index).Value;
 
-            public bool IsReadOnly => true;
+            object? IEnumerator.Current => Current;
 
-            public void Add(string? item)
+            public void Dispose()
             {
-                throw new NotSupportedException();
             }
 
-            public void Clear()
+            public bool MoveNext()
             {
-                throw new NotSupportedException();
+                _index++;
+                return _index < _attributes.Count;
             }
 
-            public bool Contains(string? item)
+            public void Reset()
             {
-                for (var i = 0; i < _attributes.Count; i++)
-                {
-                    if (string.Equals(item, _attributes.Get(i).Value, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return true;
-                    }
-                }
-
-                return false;
-            }
-
-            public void CopyTo(string?[] array, int arrayIndex)
-            {
-                if (array == null)
-                {
-                    throw new ArgumentNullException(nameof(array));
-                }
-
-                if (arrayIndex < 0 || arrayIndex >= array.Length)
-                {
-                    throw new IndexOutOfRangeException();
-                }
-
-                for (var i = 0; i < _attributes.Count; i++)
-                {
-                    array[arrayIndex + i] = _attributes.Get(i).Value;
-                }
-            }
-
-            public Enumerator GetEnumerator()
-            {
-                return new Enumerator(_attributes);
-            }
-
-            public bool Remove(string? item)
-            {
-                throw new NotSupportedException();
-            }
-
-            IEnumerator<string?> IEnumerable<string?>.GetEnumerator()
-            {
-                return GetEnumerator();
-            }
-
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                return GetEnumerator();
-            }
-
-            public struct Enumerator : IEnumerator<string?>
-            {
-                private readonly AttributeDictionary _attributes;
-
-                private int _index;
-
-                public Enumerator(AttributeDictionary attributes)
-                {
-                    _attributes = attributes;
-
-                    _index = -1;
-                }
-
-                public string? Current => _attributes.Get(_index).Value;
-
-                object? IEnumerator.Current => Current;
-
-                public void Dispose()
-                {
-                }
-
-                public bool MoveNext()
-                {
-                    _index++;
-                    return _index < _attributes.Count;
-                }
-
-                public void Reset()
-                {
-                    _index = -1;
-                }
+                _index = -1;
             }
         }
     }

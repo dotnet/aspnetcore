@@ -3,19 +3,18 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace RazorPagesWebSite
+namespace RazorPagesWebSite;
+
+public class UserModel : IUserModel
 {
-    public class UserModel : IUserModel
+    [Required]
+    public string Name { get; set; }
+
+    [Range(0, 99)]
+    public int Age { get; set; }
+
+    public override string ToString()
     {
-        [Required]
-        public string Name { get; set; }
-
-        [Range(0, 99)]
-        public int Age { get; set; }
-
-        public override string ToString()
-        {
-            return $"Name = {Name}, Age = {Age}";
-        }
+        return $"Name = {Name}, Age = {Age}";
     }
 }

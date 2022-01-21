@@ -1,169 +1,167 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using Microsoft.JSInterop.WebAssembly;
 
-namespace Microsoft.AspNetCore.Components.WebAssembly.Services
+namespace Microsoft.AspNetCore.Components.WebAssembly.Services;
+
+internal class WebAssemblyConsoleLogger<T> : ILogger<T>, ILogger
 {
-    internal class WebAssemblyConsoleLogger<T> : ILogger<T>, ILogger
+    private const string _loglevelPadding = ": ";
+    private static readonly string _messagePadding = new(' ', GetLogLevelString(LogLevel.Information).Length + _loglevelPadding.Length);
+    private static readonly string _newLineWithMessagePadding = Environment.NewLine + _messagePadding;
+    private static readonly StringBuilder _logBuilder = new StringBuilder();
+
+    private readonly string _name;
+    private readonly WebAssemblyJSRuntime _jsRuntime;
+
+    public WebAssemblyConsoleLogger(IJSRuntime jsRuntime)
+        : this(string.Empty, (WebAssemblyJSRuntime)jsRuntime) // Cast for DI
     {
-        private const string _loglevelPadding = ": ";
-        private static readonly string _messagePadding = new(' ', GetLogLevelString(LogLevel.Information).Length + _loglevelPadding.Length);
-        private static readonly string _newLineWithMessagePadding = Environment.NewLine + _messagePadding;
-        private static readonly StringBuilder _logBuilder = new StringBuilder();
+    }
 
-        private readonly string _name;
-        private readonly WebAssemblyJSRuntime _jsRuntime;
+    public WebAssemblyConsoleLogger(string name, WebAssemblyJSRuntime jsRuntime)
+    {
+        _name = name ?? throw new ArgumentNullException(nameof(name));
+        _jsRuntime = jsRuntime ?? throw new ArgumentNullException(nameof(jsRuntime));
+    }
 
-        public WebAssemblyConsoleLogger(IJSRuntime jsRuntime)
-            : this(string.Empty, (WebAssemblyJSRuntime)jsRuntime) // Cast for DI
+    public IDisposable BeginScope<TState>(TState state)
+    {
+        return NoOpDisposable.Instance;
+    }
+
+    public bool IsEnabled(LogLevel logLevel)
+    {
+        return logLevel != LogLevel.None;
+    }
+
+    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+    {
+        if (!IsEnabled(logLevel))
         {
+            return;
         }
 
-        public WebAssemblyConsoleLogger(string name, WebAssemblyJSRuntime jsRuntime)
+        if (formatter == null)
         {
-            _name = name ?? throw new ArgumentNullException(nameof(name));
-            _jsRuntime = jsRuntime ?? throw new ArgumentNullException(nameof(jsRuntime));
+            throw new ArgumentNullException(nameof(formatter));
         }
 
-        public IDisposable BeginScope<TState>(TState state)
-        {
-            return NoOpDisposable.Instance;
-        }
+        var message = formatter(state, exception);
 
-        public bool IsEnabled(LogLevel logLevel)
+        if (!string.IsNullOrEmpty(message) || exception != null)
         {
-            return logLevel != LogLevel.None;
+            WriteMessage(logLevel, _name, eventId.Id, message, exception);
         }
+    }
 
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+    private void WriteMessage(LogLevel logLevel, string logName, int eventId, string message, Exception? exception)
+    {
+        lock (_logBuilder)
         {
-            if (!IsEnabled(logLevel))
+            try
             {
-                return;
-            }
+                CreateDefaultLogMessage(_logBuilder, logLevel, logName, eventId, message, exception);
+                var formattedMessage = _logBuilder.ToString();
 
-            if (formatter == null)
-            {
-                throw new ArgumentNullException(nameof(formatter));
-            }
-
-            var message = formatter(state, exception);
-
-            if (!string.IsNullOrEmpty(message) || exception != null)
-            {
-                WriteMessage(logLevel, _name, eventId.Id, message, exception);
-            }
-        }
-
-        private void WriteMessage(LogLevel logLevel, string logName, int eventId, string message, Exception? exception)
-        {
-            lock (_logBuilder)
-            {
-                try
+                switch (logLevel)
                 {
-                    CreateDefaultLogMessage(_logBuilder, logLevel, logName, eventId, message, exception);
-                    var formattedMessage = _logBuilder.ToString();
-
-                    switch (logLevel)
-                    {
-                        case LogLevel.Trace:
-                        case LogLevel.Debug:
-                            // Although https://console.spec.whatwg.org/#loglevel-severity claims that
-                            // "console.debug" and "console.log" are synonyms, that doesn't match the
-                            // behavior of browsers in the real world. Chromium only displays "debug"
-                            // messages if you enable "Verbose" in the filter dropdown (which is off
-                            // by default). As such "console.debug" is the best choice for messages
-                            // with a lower severity level than "Information".
-                            _jsRuntime.InvokeVoid("console.debug", formattedMessage);
-                            break;
-                        case LogLevel.Information:
-                            _jsRuntime.InvokeVoid("console.info", formattedMessage);
-                            break;
-                        case LogLevel.Warning:
-                            _jsRuntime.InvokeVoid("console.warn", formattedMessage);
-                            break;
-                        case LogLevel.Error:
-                            _jsRuntime.InvokeVoid("console.error", formattedMessage);
-                            break;
-                        case LogLevel.Critical:
-                            _jsRuntime.InvokeUnmarshalled<string, object>("Blazor._internal.dotNetCriticalError", formattedMessage);
-                            break;
-                        default: // invalid enum values
-                            Debug.Assert(logLevel != LogLevel.None, "This method is never called with LogLevel.None.");
-                            _jsRuntime.InvokeVoid("console.log", formattedMessage);
-                            break;
-                    }
-                }
-                finally
-                {
-                    _logBuilder.Clear();
+                    case LogLevel.Trace:
+                    case LogLevel.Debug:
+                        // Although https://console.spec.whatwg.org/#loglevel-severity claims that
+                        // "console.debug" and "console.log" are synonyms, that doesn't match the
+                        // behavior of browsers in the real world. Chromium only displays "debug"
+                        // messages if you enable "Verbose" in the filter dropdown (which is off
+                        // by default). As such "console.debug" is the best choice for messages
+                        // with a lower severity level than "Information".
+                        _jsRuntime.InvokeVoid("console.debug", formattedMessage);
+                        break;
+                    case LogLevel.Information:
+                        _jsRuntime.InvokeVoid("console.info", formattedMessage);
+                        break;
+                    case LogLevel.Warning:
+                        _jsRuntime.InvokeVoid("console.warn", formattedMessage);
+                        break;
+                    case LogLevel.Error:
+                        _jsRuntime.InvokeVoid("console.error", formattedMessage);
+                        break;
+                    case LogLevel.Critical:
+                        _jsRuntime.InvokeUnmarshalled<string, object>("Blazor._internal.dotNetCriticalError", formattedMessage);
+                        break;
+                    default: // invalid enum values
+                        Debug.Assert(logLevel != LogLevel.None, "This method is never called with LogLevel.None.");
+                        _jsRuntime.InvokeVoid("console.log", formattedMessage);
+                        break;
                 }
             }
-        }
-
-        private void CreateDefaultLogMessage(StringBuilder logBuilder, LogLevel logLevel, string logName, int eventId, string message, Exception? exception)
-        {
-            logBuilder.Append(GetLogLevelString(logLevel));
-            logBuilder.Append(_loglevelPadding);
-            logBuilder.Append(logName);
-            logBuilder.Append('[');
-            logBuilder.Append(eventId);
-            logBuilder.Append(']');
-
-            if (!string.IsNullOrEmpty(message))
+            finally
             {
-                // message
-                logBuilder.AppendLine();
-                logBuilder.Append(_messagePadding);
-
-                var len = logBuilder.Length;
-                logBuilder.Append(message);
-                logBuilder.Replace(Environment.NewLine, _newLineWithMessagePadding, len, message.Length);
-            }
-
-            // Example:
-            // System.InvalidOperationException
-            //    at Namespace.Class.Function() in File:line X
-            if (exception != null)
-            {
-                // exception message
-                logBuilder.AppendLine();
-                logBuilder.Append(exception.ToString());
+                _logBuilder.Clear();
             }
         }
+    }
 
-        private static string GetLogLevelString(LogLevel logLevel)
+    private static void CreateDefaultLogMessage(StringBuilder logBuilder, LogLevel logLevel, string logName, int eventId, string message, Exception? exception)
+    {
+        logBuilder.Append(GetLogLevelString(logLevel));
+        logBuilder.Append(_loglevelPadding);
+        logBuilder.Append(logName);
+        logBuilder.Append('[');
+        logBuilder.Append(eventId);
+        logBuilder.Append(']');
+
+        if (!string.IsNullOrEmpty(message))
         {
-            switch (logLevel)
-            {
-                case LogLevel.Trace:
-                    return "trce";
-                case LogLevel.Debug:
-                    return "dbug";
-                case LogLevel.Information:
-                    return "info";
-                case LogLevel.Warning:
-                    return "warn";
-                case LogLevel.Error:
-                    return "fail";
-                case LogLevel.Critical:
-                    return "crit";
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(logLevel));
-            }
+            // message
+            logBuilder.AppendLine();
+            logBuilder.Append(_messagePadding);
+
+            var len = logBuilder.Length;
+            logBuilder.Append(message);
+            logBuilder.Replace(Environment.NewLine, _newLineWithMessagePadding, len, message.Length);
         }
 
-        private class NoOpDisposable : IDisposable
+        // Example:
+        // System.InvalidOperationException
+        //    at Namespace.Class.Function() in File:line X
+        if (exception != null)
         {
-            public static NoOpDisposable Instance = new NoOpDisposable();
-
-            public void Dispose() { }
+            // exception message
+            logBuilder.AppendLine();
+            logBuilder.Append(exception.ToString());
         }
+    }
+
+    private static string GetLogLevelString(LogLevel logLevel)
+    {
+        switch (logLevel)
+        {
+            case LogLevel.Trace:
+                return "trce";
+            case LogLevel.Debug:
+                return "dbug";
+            case LogLevel.Information:
+                return "info";
+            case LogLevel.Warning:
+                return "warn";
+            case LogLevel.Error:
+                return "fail";
+            case LogLevel.Critical:
+                return "crit";
+            default:
+                throw new ArgumentOutOfRangeException(nameof(logLevel));
+        }
+    }
+
+    private class NoOpDisposable : IDisposable
+    {
+        public static NoOpDisposable Instance = new NoOpDisposable();
+
+        public void Dispose() { }
     }
 }

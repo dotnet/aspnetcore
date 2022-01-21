@@ -3,22 +3,21 @@
 
 using System.Text.RegularExpressions;
 
-namespace Microsoft.AspNetCore.Rewrite.UrlMatches
+namespace Microsoft.AspNetCore.Rewrite.UrlMatches;
+
+internal class RegexMatch : UrlMatch
 {
-    internal class RegexMatch : UrlMatch
+    private readonly Regex _match;
+
+    public RegexMatch(Regex match, bool negate)
     {
-        private readonly Regex _match;
+        _match = match;
+        Negate = negate;
+    }
 
-        public RegexMatch(Regex match, bool negate)
-        {
-            _match = match;
-            Negate = negate;
-        }
-
-        public override MatchResults Evaluate(string pattern, RewriteContext context)
-        {
-            var res = _match.Match(pattern);
-            return new MatchResults(success: res.Success != Negate, new BackReferenceCollection(res.Groups));
-        }
+    public override MatchResults Evaluate(string pattern, RewriteContext context)
+    {
+        var res = _match.Match(pattern);
+        return new MatchResults(success: res.Success != Negate, new BackReferenceCollection(res.Groups));
     }
 }

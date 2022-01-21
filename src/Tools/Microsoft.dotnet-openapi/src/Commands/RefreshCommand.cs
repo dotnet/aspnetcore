@@ -9,59 +9,58 @@ using Microsoft.DotNet.Openapi.Tools;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Tools.Internal;
 
-namespace Microsoft.DotNet.OpenApi.Commands
+namespace Microsoft.DotNet.OpenApi.Commands;
+
+internal class RefreshCommand : BaseCommand
 {
-    internal class RefreshCommand : BaseCommand
+    private const string CommandName = "refresh";
+
+    private const string SourceURLArgName = "source-URL";
+
+    public RefreshCommand(Application parent, IHttpClientWrapper httpClient) : base(parent, CommandName, httpClient)
     {
-        private const string CommandName = "refresh";
+        _sourceFileArg = Argument(SourceURLArgName, "The OpenAPI reference to refresh.");
+    }
 
-        private const string SourceURLArgName = "source-URL";
+    internal readonly CommandArgument _sourceFileArg;
 
-        public RefreshCommand(Application parent, IHttpClientWrapper httpClient) : base(parent, CommandName, httpClient)
+    protected override async Task<int> ExecuteCoreAsync()
+    {
+        var projectFile = ResolveProjectFile(ProjectFileOption);
+
+        var sourceFile = Ensure.NotNullOrEmpty(_sourceFileArg.Value, SourceURLArgName);
+
+        var destination = FindReferenceFromUrl(projectFile, sourceFile);
+        await DownloadToFileAsync(sourceFile, destination, overwrite: true);
+
+        return 0;
+    }
+
+    private static string FindReferenceFromUrl(FileInfo projectFile, string url)
+    {
+        var project = LoadProject(projectFile);
+        var openApiReferenceItems = project.GetItems(OpenApiReference);
+
+        foreach (ProjectItem item in openApiReferenceItems)
         {
-            _sourceFileArg = Argument(SourceURLArgName, "The OpenAPI reference to refresh.");
-        }
-
-        internal readonly CommandArgument _sourceFileArg;
-
-        protected override async Task<int> ExecuteCoreAsync()
-        {
-            var projectFile = ResolveProjectFile(ProjectFileOption);
-
-            var sourceFile = Ensure.NotNullOrEmpty(_sourceFileArg.Value, SourceURLArgName);
-
-            var destination = FindReferenceFromUrl(projectFile, sourceFile);
-            await DownloadToFileAsync(sourceFile, destination, overwrite: true);
-
-            return 0;
-        }
-
-        private string FindReferenceFromUrl(FileInfo projectFile, string url)
-        {
-            var project = LoadProject(projectFile);
-            var openApiReferenceItems = project.GetItems(OpenApiReference);
-
-            foreach (ProjectItem item in openApiReferenceItems)
+            var attrUrl = item.GetMetadataValue(SourceUrlAttrName);
+            if (string.Equals(attrUrl, url, StringComparison.Ordinal))
             {
-                var attrUrl = item.GetMetadataValue(SourceUrlAttrName);
-                if (string.Equals(attrUrl, url, StringComparison.Ordinal))
-                {
-                    return item.EvaluatedInclude;
-                }
+                return item.EvaluatedInclude;
             }
-
-            throw new ArgumentException("There was no OpenAPI reference to refresh with the given URL.");
         }
 
-        protected override bool ValidateArguments()
+        throw new ArgumentException("There was no OpenAPI reference to refresh with the given URL.");
+    }
+
+    protected override bool ValidateArguments()
+    {
+        var sourceFile = Ensure.NotNullOrEmpty(_sourceFileArg.Value, SourceURLArgName);
+        if (!IsUrl(sourceFile))
         {
-            var sourceFile = Ensure.NotNullOrEmpty(_sourceFileArg.Value, SourceURLArgName);
-            if (!IsUrl(sourceFile))
-            {
-                throw new ArgumentException("'dotnet openapi refresh' must be given a URL");
-            }
-
-            return true;
+            throw new ArgumentException("'dotnet openapi refresh' must be given a URL");
         }
+
+        return true;
     }
 }

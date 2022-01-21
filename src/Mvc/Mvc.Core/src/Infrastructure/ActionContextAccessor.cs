@@ -4,34 +4,32 @@
 #nullable enable
 
 using System.Diagnostics.CodeAnalysis;
-using System.Threading;
 
-namespace Microsoft.AspNetCore.Mvc.Infrastructure
+namespace Microsoft.AspNetCore.Mvc.Infrastructure;
+
+/// <summary>
+/// Type that provides access to an <see cref="ActionContext"/>.
+/// </summary>
+public class ActionContextAccessor : IActionContextAccessor
 {
-    /// <summary>
-    /// Type that provides access to an <see cref="ActionContext"/>.
-    /// </summary>
-    public class ActionContextAccessor : IActionContextAccessor
+    internal static readonly IActionContextAccessor Null = new NullActionContextAccessor();
+
+    private static readonly AsyncLocal<ActionContext> _storage = new AsyncLocal<ActionContext>();
+
+    /// <inheritdoc/>
+    [DisallowNull]
+    public ActionContext? ActionContext
     {
-        internal static readonly IActionContextAccessor Null = new NullActionContextAccessor();
+        get { return _storage.Value; }
+        set { _storage.Value = value; }
+    }
 
-        private static readonly AsyncLocal<ActionContext> _storage = new AsyncLocal<ActionContext>();
-
-        /// <inheritdoc/>
-        [DisallowNull]
+    private class NullActionContextAccessor : IActionContextAccessor
+    {
         public ActionContext? ActionContext
         {
-            get { return _storage.Value; }
-            set { _storage.Value = value; }
-        }
-
-        private class NullActionContextAccessor : IActionContextAccessor
-        {
-            public ActionContext? ActionContext
-            {
-                get => null;
-                set { }
-            }
+            get => null;
+            set { }
         }
     }
 }

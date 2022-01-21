@@ -1,27 +1,25 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Text.Json;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Components.Web
+namespace Microsoft.AspNetCore.Components.Web;
+
+public class TouchEventArgsReaderTest
 {
-    public class TouchEventArgsReaderTest
+    [Fact]
+    public void Read_Works()
     {
-        [Fact]
-        public void Read_Works()
+        // Arrange
+        var args = new TouchEventArgs
         {
-            // Arrange
-            var args = new TouchEventArgs
+            AltKey = false,
+            CtrlKey = true,
+            MetaKey = true,
+            ShiftKey = false,
+            Type = "type1",
+            ChangedTouches = new[]
             {
-                AltKey = false,
-                CtrlKey = true,
-                MetaKey = true,
-                ShiftKey = false,
-                Type = "type1",
-                ChangedTouches = new[]
-                {
                     new TouchPoint
                     {
                         ClientX = 1.3,
@@ -33,9 +31,9 @@ namespace Microsoft.AspNetCore.Components.Web
                         ScreenY = 39.2
                     },
                 },
-                Detail = 789,
-                TargetTouches = new[]
-                {
+            Detail = 789,
+            TargetTouches = new[]
+            {
                     new TouchPoint
                     {
                         ClientX = 2.3,
@@ -57,8 +55,8 @@ namespace Microsoft.AspNetCore.Components.Web
                         ScreenY = 7.2
                     },
                 },
-                Touches = new[]
-                {
+            Touches = new[]
+            {
                     new TouchPoint
                     {
                         ClientX = 6.8,
@@ -70,52 +68,51 @@ namespace Microsoft.AspNetCore.Components.Web
                         ScreenY = 8.0,
                     },
                 },
-            };
+        };
 
-            var jsonElement = GetJsonElement(args);
+        var jsonElement = GetJsonElement(args);
 
-            // Act
-            var result = TouchEventArgsReader.Read(jsonElement);
+        // Act
+        var result = TouchEventArgsReader.Read(jsonElement);
 
-            // Assert
-            Assert.Equal(args.AltKey, result.AltKey);
-            Assert.Equal(args.CtrlKey, result.CtrlKey);
-            Assert.Equal(args.MetaKey, result.MetaKey);
-            Assert.Equal(args.ShiftKey, result.ShiftKey);
-            Assert.Equal(args.Type, result.Type);
-            Assert.Equal(args.Detail, result.Detail);
+        // Assert
+        Assert.Equal(args.AltKey, result.AltKey);
+        Assert.Equal(args.CtrlKey, result.CtrlKey);
+        Assert.Equal(args.MetaKey, result.MetaKey);
+        Assert.Equal(args.ShiftKey, result.ShiftKey);
+        Assert.Equal(args.Type, result.Type);
+        Assert.Equal(args.Detail, result.Detail);
 
-            AssertEqual(args.Touches, result.Touches);
-            AssertEqual(args.ChangedTouches, result.ChangedTouches);
-            AssertEqual(args.TargetTouches, result.TargetTouches);
-        }
+        AssertEqual(args.Touches, result.Touches);
+        AssertEqual(args.ChangedTouches, result.ChangedTouches);
+        AssertEqual(args.TargetTouches, result.TargetTouches);
+    }
 
-        private void AssertEqual(TouchPoint[] expected, TouchPoint[] actual)
+    private void AssertEqual(TouchPoint[] expected, TouchPoint[] actual)
+    {
+        Assert.Equal(expected.Length, actual.Length);
+        for (var i = 0; i < expected.Length; i++)
         {
-            Assert.Equal(expected.Length, actual.Length);
-            for (var i = 0; i < expected.Length; i++)
-            {
-                AssertEqual(expected[i], actual[i]);
-            }
+            AssertEqual(expected[i], actual[i]);
         }
+    }
 
-        private void AssertEqual(TouchPoint expected, TouchPoint actual)
-        {
-            Assert.Equal(expected.ClientX, actual.ClientX);
-            Assert.Equal(expected.ClientY, actual.ClientY);
-            Assert.Equal(expected.Identifier, actual.Identifier);
-            Assert.Equal(expected.PageX, actual.PageX);
-            Assert.Equal(expected.PageY, actual.PageY);
-            Assert.Equal(expected.ScreenX, actual.ScreenX);
-            Assert.Equal(expected.ScreenY, actual.ScreenY);
-        }
+    private void AssertEqual(TouchPoint expected, TouchPoint actual)
+    {
+        Assert.Equal(expected.ClientX, actual.ClientX);
+        Assert.Equal(expected.ClientY, actual.ClientY);
+        Assert.Equal(expected.Identifier, actual.Identifier);
+        Assert.Equal(expected.PageX, actual.PageX);
+        Assert.Equal(expected.PageY, actual.PageY);
+        Assert.Equal(expected.ScreenX, actual.ScreenX);
+        Assert.Equal(expected.ScreenY, actual.ScreenY);
+    }
 
-        private static JsonElement GetJsonElement<T>(T args)
-        {
-            var json = JsonSerializer.SerializeToUtf8Bytes(args, JsonSerializerOptionsProvider.Options);
-            var jsonReader = new Utf8JsonReader(json);
-            var jsonElement = JsonElement.ParseValue(ref jsonReader);
-            return jsonElement;
-        }
+    private static JsonElement GetJsonElement<T>(T args)
+    {
+        var json = JsonSerializer.SerializeToUtf8Bytes(args, JsonSerializerOptionsProvider.Options);
+        var jsonReader = new Utf8JsonReader(json);
+        var jsonElement = JsonElement.ParseValue(ref jsonReader);
+        return jsonElement;
     }
 }

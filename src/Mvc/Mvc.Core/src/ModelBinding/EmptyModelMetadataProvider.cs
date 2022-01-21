@@ -3,30 +3,28 @@
 
 #nullable enable
 
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Mvc.ModelBinding
+namespace Microsoft.AspNetCore.Mvc.ModelBinding;
+
+/// <summary>
+/// A <see cref="DefaultBindingMetadataProvider"/> that represents an empty model.
+/// </summary>
+public class EmptyModelMetadataProvider : DefaultModelMetadataProvider
 {
     /// <summary>
-    /// A <see cref="DefaultBindingMetadataProvider"/> that represents an empty model.
+    /// Initializes a new <see cref="EmptyModelMetadataProvider"/>.
     /// </summary>
-    public class EmptyModelMetadataProvider : DefaultModelMetadataProvider
+    public EmptyModelMetadataProvider()
+        : base(
+              new DefaultCompositeMetadataDetailsProvider(new List<IMetadataDetailsProvider>()),
+              new OptionsAccessor())
     {
-        /// <summary>
-        /// Initializes a new <see cref="EmptyModelMetadataProvider"/>.
-        /// </summary>
-        public EmptyModelMetadataProvider()
-            : base(
-                  new DefaultCompositeMetadataDetailsProvider(new List<IMetadataDetailsProvider>()),
-                  new OptionsAccessor())
-        {
-        }
+    }
 
-        private class OptionsAccessor : IOptions<MvcOptions>
-        {
-            public MvcOptions Value { get; } = new MvcOptions();
-        }
+    private class OptionsAccessor : IOptions<MvcOptions>
+    {
+        public MvcOptions Value { get; } = new MvcOptions();
     }
 }

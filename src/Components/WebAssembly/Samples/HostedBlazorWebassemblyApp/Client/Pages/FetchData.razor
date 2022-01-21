@@ -2,7 +2,7 @@
 @implements IDisposable
 @using HostedBlazorWebassemblyApp.Shared
 @inject IWeatherForecastService WeatherForecastService
-@inject ComponentApplicationState ApplicationState
+@inject PersistentComponentState ApplicationState
 
 <h1>Weather forecast</h1>
 
@@ -39,13 +39,19 @@ else
 
 @code {
     private WeatherForecast[] forecasts = Array.Empty<WeatherForecast>();
+    private PersistingComponentStateSubscription _persistingSubscription;
 
     protected override async Task OnInitializedAsync()
     {
-        ApplicationState.OnPersisting += PersistForecasts;
-        forecasts = !ApplicationState.TryTakeAsJson<WeatherForecast[]>("fetchdata", out var restored) ?
-            await WeatherForecastService.GetForecastAsync(DateTime.Now) :
-            restored!;
+        _persistingSubscription = ApplicationState.RegisterOnPersisting(PersistForecasts);
+        if (!ApplicationState.TryTakeFromJson<WeatherForecast[]>("fetchdata", out var restored))
+        {
+            forecasts = await WeatherForecastService.GetForecastAsync(DateTime.Now);
+        }
+        else
+        {
+            forecasts = restored!;
+        }
     }
 
     private Task PersistForecasts()
@@ -56,6 +62,6 @@ else
 
     void IDisposable.Dispose()
     {
-        ApplicationState.OnPersisting -= PersistForecasts;
+        _persistingSubscription.Dispose();
     }
 }

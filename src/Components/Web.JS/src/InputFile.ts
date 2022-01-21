@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 export const InputFile = {
   init,
   toImageFile,
@@ -57,7 +60,12 @@ async function toImageFile(elem: InputElement, fileId: number, format: string, m
   const loadedImage = await new Promise(function(resolve: (loadedImage: HTMLImageElement) => void): void {
     const originalFileImage = new Image();
     originalFileImage.onload = function(): void {
+      URL.revokeObjectURL(originalFileImage.src);
       resolve(originalFileImage);
+    };
+    originalFileImage.onerror = function(): void {
+      originalFileImage.onerror = null;
+      URL.revokeObjectURL(originalFileImage.src);
     };
     originalFileImage.src = URL.createObjectURL(originalFile['blob']);
   });

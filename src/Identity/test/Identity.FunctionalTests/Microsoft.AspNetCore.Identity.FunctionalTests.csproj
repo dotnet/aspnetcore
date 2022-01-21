@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -25,15 +25,12 @@
     <Reference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <Reference Include="Microsoft.EntityFrameworkCore.Sqlite" />
     <Reference Include="AngleSharp" />
+    <Reference Include="System.Net.Http" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Testing.DefaultWebSite.StaticWebAssets.V4.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Testing.DefaultWebSite.StaticWebAssets.V5.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    <None Update="Testing.DefaultWebSite.StaticWebAssets.V4.xml" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Testing.DefaultWebSite.StaticWebAssets.V5.xml" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <Target Name="AddProjectReferenceAssemblyInfo" BeforeTargets="GetAssemblyAttributes" DependsOnTargets="ResolveAssemblyReferences">

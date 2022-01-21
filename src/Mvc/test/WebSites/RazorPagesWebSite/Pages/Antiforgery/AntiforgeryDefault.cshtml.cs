@@ -3,9 +3,8 @@
 
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace RazorPagesWebSite
+namespace RazorPagesWebSite;
+
+public class AntiforgeryDefaultModel : PageModel
 {
-    public class AntiforgeryDefaultModel : PageModel
-    {
-    }
 }

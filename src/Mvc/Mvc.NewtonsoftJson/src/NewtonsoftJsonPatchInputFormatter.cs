@@ -1,108 +1,104 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
-using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
 using Newtonsoft.Json;
 
-namespace Microsoft.AspNetCore.Mvc.Formatters
+namespace Microsoft.AspNetCore.Mvc.Formatters;
+
+/// <summary>
+/// A <see cref="TextInputFormatter"/> for JSON Patch (application/json-patch+json) content.
+/// </summary>
+public class NewtonsoftJsonPatchInputFormatter : NewtonsoftJsonInputFormatter
 {
     /// <summary>
-    /// A <see cref="TextInputFormatter"/> for JSON Patch (application/json-patch+json) content.
+    /// Initializes a new <see cref="NewtonsoftJsonPatchInputFormatter"/> instance.
     /// </summary>
-    public class NewtonsoftJsonPatchInputFormatter : NewtonsoftJsonInputFormatter
+    /// <param name="logger">The <see cref="ILogger"/>.</param>
+    /// <param name="serializerSettings">
+    /// The <see cref="JsonSerializerSettings"/>. Should be either the application-wide settings
+    /// (<see cref="MvcNewtonsoftJsonOptions.SerializerSettings"/>) or an instance
+    /// <see cref="JsonSerializerSettingsProvider.CreateSerializerSettings"/> initially returned.
+    /// </param>
+    /// <param name="charPool">The <see cref="ArrayPool{Char}"/>.</param>
+    /// <param name="objectPoolProvider">The <see cref="ObjectPoolProvider"/>.</param>
+    /// <param name="options">The <see cref="MvcOptions"/>.</param>
+    /// <param name="jsonOptions">The <see cref="MvcNewtonsoftJsonOptions"/>.</param>
+    public NewtonsoftJsonPatchInputFormatter(
+        ILogger logger,
+        JsonSerializerSettings serializerSettings,
+        ArrayPool<char> charPool,
+        ObjectPoolProvider objectPoolProvider,
+        MvcOptions options,
+        MvcNewtonsoftJsonOptions jsonOptions)
+        : base(logger, serializerSettings, charPool, objectPoolProvider, options, jsonOptions)
     {
-        /// <summary>
-        /// Initializes a new <see cref="NewtonsoftJsonPatchInputFormatter"/> instance.
-        /// </summary>
-        /// <param name="logger">The <see cref="ILogger"/>.</param>
-        /// <param name="serializerSettings">
-        /// The <see cref="JsonSerializerSettings"/>. Should be either the application-wide settings
-        /// (<see cref="MvcNewtonsoftJsonOptions.SerializerSettings"/>) or an instance
-        /// <see cref="JsonSerializerSettingsProvider.CreateSerializerSettings"/> initially returned.
-        /// </param>
-        /// <param name="charPool">The <see cref="ArrayPool{Char}"/>.</param>
-        /// <param name="objectPoolProvider">The <see cref="ObjectPoolProvider"/>.</param>
-        /// <param name="options">The <see cref="MvcOptions"/>.</param>
-        /// <param name="jsonOptions">The <see cref="MvcNewtonsoftJsonOptions"/>.</param>
-        public NewtonsoftJsonPatchInputFormatter(
-            ILogger logger,
-            JsonSerializerSettings serializerSettings,
-            ArrayPool<char> charPool,
-            ObjectPoolProvider objectPoolProvider,
-            MvcOptions options,
-            MvcNewtonsoftJsonOptions jsonOptions)
-            : base(logger, serializerSettings, charPool, objectPoolProvider, options, jsonOptions)
-        {
-            // Clear all values and only include json-patch+json value.
-            SupportedMediaTypes.Clear();
+        // Clear all values and only include json-patch+json value.
+        SupportedMediaTypes.Clear();
 
-            SupportedMediaTypes.Add(MediaTypeHeaderValues.ApplicationJsonPatch);
+        SupportedMediaTypes.Add(MediaTypeHeaderValues.ApplicationJsonPatch);
+    }
+
+    /// <inheritdoc />
+    public override InputFormatterExceptionPolicy ExceptionPolicy
+    {
+        get
+        {
+            if (GetType() == typeof(NewtonsoftJsonPatchInputFormatter))
+            {
+                return InputFormatterExceptionPolicy.MalformedInputExceptions;
+            }
+            return InputFormatterExceptionPolicy.AllExceptions;
+        }
+    }
+
+    /// <inheritdoc />
+    public override async Task<InputFormatterResult> ReadRequestBodyAsync(
+        InputFormatterContext context,
+        Encoding encoding)
+    {
+        if (context == null)
+        {
+            throw new ArgumentNullException(nameof(context));
         }
 
-        /// <inheritdoc />
-        public override InputFormatterExceptionPolicy ExceptionPolicy
+        if (encoding == null)
         {
-            get
+            throw new ArgumentNullException(nameof(encoding));
+        }
+
+        var result = await base.ReadRequestBodyAsync(context, encoding);
+        if (!result.HasError)
+        {
+            if (result.Model is IJsonPatchDocument jsonPatchDocument && SerializerSettings.ContractResolver is not null)
             {
-                if (GetType() == typeof(NewtonsoftJsonPatchInputFormatter))
-                {
-                    return InputFormatterExceptionPolicy.MalformedInputExceptions;
-                }
-                return InputFormatterExceptionPolicy.AllExceptions;
+                jsonPatchDocument.ContractResolver = SerializerSettings.ContractResolver;
             }
         }
 
-        /// <inheritdoc />
-        public override async Task<InputFormatterResult> ReadRequestBodyAsync(
-            InputFormatterContext context,
-            Encoding encoding)
+        return result;
+    }
+
+    /// <inheritdoc />
+    public override bool CanRead(InputFormatterContext context)
+    {
+        if (context == null)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            if (encoding == null)
-            {
-                throw new ArgumentNullException(nameof(encoding));
-            }
-
-            var result = await base.ReadRequestBodyAsync(context, encoding);
-            if (!result.HasError)
-            {
-                if (result.Model is IJsonPatchDocument jsonPatchDocument && SerializerSettings.ContractResolver is not  null)
-                {
-                    jsonPatchDocument.ContractResolver = SerializerSettings.ContractResolver;
-                }
-            }
-
-            return result;
+            throw new ArgumentNullException(nameof(context));
         }
 
-        /// <inheritdoc />
-        public override bool CanRead(InputFormatterContext context)
+        var modelType = context.ModelType;
+        if (!typeof(IJsonPatchDocument).IsAssignableFrom(modelType) ||
+            !modelType.IsGenericType)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            var modelType = context.ModelType;
-            if (!typeof(IJsonPatchDocument).IsAssignableFrom(modelType) ||
-                !modelType.IsGenericType)
-            {
-                return false;
-            }
-
-            return base.CanRead(context);
+            return false;
         }
+
+        return base.CanRead(context);
     }
 }

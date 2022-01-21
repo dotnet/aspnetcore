@@ -1,42 +1,40 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Antiforgery
+namespace Microsoft.AspNetCore.Antiforgery;
+
+internal class AntiforgeryOptionsSetup : IConfigureOptions<AntiforgeryOptions>
 {
-    internal class AntiforgeryOptionsSetup : IConfigureOptions<AntiforgeryOptions>
+    private readonly DataProtectionOptions _dataProtectionOptions;
+
+    public AntiforgeryOptionsSetup(IOptions<DataProtectionOptions> dataProtectionOptions)
     {
-        private readonly DataProtectionOptions _dataProtectionOptions;
+        _dataProtectionOptions = dataProtectionOptions.Value;
+    }
 
-        public AntiforgeryOptionsSetup(IOptions<DataProtectionOptions> dataProtectionOptions)
+    public void Configure(AntiforgeryOptions options)
+    {
+        if (options == null)
         {
-            _dataProtectionOptions = dataProtectionOptions.Value;
+            throw new ArgumentNullException(nameof(options));
         }
 
-        public void Configure(AntiforgeryOptions options)
+        if (options.Cookie.Name == null)
         {
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
-
-            if (options.Cookie.Name == null)
-            {
-                var applicationId = _dataProtectionOptions.ApplicationDiscriminator ?? string.Empty;
-                options.Cookie.Name = AntiforgeryOptions.DefaultCookiePrefix + ComputeCookieName(applicationId);
-            }
+            var applicationId = _dataProtectionOptions.ApplicationDiscriminator ?? string.Empty;
+            options.Cookie.Name = AntiforgeryOptions.DefaultCookiePrefix + ComputeCookieName(applicationId);
         }
+    }
 
-        private static string ComputeCookieName(string applicationId)
-        {
-            byte[] fullHash = SHA256.HashData(Encoding.UTF8.GetBytes(applicationId));
-            return WebEncoders.Base64UrlEncode(fullHash, 0, 8);
-        }
+    private static string ComputeCookieName(string applicationId)
+    {
+        byte[] fullHash = SHA256.HashData(Encoding.UTF8.GetBytes(applicationId));
+        return WebEncoders.Base64UrlEncode(fullHash, 0, 8);
     }
 }

@@ -1,91 +1,88 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
+namespace Microsoft.Extensions.Logging;
 
-namespace Microsoft.Extensions.Logging
+internal static class LoggingExtensions
 {
-    internal static class LoggingExtensions
+    private static readonly Action<ILogger, Exception> _invalidExpirationTime;
+    private static readonly Action<ILogger, Exception> _userIdsNotEquals;
+    private static readonly Action<ILogger, string, string, Exception> _purposeNotEquals;
+    private static readonly Action<ILogger, Exception> _unexpectedEndOfInput;
+    private static readonly Action<ILogger, Exception> _securityStampNotEquals;
+    private static readonly Action<ILogger, Exception> _securityStampIsNotEmpty;
+    private static readonly Action<ILogger, Exception> _unhandledException;
+
+    static LoggingExtensions()
     {
-        private static readonly Action<ILogger, Exception> _invalidExpirationTime;
-        private static readonly Action<ILogger, Exception> _userIdsNotEquals;
-        private static readonly Action<ILogger, string, string, Exception> _purposeNotEquals;
-        private static readonly Action<ILogger, Exception> _unexpectedEndOfInput;
-        private static readonly Action<ILogger, Exception> _securityStampNotEquals;
-        private static readonly Action<ILogger, Exception> _securityStampIsNotEmpty;
-        private static readonly Action<ILogger, Exception> _unhandledException;
+        _invalidExpirationTime = LoggerMessage.Define(
+            eventId: new EventId(0, "InvalidExpirationTime"),
+            logLevel: LogLevel.Debug,
+            formatString: "ValidateAsync failed: the expiration time is invalid.");
 
-        static LoggingExtensions()
-        {
-            _invalidExpirationTime = LoggerMessage.Define(
-                eventId: new EventId(0, "InvalidExpirationTime"),
-                logLevel: LogLevel.Debug,
-                formatString: "ValidateAsync failed: the expiration time is invalid.");
+        _userIdsNotEquals = LoggerMessage.Define(
+            eventId: new EventId(1, "UserIdsNotEquals"),
+            logLevel: LogLevel.Debug,
+            formatString: "ValidateAsync failed: did not find expected UserId.");
 
-            _userIdsNotEquals = LoggerMessage.Define(
-                eventId: new EventId(1, "UserIdsNotEquals"),
-                logLevel: LogLevel.Debug,
-                formatString: "ValidateAsync failed: did not find expected UserId.");
+        _purposeNotEquals = LoggerMessage.Define<string, string>(
+            eventId: new EventId(2, "PurposeNotEquals"),
+            logLevel: LogLevel.Debug,
+            formatString: "ValidateAsync failed: did not find expected purpose. '{ActualPurpose}' does not match the expected purpose '{ExpectedPurpose}'.");
 
-            _purposeNotEquals = LoggerMessage.Define<string, string>(
-                eventId: new EventId(2, "PurposeNotEquals"),
-                logLevel: LogLevel.Debug,
-                formatString: "ValidateAsync failed: did not find expected purpose. '{ActualPurpose}' does not match the expected purpose '{ExpectedPurpose}'.");
+        _unexpectedEndOfInput = LoggerMessage.Define(
+            eventId: new EventId(3, "UnexpectedEndOfInput"),
+            logLevel: LogLevel.Debug,
+            formatString: "ValidateAsync failed: unexpected end of input.");
 
-            _unexpectedEndOfInput = LoggerMessage.Define(
-                eventId: new EventId(3, "UnexpectedEndOfInput"),
-                logLevel: LogLevel.Debug,
-                formatString: "ValidateAsync failed: unexpected end of input.");
+        _securityStampNotEquals = LoggerMessage.Define(
+            eventId: new EventId(4, "SecurityStampNotEquals"),
+            logLevel: LogLevel.Debug,
+            formatString: "ValidateAsync failed: did not find expected security stamp.");
 
-            _securityStampNotEquals = LoggerMessage.Define(
-                eventId: new EventId(4, "SecurityStampNotEquals"),
-                logLevel: LogLevel.Debug,
-                formatString: "ValidateAsync failed: did not find expected security stamp.");
+        _securityStampIsNotEmpty = LoggerMessage.Define(
+            eventId: new EventId(5, "SecurityStampIsNotEmpty"),
+            logLevel: LogLevel.Debug,
+            formatString: "ValidateAsync failed: the expected stamp is not empty.");
 
-            _securityStampIsNotEmpty = LoggerMessage.Define(
-                eventId: new EventId(5, "SecurityStampIsNotEmpty"),
-                logLevel: LogLevel.Debug,
-                formatString: "ValidateAsync failed: the expected stamp is not empty.");
+        _unhandledException = LoggerMessage.Define(
+            eventId: new EventId(6, "UnhandledException"),
+            logLevel: LogLevel.Debug,
+            formatString: "ValidateAsync failed: unhandled exception was thrown.");
+    }
 
-            _unhandledException = LoggerMessage.Define(
-                eventId: new EventId(6, "UnhandledException"),
-                logLevel: LogLevel.Debug,
-                formatString: "ValidateAsync failed: unhandled exception was thrown.");
-        }
+    public static void InvalidExpirationTime(this ILogger logger)
+    {
+        _invalidExpirationTime(logger, null);
+    }
 
-        public static void InvalidExpirationTime(this ILogger logger)
-        {
-            _invalidExpirationTime(logger, null);
-        }
+    public static void UserIdsNotEquals(this ILogger logger)
+    {
+        _userIdsNotEquals(logger, null);
+    }
 
-        public static void UserIdsNotEquals(this ILogger logger)
-        {
-            _userIdsNotEquals(logger, null);
-        }
+    public static void PurposeNotEquals(this ILogger logger, string actualPurpose, string expectedPurpose)
+    {
+        _purposeNotEquals(logger, actualPurpose, expectedPurpose, null);
+    }
 
-        public static void PurposeNotEquals(this ILogger logger, string actualPurpose, string expectedPurpose)
-        {
-            _purposeNotEquals(logger, actualPurpose, expectedPurpose,  null);
-        }
+    public static void UnexpectedEndOfInput(this ILogger logger)
+    {
+        _unexpectedEndOfInput(logger, null);
+    }
 
-        public static void UnexpectedEndOfInput(this ILogger logger)
-        {
-            _unexpectedEndOfInput(logger, null);
-        }
+    public static void SecurityStampNotEquals(this ILogger logger)
+    {
+        _securityStampNotEquals(logger, null);
+    }
 
-        public static void SecurityStampNotEquals(this ILogger logger)
-        {
-            _securityStampNotEquals(logger, null);
-        }
+    public static void SecurityStampIsNotEmpty(this ILogger logger)
+    {
+        _securityStampIsNotEmpty(logger, null);
+    }
 
-        public static void SecurityStampIsNotEmpty(this ILogger logger)
-        {
-            _securityStampIsNotEmpty(logger, null);
-        }
-
-        public static void UnhandledException(this ILogger logger)
-        {
-            _unhandledException(logger, null);
-        }
+    public static void UnhandledException(this ILogger logger)
+    {
+        _unhandledException(logger, null);
     }
 }

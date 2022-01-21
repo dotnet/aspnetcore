@@ -4,7 +4,6 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Cryptography.Cng;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.Infrastructure;
@@ -18,94 +17,93 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.Extensions.DependencyInjection
+namespace Microsoft.Extensions.DependencyInjection;
+
+/// <summary>
+/// Extension methods for setting up data protection services in an <see cref="IServiceCollection" />.
+/// </summary>
+public static class DataProtectionServiceCollectionExtensions
 {
     /// <summary>
-    /// Extension methods for setting up data protection services in an <see cref="IServiceCollection" />.
+    /// Adds data protection services to the specified <see cref="IServiceCollection" />.
     /// </summary>
-    public static class DataProtectionServiceCollectionExtensions
+    /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
+    public static IDataProtectionBuilder AddDataProtection(this IServiceCollection services)
     {
-        /// <summary>
-        /// Adds data protection services to the specified <see cref="IServiceCollection" />.
-        /// </summary>
-        /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
-        public static IDataProtectionBuilder AddDataProtection(this IServiceCollection services)
+        if (services == null)
         {
-            if (services == null)
-            {
-                throw new ArgumentNullException(nameof(services));
-            }
-
-            services.TryAddSingleton<IActivator, TypeForwardingActivator>();
-            services.AddOptions();
-            AddDataProtectionServices(services);
-
-            return new DataProtectionBuilder(services);
+            throw new ArgumentNullException(nameof(services));
         }
 
-        /// <summary>
-        /// Adds data protection services to the specified <see cref="IServiceCollection" />.
-        /// </summary>
-        /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
-        /// <param name="setupAction">An <see cref="Action{DataProtectionOptions}"/> to configure the provided <see cref="DataProtectionOptions"/>.</param>
-        /// <returns>A reference to this instance after the operation has completed.</returns>
-        public static IDataProtectionBuilder AddDataProtection(this IServiceCollection services, Action<DataProtectionOptions> setupAction)
+        services.TryAddSingleton<IActivator, TypeForwardingActivator>();
+        services.AddOptions();
+        AddDataProtectionServices(services);
+
+        return new DataProtectionBuilder(services);
+    }
+
+    /// <summary>
+    /// Adds data protection services to the specified <see cref="IServiceCollection" />.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
+    /// <param name="setupAction">An <see cref="Action{DataProtectionOptions}"/> to configure the provided <see cref="DataProtectionOptions"/>.</param>
+    /// <returns>A reference to this instance after the operation has completed.</returns>
+    public static IDataProtectionBuilder AddDataProtection(this IServiceCollection services, Action<DataProtectionOptions> setupAction)
+    {
+        if (services == null)
         {
-            if (services == null)
-            {
-                throw new ArgumentNullException(nameof(services));
-            }
-
-            if (setupAction == null)
-            {
-                throw new ArgumentNullException(nameof(setupAction));
-            }
-
-            var builder = services.AddDataProtection();
-            services.Configure(setupAction);
-            return builder;
+            throw new ArgumentNullException(nameof(services));
         }
 
-        private static void AddDataProtectionServices(IServiceCollection services)
+        if (setupAction == null)
         {
-            if (OSVersionUtil.IsWindows())
+            throw new ArgumentNullException(nameof(setupAction));
+        }
+
+        var builder = services.AddDataProtection();
+        services.Configure(setupAction);
+        return builder;
+    }
+
+    private static void AddDataProtectionServices(IServiceCollection services)
+    {
+        if (OSVersionUtil.IsWindows())
+        {
+            // Assertion for platform compat analyzer
+            Debug.Assert(RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
+            services.TryAddSingleton<IRegistryPolicyResolver, RegistryPolicyResolver>();
+        }
+
+        services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IConfigureOptions<KeyManagementOptions>, KeyManagementOptionsSetup>());
+        services.TryAddEnumerable(
+            ServiceDescriptor.Transient<IConfigureOptions<DataProtectionOptions>, DataProtectionOptionsSetup>());
+
+        services.TryAddSingleton<IKeyManager, XmlKeyManager>();
+        services.TryAddSingleton<IApplicationDiscriminator, HostingApplicationDiscriminator>();
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, DataProtectionHostedService>());
+
+        // Internal services
+        services.TryAddSingleton<IDefaultKeyResolver, DefaultKeyResolver>();
+        services.TryAddSingleton<IKeyRingProvider, KeyRingProvider>();
+
+        services.TryAddSingleton<IDataProtectionProvider>(s =>
+        {
+            var dpOptions = s.GetRequiredService<IOptions<DataProtectionOptions>>();
+            var keyRingProvider = s.GetRequiredService<IKeyRingProvider>();
+            var loggerFactory = s.GetService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
+
+            IDataProtectionProvider dataProtectionProvider = new KeyRingBasedDataProtectionProvider(keyRingProvider, loggerFactory);
+
+            // Link the provider to the supplied discriminator
+            if (!string.IsNullOrEmpty(dpOptions.Value.ApplicationDiscriminator))
             {
-                // Assertion for platform compat analyzer
-                Debug.Assert(RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
-                services.TryAddSingleton<IRegistryPolicyResolver, RegistryPolicyResolver>();
+                dataProtectionProvider = dataProtectionProvider.CreateProtector(dpOptions.Value.ApplicationDiscriminator);
             }
 
-            services.TryAddEnumerable(
-                ServiceDescriptor.Singleton<IConfigureOptions<KeyManagementOptions>, KeyManagementOptionsSetup>());
-            services.TryAddEnumerable(
-                ServiceDescriptor.Transient<IConfigureOptions<DataProtectionOptions>, DataProtectionOptionsSetup>());
+            return dataProtectionProvider;
+        });
 
-            services.TryAddSingleton<IKeyManager, XmlKeyManager>();
-            services.TryAddSingleton<IApplicationDiscriminator, HostingApplicationDiscriminator>();
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, DataProtectionHostedService>());
-
-            // Internal services
-            services.TryAddSingleton<IDefaultKeyResolver, DefaultKeyResolver>();
-            services.TryAddSingleton<IKeyRingProvider, KeyRingProvider>();
-
-            services.TryAddSingleton<IDataProtectionProvider>(s =>
-            {
-                var dpOptions = s.GetRequiredService<IOptions<DataProtectionOptions>>();
-                var keyRingProvider = s.GetRequiredService<IKeyRingProvider>();
-                var loggerFactory = s.GetService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
-
-                IDataProtectionProvider dataProtectionProvider = new KeyRingBasedDataProtectionProvider(keyRingProvider, loggerFactory);
-
-                // Link the provider to the supplied discriminator
-                if (!string.IsNullOrEmpty(dpOptions.Value.ApplicationDiscriminator))
-                {
-                    dataProtectionProvider = dataProtectionProvider.CreateProtector(dpOptions.Value.ApplicationDiscriminator);
-                }
-
-                return dataProtectionProvider;
-            });
-
-            services.TryAddSingleton<ICertificateResolver, CertificateResolver>();
-        }
+        services.TryAddSingleton<ICertificateResolver, CertificateResolver>();
     }
 }

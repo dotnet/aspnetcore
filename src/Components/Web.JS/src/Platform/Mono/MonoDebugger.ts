@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 import { WebAssemblyResourceLoader } from '../WebAssemblyResourceLoader';
 
 const currentBrowserIsChrome = (window as any).chrome
@@ -10,7 +13,7 @@ export function hasDebuggingEnabled() {
   return (hasReferencedPdbs || debugBuild) && currentBrowserIsChrome;
 }
 
-export function attachDebuggerHotkey(resourceLoader: WebAssemblyResourceLoader) {
+export function attachDebuggerHotkey(resourceLoader: WebAssemblyResourceLoader): void {
   hasReferencedPdbs = !!resourceLoader.bootConfig.resources.pdb;
   debugBuild = resourceLoader.bootConfig.debugBuild;
   // Use the combination shift+alt+D because it isn't used by the major browsers

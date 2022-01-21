@@ -1,1 +1,2 @@
 #nullable enable
+~virtual Microsoft.AspNetCore.Identity.EntityFrameworkCore.RoleStore<TRole, TContext, TKey, TUserRole, TRoleClaim>.SaveChanges(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task

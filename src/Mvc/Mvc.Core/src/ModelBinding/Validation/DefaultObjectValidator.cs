@@ -3,51 +3,49 @@
 
 #nullable enable
 
-using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
+namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+
+/// <summary>
+/// The default implementation of <see cref="IObjectModelValidator"/>.
+/// </summary>
+internal class DefaultObjectValidator : ObjectModelValidator
 {
+    private readonly MvcOptions _mvcOptions;
+
     /// <summary>
-    /// The default implementation of <see cref="IObjectModelValidator"/>.
+    /// Initializes a new instance of <see cref="DefaultObjectValidator"/>.
     /// </summary>
-    internal class DefaultObjectValidator : ObjectModelValidator
+    /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
+    /// <param name="validatorProviders">The list of <see cref="IModelValidatorProvider"/>.</param>
+    /// <param name="mvcOptions">Accessor to <see cref="MvcOptions"/>.</param>
+    public DefaultObjectValidator(
+        IModelMetadataProvider modelMetadataProvider,
+        IList<IModelValidatorProvider> validatorProviders,
+        MvcOptions mvcOptions)
+        : base(modelMetadataProvider, validatorProviders)
     {
-        private readonly MvcOptions _mvcOptions;
+        _mvcOptions = mvcOptions;
+    }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="DefaultObjectValidator"/>.
-        /// </summary>
-        /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
-        /// <param name="validatorProviders">The list of <see cref="IModelValidatorProvider"/>.</param>
-        /// <param name="mvcOptions">Accessor to <see cref="MvcOptions"/>.</param>
-        public DefaultObjectValidator(
-            IModelMetadataProvider modelMetadataProvider,
-            IList<IModelValidatorProvider> validatorProviders,
-            MvcOptions mvcOptions)
-            : base(modelMetadataProvider, validatorProviders)
+    public override ValidationVisitor GetValidationVisitor(
+        ActionContext actionContext,
+        IModelValidatorProvider validatorProvider,
+        ValidatorCache validatorCache,
+        IModelMetadataProvider metadataProvider,
+        ValidationStateDictionary? validationState)
+    {
+        var visitor = new ValidationVisitor(
+            actionContext,
+            validatorProvider,
+            validatorCache,
+            metadataProvider,
+            validationState)
         {
-            _mvcOptions = mvcOptions;
-        }
+            MaxValidationDepth = _mvcOptions.MaxValidationDepth,
+            ValidateComplexTypesIfChildValidationFails = _mvcOptions.ValidateComplexTypesIfChildValidationFails,
+        };
 
-        public override ValidationVisitor GetValidationVisitor(
-            ActionContext actionContext,
-            IModelValidatorProvider validatorProvider,
-            ValidatorCache validatorCache,
-            IModelMetadataProvider metadataProvider,
-            ValidationStateDictionary? validationState)
-        {
-            var visitor = new ValidationVisitor(
-                actionContext,
-                validatorProvider,
-                validatorCache,
-                metadataProvider,
-                validationState)
-            {
-                MaxValidationDepth = _mvcOptions.MaxValidationDepth,
-                ValidateComplexTypesIfChildValidationFails = _mvcOptions.ValidateComplexTypesIfChildValidationFails,
-            };
-
-            return visitor;
-        }
+        return visitor;
     }
 }

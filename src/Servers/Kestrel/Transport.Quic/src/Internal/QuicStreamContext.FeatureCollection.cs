@@ -1,40 +1,46 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Net.Sockets;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal;
+
+internal sealed partial class QuicStreamContext : IPersistentStateFeature, IStreamDirectionFeature, IProtocolErrorCodeFeature, IStreamIdFeature, IStreamAbortFeature
 {
-    internal sealed partial class QuicStreamContext : IPersistentStateFeature, IStreamDirectionFeature, IProtocolErrorCodeFeature, IStreamIdFeature, IStreamAbortFeature
+    private IDictionary<object, object?>? _persistentState;
+    private long? _error;
+
+    public bool CanRead { get; private set; }
+    public bool CanWrite { get; private set; }
+
+    public long Error
     {
-        private IDictionary<object, object?>? _persistentState;
+        get => _error ?? -1;
+        set => _error = value;
+    }
 
-        public bool CanRead { get; private set; }
-        public bool CanWrite { get; private set; }
+    public long StreamId { get; private set; }
 
-        public long Error { get; set; }
-
-        public long StreamId { get; private set; }
-
-        IDictionary<object, object?> IPersistentStateFeature.State
+    IDictionary<object, object?> IPersistentStateFeature.State
+    {
+        get
         {
-            get
-            {
-                // Lazily allocate persistent state
-                return _persistentState ?? (_persistentState = new ConnectionItems());
-            }
+            // Lazily allocate persistent state
+            return _persistentState ?? (_persistentState = new ConnectionItems());
         }
+    }
 
-        public void AbortRead(long errorCode, ConnectionAbortedException abortReason)
+    public void AbortRead(long errorCode, ConnectionAbortedException abortReason)
+    {
+        lock (_shutdownLock)
         {
-            lock (_shutdownLock)
+            if (_stream != null)
             {
                 if (_stream.CanRead)
                 {
                     _shutdownReadReason = abortReason;
-                    _log.StreamAbortRead(this, errorCode, abortReason.Message);
+                    QuicLog.StreamAbortRead(_log, this, errorCode, abortReason.Message);
                     _stream.AbortRead(errorCode);
                 }
                 else
@@ -43,15 +49,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
                 }
             }
         }
+    }
 
-        public void AbortWrite(long errorCode, ConnectionAbortedException abortReason)
+    public void AbortWrite(long errorCode, ConnectionAbortedException abortReason)
+    {
+        lock (_shutdownLock)
         {
-            lock (_shutdownLock)
+            if (_stream != null)
             {
                 if (_stream.CanWrite)
                 {
                     _shutdownWriteReason = abortReason;
-                    _log.StreamAbortWrite(this, errorCode, abortReason.Message);
+                    QuicLog.StreamAbortWrite(_log, this, errorCode, abortReason.Message);
                     _stream.AbortWrite(errorCode);
                 }
                 else
@@ -60,14 +69,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
                 }
             }
         }
+    }
 
-        private void InitializeFeatures()
-        {
-            _currentIPersistentStateFeature = this;
-            _currentIStreamDirectionFeature = this;
-            _currentIProtocolErrorCodeFeature = this;
-            _currentIStreamIdFeature = this;
-            _currentIStreamAbortFeature = this;
-        }
+    private void InitializeFeatures()
+    {
+        _currentIPersistentStateFeature = this;
+        _currentIStreamDirectionFeature = this;
+        _currentIProtocolErrorCodeFeature = this;
+        _currentIStreamIdFeature = this;
+        _currentIStreamAbortFeature = this;
     }
 }

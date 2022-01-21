@@ -39,6 +39,10 @@
                 <Directory Id="DOTNETHOME" Name="dotnet" />
             </Directory>
         </Directory>
+
+        <?if $(var.Platform)=x64?>
+        <CustomActionRef Id="Set_DOTNETHOME_NON_NATIVE_ARCHITECTURE" />
+        <?endif?>
     </Fragment>
 
     <Fragment>
@@ -55,6 +59,10 @@
         <ComponentGroup Id="CG_ProductInfo">
             <ComponentRef Id="C_ProductVersion"/>
             <ComponentRef Id="C_ProductInstallDir"/>
+            <?if $(var.Platform)=x64 ?>
+            <ComponentRef Id="C_ProductVersion_NonNative"/>
+            <ComponentRef Id="C_ProductInstallDir_NonNative"/>
+            <?endif?>
         </ComponentGroup>
 
         <DirectoryRef Id="DOTNETHOME">
@@ -65,16 +73,41 @@
             <?define ProductVersionKey=SOFTWARE\Microsoft\ASP.NET Core\Targeting Pack\v$(var.MajorVersion).$(var.MinorVersion)\$(var.PackageVersion)?>
 
             <Component Id="C_ProductVersion">
+                <?if $(var.Platform)=x64 ?>
+                <!-- Only install when actually on native architecture -->
+                <Condition>NOT NON_NATIVE_ARCHITECTURE</Condition>
+                <?endif?>
                 <RegistryKey Key="$(var.ProductVersionKey)" Root="HKLM">
                     <RegistryValue Name="Version" Type="string" Value="$(var.Version)" />
                 </RegistryKey>
             </Component>
 
             <Component Id="C_ProductInstallDir">
+                <?if $(var.Platform)=x64 ?>
+                <!-- Only install when actually on native architecture -->
+                <Condition>NOT NON_NATIVE_ARCHITECTURE</Condition>
+                <?endif?>
                 <RegistryKey Key="SOFTWARE\Microsoft\ASP.NET Core\Targeting Pack" Root="HKLM">
                     <RegistryValue Name="InstallDir" Type="string" Value="[DOTNETHOME]" />
                 </RegistryKey>
             </Component>
+
+
+            <?if $(var.Platform)=x64 ?>
+            <!-- Install keys to a different path when not native architecture -->
+            <Component Id="C_ProductVersion_NonNative">
+                <Condition>NON_NATIVE_ARCHITECTURE</Condition>
+                <RegistryKey Key="$(var.ProductVersionKey)\$(var.Platform)" Root="HKLM">
+                    <RegistryValue Name="Version" Type="string" Value="$(var.Version)" />
+                </RegistryKey>
+            </Component>
+            <Component Id="C_ProductInstallDir_NonNative">
+                <Condition>NON_NATIVE_ARCHITECTURE</Condition>
+                <RegistryKey Key="SOFTWARE\Microsoft\ASP.NET Core\Targeting Pack\$(var.Platform)" Root="HKLM">
+                    <RegistryValue Name="InstallDir" Type="string" Value="[DOTNETHOME]" />
+                </RegistryKey>
+            </Component>
+            <?endif?>
         </DirectoryRef>
     </Fragment>
 </Wix>

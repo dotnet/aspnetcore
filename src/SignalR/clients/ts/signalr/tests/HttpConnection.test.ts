@@ -213,7 +213,7 @@ describe("HttpConnection", () => {
         await VerifyLogger.run(async (loggerImpl) => {
             let negotiateCount: number = 0;
             const options: IHttpConnectionOptions = {
-                WebSocket: false,
+                WebSocket: TestWebSocket,
                 ...commonOptions,
                 httpClient: new TestHttpClient()
                     .on("POST", () =>  {
@@ -227,10 +227,18 @@ describe("HttpConnection", () => {
                 transport: HttpTransportType.WebSockets,
             } as IHttpConnectionOptions;
 
+            TestWebSocket.webSocketSet = new PromiseSource();
+
             const connection = new HttpConnection("http://tempuri.org", options);
-            await expect(connection.start(TransferFormat.Text))
+            const startPromise = connection.start(TransferFormat.Text);
+
+            await TestWebSocket.webSocketSet;
+            await TestWebSocket.webSocket.closeSet;
+            TestWebSocket.webSocket.onclose(new TestEvent());
+
+            await expect(startPromise)
                 .rejects
-                .toThrow("Unable to connect to the server with any of the available transports. WebSockets failed: Error: WebSocket failed to connect. " +
+                .toThrow("Unable to connect to the server with any of the available transports. Error: WebSockets failed: Error: WebSocket failed to connect. " +
                 "The connection could not be found on the server, either the endpoint may not be a SignalR endpoint, the connection ID is not present on the server, " +
                 "or there is a proxy blocking WebSockets. If you have multiple servers check that sticky sessions are enabled. ServerSentEvents failed: Error: 'ServerSentEvents' is disabled by the client. LongPolling failed: Error: 'LongPolling' is disabled by the client.");
 
@@ -239,7 +247,7 @@ describe("HttpConnection", () => {
         /* eslint-disable max-len */
         "Failed to start the transport 'WebSockets': Error: WebSocket failed to connect. The connection could not be found on the server, " +
         "either the endpoint may not be a SignalR endpoint, the connection ID is not present on the server, or there is a proxy blocking WebSockets. If you have multiple servers check that sticky sessions are enabled.",
-        "Failed to start the connection: Error: Unable to connect to the server with any of the available transports. WebSockets failed: " +
+        "Failed to start the connection: Error: Unable to connect to the server with any of the available transports. Error: WebSockets failed: " +
         "Error: WebSocket failed to connect. The connection could not be found on the server, either the endpoint may not be a SignalR endpoint, the connection ID is not present on the server, or there is a proxy blocking WebSockets. If you have multiple servers check that sticky sessions are enabled. ServerSentEvents failed: Error: 'ServerSentEvents' is disabled by the client. LongPolling failed: Error: 'LongPolling' is disabled by the client.");
         /* eslint-enable max-len */
     });
@@ -266,13 +274,14 @@ describe("HttpConnection", () => {
             const connection = new HttpConnection("http://tempuri.org", options);
             await expect(connection.start(TransferFormat.Text))
                 .rejects
-                .toThrow("Unable to connect to the server with any of the available transports. WebSockets failed: Error: Don't allow Websockets. ServerSentEvents failed: Error: Don't allow ServerSentEvents. LongPolling failed: Error: 'LongPolling' is disabled by the client.");
+                .toThrow("Unable to connect to the server with any of the available transports. Error: WebSockets failed: Error: Don't allow Websockets. Error: ServerSentEvents failed: Error: Don't allow ServerSentEvents. LongPolling failed: Error: 'LongPolling' is disabled by the client.");
 
             expect(negotiateCount).toEqual(2);
         },
         "Failed to start the transport 'WebSockets': Error: Don't allow Websockets.",
         "Failed to start the transport 'ServerSentEvents': Error: Don't allow ServerSentEvents.",
-        "Failed to start the connection: Error: Unable to connect to the server with any of the available transports. WebSockets failed: Error: Don't allow Websockets. ServerSentEvents failed: Error: Don't allow ServerSentEvents. LongPolling failed: Error: 'LongPolling' is disabled by the client.");
+        "Failed to start the connection: Error: Unable to connect to the server with any of the available transports. Error: WebSockets failed: Error: Don't allow Websockets. " +
+        "Error: ServerSentEvents failed: Error: Don't allow ServerSentEvents. LongPolling failed: Error: 'LongPolling' is disabled by the client.");
     });
 
     it("failed re-negotiate fails start", async () => {
@@ -1331,12 +1340,12 @@ describe("HttpConnection", () => {
 
                 await expect(connection.start(TransferFormat.Text))
                     .rejects
-                    .toEqual(new Error("Unable to connect to the server with any of the available transports. ServerSentEvents failed: Error: EventSource constructor called."));
+                    .toEqual(new Error("Unable to connect to the server with any of the available transports. Error: ServerSentEvents failed: Error: EventSource constructor called."));
 
                 expect(eventSourceConstructorCalled).toEqual(true);
             },
             "Failed to start the transport 'ServerSentEvents': Error: EventSource constructor called.",
-            "Failed to start the connection: Error: Unable to connect to the server with any of the available transports. ServerSentEvents failed: Error: EventSource constructor called.");
+            "Failed to start the connection: Error: Unable to connect to the server with any of the available transports. Error: ServerSentEvents failed: Error: EventSource constructor called.");
         });
 
         it("uses WebSocket constructor from options if provided", async () => {

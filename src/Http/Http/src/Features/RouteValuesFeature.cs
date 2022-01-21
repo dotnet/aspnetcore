@@ -3,32 +3,31 @@
 
 using Microsoft.AspNetCore.Routing;
 
-namespace Microsoft.AspNetCore.Http.Features
+namespace Microsoft.AspNetCore.Http.Features;
+
+/// <summary>
+/// A feature for routing values. Use <see cref="HttpContext.Features"/>
+/// to access the values associated with the current request.
+/// </summary>
+public class RouteValuesFeature : IRouteValuesFeature
 {
+    private RouteValueDictionary? _routeValues;
+
     /// <summary>
-    /// A feature for routing values. Use <see cref="HttpContext.Features"/>
-    /// to access the values associated with the current request.
+    /// Gets or sets the <see cref="RouteValueDictionary"/> associated with the currrent
+    /// request.
     /// </summary>
-    public class RouteValuesFeature : IRouteValuesFeature
+    public RouteValueDictionary RouteValues
     {
-        private RouteValueDictionary? _routeValues;
-
-        /// <summary>
-        /// Gets or sets the <see cref="RouteValueDictionary"/> associated with the currrent
-        /// request.
-        /// </summary>
-        public RouteValueDictionary RouteValues
+        get
         {
-            get
+            if (_routeValues == null)
             {
-                if (_routeValues == null)
-                {
-                    _routeValues = new RouteValueDictionary();
-                }
-
-                return _routeValues;
+                _routeValues = new RouteValueDictionary();
             }
-            set => _routeValues = value;
+
+            return _routeValues;
         }
+        set => _routeValues = value;
     }
 }

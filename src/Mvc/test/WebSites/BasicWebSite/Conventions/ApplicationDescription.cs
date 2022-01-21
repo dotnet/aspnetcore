@@ -3,20 +3,19 @@
 
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 
-namespace BasicWebSite
+namespace BasicWebSite;
+
+public class ApplicationDescription : IApplicationModelConvention
 {
-    public class ApplicationDescription : IApplicationModelConvention
+    private readonly string _description;
+
+    public ApplicationDescription(string description)
     {
-        private readonly string _description;
+        _description = description;
+    }
 
-        public ApplicationDescription(string description)
-        {
-            _description = description;
-        }
-
-        public void Apply(ApplicationModel application)
-        {
-            application.Properties["description"] = _description;
-        }
+    public void Apply(ApplicationModel application)
+    {
+        application.Properties["description"] = _description;
     }
 }

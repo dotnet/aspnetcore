@@ -19,298 +19,297 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
-namespace Microsoft.AspNetCore.SignalR.Client.Tests
+namespace Microsoft.AspNetCore.SignalR.Client.Tests;
+
+public partial class HttpConnectionTests
 {
-    public partial class HttpConnectionTests
+    public class Transport : VerifiableLoggedTest
     {
-        public class Transport : VerifiableLoggedTest
+        [Theory]
+        [InlineData(HttpTransportType.LongPolling)]
+        [InlineData(HttpTransportType.ServerSentEvents)]
+        public async Task HttpConnectionSetsAccessTokenOnAllRequests(HttpTransportType transportType)
         {
-            [Theory]
-            [InlineData(HttpTransportType.LongPolling)]
-            [InlineData(HttpTransportType.ServerSentEvents)]
-            public async Task HttpConnectionSetsAccessTokenOnAllRequests(HttpTransportType transportType)
+            var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
+            var requestsExecuted = false;
+            var callCount = 0;
+
+            testHttpHandler.OnNegotiate((_, cancellationToken) =>
+            {
+                return ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationContent());
+            });
+
+            testHttpHandler.OnRequest(async (request, next, token) =>
+            {
+                Assert.Equal("Bearer", request.Headers.Authorization.Scheme);
+
+                // Call count increments with each call and is used as the access token
+                Assert.Equal(callCount.ToString(CultureInfo.InvariantCulture), request.Headers.Authorization.Parameter);
+
+                requestsExecuted = true;
+
+                return await next();
+            });
+
+            testHttpHandler.OnRequest((request, next, token) =>
+            {
+                return Task.FromResult(ResponseUtils.CreateResponse(HttpStatusCode.NoContent));
+            });
+
+            Task<string> AccessTokenProvider()
+            {
+                callCount++;
+                return Task.FromResult(callCount.ToString(CultureInfo.InvariantCulture));
+            }
+
+            await WithConnectionAsync(
+                CreateConnection(testHttpHandler, transportType: transportType, accessTokenProvider: AccessTokenProvider),
+                async (connection) =>
+                {
+                    await connection.StartAsync().DefaultTimeout();
+                    await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello world 1"));
+                    await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello world 2"));
+                });
+            // Fail safe in case the code is modified and some requests don't execute as a result
+            Assert.True(requestsExecuted);
+        }
+
+        [Theory]
+        [InlineData(HttpTransportType.LongPolling, true)]
+        [InlineData(HttpTransportType.ServerSentEvents, false)]
+        public async Task HttpConnectionSetsInherentKeepAliveFeature(HttpTransportType transportType, bool expectedValue)
+        {
+            using (StartVerifiableLog())
             {
                 var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
-                var requestsExecuted = false;
-                var callCount = 0;
 
-                testHttpHandler.OnNegotiate((_, cancellationToken) =>
+                testHttpHandler.OnNegotiate((_, cancellationToken) => ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationContent()));
+
+                testHttpHandler.OnRequest((request, next, token) => Task.FromResult(ResponseUtils.CreateResponse(HttpStatusCode.NoContent)));
+
+                await WithConnectionAsync(
+                    CreateConnection(testHttpHandler, transportType: transportType, loggerFactory: LoggerFactory),
+                    async (connection) =>
+                    {
+                        await connection.StartAsync().DefaultTimeout();
+
+                        var feature = connection.Features.Get<IConnectionInherentKeepAliveFeature>();
+                        Assert.NotNull(feature);
+                        Assert.Equal(expectedValue, feature.HasInherentKeepAlive);
+                    });
+            }
+        }
+
+        [Theory]
+        [InlineData(HttpTransportType.LongPolling)]
+        [InlineData(HttpTransportType.ServerSentEvents)]
+        public async Task HttpConnectionSetsUserAgentOnAllRequests(HttpTransportType transportType)
+        {
+            var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
+            var requestsExecuted = false;
+
+
+            testHttpHandler.OnNegotiate((_, cancellationToken) =>
+            {
+                return ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationContent());
+            });
+
+            testHttpHandler.OnRequest(async (request, next, token) =>
+            {
+                var userAgentHeader = request.Headers.UserAgent.ToString();
+
+                Assert.NotNull(userAgentHeader);
+                Assert.StartsWith("Microsoft SignalR/", userAgentHeader);
+
+                // user agent version should come from version embedded in assembly metadata
+                var assemblyVersion = typeof(Constants)
+                    .Assembly
+                    .GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+
+                Assert.Contains(assemblyVersion.InformationalVersion, userAgentHeader);
+
+                requestsExecuted = true;
+
+                return await next();
+            });
+
+            testHttpHandler.OnRequest((request, next, token) =>
+            {
+                return Task.FromResult(ResponseUtils.CreateResponse(HttpStatusCode.NoContent));
+            });
+
+            await WithConnectionAsync(
+                CreateConnection(testHttpHandler, transportType: transportType),
+                async (connection) =>
                 {
-                    return ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationContent());
+                    await connection.StartAsync().DefaultTimeout();
+                    await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello World"));
                 });
+            // Fail safe in case the code is modified and some requests don't execute as a result
+            Assert.True(requestsExecuted);
+        }
 
-                testHttpHandler.OnRequest(async (request, next, token) =>
+        [Theory]
+        [InlineData(HttpTransportType.LongPolling)]
+        [InlineData(HttpTransportType.ServerSentEvents)]
+        public async Task HttpConnectionSetsRequestedWithOnAllRequests(HttpTransportType transportType)
+        {
+            var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
+            var requestsExecuted = false;
+
+            testHttpHandler.OnNegotiate((_, cancellationToken) =>
+            {
+                return ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationContent());
+            });
+
+            testHttpHandler.OnRequest(async (request, next, token) =>
+            {
+                var requestedWithHeader = request.Headers.GetValues(HeaderNames.XRequestedWith);
+                var requestedWithValue = Assert.Single(requestedWithHeader);
+                Assert.Equal("XMLHttpRequest", requestedWithValue);
+
+                requestsExecuted = true;
+
+                return await next();
+            });
+
+            testHttpHandler.OnRequest((request, next, token) =>
+            {
+                return Task.FromResult(ResponseUtils.CreateResponse(HttpStatusCode.NoContent));
+            });
+
+            await WithConnectionAsync(
+                CreateConnection(testHttpHandler, transportType: transportType),
+                async (connection) =>
                 {
-                    Assert.Equal("Bearer", request.Headers.Authorization.Scheme);
-
-                    // Call count increments with each call and is used as the access token
-                    Assert.Equal(callCount.ToString(CultureInfo.InvariantCulture), request.Headers.Authorization.Parameter);
-
-                    requestsExecuted = true;
-
-                    return await next();
+                    await connection.StartAsync().DefaultTimeout();
+                    await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello World"));
                 });
+            // Fail safe in case the code is modified and some requests don't execute as a result
+            Assert.True(requestsExecuted);
+        }
 
-                testHttpHandler.OnRequest((request, next, token) =>
-                {
-                    return Task.FromResult(ResponseUtils.CreateResponse(HttpStatusCode.NoContent));
-                });
+        [Fact]
+        public async Task CanReceiveData()
+        {
+            var testHttpHandler = new TestHttpMessageHandler();
 
-                Task<string> AccessTokenProvider()
+            // Set the long poll up to return a single message over a few polls.
+            var requestCount = 0;
+            var messageFragments = new[] { "This ", "is ", "a ", "test" };
+            testHttpHandler.OnLongPoll(cancellationToken =>
+            {
+                if (requestCount >= messageFragments.Length)
                 {
-                    callCount++;
-                    return Task.FromResult(callCount.ToString(CultureInfo.InvariantCulture));
+                    return ResponseUtils.CreateResponse(HttpStatusCode.NoContent);
                 }
 
-                await WithConnectionAsync(
-                    CreateConnection(testHttpHandler, transportType: transportType, accessTokenProvider: AccessTokenProvider),
-                    async (connection) =>
-                    {
-                        await connection.StartAsync().DefaultTimeout();
-                        await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello world 1"));
-                        await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello world 2"));
-                    });
-                // Fail safe in case the code is modified and some requests don't execute as a result
-                Assert.True(requestsExecuted);
-            }
+                var resp = ResponseUtils.CreateResponse(HttpStatusCode.OK, messageFragments[requestCount]);
+                requestCount += 1;
+                return resp;
+            });
+            testHttpHandler.OnSocketSend((_, __) => ResponseUtils.CreateResponse(HttpStatusCode.Accepted));
 
-            [Theory]
-            [InlineData(HttpTransportType.LongPolling, true)]
-            [InlineData(HttpTransportType.ServerSentEvents, false)]
-            public async Task HttpConnectionSetsInherentKeepAliveFeature(HttpTransportType transportType, bool expectedValue)
-            {
-                using (StartVerifiableLog())
+            await WithConnectionAsync(
+                CreateConnection(testHttpHandler),
+                async (connection) =>
                 {
-                    var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
-
-                    testHttpHandler.OnNegotiate((_, cancellationToken) => ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationContent()));
-
-                    testHttpHandler.OnRequest((request, next, token) => Task.FromResult(ResponseUtils.CreateResponse(HttpStatusCode.NoContent)));
-
-                    await WithConnectionAsync(
-                        CreateConnection(testHttpHandler, transportType: transportType, loggerFactory: LoggerFactory),
-                        async (connection) =>
-                        {
-                            await connection.StartAsync().DefaultTimeout();
-
-                            var feature = connection.Features.Get<IConnectionInherentKeepAliveFeature>();
-                            Assert.NotNull(feature);
-                            Assert.Equal(expectedValue, feature.HasInherentKeepAlive);
-                        });
-                }
-            }
-
-            [Theory]
-            [InlineData(HttpTransportType.LongPolling)]
-            [InlineData(HttpTransportType.ServerSentEvents)]
-            public async Task HttpConnectionSetsUserAgentOnAllRequests(HttpTransportType transportType)
-            {
-                var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
-                var requestsExecuted = false;
-
-
-                testHttpHandler.OnNegotiate((_, cancellationToken) =>
-                {
-                    return ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationContent());
+                    await connection.StartAsync().DefaultTimeout();
+                    Assert.Contains("This is a test", Encoding.UTF8.GetString(await connection.Transport.Input.ReadAllAsync()));
                 });
+        }
 
-                testHttpHandler.OnRequest(async (request, next, token) =>
-                {
-                    var userAgentHeader = request.Headers.UserAgent.ToString();
+        [Fact]
+        public async Task CanSendData()
+        {
+            var data = new byte[] { 1, 1, 2, 3, 5, 8 };
 
-                    Assert.NotNull(userAgentHeader);
-                    Assert.StartsWith("Microsoft SignalR/", userAgentHeader);
+            var testHttpHandler = new TestHttpMessageHandler();
 
-                    // user agent version should come from version embedded in assembly metadata
-                    var assemblyVersion = typeof(Constants)
-                            .Assembly
-                            .GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+            var sendTcs = new TaskCompletionSource<byte[]>();
+            var longPollTcs = new TaskCompletionSource<HttpResponseMessage>();
 
-                    Assert.Contains(assemblyVersion.InformationalVersion, userAgentHeader);
+            testHttpHandler.OnLongPoll(cancellationToken => longPollTcs.Task);
 
-                    requestsExecuted = true;
-
-                    return await next();
-                });
-
-                testHttpHandler.OnRequest((request, next, token) =>
-                {
-                    return Task.FromResult(ResponseUtils.CreateResponse(HttpStatusCode.NoContent));
-                });
-
-                await WithConnectionAsync(
-                    CreateConnection(testHttpHandler, transportType: transportType),
-                    async (connection) =>
-                    {
-                        await connection.StartAsync().DefaultTimeout();
-                        await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello World"));
-                    });
-                // Fail safe in case the code is modified and some requests don't execute as a result
-                Assert.True(requestsExecuted);
-            }
-
-            [Theory]
-            [InlineData(HttpTransportType.LongPolling)]
-            [InlineData(HttpTransportType.ServerSentEvents)]
-            public async Task HttpConnectionSetsRequestedWithOnAllRequests(HttpTransportType transportType)
+            testHttpHandler.OnSocketSend((buf, cancellationToken) =>
             {
-                var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
-                var requestsExecuted = false;
+                sendTcs.TrySetResult(buf);
+                return Task.FromResult(ResponseUtils.CreateResponse(HttpStatusCode.Accepted));
+            });
 
-                testHttpHandler.OnNegotiate((_, cancellationToken) =>
+            await WithConnectionAsync(
+                CreateConnection(testHttpHandler),
+                async (connection) =>
                 {
-                    return ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationContent());
-                });
+                    await connection.StartAsync().DefaultTimeout();
 
-                testHttpHandler.OnRequest(async (request, next, token) =>
+                    await connection.Transport.Output.WriteAsync(data).DefaultTimeout();
+
+                    Assert.Equal(data, await sendTcs.Task.DefaultTimeout());
+
+                    longPollTcs.TrySetResult(ResponseUtils.CreateResponse(HttpStatusCode.NoContent));
+                });
+        }
+
+        [Fact]
+        public Task SendThrowsIfConnectionIsNotStarted()
+        {
+            return WithConnectionAsync(
+                CreateConnection(),
+                async (connection) =>
                 {
-                    var requestedWithHeader = request.Headers.GetValues(HeaderNames.XRequestedWith);
-                    var requestedWithValue = Assert.Single(requestedWithHeader);
-                    Assert.Equal("XMLHttpRequest", requestedWithValue);
-
-                    requestsExecuted = true;
-
-                    return await next();
+                    var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                        () => connection.Transport.Output.WriteAsync(new byte[0]).DefaultTimeout());
+                    Assert.Equal($"Cannot access the {nameof(Transport)} pipe before the connection has started.", exception.Message);
                 });
+        }
 
-                testHttpHandler.OnRequest((request, next, token) =>
+        [Fact]
+        public Task TransportPipeCannotBeAccessedAfterConnectionIsDisposed()
+        {
+            return WithConnectionAsync(
+                CreateConnection(),
+                async (connection) =>
                 {
-                    return Task.FromResult(ResponseUtils.CreateResponse(HttpStatusCode.NoContent));
+                    await connection.StartAsync().DefaultTimeout();
+                    await connection.DisposeAsync().DefaultTimeout();
+
+                    var exception = await Assert.ThrowsAsync<ObjectDisposedException>(
+                        () => connection.Transport.Output.WriteAsync(new byte[0]).DefaultTimeout());
+                    Assert.Equal(nameof(HttpConnection), exception.ObjectName);
                 });
+        }
 
-                await WithConnectionAsync(
-                    CreateConnection(testHttpHandler, transportType: transportType),
-                    async (connection) =>
-                    {
-                        await connection.StartAsync().DefaultTimeout();
-                        await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello World"));
-                    });
-                // Fail safe in case the code is modified and some requests don't execute as a result
-                Assert.True(requestsExecuted);
-            }
-
-            [Fact]
-            public async Task CanReceiveData()
-            {
-                var testHttpHandler = new TestHttpMessageHandler();
-
-                // Set the long poll up to return a single message over a few polls.
-                var requestCount = 0;
-                var messageFragments = new[] { "This ", "is ", "a ", "test" };
-                testHttpHandler.OnLongPoll(cancellationToken =>
+        [Fact]
+        public Task TransportIsShutDownAfterDispose()
+        {
+            var transport = new TestTransport();
+            return WithConnectionAsync(
+                CreateConnection(transport: transport),
+                async (connection) =>
                 {
-                    if (requestCount >= messageFragments.Length)
-                    {
-                        return ResponseUtils.CreateResponse(HttpStatusCode.NoContent);
-                    }
+                    await connection.StartAsync().DefaultTimeout();
+                    await connection.DisposeAsync().DefaultTimeout();
 
-                    var resp = ResponseUtils.CreateResponse(HttpStatusCode.OK, messageFragments[requestCount]);
-                    requestCount += 1;
-                    return resp;
+                    // This will throw OperationCanceledException if it's forcibly terminated
+                    // which we don't want
+                    await transport.Receiving.DefaultTimeout();
                 });
-                testHttpHandler.OnSocketSend((_, __) => ResponseUtils.CreateResponse(HttpStatusCode.Accepted));
+        }
 
-                await WithConnectionAsync(
-                    CreateConnection(testHttpHandler),
-                    async (connection) =>
-                    {
-                        await connection.StartAsync().DefaultTimeout();
-                        Assert.Contains("This is a test", Encoding.UTF8.GetString(await connection.Transport.Input.ReadAllAsync()));
-                    });
-            }
+        [Fact]
+        public Task StartAsyncTransferFormatOverridesOptions()
+        {
+            var transport = new TestTransport();
 
-            [Fact]
-            public async Task CanSendData()
-            {
-                var data = new byte[] { 1, 1, 2, 3, 5, 8 };
-
-                var testHttpHandler = new TestHttpMessageHandler();
-
-                var sendTcs = new TaskCompletionSource<byte[]>();
-                var longPollTcs = new TaskCompletionSource<HttpResponseMessage>();
-
-                testHttpHandler.OnLongPoll(cancellationToken => longPollTcs.Task);
-
-                testHttpHandler.OnSocketSend((buf, cancellationToken) =>
+            return WithConnectionAsync(
+                CreateConnection(transport: transport, transferFormat: TransferFormat.Binary),
+                async (connection) =>
                 {
-                    sendTcs.TrySetResult(buf);
-                    return Task.FromResult(ResponseUtils.CreateResponse(HttpStatusCode.Accepted));
+                    await connection.StartAsync(TransferFormat.Text).DefaultTimeout();
+
+                    Assert.Equal(TransferFormat.Text, transport.Format);
                 });
-
-                await WithConnectionAsync(
-                    CreateConnection(testHttpHandler),
-                    async (connection) =>
-                    {
-                        await connection.StartAsync().DefaultTimeout();
-
-                        await connection.Transport.Output.WriteAsync(data).DefaultTimeout();
-
-                        Assert.Equal(data, await sendTcs.Task.DefaultTimeout());
-
-                        longPollTcs.TrySetResult(ResponseUtils.CreateResponse(HttpStatusCode.NoContent));
-                    });
-            }
-
-            [Fact]
-            public Task SendThrowsIfConnectionIsNotStarted()
-            {
-                return WithConnectionAsync(
-                    CreateConnection(),
-                    async (connection) =>
-                    {
-                        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-                            () => connection.Transport.Output.WriteAsync(new byte[0]).DefaultTimeout());
-                        Assert.Equal($"Cannot access the {nameof(Transport)} pipe before the connection has started.", exception.Message);
-                    });
-            }
-
-            [Fact]
-            public Task TransportPipeCannotBeAccessedAfterConnectionIsDisposed()
-            {
-                return WithConnectionAsync(
-                    CreateConnection(),
-                    async (connection) =>
-                    {
-                        await connection.StartAsync().DefaultTimeout();
-                        await connection.DisposeAsync().DefaultTimeout();
-
-                        var exception = await Assert.ThrowsAsync<ObjectDisposedException>(
-                            () => connection.Transport.Output.WriteAsync(new byte[0]).DefaultTimeout());
-                        Assert.Equal(nameof(HttpConnection), exception.ObjectName);
-                    });
-            }
-
-            [Fact]
-            public Task TransportIsShutDownAfterDispose()
-            {
-                var transport = new TestTransport();
-                return WithConnectionAsync(
-                    CreateConnection(transport: transport),
-                    async (connection) =>
-                    {
-                        await connection.StartAsync().DefaultTimeout();
-                        await connection.DisposeAsync().DefaultTimeout();
-
-                        // This will throw OperationCanceledException if it's forcibly terminated
-                        // which we don't want
-                        await transport.Receiving.DefaultTimeout();
-                    });
-            }
-
-            [Fact]
-            public Task StartAsyncTransferFormatOverridesOptions()
-            {
-                var transport = new TestTransport();
-
-                return WithConnectionAsync(
-                    CreateConnection(transport: transport, transferFormat: TransferFormat.Binary),
-                    async (connection) =>
-                    {
-                        await connection.StartAsync(TransferFormat.Text).DefaultTimeout();
-
-                        Assert.Equal(TransferFormat.Text, transport.Format);
-                    });
-            }
         }
     }
 }

@@ -4,16 +4,15 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using TestHelper;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Components.Analyzers
+namespace Microsoft.AspNetCore.Components.Analyzers;
+
+public class ComponentParametersShouldBePublicTest : DiagnosticVerifier
 {
-    public class ComponentParametersShouldBePublicTest : DiagnosticVerifier
+    [Fact]
+    public void IgnoresPublicProperties()
     {
-        [Fact]
-        public void IgnoresPublicProperties()
-        {
-            var test = $@"
+        var test = $@"
     namespace ConsoleApplication1
     {{
         using {typeof(ParameterAttribute).Namespace};
@@ -23,13 +22,13 @@ namespace Microsoft.AspNetCore.Components.Analyzers
         }}
     }}" + ComponentsTestDeclarations.Source;
 
-            VerifyCSharpDiagnostic(test);
-        }
+        VerifyCSharpDiagnostic(test);
+    }
 
-        [Fact]
-        public void IgnoresPrivateNonParameterProperties()
-        {
-            var test = $@"
+    [Fact]
+    public void IgnoresPrivateNonParameterProperties()
+    {
+        var test = $@"
     namespace ConsoleApplication1
     {{
         using {typeof(ParameterAttribute).Namespace};
@@ -39,13 +38,13 @@ namespace Microsoft.AspNetCore.Components.Analyzers
         }}
     }}" + ComponentsTestDeclarations.Source;
 
-            VerifyCSharpDiagnostic(test);
-        }
+        VerifyCSharpDiagnostic(test);
+    }
 
-        [Fact]
-        public void ErrorsForNonPublicParameters()
-        {
-            var test = $@"
+    [Fact]
+    public void ErrorsForNonPublicParameters()
+    {
+        var test = $@"
     namespace ConsoleApplication1
     {{
         using {typeof(ParameterAttribute).Namespace};
@@ -58,49 +57,48 @@ namespace Microsoft.AspNetCore.Components.Analyzers
         }}
     }}" + ComponentsTestDeclarations.Source;
 
-            VerifyCSharpDiagnostic(test,
-                new DiagnosticResult
+        VerifyCSharpDiagnostic(test,
+            new DiagnosticResult
+            {
+                Id = DiagnosticDescriptors.ComponentParametersShouldBePublic.Id,
+                Message = "Component parameter 'ConsoleApplication1.TypeName.MyProperty1' should be public.",
+                Severity = DiagnosticSeverity.Error,
+                Locations = new[]
                 {
-                    Id = DiagnosticDescriptors.ComponentParametersShouldBePublic.Id,
-                    Message = "Component parameter 'ConsoleApplication1.TypeName.MyProperty1' should be public.",
-                    Severity = DiagnosticSeverity.Error,
-                    Locations = new[]
-                    {
                         new DiagnosticResultLocation("Test0.cs", 7, 32)
-                    }
-                },
-                new DiagnosticResult
+                }
+            },
+            new DiagnosticResult
+            {
+                Id = DiagnosticDescriptors.ComponentParametersShouldBePublic.Id,
+                Message = "Component parameter 'ConsoleApplication1.TypeName.MyProperty2' should be public.",
+                Severity = DiagnosticSeverity.Error,
+                Locations = new[]
                 {
-                    Id = DiagnosticDescriptors.ComponentParametersShouldBePublic.Id,
-                    Message = "Component parameter 'ConsoleApplication1.TypeName.MyProperty2' should be public.",
-                    Severity = DiagnosticSeverity.Error,
-                    Locations = new[]
-                    {
                         new DiagnosticResultLocation("Test0.cs", 8, 40)
-                    }
-                },
-                new DiagnosticResult
+                }
+            },
+            new DiagnosticResult
+            {
+                Id = DiagnosticDescriptors.ComponentParametersShouldBePublic.Id,
+                Message = "Component parameter 'ConsoleApplication1.TypeName.MyProperty3' should be public.",
+                Severity = DiagnosticSeverity.Error,
+                Locations = new[]
                 {
-                    Id = DiagnosticDescriptors.ComponentParametersShouldBePublic.Id,
-                    Message = "Component parameter 'ConsoleApplication1.TypeName.MyProperty3' should be public.",
-                    Severity = DiagnosticSeverity.Error,
-                    Locations = new[]
-                    {
                         new DiagnosticResultLocation("Test0.cs", 9, 42)
-                    }
-                },
-                new DiagnosticResult
+                }
+            },
+            new DiagnosticResult
+            {
+                Id = DiagnosticDescriptors.ComponentParametersShouldBePublic.Id,
+                Message = "Component parameter 'ConsoleApplication1.TypeName.MyProperty4' should be public.",
+                Severity = DiagnosticSeverity.Error,
+                Locations = new[]
                 {
-                    Id = DiagnosticDescriptors.ComponentParametersShouldBePublic.Id,
-                    Message = "Component parameter 'ConsoleApplication1.TypeName.MyProperty4' should be public.",
-                    Severity = DiagnosticSeverity.Error,
-                    Locations = new[]
-                    {
                         new DiagnosticResultLocation("Test0.cs", 10, 41)
-                    }
-                });
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer() => new ComponentParameterAnalyzer();
+                }
+            });
     }
+
+    protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer() => new ComponentParameterAnalyzer();
 }

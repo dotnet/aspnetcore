@@ -1,12 +1,15 @@
 ﻿<Project DefaultTargets="Build">
   <PropertyGroup>
-    <IsTestProject>true</IsTestProject>
+    <IsUnitTestProject>true</IsUnitTestProject>
   </PropertyGroup>
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
 
   <PropertyGroup>
     <IsPackable>false</IsPackable>
+
+    <!-- Npm tests don't run on Helix currently, so we need to set this to false to still run the tests on non-Helix -->
+    <BuildHelixPayload>false</BuildHelixPayload>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,22 +28,22 @@
   <ItemGroup>
     <ProjectReference
       Include="..\..\JSInterop\Microsoft.JSInterop.JS\src\Microsoft.JSInterop.JS.npmproj"
-      ReferenceOutputAssemblies="false"
+      Private="false"
+      ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true"
-      UndefineProperties="TargetFramework"
-      Private="false" />
+      UndefineProperties="TargetFramework" />
     <ProjectReference
       Include="..\..\SignalR\clients\ts\signalr\signalr.npmproj"
-      ReferenceOutputAssemblies="false"
+      Private="false"
+      ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true"
-      UndefineProperties="TargetFramework"
-      Private="false" />
+      UndefineProperties="TargetFramework" />
     <ProjectReference
       Include="..\..\SignalR\clients\ts\signalr-protocol-msgpack\signalr-protocol-msgpack.npmproj"
-      ReferenceOutputAssemblies="false"
+      Private="false"
+      ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true"
-      UndefineProperties="TargetFramework"
-      Private="false" />
+      UndefineProperties="TargetFramework" />
   </ItemGroup>
 
   <!-- Workaround strange issues with something calling these targets. -->

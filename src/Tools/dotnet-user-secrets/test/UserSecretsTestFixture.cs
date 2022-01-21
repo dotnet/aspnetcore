@@ -6,37 +6,37 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 
-namespace Microsoft.Extensions.Configuration.UserSecrets.Tests
+namespace Microsoft.Extensions.Configuration.UserSecrets.Tests;
+
+public class UserSecretsTestFixture : IDisposable
 {
-    public class UserSecretsTestFixture : IDisposable
+    private Stack<Action> _disposables = new Stack<Action>();
+
+    public const string TestSecretsId = "b918174fa80346bbb7f4a386729c0eff";
+
+    public UserSecretsTestFixture()
     {
-        private Stack<Action> _disposables = new Stack<Action>();
+        _disposables.Push(() => TryDelete(Path.GetDirectoryName(PathHelper.GetSecretsPathFromSecretsId(TestSecretsId))));
+    }
 
-        public const string TestSecretsId = "b918174fa80346bbb7f4a386729c0eff";
-
-        public UserSecretsTestFixture()
+    public void Dispose()
+    {
+        while (_disposables.Count > 0)
         {
-            _disposables.Push(() => TryDelete(Path.GetDirectoryName(PathHelper.GetSecretsPathFromSecretsId(TestSecretsId))));
+            _disposables.Pop()?.Invoke();
         }
+    }
 
-        public void Dispose()
-        {
-            while (_disposables.Count > 0)
-            {
-                _disposables.Pop()?.Invoke();
-            }
-        }
+    public string GetTempSecretProject()
+    {
+        string userSecretsId;
+        return GetTempSecretProject(out userSecretsId);
+    }
 
-        public string GetTempSecretProject()
-        {
-            string userSecretsId;
-            return GetTempSecretProject(out userSecretsId);
-        }
-
-        private const string ProjectTemplate = @"<Project ToolsVersion=""15.0"" Sdk=""Microsoft.NET.Sdk"">
+    private const string ProjectTemplate = @"<Project ToolsVersion=""15.0"" Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net6.0</TargetFrameworks>
+    <TargetFramework>net7.0</TargetFramework>
     {0}
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
@@ -46,53 +46,52 @@ namespace Microsoft.Extensions.Configuration.UserSecrets.Tests
   </ItemGroup>
 </Project>";
 
-        public string GetTempSecretProject(out string userSecretsId)
-        {
-            userSecretsId = Guid.NewGuid().ToString();
-            return CreateProject(userSecretsId);
-        }
+    public string GetTempSecretProject(out string userSecretsId)
+    {
+        userSecretsId = Guid.NewGuid().ToString();
+        return CreateProject(userSecretsId);
+    }
 
-        public string CreateProject(string userSecretsId)
-        {
-            var projectPath = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "usersecretstest", Guid.NewGuid().ToString()));
-            var prop = string.IsNullOrEmpty(userSecretsId)
-                ? string.Empty
-                : $"<UserSecretsId>{userSecretsId}</UserSecretsId>";
+    public string CreateProject(string userSecretsId)
+    {
+        var projectPath = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "usersecretstest", Guid.NewGuid().ToString()));
+        var prop = string.IsNullOrEmpty(userSecretsId)
+            ? string.Empty
+            : $"<UserSecretsId>{userSecretsId}</UserSecretsId>";
 
-            File.WriteAllText(
-                Path.Combine(projectPath.FullName, "TestProject.csproj"),
-                string.Format(CultureInfo.InvariantCulture, ProjectTemplate, prop));
+        File.WriteAllText(
+            Path.Combine(projectPath.FullName, "TestProject.csproj"),
+            string.Format(CultureInfo.InvariantCulture, ProjectTemplate, prop));
 
-            var id = userSecretsId;
-            _disposables.Push(() =>
-            {
-                try
-                {
-                    // may throw if id is bad
-                    var secretsDir = Path.GetDirectoryName(PathHelper.GetSecretsPathFromSecretsId(id));
-                    TryDelete(secretsDir);
-                }
-                catch { }
-            });
-            _disposables.Push(() => TryDelete(projectPath.FullName));
-
-            return projectPath.FullName;
-        }
-
-        private static void TryDelete(string directory)
+        var id = userSecretsId;
+        _disposables.Push(() =>
         {
             try
             {
-                if (Directory.Exists(directory))
-                {
-                    Directory.Delete(directory, true);
-                }
+                // may throw if id is bad
+                var secretsDir = Path.GetDirectoryName(PathHelper.GetSecretsPathFromSecretsId(id));
+                TryDelete(secretsDir);
             }
-            catch (Exception)
+            catch { }
+        });
+        _disposables.Push(() => TryDelete(projectPath.FullName));
+
+        return projectPath.FullName;
+    }
+
+    private static void TryDelete(string directory)
+    {
+        try
+        {
+            if (Directory.Exists(directory))
             {
-                // Ignore failures.
-                Console.WriteLine("Failed to delete " + directory);
+                Directory.Delete(directory, true);
             }
+        }
+        catch (Exception)
+        {
+            // Ignore failures.
+            Console.WriteLine("Failed to delete " + directory);
         }
     }
 }

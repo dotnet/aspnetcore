@@ -1,43 +1,40 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
+/// <summary>
+/// Summary description for Disposable
+/// </summary>
+internal class Disposable : IDisposable
 {
-    /// <summary>
-    /// Summary description for Disposable
-    /// </summary>
-    internal class Disposable : IDisposable
+    private Action? _dispose;
+    private bool _disposedValue; // To detect redundant calls
+
+    public Disposable(Action dispose)
     {
-        private Action? _dispose;
-        private bool _disposedValue; // To detect redundant calls
+        _dispose = dispose;
+    }
 
-        public Disposable(Action dispose)
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!_disposedValue)
         {
-            _dispose = dispose;
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!_disposedValue)
+            if (disposing)
             {
-                if (disposing)
-                {
-                    _dispose!.Invoke();
-                }
-
-                _dispose = null;
-                _disposedValue = true;
+                _dispose!.Invoke();
             }
-        }
 
-        // This code added to correctly implement the disposable pattern.
-        public void Dispose()
-        {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            _dispose = null;
+            _disposedValue = true;
         }
+    }
+
+    // This code added to correctly implement the disposable pattern.
+    public void Dispose()
+    {
+        // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+        Dispose(true);
+        GC.SuppressFinalize(this);
     }
 }

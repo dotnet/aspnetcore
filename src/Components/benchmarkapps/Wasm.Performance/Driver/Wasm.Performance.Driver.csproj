@@ -9,7 +9,7 @@
     <SignAssembly>false</SignAssembly>
     <IsTestAssetProject>true</IsTestAssetProject>
     <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
-    <DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
+    <Nullable>annotations</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

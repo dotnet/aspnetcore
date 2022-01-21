@@ -3,24 +3,22 @@
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
-namespace RazorPagesWebSite.TempData
+namespace RazorPagesWebSite.TempData;
+
+public class TempDataPageModel : PageModel
 {
-    public class TempDataPageModel : PageModel
+    [TempData]
+    public string Message { get; set; }
+
+    public IActionResult OnGet()
     {
-        [TempData]
-        public string Message { get; set; }
+        return Page();
+    }
 
-        public IActionResult OnGet()
-        {
-            return Page();
-        }
-
-        public IActionResult OnPost()
-        {
-            Message = "Secret post";
-            return Page();
-        }
+    public IActionResult OnPost()
+    {
+        Message = "Secret post";
+        return Page();
     }
 }

@@ -14,6 +14,7 @@
     <Compile Include="$(SharedSourceRoot)RazorViews\*.cs" />
     <Compile Include="$(SharedSourceRoot)StackTrace\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)ErrorPage\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)StaticWebAssets\**\*.cs" LinkBase="StaticWebAssets" />
   </ItemGroup>
 
   <ItemGroup>
@@ -31,6 +32,10 @@
     <Reference Include="Microsoft.Extensions.Options" />
 
     <Compile Include="$(SharedSourceRoot)TypeNameHelper\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Identity.DefaultUI.WebSite" />
   </ItemGroup>
 
 </Project>

@@ -34,13 +34,27 @@
         Expiry date (optional): <InputDate @bind-Value="person.OptionalExpiryDate" />
     </p>
     <p class="departure-time">
-        Departure time: <InputDate Type="InputDateType.Time" @bind-Value="person.DepartureTime" placeholder="Enter the time" />
+        Departure time:<br>
+        <input id="time-seconds-checkbox" type="checkbox" @bind-value="includeTimeSeconds" />Include seconds<br>
+        <InputDate
+            id="time-input"
+            Type="InputDateType.Time"
+            @bind-Value="person.DepartureTime"
+            placeholder="Enter the time"
+            step="@(includeTimeSeconds ? 1 : 60)" />
     </p>
     <p class="visit-month">
         Month of visit: <InputDate Type="InputDateType.Month" @bind-Value="person.VisitMonth" placeholder="Enter the month of your visit" />
     </p>
     <p class="appointment-date-time">
-        Appointment date and time: <InputDate Type="InputDateType.DateTimeLocal" @bind-Value="person.AppointmentDateAndTime" placeholder="Enter the appointment date and time" />
+        Appointment date and time:<br>
+        <input id="datetime-local-seconds-checkbox" type="checkbox" @bind-value="includeDateTimeLocalSeconds" />Include seconds<br>
+        <InputDate
+            id="datetime-local-input"
+            Type="InputDateType.DateTimeLocal"
+            @bind-Value="person.AppointmentDateAndTime"
+            placeholder="Enter the appointment date and time"
+            step="@(includeDateTimeLocalSeconds ? 1 : 60)" />
     </p>
     <p class="ticket-class">
         Ticket class:
@@ -70,6 +84,14 @@
         </InputSelect>
         <span>@string.Join(", ", person.HostileStrings)</span>
     </p>
+    <p class="select-bool-values">
+        T/F: 77 + 33 = 100<br>
+        <InputSelect @bind-Value="person.IsSelectMathStatementTrue">
+            <option>(select)</option>
+            <option value="true">true</option>
+            <option value="false">false</option>
+        </InputSelect>
+    </p>
     <p class="airline">
         <InputRadioGroup @bind-Value="person.Airline">
             Airline:
@@ -94,6 +116,13 @@
                 <InputRadio Name="country" Value="Country.Latvia" />latvia<br>
                 <InputRadio Name="color" Value="Color.Orange" />orange<br>
             </InputRadioGroup>
+        </InputRadioGroup>
+    </p>
+    <p class="radio-group-bool-values">
+        T/F: 7 * 3 = 21<br>
+        <InputRadioGroup @bind-Value="person.IsRadioMathStatementTrue">
+            <InputRadio Value="true" />true<br>
+            <InputRadio Value="false" />false<br>
         </InputRadioGroup>
     </p>
     <p class="socks">
@@ -130,6 +159,8 @@
     EditContext editContext;
     ValidationMessageStore customValidationMessageStore;
     bool enableDataAnnotationsSupport = true;
+    bool includeTimeSeconds;
+    bool includeDateTimeLocalSeconds;
 
     protected override void OnInitialized()
     {
@@ -187,6 +218,12 @@
 
         [Required, EnumDataType(typeof(Country))]
         public Country? Country { get; set; } = null;
+
+        [Required, Range(typeof(bool), "false", "false", ErrorMessage = "77 + 33 = 100 is a false statement, unfortunately.")]
+        public bool? IsSelectMathStatementTrue { get; set; } = null;
+
+        [Required, Range(typeof(bool), "true", "true", ErrorMessage = "7 * 3 = 21 is a true statement.")]
+        public bool IsRadioMathStatementTrue { get; set; } = false;
 
         [Required, StringLength(10), CustomValidationClassName(Valid = "valid-socks", Invalid = "invalid-socks")]
         public string SocksColor { get; set; }

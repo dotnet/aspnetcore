@@ -4,27 +4,34 @@
 *                                                                                 @Pilchie
 /global.json                                                                      @dotnet/aspnet-build
 /.azure/                                                                          @dotnet/aspnet-build
+/.azuredevops/                                                                    @dotnet/aspnet-build
 /.config/                                                                         @dotnet/aspnet-build
+/.devcontainer/                                                                   @captainsafia @TanayParikh
+/.vscode/                                                                         @captainsafia @TanayParikh
+/.github/                                                                         @dotnet/aspnet-build
+/.github/*_TEMPLATE/                                                              @dotnet/aspnet-build @mkArtakMSFT
+/.github/workflows/                                                               @dotnet/aspnet-build @tratcher
+/docs/                                                                            @captainsafia @mkArtakMSFT
 /eng/                                                                             @dotnet/aspnet-build
 /eng/common/                                                                      @dotnet-maestro-bot
 /eng/Versions.props                                                               @dotnet-maestro-bot @dougbu
 /eng/Version.Details.xml                                                          @dotnet-maestro-bot @dougbu
-/src/Caching/                                                                     @juntaoluo
-/src/Caching/**/PublicAPI.*Shipped.txt                                            @dotnet/aspnet-api-review @juntaoluo
+/src/Caching/                                                                     @captainsafia @halter73
+/src/Caching/**/PublicAPI.*Shipped.txt                                            @dotnet/aspnet-api-review @captainsafia @halter73
 /src/Components/                                                                  @dotnet/aspnet-blazor-eng
 /src/Components/**/PublicAPI.*Shipped.txt                                         @dotnet/aspnet-api-review @dotnet/aspnet-blazor-eng
-/src/DefaultBuilder/                                                              @tratcher
+/src/DefaultBuilder/                                                              @tratcher @halter73
 /src/DefaultBuilder/**/PublicAPI.*Shipped.txt                                     @dotnet/aspnet-api-review @tratcher
-/src/Hosting/                                                                     @tratcher
+/src/Hosting/                                                                     @tratcher @halter73
 /src/Hosting/**/PublicAPI.*Shipped.txt                                            @dotnet/aspnet-api-review @tratcher
-/src/Http/                                                                        @tratcher @BrennanConroy
-/src/Http/**/PublicAPI.*Shipped.txt                                               @dotnet/aspnet-api-review @tratcher
+/src/Http/                                                                        @tratcher @BrennanConroy @halter73
+/src/Http/**/PublicAPI.*Shipped.txt                                               @dotnet/aspnet-api-review @tratcher @BrennanConroy
 /src/Http/Routing/                                                                @javiercn
 /src/Http/Routing/**/PublicAPI.*Shipped.txt                                       @dotnet/aspnet-api-review @javiercn
-/src/HttpClientFactory/                                                           @juntaoluo
-/src/HttpClientFactory/**/PublicAPI.*Shipped.txt                                  @dotnet/aspnet-api-review @juntaoluo
+/src/HttpClientFactory/                                                           @captainsafia @halter73
+/src/HttpClientFactory/**/PublicAPI.*Shipped.txt                                  @dotnet/aspnet-api-review @captainsafia @halter73
 /src/Middleware/                                                                  @tratcher @BrennanConroy
-/src/Middleware/**/PublicAPI.*Shipped.txt                                         @dotnet/aspnet-api-review @tratcher
+/src/Middleware/**/PublicAPI.*Shipped.txt                                         @dotnet/aspnet-api-review @tratcher @BrennanConroy
 /src/Mvc/                                                                         @pranavkm @javiercn
 /src/Mvc/**/PublicAPI.*Shipped.txt                                                @dotnet/aspnet-api-review @pranavkm @javiercn
 /src/ProjectTemplates/Web.ProjectTemplates/content/BlazorServerWeb-CSharp/        @dotnet/aspnet-blazor-eng
@@ -32,8 +39,9 @@
 /src/Security/                                                                    @tratcher
 /src/Security/**/PublicAPI.*Shipped.txt                                           @dotnet/aspnet-api-review @tratcher
 /src/Servers/                                                                     @tratcher @halter73 @BrennanConroy
-/src/Servers/**/PublicAPI.*Shipped.txt                                            @dotnet/aspnet-api-review @tratcher @halter73
+/src/Servers/**/PublicAPI.*Shipped.txt                                            @dotnet/aspnet-api-review @tratcher @halter73 @BrennanConroy
 /src/Shared/runtime/                                                              @dotnet/http
 /src/Shared/test/Shared.Tests/runtime/                                            @dotnet/http
 /src/SignalR/                                                                     @BrennanConroy @halter73
 /src/SignalR/**/PublicAPI.*Shipped.txt                                            @dotnet/aspnet-api-review @BrennanConroy @halter73
+/src/submodules                                                                   @dotnet/aspnet-build @dougbu @wtgodbe

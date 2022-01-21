@@ -4,27 +4,25 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Serialization;
-using Xunit;
 
-namespace Microsoft.Extensions.DependencyInjection
+namespace Microsoft.Extensions.DependencyInjection;
+
+public class NewtonsoftJsonMvcBuilderExtensionsTest
 {
-    public class NewtonsoftJsonMvcBuilderExtensionsTest
+    [Fact]
+    public void AddNewtonsoftJson_ConfiguresOptions()
     {
-        [Fact]
-        public void AddNewtonsoftJson_ConfiguresOptions()
-        {
-            // Arrange
-            var services = new ServiceCollection();
+        // Arrange
+        var services = new ServiceCollection();
 
-            // Act
-            services.AddMvc()
-                .AddNewtonsoftJson((options) =>
-                {
-                    options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
-                });
+        // Act
+        services.AddMvc()
+            .AddNewtonsoftJson((options) =>
+            {
+                options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+            });
 
-            // Assert
-            Assert.Single(services, d => d.ServiceType == typeof(IConfigureOptions<MvcNewtonsoftJsonOptions>));
-        }
+        // Assert
+        Assert.Single(services, d => d.ServiceType == typeof(IConfigureOptions<MvcNewtonsoftJsonOptions>));
     }
 }

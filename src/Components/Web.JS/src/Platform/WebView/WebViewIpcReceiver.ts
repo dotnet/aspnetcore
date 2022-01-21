@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 import { DotNet } from '@microsoft/dotnet-js-interop';
 import { showErrorNotification } from '../../BootErrors';
 import { OutOfProcessRenderBatch } from '../../Rendering/RenderBatch/OutOfProcessRenderBatch';
@@ -20,7 +23,7 @@ export function startIpcReceiver() {
         renderBatch(0, new OutOfProcessRenderBatch(batchData));
         sendRenderCompleted(batchId, null);
       } catch (ex) {
-        sendRenderCompleted(batchId, ex.toString());
+        sendRenderCompleted(batchId, (ex as Error).toString());
       }
     },
 

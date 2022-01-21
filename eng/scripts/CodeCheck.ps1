@@ -50,9 +50,9 @@ try {
     if ($ci) {
         # Install dotnet.exe
         if ($RuntimeSourceFeed -or $RuntimeSourceFeedKey) {
-            & $repoRoot/restore.cmd -ci -nobl -noBuildNodeJS -RuntimeSourceFeed $RuntimeSourceFeed -RuntimeSourceFeedKey $RuntimeSourceFeedKey
-        }
-        else{
+            & $repoRoot/restore.cmd -ci -nobl -noBuildNodeJS -RuntimeSourceFeed $RuntimeSourceFeed `
+                -RuntimeSourceFeedKey $RuntimeSourceFeedKey
+        } else {
             & $repoRoot/restore.cmd -ci -nobl -noBuildNodeJS
         }
     }
@@ -67,16 +67,17 @@ try {
 
     # Ignore duplicates in submodules. These should be isolated from the rest of the build.
     # Ignore duplicates in the .ref folder. This is expected.
-    Get-ChildItem -Recurse "$repoRoot/src/*.*proj" `
-        | ? { $_.FullName -notmatch 'submodules' -and $_.FullName -notmatch 'node_modules' } `
-        | ? { (Split-Path -Leaf (Split-Path -Parent $_)) -ne 'ref' } `
-        | % {
-            $fileName = [io.path]::GetFileNameWithoutExtension($_)
-            if (-not ($projectFileNames.Add($fileName))) {
-                LogError -code 'BUILD003' -filepath $_ `
-                    "Multiple project files named '$fileName' exist. Project files should have a unique name to avoid conflicts in build output."
-            }
+    Get-ChildItem -Recurse "$repoRoot/src/*.*proj" |
+    Where-Object { $_.FullName -notmatch 'submodules' -and $_.FullName -notmatch 'node_modules' } |
+    Where-Object { (Split-Path -Leaf (Split-Path -Parent $_)) -ne 'ref' } |
+    ForEach-Object {
+        $fileName = [io.path]::GetFileNameWithoutExtension($_)
+        if (-not ($projectFileNames.Add($fileName))) {
+            LogError -code 'BUILD003' -filepath $_ `
+                ("Multiple project files named '$fileName' exist. Project files should have a unique name " +
+                 "to avoid conflicts in build output.")
         }
+    }
 
     #
     # Versions.props and Version.Details.xml
@@ -102,9 +103,9 @@ try {
             $actualVersion = $globalJson.'msbuild-sdks'.($dep.Name)
 
             if ($expectedVersion -ne $actualVersion) {
-                LogError `
-                    "MSBuild SDK version '$($dep.Name)' in global.json does not match the value in Version.Details.xml. Expected '$expectedVersion', actual '$actualVersion'" `
-                    -filepath "$repoRoot\global.json"
+                LogError -filepath "$repoRoot\global.json" `
+                    ("MSBuild SDK version '$($dep.Name)' in global.json does not match the value in " +
+                     "Version.Details.xml. Expected '$expectedVersion', actual '$actualVersion'")
             }
         }
         else {
@@ -122,40 +123,50 @@ try {
             }
 
             if ($expectedVersion -ne $actualVersion) {
-                LogError `
-                    "Version variable '$varName' does not match the value in Version.Details.xml. Expected '$expectedVersion', actual '$actualVersion'" `
-                    -filepath "$repoRoot\eng\Versions.props"
+                LogError -filepath "$repoRoot\eng\Versions.props" `
+                    ("Version variable '$varName' does not match the value in Version.Details.xml. " +
+                     "Expected '$expectedVersion', actual '$actualVersion'")
             }
         }
     }
 
     foreach ($unexpectedVar in $versionVars) {
-        LogError `
-            "Version variable '$unexpectedVar' does not have a matching entry in Version.Details.xml. See https://github.com/dotnet/aspnetcore/blob/main/docs/ReferenceResolution.md for instructions on how to add a new dependency." `
-            -filepath "$repoRoot\eng\Versions.props"
+        LogError -Filepath "$repoRoot\eng\Versions.props" `
+            ("Version variable '$unexpectedVar' does not have a matching entry in Version.Details.xml. " +
+             "See https://github.com/dotnet/aspnetcore/blob/main/docs/ReferenceResolution.md for instructions " +
+             "on how to add a new dependency.")
     }
 
-    Write-Host "Checking that solutions are up to date"
+    # ComponentsWebAssembly-CSharp.sln is used by the templating engine; MessagePack.sln is irrelevant (in submodule).
+    $solution = Get-ChildItem "$repoRoot/AspNetCore.sln"
+    $solutionFile = Split-Path -Leaf $solution
 
-    Get-ChildItem "$repoRoot/*.sln" -Recurse `
-        | ? {
-            # These .sln files are used by the templating engine.
-            ($_.Name -ne "BlazorServerWeb_CSharp.sln") -and
-            ($_.Name -ne "ComponentsWebAssembly-CSharp.sln")
-        } `
-        | % {
-        Write-Host "  Checking $(Split-Path -Leaf $_)"
-        $slnDir = Split-Path -Parent $_
-        $sln = $_
-        & dotnet sln $_ list `
-            | ? { $_ -like '*proj' } `
-            | % {
-                $proj = Join-Path $slnDir $_
-                if (-not (Test-Path $proj)) {
-                    LogError "Missing project. Solution references a project which does not exist: $proj. [$sln] "
-                }
+    Write-Host "Checking that $solutionFile is up to date"
+
+    # $solutionProjects will store relative paths i.e. the exact solution and solution filter content.
+    $solutionProjects = New-Object 'System.Collections.Generic.HashSet[string]'
+
+    # Where-Object needed to ignore heading `dotnet sln` outputs
+    & dotnet sln $solution list  | Where-Object { $_ -like '*proj' } | ForEach-Object {
+        $proj = Join-Path $repoRoot $_
+        if (-not ($solutionProjects.Add($_))) {
+            LogError "Duplicate project. $solutionFile references a project more than once: $proj."
+        }
+        if (-not (Test-Path $proj)) {
+            LogError "Missing project. $solutionFile references a project which does not exist: $proj."
+        }
+    }
+
+    Write-Host "Checking solution filters"
+    Get-ChildItem -Recurse "$repoRoot\*.slnf" | ForEach-Object {
+        $solutionFilter = $_
+        $json = Get-Content -Raw -Path $solutionFilter |ConvertFrom-Json
+        $json.solution.projects | ForEach-Object {
+            if (!$solutionProjects.Contains($_)) {
+                LogError "$solutionFilter references a project not in $solutionFile`: $_"
             }
         }
+    }
 
     #
     # Generated code check
@@ -163,17 +174,17 @@ try {
 
     Write-Host "Re-running code generation"
 
-    Write-Host "Re-generating project lists"
+    Write-Host "  Re-generating project lists"
     Invoke-Block {
         & $PSScriptRoot\GenerateProjectList.ps1 -ci:$ci
     }
 
-    Write-Host "Re-generating package baselines"
+    Write-Host "  Re-generating package baselines"
     Invoke-Block {
-        & dotnet run -p "$repoRoot/eng/tools/BaselineGenerator/"
+        & dotnet run --project "$repoRoot/eng/tools/BaselineGenerator/"
     }
 
-    Write-Host "Run git diff to check for pending changes"
+    Write-Host "Running git diff to check for pending changes"
 
     # Redirect stderr to stdout because PowerShell does not consistently handle output to stderr
     $changedFiles = & cmd /c 'git --no-pager diff --ignore-space-change --name-only 2>nul'
@@ -186,7 +197,9 @@ try {
         foreach ($file in $changedFiles) {
             if ($changedFilesExclusions -contains $file) {continue}
             $filePath = Resolve-Path "${repoRoot}/${file}"
-            LogError "Generated code is not up to date in $file. You might need to regenerate the reference assemblies or project list (see docs/ReferenceResolution.md)" -filepath $filePath
+            LogError  -filepath $filePath `
+                ("Generated code is not up to date in $file. You might need to regenerate the reference " +
+                 "assemblies or project list (see docs/ReferenceResolution.md)")
             & git --no-pager diff --ignore-space-change $filePath
         }
     }
@@ -222,7 +235,8 @@ try {
         Write-Host "Found changes in $($changedAPIBaselines.count) API baseline files"
 
         if ($changedAPIBaselines.count -gt 0) {
-            LogError "Detected modification to baseline API files. PublicAPI.Shipped.txt files should only be updated after a major release. See /docs/APIBaselines.md for more information."
+            LogError ("Detected modification to baseline API files. PublicAPI.Shipped.txt files should only " +
+                "be updated after a major release. See /docs/APIBaselines.md for more information.")
             LogError "Modified API baseline files:"
             foreach ($file in $changedAPIBaselines) {
                 LogError $file

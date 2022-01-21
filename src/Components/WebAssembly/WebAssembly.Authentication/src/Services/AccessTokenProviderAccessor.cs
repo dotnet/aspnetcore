@@ -1,18 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication.Internal
+namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication.Internal;
+
+internal class AccessTokenProviderAccessor : IAccessTokenProviderAccessor
 {
-    internal class AccessTokenProviderAccessor : IAccessTokenProviderAccessor
-    {
-        private readonly IServiceProvider _provider;
-        private IAccessTokenProvider _tokenProvider;
+    private readonly IServiceProvider _provider;
+    private IAccessTokenProvider _tokenProvider;
 
-        public AccessTokenProviderAccessor(IServiceProvider provider) => _provider = provider;
+    public AccessTokenProviderAccessor(IServiceProvider provider) => _provider = provider;
 
-        public IAccessTokenProvider TokenProvider => _tokenProvider ??= _provider.GetRequiredService<IAccessTokenProvider>();
-    }
+    public IAccessTokenProvider TokenProvider => _tokenProvider ??= _provider.GetRequiredService<IAccessTokenProvider>();
 }

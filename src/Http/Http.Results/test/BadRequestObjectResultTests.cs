@@ -1,22 +1,19 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Xunit;
+namespace Microsoft.AspNetCore.Http.Result;
 
-namespace Microsoft.AspNetCore.Http.Result
+public class BadRequestObjectResultTests
 {
-    public class BadRequestObjectResultTests
+    [Fact]
+    public void BadRequestObjectResult_SetsStatusCodeAndValue()
     {
-        [Fact]
-        public void BadRequestObjectResult_SetsStatusCodeAndValue()
-        {
-            // Arrange & Act
-            var obj = new object();
-            var badRequestObjectResult = new BadRequestObjectResult(obj);
+        // Arrange & Act
+        var obj = new object();
+        var badRequestObjectResult = new BadRequestObjectResult(obj);
 
-            // Assert
-            Assert.Equal(StatusCodes.Status400BadRequest, badRequestObjectResult.StatusCode);
-            Assert.Equal(obj, badRequestObjectResult.Value);
-        }
+        // Assert
+        Assert.Equal(StatusCodes.Status400BadRequest, badRequestObjectResult.StatusCode);
+        Assert.Equal(obj, badRequestObjectResult.Value);
     }
 }

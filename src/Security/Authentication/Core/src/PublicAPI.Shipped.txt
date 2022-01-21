@@ -1,4 +1,19 @@
 #nullable enable
+~Microsoft.AspNetCore.Authentication.AuthenticationHandler<TOptions>
+~Microsoft.AspNetCore.Authentication.BaseContext<TOptions>
+~Microsoft.AspNetCore.Authentication.HandleRequestContext<TOptions>
+~Microsoft.AspNetCore.Authentication.PrincipalContext<TOptions>
+~Microsoft.AspNetCore.Authentication.PropertiesContext<TOptions>
+~Microsoft.AspNetCore.Authentication.RedirectContext<TOptions>
+~Microsoft.AspNetCore.Authentication.RemoteAuthenticationContext<TOptions>
+~Microsoft.AspNetCore.Authentication.RemoteAuthenticationHandler<TOptions>
+~Microsoft.AspNetCore.Authentication.ResultContext<TOptions>
+~Microsoft.AspNetCore.Authentication.SignInAuthenticationHandler<TOptions>
+~Microsoft.AspNetCore.Authentication.SignOutAuthenticationHandler<TOptions>
+abstract Microsoft.AspNetCore.Authentication.AuthenticationHandler<TOptions>.HandleAuthenticateAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticateResult!>!
+abstract Microsoft.AspNetCore.Authentication.RemoteAuthenticationHandler<TOptions>.HandleRemoteAuthenticateAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.HandleRequestResult!>!
+abstract Microsoft.AspNetCore.Authentication.SignInAuthenticationHandler<TOptions>.HandleSignInAsync(System.Security.Claims.ClaimsPrincipal! user, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> System.Threading.Tasks.Task!
+abstract Microsoft.AspNetCore.Authentication.SignOutAuthenticationHandler<TOptions>.HandleSignOutAsync(Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Authentication.AccessDeniedContext
 Microsoft.AspNetCore.Authentication.AccessDeniedContext.AccessDeniedContext(Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.AspNetCore.Authentication.AuthenticationScheme! scheme, Microsoft.AspNetCore.Authentication.RemoteAuthenticationOptions! options) -> void
 Microsoft.AspNetCore.Authentication.AccessDeniedContext.AccessDeniedPath.get -> Microsoft.AspNetCore.Http.PathString
@@ -11,7 +26,6 @@ Microsoft.AspNetCore.Authentication.AccessDeniedContext.ReturnUrlParameter.get -
 Microsoft.AspNetCore.Authentication.AccessDeniedContext.ReturnUrlParameter.set -> void
 Microsoft.AspNetCore.Authentication.AuthenticationBuilder
 Microsoft.AspNetCore.Authentication.AuthenticationBuilder.AuthenticationBuilder(Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> void
-~Microsoft.AspNetCore.Authentication.AuthenticationHandler<TOptions>
 Microsoft.AspNetCore.Authentication.AuthenticationHandler<TOptions>.AuthenticateAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticateResult!>!
 Microsoft.AspNetCore.Authentication.AuthenticationHandler<TOptions>.AuthenticationHandler(Microsoft.Extensions.Options.IOptionsMonitor<TOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder, Microsoft.AspNetCore.Authentication.ISystemClock! clock) -> void
 Microsoft.AspNetCore.Authentication.AuthenticationHandler<TOptions>.BuildRedirectUri(string! targetPath) -> string!
@@ -51,7 +65,7 @@ Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions.ForwardChallenge
 Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions.ForwardChallenge.set -> void
 Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions.ForwardDefault.get -> string?
 Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions.ForwardDefault.set -> void
-Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions.ForwardDefaultSelector.get -> System.Func<Microsoft.AspNetCore.Http.HttpContext!, string!>?
+Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions.ForwardDefaultSelector.get -> System.Func<Microsoft.AspNetCore.Http.HttpContext!, string?>?
 Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions.ForwardDefaultSelector.set -> void
 Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions.ForwardForbid.get -> string?
 Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions.ForwardForbid.set -> void
@@ -60,31 +74,29 @@ Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions.ForwardSignIn.se
 Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions.ForwardSignOut.get -> string?
 Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions.ForwardSignOut.set -> void
 Microsoft.AspNetCore.Authentication.Base64UrlTextEncoder
-~Microsoft.AspNetCore.Authentication.BaseContext<TOptions>
 Microsoft.AspNetCore.Authentication.BaseContext<TOptions>.BaseContext(Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.AspNetCore.Authentication.AuthenticationScheme! scheme, TOptions! options) -> void
 Microsoft.AspNetCore.Authentication.BaseContext<TOptions>.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
 Microsoft.AspNetCore.Authentication.BaseContext<TOptions>.Options.get -> TOptions!
 Microsoft.AspNetCore.Authentication.BaseContext<TOptions>.Request.get -> Microsoft.AspNetCore.Http.HttpRequest!
 Microsoft.AspNetCore.Authentication.BaseContext<TOptions>.Response.get -> Microsoft.AspNetCore.Http.HttpResponse!
 Microsoft.AspNetCore.Authentication.BaseContext<TOptions>.Scheme.get -> Microsoft.AspNetCore.Authentication.AuthenticationScheme!
-~Microsoft.AspNetCore.Authentication.HandleRequestContext<TOptions>
 Microsoft.AspNetCore.Authentication.HandleRequestContext<TOptions>.HandleRequestContext(Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.AspNetCore.Authentication.AuthenticationScheme! scheme, TOptions! options) -> void
 Microsoft.AspNetCore.Authentication.HandleRequestContext<TOptions>.HandleResponse() -> void
 Microsoft.AspNetCore.Authentication.HandleRequestContext<TOptions>.Result.get -> Microsoft.AspNetCore.Authentication.HandleRequestResult!
 Microsoft.AspNetCore.Authentication.HandleRequestContext<TOptions>.Result.set -> void
 Microsoft.AspNetCore.Authentication.HandleRequestContext<TOptions>.SkipHandler() -> void
 Microsoft.AspNetCore.Authentication.HandleRequestResult
-Microsoft.AspNetCore.Authentication.HandleRequestResult.HandleRequestResult() -> void
 Microsoft.AspNetCore.Authentication.HandleRequestResult.Handled.get -> bool
+Microsoft.AspNetCore.Authentication.HandleRequestResult.HandleRequestResult() -> void
 Microsoft.AspNetCore.Authentication.HandleRequestResult.Skipped.get -> bool
 Microsoft.AspNetCore.Authentication.IDataSerializer<TModel>
-Microsoft.AspNetCore.Authentication.IDataSerializer<TModel>.Deserialize(byte[]! data) -> TModel
+Microsoft.AspNetCore.Authentication.IDataSerializer<TModel>.Deserialize(byte[]! data) -> TModel?
 Microsoft.AspNetCore.Authentication.IDataSerializer<TModel>.Serialize(TModel model) -> byte[]!
 Microsoft.AspNetCore.Authentication.ISecureDataFormat<TData>
 Microsoft.AspNetCore.Authentication.ISecureDataFormat<TData>.Protect(TData data) -> string!
 Microsoft.AspNetCore.Authentication.ISecureDataFormat<TData>.Protect(TData data, string? purpose) -> string!
-Microsoft.AspNetCore.Authentication.ISecureDataFormat<TData>.Unprotect(string! protectedText) -> TData
-Microsoft.AspNetCore.Authentication.ISecureDataFormat<TData>.Unprotect(string! protectedText, string? purpose) -> TData
+Microsoft.AspNetCore.Authentication.ISecureDataFormat<TData>.Unprotect(string? protectedText) -> TData?
+Microsoft.AspNetCore.Authentication.ISecureDataFormat<TData>.Unprotect(string? protectedText, string? purpose) -> TData?
 Microsoft.AspNetCore.Authentication.ISystemClock
 Microsoft.AspNetCore.Authentication.ISystemClock.UtcNow.get -> System.DateTimeOffset
 Microsoft.AspNetCore.Authentication.JsonDocumentAuthExtensions
@@ -92,21 +104,17 @@ Microsoft.AspNetCore.Authentication.PolicySchemeHandler
 Microsoft.AspNetCore.Authentication.PolicySchemeHandler.PolicySchemeHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.PolicySchemeOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder, Microsoft.AspNetCore.Authentication.ISystemClock! clock) -> void
 Microsoft.AspNetCore.Authentication.PolicySchemeOptions
 Microsoft.AspNetCore.Authentication.PolicySchemeOptions.PolicySchemeOptions() -> void
-~Microsoft.AspNetCore.Authentication.PrincipalContext<TOptions>
 Microsoft.AspNetCore.Authentication.PrincipalContext<TOptions>.PrincipalContext(Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.AspNetCore.Authentication.AuthenticationScheme! scheme, TOptions! options, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> void
-~Microsoft.AspNetCore.Authentication.PropertiesContext<TOptions>
 Microsoft.AspNetCore.Authentication.PropertiesContext<TOptions>.PropertiesContext(Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.AspNetCore.Authentication.AuthenticationScheme! scheme, TOptions! options, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> void
 Microsoft.AspNetCore.Authentication.PropertiesDataFormat
 Microsoft.AspNetCore.Authentication.PropertiesDataFormat.PropertiesDataFormat(Microsoft.AspNetCore.DataProtection.IDataProtector! protector) -> void
 Microsoft.AspNetCore.Authentication.PropertiesSerializer
 Microsoft.AspNetCore.Authentication.PropertiesSerializer.PropertiesSerializer() -> void
-~Microsoft.AspNetCore.Authentication.RedirectContext<TOptions>
 Microsoft.AspNetCore.Authentication.RedirectContext<TOptions>.RedirectContext(Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.AspNetCore.Authentication.AuthenticationScheme! scheme, TOptions! options, Microsoft.AspNetCore.Authentication.AuthenticationProperties! properties, string! redirectUri) -> void
 Microsoft.AspNetCore.Authentication.RedirectContext<TOptions>.RedirectUri.get -> string!
 Microsoft.AspNetCore.Authentication.RedirectContext<TOptions>.RedirectUri.set -> void
-~Microsoft.AspNetCore.Authentication.RemoteAuthenticationContext<TOptions>
-Microsoft.AspNetCore.Authentication.RemoteAuthenticationContext<TOptions>.Fail(System.Exception! failure) -> void
 Microsoft.AspNetCore.Authentication.RemoteAuthenticationContext<TOptions>.Fail(string! failureMessage) -> void
+Microsoft.AspNetCore.Authentication.RemoteAuthenticationContext<TOptions>.Fail(System.Exception! failure) -> void
 Microsoft.AspNetCore.Authentication.RemoteAuthenticationContext<TOptions>.Principal.get -> System.Security.Claims.ClaimsPrincipal?
 Microsoft.AspNetCore.Authentication.RemoteAuthenticationContext<TOptions>.Principal.set -> void
 Microsoft.AspNetCore.Authentication.RemoteAuthenticationContext<TOptions>.RemoteAuthenticationContext(Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.AspNetCore.Authentication.AuthenticationScheme! scheme, TOptions! options, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> void
@@ -119,7 +127,6 @@ Microsoft.AspNetCore.Authentication.RemoteAuthenticationEvents.OnRemoteFailure.s
 Microsoft.AspNetCore.Authentication.RemoteAuthenticationEvents.OnTicketReceived.get -> System.Func<Microsoft.AspNetCore.Authentication.TicketReceivedContext!, System.Threading.Tasks.Task!>!
 Microsoft.AspNetCore.Authentication.RemoteAuthenticationEvents.OnTicketReceived.set -> void
 Microsoft.AspNetCore.Authentication.RemoteAuthenticationEvents.RemoteAuthenticationEvents() -> void
-~Microsoft.AspNetCore.Authentication.RemoteAuthenticationHandler<TOptions>
 Microsoft.AspNetCore.Authentication.RemoteAuthenticationHandler<TOptions>.Events.get -> Microsoft.AspNetCore.Authentication.RemoteAuthenticationEvents!
 Microsoft.AspNetCore.Authentication.RemoteAuthenticationHandler<TOptions>.Events.set -> void
 Microsoft.AspNetCore.Authentication.RemoteAuthenticationHandler<TOptions>.RemoteAuthenticationHandler(Microsoft.Extensions.Options.IOptionsMonitor<TOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder, Microsoft.AspNetCore.Authentication.ISystemClock! clock) -> void
@@ -158,9 +165,8 @@ Microsoft.AspNetCore.Authentication.RemoteFailureContext.Properties.set -> void
 Microsoft.AspNetCore.Authentication.RemoteFailureContext.RemoteFailureContext(Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.AspNetCore.Authentication.AuthenticationScheme! scheme, Microsoft.AspNetCore.Authentication.RemoteAuthenticationOptions! options, System.Exception! failure) -> void
 Microsoft.AspNetCore.Authentication.RequestPathBaseCookieBuilder
 Microsoft.AspNetCore.Authentication.RequestPathBaseCookieBuilder.RequestPathBaseCookieBuilder() -> void
-~Microsoft.AspNetCore.Authentication.ResultContext<TOptions>
-Microsoft.AspNetCore.Authentication.ResultContext<TOptions>.Fail(System.Exception! failure) -> void
 Microsoft.AspNetCore.Authentication.ResultContext<TOptions>.Fail(string! failureMessage) -> void
+Microsoft.AspNetCore.Authentication.ResultContext<TOptions>.Fail(System.Exception! failure) -> void
 Microsoft.AspNetCore.Authentication.ResultContext<TOptions>.NoResult() -> void
 Microsoft.AspNetCore.Authentication.ResultContext<TOptions>.Principal.get -> System.Security.Claims.ClaimsPrincipal?
 Microsoft.AspNetCore.Authentication.ResultContext<TOptions>.Principal.set -> void
@@ -173,11 +179,9 @@ Microsoft.AspNetCore.Authentication.SecureDataFormat<TData>
 Microsoft.AspNetCore.Authentication.SecureDataFormat<TData>.Protect(TData data) -> string!
 Microsoft.AspNetCore.Authentication.SecureDataFormat<TData>.Protect(TData data, string? purpose) -> string!
 Microsoft.AspNetCore.Authentication.SecureDataFormat<TData>.SecureDataFormat(Microsoft.AspNetCore.Authentication.IDataSerializer<TData>! serializer, Microsoft.AspNetCore.DataProtection.IDataProtector! protector) -> void
-Microsoft.AspNetCore.Authentication.SecureDataFormat<TData>.Unprotect(string! protectedText) -> TData
-Microsoft.AspNetCore.Authentication.SecureDataFormat<TData>.Unprotect(string! protectedText, string? purpose) -> TData
-~Microsoft.AspNetCore.Authentication.SignInAuthenticationHandler<TOptions>
+Microsoft.AspNetCore.Authentication.SecureDataFormat<TData>.Unprotect(string? protectedText) -> TData?
+Microsoft.AspNetCore.Authentication.SecureDataFormat<TData>.Unprotect(string? protectedText, string? purpose) -> TData?
 Microsoft.AspNetCore.Authentication.SignInAuthenticationHandler<TOptions>.SignInAuthenticationHandler(Microsoft.Extensions.Options.IOptionsMonitor<TOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder, Microsoft.AspNetCore.Authentication.ISystemClock! clock) -> void
-~Microsoft.AspNetCore.Authentication.SignOutAuthenticationHandler<TOptions>
 Microsoft.AspNetCore.Authentication.SignOutAuthenticationHandler<TOptions>.SignOutAuthenticationHandler(Microsoft.Extensions.Options.IOptionsMonitor<TOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder, Microsoft.AspNetCore.Authentication.ISystemClock! clock) -> void
 Microsoft.AspNetCore.Authentication.SystemClock
 Microsoft.AspNetCore.Authentication.SystemClock.SystemClock() -> void
@@ -192,10 +196,6 @@ Microsoft.AspNetCore.Authentication.TicketSerializer
 Microsoft.AspNetCore.Authentication.TicketSerializer.TicketSerializer() -> void
 Microsoft.AspNetCore.Builder.AuthAppBuilderExtensions
 Microsoft.Extensions.DependencyInjection.AuthenticationServiceCollectionExtensions
-abstract Microsoft.AspNetCore.Authentication.AuthenticationHandler<TOptions>.HandleAuthenticateAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticateResult!>!
-abstract Microsoft.AspNetCore.Authentication.RemoteAuthenticationHandler<TOptions>.HandleRemoteAuthenticateAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.HandleRequestResult!>!
-abstract Microsoft.AspNetCore.Authentication.SignInAuthenticationHandler<TOptions>.HandleSignInAsync(System.Security.Claims.ClaimsPrincipal! user, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> System.Threading.Tasks.Task!
-abstract Microsoft.AspNetCore.Authentication.SignOutAuthenticationHandler<TOptions>.HandleSignOutAsync(Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Authentication.PolicySchemeHandler.HandleAuthenticateAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticateResult!>!
 override Microsoft.AspNetCore.Authentication.PolicySchemeHandler.HandleChallengeAsync(Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Authentication.PolicySchemeHandler.HandleForbiddenAsync(Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> System.Threading.Tasks.Task!
@@ -209,10 +209,10 @@ override Microsoft.AspNetCore.Authentication.RemoteAuthenticationOptions.Validat
 override Microsoft.AspNetCore.Authentication.RequestPathBaseCookieBuilder.Build(Microsoft.AspNetCore.Http.HttpContext! context, System.DateTimeOffset expiresFrom) -> Microsoft.AspNetCore.Http.CookieOptions!
 static Microsoft.AspNetCore.Authentication.Base64UrlTextEncoder.Decode(string! text) -> byte[]!
 static Microsoft.AspNetCore.Authentication.Base64UrlTextEncoder.Encode(byte[]! data) -> string!
-static Microsoft.AspNetCore.Authentication.HandleRequestResult.Fail(System.Exception! failure) -> Microsoft.AspNetCore.Authentication.HandleRequestResult!
-static Microsoft.AspNetCore.Authentication.HandleRequestResult.Fail(System.Exception! failure, Microsoft.AspNetCore.Authentication.AuthenticationProperties! properties) -> Microsoft.AspNetCore.Authentication.HandleRequestResult!
 static Microsoft.AspNetCore.Authentication.HandleRequestResult.Fail(string! failureMessage) -> Microsoft.AspNetCore.Authentication.HandleRequestResult!
-static Microsoft.AspNetCore.Authentication.HandleRequestResult.Fail(string! failureMessage, Microsoft.AspNetCore.Authentication.AuthenticationProperties! properties) -> Microsoft.AspNetCore.Authentication.HandleRequestResult!
+static Microsoft.AspNetCore.Authentication.HandleRequestResult.Fail(string! failureMessage, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> Microsoft.AspNetCore.Authentication.HandleRequestResult!
+static Microsoft.AspNetCore.Authentication.HandleRequestResult.Fail(System.Exception! failure) -> Microsoft.AspNetCore.Authentication.HandleRequestResult!
+static Microsoft.AspNetCore.Authentication.HandleRequestResult.Fail(System.Exception! failure, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> Microsoft.AspNetCore.Authentication.HandleRequestResult!
 static Microsoft.AspNetCore.Authentication.HandleRequestResult.Handle() -> Microsoft.AspNetCore.Authentication.HandleRequestResult!
 static Microsoft.AspNetCore.Authentication.HandleRequestResult.NoResult() -> Microsoft.AspNetCore.Authentication.HandleRequestResult!
 static Microsoft.AspNetCore.Authentication.HandleRequestResult.SkipHandler() -> Microsoft.AspNetCore.Authentication.HandleRequestResult!
@@ -222,12 +222,12 @@ static Microsoft.AspNetCore.Authentication.PropertiesSerializer.Default.get -> M
 static Microsoft.AspNetCore.Authentication.TicketSerializer.Default.get -> Microsoft.AspNetCore.Authentication.TicketSerializer!
 static Microsoft.AspNetCore.Builder.AuthAppBuilderExtensions.UseAuthentication(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.Extensions.DependencyInjection.AuthenticationServiceCollectionExtensions.AddAuthentication(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
-static Microsoft.Extensions.DependencyInjection.AuthenticationServiceCollectionExtensions.AddAuthentication(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Authentication.AuthenticationOptions!>! configureOptions) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
 static Microsoft.Extensions.DependencyInjection.AuthenticationServiceCollectionExtensions.AddAuthentication(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, string! defaultScheme) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
+static Microsoft.Extensions.DependencyInjection.AuthenticationServiceCollectionExtensions.AddAuthentication(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Authentication.AuthenticationOptions!>! configureOptions) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
 virtual Microsoft.AspNetCore.Authentication.AuthenticationBuilder.AddPolicyScheme(string! authenticationScheme, string? displayName, System.Action<Microsoft.AspNetCore.Authentication.PolicySchemeOptions!>! configureOptions) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
 virtual Microsoft.AspNetCore.Authentication.AuthenticationBuilder.AddRemoteScheme<TOptions, THandler>(string! authenticationScheme, string? displayName, System.Action<TOptions!>? configureOptions) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
-virtual Microsoft.AspNetCore.Authentication.AuthenticationBuilder.AddScheme<TOptions, THandler>(string! authenticationScheme, System.Action<TOptions!>? configureOptions) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
 virtual Microsoft.AspNetCore.Authentication.AuthenticationBuilder.AddScheme<TOptions, THandler>(string! authenticationScheme, string? displayName, System.Action<TOptions!>? configureOptions) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
+virtual Microsoft.AspNetCore.Authentication.AuthenticationBuilder.AddScheme<TOptions, THandler>(string! authenticationScheme, System.Action<TOptions!>? configureOptions) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
 virtual Microsoft.AspNetCore.Authentication.AuthenticationBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 virtual Microsoft.AspNetCore.Authentication.AuthenticationHandler<TOptions>.ClaimsIssuer.get -> string!
 virtual Microsoft.AspNetCore.Authentication.AuthenticationHandler<TOptions>.CreateEventsAsync() -> System.Threading.Tasks.Task<object!>!
@@ -248,7 +248,7 @@ virtual Microsoft.AspNetCore.Authentication.PropertiesSerializer.Deserialize(byt
 virtual Microsoft.AspNetCore.Authentication.PropertiesSerializer.Read(System.IO.BinaryReader! reader) -> Microsoft.AspNetCore.Authentication.AuthenticationProperties?
 virtual Microsoft.AspNetCore.Authentication.PropertiesSerializer.Serialize(Microsoft.AspNetCore.Authentication.AuthenticationProperties! model) -> byte[]!
 virtual Microsoft.AspNetCore.Authentication.PropertiesSerializer.Write(System.IO.BinaryWriter! writer, Microsoft.AspNetCore.Authentication.AuthenticationProperties! properties) -> void
-virtual Microsoft.AspNetCore.Authentication.RemoteAuthenticationContext<TOptions>.Properties.get -> Microsoft.AspNetCore.Authentication.AuthenticationProperties!
+virtual Microsoft.AspNetCore.Authentication.RemoteAuthenticationContext<TOptions>.Properties.get -> Microsoft.AspNetCore.Authentication.AuthenticationProperties?
 virtual Microsoft.AspNetCore.Authentication.RemoteAuthenticationContext<TOptions>.Properties.set -> void
 virtual Microsoft.AspNetCore.Authentication.RemoteAuthenticationEvents.AccessDenied(Microsoft.AspNetCore.Authentication.AccessDeniedContext! context) -> System.Threading.Tasks.Task!
 virtual Microsoft.AspNetCore.Authentication.RemoteAuthenticationEvents.RemoteFailure(Microsoft.AspNetCore.Authentication.RemoteFailureContext! context) -> System.Threading.Tasks.Task!

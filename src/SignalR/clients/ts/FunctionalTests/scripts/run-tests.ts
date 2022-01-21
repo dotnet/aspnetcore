@@ -194,19 +194,6 @@ if (sauce) {
     }
 }
 
-// Workaround for 'wd' not installing correctly. https://github.com/karma-runner/karma-sauce-launcher/issues/117
-function ensureWdInstalled() {
-    return new Promise((resolve, reject) => {
-        exec(`node ${__dirname}/../node_modules/wd/scripts/build-browser-scripts.js`, { timeout: 30000 }, (error: any, stdout, stderr) => {
-            if (error) {
-                console.log(error.message);
-                reject(error);
-            }
-            resolve();
-        });
-    });
-}
-
 function runKarma(karmaConfig) {
     return new Promise<number>((resolve, reject) => {
         const server = new karma.Server(karmaConfig, (exitCode: number) => {
@@ -245,7 +232,7 @@ function runJest(httpsUrl: string, httpUrl: string) {
 
 (async () => {
     try {
-        const serverPath = path.resolve(ARTIFACTS_DIR, "bin", "SignalR.Client.FunctionalTestApp", configuration, "net6.0", "SignalR.Client.FunctionalTestApp.dll");
+        const serverPath = path.resolve(ARTIFACTS_DIR, "bin", "SignalR.Client.FunctionalTestApp", configuration, "net7.0", "SignalR.Client.FunctionalTestApp.dll");
 
         debug(`Launching Functional Test Server: ${serverPath}`);
         let desiredServerUrl = "https://127.0.0.1:0;http://127.0.0.1:0";
@@ -298,8 +285,6 @@ function runJest(httpsUrl: string, httpUrl: string) {
         }
 
         debug(`Functional Test Server has started at ${httpsUrl} and ${httpUrl}`);
-
-        await ensureWdInstalled();
 
         // Start karma server
         const conf = {

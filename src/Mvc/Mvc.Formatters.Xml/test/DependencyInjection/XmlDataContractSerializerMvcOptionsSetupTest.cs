@@ -4,69 +4,67 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Logging.Abstractions;
-using Xunit;
 
-namespace Microsoft.Extensions.DependencyInjection
+namespace Microsoft.Extensions.DependencyInjection;
+
+public class XmlDataContractSerializerMvcOptionsSetupTest
 {
-    public class XmlDataContractSerializerMvcOptionsSetupTest
+    [Fact]
+    public void AddsFormatterMapping()
     {
-        [Fact]
-        public void AddsFormatterMapping()
-        {
-            // Arrange
-            var optionsSetup = new XmlDataContractSerializerMvcOptionsSetup(NullLoggerFactory.Instance);
-            var options = new MvcOptions();
+        // Arrange
+        var optionsSetup = new XmlDataContractSerializerMvcOptionsSetup(NullLoggerFactory.Instance);
+        var options = new MvcOptions();
 
-            // Act
-            optionsSetup.Configure(options);
+        // Act
+        optionsSetup.Configure(options);
 
-            // Assert
-            var mappedContentType = options.FormatterMappings.GetMediaTypeMappingForFormat("xml");
-            Assert.Equal("application/xml", mappedContentType);
-        }
+        // Assert
+        var mappedContentType = options.FormatterMappings.GetMediaTypeMappingForFormat("xml");
+        Assert.Equal("application/xml", mappedContentType);
+    }
 
-        [Fact]
-        public void DoesNotOverrideExistingMapping()
-        {
-            // Arrange
-            var optionsSetup = new XmlDataContractSerializerMvcOptionsSetup(NullLoggerFactory.Instance);
-            var options = new MvcOptions();
-            options.FormatterMappings.SetMediaTypeMappingForFormat("xml", "text/xml");
+    [Fact]
+    public void DoesNotOverrideExistingMapping()
+    {
+        // Arrange
+        var optionsSetup = new XmlDataContractSerializerMvcOptionsSetup(NullLoggerFactory.Instance);
+        var options = new MvcOptions();
+        options.FormatterMappings.SetMediaTypeMappingForFormat("xml", "text/xml");
 
-            // Act
-            optionsSetup.Configure(options);
+        // Act
+        optionsSetup.Configure(options);
 
-            // Assert
-            var mappedContentType = options.FormatterMappings.GetMediaTypeMappingForFormat("xml");
-            Assert.Equal("text/xml", mappedContentType);
-        }
+        // Assert
+        var mappedContentType = options.FormatterMappings.GetMediaTypeMappingForFormat("xml");
+        Assert.Equal("text/xml", mappedContentType);
+    }
 
-        [Fact]
-        public void AddsInputFormatter()
-        {
-            // Arrange
-            var optionsSetup = new XmlDataContractSerializerMvcOptionsSetup(NullLoggerFactory.Instance);
-            var options = new MvcOptions();
+    [Fact]
+    public void AddsInputFormatter()
+    {
+        // Arrange
+        var optionsSetup = new XmlDataContractSerializerMvcOptionsSetup(NullLoggerFactory.Instance);
+        var options = new MvcOptions();
 
-            // Act
-            optionsSetup.Configure(options);
+        // Act
+        optionsSetup.Configure(options);
 
-            // Assert
-            Assert.IsType<XmlDataContractSerializerInputFormatter>(Assert.Single(options.InputFormatters));
-        }
+        // Assert
+        Assert.IsType<XmlDataContractSerializerInputFormatter>(Assert.Single(options.InputFormatters));
+    }
 
-        [Fact]
-        public void AddsOutputFormatter()
-        {
-            // Arrange
-            var optionsSetup = new XmlDataContractSerializerMvcOptionsSetup(NullLoggerFactory.Instance);
-            var options = new MvcOptions();
+    [Fact]
+    public void AddsOutputFormatter()
+    {
+        // Arrange
+        var optionsSetup = new XmlDataContractSerializerMvcOptionsSetup(NullLoggerFactory.Instance);
+        var options = new MvcOptions();
 
-            // Act
-            optionsSetup.Configure(options);
+        // Act
+        optionsSetup.Configure(options);
 
-            // Assert
-            Assert.IsType<XmlDataContractSerializerOutputFormatter>(Assert.Single(options.OutputFormatters));
-        }
+        // Assert
+        Assert.IsType<XmlDataContractSerializerOutputFormatter>(Assert.Single(options.OutputFormatters));
     }
 }

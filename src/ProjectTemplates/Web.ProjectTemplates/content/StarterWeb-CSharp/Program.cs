@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 #endif
+#if (WindowsAuth)
+using Microsoft.AspNetCore.Authentication.Negotiate;
+#endif
 #if (IndividualLocalAuth)
 using Microsoft.AspNetCore.Identity;
 #endif
@@ -25,14 +28,14 @@ using Graph = Microsoft.Graph;
 #if (IndividualLocalAuth)
 using Company.WebApplication1.Data;
 #endif
-#if (OrganizationalAuth || IndividualB2CAuth || IndividualLocalAuth || MultiOrgAuth || GenerateGraph)
+#if (OrganizationalAuth || IndividualB2CAuth || IndividualLocalAuth || MultiOrgAuth || GenerateGraph || WindowsAuth)
 
 #endif
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 #if (IndividualLocalAuth)
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 #if (UseLocalDB)
     options.UseSqlServer(connectionString));
@@ -93,6 +96,18 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages()
     .AddMicrosoftIdentityUI();
 #endif
+#if (WindowsAuth)
+
+builder.Services.AddAuthentication(NegotiateDefaults.AuthenticationScheme)
+   .AddNegotiate();
+
+builder.Services.AddAuthorization(options =>
+{
+    // By default, all incoming requests will be authorized according to the default policy.
+    options.FallbackPolicy = options.DefaultPolicy;
+});
+builder.Services.AddRazorPages();
+#endif
 
 var app = builder.Build();
 
@@ -121,7 +136,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-#if (OrganizationalAuth || IndividualAuth)
+#if (OrganizationalAuth || IndividualAuth || WindowsAuth)
 app.UseAuthentication();
 #endif
 app.UseAuthorization();

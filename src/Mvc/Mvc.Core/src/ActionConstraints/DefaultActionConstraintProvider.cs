@@ -1,63 +1,60 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
+namespace Microsoft.AspNetCore.Mvc.ActionConstraints;
 
-namespace Microsoft.AspNetCore.Mvc.ActionConstraints
+/// <summary>
+/// A default implementation of <see cref="IActionConstraintProvider"/>.
+/// </summary>
+/// <remarks>
+/// This provider is able to provide an <see cref="IActionConstraint"/> instance when the
+/// <see cref="IActionConstraintMetadata"/> implements <see cref="IActionConstraint"/> or
+/// <see cref="IActionConstraintFactory"/>/
+/// </remarks>
+internal class DefaultActionConstraintProvider : IActionConstraintProvider
 {
-    /// <summary>
-    /// A default implementation of <see cref="IActionConstraintProvider"/>.
-    /// </summary>
-    /// <remarks>
-    /// This provider is able to provide an <see cref="IActionConstraint"/> instance when the
-    /// <see cref="IActionConstraintMetadata"/> implements <see cref="IActionConstraint"/> or
-    /// <see cref="IActionConstraintFactory"/>/
-    /// </remarks>
-    internal class DefaultActionConstraintProvider : IActionConstraintProvider
+    /// <inheritdoc />
+    public int Order => -1000;
+
+    /// <inheritdoc />
+    public void OnProvidersExecuting(ActionConstraintProviderContext context)
     {
-        /// <inheritdoc />
-        public int Order => -1000;
-
-        /// <inheritdoc />
-        public void OnProvidersExecuting(ActionConstraintProviderContext context)
+        if (context == null)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            for (var i = 0; i < context.Results.Count; i++)
-            {
-                ProvideConstraint(context.Results[i], context.HttpContext.RequestServices);
-            }
+            throw new ArgumentNullException(nameof(context));
         }
 
-        /// <inheritdoc />
-        public void OnProvidersExecuted(ActionConstraintProviderContext context)
+        for (var i = 0; i < context.Results.Count; i++)
         {
+            ProvideConstraint(context.Results[i], context.HttpContext.RequestServices);
+        }
+    }
+
+    /// <inheritdoc />
+    public void OnProvidersExecuted(ActionConstraintProviderContext context)
+    {
+    }
+
+    private static void ProvideConstraint(ActionConstraintItem item, IServiceProvider services)
+    {
+        // Don't overwrite anything that was done by a previous provider.
+        if (item.Constraint != null)
+        {
+            return;
         }
 
-        private void ProvideConstraint(ActionConstraintItem item, IServiceProvider services)
+        if (item.Metadata is IActionConstraint constraint)
         {
-            // Don't overwrite anything that was done by a previous provider.
-            if (item.Constraint != null)
-            {
-                return;
-            }
+            item.Constraint = constraint;
+            item.IsReusable = true;
+            return;
+        }
 
-            if (item.Metadata is IActionConstraint constraint)
-            {
-                item.Constraint = constraint;
-                item.IsReusable = true;
-                return;
-            }
-
-            if (item.Metadata is IActionConstraintFactory factory)
-            {
-                item.Constraint = factory.CreateInstance(services);
-                item.IsReusable = factory.IsReusable;
-                return;
-            }
+        if (item.Metadata is IActionConstraintFactory factory)
+        {
+            item.Constraint = factory.CreateInstance(services);
+            item.IsReusable = factory.IsReusable;
+            return;
         }
     }
 }

@@ -1,96 +1,94 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks.Sources;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
+
+internal abstract class AwaitableProvider
 {
-    internal abstract class AwaitableProvider
+    public abstract ManualResetValueTaskSource<object?> GetAwaitable();
+    public abstract void CompleteCurrent();
+    public abstract int ActiveCount { get; }
+}
+
+/// <summary>
+/// Provider returns multiple awaitables. Awaitables are completed FIFO.
+/// </summary>
+internal class MultipleAwaitableProvider : AwaitableProvider
+{
+    private Queue<ManualResetValueTaskSource<object?>>? _awaitableQueue;
+    private Queue<ManualResetValueTaskSource<object?>>? _awaitableCache;
+
+    public override void CompleteCurrent()
     {
-        public abstract ManualResetValueTaskSource<object?> GetAwaitable();
-        public abstract void CompleteCurrent();
-        public abstract int ActiveCount { get; }
+        Debug.Assert(_awaitableQueue != null);
+        Debug.Assert(_awaitableCache != null);
+
+        var awaitable = _awaitableQueue.Dequeue();
+        awaitable.TrySetResult(null);
+
+        // Add completed awaitable to the cache for reuse
+        _awaitableCache.Enqueue(awaitable);
     }
 
-    /// <summary>
-    /// Provider returns multiple awaitables. Awaitables are completed FIFO.
-    /// </summary>
-    internal class MultipleAwaitableProvider : AwaitableProvider
+    public override ManualResetValueTaskSource<object?> GetAwaitable()
     {
-        private Queue<ManualResetValueTaskSource<object?>>? _awaitableQueue;
-        private Queue<ManualResetValueTaskSource<object?>>? _awaitableCache;
-
-        public override void CompleteCurrent()
+        if (_awaitableQueue == null)
         {
-            Debug.Assert(_awaitableQueue != null);
-            Debug.Assert(_awaitableCache != null);
-
-            var awaitable = _awaitableQueue.Dequeue();
-            awaitable.TrySetResult(null);
-
-            // Add completed awaitable to the cache for reuse
-            _awaitableCache.Enqueue(awaitable);
+            _awaitableQueue = new Queue<ManualResetValueTaskSource<object?>>();
+            _awaitableCache = new Queue<ManualResetValueTaskSource<object?>>();
         }
 
-        public override ManualResetValueTaskSource<object?> GetAwaitable()
+        // First attempt to reuse an existing awaitable in the queue
+        // to save allocating a new instance.
+        if (_awaitableCache!.TryDequeue(out var awaitable))
         {
-            if (_awaitableQueue == null)
-            {
-                _awaitableQueue = new Queue<ManualResetValueTaskSource<object?>>();
-                _awaitableCache = new Queue<ManualResetValueTaskSource<object?>>();
-            }
-
-            // First attempt to reuse an existing awaitable in the queue
-            // to save allocating a new instance.
-            if (_awaitableCache!.TryDequeue(out var awaitable))
-            {
-                // Reset previously used awaitable
-                Debug.Assert(awaitable.GetStatus() == ValueTaskSourceStatus.Succeeded, "Previous awaitable should have been completed.");
-                awaitable.Reset();
-            }
-            else
-            {
-                awaitable = new ManualResetValueTaskSource<object?>();
-            }
-
-            _awaitableQueue.Enqueue(awaitable);
-
-            return awaitable;
+            // Reset previously used awaitable
+            Debug.Assert(awaitable.GetStatus() == ValueTaskSourceStatus.Succeeded, "Previous awaitable should have been completed.");
+            awaitable.Reset();
+        }
+        else
+        {
+            awaitable = new ManualResetValueTaskSource<object?>();
         }
 
-        public override int ActiveCount => _awaitableQueue?.Count ?? 0;
+        _awaitableQueue.Enqueue(awaitable);
+
+        return awaitable;
     }
 
-    /// <summary>
-    /// Provider has a single awaitable.
-    /// </summary>
-    internal class SingleAwaitableProvider : AwaitableProvider
+    public override int ActiveCount => _awaitableQueue?.Count ?? 0;
+}
+
+/// <summary>
+/// Provider has a single awaitable.
+/// </summary>
+internal class SingleAwaitableProvider : AwaitableProvider
+{
+    private ManualResetValueTaskSource<object?>? _awaitable;
+
+    public override void CompleteCurrent()
     {
-        private ManualResetValueTaskSource<object?>? _awaitable;
-
-        public override void CompleteCurrent()
-        {
-            Debug.Assert(_awaitable != null);
-            _awaitable.TrySetResult(null);
-        }
-
-        public override ManualResetValueTaskSource<object?> GetAwaitable()
-        {
-            if (_awaitable == null)
-            {
-                _awaitable = new ManualResetValueTaskSource<object?>();
-            }
-            else
-            {
-                Debug.Assert(_awaitable.GetStatus() == ValueTaskSourceStatus.Succeeded, "Previous awaitable should have been completed.");
-                _awaitable.Reset();
-            }
-
-            return _awaitable;
-        }
-
-        public override int ActiveCount => _awaitable != null && _awaitable.GetStatus() != ValueTaskSourceStatus.Succeeded ? 1 : 0;
+        Debug.Assert(_awaitable != null);
+        _awaitable.TrySetResult(null);
     }
+
+    public override ManualResetValueTaskSource<object?> GetAwaitable()
+    {
+        if (_awaitable == null)
+        {
+            _awaitable = new ManualResetValueTaskSource<object?>();
+        }
+        else
+        {
+            Debug.Assert(_awaitable.GetStatus() == ValueTaskSourceStatus.Succeeded, "Previous awaitable should have been completed.");
+            _awaitable.Reset();
+        }
+
+        return _awaitable;
+    }
+
+    public override int ActiveCount => _awaitable != null && _awaitable.GetStatus() != ValueTaskSourceStatus.Succeeded ? 1 : 0;
 }

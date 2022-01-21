@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 import { RenderBatch, ArrayBuilderSegment, RenderTreeEdit, RenderTreeFrame, EditType, FrameType, ArrayValues } from './RenderBatch/RenderBatch';
 import { EventDelegator } from './Events/EventDelegator';
 import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, getLogicalChildrenArray, getLogicalSiblingEnd, permuteLogicalChildren, getClosestDomElement, emptyLogicalElement } from './LogicalElements';
@@ -15,6 +18,7 @@ export class BrowserRenderer {
   public eventDelegator: EventDelegator;
 
   private rootComponentIds = new Set<number>();
+
   private childComponentLocations: { [componentId: number]: LogicalElement } = {};
 
   public constructor(browserRendererId: number) {
@@ -288,22 +292,26 @@ export class BrowserRenderer {
   private trySetSelectValueFromOptionElement(optionElement: HTMLOptionElement) {
     const selectElem = this.findClosestAncestorSelectElement(optionElement);
 
-    if (!selectElem || !(deferredValuePropname in selectElem)) {
+    if (!isBlazorSelectElement(selectElem)) {
       return false;
     }
 
     if (isMultipleSelectElement(selectElem)) {
-      optionElement.selected = selectElem[deferredValuePropname].indexOf(optionElement.value) !== -1;
+      optionElement.selected = selectElem._blazorDeferredValue!.indexOf(optionElement.value) !== -1;
     } else {
-      if (selectElem[deferredValuePropname] !== optionElement.value) {
+      if (selectElem._blazorDeferredValue !== optionElement.value) {
         return false;
       }
 
       setSingleSelectElementValue(selectElem, optionElement.value);
-      delete selectElem[deferredValuePropname];
+      delete selectElem._blazorDeferredValue;
     }
 
     return true;
+
+    function isBlazorSelectElement(selectElem: HTMLSelectElement | null) : selectElem is BlazorHtmlSelectElement {
+      return !!selectElem && (deferredValuePropname in selectElem);
+    }
   }
 
   private insertComponent(batch: RenderBatch, parent: LogicalElement, childIndex: number, frame: RenderTreeFrame) {
@@ -390,20 +398,16 @@ export class BrowserRenderer {
     // Certain elements have built-in behaviour for their 'value' property
     const frameReader = batch.frameReader;
 
-    if (element.tagName === 'INPUT' && element.getAttribute('type') === 'time' && !element.getAttribute('step')) {
-      const timeValue = attributeFrame ? frameReader.attributeValue(attributeFrame) : null;
-      if (timeValue) {
-        element['value'] = timeValue.substring(0, 5);
-        return true;
-      }
+    let value = attributeFrame ? frameReader.attributeValue(attributeFrame) : null;
+
+    if (value && element.tagName === 'INPUT') {
+      value = normalizeInputValue(value, element.getAttribute('type'));
     }
 
     switch (element.tagName) {
       case 'INPUT':
       case 'SELECT':
       case 'TEXTAREA': {
-        let value = attributeFrame ? frameReader.attributeValue(attributeFrame) : null;
-
         // <select> is special, in that anything we write to .value will be lost if there
         // isn't yet a matching <option>. To maintain the expected behavior no matter the
         // element insertion/update order, preserve the desired value separately so
@@ -425,7 +429,6 @@ export class BrowserRenderer {
         return true;
       }
       case 'OPTION': {
-        const value = attributeFrame ? frameReader.attributeValue(attributeFrame) : null;
         if (value || value === '') {
           element.setAttribute('value', value);
         } else {
@@ -495,6 +498,27 @@ function parseMarkup(markup: string, isSvg: boolean) {
   }
 }
 
+function normalizeInputValue(value: string, type: string | null): string {
+  // Time inputs (e.g. 'time' and 'datetime-local') misbehave on chromium-based
+  // browsers when a time is set that includes a seconds value of '00', most notably
+  // when entered from keyboard input. This behavior is not limited to specific
+  // 'step' attribute values, so we always remove the trailing seconds value if the
+  // time ends in '00'.
+
+  switch (type) {
+    case 'time':
+      return value.length === 8 && value.endsWith('00')
+        ? value.substring(0, 5)
+        : value;
+    case 'datetime-local':
+      return value.length === 19 && value.endsWith('00')
+        ? value.substring(0, 16)
+        : value;
+    default:
+      return value;
+  }
+}
+
 function countDescendantFrames(batch: RenderBatch, frame: RenderTreeFrame): number {
   const frameReader = batch.frameReader;
   switch (frameReader.frameType(frame)) {
@@ -543,6 +567,8 @@ function stripOnPrefix(attributeName: string) {
 
   throw new Error(`Attribute should be an event name, but doesn't start with 'on'. Value: '${attributeName}'`);
 }
+
+type BlazorHtmlSelectElement = HTMLSelectElement & { _blazorDeferredValue?: string };
 
 function isMultipleSelectElement(element: HTMLSelectElement) {
   return element.type === 'select-multiple';

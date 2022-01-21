@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { DefaultHttpClient } from "./DefaultHttpClient";
-import { AggregateErrors, DisabledTransportError, FailedToStartTransportError, HttpError, UnsupportedTransportError } from "./Errors";
+import { AggregateErrors, DisabledTransportError, FailedToNegotiateWithServerError, FailedToStartTransportError, HttpError, UnsupportedTransportError } from "./Errors";
 import { HeaderNames } from "./HeaderNames";
 import { HttpClient } from "./HttpClient";
 import { IConnection } from "./IConnection";
@@ -347,7 +347,7 @@ export class HttpConnection implements IConnection {
             }
             this._logger.log(LogLevel.Error, errorMessage);
 
-            return Promise.reject(new Error(errorMessage));
+            return Promise.reject(new FailedToNegotiateWithServerError(errorMessage));
         }
     }
 
@@ -533,7 +533,7 @@ export class HttpConnection implements IConnection {
             return url;
         }
 
-        if (!Platform.isBrowser || !window.document) {
+        if (!Platform.isBrowser) {
             throw new Error(`Cannot resolve '${url}'.`);
         }
 

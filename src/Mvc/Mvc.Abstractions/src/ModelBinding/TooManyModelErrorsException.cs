@@ -1,27 +1,24 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
+namespace Microsoft.AspNetCore.Mvc.ModelBinding;
 
-namespace Microsoft.AspNetCore.Mvc.ModelBinding
+/// <summary>
+/// The <see cref="Exception"/> that is thrown when too many model errors are encountered.
+/// </summary>
+public class TooManyModelErrorsException : Exception
 {
     /// <summary>
-    /// The <see cref="Exception"/> that is thrown when too many model errors are encountered.
+    /// Creates a new instance of <see cref="TooManyModelErrorsException"/> with the specified
+    /// exception <paramref name="message"/>.
     /// </summary>
-    public class TooManyModelErrorsException : Exception
+    /// <param name="message">The message that describes the error.</param>
+    public TooManyModelErrorsException(string message)
+        : base(message)
     {
-        /// <summary>
-        /// Creates a new instance of <see cref="TooManyModelErrorsException"/> with the specified
-        /// exception <paramref name="message"/>.
-        /// </summary>
-        /// <param name="message">The message that describes the error.</param>
-        public TooManyModelErrorsException(string message)
-            : base(message)
+        if (message == null)
         {
-            if (message == null)
-            {
-                throw new ArgumentNullException(nameof(message));
-            }
+            throw new ArgumentNullException(nameof(message));
         }
     }
 }

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Buffers;
+using System.Buffers.Binary;
 using System.IO.Pipelines;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -99,6 +100,179 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         Via,
         Warning,
         WWWAuthenticate,
+    }
+
+    internal static class HttpHeadersCompression
+    {
+        internal static (int index, bool matchedValue) MatchKnownHeaderQPack(KnownHeaderType knownHeader, string value)
+        {
+            switch (knownHeader)
+            {
+                case KnownHeaderType.Age:
+                    switch (value)
+                    {
+                        case "0":
+                            return (2, true);
+                        default:
+                            return (2, false);
+                    }
+                case KnownHeaderType.ContentLength:
+                    switch (value)
+                    {
+                        case "0":
+                            return (4, true);
+                        default:
+                            return (4, false);
+                    }
+                case KnownHeaderType.Date:
+                    return (6, false);
+                case KnownHeaderType.ETag:
+                    return (7, false);
+                case KnownHeaderType.LastModified:
+                    return (10, false);
+                case KnownHeaderType.Location:
+                    return (12, false);
+                case KnownHeaderType.SetCookie:
+                    return (14, false);
+                case KnownHeaderType.AcceptRanges:
+                    switch (value)
+                    {
+                        case "bytes":
+                            return (32, true);
+                        default:
+                            return (32, false);
+                    }
+                case KnownHeaderType.AccessControlAllowHeaders:
+                    switch (value)
+                    {
+                        case "cache-control":
+                            return (33, true);
+                        case "content-type":
+                            return (34, true);
+                        case "*":
+                            return (75, true);
+                        default:
+                            return (33, false);
+                    }
+                case KnownHeaderType.AccessControlAllowOrigin:
+                    switch (value)
+                    {
+                        case "*":
+                            return (35, true);
+                        default:
+                            return (35, false);
+                    }
+                case KnownHeaderType.CacheControl:
+                    switch (value)
+                    {
+                        case "max-age=0":
+                            return (36, true);
+                        case "max-age=2592000":
+                            return (37, true);
+                        case "max-age=604800":
+                            return (38, true);
+                        case "no-cache":
+                            return (39, true);
+                        case "no-store":
+                            return (40, true);
+                        case "public, max-age=31536000":
+                            return (41, true);
+                        default:
+                            return (36, false);
+                    }
+                case KnownHeaderType.ContentEncoding:
+                    switch (value)
+                    {
+                        case "br":
+                            return (42, true);
+                        case "gzip":
+                            return (43, true);
+                        default:
+                            return (42, false);
+                    }
+                case KnownHeaderType.ContentType:
+                    switch (value)
+                    {
+                        case "application/dns-message":
+                            return (44, true);
+                        case "application/javascript":
+                            return (45, true);
+                        case "application/json":
+                            return (46, true);
+                        case "application/x-www-form-urlencoded":
+                            return (47, true);
+                        case "image/gif":
+                            return (48, true);
+                        case "image/jpeg":
+                            return (49, true);
+                        case "image/png":
+                            return (50, true);
+                        case "text/css":
+                            return (51, true);
+                        case "text/html; charset=utf-8":
+                            return (52, true);
+                        case "text/plain":
+                            return (53, true);
+                        case "text/plain;charset=utf-8":
+                            return (54, true);
+                        default:
+                            return (44, false);
+                    }
+                case KnownHeaderType.Vary:
+                    switch (value)
+                    {
+                        case "accept-encoding":
+                            return (59, true);
+                        case "origin":
+                            return (60, true);
+                        default:
+                            return (59, false);
+                    }
+                case KnownHeaderType.AccessControlAllowCredentials:
+                    switch (value)
+                    {
+                        case "FALSE":
+                            return (73, true);
+                        case "TRUE":
+                            return (74, true);
+                        default:
+                            return (73, false);
+                    }
+                case KnownHeaderType.AccessControlAllowMethods:
+                    switch (value)
+                    {
+                        case "get":
+                            return (76, true);
+                        case "get, post, options":
+                            return (77, true);
+                        case "options":
+                            return (78, true);
+                        default:
+                            return (76, false);
+                    }
+                case KnownHeaderType.AccessControlExposeHeaders:
+                    switch (value)
+                    {
+                        case "content-length":
+                            return (79, true);
+                        default:
+                            return (79, false);
+                    }
+                case KnownHeaderType.AltSvc:
+                    switch (value)
+                    {
+                        case "clear":
+                            return (83, true);
+                        default:
+                            return (83, false);
+                    }
+                case KnownHeaderType.Server:
+                    return (92, false);
+                
+                default:
+                    return (-1, false);
+            }
+        }
     }
 
     internal partial class HttpHeaders
@@ -226,7 +400,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             set
             {
-                _bits |= 0x2L;
+                if (!StringValues.IsNullOrEmpty(value))
+                {
+                    _bits |= 0x2L;
+                }
+                else
+                {
+                    _bits &= ~0x2L;
+                }
                 _headers._Connection = value; 
             }
         }
@@ -243,7 +424,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             set
             {
-                _bits |= 0x4L;
+                if (!StringValues.IsNullOrEmpty(value))
+                {
+                    _bits |= 0x4L;
+                }
+                else
+                {
+                    _bits &= ~0x4L;
+                }
                 _headers._Host = value; 
             }
         }
@@ -260,7 +448,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             set
             {
-                _bits |= 0x10L;
+                if (!StringValues.IsNullOrEmpty(value))
+                {
+                    _bits |= 0x10L;
+                }
+                else
+                {
+                    _bits &= ~0x10L;
+                }
                 _headers._Authority = value; 
             }
         }
@@ -277,7 +472,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             set
             {
-                _bits |= 0x20L;
+                if (!StringValues.IsNullOrEmpty(value))
+                {
+                    _bits |= 0x20L;
+                }
+                else
+                {
+                    _bits &= ~0x20L;
+                }
                 _headers._Method = value; 
             }
         }
@@ -294,7 +496,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             set
             {
-                _bits |= 0x40L;
+                if (!StringValues.IsNullOrEmpty(value))
+                {
+                    _bits |= 0x40L;
+                }
+                else
+                {
+                    _bits &= ~0x40L;
+                }
                 _headers._Path = value; 
             }
         }
@@ -311,7 +520,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             set
             {
-                _bits |= 0x80L;
+                if (!StringValues.IsNullOrEmpty(value))
+                {
+                    _bits |= 0x80L;
+                }
+                else
+                {
+                    _bits &= ~0x80L;
+                }
                 _headers._Scheme = value; 
             }
         }
@@ -328,7 +544,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             set
             {
-                _bits |= 0x20000000000L;
+                if (!StringValues.IsNullOrEmpty(value))
+                {
+                    _bits |= 0x20000000000L;
+                }
+                else
+                {
+                    _bits &= ~0x20000000000L;
+                }
                 _headers._TransferEncoding = value; 
             }
         }
@@ -345,7 +568,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             set
             {
-                _contentLength = ParseContentLength(value);
+                _contentLength = ParseContentLength(value.ToString());
             }
         }
         
@@ -4779,7 +5002,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         if (!_contentLength.HasValue)
                         {
-                            _contentLength = ParseContentLength(value);
+                            _contentLength = ParseContentLength(value.ToString());
                             return true;
                         }
                         return false;
@@ -4799,7 +5022,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         if (!_contentLength.HasValue)
                         {
-                            _contentLength = ParseContentLength(value);
+                            _contentLength = ParseContentLength(value.ToString());
                             return true;
                         }
                         return false;
@@ -7052,6 +7275,42 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return true;
         }
         
+        internal void ClearPseudoRequestHeaders()
+        {
+            _pseudoBits = _bits & 240;
+            _bits &= ~240;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static unsafe ushort ReadUnalignedLittleEndian_ushort(ref byte source)
+        {
+            ushort result = Unsafe.ReadUnaligned<ushort>(ref source);
+            if (!BitConverter.IsLittleEndian)
+            {
+                result = BinaryPrimitives.ReverseEndianness(result);
+            }
+            return result;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static unsafe uint ReadUnalignedLittleEndian_uint(ref byte source)
+        {
+            uint result = Unsafe.ReadUnaligned<uint>(ref source);
+            if (!BitConverter.IsLittleEndian)
+            {
+                result = BinaryPrimitives.ReverseEndianness(result);
+            }
+            return result;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static unsafe ulong ReadUnalignedLittleEndian_ulong(ref byte source)
+        {
+            ulong result = Unsafe.ReadUnaligned<ulong>(ref source);
+            if (!BitConverter.IsLittleEndian)
+            {
+                result = BinaryPrimitives.ReverseEndianness(result);
+            }
+            return result;
+        }
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         public unsafe void Append(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value, bool checkForNewlineChars)
         {
@@ -7064,7 +7323,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             switch (name.Length)
             {
                 case 2:
-                    if (((Unsafe.ReadUnaligned<ushort>(ref nameStart) & 0xdfdfu) == 0x4554u))
+                    if (((ReadUnalignedLittleEndian_ushort(ref nameStart) & 0xdfdfu) == 0x4554u))
                     {
                         flag = 0x4000000000L;
                         values = ref _headers._TE;
@@ -7072,7 +7331,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     break;
                 case 3:
-                    if (((Unsafe.ReadUnaligned<ushort>(ref nameStart) & 0xdfdfu) == 0x4956u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)2) & 0xdfu) == 0x41u))
+                    if (((ReadUnalignedLittleEndian_ushort(ref nameStart) & 0xdfdfu) == 0x4956u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)2) & 0xdfu) == 0x41u))
                     {
                         flag = 0x200000000000L;
                         values = ref _headers._Via;
@@ -7080,7 +7339,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     break;
                 case 4:
-                    var firstTerm4 = (Unsafe.ReadUnaligned<uint>(ref nameStart) & 0xdfdfdfdfu);
+                    var firstTerm4 = (ReadUnalignedLittleEndian_uint(ref nameStart) & 0xdfdfdfdfu);
                     if ((firstTerm4 == 0x54534f48u))
                     {
                         flag = 0x4L;
@@ -7101,13 +7360,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     break;
                 case 5:
-                    if (((Unsafe.ReadUnaligned<uint>(ref nameStart) & 0xdfdfdfffu) == 0x5441503au) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)4) & 0xdfu) == 0x48u))
+                    if (((ReadUnalignedLittleEndian_uint(ref nameStart) & 0xdfdfdfffu) == 0x5441503au) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)4) & 0xdfu) == 0x48u))
                     {
                         flag = 0x40L;
                         values = ref _headers._Path;
                         nameStr = HeaderNames.Path;
                     }
-                    else if (((Unsafe.ReadUnaligned<uint>(ref nameStart) & 0xdfdfdfdfu) == 0x474e4152u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)4) & 0xdfu) == 0x45u))
+                    else if (((ReadUnalignedLittleEndian_uint(ref nameStart) & 0xdfdfdfdfu) == 0x474e4152u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)4) & 0xdfu) == 0x45u))
                     {
                         flag = 0x800000000L;
                         values = ref _headers._Range;
@@ -7115,32 +7374,32 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     break;
                 case 6:
-                    var firstTerm6 = (Unsafe.ReadUnaligned<uint>(ref nameStart) & 0xdfdfdfdfu);
-                    if ((firstTerm6 == 0x45434341u) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x5450u))
+                    var firstTerm6 = (ReadUnalignedLittleEndian_uint(ref nameStart) & 0xdfdfdfdfu);
+                    if ((firstTerm6 == 0x45434341u) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x5450u))
                     {
                         flag = 0x1L;
                         values = ref _headers._Accept;
                         nameStr = HeaderNames.Accept;
                     }
-                    else if ((firstTerm6 == 0x4b4f4f43u) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x4549u))
+                    else if ((firstTerm6 == 0x4b4f4f43u) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x4549u))
                     {
                         flag = 0x20000L;
                         values = ref _headers._Cookie;
                         nameStr = HeaderNames.Cookie;
                     }
-                    else if ((firstTerm6 == 0x45505845u) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x5443u))
+                    else if ((firstTerm6 == 0x45505845u) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x5443u))
                     {
                         flag = 0x100000L;
                         values = ref _headers._Expect;
                         nameStr = HeaderNames.Expect;
                     }
-                    else if ((firstTerm6 == 0x4749524fu) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x4e49u))
+                    else if ((firstTerm6 == 0x4749524fu) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x4e49u))
                     {
                         flag = 0x100000000L;
                         values = ref _headers._Origin;
                         nameStr = HeaderNames.Origin;
                     }
-                    else if ((firstTerm6 == 0x47415250u) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x414du))
+                    else if ((firstTerm6 == 0x47415250u) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x414du))
                     {
                         flag = 0x200000000L;
                         values = ref _headers._Pragma;
@@ -7148,37 +7407,37 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     break;
                 case 7:
-                    if (((Unsafe.ReadUnaligned<uint>(ref nameStart) & 0xdfdfdfffu) == 0x54454d3au) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x4f48u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)6) & 0xdfu) == 0x44u))
+                    if (((ReadUnalignedLittleEndian_uint(ref nameStart) & 0xdfdfdfffu) == 0x54454d3au) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x4f48u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)6) & 0xdfu) == 0x44u))
                     {
                         flag = 0x20L;
                         values = ref _headers._Method;
                         nameStr = HeaderNames.Method;
                     }
-                    else if (((Unsafe.ReadUnaligned<uint>(ref nameStart) & 0xdfdfdfffu) == 0x4843533au) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x4d45u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)6) & 0xdfu) == 0x45u))
+                    else if (((ReadUnalignedLittleEndian_uint(ref nameStart) & 0xdfdfdfffu) == 0x4843533au) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x4d45u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)6) & 0xdfu) == 0x45u))
                     {
                         flag = 0x80L;
                         values = ref _headers._Scheme;
                         nameStr = HeaderNames.Scheme;
                     }
-                    else if (((Unsafe.ReadUnaligned<uint>(ref nameStart) & 0xdfdfdfdfu) == 0x47474142u) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x4741u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)6) & 0xdfu) == 0x45u))
+                    else if (((ReadUnalignedLittleEndian_uint(ref nameStart) & 0xdfdfdfdfu) == 0x47474142u) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x4741u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)6) & 0xdfu) == 0x45u))
                     {
                         flag = 0x4000L;
                         values = ref _headers._Baggage;
                         nameStr = HeaderNames.Baggage;
                     }
-                    else if (((Unsafe.ReadUnaligned<uint>(ref nameStart) & 0xdfdfdfdfu) == 0x45464552u) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x4552u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)6) & 0xdfu) == 0x52u))
+                    else if (((ReadUnalignedLittleEndian_uint(ref nameStart) & 0xdfdfdfdfu) == 0x45464552u) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x4552u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)6) & 0xdfu) == 0x52u))
                     {
                         flag = 0x1000000000L;
                         values = ref _headers._Referer;
                         nameStr = HeaderNames.Referer;
                     }
-                    else if (((Unsafe.ReadUnaligned<uint>(ref nameStart) & 0xdfdfdfdfu) == 0x52475055u) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x4441u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)6) & 0xdfu) == 0x45u))
+                    else if (((ReadUnalignedLittleEndian_uint(ref nameStart) & 0xdfdfdfdfu) == 0x52475055u) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x4441u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)6) & 0xdfu) == 0x45u))
                     {
                         flag = 0x80000000000L;
                         values = ref _headers._Upgrade;
                         nameStr = HeaderNames.Upgrade;
                     }
-                    else if (((Unsafe.ReadUnaligned<uint>(ref nameStart) & 0xdfdfdfdfu) == 0x4e524157u) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x4e49u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)6) & 0xdfu) == 0x47u))
+                    else if (((ReadUnalignedLittleEndian_uint(ref nameStart) & 0xdfdfdfdfu) == 0x4e524157u) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x4e49u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)6) & 0xdfu) == 0x47u))
                     {
                         flag = 0x400000000000L;
                         values = ref _headers._Warning;
@@ -7186,7 +7445,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     break;
                 case 8:
-                    var firstTerm8 = (Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfdfdfdfffdfdfuL);
+                    var firstTerm8 = (ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfdfdfdfffdfdfuL);
                     if ((firstTerm8 == 0x484354414d2d4649uL))
                     {
                         flag = 0x2000000L;
@@ -7201,7 +7460,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     break;
                 case 9:
-                    if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfdfdfdfdfdfdfuL) == 0x54414c534e415254uL) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)8) & 0xdfu) == 0x45u))
+                    if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfdfdfdfdfdfdfuL) == 0x54414c534e415254uL) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)8) & 0xdfu) == 0x45u))
                     {
                         flag = 0x40000000000L;
                         values = ref _headers._Translate;
@@ -7209,37 +7468,37 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     break;
                 case 10:
-                    if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfdfdfdfdfdfdfuL) == 0x495443454e4e4f43uL) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(4 * sizeof(ushort)))) & 0xdfdfu) == 0x4e4fu))
+                    if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfdfdfdfdfdfdfuL) == 0x495443454e4e4f43uL) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(4 * sizeof(ushort)))) & 0xdfdfu) == 0x4e4fu))
                     {
                         flag = 0x2L;
                         values = ref _headers._Connection;
                         nameStr = HeaderNames.Connection;
                     }
-                    else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfdfffdfdfdfdfuL) == 0x4547412d52455355uL) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(4 * sizeof(ushort)))) & 0xdfdfu) == 0x544eu))
+                    else if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfdfffdfdfdfdfuL) == 0x4547412d52455355uL) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(4 * sizeof(ushort)))) & 0xdfdfu) == 0x544eu))
                     {
                         flag = 0x8L;
                         values = ref _headers._UserAgent;
                         nameStr = HeaderNames.UserAgent;
                     }
-                    else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfdfdfdfdfdfffuL) == 0x49524f485455413auL) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(4 * sizeof(ushort)))) & 0xdfdfu) == 0x5954u))
+                    else if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfdfdfdfdfdfffuL) == 0x49524f485455413auL) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(4 * sizeof(ushort)))) & 0xdfdfu) == 0x5954u))
                     {
                         flag = 0x10L;
                         values = ref _headers._Authority;
                         nameStr = HeaderNames.Authority;
                     }
-                    else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfdfffdfdfdfdfuL) == 0x494c412d5045454buL) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(4 * sizeof(ushort)))) & 0xdfdfu) == 0x4556u))
+                    else if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfdfffdfdfdfdfuL) == 0x494c412d5045454buL) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(4 * sizeof(ushort)))) & 0xdfdfu) == 0x4556u))
                     {
                         flag = 0x40000000L;
                         values = ref _headers._KeepAlive;
                         nameStr = HeaderNames.KeepAlive;
                     }
-                    else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xffdfdfdfdfdfdfdfuL) == 0x2d54534555514552uL) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(4 * sizeof(ushort)))) & 0xdfdfu) == 0x4449u))
+                    else if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xffdfdfdfdfdfdfdfuL) == 0x2d54534555514552uL) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(4 * sizeof(ushort)))) & 0xdfdfu) == 0x4449u))
                     {
                         flag = 0x2000000000L;
                         values = ref _headers._RequestId;
                         nameStr = HeaderNames.RequestId;
                     }
-                    else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfdfdfdfdfdfdfuL) == 0x4154534543415254uL) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(4 * sizeof(ushort)))) & 0xdfdfu) == 0x4554u))
+                    else if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfdfdfdfdfdfdfuL) == 0x4154534543415254uL) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(4 * sizeof(ushort)))) & 0xdfdfu) == 0x4554u))
                     {
                         flag = 0x10000000000L;
                         values = ref _headers._TraceState;
@@ -7247,7 +7506,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     break;
                 case 11:
-                    if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfdfdfdfdfdfdfuL) == 0x5241504543415254uL) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(4 * sizeof(ushort)))) & 0xdfdfu) == 0x4e45u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)10) & 0xdfu) == 0x54u))
+                    if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfdfdfdfdfdfdfuL) == 0x5241504543415254uL) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(4 * sizeof(ushort)))) & 0xdfdfu) == 0x4e45u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)10) & 0xdfu) == 0x54u))
                     {
                         flag = 0x8000000000L;
                         values = ref _headers._TraceParent;
@@ -7255,19 +7514,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     break;
                 case 12:
-                    if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xffdfdfdfdfdfdfdfuL) == 0x2d544e45544e4f43uL) && ((Unsafe.ReadUnaligned<uint>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x45505954u))
+                    if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xffdfdfdfdfdfdfdfuL) == 0x2d544e45544e4f43uL) && ((ReadUnalignedLittleEndian_uint(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x45505954u))
                     {
                         flag = 0x10000L;
                         values = ref _headers._ContentType;
                         nameStr = HeaderNames.ContentType;
                     }
-                    else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfdfffdfdfdfdfuL) == 0x4d49542d43505247uL) && ((Unsafe.ReadUnaligned<uint>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x54554f45u))
+                    else if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfdfffdfdfdfdfuL) == 0x4d49542d43505247uL) && ((ReadUnalignedLittleEndian_uint(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x54554f45u))
                     {
                         flag = 0x1000000L;
                         values = ref _headers._GrpcTimeout;
                         nameStr = HeaderNames.GrpcTimeout;
                     }
-                    else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfdfdfffdfdfdfuL) == 0x57524f462d58414duL) && ((Unsafe.ReadUnaligned<uint>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x53445241u))
+                    else if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfdfdfffdfdfdfuL) == 0x57524f462d58414duL) && ((ReadUnalignedLittleEndian_uint(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x53445241u))
                     {
                         flag = 0x80000000L;
                         values = ref _headers._MaxForwards;
@@ -7275,25 +7534,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     break;
                 case 13:
-                    if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfdfdfdfdfdfdfuL) == 0x5a49524f48545541uL) && ((Unsafe.ReadUnaligned<uint>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x4f495441u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)12) & 0xdfu) == 0x4eu))
+                    if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfdfdfdfdfdfdfuL) == 0x5a49524f48545541uL) && ((ReadUnalignedLittleEndian_uint(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x4f495441u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)12) & 0xdfu) == 0x4eu))
                     {
                         flag = 0x2000L;
                         values = ref _headers._Authorization;
                         nameStr = HeaderNames.Authorization;
                     }
-                    else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfffdfdfdfdfdfuL) == 0x4f432d4548434143uL) && ((Unsafe.ReadUnaligned<uint>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x4f52544eu) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)12) & 0xdfu) == 0x4cu))
+                    else if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfffdfdfdfdfdfuL) == 0x4f432d4548434143uL) && ((ReadUnalignedLittleEndian_uint(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x4f52544eu) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)12) & 0xdfu) == 0x4cu))
                     {
                         flag = 0x8000L;
                         values = ref _headers._CacheControl;
                         nameStr = HeaderNames.CacheControl;
                     }
-                    else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfdfffdfdfdfdfuL) == 0x434e452d43505247uL) && ((Unsafe.ReadUnaligned<uint>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x4e49444fu) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)12) & 0xdfu) == 0x47u))
+                    else if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfdfffdfdfdfdfuL) == 0x434e452d43505247uL) && ((ReadUnalignedLittleEndian_uint(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x4e49444fu) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)12) & 0xdfu) == 0x47u))
                     {
                         flag = 0x800000L;
                         values = ref _headers._GrpcEncoding;
                         nameStr = HeaderNames.GrpcEncoding;
                     }
-                    else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xffdfdfdfdfffdfdfuL) == 0x2d454e4f4e2d4649uL) && ((Unsafe.ReadUnaligned<uint>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x4354414du) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)12) & 0xdfu) == 0x48u))
+                    else if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xffdfdfdfdfffdfdfuL) == 0x2d454e4f4e2d4649uL) && ((ReadUnalignedLittleEndian_uint(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x4354414du) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)12) & 0xdfu) == 0x48u))
                     {
                         flag = 0x8000000L;
                         values = ref _headers._IfNoneMatch;
@@ -7301,13 +7560,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     break;
                 case 14:
-                    if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfffdfdfdfdfdfdfuL) == 0x432d545045434341uL) && ((Unsafe.ReadUnaligned<uint>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x53524148u) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(6 * sizeof(ushort)))) & 0xdfdfu) == 0x5445u))
+                    if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfffdfdfdfdfdfdfuL) == 0x432d545045434341uL) && ((ReadUnalignedLittleEndian_uint(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x53524148u) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(6 * sizeof(ushort)))) & 0xdfdfu) == 0x5445u))
                     {
                         flag = 0x100L;
                         values = ref _headers._AcceptCharset;
                         nameStr = HeaderNames.AcceptCharset;
                     }
-                    else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xffdfdfdfdfdfdfdfuL) == 0x2d544e45544e4f43uL) && ((Unsafe.ReadUnaligned<uint>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x474e454cu) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(6 * sizeof(ushort)))) & 0xdfdfu) == 0x4854u))
+                    else if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xffdfdfdfdfdfdfdfuL) == 0x2d544e45544e4f43uL) && ((ReadUnalignedLittleEndian_uint(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x474e454cu) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(6 * sizeof(ushort)))) & 0xdfdfu) == 0x4854u))
                     {
                         var customEncoding = ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector)
                            ? null : EncodingSelector(HeaderNames.ContentLength);
@@ -7323,14 +7582,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     break;
                 case 15:
-                    var firstTerm15 = (Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfffdfdfdfdfdfdfuL);
-                    if ((firstTerm15 == 0x452d545045434341uL) && ((Unsafe.ReadUnaligned<uint>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x444f434eu) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(6 * sizeof(ushort)))) & 0xdfdfu) == 0x4e49u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)14) & 0xdfu) == 0x47u))
+                    var firstTerm15 = (ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfffdfdfdfdfdfdfuL);
+                    if ((firstTerm15 == 0x452d545045434341uL) && ((ReadUnalignedLittleEndian_uint(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x444f434eu) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(6 * sizeof(ushort)))) & 0xdfdfu) == 0x4e49u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)14) & 0xdfu) == 0x47u))
                     {
                         flag = 0x200L;
                         values = ref _headers._AcceptEncoding;
                         nameStr = HeaderNames.AcceptEncoding;
                     }
-                    else if ((firstTerm15 == 0x4c2d545045434341uL) && ((Unsafe.ReadUnaligned<uint>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x55474e41u) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(6 * sizeof(ushort)))) & 0xdfdfu) == 0x4741u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)14) & 0xdfu) == 0x45u))
+                    else if ((firstTerm15 == 0x4c2d545045434341uL) && ((ReadUnalignedLittleEndian_uint(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x55474e41u) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(6 * sizeof(ushort)))) & 0xdfdfu) == 0x4741u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)14) & 0xdfu) == 0x45u))
                     {
                         flag = 0x400L;
                         values = ref _headers._AcceptLanguage;
@@ -7338,13 +7597,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     break;
                 case 17:
-                    if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfdfdfdfffdfdfuL) == 0x4649444f4d2d4649uL) && ((Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfdfdfdfffdfdfdfuL) == 0x434e49532d444549uL) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)16) & 0xdfu) == 0x45u))
+                    if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfdfdfdfffdfdfuL) == 0x4649444f4d2d4649uL) && ((ReadUnalignedLittleEndian_ulong(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfdfdfdfffdfdfdfuL) == 0x434e49532d444549uL) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)16) & 0xdfu) == 0x45u))
                     {
                         flag = 0x4000000L;
                         values = ref _headers._IfModifiedSince;
                         nameStr = HeaderNames.IfModifiedSince;
                     }
-                    else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfdfdfdfdfdfdfuL) == 0x524546534e415254uL) && ((Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfdfdfdfdfdfdfffuL) == 0x4e49444f434e452duL) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)16) & 0xdfu) == 0x47u))
+                    else if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfdfdfdfdfdfdfuL) == 0x524546534e415254uL) && ((ReadUnalignedLittleEndian_ulong(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfdfdfdfdfdfdfffuL) == 0x4e49444f434e452duL) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)16) & 0xdfu) == 0x47u))
                     {
                         flag = 0x20000000000L;
                         values = ref _headers._TransferEncoding;
@@ -7352,19 +7611,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     break;
                 case 19:
-                    if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfdfdfdfdfdfdfuL) == 0x54414c4552524f43uL) && ((Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfdfdfdfffdfdfdfuL) == 0x544e4f432d4e4f49uL) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(8 * sizeof(ushort)))) & 0xdfdfu) == 0x5845u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)18) & 0xdfu) == 0x54u))
+                    if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfdfdfdfdfdfdfuL) == 0x54414c4552524f43uL) && ((ReadUnalignedLittleEndian_ulong(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfdfdfdfffdfdfdfuL) == 0x544e4f432d4e4f49uL) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(8 * sizeof(ushort)))) & 0xdfdfu) == 0x5845u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)18) & 0xdfu) == 0x54u))
                     {
                         flag = 0x40000L;
                         values = ref _headers._CorrelationContext;
                         nameStr = HeaderNames.CorrelationContext;
                     }
-                    else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfdfdfdfffdfdfuL) == 0x444f4d4e552d4649uL) && ((Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfdfffdfdfdfdfdfuL) == 0x49532d4445494649uL) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(8 * sizeof(ushort)))) & 0xdfdfu) == 0x434eu) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)18) & 0xdfu) == 0x45u))
+                    else if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfdfdfdfffdfdfuL) == 0x444f4d4e552d4649uL) && ((ReadUnalignedLittleEndian_ulong(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfdfffdfdfdfdfdfuL) == 0x49532d4445494649uL) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(8 * sizeof(ushort)))) & 0xdfdfu) == 0x434eu) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)18) & 0xdfu) == 0x45u))
                     {
                         flag = 0x20000000L;
                         values = ref _headers._IfUnmodifiedSince;
                         nameStr = HeaderNames.IfUnmodifiedSince;
                     }
-                    else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfffdfdfdfdfdfuL) == 0x55412d59584f5250uL) && ((Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfdfdfdfdfdfdfdfuL) == 0x54415a49524f4854uL) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(8 * sizeof(ushort)))) & 0xdfdfu) == 0x4f49u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)18) & 0xdfu) == 0x4eu))
+                    else if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfffdfdfdfdfdfuL) == 0x55412d59584f5250uL) && ((ReadUnalignedLittleEndian_ulong(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfdfdfdfdfdfdfdfuL) == 0x54415a49524f4854uL) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(8 * sizeof(ushort)))) & 0xdfdfu) == 0x4f49u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)18) & 0xdfu) == 0x4eu))
                     {
                         flag = 0x400000000L;
                         values = ref _headers._ProxyAuthorization;
@@ -7372,7 +7631,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     break;
                 case 20:
-                    if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfdfffdfdfdfdfuL) == 0x4343412d43505247uL) && ((Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfdfdfdfffdfdfdfuL) == 0x4f434e452d545045uL) && ((Unsafe.ReadUnaligned<uint>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(4 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x474e4944u))
+                    if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfdfdfffdfdfdfdfuL) == 0x4343412d43505247uL) && ((ReadUnalignedLittleEndian_ulong(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfdfdfdfffdfdfdfuL) == 0x4f434e452d545045uL) && ((ReadUnalignedLittleEndian_uint(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(4 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x474e4944u))
                     {
                         flag = 0x400000L;
                         values = ref _headers._GrpcAcceptEncoding;
@@ -7380,7 +7639,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     break;
                 case 25:
-                    if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xffdfdfdfdfdfdfdfuL) == 0x2d45444152475055uL) && ((Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfdfdfdfdfdfdfdfuL) == 0x4552554345534e49uL) && ((Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ulong)))) & 0xdfdfdfdfdfdfdfffuL) == 0x545345555145522duL) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)24) & 0xdfu) == 0x53u))
+                    if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xffdfdfdfdfdfdfdfuL) == 0x2d45444152475055uL) && ((ReadUnalignedLittleEndian_ulong(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfdfdfdfdfdfdfdfuL) == 0x4552554345534e49uL) && ((ReadUnalignedLittleEndian_ulong(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ulong)))) & 0xdfdfdfdfdfdfdfffuL) == 0x545345555145522duL) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)24) & 0xdfu) == 0x53u))
                     {
                         flag = 0x100000000000L;
                         values = ref _headers._UpgradeInsecureRequests;
@@ -7388,7 +7647,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     break;
                 case 29:
-                    if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfffdfdfdfdfdfdfuL) == 0x432d535345434341uL) && ((Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfffdfdfdfdfdfdfuL) == 0x522d4c4f52544e4fuL) && ((Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ulong)))) & 0xdfffdfdfdfdfdfdfuL) == 0x4d2d545345555145uL) && ((Unsafe.ReadUnaligned<uint>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(6 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x4f485445u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)28) & 0xdfu) == 0x44u))
+                    if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfffdfdfdfdfdfdfuL) == 0x432d535345434341uL) && ((ReadUnalignedLittleEndian_ulong(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfffdfdfdfdfdfdfuL) == 0x522d4c4f52544e4fuL) && ((ReadUnalignedLittleEndian_ulong(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ulong)))) & 0xdfffdfdfdfdfdfdfuL) == 0x4d2d545345555145uL) && ((ReadUnalignedLittleEndian_uint(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(6 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x4f485445u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)28) & 0xdfu) == 0x44u))
                     {
                         flag = 0x1000L;
                         values = ref _headers._AccessControlRequestMethod;
@@ -7396,7 +7655,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     break;
                 case 30:
-                    if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfffdfdfdfdfdfdfuL) == 0x432d535345434341uL) && ((Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfffdfdfdfdfdfdfuL) == 0x522d4c4f52544e4fuL) && ((Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ulong)))) & 0xdfffdfdfdfdfdfdfuL) == 0x482d545345555145uL) && ((Unsafe.ReadUnaligned<uint>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(6 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x45444145u) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(14 * sizeof(ushort)))) & 0xdfdfu) == 0x5352u))
+                    if (((ReadUnalignedLittleEndian_ulong(ref nameStart) & 0xdfffdfdfdfdfdfdfuL) == 0x432d535345434341uL) && ((ReadUnalignedLittleEndian_ulong(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfffdfdfdfdfdfdfuL) == 0x522d4c4f52544e4fuL) && ((ReadUnalignedLittleEndian_ulong(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ulong)))) & 0xdfffdfdfdfdfdfdfuL) == 0x482d545345555145uL) && ((ReadUnalignedLittleEndian_uint(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(6 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x45444145u) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(14 * sizeof(ushort)))) & 0xdfdfu) == 0x5352u))
                     {
                         flag = 0x800L;
                         values = ref _headers._AccessControlRequestHeaders;
@@ -7455,12 +7714,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public unsafe bool TryHPackAppend(int index, ReadOnlySpan<byte> value)
+        public unsafe bool TryHPackAppend(int index, ReadOnlySpan<byte> value, bool checkForNewlineChars)
         {
             ref StringValues values = ref Unsafe.AsRef<StringValues>(null);
             var nameStr = string.Empty;
             var flag = 0L;
-            var checkForNewlineChars = true;
 
             // Does the HPack static index match any "known" headers
             switch (index)
@@ -7667,6 +7925,204 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        public unsafe bool TryQPackAppend(int index, ReadOnlySpan<byte> value, bool checkForNewlineChars)
+        {
+            ref StringValues values = ref Unsafe.AsRef<StringValues>(null);
+            var nameStr = string.Empty;
+            var flag = 0L;
+
+            // Does the QPack static index match any "known" headers
+            switch (index)
+            {
+                case 0:
+                    flag = 0x10L;
+                    values = ref _headers._Authority;
+                    nameStr = HeaderNames.Authority;
+                    break;
+                case 1:
+                    flag = 0x40L;
+                    values = ref _headers._Path;
+                    nameStr = HeaderNames.Path;
+                    break;
+                case 4:
+                    var customEncoding = ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultHeaderEncodingSelector)
+                        ? null : EncodingSelector(HeaderNames.ContentLength);
+                    if (customEncoding == null)
+                    {
+                        AppendContentLength(value);
+                    }
+                    else
+                    {
+                        AppendContentLengthCustomEncoding(value, customEncoding);
+                    }
+                    return true;
+                case 5:
+                    flag = 0x20000L;
+                    values = ref _headers._Cookie;
+                    nameStr = HeaderNames.Cookie;
+                    break;
+                case 6:
+                    flag = 0x80000L;
+                    values = ref _headers._Date;
+                    nameStr = HeaderNames.Date;
+                    break;
+                case 8:
+                    flag = 0x4000000L;
+                    values = ref _headers._IfModifiedSince;
+                    nameStr = HeaderNames.IfModifiedSince;
+                    break;
+                case 9:
+                    flag = 0x8000000L;
+                    values = ref _headers._IfNoneMatch;
+                    nameStr = HeaderNames.IfNoneMatch;
+                    break;
+                case 13:
+                    flag = 0x1000000000L;
+                    values = ref _headers._Referer;
+                    nameStr = HeaderNames.Referer;
+                    break;
+                case 15:
+                case 16:
+                case 17:
+                case 18:
+                case 19:
+                case 20:
+                case 21:
+                    flag = 0x20L;
+                    values = ref _headers._Method;
+                    nameStr = HeaderNames.Method;
+                    break;
+                case 22:
+                case 23:
+                    flag = 0x80L;
+                    values = ref _headers._Scheme;
+                    nameStr = HeaderNames.Scheme;
+                    break;
+                case 29:
+                case 30:
+                    flag = 0x1L;
+                    values = ref _headers._Accept;
+                    nameStr = HeaderNames.Accept;
+                    break;
+                case 31:
+                    flag = 0x200L;
+                    values = ref _headers._AcceptEncoding;
+                    nameStr = HeaderNames.AcceptEncoding;
+                    break;
+                case 36:
+                case 37:
+                case 38:
+                case 39:
+                case 40:
+                case 41:
+                    flag = 0x8000L;
+                    values = ref _headers._CacheControl;
+                    nameStr = HeaderNames.CacheControl;
+                    break;
+                case 44:
+                case 45:
+                case 46:
+                case 47:
+                case 48:
+                case 49:
+                case 50:
+                case 51:
+                case 52:
+                case 53:
+                case 54:
+                    flag = 0x10000L;
+                    values = ref _headers._ContentType;
+                    nameStr = HeaderNames.ContentType;
+                    break;
+                case 55:
+                    flag = 0x800000000L;
+                    values = ref _headers._Range;
+                    nameStr = HeaderNames.Range;
+                    break;
+                case 72:
+                    flag = 0x400L;
+                    values = ref _headers._AcceptLanguage;
+                    nameStr = HeaderNames.AcceptLanguage;
+                    break;
+                case 80:
+                    flag = 0x800L;
+                    values = ref _headers._AccessControlRequestHeaders;
+                    nameStr = HeaderNames.AccessControlRequestHeaders;
+                    break;
+                case 81:
+                case 82:
+                    flag = 0x1000L;
+                    values = ref _headers._AccessControlRequestMethod;
+                    nameStr = HeaderNames.AccessControlRequestMethod;
+                    break;
+                case 84:
+                    flag = 0x2000L;
+                    values = ref _headers._Authorization;
+                    nameStr = HeaderNames.Authorization;
+                    break;
+                case 89:
+                    flag = 0x10000000L;
+                    values = ref _headers._IfRange;
+                    nameStr = HeaderNames.IfRange;
+                    break;
+                case 90:
+                    flag = 0x100000000L;
+                    values = ref _headers._Origin;
+                    nameStr = HeaderNames.Origin;
+                    break;
+                case 95:
+                    flag = 0x8L;
+                    values = ref _headers._UserAgent;
+                    nameStr = HeaderNames.UserAgent;
+                    break;
+            }
+
+            if (flag != 0)
+            {
+                // Matched a known header
+                if ((_previousBits & flag) != 0)
+                {
+                    // Had a previous string for this header, mark it as used so we don't clear it OnHeadersComplete or consider it if we get a second header
+                    _previousBits ^= flag;
+
+                    // We will only reuse this header if there was only one previous header
+                    if (values.Count == 1)
+                    {
+                        var previousValue = values.ToString();
+                        // Check lengths are the same, then if the bytes were converted to an ascii string if they would be the same.
+                        // We do not consider Utf8 headers for reuse.
+                        if (previousValue.Length == value.Length &&
+                            StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, value))
+                        {
+                            // The previous string matches what the bytes would convert to, so we will just use that one.
+                            _bits |= flag;
+                            return true;
+                        }
+                    }
+                }
+
+                // We didn't have a previous matching header value, or have already added a header, so get the string for this value.
+                var valueStr = value.GetRequestHeaderString(nameStr, EncodingSelector, checkForNewlineChars);
+                if ((_bits & flag) == 0)
+                {
+                    // We didn't already have a header set, so add a new one.
+                    _bits |= flag;
+                    values = new StringValues(valueStr);
+                }
+                else
+                {
+                    // We already had a header set, so concatenate the new one.
+                    values = AppendValue(values, valueStr);
+                }
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         private struct HeaderReferences
         {
             public StringValues _Accept;
@@ -7726,450 +8182,266 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 switch (_next)
                 {
-                    case 0:
-                        goto HeaderAccept;
-                    case 1:
-                        goto HeaderConnection;
-                    case 2:
-                        goto HeaderHost;
-                    case 3:
-                        goto HeaderUserAgent;
-                    case 4:
-                        goto HeaderAuthority;
-                    case 5:
-                        goto HeaderMethod;
-                    case 6:
-                        goto HeaderPath;
-                    case 7:
-                        goto HeaderScheme;
-                    case 8:
-                        goto HeaderAcceptCharset;
-                    case 9:
-                        goto HeaderAcceptEncoding;
-                    case 10:
-                        goto HeaderAcceptLanguage;
-                    case 11:
-                        goto HeaderAccessControlRequestHeaders;
-                    case 12:
-                        goto HeaderAccessControlRequestMethod;
-                    case 13:
-                        goto HeaderAuthorization;
-                    case 14:
-                        goto HeaderBaggage;
-                    case 15:
-                        goto HeaderCacheControl;
-                    case 16:
-                        goto HeaderContentType;
-                    case 17:
-                        goto HeaderCookie;
-                    case 18:
-                        goto HeaderCorrelationContext;
-                    case 19:
-                        goto HeaderDate;
-                    case 20:
-                        goto HeaderExpect;
-                    case 21:
-                        goto HeaderFrom;
-                    case 22:
-                        goto HeaderGrpcAcceptEncoding;
-                    case 23:
-                        goto HeaderGrpcEncoding;
-                    case 24:
-                        goto HeaderGrpcTimeout;
-                    case 25:
-                        goto HeaderIfMatch;
-                    case 26:
-                        goto HeaderIfModifiedSince;
-                    case 27:
-                        goto HeaderIfNoneMatch;
-                    case 28:
-                        goto HeaderIfRange;
-                    case 29:
-                        goto HeaderIfUnmodifiedSince;
-                    case 30:
-                        goto HeaderKeepAlive;
-                    case 31:
-                        goto HeaderMaxForwards;
-                    case 32:
-                        goto HeaderOrigin;
-                    case 33:
-                        goto HeaderPragma;
-                    case 34:
-                        goto HeaderProxyAuthorization;
-                    case 35:
-                        goto HeaderRange;
-                    case 36:
-                        goto HeaderReferer;
-                    case 37:
-                        goto HeaderRequestId;
-                    case 38:
-                        goto HeaderTE;
-                    case 39:
-                        goto HeaderTraceParent;
-                    case 40:
-                        goto HeaderTraceState;
-                    case 41:
-                        goto HeaderTransferEncoding;
-                    case 42:
-                        goto HeaderTranslate;
-                    case 43:
-                        goto HeaderUpgrade;
-                    case 44:
-                        goto HeaderUpgradeInsecureRequests;
-                    case 45:
-                        goto HeaderVia;
-                    case 46:
-                        goto HeaderWarning;
-                    case 47:
-                        goto HeaderContentLength;
-                    default:
-                        goto ExtraHeaders;
-                }
-                
-                HeaderAccept: // case 0
-                    if ((_bits & 0x1L) != 0)
-                    {
+                    case 0: // Header: "Accept"
+                        Debug.Assert((_currentBits & 0x1L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Accept, _collection._headers._Accept);
-                        _next = 1;
-                        return true;
-                    }
-                HeaderConnection: // case 1
-                    if ((_bits & 0x2L) != 0)
-                    {
+                        _currentBits ^= 0x1L;
+                        break;
+                    case 1: // Header: "Connection"
+                        Debug.Assert((_currentBits & 0x2L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Connection, _collection._headers._Connection);
-                        _next = 2;
-                        return true;
-                    }
-                HeaderHost: // case 2
-                    if ((_bits & 0x4L) != 0)
-                    {
+                        _currentBits ^= 0x2L;
+                        break;
+                    case 2: // Header: "Host"
+                        Debug.Assert((_currentBits & 0x4L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Host, _collection._headers._Host);
-                        _next = 3;
-                        return true;
-                    }
-                HeaderUserAgent: // case 3
-                    if ((_bits & 0x8L) != 0)
-                    {
+                        _currentBits ^= 0x4L;
+                        break;
+                    case 3: // Header: "User-Agent"
+                        Debug.Assert((_currentBits & 0x8L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.UserAgent, _collection._headers._UserAgent);
-                        _next = 4;
-                        return true;
-                    }
-                HeaderAuthority: // case 4
-                    if ((_bits & 0x10L) != 0)
-                    {
+                        _currentBits ^= 0x8L;
+                        break;
+                    case 4: // Header: ":authority"
+                        Debug.Assert((_currentBits & 0x10L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Authority, _collection._headers._Authority);
-                        _next = 5;
-                        return true;
-                    }
-                HeaderMethod: // case 5
-                    if ((_bits & 0x20L) != 0)
-                    {
+                        _currentBits ^= 0x10L;
+                        break;
+                    case 5: // Header: ":method"
+                        Debug.Assert((_currentBits & 0x20L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Method, _collection._headers._Method);
-                        _next = 6;
-                        return true;
-                    }
-                HeaderPath: // case 6
-                    if ((_bits & 0x40L) != 0)
-                    {
+                        _currentBits ^= 0x20L;
+                        break;
+                    case 6: // Header: ":path"
+                        Debug.Assert((_currentBits & 0x40L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Path, _collection._headers._Path);
-                        _next = 7;
-                        return true;
-                    }
-                HeaderScheme: // case 7
-                    if ((_bits & 0x80L) != 0)
-                    {
+                        _currentBits ^= 0x40L;
+                        break;
+                    case 7: // Header: ":scheme"
+                        Debug.Assert((_currentBits & 0x80L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Scheme, _collection._headers._Scheme);
-                        _next = 8;
-                        return true;
-                    }
-                HeaderAcceptCharset: // case 8
-                    if ((_bits & 0x100L) != 0)
-                    {
+                        _currentBits ^= 0x80L;
+                        break;
+                    case 8: // Header: "Accept-Charset"
+                        Debug.Assert((_currentBits & 0x100L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.AcceptCharset, _collection._headers._AcceptCharset);
-                        _next = 9;
-                        return true;
-                    }
-                HeaderAcceptEncoding: // case 9
-                    if ((_bits & 0x200L) != 0)
-                    {
+                        _currentBits ^= 0x100L;
+                        break;
+                    case 9: // Header: "Accept-Encoding"
+                        Debug.Assert((_currentBits & 0x200L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.AcceptEncoding, _collection._headers._AcceptEncoding);
-                        _next = 10;
-                        return true;
-                    }
-                HeaderAcceptLanguage: // case 10
-                    if ((_bits & 0x400L) != 0)
-                    {
+                        _currentBits ^= 0x200L;
+                        break;
+                    case 10: // Header: "Accept-Language"
+                        Debug.Assert((_currentBits & 0x400L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.AcceptLanguage, _collection._headers._AcceptLanguage);
-                        _next = 11;
-                        return true;
-                    }
-                HeaderAccessControlRequestHeaders: // case 11
-                    if ((_bits & 0x800L) != 0)
-                    {
+                        _currentBits ^= 0x400L;
+                        break;
+                    case 11: // Header: "Access-Control-Request-Headers"
+                        Debug.Assert((_currentBits & 0x800L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.AccessControlRequestHeaders, _collection._headers._AccessControlRequestHeaders);
-                        _next = 12;
-                        return true;
-                    }
-                HeaderAccessControlRequestMethod: // case 12
-                    if ((_bits & 0x1000L) != 0)
-                    {
+                        _currentBits ^= 0x800L;
+                        break;
+                    case 12: // Header: "Access-Control-Request-Method"
+                        Debug.Assert((_currentBits & 0x1000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.AccessControlRequestMethod, _collection._headers._AccessControlRequestMethod);
-                        _next = 13;
-                        return true;
-                    }
-                HeaderAuthorization: // case 13
-                    if ((_bits & 0x2000L) != 0)
-                    {
+                        _currentBits ^= 0x1000L;
+                        break;
+                    case 13: // Header: "Authorization"
+                        Debug.Assert((_currentBits & 0x2000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Authorization, _collection._headers._Authorization);
-                        _next = 14;
-                        return true;
-                    }
-                HeaderBaggage: // case 14
-                    if ((_bits & 0x4000L) != 0)
-                    {
+                        _currentBits ^= 0x2000L;
+                        break;
+                    case 14: // Header: "baggage"
+                        Debug.Assert((_currentBits & 0x4000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Baggage, _collection._headers._Baggage);
-                        _next = 15;
-                        return true;
-                    }
-                HeaderCacheControl: // case 15
-                    if ((_bits & 0x8000L) != 0)
-                    {
+                        _currentBits ^= 0x4000L;
+                        break;
+                    case 15: // Header: "Cache-Control"
+                        Debug.Assert((_currentBits & 0x8000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.CacheControl, _collection._headers._CacheControl);
-                        _next = 16;
-                        return true;
-                    }
-                HeaderContentType: // case 16
-                    if ((_bits & 0x10000L) != 0)
-                    {
+                        _currentBits ^= 0x8000L;
+                        break;
+                    case 16: // Header: "Content-Type"
+                        Debug.Assert((_currentBits & 0x10000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.ContentType, _collection._headers._ContentType);
-                        _next = 17;
-                        return true;
-                    }
-                HeaderCookie: // case 17
-                    if ((_bits & 0x20000L) != 0)
-                    {
+                        _currentBits ^= 0x10000L;
+                        break;
+                    case 17: // Header: "Cookie"
+                        Debug.Assert((_currentBits & 0x20000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Cookie, _collection._headers._Cookie);
-                        _next = 18;
-                        return true;
-                    }
-                HeaderCorrelationContext: // case 18
-                    if ((_bits & 0x40000L) != 0)
-                    {
+                        _currentBits ^= 0x20000L;
+                        break;
+                    case 18: // Header: "Correlation-Context"
+                        Debug.Assert((_currentBits & 0x40000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.CorrelationContext, _collection._headers._CorrelationContext);
-                        _next = 19;
-                        return true;
-                    }
-                HeaderDate: // case 19
-                    if ((_bits & 0x80000L) != 0)
-                    {
+                        _currentBits ^= 0x40000L;
+                        break;
+                    case 19: // Header: "Date"
+                        Debug.Assert((_currentBits & 0x80000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Date, _collection._headers._Date);
-                        _next = 20;
-                        return true;
-                    }
-                HeaderExpect: // case 20
-                    if ((_bits & 0x100000L) != 0)
-                    {
+                        _currentBits ^= 0x80000L;
+                        break;
+                    case 20: // Header: "Expect"
+                        Debug.Assert((_currentBits & 0x100000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Expect, _collection._headers._Expect);
-                        _next = 21;
-                        return true;
-                    }
-                HeaderFrom: // case 21
-                    if ((_bits & 0x200000L) != 0)
-                    {
+                        _currentBits ^= 0x100000L;
+                        break;
+                    case 21: // Header: "From"
+                        Debug.Assert((_currentBits & 0x200000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.From, _collection._headers._From);
-                        _next = 22;
-                        return true;
-                    }
-                HeaderGrpcAcceptEncoding: // case 22
-                    if ((_bits & 0x400000L) != 0)
-                    {
+                        _currentBits ^= 0x200000L;
+                        break;
+                    case 22: // Header: "Grpc-Accept-Encoding"
+                        Debug.Assert((_currentBits & 0x400000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.GrpcAcceptEncoding, _collection._headers._GrpcAcceptEncoding);
-                        _next = 23;
-                        return true;
-                    }
-                HeaderGrpcEncoding: // case 23
-                    if ((_bits & 0x800000L) != 0)
-                    {
+                        _currentBits ^= 0x400000L;
+                        break;
+                    case 23: // Header: "Grpc-Encoding"
+                        Debug.Assert((_currentBits & 0x800000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.GrpcEncoding, _collection._headers._GrpcEncoding);
-                        _next = 24;
-                        return true;
-                    }
-                HeaderGrpcTimeout: // case 24
-                    if ((_bits & 0x1000000L) != 0)
-                    {
+                        _currentBits ^= 0x800000L;
+                        break;
+                    case 24: // Header: "Grpc-Timeout"
+                        Debug.Assert((_currentBits & 0x1000000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.GrpcTimeout, _collection._headers._GrpcTimeout);
-                        _next = 25;
-                        return true;
-                    }
-                HeaderIfMatch: // case 25
-                    if ((_bits & 0x2000000L) != 0)
-                    {
+                        _currentBits ^= 0x1000000L;
+                        break;
+                    case 25: // Header: "If-Match"
+                        Debug.Assert((_currentBits & 0x2000000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.IfMatch, _collection._headers._IfMatch);
-                        _next = 26;
-                        return true;
-                    }
-                HeaderIfModifiedSince: // case 26
-                    if ((_bits & 0x4000000L) != 0)
-                    {
+                        _currentBits ^= 0x2000000L;
+                        break;
+                    case 26: // Header: "If-Modified-Since"
+                        Debug.Assert((_currentBits & 0x4000000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.IfModifiedSince, _collection._headers._IfModifiedSince);
-                        _next = 27;
-                        return true;
-                    }
-                HeaderIfNoneMatch: // case 27
-                    if ((_bits & 0x8000000L) != 0)
-                    {
+                        _currentBits ^= 0x4000000L;
+                        break;
+                    case 27: // Header: "If-None-Match"
+                        Debug.Assert((_currentBits & 0x8000000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.IfNoneMatch, _collection._headers._IfNoneMatch);
-                        _next = 28;
-                        return true;
-                    }
-                HeaderIfRange: // case 28
-                    if ((_bits & 0x10000000L) != 0)
-                    {
+                        _currentBits ^= 0x8000000L;
+                        break;
+                    case 28: // Header: "If-Range"
+                        Debug.Assert((_currentBits & 0x10000000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.IfRange, _collection._headers._IfRange);
-                        _next = 29;
-                        return true;
-                    }
-                HeaderIfUnmodifiedSince: // case 29
-                    if ((_bits & 0x20000000L) != 0)
-                    {
+                        _currentBits ^= 0x10000000L;
+                        break;
+                    case 29: // Header: "If-Unmodified-Since"
+                        Debug.Assert((_currentBits & 0x20000000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.IfUnmodifiedSince, _collection._headers._IfUnmodifiedSince);
-                        _next = 30;
-                        return true;
-                    }
-                HeaderKeepAlive: // case 30
-                    if ((_bits & 0x40000000L) != 0)
-                    {
+                        _currentBits ^= 0x20000000L;
+                        break;
+                    case 30: // Header: "Keep-Alive"
+                        Debug.Assert((_currentBits & 0x40000000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.KeepAlive, _collection._headers._KeepAlive);
-                        _next = 31;
-                        return true;
-                    }
-                HeaderMaxForwards: // case 31
-                    if ((_bits & 0x80000000L) != 0)
-                    {
+                        _currentBits ^= 0x40000000L;
+                        break;
+                    case 31: // Header: "Max-Forwards"
+                        Debug.Assert((_currentBits & 0x80000000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.MaxForwards, _collection._headers._MaxForwards);
-                        _next = 32;
-                        return true;
-                    }
-                HeaderOrigin: // case 32
-                    if ((_bits & 0x100000000L) != 0)
-                    {
+                        _currentBits ^= 0x80000000L;
+                        break;
+                    case 32: // Header: "Origin"
+                        Debug.Assert((_currentBits & 0x100000000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Origin, _collection._headers._Origin);
-                        _next = 33;
-                        return true;
-                    }
-                HeaderPragma: // case 33
-                    if ((_bits & 0x200000000L) != 0)
-                    {
+                        _currentBits ^= 0x100000000L;
+                        break;
+                    case 33: // Header: "Pragma"
+                        Debug.Assert((_currentBits & 0x200000000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Pragma, _collection._headers._Pragma);
-                        _next = 34;
-                        return true;
-                    }
-                HeaderProxyAuthorization: // case 34
-                    if ((_bits & 0x400000000L) != 0)
-                    {
+                        _currentBits ^= 0x200000000L;
+                        break;
+                    case 34: // Header: "Proxy-Authorization"
+                        Debug.Assert((_currentBits & 0x400000000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.ProxyAuthorization, _collection._headers._ProxyAuthorization);
-                        _next = 35;
-                        return true;
-                    }
-                HeaderRange: // case 35
-                    if ((_bits & 0x800000000L) != 0)
-                    {
+                        _currentBits ^= 0x400000000L;
+                        break;
+                    case 35: // Header: "Range"
+                        Debug.Assert((_currentBits & 0x800000000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Range, _collection._headers._Range);
-                        _next = 36;
-                        return true;
-                    }
-                HeaderReferer: // case 36
-                    if ((_bits & 0x1000000000L) != 0)
-                    {
+                        _currentBits ^= 0x800000000L;
+                        break;
+                    case 36: // Header: "Referer"
+                        Debug.Assert((_currentBits & 0x1000000000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Referer, _collection._headers._Referer);
-                        _next = 37;
-                        return true;
-                    }
-                HeaderRequestId: // case 37
-                    if ((_bits & 0x2000000000L) != 0)
-                    {
+                        _currentBits ^= 0x1000000000L;
+                        break;
+                    case 37: // Header: "Request-Id"
+                        Debug.Assert((_currentBits & 0x2000000000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.RequestId, _collection._headers._RequestId);
-                        _next = 38;
-                        return true;
-                    }
-                HeaderTE: // case 38
-                    if ((_bits & 0x4000000000L) != 0)
-                    {
+                        _currentBits ^= 0x2000000000L;
+                        break;
+                    case 38: // Header: "TE"
+                        Debug.Assert((_currentBits & 0x4000000000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.TE, _collection._headers._TE);
-                        _next = 39;
-                        return true;
-                    }
-                HeaderTraceParent: // case 39
-                    if ((_bits & 0x8000000000L) != 0)
-                    {
+                        _currentBits ^= 0x4000000000L;
+                        break;
+                    case 39: // Header: "traceparent"
+                        Debug.Assert((_currentBits & 0x8000000000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.TraceParent, _collection._headers._TraceParent);
-                        _next = 40;
-                        return true;
-                    }
-                HeaderTraceState: // case 40
-                    if ((_bits & 0x10000000000L) != 0)
-                    {
+                        _currentBits ^= 0x8000000000L;
+                        break;
+                    case 40: // Header: "tracestate"
+                        Debug.Assert((_currentBits & 0x10000000000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.TraceState, _collection._headers._TraceState);
-                        _next = 41;
-                        return true;
-                    }
-                HeaderTransferEncoding: // case 41
-                    if ((_bits & 0x20000000000L) != 0)
-                    {
+                        _currentBits ^= 0x10000000000L;
+                        break;
+                    case 41: // Header: "Transfer-Encoding"
+                        Debug.Assert((_currentBits & 0x20000000000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.TransferEncoding, _collection._headers._TransferEncoding);
-                        _next = 42;
-                        return true;
-                    }
-                HeaderTranslate: // case 42
-                    if ((_bits & 0x40000000000L) != 0)
-                    {
+                        _currentBits ^= 0x20000000000L;
+                        break;
+                    case 42: // Header: "Translate"
+                        Debug.Assert((_currentBits & 0x40000000000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Translate, _collection._headers._Translate);
-                        _next = 43;
-                        return true;
-                    }
-                HeaderUpgrade: // case 43
-                    if ((_bits & 0x80000000000L) != 0)
-                    {
+                        _currentBits ^= 0x40000000000L;
+                        break;
+                    case 43: // Header: "Upgrade"
+                        Debug.Assert((_currentBits & 0x80000000000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Upgrade, _collection._headers._Upgrade);
-                        _next = 44;
-                        return true;
-                    }
-                HeaderUpgradeInsecureRequests: // case 44
-                    if ((_bits & 0x100000000000L) != 0)
-                    {
+                        _currentBits ^= 0x80000000000L;
+                        break;
+                    case 44: // Header: "Upgrade-Insecure-Requests"
+                        Debug.Assert((_currentBits & 0x100000000000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.UpgradeInsecureRequests, _collection._headers._UpgradeInsecureRequests);
-                        _next = 45;
-                        return true;
-                    }
-                HeaderVia: // case 45
-                    if ((_bits & 0x200000000000L) != 0)
-                    {
+                        _currentBits ^= 0x100000000000L;
+                        break;
+                    case 45: // Header: "Via"
+                        Debug.Assert((_currentBits & 0x200000000000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Via, _collection._headers._Via);
-                        _next = 46;
-                        return true;
-                    }
-                HeaderWarning: // case 46
-                    if ((_bits & 0x400000000000L) != 0)
-                    {
+                        _currentBits ^= 0x200000000000L;
+                        break;
+                    case 46: // Header: "Warning"
+                        Debug.Assert((_currentBits & 0x400000000000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Warning, _collection._headers._Warning);
-                        _next = 47;
+                        _currentBits ^= 0x400000000000L;
+                        break;
+                    case 47: // Header: "Content-Length"
+                        Debug.Assert(_currentBits == 0);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.ContentLength, HeaderUtilities.FormatNonNegativeInt64(_collection._contentLength.GetValueOrDefault()));
+                        _next = -1;
                         return true;
-                    }
-                HeaderContentLength: // case 47
-                    if (_collection._contentLength.HasValue)
-                    {
-                        _current = new KeyValuePair<string, StringValues>(HeaderNames.ContentLength, HeaderUtilities.FormatNonNegativeInt64(_collection._contentLength.Value));
-                        _next = 48;
+                    default:
+                        if (!_hasUnknown || !_unknownEnumerator.MoveNext())
+                        {
+                            _current = default(KeyValuePair<string, StringValues>);
+                            return false;
+                        }
+                        _current = _unknownEnumerator.Current;
                         return true;
-                    }
-                ExtraHeaders:
-                    if (!_hasUnknown || !_unknownEnumerator.MoveNext())
-                    {
-                        _current = default(KeyValuePair<string, StringValues>);
-                        return false;
-                    }
-                    _current = _unknownEnumerator.Current;
+                }
+
+                if (_currentBits != 0)
+                {
+                    _next = BitOperations.TrailingZeroCount(_currentBits);
                     return true;
+                }
+                else
+                {
+                    _next = _collection._contentLength.HasValue ? 47 : -1;
+                    return true;
+                }
             }
         }
     }
@@ -8202,7 +8474,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             set
             {
-                _bits |= 0x1L;
+                if (!StringValues.IsNullOrEmpty(value))
+                {
+                    _bits |= 0x1L;
+                }
+                else
+                {
+                    _bits &= ~0x1L;
+                }
                 _headers._Connection = value; 
                 _headers._rawConnection = null;
             }
@@ -8220,7 +8499,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             set
             {
-                _bits |= 0x1000L;
+                if (!StringValues.IsNullOrEmpty(value))
+                {
+                    _bits |= 0x1000L;
+                }
+                else
+                {
+                    _bits &= ~0x1000L;
+                }
                 _headers._Allow = value; 
             }
         }
@@ -8237,7 +8523,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             set
             {
-                _bits |= 0x2000L;
+                if (!StringValues.IsNullOrEmpty(value))
+                {
+                    _bits |= 0x2000L;
+                }
+                else
+                {
+                    _bits &= ~0x2000L;
+                }
                 _headers._AltSvc = value; 
                 _headers._rawAltSvc = null;
             }
@@ -8255,7 +8548,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             set
             {
-                _bits |= 0x100000000L;
+                if (!StringValues.IsNullOrEmpty(value))
+                {
+                    _bits |= 0x100000000L;
+                }
+                else
+                {
+                    _bits &= ~0x100000000L;
+                }
                 _headers._TransferEncoding = value; 
                 _headers._rawTransferEncoding = null;
             }
@@ -8273,7 +8573,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             set
             {
-                _contentLength = ParseContentLength(value);
+                _contentLength = ParseContentLength(value.ToString());
             }
         }
         
@@ -12296,7 +12596,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         if (!_contentLength.HasValue)
                         {
-                            _contentLength = ParseContentLength(value);
+                            _contentLength = ParseContentLength(value.ToString());
                             return true;
                         }
                         return false;
@@ -12306,7 +12606,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         if (!_contentLength.HasValue)
                         {
-                            _contentLength = ParseContentLength(value);
+                            _contentLength = ParseContentLength(value.ToString());
                             return true;
                         }
                         return false;
@@ -14716,410 +15016,262 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 switch (_next)
                 {
-                    case 0:
-                        goto HeaderConnection;
-                    case 1:
-                        goto HeaderContentType;
-                    case 2:
-                        goto HeaderDate;
-                    case 3:
-                        goto HeaderServer;
-                    case 4:
-                        goto HeaderAcceptRanges;
-                    case 5:
-                        goto HeaderAccessControlAllowCredentials;
-                    case 6:
-                        goto HeaderAccessControlAllowHeaders;
-                    case 7:
-                        goto HeaderAccessControlAllowMethods;
-                    case 8:
-                        goto HeaderAccessControlAllowOrigin;
-                    case 9:
-                        goto HeaderAccessControlExposeHeaders;
-                    case 10:
-                        goto HeaderAccessControlMaxAge;
-                    case 11:
-                        goto HeaderAge;
-                    case 12:
-                        goto HeaderAllow;
-                    case 13:
-                        goto HeaderAltSvc;
-                    case 14:
-                        goto HeaderCacheControl;
-                    case 15:
-                        goto HeaderContentEncoding;
-                    case 16:
-                        goto HeaderContentLanguage;
-                    case 17:
-                        goto HeaderContentLocation;
-                    case 18:
-                        goto HeaderContentMD5;
-                    case 19:
-                        goto HeaderContentRange;
-                    case 20:
-                        goto HeaderETag;
-                    case 21:
-                        goto HeaderExpires;
-                    case 22:
-                        goto HeaderGrpcEncoding;
-                    case 23:
-                        goto HeaderKeepAlive;
-                    case 24:
-                        goto HeaderLastModified;
-                    case 25:
-                        goto HeaderLocation;
-                    case 26:
-                        goto HeaderPragma;
-                    case 27:
-                        goto HeaderProxyAuthenticate;
-                    case 28:
-                        goto HeaderProxyConnection;
-                    case 29:
-                        goto HeaderRetryAfter;
-                    case 30:
-                        goto HeaderSetCookie;
-                    case 31:
-                        goto HeaderTrailer;
-                    case 32:
-                        goto HeaderTransferEncoding;
-                    case 33:
-                        goto HeaderUpgrade;
-                    case 34:
-                        goto HeaderVary;
-                    case 35:
-                        goto HeaderVia;
-                    case 36:
-                        goto HeaderWarning;
-                    case 37:
-                        goto HeaderWWWAuthenticate;
-                    case 38:
-                        goto HeaderContentLength;
-                    default:
-                        goto ExtraHeaders;
-                }
-                
-                HeaderConnection: // case 0
-                    if ((_bits & 0x1L) != 0)
-                    {
+                    case 0: // Header: "Connection"
+                        Debug.Assert((_currentBits & 0x1L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Connection, _collection._headers._Connection);
                         _currentKnownType = KnownHeaderType.Connection;
-                        _next = 1;
-                        return true;
-                    }
-                HeaderContentType: // case 1
-                    if ((_bits & 0x2L) != 0)
-                    {
+                        _currentBits ^= 0x1L;
+                        break;
+                    case 1: // Header: "Content-Type"
+                        Debug.Assert((_currentBits & 0x2L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.ContentType, _collection._headers._ContentType);
                         _currentKnownType = KnownHeaderType.ContentType;
-                        _next = 2;
-                        return true;
-                    }
-                HeaderDate: // case 2
-                    if ((_bits & 0x4L) != 0)
-                    {
+                        _currentBits ^= 0x2L;
+                        break;
+                    case 2: // Header: "Date"
+                        Debug.Assert((_currentBits & 0x4L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Date, _collection._headers._Date);
                         _currentKnownType = KnownHeaderType.Date;
-                        _next = 3;
-                        return true;
-                    }
-                HeaderServer: // case 3
-                    if ((_bits & 0x8L) != 0)
-                    {
+                        _currentBits ^= 0x4L;
+                        break;
+                    case 3: // Header: "Server"
+                        Debug.Assert((_currentBits & 0x8L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Server, _collection._headers._Server);
                         _currentKnownType = KnownHeaderType.Server;
-                        _next = 4;
-                        return true;
-                    }
-                HeaderAcceptRanges: // case 4
-                    if ((_bits & 0x10L) != 0)
-                    {
+                        _currentBits ^= 0x8L;
+                        break;
+                    case 4: // Header: "Accept-Ranges"
+                        Debug.Assert((_currentBits & 0x10L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.AcceptRanges, _collection._headers._AcceptRanges);
                         _currentKnownType = KnownHeaderType.AcceptRanges;
-                        _next = 5;
-                        return true;
-                    }
-                HeaderAccessControlAllowCredentials: // case 5
-                    if ((_bits & 0x20L) != 0)
-                    {
+                        _currentBits ^= 0x10L;
+                        break;
+                    case 5: // Header: "Access-Control-Allow-Credentials"
+                        Debug.Assert((_currentBits & 0x20L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.AccessControlAllowCredentials, _collection._headers._AccessControlAllowCredentials);
                         _currentKnownType = KnownHeaderType.AccessControlAllowCredentials;
-                        _next = 6;
-                        return true;
-                    }
-                HeaderAccessControlAllowHeaders: // case 6
-                    if ((_bits & 0x40L) != 0)
-                    {
+                        _currentBits ^= 0x20L;
+                        break;
+                    case 6: // Header: "Access-Control-Allow-Headers"
+                        Debug.Assert((_currentBits & 0x40L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.AccessControlAllowHeaders, _collection._headers._AccessControlAllowHeaders);
                         _currentKnownType = KnownHeaderType.AccessControlAllowHeaders;
-                        _next = 7;
-                        return true;
-                    }
-                HeaderAccessControlAllowMethods: // case 7
-                    if ((_bits & 0x80L) != 0)
-                    {
+                        _currentBits ^= 0x40L;
+                        break;
+                    case 7: // Header: "Access-Control-Allow-Methods"
+                        Debug.Assert((_currentBits & 0x80L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.AccessControlAllowMethods, _collection._headers._AccessControlAllowMethods);
                         _currentKnownType = KnownHeaderType.AccessControlAllowMethods;
-                        _next = 8;
-                        return true;
-                    }
-                HeaderAccessControlAllowOrigin: // case 8
-                    if ((_bits & 0x100L) != 0)
-                    {
+                        _currentBits ^= 0x80L;
+                        break;
+                    case 8: // Header: "Access-Control-Allow-Origin"
+                        Debug.Assert((_currentBits & 0x100L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.AccessControlAllowOrigin, _collection._headers._AccessControlAllowOrigin);
                         _currentKnownType = KnownHeaderType.AccessControlAllowOrigin;
-                        _next = 9;
-                        return true;
-                    }
-                HeaderAccessControlExposeHeaders: // case 9
-                    if ((_bits & 0x200L) != 0)
-                    {
+                        _currentBits ^= 0x100L;
+                        break;
+                    case 9: // Header: "Access-Control-Expose-Headers"
+                        Debug.Assert((_currentBits & 0x200L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.AccessControlExposeHeaders, _collection._headers._AccessControlExposeHeaders);
                         _currentKnownType = KnownHeaderType.AccessControlExposeHeaders;
-                        _next = 10;
-                        return true;
-                    }
-                HeaderAccessControlMaxAge: // case 10
-                    if ((_bits & 0x400L) != 0)
-                    {
+                        _currentBits ^= 0x200L;
+                        break;
+                    case 10: // Header: "Access-Control-Max-Age"
+                        Debug.Assert((_currentBits & 0x400L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.AccessControlMaxAge, _collection._headers._AccessControlMaxAge);
                         _currentKnownType = KnownHeaderType.AccessControlMaxAge;
-                        _next = 11;
-                        return true;
-                    }
-                HeaderAge: // case 11
-                    if ((_bits & 0x800L) != 0)
-                    {
+                        _currentBits ^= 0x400L;
+                        break;
+                    case 11: // Header: "Age"
+                        Debug.Assert((_currentBits & 0x800L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Age, _collection._headers._Age);
                         _currentKnownType = KnownHeaderType.Age;
-                        _next = 12;
-                        return true;
-                    }
-                HeaderAllow: // case 12
-                    if ((_bits & 0x1000L) != 0)
-                    {
+                        _currentBits ^= 0x800L;
+                        break;
+                    case 12: // Header: "Allow"
+                        Debug.Assert((_currentBits & 0x1000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Allow, _collection._headers._Allow);
                         _currentKnownType = KnownHeaderType.Allow;
-                        _next = 13;
-                        return true;
-                    }
-                HeaderAltSvc: // case 13
-                    if ((_bits & 0x2000L) != 0)
-                    {
+                        _currentBits ^= 0x1000L;
+                        break;
+                    case 13: // Header: "Alt-Svc"
+                        Debug.Assert((_currentBits & 0x2000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.AltSvc, _collection._headers._AltSvc);
                         _currentKnownType = KnownHeaderType.AltSvc;
-                        _next = 14;
-                        return true;
-                    }
-                HeaderCacheControl: // case 14
-                    if ((_bits & 0x4000L) != 0)
-                    {
+                        _currentBits ^= 0x2000L;
+                        break;
+                    case 14: // Header: "Cache-Control"
+                        Debug.Assert((_currentBits & 0x4000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.CacheControl, _collection._headers._CacheControl);
                         _currentKnownType = KnownHeaderType.CacheControl;
-                        _next = 15;
-                        return true;
-                    }
-                HeaderContentEncoding: // case 15
-                    if ((_bits & 0x8000L) != 0)
-                    {
+                        _currentBits ^= 0x4000L;
+                        break;
+                    case 15: // Header: "Content-Encoding"
+                        Debug.Assert((_currentBits & 0x8000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.ContentEncoding, _collection._headers._ContentEncoding);
                         _currentKnownType = KnownHeaderType.ContentEncoding;
-                        _next = 16;
-                        return true;
-                    }
-                HeaderContentLanguage: // case 16
-                    if ((_bits & 0x10000L) != 0)
-                    {
+                        _currentBits ^= 0x8000L;
+                        break;
+                    case 16: // Header: "Content-Language"
+                        Debug.Assert((_currentBits & 0x10000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.ContentLanguage, _collection._headers._ContentLanguage);
                         _currentKnownType = KnownHeaderType.ContentLanguage;
-                        _next = 17;
-                        return true;
-                    }
-                HeaderContentLocation: // case 17
-                    if ((_bits & 0x20000L) != 0)
-                    {
+                        _currentBits ^= 0x10000L;
+                        break;
+                    case 17: // Header: "Content-Location"
+                        Debug.Assert((_currentBits & 0x20000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.ContentLocation, _collection._headers._ContentLocation);
                         _currentKnownType = KnownHeaderType.ContentLocation;
-                        _next = 18;
-                        return true;
-                    }
-                HeaderContentMD5: // case 18
-                    if ((_bits & 0x40000L) != 0)
-                    {
+                        _currentBits ^= 0x20000L;
+                        break;
+                    case 18: // Header: "Content-MD5"
+                        Debug.Assert((_currentBits & 0x40000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.ContentMD5, _collection._headers._ContentMD5);
                         _currentKnownType = KnownHeaderType.ContentMD5;
-                        _next = 19;
-                        return true;
-                    }
-                HeaderContentRange: // case 19
-                    if ((_bits & 0x80000L) != 0)
-                    {
+                        _currentBits ^= 0x40000L;
+                        break;
+                    case 19: // Header: "Content-Range"
+                        Debug.Assert((_currentBits & 0x80000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.ContentRange, _collection._headers._ContentRange);
                         _currentKnownType = KnownHeaderType.ContentRange;
-                        _next = 20;
-                        return true;
-                    }
-                HeaderETag: // case 20
-                    if ((_bits & 0x100000L) != 0)
-                    {
+                        _currentBits ^= 0x80000L;
+                        break;
+                    case 20: // Header: "ETag"
+                        Debug.Assert((_currentBits & 0x100000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.ETag, _collection._headers._ETag);
                         _currentKnownType = KnownHeaderType.ETag;
-                        _next = 21;
-                        return true;
-                    }
-                HeaderExpires: // case 21
-                    if ((_bits & 0x200000L) != 0)
-                    {
+                        _currentBits ^= 0x100000L;
+                        break;
+                    case 21: // Header: "Expires"
+                        Debug.Assert((_currentBits & 0x200000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Expires, _collection._headers._Expires);
                         _currentKnownType = KnownHeaderType.Expires;
-                        _next = 22;
-                        return true;
-                    }
-                HeaderGrpcEncoding: // case 22
-                    if ((_bits & 0x400000L) != 0)
-                    {
+                        _currentBits ^= 0x200000L;
+                        break;
+                    case 22: // Header: "Grpc-Encoding"
+                        Debug.Assert((_currentBits & 0x400000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.GrpcEncoding, _collection._headers._GrpcEncoding);
                         _currentKnownType = KnownHeaderType.GrpcEncoding;
-                        _next = 23;
-                        return true;
-                    }
-                HeaderKeepAlive: // case 23
-                    if ((_bits & 0x800000L) != 0)
-                    {
+                        _currentBits ^= 0x400000L;
+                        break;
+                    case 23: // Header: "Keep-Alive"
+                        Debug.Assert((_currentBits & 0x800000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.KeepAlive, _collection._headers._KeepAlive);
                         _currentKnownType = KnownHeaderType.KeepAlive;
-                        _next = 24;
-                        return true;
-                    }
-                HeaderLastModified: // case 24
-                    if ((_bits & 0x1000000L) != 0)
-                    {
+                        _currentBits ^= 0x800000L;
+                        break;
+                    case 24: // Header: "Last-Modified"
+                        Debug.Assert((_currentBits & 0x1000000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.LastModified, _collection._headers._LastModified);
                         _currentKnownType = KnownHeaderType.LastModified;
-                        _next = 25;
-                        return true;
-                    }
-                HeaderLocation: // case 25
-                    if ((_bits & 0x2000000L) != 0)
-                    {
+                        _currentBits ^= 0x1000000L;
+                        break;
+                    case 25: // Header: "Location"
+                        Debug.Assert((_currentBits & 0x2000000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Location, _collection._headers._Location);
                         _currentKnownType = KnownHeaderType.Location;
-                        _next = 26;
-                        return true;
-                    }
-                HeaderPragma: // case 26
-                    if ((_bits & 0x4000000L) != 0)
-                    {
+                        _currentBits ^= 0x2000000L;
+                        break;
+                    case 26: // Header: "Pragma"
+                        Debug.Assert((_currentBits & 0x4000000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Pragma, _collection._headers._Pragma);
                         _currentKnownType = KnownHeaderType.Pragma;
-                        _next = 27;
-                        return true;
-                    }
-                HeaderProxyAuthenticate: // case 27
-                    if ((_bits & 0x8000000L) != 0)
-                    {
+                        _currentBits ^= 0x4000000L;
+                        break;
+                    case 27: // Header: "Proxy-Authenticate"
+                        Debug.Assert((_currentBits & 0x8000000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.ProxyAuthenticate, _collection._headers._ProxyAuthenticate);
                         _currentKnownType = KnownHeaderType.ProxyAuthenticate;
-                        _next = 28;
-                        return true;
-                    }
-                HeaderProxyConnection: // case 28
-                    if ((_bits & 0x10000000L) != 0)
-                    {
+                        _currentBits ^= 0x8000000L;
+                        break;
+                    case 28: // Header: "Proxy-Connection"
+                        Debug.Assert((_currentBits & 0x10000000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.ProxyConnection, _collection._headers._ProxyConnection);
                         _currentKnownType = KnownHeaderType.ProxyConnection;
-                        _next = 29;
-                        return true;
-                    }
-                HeaderRetryAfter: // case 29
-                    if ((_bits & 0x20000000L) != 0)
-                    {
+                        _currentBits ^= 0x10000000L;
+                        break;
+                    case 29: // Header: "Retry-After"
+                        Debug.Assert((_currentBits & 0x20000000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.RetryAfter, _collection._headers._RetryAfter);
                         _currentKnownType = KnownHeaderType.RetryAfter;
-                        _next = 30;
-                        return true;
-                    }
-                HeaderSetCookie: // case 30
-                    if ((_bits & 0x40000000L) != 0)
-                    {
+                        _currentBits ^= 0x20000000L;
+                        break;
+                    case 30: // Header: "Set-Cookie"
+                        Debug.Assert((_currentBits & 0x40000000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.SetCookie, _collection._headers._SetCookie);
                         _currentKnownType = KnownHeaderType.SetCookie;
-                        _next = 31;
-                        return true;
-                    }
-                HeaderTrailer: // case 31
-                    if ((_bits & 0x80000000L) != 0)
-                    {
+                        _currentBits ^= 0x40000000L;
+                        break;
+                    case 31: // Header: "Trailer"
+                        Debug.Assert((_currentBits & 0x80000000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Trailer, _collection._headers._Trailer);
                         _currentKnownType = KnownHeaderType.Trailer;
-                        _next = 32;
-                        return true;
-                    }
-                HeaderTransferEncoding: // case 32
-                    if ((_bits & 0x100000000L) != 0)
-                    {
+                        _currentBits ^= 0x80000000L;
+                        break;
+                    case 32: // Header: "Transfer-Encoding"
+                        Debug.Assert((_currentBits & 0x100000000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.TransferEncoding, _collection._headers._TransferEncoding);
                         _currentKnownType = KnownHeaderType.TransferEncoding;
-                        _next = 33;
-                        return true;
-                    }
-                HeaderUpgrade: // case 33
-                    if ((_bits & 0x200000000L) != 0)
-                    {
+                        _currentBits ^= 0x100000000L;
+                        break;
+                    case 33: // Header: "Upgrade"
+                        Debug.Assert((_currentBits & 0x200000000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Upgrade, _collection._headers._Upgrade);
                         _currentKnownType = KnownHeaderType.Upgrade;
-                        _next = 34;
-                        return true;
-                    }
-                HeaderVary: // case 34
-                    if ((_bits & 0x400000000L) != 0)
-                    {
+                        _currentBits ^= 0x200000000L;
+                        break;
+                    case 34: // Header: "Vary"
+                        Debug.Assert((_currentBits & 0x400000000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Vary, _collection._headers._Vary);
                         _currentKnownType = KnownHeaderType.Vary;
-                        _next = 35;
-                        return true;
-                    }
-                HeaderVia: // case 35
-                    if ((_bits & 0x800000000L) != 0)
-                    {
+                        _currentBits ^= 0x400000000L;
+                        break;
+                    case 35: // Header: "Via"
+                        Debug.Assert((_currentBits & 0x800000000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Via, _collection._headers._Via);
                         _currentKnownType = KnownHeaderType.Via;
-                        _next = 36;
-                        return true;
-                    }
-                HeaderWarning: // case 36
-                    if ((_bits & 0x1000000000L) != 0)
-                    {
+                        _currentBits ^= 0x800000000L;
+                        break;
+                    case 36: // Header: "Warning"
+                        Debug.Assert((_currentBits & 0x1000000000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.Warning, _collection._headers._Warning);
                         _currentKnownType = KnownHeaderType.Warning;
-                        _next = 37;
-                        return true;
-                    }
-                HeaderWWWAuthenticate: // case 37
-                    if ((_bits & 0x2000000000L) != 0)
-                    {
+                        _currentBits ^= 0x1000000000L;
+                        break;
+                    case 37: // Header: "WWW-Authenticate"
+                        Debug.Assert((_currentBits & 0x2000000000L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.WWWAuthenticate, _collection._headers._WWWAuthenticate);
                         _currentKnownType = KnownHeaderType.WWWAuthenticate;
-                        _next = 38;
-                        return true;
-                    }
-                HeaderContentLength: // case 38
-                    if (_collection._contentLength.HasValue)
-                    {
-                        _current = new KeyValuePair<string, StringValues>(HeaderNames.ContentLength, HeaderUtilities.FormatNonNegativeInt64(_collection._contentLength.Value));
+                        _currentBits ^= 0x2000000000L;
+                        break;
+                    case 38: // Header: "Content-Length"
+                        Debug.Assert(_currentBits == 0);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.ContentLength, HeaderUtilities.FormatNonNegativeInt64(_collection._contentLength.GetValueOrDefault()));
                         _currentKnownType = KnownHeaderType.ContentLength;
-                        _next = 39;
+                        _next = -1;
                         return true;
-                    }
-                ExtraHeaders:
-                    if (!_hasUnknown || !_unknownEnumerator.MoveNext())
-                    {
-                        _current = default(KeyValuePair<string, StringValues>);
-                        _currentKnownType = default;
-                        return false;
-                    }
-                    _current = _unknownEnumerator.Current;
-                    _currentKnownType = KnownHeaderType.Unknown;
+                    default:
+                        if (!_hasUnknown || !_unknownEnumerator.MoveNext())
+                        {
+                            _current = default(KeyValuePair<string, StringValues>);
+                            _currentKnownType = default;
+                            return false;
+                        }
+                        _current = _unknownEnumerator.Current;
+                        _currentKnownType = KnownHeaderType.Unknown;
+                        return true;
+                }
+
+                if (_currentBits != 0)
+                {
+                    _next = BitOperations.TrailingZeroCount(_currentBits);
                     return true;
+                }
+                else
+                {
+                    _next = _collection._contentLength.HasValue ? 38 : -1;
+                    return true;
+                }
             }
         }
     }
@@ -17193,52 +17345,47 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 switch (_next)
                 {
-                    case 0:
-                        goto HeaderETag;
-                    case 1:
-                        goto HeaderGrpcMessage;
-                    case 2:
-                        goto HeaderGrpcStatus;
-                    
-                    default:
-                        goto ExtraHeaders;
-                }
-                
-                HeaderETag: // case 0
-                    if ((_bits & 0x1L) != 0)
-                    {
+                    case 0: // Header: "ETag"
+                        Debug.Assert((_currentBits & 0x1L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.ETag, _collection._headers._ETag);
                         _currentKnownType = KnownHeaderType.ETag;
-                        _next = 1;
-                        return true;
-                    }
-                HeaderGrpcMessage: // case 1
-                    if ((_bits & 0x2L) != 0)
-                    {
+                        _currentBits ^= 0x1L;
+                        break;
+                    case 1: // Header: "Grpc-Message"
+                        Debug.Assert((_currentBits & 0x2L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.GrpcMessage, _collection._headers._GrpcMessage);
                         _currentKnownType = KnownHeaderType.GrpcMessage;
-                        _next = 2;
-                        return true;
-                    }
-                HeaderGrpcStatus: // case 2
-                    if ((_bits & 0x4L) != 0)
-                    {
+                        _currentBits ^= 0x2L;
+                        break;
+                    case 2: // Header: "Grpc-Status"
+                        Debug.Assert((_currentBits & 0x4L) != 0);
                         _current = new KeyValuePair<string, StringValues>(HeaderNames.GrpcStatus, _collection._headers._GrpcStatus);
                         _currentKnownType = KnownHeaderType.GrpcStatus;
-                        _next = 3;
+                        _currentBits ^= 0x4L;
+                        break;
+                    
+                    default:
+                        if (!_hasUnknown || !_unknownEnumerator.MoveNext())
+                        {
+                            _current = default(KeyValuePair<string, StringValues>);
+                            _currentKnownType = default;
+                            return false;
+                        }
+                        _current = _unknownEnumerator.Current;
+                        _currentKnownType = KnownHeaderType.Unknown;
                         return true;
-                    }
-                
-                ExtraHeaders:
-                    if (!_hasUnknown || !_unknownEnumerator.MoveNext())
-                    {
-                        _current = default(KeyValuePair<string, StringValues>);
-                        _currentKnownType = default;
-                        return false;
-                    }
-                    _current = _unknownEnumerator.Current;
-                    _currentKnownType = KnownHeaderType.Unknown;
+                }
+
+                if (_currentBits != 0)
+                {
+                    _next = BitOperations.TrailingZeroCount(_currentBits);
                     return true;
+                }
+                else
+                {
+                    _next = -1;
+                    return true;
+                }
             }
         }
     }

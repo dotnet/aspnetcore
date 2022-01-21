@@ -1,137 +1,134 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
-namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
+namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
+
+/// <summary>
+/// <see cref="IPageActivatorProvider"/> that uses type activation to create Pages.
+/// </summary>
+internal class DefaultPageActivatorProvider : IPageActivatorProvider
 {
-    /// <summary>
-    /// <see cref="IPageActivatorProvider"/> that uses type activation to create Pages.
-    /// </summary>
-    internal class DefaultPageActivatorProvider : IPageActivatorProvider
+    private readonly Action<PageContext, ViewContext, object> _disposer = Dispose;
+    private readonly Func<PageContext, ViewContext, object, ValueTask> _asyncDisposer = AsyncDispose;
+    private readonly Func<PageContext, ViewContext, object, ValueTask> _syncAsyncDisposer = SyncAsyncDispose;
+
+    /// <inheritdoc />
+    public Func<PageContext, ViewContext, object> CreateActivator(CompiledPageActionDescriptor actionDescriptor)
     {
-        private readonly Action<PageContext, ViewContext, object> _disposer = Dispose;
-        private readonly Func<PageContext, ViewContext, object, ValueTask> _asyncDisposer = AsyncDispose;
-        private readonly Func<PageContext, ViewContext, object, ValueTask> _syncAsyncDisposer = SyncAsyncDispose;
-
-        /// <inheritdoc />
-        public Func<PageContext, ViewContext, object> CreateActivator(CompiledPageActionDescriptor actionDescriptor)
+        if (actionDescriptor == null)
         {
-            if (actionDescriptor == null)
-            {
-                throw new ArgumentNullException(nameof(actionDescriptor));
-            }
-
-            var pageTypeInfo = actionDescriptor.PageTypeInfo?.AsType();
-            if (pageTypeInfo == null)
-            {
-                throw new ArgumentException(Resources.FormatPropertyOfTypeCannotBeNull(
-                    nameof(actionDescriptor.PageTypeInfo),
-                    nameof(actionDescriptor)),
-                    nameof(actionDescriptor));
-            }
-
-            return CreatePageFactory(pageTypeInfo);
+            throw new ArgumentNullException(nameof(actionDescriptor));
         }
 
-        public Action<PageContext, ViewContext, object>? CreateReleaser(CompiledPageActionDescriptor actionDescriptor)
+        var pageTypeInfo = actionDescriptor.PageTypeInfo?.AsType();
+        if (pageTypeInfo == null)
         {
-            if (actionDescriptor == null)
-            {
-                throw new ArgumentNullException(nameof(actionDescriptor));
-            }
-
-            if (typeof(IDisposable).GetTypeInfo().IsAssignableFrom(actionDescriptor.PageTypeInfo))
-            {
-                return _disposer;
-            }
-
-            return null;
+            throw new ArgumentException(Resources.FormatPropertyOfTypeCannotBeNull(
+                nameof(actionDescriptor.PageTypeInfo),
+                nameof(actionDescriptor)),
+                nameof(actionDescriptor));
         }
 
-        public Func<PageContext, ViewContext, object, ValueTask>? CreateAsyncReleaser(CompiledPageActionDescriptor actionDescriptor)
+        return CreatePageFactory(pageTypeInfo);
+    }
+
+    public Action<PageContext, ViewContext, object>? CreateReleaser(CompiledPageActionDescriptor actionDescriptor)
+    {
+        if (actionDescriptor == null)
         {
-            if (actionDescriptor == null)
-            {
-                throw new ArgumentNullException(nameof(actionDescriptor));
-            }
-
-            if (typeof(IAsyncDisposable).GetTypeInfo().IsAssignableFrom(actionDescriptor.PageTypeInfo))
-            {
-                return _asyncDisposer;
-            }
-
-            if (typeof(IDisposable).GetTypeInfo().IsAssignableFrom(actionDescriptor.PageTypeInfo))
-            {
-                return _syncAsyncDisposer;
-            }
-
-            return null;
+            throw new ArgumentNullException(nameof(actionDescriptor));
         }
 
-        private static Func<PageContext, ViewContext, object> CreatePageFactory(Type pageTypeInfo)
+        if (typeof(IDisposable).GetTypeInfo().IsAssignableFrom(actionDescriptor.PageTypeInfo))
         {
-            var parameter1 = Expression.Parameter(typeof(PageContext), "pageContext");
-            var parameter2 = Expression.Parameter(typeof(ViewContext), "viewContext");
-
-            // new Page();
-            var newExpression = Expression.New(pageTypeInfo);
-
-            // () => new Page();
-            var pageFactory = Expression
-                .Lambda<Func<PageContext, ViewContext, object>>(newExpression, parameter1, parameter2)
-                .Compile();
-            return pageFactory;
+            return _disposer;
         }
 
-        private static void Dispose(PageContext context, ViewContext viewContext, object page)
+        return null;
+    }
+
+    public Func<PageContext, ViewContext, object, ValueTask>? CreateAsyncReleaser(CompiledPageActionDescriptor actionDescriptor)
+    {
+        if (actionDescriptor == null)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            if (viewContext == null)
-            {
-                throw new ArgumentNullException(nameof(viewContext));
-            }
-
-            if (page == null)
-            {
-                throw new ArgumentNullException(nameof(page));
-            }
-
-            ((IDisposable)page).Dispose();
+            throw new ArgumentNullException(nameof(actionDescriptor));
         }
 
-        private static ValueTask SyncAsyncDispose(PageContext context, ViewContext viewContext, object page)
+        if (typeof(IAsyncDisposable).GetTypeInfo().IsAssignableFrom(actionDescriptor.PageTypeInfo))
         {
-            Dispose(context, viewContext, page);
-            return default;
+            return _asyncDisposer;
         }
 
-        private static ValueTask AsyncDispose(PageContext context, ViewContext viewContext, object page)
+        if (typeof(IDisposable).GetTypeInfo().IsAssignableFrom(actionDescriptor.PageTypeInfo))
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            if (viewContext == null)
-            {
-                throw new ArgumentNullException(nameof(viewContext));
-            }
-
-            if (page == null)
-            {
-                throw new ArgumentNullException(nameof(page));
-            }
-
-            return ((IAsyncDisposable)page).DisposeAsync();
+            return _syncAsyncDisposer;
         }
+
+        return null;
+    }
+
+    private static Func<PageContext, ViewContext, object> CreatePageFactory(Type pageTypeInfo)
+    {
+        var parameter1 = Expression.Parameter(typeof(PageContext), "pageContext");
+        var parameter2 = Expression.Parameter(typeof(ViewContext), "viewContext");
+
+        // new Page();
+        var newExpression = Expression.New(pageTypeInfo);
+
+        // () => new Page();
+        var pageFactory = Expression
+            .Lambda<Func<PageContext, ViewContext, object>>(newExpression, parameter1, parameter2)
+            .Compile();
+        return pageFactory;
+    }
+
+    private static void Dispose(PageContext context, ViewContext viewContext, object page)
+    {
+        if (context == null)
+        {
+            throw new ArgumentNullException(nameof(context));
+        }
+
+        if (viewContext == null)
+        {
+            throw new ArgumentNullException(nameof(viewContext));
+        }
+
+        if (page == null)
+        {
+            throw new ArgumentNullException(nameof(page));
+        }
+
+        ((IDisposable)page).Dispose();
+    }
+
+    private static ValueTask SyncAsyncDispose(PageContext context, ViewContext viewContext, object page)
+    {
+        Dispose(context, viewContext, page);
+        return default;
+    }
+
+    private static ValueTask AsyncDispose(PageContext context, ViewContext viewContext, object page)
+    {
+        if (context == null)
+        {
+            throw new ArgumentNullException(nameof(context));
+        }
+
+        if (viewContext == null)
+        {
+            throw new ArgumentNullException(nameof(viewContext));
+        }
+
+        if (page == null)
+        {
+            throw new ArgumentNullException(nameof(page));
+        }
+
+        return ((IAsyncDisposable)page).DisposeAsync();
     }
 }

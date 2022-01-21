@@ -16,673 +16,779 @@ using Xunit;
 
 #nullable enable
 
-namespace Microsoft.Extensions.Diagnostics.HealthChecks
+namespace Microsoft.Extensions.Diagnostics.HealthChecks;
+
+public class DefaultHealthCheckServiceTest
 {
-    public class DefaultHealthCheckServiceTest
+    [Fact]
+    public void Constructor_ThrowsUsefulExceptionForDuplicateNames()
     {
-        [Fact]
-        public void Constructor_ThrowsUsefulExceptionForDuplicateNames()
-        {
-            // Arrange
-            //
-            // Doing this the old fashioned way so we can verify that the exception comes
-            // from the constructor.
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddLogging();
-            serviceCollection.AddOptions();
-            serviceCollection.AddHealthChecks()
-                .AddCheck("Foo", new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy())))
-                .AddCheck("Foo", new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy())))
-                .AddCheck("Bar", new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy())))
-                .AddCheck("Baz", new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy())))
-                .AddCheck("Baz", new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy())));
+        // Arrange
+        //
+        // Doing this the old fashioned way so we can verify that the exception comes
+        // from the constructor.
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddLogging();
+        serviceCollection.AddOptions();
+        serviceCollection.AddHealthChecks()
+            .AddCheck("Foo", new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy())))
+            .AddCheck("Foo", new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy())))
+            .AddCheck("Bar", new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy())))
+            .AddCheck("Baz", new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy())))
+            .AddCheck("Baz", new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy())));
 
-            var services = serviceCollection.BuildServiceProvider();
+        var services = serviceCollection.BuildServiceProvider();
 
-            var scopeFactory = services.GetRequiredService<IServiceScopeFactory>();
-            var options = services.GetRequiredService<IOptions<HealthCheckServiceOptions>>();
-            var logger = services.GetRequiredService<ILogger<DefaultHealthCheckService>>();
+        var scopeFactory = services.GetRequiredService<IServiceScopeFactory>();
+        var options = services.GetRequiredService<IOptions<HealthCheckServiceOptions>>();
+        var logger = services.GetRequiredService<ILogger<DefaultHealthCheckService>>();
 
-            // Act
-            var exception = Assert.Throws<ArgumentException>(() => new DefaultHealthCheckService(scopeFactory, options, logger));
+        // Act
+        var exception = Assert.Throws<ArgumentException>(() => new DefaultHealthCheckService(scopeFactory, options, logger));
 
-            // Assert
-            Assert.StartsWith($"Duplicate health checks were registered with the name(s): Foo, Baz", exception.Message);
-        }
+        // Assert
+        Assert.StartsWith($"Duplicate health checks were registered with the name(s): Foo, Baz", exception.Message);
+    }
 
-        [Fact]
-        public async Task CheckAsync_RunsAllChecksAndAggregatesResultsAsync()
-        {
-            const string DataKey = "Foo";
-            const string DataValue = "Bar";
-            const string DegradedMessage = "I'm not feeling so good";
-            const string UnhealthyMessage = "Halp!";
-            const string HealthyMessage = "Everything is A-OK";
-            var exception = new Exception("Things are pretty bad!");
-            var healthyCheckTags = new List<string> { "healthy-check-tag" };
-            var degradedCheckTags = new List<string> { "degraded-check-tag" };
-            var unhealthyCheckTags = new List<string> { "unhealthy-check-tag" };
+    [Fact]
+    public async Task CheckAsync_RunsAllChecksAndAggregatesResultsAsync()
+    {
+        const string DataKey = "Foo";
+        const string DataValue = "Bar";
+        const string DegradedMessage = "I'm not feeling so good";
+        const string UnhealthyMessage = "Halp!";
+        const string HealthyMessage = "Everything is A-OK";
+        var exception = new Exception("Things are pretty bad!");
+        var healthyCheckTags = new List<string> { "healthy-check-tag" };
+        var degradedCheckTags = new List<string> { "degraded-check-tag" };
+        var unhealthyCheckTags = new List<string> { "unhealthy-check-tag" };
 
-            // Arrange
-            var data = new Dictionary<string, object>()
+        // Arrange
+        var data = new Dictionary<string, object>()
             {
                 { DataKey, DataValue }
             };
 
-            var service = CreateHealthChecksService(b =>
-            {
-                b.AddAsyncCheck("HealthyCheck", _ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data)), healthyCheckTags);
-                b.AddAsyncCheck("DegradedCheck", _ => Task.FromResult(HealthCheckResult.Degraded(DegradedMessage)), degradedCheckTags);
-                b.AddAsyncCheck("UnhealthyCheck", _ => Task.FromResult(HealthCheckResult.Unhealthy(UnhealthyMessage, exception)), unhealthyCheckTags);
-            });
-
-            // Act
-            var results = await service.CheckHealthAsync();
-
-            // Assert
-            Assert.Collection(
-                results.Entries.OrderBy(kvp => kvp.Key),
-                actual =>
-                {
-                    Assert.Equal("DegradedCheck", actual.Key);
-                    Assert.Equal(DegradedMessage, actual.Value.Description);
-                    Assert.Equal(HealthStatus.Degraded, actual.Value.Status);
-                    Assert.Null(actual.Value.Exception);
-                    Assert.Empty(actual.Value.Data);
-                    Assert.Equal(actual.Value.Tags, degradedCheckTags);
-                },
-                actual =>
-                {
-                    Assert.Equal("HealthyCheck", actual.Key);
-                    Assert.Equal(HealthyMessage, actual.Value.Description);
-                    Assert.Equal(HealthStatus.Healthy, actual.Value.Status);
-                    Assert.Null(actual.Value.Exception);
-                    Assert.Collection(actual.Value.Data, item =>
-                    {
-                        Assert.Equal(DataKey, item.Key);
-                        Assert.Equal(DataValue, item.Value);
-                    });
-                    Assert.Equal(actual.Value.Tags, healthyCheckTags);
-                },
-                actual =>
-                {
-                    Assert.Equal("UnhealthyCheck", actual.Key);
-                    Assert.Equal(UnhealthyMessage, actual.Value.Description);
-                    Assert.Equal(HealthStatus.Unhealthy, actual.Value.Status);
-                    Assert.Same(exception, actual.Value.Exception);
-                    Assert.Empty(actual.Value.Data);
-                    Assert.Equal(actual.Value.Tags, unhealthyCheckTags);
-                });
-        }
-
-        [Fact]
-        public async Task CheckAsync_TagsArePresentInHealthReportEntryIfExceptionOccurs()
+        var service = CreateHealthChecksService(b =>
         {
-            const string ExceptionMessage = "exception-message";
-            const string OperationCancelledMessage = "operation-cancelled-message";
-            var exceptionTags = new[] { "unhealthy-check-tag" };
-            var operationExceptionTags = new[] { "degraded-check-tag" };
+            b.AddAsyncCheck("HealthyCheck", _ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data)), healthyCheckTags);
+            b.AddAsyncCheck("DegradedCheck", _ => Task.FromResult(HealthCheckResult.Degraded(DegradedMessage)), degradedCheckTags);
+            b.AddAsyncCheck("UnhealthyCheck", _ => Task.FromResult(HealthCheckResult.Unhealthy(UnhealthyMessage, exception)), unhealthyCheckTags);
+        });
 
-            // Arrange
-            var service = CreateHealthChecksService(b =>
+        // Act
+        var results = await service.CheckHealthAsync();
+
+        // Assert
+        Assert.Collection(
+            results.Entries.OrderBy(kvp => kvp.Key),
+            actual =>
             {
-                b.AddAsyncCheck("ExceptionCheck", _ => throw new Exception(ExceptionMessage), exceptionTags);
-                b.AddAsyncCheck("OperationExceptionCheck", _ => throw new OperationCanceledException(OperationCancelledMessage), operationExceptionTags);
-            });
-
-            // Act
-            var results = await service.CheckHealthAsync();
-
-            // Assert
-            Assert.Collection(
-                results.Entries.OrderBy(kvp => kvp.Key),
-                actual =>
+                Assert.Equal("DegradedCheck", actual.Key);
+                Assert.Equal(DegradedMessage, actual.Value.Description);
+                Assert.Equal(HealthStatus.Degraded, actual.Value.Status);
+                Assert.Null(actual.Value.Exception);
+                Assert.Empty(actual.Value.Data);
+                Assert.Equal(actual.Value.Tags, degradedCheckTags);
+            },
+            actual =>
+            {
+                Assert.Equal("HealthyCheck", actual.Key);
+                Assert.Equal(HealthyMessage, actual.Value.Description);
+                Assert.Equal(HealthStatus.Healthy, actual.Value.Status);
+                Assert.Null(actual.Value.Exception);
+                Assert.Collection(actual.Value.Data, item =>
                 {
-                    Assert.Equal("ExceptionCheck", actual.Key);
-                    Assert.Equal(ExceptionMessage, actual.Value.Description);
-                    Assert.Equal(HealthStatus.Unhealthy, actual.Value.Status);
-                    Assert.Equal(ExceptionMessage, actual.Value.Exception!.Message);
-                    Assert.Empty(actual.Value.Data);
-                    Assert.Equal(actual.Value.Tags, exceptionTags);
-                },
-                actual =>
-                {
-                    Assert.Equal("OperationExceptionCheck", actual.Key);
-                    Assert.Equal("A timeout occurred while running check.", actual.Value.Description);
-                    Assert.Equal(HealthStatus.Unhealthy, actual.Value.Status);
-                    Assert.Equal(OperationCancelledMessage, actual.Value.Exception!.Message);
-                    Assert.Empty(actual.Value.Data);
-                    Assert.Equal(actual.Value.Tags, operationExceptionTags);
+                    Assert.Equal(DataKey, item.Key);
+                    Assert.Equal(DataValue, item.Value);
                 });
-        }
+                Assert.Equal(actual.Value.Tags, healthyCheckTags);
+            },
+            actual =>
+            {
+                Assert.Equal("UnhealthyCheck", actual.Key);
+                Assert.Equal(UnhealthyMessage, actual.Value.Description);
+                Assert.Equal(HealthStatus.Unhealthy, actual.Value.Status);
+                Assert.Same(exception, actual.Value.Exception);
+                Assert.Empty(actual.Value.Data);
+                Assert.Equal(actual.Value.Tags, unhealthyCheckTags);
+            });
+    }
 
-        [Fact]
-        public async Task CheckAsync_RunsFilteredChecksAndAggregatesResultsAsync()
+    [Fact]
+    public async Task CheckAsync_TagsArePresentInHealthReportEntryIfExceptionOccurs()
+    {
+        const string ExceptionMessage = "exception-message";
+        const string OperationCancelledMessage = "operation-cancelled-message";
+        var exceptionTags = new[] { "unhealthy-check-tag" };
+        var operationExceptionTags = new[] { "degraded-check-tag" };
+
+        // Arrange
+        var service = CreateHealthChecksService(b =>
         {
-            const string DataKey = "Foo";
-            const string DataValue = "Bar";
-            const string DegradedMessage = "I'm not feeling so good";
-            const string UnhealthyMessage = "Halp!";
-            const string HealthyMessage = "Everything is A-OK";
-            var exception = new Exception("Things are pretty bad!");
+            b.AddAsyncCheck("ExceptionCheck", _ => throw new Exception(ExceptionMessage), exceptionTags);
+            b.AddAsyncCheck("OperationExceptionCheck", _ => throw new OperationCanceledException(OperationCancelledMessage), operationExceptionTags);
+        });
 
-            // Arrange
-            var data = new Dictionary<string, object>
+        // Act
+        var results = await service.CheckHealthAsync();
+
+        // Assert
+        Assert.Collection(
+            results.Entries.OrderBy(kvp => kvp.Key),
+            actual =>
+            {
+                Assert.Equal("ExceptionCheck", actual.Key);
+                Assert.Equal(ExceptionMessage, actual.Value.Description);
+                Assert.Equal(HealthStatus.Unhealthy, actual.Value.Status);
+                Assert.Equal(ExceptionMessage, actual.Value.Exception!.Message);
+                Assert.Empty(actual.Value.Data);
+                Assert.Equal(actual.Value.Tags, exceptionTags);
+            },
+            actual =>
+            {
+                Assert.Equal("OperationExceptionCheck", actual.Key);
+                Assert.Equal("A timeout occurred while running check.", actual.Value.Description);
+                Assert.Equal(HealthStatus.Unhealthy, actual.Value.Status);
+                Assert.Equal(OperationCancelledMessage, actual.Value.Exception!.Message);
+                Assert.Empty(actual.Value.Data);
+                Assert.Equal(actual.Value.Tags, operationExceptionTags);
+            });
+    }
+
+    [Fact]
+    public async Task CheckAsync_RunsFilteredChecksAndAggregatesResultsAsync()
+    {
+        const string DataKey = "Foo";
+        const string DataValue = "Bar";
+        const string DegradedMessage = "I'm not feeling so good";
+        const string UnhealthyMessage = "Halp!";
+        const string HealthyMessage = "Everything is A-OK";
+        var exception = new Exception("Things are pretty bad!");
+
+        // Arrange
+        var data = new Dictionary<string, object>
             {
                 { DataKey, DataValue }
             };
 
-            var service = CreateHealthChecksService(b =>
-            {
-                b.AddAsyncCheck("HealthyCheck", _ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data)));
-                b.AddAsyncCheck("DegradedCheck", _ => Task.FromResult(HealthCheckResult.Degraded(DegradedMessage)));
-                b.AddAsyncCheck("UnhealthyCheck", _ => Task.FromResult(HealthCheckResult.Unhealthy(UnhealthyMessage, exception)));
-            });
-
-            // Act
-            var results = await service.CheckHealthAsync(c => c.Name == "HealthyCheck");
-
-            // Assert
-            Assert.Collection(results.Entries,
-                actual =>
-                {
-                    Assert.Equal("HealthyCheck", actual.Key);
-                    Assert.Equal(HealthyMessage, actual.Value.Description);
-                    Assert.Equal(HealthStatus.Healthy, actual.Value.Status);
-                    Assert.Null(actual.Value.Exception);
-                    Assert.Collection(actual.Value.Data, item =>
-                    {
-                        Assert.Equal(DataKey, item.Key);
-                        Assert.Equal(DataValue, item.Value);
-                    });
-                });
-        }
-
-        [Fact]
-        public async Task CheckHealthAsync_SetsRegistrationForEachCheck()
+        var service = CreateHealthChecksService(b =>
         {
-            // Arrange
-            var thrownException = new InvalidOperationException("Whoops!");
-            var faultedException = new InvalidOperationException("Ohnoes!");
+            b.AddAsyncCheck("HealthyCheck", _ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data)));
+            b.AddAsyncCheck("DegradedCheck", _ => Task.FromResult(HealthCheckResult.Degraded(DegradedMessage)));
+            b.AddAsyncCheck("UnhealthyCheck", _ => Task.FromResult(HealthCheckResult.Unhealthy(UnhealthyMessage, exception)));
+        });
 
-            var service = CreateHealthChecksService(b =>
+        // Act
+        var results = await service.CheckHealthAsync(c => c.Name == "HealthyCheck");
+
+        // Assert
+        Assert.Collection(results.Entries,
+            actual =>
             {
-                b.AddCheck<NameCapturingCheck>("A");
-                b.AddCheck<NameCapturingCheck>("B");
-                b.AddCheck<NameCapturingCheck>("C");
-            });
-
-            // Act
-            var results = await service.CheckHealthAsync();
-
-            // Assert
-            Assert.Collection(
-                results.Entries,
-                actual =>
+                Assert.Equal("HealthyCheck", actual.Key);
+                Assert.Equal(HealthyMessage, actual.Value.Description);
+                Assert.Equal(HealthStatus.Healthy, actual.Value.Status);
+                Assert.Null(actual.Value.Exception);
+                Assert.Collection(actual.Value.Data, item =>
                 {
-                    Assert.Equal("A", actual.Key);
-                    Assert.Collection(
-                        actual.Value.Data,
-                        kvp => Assert.Equal(kvp, new KeyValuePair<string, object>("name", "A")));
-                },
-                actual =>
-                {
-                    Assert.Equal("B", actual.Key);
-                    Assert.Collection(
-                        actual.Value.Data,
-                        kvp => Assert.Equal(kvp, new KeyValuePair<string, object>("name", "B")));
-                },
-                actual =>
-                {
-                    Assert.Equal("C", actual.Key);
-                    Assert.Collection(
-                        actual.Value.Data,
-                        kvp => Assert.Equal(kvp, new KeyValuePair<string, object>("name", "C")));
-                });
-        }
-
-        [Fact]
-        public async Task CheckHealthAsync_Cancellation_CanPropagate()
-        {
-            // Arrange
-            var insideCheck = new TaskCompletionSource<object?>();
-
-            var service = CreateHealthChecksService(b =>
-            {
-                b.AddAsyncCheck("cancels", async ct =>
-                {
-                    insideCheck.SetResult(null);
-
-                    await Task.Delay(10000, ct);
-                    return HealthCheckResult.Unhealthy();
+                    Assert.Equal(DataKey, item.Key);
+                    Assert.Equal(DataValue, item.Value);
                 });
             });
+    }
 
-            var cancel = new CancellationTokenSource();
-            var task = service.CheckHealthAsync(cancel.Token);
+    [Fact]
+    public async Task CheckHealthAsync_SetsRegistrationForEachCheck()
+    {
+        // Arrange
+        var thrownException = new InvalidOperationException("Whoops!");
+        var faultedException = new InvalidOperationException("Ohnoes!");
 
-            // After this returns we know the check has started
-            await insideCheck.Task;
-
-            cancel.Cancel();
-
-            // Act & Assert
-            await Assert.ThrowsAsync<TaskCanceledException>(async () => await task);
-        }
-
-        [Fact]
-        public async Task CheckHealthAsync_ConvertsExceptionInHealthCheckToUnhealthyResultAsync()
+        var service = CreateHealthChecksService(b =>
         {
-            // Arrange
-            var thrownException = new InvalidOperationException("Whoops!");
-            var faultedException = new InvalidOperationException("Ohnoes!");
+            b.AddCheck<NameCapturingCheck>("A");
+            b.AddCheck<NameCapturingCheck>("B");
+            b.AddCheck<NameCapturingCheck>("C");
+        });
 
-            var service = CreateHealthChecksService(b =>
+        // Act
+        var results = await service.CheckHealthAsync();
+
+        // Assert
+        Assert.Collection(
+            results.Entries,
+            actual =>
             {
-                b.AddAsyncCheck("Throws", ct => throw thrownException);
-                b.AddAsyncCheck("Faults", ct => Task.FromException<HealthCheckResult>(faultedException));
-                b.AddAsyncCheck("Succeeds", ct => Task.FromResult(HealthCheckResult.Healthy()));
+                Assert.Equal("A", actual.Key);
+                Assert.Collection(
+                    actual.Value.Data,
+                    kvp => Assert.Equal(kvp, new KeyValuePair<string, object>("name", "A")));
+            },
+            actual =>
+            {
+                Assert.Equal("B", actual.Key);
+                Assert.Collection(
+                    actual.Value.Data,
+                    kvp => Assert.Equal(kvp, new KeyValuePair<string, object>("name", "B")));
+            },
+            actual =>
+            {
+                Assert.Equal("C", actual.Key);
+                Assert.Collection(
+                    actual.Value.Data,
+                    kvp => Assert.Equal(kvp, new KeyValuePair<string, object>("name", "C")));
             });
+    }
 
-            // Act
-            var results = await service.CheckHealthAsync();
+    [Fact]
+    public async Task CheckHealthAsync_Cancellation_CanPropagate()
+    {
+        // Arrange
+        var insideCheck = new TaskCompletionSource<object?>();
 
-            // Assert
-            Assert.Collection(
-                results.Entries,
+        var service = CreateHealthChecksService(b =>
+        {
+            b.AddAsyncCheck("cancels", async ct =>
+            {
+                insideCheck.SetResult(null);
+
+                await Task.Delay(10000, ct);
+                return HealthCheckResult.Unhealthy();
+            });
+        });
+
+        var cancel = new CancellationTokenSource();
+        var task = service.CheckHealthAsync(cancel.Token);
+
+        // After this returns we know the check has started
+        await insideCheck.Task;
+
+        cancel.Cancel();
+
+        // Act & Assert
+        await Assert.ThrowsAsync<TaskCanceledException>(async () => await task);
+    }
+
+    [Fact]
+    public async Task CheckHealthAsync_ConvertsExceptionInHealthCheckToUnhealthyResultAsync()
+    {
+        // Arrange
+        var thrownException = new InvalidOperationException("Whoops!");
+        var faultedException = new InvalidOperationException("Ohnoes!");
+
+        var service = CreateHealthChecksService(b =>
+        {
+            b.AddAsyncCheck("Throws", ct => throw thrownException);
+            b.AddAsyncCheck("Faults", ct => Task.FromException<HealthCheckResult>(faultedException));
+            b.AddAsyncCheck("Succeeds", ct => Task.FromResult(HealthCheckResult.Healthy()));
+        });
+
+        // Act
+        var results = await service.CheckHealthAsync();
+
+        // Assert
+        Assert.Collection(
+            results.Entries,
+            actual =>
+            {
+                Assert.Equal("Throws", actual.Key);
+                Assert.Equal(thrownException.Message, actual.Value.Description);
+                Assert.Equal(HealthStatus.Unhealthy, actual.Value.Status);
+                Assert.Same(thrownException, actual.Value.Exception);
+            },
+            actual =>
+            {
+                Assert.Equal("Faults", actual.Key);
+                Assert.Equal(faultedException.Message, actual.Value.Description);
+                Assert.Equal(HealthStatus.Unhealthy, actual.Value.Status);
+                Assert.Same(faultedException, actual.Value.Exception);
+            },
+            actual =>
+            {
+                Assert.Equal("Succeeds", actual.Key);
+                Assert.Null(actual.Value.Description);
+                Assert.Equal(HealthStatus.Healthy, actual.Value.Status);
+                Assert.Null(actual.Value.Exception);
+            });
+    }
+
+    [Fact]
+    public async Task CheckHealthAsync_SetsUpALoggerScopeForEachCheck()
+    {
+        // Arrange
+        var sink = new TestSink();
+        var check = new DelegateHealthCheck(cancellationToken =>
+        {
+            Assert.Collection(sink.Scopes,
                 actual =>
                 {
-                    Assert.Equal("Throws", actual.Key);
-                    Assert.Equal(thrownException.Message, actual.Value.Description);
-                    Assert.Equal(HealthStatus.Unhealthy, actual.Value.Status);
-                    Assert.Same(thrownException, actual.Value.Exception);
-                },
-                actual =>
-                {
-                    Assert.Equal("Faults", actual.Key);
-                    Assert.Equal(faultedException.Message, actual.Value.Description);
-                    Assert.Equal(HealthStatus.Unhealthy, actual.Value.Status);
-                    Assert.Same(faultedException, actual.Value.Exception);
-                },
-                actual =>
-                {
-                    Assert.Equal("Succeeds", actual.Key);
-                    Assert.Null(actual.Value.Description);
-                    Assert.Equal(HealthStatus.Healthy, actual.Value.Status);
-                    Assert.Null(actual.Value.Exception);
+                    Assert.Equal(actual.LoggerName, typeof(DefaultHealthCheckService).FullName);
+                    Assert.Collection((IEnumerable<KeyValuePair<string, object>>)actual.Scope,
+                        item =>
+                        {
+                            Assert.Equal("HealthCheckName", item.Key);
+                            Assert.Equal("TestScope", item.Value);
+                        });
                 });
-        }
+            return Task.FromResult(HealthCheckResult.Healthy());
+        });
 
-        [Fact]
-        public async Task CheckHealthAsync_SetsUpALoggerScopeForEachCheck()
+        var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+        var service = CreateHealthChecksService(b =>
         {
-            // Arrange
-            var sink = new TestSink();
-            var check = new DelegateHealthCheck(cancellationToken =>
+            // Override the logger factory for testing
+            b.Services.AddSingleton<ILoggerFactory>(loggerFactory);
+
+            b.AddCheck("TestScope", check);
+        });
+
+        // Act
+        var results = await service.CheckHealthAsync();
+
+        // Assert
+        Assert.Collection(results.Entries, actual =>
+        {
+            Assert.Equal("TestScope", actual.Key);
+            Assert.Equal(HealthStatus.Healthy, actual.Value.Status);
+        });
+    }
+
+    [Fact]
+    public async Task CheckHealthAsync_CheckCanDependOnTransientService()
+    {
+        // Arrange
+        var service = CreateHealthChecksService(b =>
+        {
+            b.Services.AddTransient<AnotherService>();
+
+            b.AddCheck<CheckWithServiceDependency>("Test");
+        });
+
+        // Act
+        var results = await service.CheckHealthAsync();
+
+        // Assert
+        Assert.Collection(
+            results.Entries,
+            actual =>
             {
-                Assert.Collection(sink.Scopes,
-                    actual =>
-                    {
-                        Assert.Equal(actual.LoggerName, typeof(DefaultHealthCheckService).FullName);
-                        Assert.Collection((IEnumerable<KeyValuePair<string, object>>)actual.Scope,
-                            item =>
-                            {
-                                Assert.Equal("HealthCheckName", item.Key);
-                                Assert.Equal("TestScope", item.Value);
-                            });
-                    });
-                return Task.FromResult(HealthCheckResult.Healthy());
-            });
-
-            var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-            var service = CreateHealthChecksService(b =>
-            {
-                // Override the logger factory for testing
-                b.Services.AddSingleton<ILoggerFactory>(loggerFactory);
-
-                b.AddCheck("TestScope", check);
-            });
-
-            // Act
-            var results = await service.CheckHealthAsync();
-
-            // Assert
-            Assert.Collection(results.Entries, actual =>
-            {
-                Assert.Equal("TestScope", actual.Key);
+                Assert.Equal("Test", actual.Key);
                 Assert.Equal(HealthStatus.Healthy, actual.Value.Status);
             });
-        }
+    }
 
-        [Fact]
-        public async Task CheckHealthAsync_CheckCanDependOnTransientService()
+    [Fact]
+    public async Task CheckHealthAsync_CheckCanDependOnScopedService()
+    {
+        // Arrange
+        var service = CreateHealthChecksService(b =>
         {
-            // Arrange
-            var service = CreateHealthChecksService(b =>
-            {
-                b.Services.AddTransient<AnotherService>();
+            b.Services.AddScoped<AnotherService>();
 
-                b.AddCheck<CheckWithServiceDependency>("Test");
+            b.AddCheck<CheckWithServiceDependency>("Test");
+        });
+
+        // Act
+        var results = await service.CheckHealthAsync();
+
+        // Assert
+        Assert.Collection(
+            results.Entries,
+            actual =>
+            {
+                Assert.Equal("Test", actual.Key);
+                Assert.Equal(HealthStatus.Healthy, actual.Value.Status);
             });
+    }
 
-            // Act
-            var results = await service.CheckHealthAsync();
-
-            // Assert
-            Assert.Collection(
-                results.Entries,
-                actual =>
-                {
-                    Assert.Equal("Test", actual.Key);
-                    Assert.Equal(HealthStatus.Healthy, actual.Value.Status);
-                });
-        }
-
-        [Fact]
-        public async Task CheckHealthAsync_CheckCanDependOnScopedService()
+    [Fact]
+    // related to issue https://github.com/dotnet/aspnetcore/issues/14453
+    public async Task CheckHealthAsync_CheckCanDependOnScopedService_per_check()
+    {
+        // Arrange
+        var service = CreateHealthChecksService(b =>
         {
-            // Arrange
-            var service = CreateHealthChecksService(b =>
-            {
-                b.Services.AddScoped<AnotherService>();
+            b.Services.AddScoped<CantBeMultiThreadedService>();
 
-                b.AddCheck<CheckWithServiceDependency>("Test");
+            b.AddCheck<CheckWithServiceNotMultiThreadDependency>("Test");
+            b.AddCheck<CheckWithServiceNotMultiThreadDependency>("Test2");
+        });
+
+        // Act
+        var results = await service.CheckHealthAsync();
+
+        // Assert
+        Assert.Collection(
+            results.Entries,
+            actual =>
+            {
+                Assert.Equal("Test", actual.Key);
+                Assert.Equal(HealthStatus.Healthy, actual.Value.Status);
+            },
+            actual =>
+            {
+                Assert.Equal("Test2", actual.Key);
+                Assert.Equal(HealthStatus.Healthy, actual.Value.Status);
             });
+    }
 
-            // Act
-            var results = await service.CheckHealthAsync();
-
-            // Assert
-            Assert.Collection(
-                results.Entries,
-                actual =>
-                {
-                    Assert.Equal("Test", actual.Key);
-                    Assert.Equal(HealthStatus.Healthy, actual.Value.Status);
-                });
-        }
-
-        [Fact]
-        // related to issue https://github.com/dotnet/aspnetcore/issues/14453
-        public async Task CheckHealthAsync_CheckCanDependOnScopedService_per_check()
+    [Fact]
+    public async Task CheckHealthAsync_CheckCanHaveScopedDisposableDependencies()
+    {
+        // Arrange
+        var service = CreateHealthChecksService(b =>
         {
-            // Arrange
-            var service = CreateHealthChecksService(b =>
-            {
-                b.Services.AddScoped<CantBeMultiThreadedService>();
+            b.Services.AddScoped<SynchronousDisposable>();
+            b.Services.AddScoped<AsyncOnlyDisposable>();
+            b.Services.AddScoped<SyncOrAsyncDisposable>();
 
-                b.AddCheck<CheckWithServiceNotMultiThreadDependency>("Test");
-                b.AddCheck<CheckWithServiceNotMultiThreadDependency>("Test2");
+            b.AddCheck<DisposableDependeciesCheck>("TestDisposableDepenencies");
+        });
+
+        // Act
+        var results = await service.CheckHealthAsync();
+
+        // Assert
+        var healthCheck = (DisposableDependeciesCheck)results.Entries.Single().Value.Data.Single().Value;
+
+        Assert.True(healthCheck.SynchronousDisposable.IsDisposed);
+        Assert.True(healthCheck.AsyncOnlyDisposable.IsAsyncDisposed);
+        Assert.True(healthCheck.SyncOrAsyncDisposable.IsAsyncDisposed);
+        Assert.False(healthCheck.SyncOrAsyncDisposable.IsDisposed);
+    }
+
+    [Fact]
+    public async Task CheckHealthAsync_CheckCanDependOnSingletonService()
+    {
+        // Arrange
+        var service = CreateHealthChecksService(b =>
+        {
+            b.Services.AddSingleton<AnotherService>();
+
+            b.AddCheck<CheckWithServiceDependency>("Test");
+        });
+
+        // Act
+        var results = await service.CheckHealthAsync();
+
+        // Assert
+        Assert.Collection(
+            results.Entries,
+            actual =>
+            {
+                Assert.Equal("Test", actual.Key);
+                Assert.Equal(HealthStatus.Healthy, actual.Value.Status);
             });
+    }
 
-            // Act
-            var results = await service.CheckHealthAsync();
+    [Fact]
+    public async Task CheckHealthAsync_ChecksAreRunInParallel()
+    {
+        // Arrange
+        var input1 = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var input2 = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var output1 = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var output2 = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            // Assert
-            Assert.Collection(
-                results.Entries,
-                actual =>
-                {
-                    Assert.Equal("Test", actual.Key);
-                    Assert.Equal(HealthStatus.Healthy, actual.Value.Status);
-                },
-                actual =>
-                {
-                    Assert.Equal("Test2", actual.Key);
-                    Assert.Equal(HealthStatus.Healthy, actual.Value.Status);
-                });
-        }
-
-        [Fact]
-        public async Task CheckHealthAsync_CheckCanDependOnSingletonService()
+        var service = CreateHealthChecksService(b =>
         {
-            // Arrange
-            var service = CreateHealthChecksService(b =>
-            {
-                b.Services.AddSingleton<AnotherService>();
-
-                b.AddCheck<CheckWithServiceDependency>("Test");
-            });
-
-            // Act
-            var results = await service.CheckHealthAsync();
-
-            // Assert
-            Assert.Collection(
-                results.Entries,
-                actual =>
+            b.AddAsyncCheck("test1",
+                async () =>
                 {
-                    Assert.Equal("Test", actual.Key);
-                    Assert.Equal(HealthStatus.Healthy, actual.Value.Status);
-                });
-        }
-
-        [Fact]
-        public async Task CheckHealthAsync_ChecksAreRunInParallel()
-        {
-            // Arrange
-            var input1 = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var input2 = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var output1 = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var output2 = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
-
-            var service = CreateHealthChecksService(b =>
-            {
-                b.AddAsyncCheck("test1",
-                    async () =>
-                    {
-                        output1.SetResult(null);
-                        await input1.Task;
-                        return HealthCheckResult.Healthy();
-                    });
-                b.AddAsyncCheck("test2",
-                    async () =>
-                    {
-                        output2.SetResult(null);
-                        await input2.Task;
-                        return HealthCheckResult.Healthy();
-                    });
-            });
-
-            // Act
-            var checkHealthTask = service.CheckHealthAsync();
-            await Task.WhenAll(output1.Task, output2.Task).TimeoutAfter(TimeSpan.FromSeconds(10));
-            input1.SetResult(null);
-            input2.SetResult(null);
-            await checkHealthTask;
-
-            // Assert
-            Assert.Collection(checkHealthTask.Result.Entries,
-                entry =>
-                {
-                    Assert.Equal("test1", entry.Key);
-                    Assert.Equal(HealthStatus.Healthy, entry.Value.Status);
-                },
-                entry =>
-                {
-                    Assert.Equal("test2", entry.Key);
-                    Assert.Equal(HealthStatus.Healthy, entry.Value.Status);
-                });
-        }
-
-        [Fact]
-        public async Task CheckHealthAsync_TimeoutReturnsUnhealthy()
-        {
-            // Arrange
-            var service = CreateHealthChecksService(b =>
-            {
-                b.AddAsyncCheck("timeout", async (ct) =>
-                {
-                    await Task.Delay(2000, ct);
-                    return HealthCheckResult.Healthy();
-                }, timeout: TimeSpan.FromMilliseconds(100));
-            });
-
-            // Act
-            var results = await service.CheckHealthAsync();
-
-            // Assert
-            Assert.Collection(
-                results.Entries,
-                actual =>
-                {
-                    Assert.Equal("timeout", actual.Key);
-                    Assert.Equal(HealthStatus.Unhealthy, actual.Value.Status);
-                });
-        }
-
-        [Fact]
-        public void CheckHealthAsync_WorksInSingleThreadedSyncContext()
-        {
-            // Arrange
-            var service = CreateHealthChecksService(b =>
-            {
-                b.AddAsyncCheck("test", async () =>
-                {
-                    await Task.Delay(1).ConfigureAwait(false);
+                    output1.SetResult(null);
+                    await input1.Task;
                     return HealthCheckResult.Healthy();
                 });
-            });
-
-            var hangs = true;
-
-            // Act
-            using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3)))
-            {
-                var token = cts.Token;
-                token.Register(() => throw new OperationCanceledException(token));
-
-                SingleThreadedSynchronizationContext.Run(() =>
+            b.AddAsyncCheck("test2",
+                async () =>
                 {
-                    // Act
-                    service.CheckHealthAsync(token).GetAwaiter().GetResult();
-                    hangs = false;
+                    output2.SetResult(null);
+                    await input2.Task;
+                    return HealthCheckResult.Healthy();
                 });
-            }
+        });
 
-            // Assert
-            Assert.False(hangs);
-        }
+        // Act
+        var checkHealthTask = service.CheckHealthAsync();
+        await Task.WhenAll(output1.Task, output2.Task).TimeoutAfter(TimeSpan.FromSeconds(10));
+        input1.SetResult(null);
+        input2.SetResult(null);
+        await checkHealthTask;
 
-        [Fact]
-        public async Task CheckHealthAsync_WithFailureStatus()
-        {
-            // Arrange
-            var service = CreateHealthChecksService(b =>
+        // Assert
+        Assert.Collection(checkHealthTask.Result.Entries,
+            entry =>
             {
-                b.AddCheck<FailCapturingCheck>("degraded", HealthStatus.Degraded);
-                b.AddCheck<FailCapturingCheck>("healthy", HealthStatus.Healthy);
-                b.AddCheck<FailCapturingCheck>("unhealthy", HealthStatus.Unhealthy);
+                Assert.Equal("test1", entry.Key);
+                Assert.Equal(HealthStatus.Healthy, entry.Value.Status);
+            },
+            entry =>
+            {
+                Assert.Equal("test2", entry.Key);
+                Assert.Equal(HealthStatus.Healthy, entry.Value.Status);
             });
+    }
 
-            // Act
-            var results = await service.CheckHealthAsync();
+    [Fact]
+    public async Task CheckHealthAsync_TimeoutReturnsUnhealthy()
+    {
+        // Arrange
+        var service = CreateHealthChecksService(b =>
+        {
+            b.AddAsyncCheck("timeout", async (ct) =>
+            {
+                await Task.Delay(2000, ct);
+                return HealthCheckResult.Healthy();
+            }, timeout: TimeSpan.FromMilliseconds(100));
+        });
 
-            // Assert
-            Assert.Collection(
-                results.Entries,
-                actual =>
-                {
-                    Assert.Equal("degraded", actual.Key);
-                    Assert.Equal(HealthStatus.Degraded, actual.Value.Status);
-                },
-                actual =>
-                {
-                    Assert.Equal("healthy", actual.Key);
-                    Assert.Equal(HealthStatus.Healthy, actual.Value.Status);
-                },
-                actual =>
-                {
-                    Assert.Equal("unhealthy", actual.Key);
-                    Assert.Equal(HealthStatus.Unhealthy, actual.Value.Status);
-                });
+        // Act
+        var results = await service.CheckHealthAsync();
+
+        // Assert
+        Assert.Collection(
+            results.Entries,
+            actual =>
+            {
+                Assert.Equal("timeout", actual.Key);
+                Assert.Equal(HealthStatus.Unhealthy, actual.Value.Status);
+            });
+    }
+
+    [Fact]
+    public void CheckHealthAsync_WorksInSingleThreadedSyncContext()
+    {
+        // Arrange
+        var service = CreateHealthChecksService(b =>
+        {
+            b.AddAsyncCheck("test", async () =>
+            {
+                await Task.Delay(1).ConfigureAwait(false);
+                return HealthCheckResult.Healthy();
+            });
+        });
+
+        var hangs = true;
+
+        // Act
+        using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3)))
+        {
+            var token = cts.Token;
+            token.Register(() => throw new OperationCanceledException(token));
+
+            SingleThreadedSynchronizationContext.Run(() =>
+            {
+                // Act
+                service.CheckHealthAsync(token).GetAwaiter().GetResult();
+                hangs = false;
+            });
         }
 
-        private static DefaultHealthCheckService CreateHealthChecksService(Action<IHealthChecksBuilder> configure)
+        // Assert
+        Assert.False(hangs);
+    }
+
+    [Fact]
+    public async Task CheckHealthAsync_WithFailureStatus()
+    {
+        // Arrange
+        var service = CreateHealthChecksService(b =>
         {
-            var services = new ServiceCollection();
-            services.AddLogging();
-            services.AddOptions();
+            b.AddCheck<FailCapturingCheck>("degraded", HealthStatus.Degraded);
+            b.AddCheck<FailCapturingCheck>("healthy", HealthStatus.Healthy);
+            b.AddCheck<FailCapturingCheck>("unhealthy", HealthStatus.Unhealthy);
+        });
 
-            var builder = services.AddHealthChecks();
-            if (configure != null)
+        // Act
+        var results = await service.CheckHealthAsync();
+
+        // Assert
+        Assert.Collection(
+            results.Entries,
+            actual =>
             {
-                configure(builder);
-            }
+                Assert.Equal("degraded", actual.Key);
+                Assert.Equal(HealthStatus.Degraded, actual.Value.Status);
+            },
+            actual =>
+            {
+                Assert.Equal("healthy", actual.Key);
+                Assert.Equal(HealthStatus.Healthy, actual.Value.Status);
+            },
+            actual =>
+            {
+                Assert.Equal("unhealthy", actual.Key);
+                Assert.Equal(HealthStatus.Unhealthy, actual.Value.Status);
+            });
+    }
 
-            return (DefaultHealthCheckService)services.BuildServiceProvider(validateScopes: true).GetRequiredService<HealthCheckService>();
+    private static DefaultHealthCheckService CreateHealthChecksService(Action<IHealthChecksBuilder> configure)
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddOptions();
+
+        var builder = services.AddHealthChecks();
+        if (configure != null)
+        {
+            configure(builder);
         }
 
-        private class AnotherService { }
+        return (DefaultHealthCheckService)services.BuildServiceProvider(validateScopes: true).GetRequiredService<HealthCheckService>();
+    }
 
-        private class CantBeMultiThreadedService
+    private class AnotherService { }
+
+    private class CantBeMultiThreadedService
+    {
+        private readonly object _lock = new();
+        private bool _wasUsed;
+        public void Check()
         {
-            private readonly object _lock = new();
-            private bool _wasUsed;
-            public void Check()
+            lock (_lock)
             {
-                lock (_lock)
+                if (_wasUsed)
                 {
-                    if (_wasUsed) throw new InvalidOperationException("Should only used once");
-                    _wasUsed = true;
+                    throw new InvalidOperationException("Should only used once");
                 }
+                _wasUsed = true;
             }
         }
+    }
 
-        private class CheckWithServiceDependency : IHealthCheck
+    private class CheckWithServiceDependency : IHealthCheck
+    {
+        public CheckWithServiceDependency(AnotherService _)
         {
-            public CheckWithServiceDependency(AnotherService _)
-            {
-            }
+        }
 
-            public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
+        public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(HealthCheckResult.Healthy());
+        }
+    }
+
+    private class CheckWithServiceNotMultiThreadDependency : IHealthCheck
+    {
+        private readonly CantBeMultiThreadedService _service;
+
+        public CheckWithServiceNotMultiThreadDependency(CantBeMultiThreadedService service)
+        {
+            _service = service;
+        }
+
+        public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
+        {
+            try
             {
+                _service.Check();
                 return Task.FromResult(HealthCheckResult.Healthy());
             }
-        }
-
-        private class CheckWithServiceNotMultiThreadDependency : IHealthCheck
-        {
-            private readonly CantBeMultiThreadedService _service;
-
-            public CheckWithServiceNotMultiThreadDependency(CantBeMultiThreadedService service)
+            catch (InvalidOperationException e)
             {
-                _service = service;
+                return Task.FromResult(HealthCheckResult.Unhealthy("failed", e));
             }
 
-            public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
-            {
-                try
-                {
-                    _service.Check();
-                    return Task.FromResult(HealthCheckResult.Healthy());
-                }
-                catch (InvalidOperationException e)
-                {
-                    return Task.FromResult(HealthCheckResult.Unhealthy("failed", e));
-                }
-
-            }
         }
+    }
 
-        private class NameCapturingCheck : IHealthCheck
+    private class NameCapturingCheck : IHealthCheck
+    {
+        public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
         {
-            public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
-            {
-                var data = new Dictionary<string, object>()
+            var data = new Dictionary<string, object>()
                 {
                     { "name", context.Registration.Name },
                 };
-                return Task.FromResult(HealthCheckResult.Healthy(data: data));
-            }
+            return Task.FromResult(HealthCheckResult.Healthy(data: data));
+        }
+    }
+
+    private class FailCapturingCheck : IHealthCheck
+    {
+        public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
+        {
+            throw new Exception("check failed");
+        }
+    }
+
+    private class DisposableDependeciesCheck : IHealthCheck
+    {
+        public DisposableDependeciesCheck(
+            SynchronousDisposable disposable,
+            AsyncOnlyDisposable asyncOnlyDisposable,
+            SyncOrAsyncDisposable syncOrAsyncDisposable)
+        {
+            SynchronousDisposable = disposable;
+            AsyncOnlyDisposable = asyncOnlyDisposable;
+            SyncOrAsyncDisposable = syncOrAsyncDisposable;
         }
 
-        private class FailCapturingCheck : IHealthCheck
+        public SynchronousDisposable SynchronousDisposable { get; }
+
+        public AsyncOnlyDisposable AsyncOnlyDisposable { get; }
+
+        public SyncOrAsyncDisposable SyncOrAsyncDisposable { get; }
+
+        public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken)
         {
-            public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
+            return Task.FromResult(HealthCheckResult.Healthy(data: new Dictionary<string, object> { { "self", this } }));
+        }
+    }
+
+    private class SynchronousDisposable : IDisposable
+    {
+        public bool IsDisposed { get; private set; }
+
+        public void Dispose()
+        {
+            if (IsDisposed)
             {
-                throw new Exception("check failed");
+                throw new InvalidOperationException("Dependency disposed multiple times.");
             }
+            IsDisposed = true;
+        }
+    }
+
+    private class AsyncOnlyDisposable : IAsyncDisposable
+    {
+        public bool IsAsyncDisposed { get; private set; }
+
+        public ValueTask DisposeAsync()
+        {
+            if (IsAsyncDisposed)
+            {
+                throw new InvalidOperationException("Dependency disposed multiple times.");
+            }
+            IsAsyncDisposed = true;
+            return default;
+        }
+    }
+
+    private class SyncOrAsyncDisposable : IDisposable, IAsyncDisposable
+    {
+        public bool IsDisposed { get; private set; }
+
+        public bool IsAsyncDisposed { get; private set; }
+
+        public void Dispose()
+        {
+            if (IsDisposed || IsAsyncDisposed)
+            {
+                throw new InvalidOperationException("Dependency disposed multiple times.");
+            }
+            IsDisposed = true;
+        }
+
+        public ValueTask DisposeAsync()
+        {
+            if (IsDisposed || IsAsyncDisposed)
+            {
+                throw new InvalidOperationException("Dependency disposed multiple times.");
+            }
+            IsAsyncDisposed = true;
+            return default;
         }
     }
 }

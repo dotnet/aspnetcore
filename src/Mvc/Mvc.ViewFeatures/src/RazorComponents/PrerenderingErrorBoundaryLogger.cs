@@ -1,31 +1,28 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Mvc.ViewFeatures
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
+
+internal class PrerenderingErrorBoundaryLogger : IErrorBoundaryLogger
 {
-    internal class PrerenderingErrorBoundaryLogger : IErrorBoundaryLogger
+    private static readonly Action<ILogger, string, Exception> _exceptionCaughtByErrorBoundary = LoggerMessage.Define<string>(
+        LogLevel.Warning,
+        100,
+        "Unhandled exception rendering component: {Message}");
+
+    private readonly ILogger _logger;
+
+    public PrerenderingErrorBoundaryLogger(ILogger<ErrorBoundary> logger)
     {
-        private static readonly Action<ILogger, string, Exception> _exceptionCaughtByErrorBoundary = LoggerMessage.Define<string>(
-            LogLevel.Warning,
-            100,
-            "Unhandled exception rendering component: {Message}");
+        _logger = logger;
+    }
 
-        private readonly ILogger _logger;
-
-        public PrerenderingErrorBoundaryLogger(ILogger<ErrorBoundary> logger)
-        {
-            _logger = logger;
-        }
-
-        public ValueTask LogErrorAsync(Exception exception)
-        {
-            _exceptionCaughtByErrorBoundary(_logger, exception.Message, exception);
-            return ValueTask.CompletedTask;
-        }
+    public ValueTask LogErrorAsync(Exception exception)
+    {
+        _exceptionCaughtByErrorBoundary(_logger, exception.Message, exception);
+        return ValueTask.CompletedTask;
     }
 }

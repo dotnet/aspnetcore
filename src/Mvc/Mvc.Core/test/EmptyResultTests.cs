@@ -5,26 +5,24 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Routing;
 using Moq;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc
+namespace Microsoft.AspNetCore.Mvc;
+
+public class EmptyResultTests
 {
-    public class EmptyResultTests
+    [Fact]
+    public void EmptyResult_ExecuteResult_IsANoOp()
     {
-        [Fact]
-        public void EmptyResult_ExecuteResult_IsANoOp()
-        {
-            // Arrange
-            var emptyResult = new EmptyResult();
+        // Arrange
+        var emptyResult = new EmptyResult();
 
-            var httpContext = new Mock<HttpContext>(MockBehavior.Strict);
-            var routeData = new RouteData();
-            var actionDescriptor = new ActionDescriptor();
+        var httpContext = new Mock<HttpContext>(MockBehavior.Strict);
+        var routeData = new RouteData();
+        var actionDescriptor = new ActionDescriptor();
 
-            var context = new ActionContext(httpContext.Object, routeData, actionDescriptor);
+        var context = new ActionContext(httpContext.Object, routeData, actionDescriptor);
 
-            // Act & Assert (does not throw)
-            emptyResult.ExecuteResult(context);
-        }
+        // Act & Assert (does not throw)
+        emptyResult.ExecuteResult(context);
     }
 }

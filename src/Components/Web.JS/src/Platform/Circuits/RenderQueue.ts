@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 import { renderBatch } from '../../Rendering/Renderer';
 import { OutOfProcessRenderBatch } from '../../Rendering/RenderBatch/OutOfProcessRenderBatch';
 import { Logger, LogLevel } from '../Logging/Logger';
@@ -54,11 +57,11 @@ export class RenderQueue {
       renderBatch(this.browserRendererId, new OutOfProcessRenderBatch(batchData));
       await this.completeBatch(connection, receivedBatchId);
     } catch (error) {
-      this.fatalError = error.toString();
+      this.fatalError = (error as Error).toString();
       this.logger.log(LogLevel.Error, `There was an error applying batch ${receivedBatchId}.`);
 
       // If there's a rendering exception, notify server *and* throw on client
-      connection.send('OnRenderCompleted', receivedBatchId, error.toString());
+      connection.send('OnRenderCompleted', receivedBatchId, (error as Error).toString());
       throw error;
     }
   }

@@ -1,40 +1,36 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
+namespace Microsoft.AspNetCore.Mvc.ViewComponents;
 
-namespace Microsoft.AspNetCore.Mvc.ViewComponents
+/// <summary>
+/// A cached collection of <see cref="ViewComponentDescriptor" />.
+/// </summary>
+public class ViewComponentDescriptorCollection
 {
     /// <summary>
-    /// A cached collection of <see cref="ViewComponentDescriptor" />.
+    /// Initializes a new instance of the <see cref="ViewComponentDescriptorCollection"/>.
     /// </summary>
-    public class ViewComponentDescriptorCollection
+    /// <param name="items">The result of view component discovery</param>
+    /// <param name="version">The unique version of discovered view components.</param>
+    public ViewComponentDescriptorCollection(IEnumerable<ViewComponentDescriptor> items, int version)
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ViewComponentDescriptorCollection"/>.
-        /// </summary>
-        /// <param name="items">The result of view component discovery</param>
-        /// <param name="version">The unique version of discovered view components.</param>
-        public ViewComponentDescriptorCollection(IEnumerable<ViewComponentDescriptor> items, int version)
+        if (items == null)
         {
-            if (items == null)
-            {
-                throw new ArgumentNullException(nameof(items));
-            }
-
-            Items = new List<ViewComponentDescriptor>(items);
-            Version = version;
+            throw new ArgumentNullException(nameof(items));
         }
 
-        /// <summary>
-        /// Returns the cached <see cref="IReadOnlyList{ViewComponentDescriptor}"/>.
-        /// </summary>
-        public IReadOnlyList<ViewComponentDescriptor> Items { get; }
-
-        /// <summary>
-        /// Returns the unique version of the currently cached items.
-        /// </summary>
-        public int Version { get; }
+        Items = new List<ViewComponentDescriptor>(items);
+        Version = version;
     }
+
+    /// <summary>
+    /// Returns the cached <see cref="IReadOnlyList{ViewComponentDescriptor}"/>.
+    /// </summary>
+    public IReadOnlyList<ViewComponentDescriptor> Items { get; }
+
+    /// <summary>
+    /// Returns the unique version of the currently cached items.
+    /// </summary>
+    public int Version { get; }
 }

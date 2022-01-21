@@ -1,51 +1,49 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
-namespace Microsoft.AspNetCore.Mvc.DataAnnotations
+namespace Microsoft.AspNetCore.Mvc.DataAnnotations;
+
+/// <summary>
+/// An implementation of <see cref="IClientModelValidatorProvider"/> which provides client validators
+/// for specific numeric types.
+/// </summary>
+internal class NumericClientModelValidatorProvider : IClientModelValidatorProvider
 {
-    /// <summary>
-    /// An implementation of <see cref="IClientModelValidatorProvider"/> which provides client validators
-    /// for specific numeric types.
-    /// </summary>
-    internal class NumericClientModelValidatorProvider : IClientModelValidatorProvider
+    /// <inheritdoc />
+    public void CreateValidators(ClientValidatorProviderContext context)
     {
-        /// <inheritdoc />
-        public void CreateValidators(ClientValidatorProviderContext context)
+        if (context == null)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            throw new ArgumentNullException(nameof(context));
+        }
 
-            var typeToValidate = context.ModelMetadata.UnderlyingOrModelType;
+        var typeToValidate = context.ModelMetadata.UnderlyingOrModelType;
 
-            // Check only the numeric types for which we set type='text'.
-            if (typeToValidate == typeof(float) ||
-                typeToValidate == typeof(double) ||
-                typeToValidate == typeof(decimal))
+        // Check only the numeric types for which we set type='text'.
+        if (typeToValidate == typeof(float) ||
+            typeToValidate == typeof(double) ||
+            typeToValidate == typeof(decimal))
+        {
+            var results = context.Results;
+            // Read interface .Count once rather than per iteration
+            var resultsCount = results.Count;
+            for (var i = 0; i < resultsCount; i++)
             {
-                var results = context.Results;
-                // Read interface .Count once rather than per iteration
-                var resultsCount = results.Count;
-                for (var i = 0; i < resultsCount; i++)
+                var validator = results[i].Validator;
+                if (validator != null && validator is NumericClientModelValidator)
                 {
-                    var validator = results[i].Validator;
-                    if (validator != null && validator is NumericClientModelValidator)
-                    {
-                        // A validator is already present. No need to add one.
-                        return;
-                    }
+                    // A validator is already present. No need to add one.
+                    return;
                 }
-
-                results.Add(new ClientValidatorItem
-                {
-                    Validator = new NumericClientModelValidator(),
-                    IsReusable = true
-                });
             }
+
+            results.Add(new ClientValidatorItem
+            {
+                Validator = new NumericClientModelValidator(),
+                IsReusable = true
+            });
         }
     }
 }

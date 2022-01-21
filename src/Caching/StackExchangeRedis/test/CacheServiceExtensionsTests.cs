@@ -1,61 +1,57 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
 
-namespace Microsoft.Extensions.Caching.StackExchangeRedis
+namespace Microsoft.Extensions.Caching.StackExchangeRedis;
+
+public class CacheServiceExtensionsTests
 {
-    public class CacheServiceExtensionsTests
+    [Fact]
+    public void AddStackExchangeRedisCache_RegistersDistributedCacheAsSingleton()
     {
-        [Fact]
-        public void AddStackExchangeRedisCache_RegistersDistributedCacheAsSingleton()
-        {
-            // Arrange
-            var services = new ServiceCollection();
+        // Arrange
+        var services = new ServiceCollection();
 
-            // Act
-            services.AddStackExchangeRedisCache(options => { });
+        // Act
+        services.AddStackExchangeRedisCache(options => { });
 
-            // Assert
-            var distributedCache = services.FirstOrDefault(desc => desc.ServiceType == typeof(IDistributedCache));
+        // Assert
+        var distributedCache = services.FirstOrDefault(desc => desc.ServiceType == typeof(IDistributedCache));
 
-            Assert.NotNull(distributedCache);
-            Assert.Equal(ServiceLifetime.Singleton, distributedCache.Lifetime);
-        }
+        Assert.NotNull(distributedCache);
+        Assert.Equal(ServiceLifetime.Singleton, distributedCache.Lifetime);
+    }
 
-        [Fact]
-        public void AddStackExchangeRedisCache_ReplacesPreviouslyUserRegisteredServices()
-        {
-            // Arrange
-            var services = new ServiceCollection();
-            services.AddScoped(typeof(IDistributedCache), sp => Mock.Of<IDistributedCache>());
+    [Fact]
+    public void AddStackExchangeRedisCache_ReplacesPreviouslyUserRegisteredServices()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddScoped(typeof(IDistributedCache), sp => Mock.Of<IDistributedCache>());
 
-            // Act
-            services.AddStackExchangeRedisCache(options => { });
+        // Act
+        services.AddStackExchangeRedisCache(options => { });
 
-            // Assert
-            var serviceProvider = services.BuildServiceProvider();
+        // Assert
+        var serviceProvider = services.BuildServiceProvider();
 
-            var distributedCache = services.FirstOrDefault(desc => desc.ServiceType == typeof(IDistributedCache));
+        var distributedCache = services.FirstOrDefault(desc => desc.ServiceType == typeof(IDistributedCache));
 
-            Assert.NotNull(distributedCache);
-            Assert.Equal(ServiceLifetime.Scoped, distributedCache.Lifetime);
-            Assert.IsType<RedisCache>(serviceProvider.GetRequiredService<IDistributedCache>());
-        }
+        Assert.NotNull(distributedCache);
+        Assert.Equal(ServiceLifetime.Scoped, distributedCache.Lifetime);
+        Assert.IsType<RedisCache>(serviceProvider.GetRequiredService<IDistributedCache>());
+    }
 
-        [Fact]
-        public void AddStackExchangeRedisCache_allows_chaining()
-        {
-            var services = new ServiceCollection();
+    [Fact]
+    public void AddStackExchangeRedisCache_allows_chaining()
+    {
+        var services = new ServiceCollection();
 
-            Assert.Same(services, services.AddStackExchangeRedisCache(_ => { }));
-        }
+        Assert.Same(services, services.AddStackExchangeRedisCache(_ => { }));
     }
 }

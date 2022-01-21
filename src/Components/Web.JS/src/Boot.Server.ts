@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 import { DotNet } from '@microsoft/dotnet-js-interop';
 import { Blazor } from './GlobalExports';
 import { HubConnectionBuilder, HubConnection, HttpTransportType } from '@microsoft/signalr';
@@ -13,6 +16,7 @@ import { DefaultReconnectionHandler } from './Platform/Circuits/DefaultReconnect
 import { attachRootComponentToLogicalElement } from './Rendering/Renderer';
 import { discoverComponents, discoverPersistedState, ServerComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
 import { sendJSDataStream } from './Platform/Circuits/CircuitStreamingInterop';
+import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.Server';
 
 let renderingFailed = false;
 let started = false;
@@ -25,25 +29,11 @@ async function boot(userOptions?: Partial<CircuitStartOptions>): Promise<void> {
 
   // Establish options to be used
   const options = resolveOptions(userOptions);
+  const jsInitializer = await fetchAndInvokeInitializers(options);
+
   const logger = new ConsoleLogger(options.logLevel);
-  Blazor.defaultReconnectionHandler = new DefaultReconnectionHandler(logger);
 
-  options.reconnectionHandler = options.reconnectionHandler || Blazor.defaultReconnectionHandler;
-  logger.log(LogLevel.Information, 'Starting up Blazor server-side application.');
-
-  const components = discoverComponents(document, 'server') as ServerComponentDescriptor[];
-  const appState = discoverPersistedState(document);
-  const circuit = new CircuitDescriptor(components, appState || '');
-
-
-  const initialConnection = await initializeConnection(options, logger, circuit);
-  const circuitStarted = await circuit.startCircuit(initialConnection);
-  if (!circuitStarted) {
-    logger.log(LogLevel.Error, 'Failed to start the circuit.');
-    return;
-  }
-
-  const reconnect = async (existingConnection?: HubConnection): Promise<boolean> => {
+  Blazor.reconnect = async (existingConnection?: HubConnection): Promise<boolean> => {
     if (renderingFailed) {
       // We can't reconnect after a failure, so exit early.
       return false;
@@ -59,6 +49,21 @@ async function boot(userOptions?: Partial<CircuitStartOptions>): Promise<void> {
 
     return true;
   };
+  Blazor.defaultReconnectionHandler = new DefaultReconnectionHandler(logger);
+
+  options.reconnectionHandler = options.reconnectionHandler || Blazor.defaultReconnectionHandler;
+  logger.log(LogLevel.Information, 'Starting up Blazor server-side application.');
+
+  const components = discoverComponents(document, 'server') as ServerComponentDescriptor[];
+  const appState = discoverPersistedState(document);
+  const circuit = new CircuitDescriptor(components, appState || '');
+
+  const initialConnection = await initializeConnection(options, logger, circuit);
+  const circuitStarted = await circuit.startCircuit(initialConnection);
+  if (!circuitStarted) {
+    logger.log(LogLevel.Error, 'Failed to start the circuit.');
+    return;
+  }
 
   let disconnectSent = false;
   const cleanup = () => {
@@ -74,9 +79,9 @@ async function boot(userOptions?: Partial<CircuitStartOptions>): Promise<void> {
 
   window.addEventListener('unload', cleanup, { capture: false, once: true });
 
-  Blazor.reconnect = reconnect;
-
   logger.log(LogLevel.Information, 'Blazor server-side application started.');
+
+  jsInitializer.invokeAfterStartedCallbacks(Blazor);
 }
 
 async function initializeConnection(options: CircuitStartOptions, logger: Logger, circuit: CircuitDescriptor): Promise<HubConnection> {
@@ -84,7 +89,7 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
   (hubProtocol as unknown as { name: string }).name = 'blazorpack';
 
   const connectionBuilder = new HubConnectionBuilder()
-    .withUrl('_blazor', HttpTransportType.WebSockets)
+    .withUrl('_blazor')
     .withHubProtocol(hubProtocol);
 
   options.configureSignalR(connectionBuilder);
@@ -109,7 +114,7 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
           complete: () => controller.close(),
           error: (err) => controller.error(err),
         });
-      }
+      },
     });
 
     DotNet.jsCallDispatcher.supplyDotNetStream(streamId, readableStream);
@@ -134,19 +139,33 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
 
   try {
     await connection.start();
-  } catch (ex) {
-    unhandledError(connection, ex, logger);
+  } catch (ex: any) {
+    unhandledError(connection, ex as Error, logger);
 
-    if (ex.innerErrors && ex.innerErrors.some(e => e.errorType === 'UnsupportedTransportError' && e.transport === HttpTransportType.WebSockets)) {
-      showErrorNotification('Unable to connect, please ensure you are using an updated browser that supports WebSockets.');
-    } else if (ex.innerErrors && ex.innerErrors.some(e => e.errorType === 'FailedToStartTransportError' && e.transport === HttpTransportType.WebSockets)) {
-      showErrorNotification('Unable to connect, please ensure WebSockets are available. A VPN or proxy may be blocking the connection.');
-    } else if (ex.innerErrors && ex.innerErrors.some(e => e.errorType === 'DisabledTransportError' && e.transport === HttpTransportType.LongPolling)) {
-      logger.log(LogLevel.Error, 'Unable to initiate a SignalR connection to the server. This might be because the server is not configured to support WebSockets. To troubleshoot this, visit https://aka.ms/blazor-server-websockets-error.');
-      showErrorNotification();
+    if (ex.errorType === 'FailedToNegotiateWithServerError') {
+      // Connection with the server has been interrupted, and we're in the process of reconnecting.
+      // Throw this exception so it can be handled at the reconnection layer, and don't show the
+      // error notification.
+      throw ex;
     } else {
       showErrorNotification();
     }
+
+    if (ex.innerErrors) {
+      if (ex.innerErrors.some(e => e.errorType === 'UnsupportedTransportError' && e.transport === HttpTransportType.WebSockets)) {
+        logger.log(LogLevel.Error, 'Unable to connect, please ensure you are using an updated browser that supports WebSockets.');
+      } else if (ex.innerErrors.some(e => e.errorType === 'FailedToStartTransportError' && e.transport === HttpTransportType.WebSockets)) {
+        logger.log(LogLevel.Error, 'Unable to connect, please ensure WebSockets are available. A VPN or proxy may be blocking the connection.');
+      } else if (ex.innerErrors.some(e => e.errorType === 'DisabledTransportError' && e.transport === HttpTransportType.LongPolling)) {
+        logger.log(LogLevel.Error, 'Unable to initiate a SignalR connection to the server. This might be because the server is not configured to support WebSockets. For additional details, visit https://aka.ms/blazor-server-websockets-error.');
+      }
+    }
+  }
+
+  // Check if the connection is established using the long polling transport,
+  // using the `features.inherentKeepAlive` property only present with long polling.
+  if ((connection as any).connection?.features?.inherentKeepAlive) {
+    logger.log(LogLevel.Warning, 'Failed to connect via WebSockets, using the Long Polling fallback transport. This may be due to a VPN or proxy blocking the connection. To troubleshoot this, visit https://aka.ms/blazor-server-using-fallback-long-polling.');
   }
 
   DotNet.attachDispatcher({

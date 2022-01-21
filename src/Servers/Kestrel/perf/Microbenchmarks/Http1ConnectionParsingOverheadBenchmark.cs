@@ -11,104 +11,103 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
+namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks;
+
+public class Http1ConnectionParsingOverheadBenchmark
 {
-    public class Http1ConnectionParsingOverheadBenchmark
+    private const int InnerLoopCount = 512;
+
+    public ReadOnlySequence<byte> _buffer;
+    private Http1Connection _http1Connection;
+
+    [IterationSetup]
+    public void Setup()
     {
-        private const int InnerLoopCount = 512;
+        var memoryPool = PinnedBlockMemoryPoolFactory.Create();
+        var options = new PipeOptions(memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
+        var pair = DuplexPipe.CreateConnectionPair(options, options);
 
-        public ReadOnlySequence<byte> _buffer;
-        private Http1Connection _http1Connection;
+        var serviceContext = TestContextFactory.CreateServiceContext(
+            serverOptions: new KestrelServerOptions(),
+            httpParser: NullParser<Http1ParsingHandler>.Instance);
 
-        [IterationSetup]
-        public void Setup()
+        var connectionContext = TestContextFactory.CreateHttpConnectionContext(
+            serviceContext: serviceContext,
+            connectionContext: null,
+            transport: pair.Transport,
+            timeoutControl: new TimeoutControl(timeoutHandler: null),
+            memoryPool: memoryPool,
+            connectionFeatures: new FeatureCollection());
+
+        var http1Connection = new Http1Connection(connectionContext);
+
+        http1Connection.Reset();
+
+        _http1Connection = http1Connection;
+    }
+
+    [Benchmark(Baseline = true, OperationsPerInvoke = InnerLoopCount)]
+    public void Http1ConnectionOverheadTotal()
+    {
+        for (var i = 0; i < InnerLoopCount; i++)
         {
-            var memoryPool = PinnedBlockMemoryPoolFactory.Create();
-            var options = new PipeOptions(memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
-            var pair = DuplexPipe.CreateConnectionPair(options, options);
+            ParseRequest();
+        }
+    }
 
-            var serviceContext = TestContextFactory.CreateServiceContext(
-                serverOptions: new KestrelServerOptions(),
-                httpParser: NullParser<Http1ParsingHandler>.Instance);
+    [Benchmark(OperationsPerInvoke = InnerLoopCount)]
+    public void Http1ConnectionOverheadRequestLine()
+    {
+        for (var i = 0; i < InnerLoopCount; i++)
+        {
+            ParseRequestLine();
+        }
+    }
 
-            var connectionContext = TestContextFactory.CreateHttpConnectionContext(
-                serviceContext: serviceContext,
-                connectionContext: null,
-                transport: pair.Transport,
-                timeoutControl: new TimeoutControl(timeoutHandler: null),
-                memoryPool: memoryPool,
-                connectionFeatures: new FeatureCollection());
+    [Benchmark(OperationsPerInvoke = InnerLoopCount)]
+    public void Http1ConnectionOverheadRequestHeaders()
+    {
+        for (var i = 0; i < InnerLoopCount; i++)
+        {
+            ParseRequestHeaders();
+        }
+    }
 
-            var http1Connection = new Http1Connection(connectionContext);
+    private void ParseRequest()
+    {
+        _http1Connection.Reset();
 
-            http1Connection.Reset();
-
-            _http1Connection = http1Connection;
+        var reader = new SequenceReader<byte>(_buffer);
+        if (!_http1Connection.TakeStartLine(ref reader))
+        {
+            ErrorUtilities.ThrowInvalidRequestLine();
         }
 
-        [Benchmark(Baseline = true, OperationsPerInvoke = InnerLoopCount)]
-        public void Http1ConnectionOverheadTotal()
+        if (!_http1Connection.TakeMessageHeaders(ref reader, trailers: false))
         {
-            for (var i = 0; i < InnerLoopCount; i++)
-            {
-                ParseRequest();
-            }
+            ErrorUtilities.ThrowInvalidRequestHeaders();
         }
+    }
 
-        [Benchmark(OperationsPerInvoke = InnerLoopCount)]
-        public void Http1ConnectionOverheadRequestLine()
+    private void ParseRequestLine()
+    {
+        _http1Connection.Reset();
+
+        var reader = new SequenceReader<byte>(_buffer);
+        if (!_http1Connection.TakeStartLine(ref reader))
         {
-            for (var i = 0; i < InnerLoopCount; i++)
-            {
-                ParseRequestLine();
-            }
+            ErrorUtilities.ThrowInvalidRequestLine();
         }
+    }
 
-        [Benchmark(OperationsPerInvoke = InnerLoopCount)]
-        public void Http1ConnectionOverheadRequestHeaders()
+    private void ParseRequestHeaders()
+    {
+        _http1Connection.Reset();
+
+        var reader = new SequenceReader<byte>(_buffer);
+        if (!_http1Connection.TakeMessageHeaders(ref reader, trailers: false))
         {
-            for (var i = 0; i < InnerLoopCount; i++)
-            {
-                ParseRequestHeaders();
-            }
-        }
-
-        private void ParseRequest()
-        {
-            _http1Connection.Reset();
-
-            var reader = new SequenceReader<byte>(_buffer);
-            if (!_http1Connection.TakeStartLine(ref reader))
-            {
-                ErrorUtilities.ThrowInvalidRequestLine();
-            }
-
-            if (!_http1Connection.TakeMessageHeaders(ref reader, trailers: false))
-            {
-                ErrorUtilities.ThrowInvalidRequestHeaders();
-            }
-        }
-
-        private void ParseRequestLine()
-        {
-            _http1Connection.Reset();
-
-            var reader = new SequenceReader<byte>(_buffer);
-            if (!_http1Connection.TakeStartLine(ref reader))
-            {
-                ErrorUtilities.ThrowInvalidRequestLine();
-            }
-        }
-
-        private void ParseRequestHeaders()
-        {
-            _http1Connection.Reset();
-
-            var reader = new SequenceReader<byte>(_buffer);
-            if (!_http1Connection.TakeMessageHeaders(ref reader, trailers: false))
-            {
-                ErrorUtilities.ThrowInvalidRequestHeaders();
-            }
+            ErrorUtilities.ThrowInvalidRequestHeaders();
         }
     }
 }

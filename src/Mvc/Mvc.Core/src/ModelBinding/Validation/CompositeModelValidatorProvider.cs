@@ -3,45 +3,42 @@
 
 #nullable enable
 
-using System;
-using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
+namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+
+/// <summary>
+/// Aggregate of <see cref="IModelValidatorProvider"/>s that delegates to its underlying providers.
+/// </summary>
+public class CompositeModelValidatorProvider : IModelValidatorProvider
 {
     /// <summary>
-    /// Aggregate of <see cref="IModelValidatorProvider"/>s that delegates to its underlying providers.
+    /// Initializes a new instance of <see cref="CompositeModelValidatorProvider"/>.
     /// </summary>
-    public class CompositeModelValidatorProvider : IModelValidatorProvider
+    /// <param name="providers">
+    /// A collection of <see cref="IModelValidatorProvider"/> instances.
+    /// </param>
+    public CompositeModelValidatorProvider(IList<IModelValidatorProvider> providers)
     {
-        /// <summary>
-        /// Initializes a new instance of <see cref="CompositeModelValidatorProvider"/>.
-        /// </summary>
-        /// <param name="providers">
-        /// A collection of <see cref="IModelValidatorProvider"/> instances.
-        /// </param>
-        public CompositeModelValidatorProvider(IList<IModelValidatorProvider> providers)
+        if (providers == null)
         {
-            if (providers == null)
-            {
-                throw new ArgumentNullException(nameof(providers));
-            }
-
-            ValidatorProviders = providers;
+            throw new ArgumentNullException(nameof(providers));
         }
 
-        /// <summary>
-        /// Gets the list of <see cref="IModelValidatorProvider"/> instances.
-        /// </summary>
-        public IList<IModelValidatorProvider> ValidatorProviders { get; }
+        ValidatorProviders = providers;
+    }
 
-        /// <inheritdoc />
-        public void CreateValidators(ModelValidatorProviderContext context)
+    /// <summary>
+    /// Gets the list of <see cref="IModelValidatorProvider"/> instances.
+    /// </summary>
+    public IList<IModelValidatorProvider> ValidatorProviders { get; }
+
+    /// <inheritdoc />
+    public void CreateValidators(ModelValidatorProviderContext context)
+    {
+        // Perf: Avoid allocations
+        for (var i = 0; i < ValidatorProviders.Count; i++)
         {
-            // Perf: Avoid allocations
-            for (var i = 0; i < ValidatorProviders.Count; i++)
-            {
-                ValidatorProviders[i].CreateValidators(context);
-            }
+            ValidatorProviders[i].CreateValidators(context);
         }
     }
 }

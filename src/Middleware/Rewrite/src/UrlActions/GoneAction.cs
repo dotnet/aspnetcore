@@ -3,14 +3,13 @@
 
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Rewrite.UrlActions
+namespace Microsoft.AspNetCore.Rewrite.UrlActions;
+
+internal class GoneAction : UrlAction
 {
-    internal class GoneAction : UrlAction
+    public override void ApplyAction(RewriteContext context, BackReferenceCollection? ruleBackReferences, BackReferenceCollection? conditionBackReferences)
     {
-        public override void ApplyAction(RewriteContext context, BackReferenceCollection? ruleBackReferences, BackReferenceCollection? conditionBackReferences)
-        {
-            context.HttpContext.Response.StatusCode = StatusCodes.Status410Gone;
-            context.Result = RuleResult.EndResponse;
-        }
+        context.HttpContext.Response.StatusCode = StatusCodes.Status410Gone;
+        context.Result = RuleResult.EndResponse;
     }
 }

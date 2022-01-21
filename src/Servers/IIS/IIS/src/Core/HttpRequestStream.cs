@@ -1,143 +1,138 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
-using System.IO;
 using System.Runtime.ExceptionServices;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
 
-namespace Microsoft.AspNetCore.Server.IIS.Core
+namespace Microsoft.AspNetCore.Server.IIS.Core;
+
+internal class HttpRequestStream : ReadOnlyStream
 {
-    internal class HttpRequestStream : ReadOnlyStream
+    private readonly IHttpBodyControlFeature _bodyControl;
+    private IISHttpContext? _body;
+    private HttpStreamState _state;
+    private Exception? _error;
+
+    public HttpRequestStream(IHttpBodyControlFeature bodyControl)
     {
-        private readonly IHttpBodyControlFeature _bodyControl;
-        private IISHttpContext? _body;
-        private HttpStreamState _state;
-        private Exception? _error;
+        _bodyControl = bodyControl;
+        _state = HttpStreamState.Closed;
+    }
 
-        public HttpRequestStream(IHttpBodyControlFeature bodyControl)
+    public override int Read(byte[] buffer, int offset, int count)
+    {
+        if (!_bodyControl.AllowSynchronousIO)
         {
-            _bodyControl = bodyControl;
-            _state = HttpStreamState.Closed;
+            throw new InvalidOperationException(CoreStrings.SynchronousReadsDisallowed);
         }
 
-        public override int Read(byte[] buffer, int offset, int count)
-        {
-            if (!_bodyControl.AllowSynchronousIO)
-            {
-                throw new InvalidOperationException(CoreStrings.SynchronousReadsDisallowed);
-            }
+        return ReadAsync(buffer, offset, count).GetAwaiter().GetResult();
+    }
 
-            return ReadAsync(buffer, offset, count).GetAwaiter().GetResult();
+    public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
+    {
+        return TaskToApm.Begin(ReadAsync(buffer, offset, count), callback, state);
+    }
+
+    public override int EndRead(IAsyncResult asyncResult)
+    {
+        return TaskToApm.End<int>(asyncResult);
+    }
+
+    public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+    {
+        ValidateState(cancellationToken);
+
+        return ReadAsyncInternal(new Memory<byte>(buffer, offset, count), cancellationToken).AsTask();
+    }
+
+    public override ValueTask<int> ReadAsync(Memory<byte> destination, CancellationToken cancellationToken = default)
+    {
+        ValidateState(cancellationToken);
+
+        return ReadAsyncInternal(destination, cancellationToken);
+    }
+
+    private async ValueTask<int> ReadAsyncInternal(Memory<byte> buffer, CancellationToken cancellationToken)
+    {
+        try
+        {
+            Debug.Assert(_body != null, "Stream must be accepting reads.");
+            return await _body.ReadAsync(buffer, cancellationToken);
         }
-
-        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
+        catch (ConnectionAbortedException ex)
         {
-            return TaskToApm.Begin(ReadAsync(buffer, offset, count), callback, state);
+            throw new TaskCanceledException("The request was aborted", ex);
         }
+    }
 
-        public override int EndRead(IAsyncResult asyncResult)
+    public override async Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
+    {
+        try
         {
-            return TaskToApm.End<int>(asyncResult);
+            Debug.Assert(_body != null, "Stream must be accepting reads.");
+            await _body.CopyToAsync(destination, cancellationToken);
         }
-
-        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        catch (ConnectionAbortedException ex)
         {
-            ValidateState(cancellationToken);
-
-            return ReadAsyncInternal(new Memory<byte>(buffer, offset, count), cancellationToken).AsTask();
+            throw new TaskCanceledException("The request was aborted", ex);
         }
+    }
 
-        public override ValueTask<int> ReadAsync(Memory<byte> destination, CancellationToken cancellationToken = default)
+    public void StartAcceptingReads(IISHttpContext body)
+    {
+        // Only start if not aborted
+        if (_state == HttpStreamState.Closed)
         {
-            ValidateState(cancellationToken);
-
-            return ReadAsyncInternal(destination, cancellationToken);
+            _state = HttpStreamState.Open;
+            _body = body;
         }
+    }
 
-        private async ValueTask<int> ReadAsyncInternal(Memory<byte> buffer, CancellationToken cancellationToken)
+    public void StopAcceptingReads()
+    {
+        // Can't use dispose (or close) as can be disposed too early by user code
+        // As exampled in EngineTests.ZeroContentLengthNotSetAutomaticallyForCertainStatusCodes
+        _state = HttpStreamState.Closed;
+        _body = null;
+    }
+
+    public void Abort(Exception? error = null)
+    {
+        // We don't want to throw an ODE until the app func actually completes.
+        // If the request is aborted, we throw a TaskCanceledException instead,
+        // unless error is not null, in which case we throw it.
+        if (_state != HttpStreamState.Closed)
         {
-            try
-            {
-                Debug.Assert(_body != null, "Stream must be accepting reads.");
-                return await _body.ReadAsync(buffer, cancellationToken);
-            }
-            catch (ConnectionAbortedException ex)
-            {
-                throw new TaskCanceledException("The request was aborted", ex);
-            }
+            _state = HttpStreamState.Aborted;
+            _error = error;
         }
+    }
 
-        public override async Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
+    private void ValidateState(CancellationToken cancellationToken)
+    {
+        switch (_state)
         {
-            try
-            {
-                Debug.Assert(_body != null, "Stream must be accepting reads.");
-                await _body.CopyToAsync(destination, cancellationToken);
-            }
-            catch (ConnectionAbortedException ex)
-            {
-                throw new TaskCanceledException("The request was aborted", ex);
-            }
-        }
-
-        public void StartAcceptingReads(IISHttpContext body)
-        {
-            // Only start if not aborted
-            if (_state == HttpStreamState.Closed)
-            {
-                _state = HttpStreamState.Open;
-                _body = body;
-            }
-        }
-
-        public void StopAcceptingReads()
-        {
-            // Can't use dispose (or close) as can be disposed too early by user code
-            // As exampled in EngineTests.ZeroContentLengthNotSetAutomaticallyForCertainStatusCodes
-            _state = HttpStreamState.Closed;
-            _body = null;
-        }
-
-        public void Abort(Exception? error = null)
-        {
-            // We don't want to throw an ODE until the app func actually completes.
-            // If the request is aborted, we throw a TaskCanceledException instead,
-            // unless error is not null, in which case we throw it.
-            if (_state != HttpStreamState.Closed)
-            {
-                _state = HttpStreamState.Aborted;
-                _error = error;
-            }
-        }
-
-        private void ValidateState(CancellationToken cancellationToken)
-        {
-            switch (_state)
-            {
-                case HttpStreamState.Open:
-                    if (cancellationToken.IsCancellationRequested)
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-                    }
-                    break;
-                case HttpStreamState.Closed:
-                    throw new ObjectDisposedException(nameof(HttpRequestStream));
-                case HttpStreamState.Aborted:
-                    if (_error != null)
-                    {
-                        ExceptionDispatchInfo.Capture(_error).Throw();
-                    }
-                    else
-                    {
-                        throw new TaskCanceledException();
-                    }
-                    break;
-            }
+            case HttpStreamState.Open:
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                }
+                break;
+            case HttpStreamState.Closed:
+                throw new ObjectDisposedException(nameof(HttpRequestStream));
+            case HttpStreamState.Aborted:
+                if (_error != null)
+                {
+                    ExceptionDispatchInfo.Capture(_error).Throw();
+                }
+                else
+                {
+                    throw new TaskCanceledException();
+                }
+                break;
         }
     }
 }

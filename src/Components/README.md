@@ -12,7 +12,6 @@ The following contains a description of each sub-directory in the `Components` d
 - `Authorization`: Contains source files associated with auth-related components and services in Blazor
 - `Components`: Contains the implementation for the Blazor component model
 - `Forms`: Contains source files for Form components in Blazor
-- `Ignitor`: A library for testing Blazor Server apps
 - `Samples`: Contains a collection of sample apps in Blazor
 - `Server`: Contains the implementation for Blazor Server-specific components
 - `Shared`: Contains a collection of shared constants and helper methods/classes
@@ -37,18 +36,46 @@ To build this specific project from source, follow the instructions [on building
 
 ### Test
 
-This project contains a collection of unit tests implemented with XUnit and E2E tests implemented using Selenium. In order to run the E2E tests, you will need to have Selenium installed on your machine.
+This project contains a collection of unit tests implemented with XUnit and E2E tests implemented using Selenium. In order to run the E2E tests, you will need to have [Node v16](https://nodejs.org/en/) installed on your machine.
 
-The E2E tests are located in the top-level `tests` folder in this directory. The E2E tests consists of a top-level `TestServer` which instantiates different app servers for specific scenarios:
+The E2E tests are located in the `tests/E2ETest` folder. The E2E test assets are located in the `test/testassets` directory, and it contains a top-level `TestServer` which instantiates different app servers for specific scenarios:
 
 - Standalone Blazor WASM
 - Hosted Blazor WASM
 - Blazor Server
 - Blazor Server with pre-rendering
 
-Each app server mounts the same `BasicTestApp` application under each scenario.
+Each app server mounts the same `BasicTestApp` application under each scenario (located at `tests/testassets/BasicTestApp`).
 
-To run the tests for this project, [run the tests on the command line](../../docs/BuildFromSource.md#running-tests-on-command-line) in this directory.
+These tests are run in the CI as part of the [`aspnetcore-components-e2e`](https://dev.azure.com/dnceng/public/_build?definitionId=1026) pipeline.
+
+#### How to run the E2E Tests
+
+To run the tests for this project, follow these steps (from the root directory):
+
+##### Windows
+
+```powershell
+./restore.cmd
+npm install --prefix ./src/Components/test/E2ETest
+. .\activate.ps1
+dotnet test ./src/Components/test/E2ETest
+```
+
+##### Linux / MacOS
+
+```shell
+./restore.sh
+npm install --prefix ./src/Components/test/E2ETest
+source ./activate.sh
+dotnet test ./src/Components/test/E2ETest
+```
+
+Note, you may wish to filter tests using the `--filter` command (ie. `dotnet test --filter <TEST_NAME> ./src/Components/test/E2ETest`).
+
+Please see the [`Build From Source`](https://github.com/dotnet/aspnetcore/blob/main/docs/BuildFromSource.md) docs for more information on building and testing from source.
+
+##### WebAssembly Trimming
 
 By default, WebAssembly E2E tests that run as part of the CI or when run in Release builds run with trimming enabled. It's possible that tests that successfully run locally might fail as part of the CI run due to errors introduced due to trimming. To test this scenario locally, either run the E2E tests in release build or with the `TestTrimmedApps` property set. For e.g.
 

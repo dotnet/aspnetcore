@@ -3,10 +3,9 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace RazorWebSite.Controllers
+namespace RazorWebSite.Controllers;
+
+public class BackSlashController : Controller
 {
-    public class BackSlashController : Controller
-    {
-        public IActionResult Index() => View(@"Views\BackSlash\BackSlashView.cshtml");
-    }
+    public IActionResult Index() => View(@"Views\BackSlash\BackSlashView.cshtml");
 }

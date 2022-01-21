@@ -36,6 +36,39 @@
           "exclude": [
             "Properties/launchSettings.json"
           ]
+        },
+        {
+          "condition": "(UseMinimalAPIs)",
+          "exclude": [
+            "Controllers/WeatherForecastController.cs",
+            "Program.cs",
+            "WeatherForecast.cs"
+          ]
+        },
+        {
+          "condition": "(UseMinimalAPIs && (NoAuth || WindowsAuth))",
+          "rename": {
+            "Program.MinimalAPIs.WindowsOrNoAuth.cs": "Program.cs"
+          },
+          "exclude": [
+            "Program.MinimalAPIs.OrgOrIndividualB2CAuth.cs"
+          ]
+        },
+        {
+          "condition": "(UseMinimalAPIs && (IndividualAuth || OrganizationalAuth))",
+          "rename": {
+            "Program.MinimalAPIs.OrgOrIndividualB2CAuth.cs": "Program.cs"
+          },
+          "exclude": [
+            "Program.MinimalAPIs.WindowsOrNoAuth.cs"
+          ]
+        },
+        {
+          "condition": "(UseControllers)",
+          "exclude": [
+            "Program.MinimalAPIs.WindowsOrNoAuth.cs",
+            "Program.MinimalAPIs.OrgOrIndividualB2CAuth.cs"
+          ]
         }
       ]
     }
@@ -68,14 +101,14 @@
     "AAdB2CInstance": {
       "type": "parameter",
       "datatype": "string",
-      "defaultValue": "https://login.microsoftonline.com/tfp/",
-      "replaces": "https:////login.microsoftonline.com/tfp/",
+      "defaultValue": "https://qualified.domain.name.b2clogin.com/",
+      "replaces": "https:////qualified.domain.name.b2clogin.com/",
       "description": "The Azure Active Directory B2C instance to connect to (use with IndividualB2C auth)."
     },
     "SignUpSignInPolicyId": {
       "type": "parameter",
       "datatype": "string",
-      "defaultValue": "",
+      "defaultValue": "b2c_1_susi",
       "replaces": "MySignUpSignInPolicyId",
       "description": "The sign-in and sign-up policy ID for this project (use with IndividualB2C auth)."
     },
@@ -254,18 +287,24 @@
       "defaultValue": "false",
       "description": "Whether to use LocalDB instead of SQLite. This option only applies if --auth Individual or --auth IndividualB2C is specified."
     },
+    "UseMinimalAPIs": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Whether to use minimal APIs instead of controllers."
+    },
     "Framework": {
       "type": "parameter",
       "description": "The target framework for the project.",
       "datatype": "choice",
       "choices": [
         {
-          "choice": "net6.0",
-          "description": "Target net6.0"
+          "choice": "net7.0",
+          "description": "Target net7.0"
         }
       ],
-      "replaces": "net6.0",
-      "defaultValue": "net6.0"
+      "replaces": "net7.0",
+      "defaultValue": "net7.0"
     },
     "copyrightYear": {
       "type": "generated",
@@ -321,6 +360,10 @@
     "EnableOpenAPI": {
       "type": "computed",
       "value": "(!DisableOpenAPI)"
+    },
+    "UseControllers": {
+      "type": "computed",
+      "value": "(!UseMinimalAPIs)"
     }
   },
   "primaryOutputs": [
@@ -331,6 +374,7 @@
   "defaultName": "WebApplication",
   "postActions": [
     {
+      "id": "restore",
       "condition": "(!skipRestore)",
       "description": "Restore NuGet packages required by this project.",
       "manualInstructions": [

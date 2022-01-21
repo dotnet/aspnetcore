@@ -38,10 +38,191 @@
     </Virtualize>
 </div>
 
+<h3>Large data set with size changes</h3>
+<p>
+    Data set length:
+    <select id="large-dataset-length" value="@largeDataSetLength" @onchange="@(e => SetLargeDataSetLengthAsync(int.Parse((string)e.Value)))">
+        <option>25</option>
+        <option>1000</option>
+        <option>100000</option>
+    </select>
+    Last rendered:
+    <span id="large-dataset-length-lastrendered">@largeDataSetLengthLastRendered</span>
+</p>
+
+<hr />
+
+<h4>List: Simple layout</h4>
+
+<div id="removing-many" style="overflow-y: auto; height: 200px; border: 1px dashed gray;">
+    <Virtualize @ref="removeManyVirtualize" ItemsProvider="GetLargeDataSetAsync">
+        <div @key="@context.Name" class="person" style="border-bottom: 1px solid silver; padding: 4px;">
+            <span>@context.Name</span>
+        </div>
+    </Virtualize>
+</div>
+
+<h4>Table with horizontal scrolling: Simple Layout</h4>
+<table id="simple-scroll-horizontal" style="overflow: auto; height: 200px; width:300px; border: 1px dashed gray; border-collapse: collapse; display: block; white-space: nowrap">
+    <Virtualize @ref="tableSimpleLayoutVirtualize" ItemsProvider="GetLargeDataSetAsync" Context="person">
+        <tr @key="person.Name" style="border-bottom: 1px dashed silver;">
+            <td class="person" style="padding: 10px"><span>@person.Name</span></td>
+            <td style="padding: 10px">@person.LastName</td>
+            <td style="padding: 10px">@person.Email</td>
+            <td style="padding: 10px">@person.DateOfBirth</td>
+            <td style="padding: 10px">@(DateTime.Today.Year - person.DateOfBirth.Year)</td>
+        </tr>
+    </Virtualize>
+</table>
+
+<h4>Table with horizontal scrolling: Complex Layout</h4>
+<table id="complex-scroll-horizontal" style="overflow: auto; height: 200px; width:300px; border: 1px dashed gray; border-collapse: collapse; display: block; white-space: nowrap">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Last Name</th>
+            <th>Email</th>
+            <th>Date of Birth</th>
+            <th>Age</th>
+        </tr>
+    </thead>
+    <tbody>
+        <Virtualize @ref="tableComplexLayoutVirtualize" ItemsProvider="GetLargeDataSetAsync" Context="person">
+            <tr @key="person.Name" style="border-bottom: 1px dashed silver;">
+                <td class="person" style="padding: 10px"><span>@person.Name</span></td>
+                <td style="padding: 10px">@person.LastName</td>
+                <td style="padding: 10px">@person.Email</td>
+                <td style="padding: 10px">@person.DateOfBirth</td>
+                <td style="padding: 10px">@(DateTime.Today.Year - person.DateOfBirth.Year)</td>
+            </tr>
+        </Virtualize>
+    </tbody>
+</table>
+
+<h4>Table with horizontal scrolling on tbody: Complex Layout</h4>
+<table>
+    <thead style="display: block">
+        <tr>
+            <th>Name</th>
+            <th>Last Name</th>
+            <th>Email</th>
+            <th>Date of Birth</th>
+            <th>Age</th>
+        </tr>
+    </thead>
+    <tbody id="complex-scroll-horizontal-on-tbody" style="overflow: auto; height: 200px; width:300px; border: 1px dashed gray; border-collapse: collapse; display: block; white-space: nowrap">
+        <Virtualize @ref="tableComplexLayoutWithTBodyAsContainerVirtualize" ItemsProvider="GetLargeDataSetAsync" Context="person">
+            <tr @key="person.Name" style="border-bottom: 1px dashed silver;">
+                <td class="person" style="padding: 10px"><span>@person.Name</span></td>
+                <td style="padding: 10px">@person.LastName</td>
+                <td style="padding: 10px">@person.Email</td>
+                <td style="padding: 10px">@person.DateOfBirth</td>
+                <td style="padding: 10px">@(DateTime.Today.Year - person.DateOfBirth.Year)</td>
+            </tr>
+        </Virtualize>
+    </tbody>
+</table>
+
+<h4>Table with horizontal scrolling on parent: Simple Layout</h4>
+<div id="simple-scroll-horizontal-on-parent" style="overflow: auto; width: 300px; height:200px">
+    <table style="width: 800px">
+        <Virtualize @ref="tableSimpleLayoutWithParentVirtualize" ItemsProvider="GetLargeDataSetAsync" Context="person">
+            <tr @key="person.Name" style="border-bottom: 1px dashed silver;">
+                <td class="person" style="padding: 10px"><span>@person.Name</span></td>
+                <td style="padding: 10px">@person.LastName</td>
+                <td style="padding: 10px">@person.Email</td>
+                <td style="padding: 10px">@person.DateOfBirth</td>
+                <td style="padding: 10px">@(DateTime.Today.Year - person.DateOfBirth.Year)</td>
+            </tr>
+        </Virtualize>
+    </table>
+</div>
+
+
+<h4>Table with horizontal scrolling on parent: Complex Layout</h4>
+<div id="complex-scroll-horizontal-on-parent" style="overflow: auto; width: 300px; height:200px">
+    <table style="width: 800px">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Last Name</th>
+                <th>Email</th>
+                <th>Date of Birth</th>
+                <th>Age</th>
+            </tr>
+        </thead>
+        <tbody>
+            <Virtualize @ref="tableComplexLayoutWithParentVirtualize" ItemsProvider="GetLargeDataSetAsync" Context="person">
+                <tr @key="person.Name" style="border-bottom: 1px dashed silver;">
+                    <td class="person" style="padding: 10px"><span>@person.Name</span></td>
+                    <td style="padding: 10px">@person.LastName</td>
+                    <td style="padding: 10px">@person.Email</td>
+                    <td style="padding: 10px">@person.DateOfBirth</td>
+                    <td style="padding: 10px">@(DateTime.Today.Year - person.DateOfBirth.Year)</td>
+                </tr>
+            </Virtualize>
+        </tbody>
+    </table>
+</div>
+
+<h4>Display table with horizontal scrolling: Simple Layout</h4>
+<div id="simple-display-table-scroll-horizontal" style="overflow: auto; width: 300px; height:200px">
+    <div style="display: table; width: 800px">
+        <Virtualize @ref="displayTableSimpleLayoutVirtualize" ItemsProvider="GetLargeDataSetAsync" Context="person">
+            <div @key="person.Name" style="border-bottom: 1px dashed silver; display: table-row">
+                <div class="person" style="padding: 10px; display:table-cell"><span>@person.Name</span></div>
+                <div style="padding: 10px; display:table-cell">@person.LastName</div>
+                <div style="padding: 10px; display:table-cell">@person.Email</div>
+                <div style="padding: 10px; display:table-cell">@person.DateOfBirth</div>
+                <div style="padding: 10px; display:table-cell">@(DateTime.Today.Year - person.DateOfBirth.Year)</div>
+            </div>
+        </Virtualize>
+    </div>
+</div>
+
+<h4>Display table with horizontal scrolling: Simple Layout</h4>
+<div id="complex-display-table-scroll-horizontal" style="overflow: auto; width: 300px; height:200px">
+    <div style="display: table; width: 800px">
+        <div style="display: table-header-group">
+            <div style="display:table-row">
+                <div style="display:table-cell">Name</div>
+                <div style="display:table-cell">Last Name</div>
+                <div style="display:table-cell">Email</div>
+                <div style="display:table-cell">Date of Birth</div>
+                <div style="display:table-cell">Age</div>
+            </div>
+        </div>
+        <div style="display:table-row-group">
+            <Virtualize @ref="displayTableComplexLayoutVirtualize" ItemsProvider="GetLargeDataSetAsync" Context="person">
+                <div @key="person.Name" style="border-bottom: 1px dashed silver; display: table-row">
+                    <div class="person" style="padding: 10px; display:table-cell"><span>@person.Name</span></div>
+                    <div style="padding: 10px; display:table-cell">@person.LastName</div>
+                    <div style="padding: 10px; display:table-cell">@person.Email</div>
+                    <div style="padding: 10px; display:table-cell">@person.DateOfBirth</div>
+                    <div style="padding: 10px; display:table-cell">@(DateTime.Today.Year - person.DateOfBirth.Year)</div>
+                </div>
+            </Virtualize>
+        </div>
+    </div>
+</div>
+
+
 @code {
     Virtualize<Person> asyncVirtualize;
+    Virtualize<Person> removeManyVirtualize;
+    Virtualize<Person> tableSimpleLayoutVirtualize;
+    Virtualize<Person> tableComplexLayoutVirtualize;
+    Virtualize<Person> tableComplexLayoutWithTBodyAsContainerVirtualize;
+    Virtualize<Person> tableSimpleLayoutWithParentVirtualize;
+    Virtualize<Person> tableComplexLayoutWithParentVirtualize;
+    Virtualize<Person> displayTableSimpleLayoutVirtualize;
+    Virtualize<Person> displayTableComplexLayoutVirtualize;
+
     List<Person> fixedPeople = Enumerable.Range(1, 3).Select(GeneratePerson).ToList();
     int numPeopleInItemsProvider = 3;
+
+    int largeDataSetLength = 25;
+    int? largeDataSetLengthLastRendered;
 
     void AddPersonToFixedList()
     {
@@ -69,9 +250,41 @@
             numPeopleInItemsProvider);
     }
 
+    async Task SetLargeDataSetLengthAsync(int length)
+    {
+        largeDataSetLength = length;
+        await Task.WhenAll(
+            removeManyVirtualize.RefreshDataAsync(),
+            tableSimpleLayoutVirtualize.RefreshDataAsync(),
+            tableComplexLayoutVirtualize.RefreshDataAsync(),
+            tableComplexLayoutWithTBodyAsContainerVirtualize.RefreshDataAsync(),
+            tableSimpleLayoutWithParentVirtualize.RefreshDataAsync(),
+            tableComplexLayoutWithParentVirtualize.RefreshDataAsync(),
+            displayTableSimpleLayoutVirtualize.RefreshDataAsync(),
+            displayTableComplexLayoutVirtualize.RefreshDataAsync());
+    }
+
+    async ValueTask<ItemsProviderResult<Person>> GetLargeDataSetAsync(ItemsProviderRequest request)
+    {
+        await Task.Delay(200);
+        largeDataSetLengthLastRendered = largeDataSetLength;
+
+        // Behave like a .Skip(startIndex).Take(count), so that if you ask for data beyond the end of the
+        // set, you get back nothing
+        var lastIndexExcl = Math.Min(request.StartIndex + request.Count, largeDataSetLength);
+        var effectiveCount = lastIndexExcl - request.StartIndex;
+        var resultItems = effectiveCount <= 0
+            ? Enumerable.Empty<Person>()
+            : Enumerable.Range(1 + request.StartIndex, effectiveCount).Select(GeneratePerson).ToList();
+        return new ItemsProviderResult<Person>(resultItems, largeDataSetLength);
+    }
+
     class Person
     {
         public string Name { get; set; }
+        public string LastName { get; set; }
+        public string Email { get; set; }
+        public DateOnly DateOfBirth { get; set; }
 
         public void Mutate()
         {
@@ -80,5 +293,11 @@
     }
 
     static Person GeneratePerson(int index)
-        => new Person { Name = $"Person {index}" };
+        => new Person
+        {
+            Name = $"Person {index}",
+            LastName = $"Last Name {index}",
+            Email = $"person{index}@example.com",
+            DateOfBirth = DateOnly.FromDateTime(DateTime.Today)
+        };
 }

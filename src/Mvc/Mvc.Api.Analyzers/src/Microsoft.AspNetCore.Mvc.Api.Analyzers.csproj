@@ -12,12 +12,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\Mvc.Analyzers\src\CodeAnalysisExtensions.cs" />
+    <Compile Include="$(SharedSourceRoot)Roslyn\CodeAnalysisExtensions.cs" LinkBase="Shared" />
     <Compile Include="..\..\Mvc.Analyzers\src\MvcFacts.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="All" />
+    <!-- This analyzer is supported in VS 2019 and must use a compatible Microsoft.CodeAnalysis version -->
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="All" IsImplicitlyDefined="true" Version="$(Analyzer_MicrosoftCodeAnalysisCSharpWorkspacesVersion)" />
   </ItemGroup>
 
   <ItemGroup>

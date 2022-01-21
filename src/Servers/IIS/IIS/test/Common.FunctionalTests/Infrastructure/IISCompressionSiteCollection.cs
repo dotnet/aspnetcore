@@ -3,11 +3,10 @@
 
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
+
+[CollectionDefinition(Name)]
+public class IISCompressionSiteCollection : ICollectionFixture<IISCompressionSiteFixture>
 {
-    [CollectionDefinition(Name)]
-    public class IISCompressionSiteCollection : ICollectionFixture<IISCompressionSiteFixture>
-    {
-        public const string Name = nameof(IISCompressionSiteCollection);
-    }
+    public const string Name = nameof(IISCompressionSiteCollection);
 }

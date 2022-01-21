@@ -1,32 +1,29 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Linq;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.DataProtection.XmlEncryption;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace CustomEncryptorSample
+namespace CustomEncryptorSample;
+
+public class CustomXmlDecryptor : IXmlDecryptor
 {
-    public class CustomXmlDecryptor : IXmlDecryptor
+    private readonly ILogger _logger;
+
+    public CustomXmlDecryptor(IServiceProvider services)
     {
-        private readonly ILogger _logger;
+        _logger = services.GetRequiredService<ILoggerFactory>().CreateLogger<CustomXmlDecryptor>();
+    }
 
-        public CustomXmlDecryptor(IServiceProvider services)
+    public XElement Decrypt(XElement encryptedElement)
+    {
+        if (encryptedElement == null)
         {
-            _logger = services.GetRequiredService<ILoggerFactory>().CreateLogger<CustomXmlDecryptor>();
+            throw new ArgumentNullException(nameof(encryptedElement));
         }
 
-        public XElement Decrypt(XElement encryptedElement)
-        {
-            if (encryptedElement == null)
-            {
-                throw new ArgumentNullException(nameof(encryptedElement));
-            }
-
-            return new XElement(encryptedElement.Elements().Single());
-        }
+        return new XElement(encryptedElement.Elements().Single());
     }
 }

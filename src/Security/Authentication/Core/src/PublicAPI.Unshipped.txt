@@ -1,19 +1,1 @@
 #nullable enable
-*REMOVED*Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions.ForwardDefaultSelector.get -> System.Func<Microsoft.AspNetCore.Http.HttpContext!, string!>?
-Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions.ForwardDefaultSelector.get -> System.Func<Microsoft.AspNetCore.Http.HttpContext!, string?>?
-Microsoft.AspNetCore.Authentication.IDataSerializer<TModel>.Deserialize(byte[]! data) -> TModel?
-Microsoft.AspNetCore.Authentication.ISecureDataFormat<TData>.Unprotect(string? protectedText) -> TData?
-Microsoft.AspNetCore.Authentication.ISecureDataFormat<TData>.Unprotect(string? protectedText, string? purpose) -> TData?
-Microsoft.AspNetCore.Authentication.SecureDataFormat<TData>.Unprotect(string? protectedText) -> TData?
-Microsoft.AspNetCore.Authentication.SecureDataFormat<TData>.Unprotect(string? protectedText, string? purpose) -> TData?
-static Microsoft.AspNetCore.Authentication.HandleRequestResult.Fail(System.Exception! failure, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> Microsoft.AspNetCore.Authentication.HandleRequestResult!
-static Microsoft.AspNetCore.Authentication.HandleRequestResult.Fail(string! failureMessage, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> Microsoft.AspNetCore.Authentication.HandleRequestResult!
-virtual Microsoft.AspNetCore.Authentication.RemoteAuthenticationContext<TOptions>.Properties.get -> Microsoft.AspNetCore.Authentication.AuthenticationProperties?
-*REMOVED*Microsoft.AspNetCore.Authentication.IDataSerializer<TModel>.Deserialize(byte[]! data) -> TModel
-*REMOVED*Microsoft.AspNetCore.Authentication.ISecureDataFormat<TData>.Unprotect(string! protectedText) -> TData
-*REMOVED*Microsoft.AspNetCore.Authentication.ISecureDataFormat<TData>.Unprotect(string! protectedText, string? purpose) -> TData
-*REMOVED*Microsoft.AspNetCore.Authentication.SecureDataFormat<TData>.Unprotect(string! protectedText) -> TData
-*REMOVED*Microsoft.AspNetCore.Authentication.SecureDataFormat<TData>.Unprotect(string! protectedText, string? purpose) -> TData
-*REMOVED*static Microsoft.AspNetCore.Authentication.HandleRequestResult.Fail(System.Exception! failure, Microsoft.AspNetCore.Authentication.AuthenticationProperties! properties) -> Microsoft.AspNetCore.Authentication.HandleRequestResult!
-*REMOVED*static Microsoft.AspNetCore.Authentication.HandleRequestResult.Fail(string! failureMessage, Microsoft.AspNetCore.Authentication.AuthenticationProperties! properties) -> Microsoft.AspNetCore.Authentication.HandleRequestResult!
-*REMOVED*virtual Microsoft.AspNetCore.Authentication.RemoteAuthenticationContext<TOptions>.Properties.get -> Microsoft.AspNetCore.Authentication.AuthenticationProperties!

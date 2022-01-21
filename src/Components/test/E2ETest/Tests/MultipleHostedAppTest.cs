@@ -4,63 +4,57 @@
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
-using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
-using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Components.E2ETest.Tests
+namespace Microsoft.AspNetCore.Components.E2ETest.Tests;
+
+public class MultipleHostedAppTest : ServerTestBase<AspNetSiteServerFixture>
 {
-    public class MultipleHostedAppTest: ServerTestBase<AspNetSiteServerFixture>
+    public MultipleHostedAppTest(
+        BrowserFixture browserFixture,
+        AspNetSiteServerFixture serverFixture,
+        ITestOutputHelper output)
+        : base(browserFixture, serverFixture, output)
     {
-        public MultipleHostedAppTest(
-            BrowserFixture browserFixture,
-            AspNetSiteServerFixture serverFixture,
-            ITestOutputHelper output)
-            : base(browserFixture, serverFixture, output)
-        {
-            serverFixture.AdditionalArguments.AddRange(new[] { "--MapAllApps", "true" });
-            serverFixture.BuildWebHostMethod = HostedInAspNet.Server.Program.BuildWebHost;
-            serverFixture.Environment = AspNetEnvironment.Development;
-        }
+        serverFixture.AdditionalArguments.AddRange(new[] { "--MapAllApps", "true" });
+        serverFixture.BuildWebHostMethod = HostedInAspNet.Server.Program.BuildWebHost;
+        serverFixture.Environment = AspNetEnvironment.Development;
+    }
 
-        protected override void InitializeAsyncCore()
-        {
-            Navigate("/", noReload: true);
-            WaitUntilLoaded();
-        }
+    protected override void InitializeAsyncCore()
+    {
+        Navigate("/", noReload: true);
+        WaitUntilLoaded();
+    }
 
-        [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34395")]
-        public void CanLoadBlazorAppFromSubPath()
-        {
-            Navigate("/app/");
-            WaitUntilLoaded();
-            Assert.Equal("App loaded on custom path", Browser.Title);
-            Assert.Equal(0, Browser.GetBrowserLogs(LogLevel.Severe).Count);
-        }
+    [Fact]
+    public void CanLoadBlazorAppFromSubPath()
+    {
+        Navigate("/app/");
+        WaitUntilLoaded();
+        Assert.Equal("App loaded on custom path", Browser.Title);
+        Assert.Equal(0, Browser.GetBrowserLogs(LogLevel.Severe).Count);
+    }
 
-        [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34395")]
-        public void HasTitle()
-        {
-            Assert.Equal("Sample Blazor app", Browser.Title);
-        }
+    [Fact]
+    public void HasTitle()
+    {
+        Assert.Equal("Sample Blazor app", Browser.Title);
+    }
 
-        [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/34395")]
-        public void ServesStaticAssetsFromClientAppWebRoot()
-        {
-            var javascriptExecutor = (IJavaScriptExecutor)Browser;
-            var bootstrapTooltipType = javascriptExecutor
-                .ExecuteScript("return window.customJsWasLoaded;");
-            Assert.True((bool)bootstrapTooltipType);
-        }
+    [Fact]
+    public void ServesStaticAssetsFromClientAppWebRoot()
+    {
+        var javascriptExecutor = (IJavaScriptExecutor)Browser;
+        var bootstrapTooltipType = javascriptExecutor
+            .ExecuteScript("return window.customJsWasLoaded;");
+        Assert.True((bool)bootstrapTooltipType);
+    }
 
-        private void WaitUntilLoaded()
-        {
-            var app = Browser.Exists(By.TagName("app"));
-            Browser.NotEqual("Loading...", () => app.Text);
-        }
+    private void WaitUntilLoaded()
+    {
+        var app = Browser.Exists(By.TagName("app"));
+        Browser.NotEqual("Loading...", () => app.Text);
     }
 }

@@ -4,20 +4,19 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using TestHelper;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Components.Analyzers.Test
+namespace Microsoft.AspNetCore.Components.Analyzers.Test;
+
+public class ComponentParameterCaptureUnmatchedValuesHasWrongTypeTest : DiagnosticVerifier
 {
-    public class ComponentParameterCaptureUnmatchedValuesHasWrongTypeTest : DiagnosticVerifier
+    [Theory]
+    [InlineData("System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, object>>")]
+    [InlineData("System.Collections.Generic.Dictionary<string, object>")]
+    [InlineData("System.Collections.Generic.IDictionary<string, object>")]
+    [InlineData("System.Collections.Generic.IReadOnlyDictionary<string, object>")]
+    public void IgnoresPropertiesWithSupportedType(string propertyType)
     {
-        [Theory]
-        [InlineData("System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, object>>")]
-        [InlineData("System.Collections.Generic.Dictionary<string, object>")]
-        [InlineData("System.Collections.Generic.IDictionary<string, object>")]
-        [InlineData("System.Collections.Generic.IReadOnlyDictionary<string, object>")]
-        public void IgnoresPropertiesWithSupportedType(string propertyType)
-        {
-            var test = $@"
+        var test = $@"
     namespace ConsoleApplication1
     {{
         using {typeof(ParameterAttribute).Namespace};
@@ -27,13 +26,13 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
         }}
     }}" + ComponentsTestDeclarations.Source;
 
-            VerifyCSharpDiagnostic(test);
-        }
+        VerifyCSharpDiagnostic(test);
+    }
 
-        [Fact]
-        public void IgnoresPropertiesWithCaptureUnmatchedValuesFalse()
-        {
-            var test = $@"
+    [Fact]
+    public void IgnoresPropertiesWithCaptureUnmatchedValuesFalse()
+    {
+        var test = $@"
     namespace ConsoleApplication1
     {{
         using {typeof(ParameterAttribute).Namespace};
@@ -43,13 +42,13 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
         }}
     }}" + ComponentsTestDeclarations.Source;
 
-            VerifyCSharpDiagnostic(test);
-        }
+        VerifyCSharpDiagnostic(test);
+    }
 
-        [Fact]
-        public void AddsDiagnosticForInvalidType()
-        {
-            var test = $@"
+    [Fact]
+    public void AddsDiagnosticForInvalidType()
+    {
+        var test = $@"
     namespace ConsoleApplication1
     {{
         using {typeof(ParameterAttribute).Namespace};
@@ -59,22 +58,21 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
         }}
     }}" + ComponentsTestDeclarations.Source;
 
-            VerifyCSharpDiagnostic(test,
-                    new DiagnosticResult
+        VerifyCSharpDiagnostic(test,
+                new DiagnosticResult
+                {
+                    Id = DiagnosticDescriptors.ComponentParameterCaptureUnmatchedValuesHasWrongType.Id,
+                    Message = "Component parameter 'ConsoleApplication1.TypeName.MyProperty' defines CaptureUnmatchedValues but has an unsupported type 'string'. Use a type assignable from 'System.Collections.Generic.Dictionary<string, object>'.",
+                    Severity = DiagnosticSeverity.Warning,
+                    Locations = new[]
                     {
-                        Id = DiagnosticDescriptors.ComponentParameterCaptureUnmatchedValuesHasWrongType.Id,
-                        Message = "Component parameter 'ConsoleApplication1.TypeName.MyProperty' defines CaptureUnmatchedValues but has an unsupported type 'string'. Use a type assignable from 'System.Collections.Generic.Dictionary<string, object>'.",
-                        Severity = DiagnosticSeverity.Warning,
-                        Locations = new[]
-                        {
                         new DiagnosticResultLocation("Test0.cs", 7, 70)
-                        }
-                    });
-        }
+                    }
+                });
+    }
 
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new ComponentParameterAnalyzer();
-        }
+    protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
+    {
+        return new ComponentParameterAnalyzer();
     }
 }

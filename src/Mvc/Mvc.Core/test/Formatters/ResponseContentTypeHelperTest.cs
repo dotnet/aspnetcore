@@ -4,18 +4,17 @@
 using System.Text;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Net.Http.Headers;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Internal
+namespace Microsoft.AspNetCore.Internal;
+
+public class ResponseContentTypeHelperTest
 {
-    public class ResponseContentTypeHelperTest
+    public static TheoryData<MediaTypeHeaderValue, string, string> ResponseContentTypeData
     {
-        public static TheoryData<MediaTypeHeaderValue, string, string> ResponseContentTypeData
+        get
         {
-            get
-            {
-                // contentType, responseContentType, expectedContentType
-                return new TheoryData<MediaTypeHeaderValue, string, string>
+            // contentType, responseContentType, expectedContentType
+            return new TheoryData<MediaTypeHeaderValue, string, string>
                 {
                     // No explicit content type is provided, fall-back to the default content type
                     {
@@ -92,51 +91,50 @@ namespace Microsoft.AspNetCore.Internal
                         "text/foo; charset=us-ascii"
                     }
                 };
-            }
         }
+    }
 
-        [Theory]
-        [MemberData(nameof(ResponseContentTypeData))]
-        public void GetsExpectedContentTypeAndEncoding(
-            MediaTypeHeaderValue contentType,
-            string responseContentType,
-            string expectedContentType)
-        {
-            // Arrange
-            var defaultContentType = "text/default; p1=p1-value; charset=utf-8";
+    [Theory]
+    [MemberData(nameof(ResponseContentTypeData))]
+    public void GetsExpectedContentTypeAndEncoding(
+        MediaTypeHeaderValue contentType,
+        string responseContentType,
+        string expectedContentType)
+    {
+        // Arrange
+        var defaultContentType = "text/default; p1=p1-value; charset=utf-8";
 
-            // Act
-            ResponseContentTypeHelper.ResolveContentTypeAndEncoding(
-                contentType?.ToString(),
-                responseContentType,
-                (defaultContentType, Encoding.UTF8),
-                MediaType.GetEncoding,
-                out var resolvedContentType,
-                out var resolvedContentTypeEncoding);
+        // Act
+        ResponseContentTypeHelper.ResolveContentTypeAndEncoding(
+            contentType?.ToString(),
+            responseContentType,
+            (defaultContentType, Encoding.UTF8),
+            MediaType.GetEncoding,
+            out var resolvedContentType,
+            out var resolvedContentTypeEncoding);
 
-            // Assert
-            Assert.Equal(expectedContentType, resolvedContentType);
-        }
+        // Assert
+        Assert.Equal(expectedContentType, resolvedContentType);
+    }
 
-        [Fact]
-        public void DoesNotThrowException_OnInvalidResponseContentType()
-        {
-            // Arrange
-            var expectedContentType = "invalid-content-type";
-            var defaultContentType = "text/plain; charset=utf-8";
+    [Fact]
+    public void DoesNotThrowException_OnInvalidResponseContentType()
+    {
+        // Arrange
+        var expectedContentType = "invalid-content-type";
+        var defaultContentType = "text/plain; charset=utf-8";
 
-            // Act
-            ResponseContentTypeHelper.ResolveContentTypeAndEncoding(
-                null,
-                expectedContentType,
-                (defaultContentType, Encoding.UTF8),
-                MediaType.GetEncoding,
-                out var resolvedContentType,
-                out var resolvedContentTypeEncoding);
+        // Act
+        ResponseContentTypeHelper.ResolveContentTypeAndEncoding(
+            null,
+            expectedContentType,
+            (defaultContentType, Encoding.UTF8),
+            MediaType.GetEncoding,
+            out var resolvedContentType,
+            out var resolvedContentTypeEncoding);
 
-            // Assert
-            Assert.Equal(expectedContentType, resolvedContentType);
-            Assert.Equal(Encoding.UTF8, resolvedContentTypeEncoding);
-        }
+        // Assert
+        Assert.Equal(expectedContentType, resolvedContentType);
+        Assert.Equal(Encoding.UTF8, resolvedContentTypeEncoding);
     }
 }

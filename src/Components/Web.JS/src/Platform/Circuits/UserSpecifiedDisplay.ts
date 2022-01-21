@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 import { ReconnectDisplay } from './ReconnectDisplay';
 export class UserSpecifiedDisplay implements ReconnectDisplay {
   static readonly ShowClassName = 'components-reconnect-show';
@@ -14,7 +17,7 @@ export class UserSpecifiedDisplay implements ReconnectDisplay {
 
   constructor(private dialog: HTMLElement, private readonly maxRetries: number, private readonly document: Document) {
     this.document = document;
-        
+
     const maxRetriesElement = this.document.getElementById(UserSpecifiedDisplay.MaxRetriesId);
 
     if (maxRetriesElement) {

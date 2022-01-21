@@ -3,49 +3,44 @@
 
 using System.Globalization;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 
-namespace TestServer
+namespace TestServer;
+
+public class DeferredComponentContentStartup
 {
-    public class DeferredComponentContentStartup
+    // This method gets called by the runtime. Use this method to add services to the container.
+    public void ConfigureServices(IServiceCollection services)
     {
-        // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services)
+        services.AddMvc();
+        services.AddServerSideBlazor();
+        services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
+    }
+
+    // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    {
+        var enUs = new CultureInfo("en-US");
+        CultureInfo.DefaultThreadCurrentCulture = enUs;
+        CultureInfo.DefaultThreadCurrentUICulture = enUs;
+
+        if (env.IsDevelopment())
         {
-            services.AddMvc();
-            services.AddServerSideBlazor();
-            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
+            app.UseDeveloperExceptionPage();
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        app.Map("/deferred-component-content", app =>
         {
-            var enUs = new CultureInfo("en-US");
-            CultureInfo.DefaultThreadCurrentCulture = enUs;
-            CultureInfo.DefaultThreadCurrentUICulture = enUs;
+            app.UseStaticFiles();
 
-            if (env.IsDevelopment())
+            app.UseAuthentication();
+
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
             {
-                app.UseDeveloperExceptionPage();
-            }
-
-            app.Map("/deferred-component-content", app =>
-            {
-                app.UseStaticFiles();
-
-                app.UseAuthentication();
-
-                app.UseRouting();
-                app.UseEndpoints(endpoints =>
-                {
-                    endpoints.MapRazorPages();
-                    endpoints.MapFallbackToPage("/DeferredComponentContentHost");
-                    endpoints.MapBlazorHub();
-                });
+                endpoints.MapRazorPages();
+                endpoints.MapFallbackToPage("/DeferredComponentContentHost");
+                endpoints.MapBlazorHub();
             });
-        }
+        });
     }
 }

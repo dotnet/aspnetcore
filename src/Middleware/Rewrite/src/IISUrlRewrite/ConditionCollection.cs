@@ -1,68 +1,65 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections;
-using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Rewrite.IISUrlRewrite
+namespace Microsoft.AspNetCore.Rewrite.IISUrlRewrite;
+
+internal class ConditionCollection : IEnumerable<Condition>
 {
-    internal class ConditionCollection : IEnumerable<Condition>
+    private readonly List<Condition> _conditions = new List<Condition>();
+
+    public LogicalGrouping Grouping { get; }
+    public bool TrackAllCaptures { get; }
+
+    public ConditionCollection()
+        : this(LogicalGrouping.MatchAll, trackAllCaptures: false)
     {
-        private readonly List<Condition> _conditions = new List<Condition>();
+    }
 
-        public LogicalGrouping Grouping { get; }
-        public bool TrackAllCaptures { get; }
+    public ConditionCollection(LogicalGrouping grouping, bool trackAllCaptures)
+    {
+        Grouping = grouping;
+        TrackAllCaptures = trackAllCaptures;
+    }
 
-        public ConditionCollection()
-            :this(LogicalGrouping.MatchAll, trackAllCaptures: false)
+    public int Count => _conditions.Count;
+
+    public Condition this[int index]
+    {
+        get
         {
-        }
-
-        public ConditionCollection(LogicalGrouping grouping, bool trackAllCaptures)
-        {
-            Grouping = grouping;
-            TrackAllCaptures = trackAllCaptures;
-        }
-
-        public int Count => _conditions.Count;
-
-        public Condition this[int index]
-        {
-            get
+            if (index < _conditions.Count)
             {
-                if (index < _conditions.Count)
-                {
-                    return _conditions[index];
-                }
-                throw new IndexOutOfRangeException($"Cannot access condition at index {index}. Only {_conditions.Count} conditions were captured.");
+                return _conditions[index];
             }
+            throw new IndexOutOfRangeException($"Cannot access condition at index {index}. Only {_conditions.Count} conditions were captured.");
         }
+    }
 
-        public void Add(Condition condition)
+    public void Add(Condition condition)
+    {
+        if (condition != null)
         {
-            if (condition != null)
-            {
-                _conditions.Add(condition);
-            }
+            _conditions.Add(condition);
         }
+    }
 
-        public void AddConditions(IEnumerable<Condition> conditions)
+    public void AddConditions(IEnumerable<Condition> conditions)
+    {
+        if (conditions != null)
         {
-            if (conditions != null)
-            {
-                _conditions.AddRange(conditions);
-            }
+            _conditions.AddRange(conditions);
         }
+    }
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return _conditions.GetEnumerator();
-        }
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return _conditions.GetEnumerator();
+    }
 
-        public IEnumerator<Condition> GetEnumerator()
-        {
-            return _conditions.GetEnumerator();
-        }
+    public IEnumerator<Condition> GetEnumerator()
+    {
+        return _conditions.GetEnumerator();
     }
 }

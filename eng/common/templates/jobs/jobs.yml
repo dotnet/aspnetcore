@@ -83,17 +83,7 @@ jobs:
         - ${{ if eq(parameters.enableSourceBuild, true) }}:
           - Source_Build_Complete
         pool:
-          vmImage: vs2017-win2016
+          vmImage: 'windows-2019'
         runAsPublic: ${{ parameters.runAsPublic }}
         publishUsingPipelines: ${{ parameters.enablePublishUsingPipelines }}
         enablePublishBuildArtifacts: ${{ parameters.enablePublishBuildArtifacts }}
-
-  - ${{ if eq(parameters.graphFileGeneration.enabled, true) }}:
-    - template: ../job/generate-graph-files.yml
-      parameters:
-        continueOnError: ${{ parameters.continueOnError }}
-        includeToolset: ${{ parameters.graphFileGeneration.includeToolset }}
-        dependsOn:
-          - Asset_Registry_Publish
-        pool:
-          vmImage: vs2017-win2016

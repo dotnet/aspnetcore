@@ -14,112 +14,111 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using HttpMethod = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
+namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks;
+
+public class Http1ConnectionBenchmark
 {
-    public class Http1ConnectionBenchmark
+    private readonly HttpParser<Adapter> _parser = new HttpParser<Adapter>();
+
+    private ReadOnlySequence<byte> _buffer;
+
+    internal Http1Connection Connection { get; set; }
+
+    [GlobalSetup]
+    public void Setup()
     {
-        private readonly HttpParser<Adapter> _parser = new HttpParser<Adapter>();
+        var memoryPool = PinnedBlockMemoryPoolFactory.Create();
+        var options = new PipeOptions(memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
+        var pair = DuplexPipe.CreateConnectionPair(options, options);
 
-        private ReadOnlySequence<byte> _buffer;
+        var serviceContext = TestContextFactory.CreateServiceContext(
+            serverOptions: new KestrelServerOptions(),
+            httpParser: new HttpParser<Http1ParsingHandler>());
 
-        internal Http1Connection Connection { get; set; }
+        var connectionContext = TestContextFactory.CreateHttpConnectionContext(
+            serviceContext: serviceContext,
+            connectionContext: null,
+            transport: pair.Transport,
+            timeoutControl: new TimeoutControl(timeoutHandler: null),
+            memoryPool: memoryPool,
+            connectionFeatures: new FeatureCollection());
 
-        [GlobalSetup]
-        public void Setup()
+        var http1Connection = new Http1Connection(connectionContext);
+
+        http1Connection.Reset();
+
+        Connection = http1Connection;
+    }
+
+    [Benchmark(Baseline = true, OperationsPerInvoke = RequestParsingData.InnerLoopCount)]
+    public void PlaintextTechEmpower()
+    {
+        for (var i = 0; i < RequestParsingData.InnerLoopCount; i++)
         {
-            var memoryPool = PinnedBlockMemoryPoolFactory.Create();
-            var options = new PipeOptions(memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
-            var pair = DuplexPipe.CreateConnectionPair(options, options);
+            InsertData(RequestParsingData.PlaintextTechEmpowerRequest);
+            ParseData();
+        }
+    }
 
-            var serviceContext = TestContextFactory.CreateServiceContext(
-                serverOptions: new KestrelServerOptions(),
-                httpParser: new HttpParser<Http1ParsingHandler>());
+    [Benchmark(OperationsPerInvoke = RequestParsingData.InnerLoopCount)]
+    public void LiveAspNet()
+    {
+        for (var i = 0; i < RequestParsingData.InnerLoopCount; i++)
+        {
+            InsertData(RequestParsingData.LiveaspnetRequest);
+            ParseData();
+        }
+    }
 
-            var connectionContext = TestContextFactory.CreateHttpConnectionContext(
-                serviceContext: serviceContext,
-                connectionContext: null,
-                transport: pair.Transport,
-                timeoutControl: new TimeoutControl(timeoutHandler: null),
-                memoryPool: memoryPool,
-                connectionFeatures: new FeatureCollection());
+    private void InsertData(byte[] data)
+    {
+        _buffer = new ReadOnlySequence<byte>(data);
+    }
 
-            var http1Connection = new Http1Connection(connectionContext);
-
-            http1Connection.Reset();
-
-            Connection = http1Connection;
+    private void ParseData()
+    {
+        var reader = new SequenceReader<byte>(_buffer);
+        if (!_parser.ParseRequestLine(new Adapter(this), ref reader))
+        {
+            ErrorUtilities.ThrowInvalidRequestHeaders();
         }
 
-        [Benchmark(Baseline = true, OperationsPerInvoke = RequestParsingData.InnerLoopCount)]
-        public void PlaintextTechEmpower()
+        if (!_parser.ParseHeaders(new Adapter(this), ref reader))
         {
-            for (var i = 0; i < RequestParsingData.InnerLoopCount; i++)
-            {
-                InsertData(RequestParsingData.PlaintextTechEmpowerRequest);
-                ParseData();
-            }
+            ErrorUtilities.ThrowInvalidRequestHeaders();
         }
 
-        [Benchmark(OperationsPerInvoke = RequestParsingData.InnerLoopCount)]
-        public void LiveAspNet()
+        Connection.EnsureHostHeaderExists();
+
+        Connection.Reset();
+    }
+
+    private struct Adapter : IHttpRequestLineHandler, IHttpHeadersHandler
+    {
+        public Http1ConnectionBenchmark RequestHandler;
+
+        public Adapter(Http1ConnectionBenchmark requestHandler)
         {
-            for (var i = 0; i < RequestParsingData.InnerLoopCount; i++)
-            {
-                InsertData(RequestParsingData.LiveaspnetRequest);
-                ParseData();
-            }
+            RequestHandler = requestHandler;
         }
 
-        private void InsertData(byte[] data)
+        public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+            => RequestHandler.Connection.OnHeader(name, value, checkForNewlineChars: false);
+
+        public void OnHeadersComplete(bool endStream)
+            => RequestHandler.Connection.OnHeadersComplete();
+
+        public void OnStartLine(HttpVersionAndMethod versionAndMethod, TargetOffsetPathLength targetPath, Span<byte> startLine)
+            => RequestHandler.Connection.OnStartLine(versionAndMethod, targetPath, startLine);
+
+        public void OnStaticIndexedHeader(int index)
         {
-            _buffer = new ReadOnlySequence<byte>(data);
+            throw new NotImplementedException();
         }
 
-        private void ParseData()
+        public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
         {
-            var reader = new SequenceReader<byte>(_buffer);
-            if (!_parser.ParseRequestLine(new Adapter(this), ref reader))
-            {
-                ErrorUtilities.ThrowInvalidRequestHeaders();
-            }
-
-            if (!_parser.ParseHeaders(new Adapter(this), ref reader))
-            {
-                ErrorUtilities.ThrowInvalidRequestHeaders();
-            }
-
-            Connection.EnsureHostHeaderExists();
-
-            Connection.Reset();
-        }
-
-        private struct Adapter : IHttpRequestLineHandler, IHttpHeadersHandler
-        {
-            public Http1ConnectionBenchmark RequestHandler;
-
-            public Adapter(Http1ConnectionBenchmark requestHandler)
-            {
-                RequestHandler = requestHandler;
-            }
-
-            public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
-                => RequestHandler.Connection.OnHeader(name, value, checkForNewlineChars : false);
-
-            public void OnHeadersComplete(bool endStream)
-                => RequestHandler.Connection.OnHeadersComplete();
-
-            public void OnStartLine(HttpVersionAndMethod versionAndMethod, TargetOffsetPathLength targetPath, Span<byte> startLine)
-                => RequestHandler.Connection.OnStartLine(versionAndMethod, targetPath, startLine);
-
-            public void OnStaticIndexedHeader(int index)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
-            {
-                throw new NotImplementedException();
-            }
+            throw new NotImplementedException();
         }
     }
 }

@@ -3,15 +3,14 @@
 
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.SignalR.Internal
-{
-    internal class SignalRServerBuilder : ISignalRServerBuilder
-    {
-        public SignalRServerBuilder(IServiceCollection services)
-        {
-            Services = services;
-        }
+namespace Microsoft.AspNetCore.SignalR.Internal;
 
-        public IServiceCollection Services { get; }
+internal class SignalRServerBuilder : ISignalRServerBuilder
+{
+    public SignalRServerBuilder(IServiceCollection services)
+    {
+        Services = services;
     }
+
+    public IServiceCollection Services { get; }
 }
