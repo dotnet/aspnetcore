@@ -47,10 +47,9 @@ describe("hubConnection", () => {
                     .withHubProtocol(protocol)
                     .build();
 
-                const closePromise = new PromiseSource();
                 hubConnection.onclose((error) => {
                     expect(error).toBeUndefined();
-                    closePromise.resolve();
+                    done();
                 });
 
                 hubConnection.start().then(() => {
@@ -75,10 +74,9 @@ describe("hubConnection", () => {
                         .withHubProtocol(protocol)
                         .build();
 
-                    const closePromise = new PromiseSource();
                     hubConnection.onclose((error) => {
                         expect(error).toBeUndefined();
-                        closePromise.resolve();
+                        done();
                     });
 
                     hubConnection.start().then(() => {
@@ -103,10 +101,9 @@ describe("hubConnection", () => {
                     .withHubProtocol(protocol)
                     .build();
 
-                const closePromise = new PromiseSource();
                 hubConnection.onclose((error) => {
                     expect(error).toBe(undefined);
-                    closePromise.resolve();
+                    done();
                 });
 
                 hubConnection.start().then(() => {
@@ -132,10 +129,9 @@ describe("hubConnection", () => {
                     hubConnection.stop();
                 });
 
-                const closePromise = new PromiseSource();
                 hubConnection.onclose((error) => {
                     expect(error).toBe(undefined);
-                    closePromise.resolve();
+                    done();
                 });
 
                 hubConnection.start().then(() => {
@@ -144,7 +140,6 @@ describe("hubConnection", () => {
                     fail(e);
                     done();
                 });
-                await closePromise;
             });
 
             it("can stream server method and receive result", (done) => {
@@ -152,10 +147,9 @@ describe("hubConnection", () => {
                     .withHubProtocol(protocol)
                     .build();
 
-                const closePromise = new PromiseSource();
                 hubConnection.onclose((error) => {
                     expect(error).toBe(undefined);
-                    closePromise.resolve();
+                    done();
                 });
 
                 const received: string[] = [];
@@ -177,7 +171,6 @@ describe("hubConnection", () => {
                     fail(e);
                     done();
                 });
-                await closePromise;
             });
 
             it("can stream server method and cancel stream", (done) => {
@@ -185,10 +178,9 @@ describe("hubConnection", () => {
                     .withHubProtocol(protocol)
                     .build();
 
-                const closePromise = new PromiseSource();
                 hubConnection.onclose((error) => {
                     expect(error).toBe(undefined);
-                    closePromise.resolve();
+                    done();
                 });
 
                 hubConnection.on("StreamCanceled", () => {
@@ -212,7 +204,6 @@ describe("hubConnection", () => {
                     fail(e);
                     done();
                 });
-                await closePromise;
             });
 
             it("rethrows an exception from the server when invoking", (done) => {
@@ -308,7 +299,6 @@ describe("hubConnection", () => {
                     fail(e);
                     done();
                 });
-                await closePromise;
             });
 
             it("throws an exception when invoking hub method with stream", (done) => {
@@ -336,8 +326,6 @@ describe("hubConnection", () => {
                     fail(e);
                     done();
                 });
-
-                await closePromise;
             });
 
             it("can receive server calls", (done) => {
@@ -403,7 +391,7 @@ describe("hubConnection", () => {
                             });
                     } else {
                         expect(invocationCount).toBe(2);
-                        closePromise.resolve();
+                        done();
                     }
                 });
 
@@ -423,7 +411,6 @@ describe("hubConnection", () => {
                         fail(e);
                         done();
                     });
-                await closePromise;
             });
 
             it("closed with error or start fails if hub cannot be created", async () => {
@@ -454,10 +441,9 @@ describe("hubConnection", () => {
                     .withHubProtocol(protocol)
                     .build();
 
-                const closePromise = new PromiseSource();
                 hubConnection.onclose((error) => {
                     expect(error).toBe(undefined);
-                    closePromise.resolve();
+                    done();
                 });
 
                 const complexObject = {
@@ -491,7 +477,6 @@ describe("hubConnection", () => {
                         fail(e);
                         done();
                     });
-                await closePromise;
             });
 
             it("can receive different types", (done) => {
@@ -499,10 +484,9 @@ describe("hubConnection", () => {
                     .withHubProtocol(protocol)
                     .build();
 
-                const closePromise = new PromiseSource();
                 hubConnection.onclose((error) => {
                     expect(error).toBe(undefined);
-                    closePromise.resolve();
+                    done();
                 });
 
                 const complexObject = {
@@ -536,7 +520,6 @@ describe("hubConnection", () => {
                         fail(e);
                         done();
                     });
-                await closePromise;
             });
 
             it("can be restarted", (done) => {
@@ -566,7 +549,7 @@ describe("hubConnection", () => {
                             done();
                         });
                     } else {
-                        closePromise.resolve();
+                        done();
                     }
                 });
 
@@ -582,7 +565,6 @@ describe("hubConnection", () => {
                     fail(e);
                     done();
                 });
-                await closePromise;
             });
 
             it("can stream from client to server with rxjs", async () => {
