@@ -309,8 +309,8 @@ public class BindConverterTest
         var successfullyConverted = BindConverter.TryConvertTo<Guid>(incomingValue, CultureInfo.CurrentCulture, out var actual);
 
         // Assert
-        Assert.True(successfullyConverted);
         Assert.Equal(expected, actual);
+        Assert.True(successfullyConverted);
     }
 
     [Theory]
