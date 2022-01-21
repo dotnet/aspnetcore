@@ -965,8 +965,8 @@ public class ClientCertificateAuthenticationTests
             SelfSignedExpired = MakeCert(
                 "CN=Expired Self Signed,OU=dev,DC=idunno-dev,DC=org",
                 eku: null,
-                now.AddYears(-1),
-                now.AddDays(-1));
+                now.AddYears(-2),
+                now.AddYears(-1));
 
             SelfSignedNotYetValid = MakeCert(
                 "CN=Not Valid Yet Self Signed,OU=dev,DC=idunno-dev,DC=org",
@@ -998,7 +998,7 @@ public class ClientCertificateAuthenticationTests
             DateTimeOffset notBefore,
             DateTimeOffset notAfter)
         {
-            using (RSA key = RSA.Create(2048))
+            using (var key = RSA.Create(2048))
             {
                 CertificateRequest request = new CertificateRequest(
                     subjectName,
