@@ -156,12 +156,10 @@ public class RequestResponseTests
     }
 
     [ConditionalFact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/26294")]
-    [SkipNonHelix("This test takes 5 minutes to run")]
     public async Task ReadAndWriteSynchronously()
     {
         var content = new StringContent(new string('a', 100000));
-        for (int i = 0; i < 500; i++)
+        for (int i = 0; i < 50; i++)
         {
             var response = await _fixture.Client.PostAsync("ReadAndWriteSynchronously", content);
             var responseText = await response.Content.ReadAsStringAsync();
