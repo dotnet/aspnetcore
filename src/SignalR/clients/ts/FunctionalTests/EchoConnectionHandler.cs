@@ -11,7 +11,6 @@ namespace FunctionalTests
     {
         public async override Task OnConnectedAsync(ConnectionContext connection)
         {
-
             while (true)
             {
                 var result = await connection.Transport.Input.ReadAsync();
