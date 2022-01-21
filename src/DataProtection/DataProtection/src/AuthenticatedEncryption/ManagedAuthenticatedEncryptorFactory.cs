@@ -4,128 +4,126 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
-using Microsoft.AspNetCore.Cryptography.Cng;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.DataProtection.Managed;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
+namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
+
+/// <summary>
+/// An <see cref="IAuthenticatedEncryptorFactory"/> for <see cref="ManagedAuthenticatedEncryptor"/>.
+/// </summary>
+public sealed class ManagedAuthenticatedEncryptorFactory : IAuthenticatedEncryptorFactory
 {
+    private readonly ILogger _logger;
+
     /// <summary>
-    /// An <see cref="IAuthenticatedEncryptorFactory"/> for <see cref="ManagedAuthenticatedEncryptor"/>.
+    /// Initializes a new instance of <see cref="ManagedAuthenticatedEncryptorFactory"/>.
     /// </summary>
-    public sealed class ManagedAuthenticatedEncryptorFactory : IAuthenticatedEncryptorFactory
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+    public ManagedAuthenticatedEncryptorFactory(ILoggerFactory loggerFactory)
     {
-        private readonly ILogger _logger;
+        _logger = loggerFactory.CreateLogger<ManagedAuthenticatedEncryptorFactory>();
+    }
 
+    /// <inheritdoc />
+    public IAuthenticatedEncryptor? CreateEncryptorInstance(IKey key)
+    {
+        if (key.Descriptor is not ManagedAuthenticatedEncryptorDescriptor descriptor)
+        {
+            return null;
+        }
+
+        return CreateAuthenticatedEncryptorInstance(descriptor.MasterKey, descriptor.Configuration);
+    }
+
+    [return: NotNullIfNotNull("configuration")]
+    internal ManagedAuthenticatedEncryptor? CreateAuthenticatedEncryptorInstance(
+        ISecret secret,
+        ManagedAuthenticatedEncryptorConfiguration? configuration)
+    {
+        if (configuration == null)
+        {
+            return null;
+        }
+
+        return new ManagedAuthenticatedEncryptor(
+            keyDerivationKey: new Secret(secret),
+            symmetricAlgorithmFactory: GetSymmetricBlockCipherAlgorithmFactory(configuration),
+            symmetricAlgorithmKeySizeInBytes: configuration.EncryptionAlgorithmKeySize / 8,
+            validationAlgorithmFactory: GetKeyedHashAlgorithmFactory(configuration));
+    }
+
+    private Func<KeyedHashAlgorithm> GetKeyedHashAlgorithmFactory(ManagedAuthenticatedEncryptorConfiguration configuration)
+    {
+        // basic argument checking
+        if (configuration.ValidationAlgorithmType == null)
+        {
+            throw Error.Common_PropertyCannotBeNullOrEmpty(nameof(configuration.ValidationAlgorithmType));
+        }
+
+        _logger.UsingManagedKeyedHashAlgorithm(configuration.ValidationAlgorithmType.FullName!);
+        if (configuration.ValidationAlgorithmType == typeof(HMACSHA256))
+        {
+            return () => new HMACSHA256();
+        }
+        else if (configuration.ValidationAlgorithmType == typeof(HMACSHA512))
+        {
+            return () => new HMACSHA512();
+        }
+        else
+        {
+            return AlgorithmActivator.CreateFactory<KeyedHashAlgorithm>(configuration.ValidationAlgorithmType);
+        }
+    }
+
+    private Func<SymmetricAlgorithm> GetSymmetricBlockCipherAlgorithmFactory(ManagedAuthenticatedEncryptorConfiguration configuration)
+    {
+        // basic argument checking
+        if (configuration.EncryptionAlgorithmType == null)
+        {
+            throw Error.Common_PropertyCannotBeNullOrEmpty(nameof(configuration.EncryptionAlgorithmType));
+        }
+        typeof(SymmetricAlgorithm).AssertIsAssignableFrom(configuration.EncryptionAlgorithmType);
+        if (configuration.EncryptionAlgorithmKeySize < 0)
+        {
+            throw Error.Common_PropertyMustBeNonNegative(nameof(configuration.EncryptionAlgorithmKeySize));
+        }
+
+        _logger.UsingManagedSymmetricAlgorithm(configuration.EncryptionAlgorithmType.FullName!);
+
+        if (configuration.EncryptionAlgorithmType == typeof(Aes))
+        {
+            return Aes.Create;
+        }
+        else
+        {
+            return AlgorithmActivator.CreateFactory<SymmetricAlgorithm>(configuration.EncryptionAlgorithmType);
+        }
+    }
+
+    /// <summary>
+    /// Contains helper methods for generating cryptographic algorithm factories.
+    /// </summary>
+    private static class AlgorithmActivator
+    {
         /// <summary>
-        /// Initializes a new instance of <see cref="ManagedAuthenticatedEncryptorFactory"/>.
+        /// Creates a factory that wraps a call to <see cref="Activator.CreateInstance{T}"/>.
         /// </summary>
-        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
-        public ManagedAuthenticatedEncryptorFactory(ILoggerFactory loggerFactory)
+        public static Func<T> CreateFactory<T>(Type implementation)
         {
-            _logger = loggerFactory.CreateLogger<ManagedAuthenticatedEncryptorFactory>();
+            return ((IActivator<T>)Activator.CreateInstance(typeof(AlgorithmActivatorCore<>).MakeGenericType(implementation))!).Creator;
         }
 
-        /// <inheritdoc />
-        public IAuthenticatedEncryptor? CreateEncryptorInstance(IKey key)
+        private interface IActivator<out T>
         {
-            if (key.Descriptor is not ManagedAuthenticatedEncryptorDescriptor descriptor)
-            {
-                return null;
-            }
-
-            return CreateAuthenticatedEncryptorInstance(descriptor.MasterKey, descriptor.Configuration);
+            Func<T> Creator { get; }
         }
 
-        [return: NotNullIfNotNull("configuration")]
-        internal ManagedAuthenticatedEncryptor? CreateAuthenticatedEncryptorInstance(
-            ISecret secret,
-            ManagedAuthenticatedEncryptorConfiguration? configuration)
+        private class AlgorithmActivatorCore<T> : IActivator<T> where T : new()
         {
-            if (configuration == null)
-            {
-                return null;
-            }
-
-            return new ManagedAuthenticatedEncryptor(
-                keyDerivationKey: new Secret(secret),
-                symmetricAlgorithmFactory: GetSymmetricBlockCipherAlgorithmFactory(configuration),
-                symmetricAlgorithmKeySizeInBytes: configuration.EncryptionAlgorithmKeySize / 8,
-                validationAlgorithmFactory: GetKeyedHashAlgorithmFactory(configuration));
-        }
-
-        private Func<KeyedHashAlgorithm> GetKeyedHashAlgorithmFactory(ManagedAuthenticatedEncryptorConfiguration configuration)
-        {
-            // basic argument checking
-            if (configuration.ValidationAlgorithmType == null)
-            {
-                throw Error.Common_PropertyCannotBeNullOrEmpty(nameof(configuration.ValidationAlgorithmType));
-            }
-
-            _logger.UsingManagedKeyedHashAlgorithm(configuration.ValidationAlgorithmType.FullName!);
-            if (configuration.ValidationAlgorithmType == typeof(HMACSHA256))
-            {
-                return () => new HMACSHA256();
-            }
-            else if (configuration.ValidationAlgorithmType == typeof(HMACSHA512))
-            {
-                return () => new HMACSHA512();
-            }
-            else
-            {
-                return AlgorithmActivator.CreateFactory<KeyedHashAlgorithm>(configuration.ValidationAlgorithmType);
-            }
-        }
-
-        private Func<SymmetricAlgorithm> GetSymmetricBlockCipherAlgorithmFactory(ManagedAuthenticatedEncryptorConfiguration configuration)
-        {
-            // basic argument checking
-            if (configuration.EncryptionAlgorithmType == null)
-            {
-                throw Error.Common_PropertyCannotBeNullOrEmpty(nameof(configuration.EncryptionAlgorithmType));
-            }
-            typeof(SymmetricAlgorithm).AssertIsAssignableFrom(configuration.EncryptionAlgorithmType);
-            if (configuration.EncryptionAlgorithmKeySize < 0)
-            {
-                throw Error.Common_PropertyMustBeNonNegative(nameof(configuration.EncryptionAlgorithmKeySize));
-            }
-
-            _logger.UsingManagedSymmetricAlgorithm(configuration.EncryptionAlgorithmType.FullName!);
-
-            if (configuration.EncryptionAlgorithmType == typeof(Aes))
-            {
-                return Aes.Create;
-            }
-            else
-            {
-                return AlgorithmActivator.CreateFactory<SymmetricAlgorithm>(configuration.EncryptionAlgorithmType);
-            }
-        }
-
-        /// <summary>
-        /// Contains helper methods for generating cryptographic algorithm factories.
-        /// </summary>
-        private static class AlgorithmActivator
-        {
-            /// <summary>
-            /// Creates a factory that wraps a call to <see cref="Activator.CreateInstance{T}"/>.
-            /// </summary>
-            public static Func<T> CreateFactory<T>(Type implementation)
-            {
-                return ((IActivator<T>)Activator.CreateInstance(typeof(AlgorithmActivatorCore<>).MakeGenericType(implementation))!).Creator;
-            }
-
-            private interface IActivator<out T>
-            {
-                Func<T> Creator { get; }
-            }
-
-            private class AlgorithmActivatorCore<T> : IActivator<T> where T : new()
-            {
-                public Func<T> Creator { get; } = Activator.CreateInstance<T>;
-            }
+            public Func<T> Creator { get; } = Activator.CreateInstance<T>;
         }
     }
 }

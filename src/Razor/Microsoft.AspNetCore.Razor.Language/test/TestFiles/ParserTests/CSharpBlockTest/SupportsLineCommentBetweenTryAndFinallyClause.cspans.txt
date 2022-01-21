@@ -1,4 +1,0 @@
-Markup span at (0:0,0 [0] ) (Accepts:Any) - Parent: Markup block at (0:0,0 [51] )
-Transition span at (0:0,0 [1] ) (Accepts:None) - Parent: Statement block at (0:0,0 [51] )
-Code span at (1:0,1 [50] ) (Accepts:None) - Parent: Statement block at (0:0,0 [51] )
-Markup span at (51:3,18 [0] ) (Accepts:Any) - Parent: Markup block at (0:0,0 [51] )

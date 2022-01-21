@@ -187,10 +187,6 @@ function InitializeCustomToolset {
 }
 
 function Build {
-
-  if [[ "$ci" == true ]]; then
-    TryLogClientIpAddress
-  fi
   InitializeToolset
   InitializeCustomToolset
 

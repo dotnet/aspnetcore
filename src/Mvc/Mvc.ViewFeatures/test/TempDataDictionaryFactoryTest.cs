@@ -3,51 +3,49 @@
 
 using Microsoft.AspNetCore.Http;
 using Moq;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.ViewFeatures
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
+
+public class TempDataDictionaryFactoryTest
 {
-    public class TempDataDictionaryFactoryTest
+    [Fact]
+    public void Factory_CreatesTempData_ForEachHttpContext()
     {
-        [Fact]
-        public void Factory_CreatesTempData_ForEachHttpContext()
-        {
-            // Arrange
-            var factory = CreateFactory();
+        // Arrange
+        var factory = CreateFactory();
 
-            var context1 = new DefaultHttpContext();
-            var context2 = new DefaultHttpContext();
+        var context1 = new DefaultHttpContext();
+        var context2 = new DefaultHttpContext();
 
-            var tempData1 = factory.GetTempData(context1);
+        var tempData1 = factory.GetTempData(context1);
 
-            // Act
-            var tempData2 = factory.GetTempData(context2);
+        // Act
+        var tempData2 = factory.GetTempData(context2);
 
-            // Assert
-            Assert.NotSame(tempData1, tempData2);
-        }
+        // Assert
+        Assert.NotSame(tempData1, tempData2);
+    }
 
-        [Fact]
-        public void Factory_StoresTempData_InHttpContext()
-        {
-            // Arrange
-            var factory = CreateFactory();
+    [Fact]
+    public void Factory_StoresTempData_InHttpContext()
+    {
+        // Arrange
+        var factory = CreateFactory();
 
-            var context = new DefaultHttpContext();
+        var context = new DefaultHttpContext();
 
-            var tempData1 = factory.GetTempData(context);
+        var tempData1 = factory.GetTempData(context);
 
-            // Act
-            var tempData2 = factory.GetTempData(context);
+        // Act
+        var tempData2 = factory.GetTempData(context);
 
-            // Assert
-            Assert.Same(tempData1, tempData2);
-        }
+        // Assert
+        Assert.Same(tempData1, tempData2);
+    }
 
-        private TempDataDictionaryFactory CreateFactory()
-        {
-            var provider = Mock.Of<ITempDataProvider>();
-            return new TempDataDictionaryFactory(provider);
-        }
+    private TempDataDictionaryFactory CreateFactory()
+    {
+        var provider = Mock.Of<ITempDataProvider>();
+        return new TempDataDictionaryFactory(provider);
     }
 }

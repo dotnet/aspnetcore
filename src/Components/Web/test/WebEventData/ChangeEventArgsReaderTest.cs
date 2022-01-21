@@ -2,71 +2,69 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Components.Web
+namespace Microsoft.AspNetCore.Components.Web;
+
+public class ChangeEventArgsReaderTest
 {
-    public class ChangeEventArgsReaderTest
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Read_WithBoolValue(bool changeValue)
     {
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Read_WithBoolValue(bool changeValue)
+        // Arrange
+        var args = new ChangeEventArgs
         {
-            // Arrange
-            var args = new ChangeEventArgs
-            {
-                Value = changeValue,
-            };
-            var jsonElement = GetJsonElement(args);
+            Value = changeValue,
+        };
+        var jsonElement = GetJsonElement(args);
 
-            // Act
-            var result = ChangeEventArgsReader.Read(jsonElement);
+        // Act
+        var result = ChangeEventArgsReader.Read(jsonElement);
 
-            // Assert
-            Assert.Equal(args.Value, result.Value);
-        }
+        // Assert
+        Assert.Equal(args.Value, result.Value);
+    }
 
-        [Fact]
-        public void Read_WithNullValue()
+    [Fact]
+    public void Read_WithNullValue()
+    {
+        // Arrange
+        var args = new ChangeEventArgs
         {
-            // Arrange
-            var args = new ChangeEventArgs
-            {
-                Value = null,
-            };
-            var jsonElement = GetJsonElement(args);
+            Value = null,
+        };
+        var jsonElement = GetJsonElement(args);
 
-            // Act
-            var result = ChangeEventArgsReader.Read(jsonElement);
+        // Act
+        var result = ChangeEventArgsReader.Read(jsonElement);
 
-            // Assert
-            Assert.Equal(args.Value, result.Value);
-        }
+        // Assert
+        Assert.Equal(args.Value, result.Value);
+    }
 
-        [Fact]
-        public void Read_WithStringValue()
+    [Fact]
+    public void Read_WithStringValue()
+    {
+        // Arrange
+        var args = new ChangeEventArgs
         {
-            // Arrange
-            var args = new ChangeEventArgs
-            {
-                Value = "Hello world",
-            };
-            var jsonElement = GetJsonElement(args);
+            Value = "Hello world",
+        };
+        var jsonElement = GetJsonElement(args);
 
-            // Act
-            var result = ChangeEventArgsReader.Read(jsonElement);
+        // Act
+        var result = ChangeEventArgsReader.Read(jsonElement);
 
-            // Assert
-            Assert.Equal(args.Value, result.Value);
-        }
+        // Assert
+        Assert.Equal(args.Value, result.Value);
+    }
 
-        private static JsonElement GetJsonElement(ChangeEventArgs args)
-        {
-            var json = JsonSerializer.SerializeToUtf8Bytes(args, JsonSerializerOptionsProvider.Options);
-            var jsonReader = new Utf8JsonReader(json);
-            var jsonElement = JsonElement.ParseValue(ref jsonReader);
-            return jsonElement;
-        }
+    private static JsonElement GetJsonElement(ChangeEventArgs args)
+    {
+        var json = JsonSerializer.SerializeToUtf8Bytes(args, JsonSerializerOptionsProvider.Options);
+        var jsonReader = new Utf8JsonReader(json);
+        var jsonElement = JsonElement.ParseValue(ref jsonReader);
+        return jsonElement;
     }
 }

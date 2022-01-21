@@ -1,129 +1,127 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Net.WebSockets;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
+namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports;
+
+internal partial class WebSocketsServerTransport
 {
-    internal partial class WebSocketsServerTransport
+    private static class Log
     {
-        private static class Log
+        private static readonly Action<ILogger, string?, Exception?> _socketOpened =
+            LoggerMessage.Define<string?>(LogLevel.Debug, new EventId(1, "SocketOpened"), "Socket opened using Sub-Protocol: '{SubProtocol}'.");
+
+        private static readonly Action<ILogger, Exception?> _socketClosed =
+            LoggerMessage.Define(LogLevel.Debug, new EventId(2, "SocketClosed"), "Socket closed.");
+
+        private static readonly Action<ILogger, WebSocketCloseStatus?, string, Exception?> _clientClosed =
+            LoggerMessage.Define<WebSocketCloseStatus?, string>(LogLevel.Debug, new EventId(3, "ClientClosed"), "Client closed connection with status code '{Status}' ({Description}). Signaling end-of-input to application.");
+
+        private static readonly Action<ILogger, Exception?> _waitingForSend =
+            LoggerMessage.Define(LogLevel.Debug, new EventId(4, "WaitingForSend"), "Waiting for the application to finish sending data.");
+
+        private static readonly Action<ILogger, Exception?> _failedSending =
+            LoggerMessage.Define(LogLevel.Debug, new EventId(5, "FailedSending"), "Application failed during sending. Sending InternalServerError close frame.");
+
+        private static readonly Action<ILogger, Exception?> _finishedSending =
+            LoggerMessage.Define(LogLevel.Debug, new EventId(6, "FinishedSending"), "Application finished sending. Sending close frame.");
+
+        private static readonly Action<ILogger, Exception?> _waitingForClose =
+            LoggerMessage.Define(LogLevel.Debug, new EventId(7, "WaitingForClose"), "Waiting for the client to close the socket.");
+
+        private static readonly Action<ILogger, Exception?> _closeTimedOut =
+            LoggerMessage.Define(LogLevel.Debug, new EventId(8, "CloseTimedOut"), "Timed out waiting for client to send the close frame, aborting the connection.");
+
+        private static readonly Action<ILogger, WebSocketMessageType, int, bool, Exception?> _messageReceived =
+            LoggerMessage.Define<WebSocketMessageType, int, bool>(LogLevel.Trace, new EventId(9, "MessageReceived"), "Message received. Type: {MessageType}, size: {Size}, EndOfMessage: {EndOfMessage}.");
+
+        private static readonly Action<ILogger, int, Exception?> _messageToApplication =
+            LoggerMessage.Define<int>(LogLevel.Trace, new EventId(10, "MessageToApplication"), "Passing message to application. Payload size: {Size}.");
+
+        private static readonly Action<ILogger, long, Exception?> _sendPayload =
+            LoggerMessage.Define<long>(LogLevel.Trace, new EventId(11, "SendPayload"), "Sending payload: {Size} bytes.");
+
+        private static readonly Action<ILogger, Exception?> _errorWritingFrame =
+            LoggerMessage.Define(LogLevel.Debug, new EventId(12, "ErrorWritingFrame"), "Error writing frame.");
+
+        // 13, SendFailed - removed
+
+        private static readonly Action<ILogger, Exception?> _closedPrematurely =
+            LoggerMessage.Define(LogLevel.Debug, new EventId(14, "ClosedPrematurely"), "Socket connection closed prematurely.");
+
+        private static readonly Action<ILogger, Exception?> _closingWebSocketFailed =
+            LoggerMessage.Define(LogLevel.Debug, new EventId(15, "ClosingWebSocketFailed"), "Closing webSocket failed.");
+
+        public static void SocketOpened(ILogger logger, string? subProtocol)
         {
-            private static readonly Action<ILogger, string?, Exception?> _socketOpened =
-                LoggerMessage.Define<string?>(LogLevel.Debug, new EventId(1, "SocketOpened"), "Socket opened using Sub-Protocol: '{SubProtocol}'.");
+            _socketOpened(logger, subProtocol, null);
+        }
 
-            private static readonly Action<ILogger, Exception?> _socketClosed =
-                LoggerMessage.Define(LogLevel.Debug, new EventId(2, "SocketClosed"), "Socket closed.");
+        public static void SocketClosed(ILogger logger)
+        {
+            _socketClosed(logger, null);
+        }
 
-            private static readonly Action<ILogger, WebSocketCloseStatus?, string, Exception?> _clientClosed =
-                LoggerMessage.Define<WebSocketCloseStatus?, string>(LogLevel.Debug, new EventId(3, "ClientClosed"), "Client closed connection with status code '{Status}' ({Description}). Signaling end-of-input to application.");
+        public static void ClientClosed(ILogger logger, WebSocketCloseStatus? closeStatus, string closeDescription)
+        {
+            _clientClosed(logger, closeStatus, closeDescription, null);
+        }
 
-            private static readonly Action<ILogger, Exception?> _waitingForSend =
-                LoggerMessage.Define(LogLevel.Debug, new EventId(4, "WaitingForSend"), "Waiting for the application to finish sending data.");
+        public static void WaitingForSend(ILogger logger)
+        {
+            _waitingForSend(logger, null);
+        }
 
-            private static readonly Action<ILogger, Exception?> _failedSending =
-                LoggerMessage.Define(LogLevel.Debug, new EventId(5, "FailedSending"), "Application failed during sending. Sending InternalServerError close frame.");
+        public static void FailedSending(ILogger logger)
+        {
+            _failedSending(logger, null);
+        }
 
-            private static readonly Action<ILogger, Exception?> _finishedSending =
-                LoggerMessage.Define(LogLevel.Debug, new EventId(6, "FinishedSending"), "Application finished sending. Sending close frame.");
+        public static void FinishedSending(ILogger logger)
+        {
+            _finishedSending(logger, null);
+        }
 
-            private static readonly Action<ILogger, Exception?> _waitingForClose =
-                LoggerMessage.Define(LogLevel.Debug, new EventId(7, "WaitingForClose"), "Waiting for the client to close the socket.");
+        public static void WaitingForClose(ILogger logger)
+        {
+            _waitingForClose(logger, null);
+        }
 
-            private static readonly Action<ILogger, Exception?> _closeTimedOut =
-                LoggerMessage.Define(LogLevel.Debug, new EventId(8, "CloseTimedOut"), "Timed out waiting for client to send the close frame, aborting the connection.");
+        public static void CloseTimedOut(ILogger logger)
+        {
+            _closeTimedOut(logger, null);
+        }
 
-            private static readonly Action<ILogger, WebSocketMessageType, int, bool, Exception?> _messageReceived =
-                LoggerMessage.Define<WebSocketMessageType, int, bool>(LogLevel.Trace, new EventId(9, "MessageReceived"), "Message received. Type: {MessageType}, size: {Size}, EndOfMessage: {EndOfMessage}.");
+        public static void MessageReceived(ILogger logger, WebSocketMessageType type, int size, bool endOfMessage)
+        {
+            _messageReceived(logger, type, size, endOfMessage, null);
+        }
 
-            private static readonly Action<ILogger, int, Exception?> _messageToApplication =
-                LoggerMessage.Define<int>(LogLevel.Trace, new EventId(10, "MessageToApplication"), "Passing message to application. Payload size: {Size}.");
+        public static void MessageToApplication(ILogger logger, int size)
+        {
+            _messageToApplication(logger, size, null);
+        }
 
-            private static readonly Action<ILogger, long, Exception?> _sendPayload =
-                LoggerMessage.Define<long>(LogLevel.Trace, new EventId(11, "SendPayload"), "Sending payload: {Size} bytes.");
+        public static void SendPayload(ILogger logger, long size)
+        {
+            _sendPayload(logger, size, null);
+        }
 
-            private static readonly Action<ILogger, Exception?> _errorWritingFrame =
-                LoggerMessage.Define(LogLevel.Debug, new EventId(12, "ErrorWritingFrame"), "Error writing frame.");
+        public static void ErrorWritingFrame(ILogger logger, Exception ex)
+        {
+            _errorWritingFrame(logger, ex);
+        }
 
-            // 13, SendFailed - removed
+        public static void ClosedPrematurely(ILogger logger, Exception ex)
+        {
+            _closedPrematurely(logger, ex);
+        }
 
-            private static readonly Action<ILogger, Exception?> _closedPrematurely =
-                LoggerMessage.Define(LogLevel.Debug, new EventId(14, "ClosedPrematurely"), "Socket connection closed prematurely.");
-
-            private static readonly Action<ILogger, Exception?> _closingWebSocketFailed =
-                LoggerMessage.Define(LogLevel.Debug, new EventId(15, "ClosingWebSocketFailed"), "Closing webSocket failed.");
-
-            public static void SocketOpened(ILogger logger, string? subProtocol)
-            {
-                _socketOpened(logger, subProtocol, null);
-            }
-
-            public static void SocketClosed(ILogger logger)
-            {
-                _socketClosed(logger, null);
-            }
-
-            public static void ClientClosed(ILogger logger, WebSocketCloseStatus? closeStatus, string closeDescription)
-            {
-                _clientClosed(logger, closeStatus, closeDescription, null);
-            }
-
-            public static void WaitingForSend(ILogger logger)
-            {
-                _waitingForSend(logger, null);
-            }
-
-            public static void FailedSending(ILogger logger)
-            {
-                _failedSending(logger, null);
-            }
-
-            public static void FinishedSending(ILogger logger)
-            {
-                _finishedSending(logger, null);
-            }
-
-            public static void WaitingForClose(ILogger logger)
-            {
-                _waitingForClose(logger, null);
-            }
-
-            public static void CloseTimedOut(ILogger logger)
-            {
-                _closeTimedOut(logger, null);
-            }
-
-            public static void MessageReceived(ILogger logger, WebSocketMessageType type, int size, bool endOfMessage)
-            {
-                _messageReceived(logger, type, size, endOfMessage, null);
-            }
-
-            public static void MessageToApplication(ILogger logger, int size)
-            {
-                _messageToApplication(logger, size, null);
-            }
-
-            public static void SendPayload(ILogger logger, long size)
-            {
-                _sendPayload(logger, size, null);
-            }
-
-            public static void ErrorWritingFrame(ILogger logger, Exception ex)
-            {
-                _errorWritingFrame(logger, ex);
-            }
-
-            public static void ClosedPrematurely(ILogger logger, Exception ex)
-            {
-                _closedPrematurely(logger, ex);
-            }
-
-            public static void ClosingWebSocketFailed(ILogger logger, Exception ex)
-            {
-                _closingWebSocketFailed(logger, ex);
-            }
+        public static void ClosingWebSocketFailed(ILogger logger, Exception ex)
+        {
+            _closingWebSocketFailed(logger, ex);
         }
     }
 }

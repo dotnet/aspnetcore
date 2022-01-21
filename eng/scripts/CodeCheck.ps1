@@ -74,8 +74,8 @@ try {
         $fileName = [io.path]::GetFileNameWithoutExtension($_)
         if (-not ($projectFileNames.Add($fileName))) {
             LogError -code 'BUILD003' -filepath $_ `
-                "Multiple project files named '$fileName' exist. Project files should have a unique name " +
-                "to avoid conflicts in build output."
+                ("Multiple project files named '$fileName' exist. Project files should have a unique name " +
+                 "to avoid conflicts in build output.")
         }
     }
 
@@ -104,8 +104,8 @@ try {
 
             if ($expectedVersion -ne $actualVersion) {
                 LogError -filepath "$repoRoot\global.json" `
-                    "MSBuild SDK version '$($dep.Name)' in global.json does not match the value in " +
-                    "Version.Details.xml. Expected '$expectedVersion', actual '$actualVersion'"
+                    ("MSBuild SDK version '$($dep.Name)' in global.json does not match the value in " +
+                     "Version.Details.xml. Expected '$expectedVersion', actual '$actualVersion'")
             }
         }
         else {
@@ -124,17 +124,17 @@ try {
 
             if ($expectedVersion -ne $actualVersion) {
                 LogError -filepath "$repoRoot\eng\Versions.props" `
-                    "Version variable '$varName' does not match the value in Version.Details.xml. " +
-                    "Expected '$expectedVersion', actual '$actualVersion'"
+                    ("Version variable '$varName' does not match the value in Version.Details.xml. " +
+                     "Expected '$expectedVersion', actual '$actualVersion'")
             }
         }
     }
 
     foreach ($unexpectedVar in $versionVars) {
         LogError -Filepath "$repoRoot\eng\Versions.props" `
-            "Version variable '$unexpectedVar' does not have a matching entry in Version.Details.xml. " +
-            "See https://github.com/dotnet/aspnetcore/blob/main/docs/ReferenceResolution.md for instructions " +
-            "on how to add a new dependency."
+            ("Version variable '$unexpectedVar' does not have a matching entry in Version.Details.xml. " +
+             "See https://github.com/dotnet/aspnetcore/blob/main/docs/ReferenceResolution.md for instructions " +
+             "on how to add a new dependency.")
     }
 
     # ComponentsWebAssembly-CSharp.sln is used by the templating engine; MessagePack.sln is irrelevant (in submodule).
@@ -198,8 +198,8 @@ try {
             if ($changedFilesExclusions -contains $file) {continue}
             $filePath = Resolve-Path "${repoRoot}/${file}"
             LogError  -filepath $filePath `
-                "Generated code is not up to date in $file. You might need to regenerate the reference " +
-                "assemblies or project list (see docs/ReferenceResolution.md)"
+                ("Generated code is not up to date in $file. You might need to regenerate the reference " +
+                 "assemblies or project list (see docs/ReferenceResolution.md)")
             & git --no-pager diff --ignore-space-change $filePath
         }
     }
@@ -235,8 +235,8 @@ try {
         Write-Host "Found changes in $($changedAPIBaselines.count) API baseline files"
 
         if ($changedAPIBaselines.count -gt 0) {
-            LogError "Detected modification to baseline API files. PublicAPI.Shipped.txt files should only " +
-                "be updated after a major release. See /docs/APIBaselines.md for more information."
+            LogError ("Detected modification to baseline API files. PublicAPI.Shipped.txt files should only " +
+                "be updated after a major release. See /docs/APIBaselines.md for more information.")
             LogError "Modified API baseline files:"
             foreach ($file in $changedAPIBaselines) {
                 LogError $file

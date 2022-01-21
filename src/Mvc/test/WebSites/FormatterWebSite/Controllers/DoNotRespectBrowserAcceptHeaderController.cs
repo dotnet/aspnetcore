@@ -3,47 +3,46 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace FormatterWebSite.Controllers
+namespace FormatterWebSite.Controllers;
+
+public class DoNotRespectBrowserAcceptHeaderController : Controller
 {
-    public class DoNotRespectBrowserAcceptHeaderController : Controller
+    [HttpGet]
+    public Employee EmployeeInfo()
     {
-        [HttpGet]
-        public Employee EmployeeInfo()
+        return new Employee()
         {
-            return new Employee()
-            {
-                Id = 10,
-                Name = "John"
-            };
+            Id = 10,
+            Name = "John"
+        };
+    }
+
+    [HttpGet]
+    [Produces("application/xml")]
+    public Employee EmployeeInfoWithProduces()
+    {
+        return new Employee()
+        {
+            Id = 20,
+            Name = "Mike"
+        };
+    }
+
+    [HttpPost]
+    public IActionResult CreateEmployee([FromBody] Employee employee)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
         }
 
-        [HttpGet]
-        [Produces("application/xml")]
-        public Employee EmployeeInfoWithProduces()
-        {
-            return new Employee()
-            {
-                Id = 20,
-                Name = "Mike"
-            };
-        }
+        return new ObjectResult(employee);
+    }
 
-        [HttpPost]
-        public IActionResult CreateEmployee([FromBody]Employee employee)
-        {
-            if(!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+    public class Employee
+    {
+        public int Id { get; set; }
 
-            return new ObjectResult(employee);
-        }
-
-        public class Employee
-        {
-            public int Id { get; set; }
-
-            public string Name { get; set; }
-        }
+        public string Name { get; set; }
     }
 }

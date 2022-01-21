@@ -3,29 +3,27 @@
 
 #nullable enable
 
-using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNetCore.Mvc.ModelBinding
+namespace Microsoft.AspNetCore.Mvc.ModelBinding;
+
+/// <summary>
+/// An <see cref="IValueProvider"/> for jQuery formatted form data.
+/// </summary>
+public class JQueryFormValueProvider : JQueryValueProvider
 {
     /// <summary>
-    /// An <see cref="IValueProvider"/> for jQuery formatted form data.
+    /// Initializes a new instance of the <see cref="JQueryFormValueProvider"/> class.
     /// </summary>
-    public class JQueryFormValueProvider : JQueryValueProvider
+    /// <param name="bindingSource">The <see cref="BindingSource"/> of the data.</param>
+    /// <param name="values">The values.</param>
+    /// <param name="culture">The culture to return with ValueProviderResult instances.</param>
+    public JQueryFormValueProvider(
+        BindingSource bindingSource,
+        IDictionary<string, StringValues> values,
+        CultureInfo? culture)
+        : base(bindingSource, values, culture)
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="JQueryFormValueProvider"/> class.
-        /// </summary>
-        /// <param name="bindingSource">The <see cref="BindingSource"/> of the data.</param>
-        /// <param name="values">The values.</param>
-        /// <param name="culture">The culture to return with ValueProviderResult instances.</param>
-        public JQueryFormValueProvider(
-            BindingSource bindingSource,
-            IDictionary<string, StringValues> values,
-            CultureInfo? culture)
-            : base(bindingSource, values, culture)
-        {
-        }
     }
 }

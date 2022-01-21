@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <TestGroupName>IISNewHandler.FunctionalTests</TestGroupName>
-    <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
     <DefineConstants>NEWHANDLER_FUNCTIONALS</DefineConstants>
     <SkipTests Condition=" '$(SkipIISNewHandlerTests)' == 'true' ">true</SkipTests>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -12,25 +11,24 @@
   <Import Project="../FunctionalTest.props" />
 
   <ItemGroup>
-    <Compile Include="..\Common.FunctionalTests\StartupTests.cs" />
-    <Compile Include="..\Common.FunctionalTests\ShutdownTests.cs" />
+    <Compile Include="..\Common.LongTests\**\*.cs" />
     <Compile Include="..\Common.FunctionalTests\Infrastructure\*.cs" />
     <Compile Include="..\IIS.Shared.FunctionalTests\Properties\AssemblyInfo.cs" />
     <Compile Include="$(SharedSourceRoot)Http2cat\**\*.cs" LinkBase="Shared\Http2cat" />
     <Compile Include="$(SharedSourceRoot)runtime\Http2\**\*.cs" LinkBase="Shared\Http2\" />
-    <Compile Include="$(SharedSourceRoot)runtime\IHttpHeadersHandler.cs" LinkBase="Shared\IHttpHeadersHandler.cs" />
+    <Compile Include="$(SharedSourceRoot)runtime\IHttpStreamHeadersHandler.cs" LinkBase="Shared\IHttpStreamHeadersHandler.cs" />
     <Compile Include="$(SharedSourceRoot)runtime\SR.cs" LinkBase="Shared\SR.cs" />
-    <Compile Include="$(SharedSourceRoot)ServerInfrastructure\**\*.cs" LinkBase="Shared\" />
+    <Compile Include="$(SharedSourceRoot)ServerInfrastructure\**\*.cs" LinkBase="Shared\" Exclude="$(SharedSourceRoot)ServerInfrastructure\DuplexPipe.cs" />
     <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" LinkBase="Shared\" />
-    <Compile Remove="$(SharedSourceRoot)ServerInfrastructure\DuplexPipe.cs" />
     <Compile Include="$(SharedSourceRoot)TaskToApm.cs" Link="Shared\TaskToApm.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\testassets\IIS.Common.TestLib\IIS.Common.TestLib.csproj" />
-    <ProjectReference Include="..\testassets\InProcessWebSite\InProcessWebSite.csproj">
-      <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
-    </ProjectReference>
+    <ProjectReference Include="..\testassets\InProcessWebSite\InProcessWebSite.csproj"
+      Private="false"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
 
   <ItemGroup>

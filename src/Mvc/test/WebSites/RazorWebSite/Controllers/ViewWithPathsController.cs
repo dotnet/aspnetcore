@@ -3,14 +3,13 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace RazorWebSite.Controllers
+namespace RazorWebSite.Controllers;
+
+public class ViewWithPathsController : Controller
 {
-    public class ViewWithPathsController : Controller
+    [HttpGet("/ViewWithPaths")]
+    public IActionResult Index()
     {
-        [HttpGet("/ViewWithPaths")]
-        public IActionResult Index()
-        {
-            return View();
-        }
+        return View();
     }
 }

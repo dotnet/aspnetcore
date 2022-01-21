@@ -1,55 +1,51 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Runtime.CompilerServices;
+namespace Microsoft.AspNetCore.Routing.Matching;
 
-namespace Microsoft.AspNetCore.Routing.Matching
+// Optimized implementation for cases where we know that we're
+// comparing to ASCII.
+internal class SingleEntryAsciiJumpTable : JumpTable
 {
-    // Optimized implementation for cases where we know that we're
-    // comparing to ASCII.
-    internal class SingleEntryAsciiJumpTable : JumpTable
+    private readonly int _defaultDestination;
+    private readonly int _exitDestination;
+    private readonly string _text;
+    private readonly int _destination;
+
+    public SingleEntryAsciiJumpTable(
+        int defaultDestination,
+        int exitDestination,
+        string text,
+        int destination)
     {
-        private readonly int _defaultDestination;
-        private readonly int _exitDestination;
-        private readonly string _text;
-        private readonly int _destination;
+        _defaultDestination = defaultDestination;
+        _exitDestination = exitDestination;
+        _text = text;
+        _destination = destination;
+    }
 
-        public SingleEntryAsciiJumpTable(
-            int defaultDestination,
-            int exitDestination,
-            string text,
-            int destination)
+    public override int GetDestination(string path, PathSegment segment)
+    {
+        var length = segment.Length;
+        if (length == 0)
         {
-            _defaultDestination = defaultDestination;
-            _exitDestination = exitDestination;
-            _text = text;
-            _destination = destination;
+            return _exitDestination;
         }
 
-        public override int GetDestination(string path, PathSegment segment)
+        var text = _text;
+        if (length != text.Length)
         {
-            var length = segment.Length;
-            if (length == 0)
-            {
-                return _exitDestination;
-            }
-
-            var text = _text;
-            if (length != text.Length)
-            {
-                return _defaultDestination;
-            }
-
-            var a = path.AsSpan(segment.Start, length);
-            var b = text.AsSpan();
-
-            return Ascii.AsciiIgnoreCaseEquals(a, b, length) ? _destination : _defaultDestination;
+            return _defaultDestination;
         }
 
-        public override string DebuggerToString()
-        {
-            return $"{{ {_text}: {_destination}, $+: {_defaultDestination}, $0: {_exitDestination} }}";
-        }
+        var a = path.AsSpan(segment.Start, length);
+        var b = text.AsSpan();
+
+        return Ascii.AsciiIgnoreCaseEquals(a, b, length) ? _destination : _defaultDestination;
+    }
+
+    public override string DebuggerToString()
+    {
+        return $"{{ {_text}: {_destination}, $+: {_defaultDestination}, $0: {_exitDestination} }}";
     }
 }

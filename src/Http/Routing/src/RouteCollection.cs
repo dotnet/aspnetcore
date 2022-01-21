@@ -3,204 +3,200 @@
 
 #nullable enable
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Routing
+namespace Microsoft.AspNetCore.Routing;
+
+/// <summary>
+/// Supports managing a collection for multiple routes.
+/// </summary>
+public class RouteCollection : IRouteCollection
 {
+    private static readonly char[] UrlQueryDelimiters = new char[] { '?', '#' };
+    private readonly List<IRouter> _routes = new List<IRouter>();
+    private readonly List<IRouter> _unnamedRoutes = new List<IRouter>();
+    private readonly Dictionary<string, INamedRouter> _namedRoutes =
+                                new Dictionary<string, INamedRouter>(StringComparer.OrdinalIgnoreCase);
+
+    private RouteOptions? _options;
+
     /// <summary>
-    /// Supports managing a collection for multiple routes.
+    /// Gets the route at a given index.
     /// </summary>
-    public class RouteCollection : IRouteCollection
+    /// <value>The route at the given index.</value>
+    public IRouter this[int index]
     {
-        private static readonly char[] UrlQueryDelimiters = new char[] { '?', '#' };
-        private readonly List<IRouter> _routes = new List<IRouter>();
-        private readonly List<IRouter> _unnamedRoutes = new List<IRouter>();
-        private readonly Dictionary<string, INamedRouter> _namedRoutes =
-                                    new Dictionary<string, INamedRouter>(StringComparer.OrdinalIgnoreCase);
+        get { return _routes[index]; }
+    }
 
-        private RouteOptions? _options;
+    /// <summary>
+    /// Gets the total number of routes registered in the collection.
+    /// </summary>
+    public int Count
+    {
+        get { return _routes.Count; }
+    }
 
-        /// <summary>
-        /// Gets the route at a given index.
-        /// </summary>
-        /// <value>The route at the given index.</value>
-        public IRouter this[int index]
+    /// <inheritdoc />
+    public void Add(IRouter router)
+    {
+        if (router == null)
         {
-            get { return _routes[index]; }
+            throw new ArgumentNullException(nameof(router));
         }
 
-        /// <summary>
-        /// Gets the total number of routes registered in the collection.
-        /// </summary>
-        public int Count
+        var namedRouter = router as INamedRouter;
+        if (namedRouter != null)
         {
-            get { return _routes.Count; }
-        }
-
-        /// <inheritdoc />
-        public void Add(IRouter router)
-        {
-            if (router == null)
+            if (!string.IsNullOrEmpty(namedRouter.Name))
             {
-                throw new ArgumentNullException(nameof(router));
+                _namedRoutes.Add(namedRouter.Name, namedRouter);
             }
+        }
+        else
+        {
+            _unnamedRoutes.Add(router);
+        }
 
-            var namedRouter = router as INamedRouter;
-            if (namedRouter != null)
+        _routes.Add(router);
+    }
+
+    /// <inheritdoc />
+    public virtual async Task RouteAsync(RouteContext context)
+    {
+        // Perf: We want to avoid allocating a new RouteData for each route we need to process.
+        // We can do this by snapshotting the state at the beginning and then restoring it
+        // for each router we execute.
+        var snapshot = context.RouteData.PushState(null, values: null, dataTokens: null);
+
+        for (var i = 0; i < Count; i++)
+        {
+            var route = this[i];
+            context.RouteData.Routers.Add(route);
+
+            try
             {
-                if (!string.IsNullOrEmpty(namedRouter.Name))
+                await route.RouteAsync(context);
+
+                if (context.Handler != null)
                 {
-                    _namedRoutes.Add(namedRouter.Name, namedRouter);
+                    break;
                 }
             }
-            else
+            finally
             {
-                _unnamedRoutes.Add(router);
-            }
-
-            _routes.Add(router);
-        }
-
-        /// <inheritdoc />
-        public virtual async Task RouteAsync(RouteContext context)
-        {
-            // Perf: We want to avoid allocating a new RouteData for each route we need to process.
-            // We can do this by snapshotting the state at the beginning and then restoring it
-            // for each router we execute.
-            var snapshot = context.RouteData.PushState(null, values: null, dataTokens: null);
-
-            for (var i = 0; i < Count; i++)
-            {
-                var route = this[i];
-                context.RouteData.Routers.Add(route);
-
-                try
+                if (context.Handler == null)
                 {
-                    await route.RouteAsync(context);
-
-                    if (context.Handler != null)
-                    {
-                        break;
-                    }
-                }
-                finally
-                {
-                    if (context.Handler == null)
-                    {
-                        snapshot.Restore();
-                    }
+                    snapshot.Restore();
                 }
             }
         }
+    }
 
-        /// <inheritdoc />
-        public virtual VirtualPathData? GetVirtualPath(VirtualPathContext context)
+    /// <inheritdoc />
+    public virtual VirtualPathData? GetVirtualPath(VirtualPathContext context)
+    {
+        EnsureOptions(context.HttpContext);
+
+        if (!string.IsNullOrEmpty(context.RouteName))
         {
-            EnsureOptions(context.HttpContext);
+            VirtualPathData? namedRoutePathData = null;
 
-            if (!string.IsNullOrEmpty(context.RouteName))
+            if (_namedRoutes.TryGetValue(context.RouteName, out var matchedNamedRoute))
             {
-                VirtualPathData? namedRoutePathData = null;
-
-                if (_namedRoutes.TryGetValue(context.RouteName, out var matchedNamedRoute))
-                {
-                    namedRoutePathData = matchedNamedRoute.GetVirtualPath(context);
-                }
-
-                var pathData = GetVirtualPath(context, _unnamedRoutes);
-
-                // If the named route and one of the unnamed routes also matches, then we have an ambiguity.
-                if (namedRoutePathData != null && pathData != null)
-                {
-                    var message = Resources.FormatNamedRoutes_AmbiguousRoutesFound(context.RouteName);
-                    throw new InvalidOperationException(message);
-                }
-
-                return NormalizeVirtualPath(namedRoutePathData ?? pathData);
+                namedRoutePathData = matchedNamedRoute.GetVirtualPath(context);
             }
-            else
+
+            var pathData = GetVirtualPath(context, _unnamedRoutes);
+
+            // If the named route and one of the unnamed routes also matches, then we have an ambiguity.
+            if (namedRoutePathData != null && pathData != null)
             {
-                return NormalizeVirtualPath(GetVirtualPath(context, _routes));
+                var message = Resources.FormatNamedRoutes_AmbiguousRoutesFound(context.RouteName);
+                throw new InvalidOperationException(message);
             }
+
+            return NormalizeVirtualPath(namedRoutePathData ?? pathData);
         }
-
-        private static VirtualPathData? GetVirtualPath(VirtualPathContext context, List<IRouter> routes)
+        else
         {
-            for (var i = 0; i < routes.Count; i++)
-            {
-                var route = routes[i];
-
-                var pathData = route.GetVirtualPath(context);
-                if (pathData != null)
-                {
-                    return pathData;
-                }
-            }
-
-            return null;
+            return NormalizeVirtualPath(GetVirtualPath(context, _routes));
         }
+    }
 
-        private VirtualPathData? NormalizeVirtualPath(VirtualPathData? pathData)
+    private static VirtualPathData? GetVirtualPath(VirtualPathContext context, List<IRouter> routes)
+    {
+        for (var i = 0; i < routes.Count; i++)
         {
-            if (pathData == null)
+            var route = routes[i];
+
+            var pathData = route.GetVirtualPath(context);
+            if (pathData != null)
             {
                 return pathData;
             }
+        }
 
-            Debug.Assert(_options != null);
+        return null;
+    }
 
-            var url = pathData.VirtualPath;
-
-            if (!string.IsNullOrEmpty(url) && (_options.LowercaseUrls || _options.AppendTrailingSlash))
-            {
-                var indexOfSeparator = url.IndexOfAny(UrlQueryDelimiters);
-                var urlWithoutQueryString = url;
-                var queryString = string.Empty;
-
-                if (indexOfSeparator != -1)
-                {
-                    urlWithoutQueryString = url.Substring(0, indexOfSeparator);
-                    queryString = url.Substring(indexOfSeparator);
-                }
-
-                if (_options.LowercaseUrls)
-                {
-                    urlWithoutQueryString = urlWithoutQueryString.ToLowerInvariant();
-                }
-
-                if (_options.LowercaseUrls && _options.LowercaseQueryStrings)
-                {
-                    queryString = queryString.ToLowerInvariant();
-                }
-
-                if (_options.AppendTrailingSlash && !urlWithoutQueryString.EndsWith("/", StringComparison.Ordinal))
-                {
-                    urlWithoutQueryString += "/";
-                }
-
-                // queryString will contain the delimiter ? or # as the first character, so it's safe to append.
-                url = urlWithoutQueryString + queryString;
-
-                return new VirtualPathData(pathData.Router, url, pathData.DataTokens);
-            }
-
+    private VirtualPathData? NormalizeVirtualPath(VirtualPathData? pathData)
+    {
+        if (pathData == null)
+        {
             return pathData;
         }
 
-        [MemberNotNull(nameof(_options))]
-        private void EnsureOptions(HttpContext context)
+        Debug.Assert(_options != null);
+
+        var url = pathData.VirtualPath;
+
+        if (!string.IsNullOrEmpty(url) && (_options.LowercaseUrls || _options.AppendTrailingSlash))
         {
-            if (_options == null)
+            var indexOfSeparator = url.IndexOfAny(UrlQueryDelimiters);
+            var urlWithoutQueryString = url;
+            var queryString = string.Empty;
+
+            if (indexOfSeparator != -1)
             {
-                _options = context.RequestServices.GetRequiredService<IOptions<RouteOptions>>().Value;
+                urlWithoutQueryString = url.Substring(0, indexOfSeparator);
+                queryString = url.Substring(indexOfSeparator);
             }
+
+            if (_options.LowercaseUrls)
+            {
+                urlWithoutQueryString = urlWithoutQueryString.ToLowerInvariant();
+            }
+
+            if (_options.LowercaseUrls && _options.LowercaseQueryStrings)
+            {
+                queryString = queryString.ToLowerInvariant();
+            }
+
+            if (_options.AppendTrailingSlash && !urlWithoutQueryString.EndsWith("/", StringComparison.Ordinal))
+            {
+                urlWithoutQueryString += "/";
+            }
+
+            // queryString will contain the delimiter ? or # as the first character, so it's safe to append.
+            url = urlWithoutQueryString + queryString;
+
+            return new VirtualPathData(pathData.Router, url, pathData.DataTokens);
+        }
+
+        return pathData;
+    }
+
+    [MemberNotNull(nameof(_options))]
+    private void EnsureOptions(HttpContext context)
+    {
+        if (_options == null)
+        {
+            _options = context.RequestServices.GetRequiredService<IOptions<RouteOptions>>().Value;
         }
     }
 }

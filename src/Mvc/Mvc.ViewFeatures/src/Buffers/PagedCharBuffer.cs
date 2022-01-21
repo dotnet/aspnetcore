@@ -1,165 +1,162 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
+
+internal class PagedCharBuffer : IDisposable
 {
-    internal class PagedCharBuffer : IDisposable
+    public const int PageSize = 1024;
+    private int _charIndex;
+
+    public PagedCharBuffer(ICharBufferSource bufferSource)
     {
-        public const int PageSize = 1024;
-        private int _charIndex;
+        BufferSource = bufferSource;
+    }
 
-        public PagedCharBuffer(ICharBufferSource bufferSource)
+    public ICharBufferSource BufferSource { get; }
+
+    // Strongly typed rather than IList for performance
+    public List<char[]> Pages { get; } = new List<char[]>();
+
+    public int Length
+    {
+        get
         {
-            BufferSource = bufferSource;
-        }
-
-        public ICharBufferSource BufferSource { get; }
-
-        // Strongly typed rather than IList for performance
-        public List<char[]> Pages { get; } = new List<char[]>();
-
-        public int Length
-        {
-            get
+            var length = _charIndex;
+            var pages = Pages;
+            var fullPages = pages.Count - 1;
+            for (var i = 0; i < fullPages; i++)
             {
-                var length = _charIndex;
-                var pages = Pages;
-                var fullPages = pages.Count - 1;
-                for (var i = 0; i < fullPages; i++)
-                {
-                    length += pages[i].Length;
-                }
-
-                return length;
+                length += pages[i].Length;
             }
+
+            return length;
+        }
+    }
+
+    private char[] CurrentPage { get; set; }
+
+    public void Append(char value)
+    {
+        var page = GetCurrentPage();
+        page[_charIndex++] = value;
+    }
+
+    public void Append(string value)
+    {
+        if (value == null)
+        {
+            return;
         }
 
-        private char[] CurrentPage { get; set; }
+        var index = 0;
+        var count = value.Length;
 
-        public void Append(char value)
+        while (count > 0)
         {
             var page = GetCurrentPage();
-            page[_charIndex++] = value;
+            var copyLength = Math.Min(count, page.Length - _charIndex);
+            Debug.Assert(copyLength > 0);
+
+            value.CopyTo(
+                index,
+                page,
+                _charIndex,
+                copyLength);
+
+            _charIndex += copyLength;
+            index += copyLength;
+
+            count -= copyLength;
         }
+    }
 
-        public void Append(string value)
+    public void Append(char[] buffer, int index, int count)
+    {
+        while (count > 0)
         {
-            if (value == null)
-            {
-                return;
-            }
+            var page = GetCurrentPage();
+            var copyLength = Math.Min(count, page.Length - _charIndex);
+            Debug.Assert(copyLength > 0);
 
-            var index = 0;
-            var count = value.Length;
+            Array.Copy(
+                buffer,
+                index,
+                page,
+                _charIndex,
+                copyLength);
 
-            while (count > 0)
-            {
-                var page = GetCurrentPage();
-                var copyLength = Math.Min(count, page.Length - _charIndex);
-                Debug.Assert(copyLength > 0);
-
-                value.CopyTo(
-                    index,
-                    page,
-                    _charIndex,
-                    copyLength);
-
-                _charIndex += copyLength;
-                index += copyLength;
-
-                count -= copyLength;
-            }
+            _charIndex += copyLength;
+            index += copyLength;
+            count -= copyLength;
         }
+    }
 
-        public void Append(char[] buffer, int index, int count)
+    /// <summary>
+    /// Return all but one of the pages to the <see cref="ICharBufferSource"/>.
+    /// This way if someone writes a large chunk of content, we can return those buffers and avoid holding them
+    /// for extended durations.
+    /// </summary>
+    public void Clear()
+    {
+        var pages = Pages;
+        for (var i = pages.Count - 1; i > 0; i--)
         {
-            while (count > 0)
-            {
-                var page = GetCurrentPage();
-                var copyLength = Math.Min(count, page.Length - _charIndex);
-                Debug.Assert(copyLength > 0);
+            var page = pages[i];
 
-                Array.Copy(
-                    buffer,
-                    index,
-                    page,
-                    _charIndex,
-                    copyLength);
-
-                _charIndex += copyLength;
-                index += copyLength;
-                count -= copyLength;
-            }
-        }
-
-        /// <summary>
-        /// Return all but one of the pages to the <see cref="ICharBufferSource"/>.
-        /// This way if someone writes a large chunk of content, we can return those buffers and avoid holding them
-        /// for extended durations.
-        /// </summary>
-        public void Clear()
-        {
-            var pages = Pages;
-            for (var i = pages.Count - 1; i > 0; i--)
-            {
-                var page = pages[i];
-
-                try
-                {
-                    pages.RemoveAt(i);
-                }
-                finally
-                {
-                    BufferSource.Return(page);
-                }
-            }
-
-            _charIndex = 0;
-            CurrentPage = pages.Count > 0 ? pages[0] : null;
-        }
-
-        private char[] GetCurrentPage()
-        {
-            if (CurrentPage == null || _charIndex == CurrentPage.Length)
-            {
-                CurrentPage = NewPage();
-                _charIndex = 0;
-            }
-
-            return CurrentPage;
-        }
-
-        private char[] NewPage()
-        {
-            char[] page = null;
             try
             {
-                page = BufferSource.Rent(PageSize);
-                Pages.Add(page);
+                pages.RemoveAt(i);
             }
-            catch when (page != null)
+            finally
             {
                 BufferSource.Return(page);
-                throw;
             }
-
-            return page;
         }
 
-        public void Dispose()
+        _charIndex = 0;
+        CurrentPage = pages.Count > 0 ? pages[0] : null;
+    }
+
+    private char[] GetCurrentPage()
+    {
+        if (CurrentPage == null || _charIndex == CurrentPage.Length)
         {
-            var pages = Pages;
-            var count = pages.Count;
-            for (var i = 0; i < count; i++)
-            {
-                BufferSource.Return(pages[i]);
-            }
-
-            pages.Clear();
+            CurrentPage = NewPage();
+            _charIndex = 0;
         }
+
+        return CurrentPage;
+    }
+
+    private char[] NewPage()
+    {
+        char[] page = null;
+        try
+        {
+            page = BufferSource.Rent(PageSize);
+            Pages.Add(page);
+        }
+        catch when (page != null)
+        {
+            BufferSource.Return(page);
+            throw;
+        }
+
+        return page;
+    }
+
+    public void Dispose()
+    {
+        var pages = Pages;
+        var count = pages.Count;
+        for (var i = 0; i < count; i++)
+        {
+            BufferSource.Return(pages[i]);
+        }
+
+        pages.Clear();
     }
 }

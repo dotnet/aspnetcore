@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 import { ReconnectionHandler, ReconnectionOptions } from './CircuitStartOptions';
 import { ReconnectDisplay } from './ReconnectDisplay';
 import { DefaultReconnectDisplay } from './DefaultReconnectDisplay';
@@ -7,8 +10,11 @@ import { Blazor } from '../../GlobalExports';
 
 export class DefaultReconnectionHandler implements ReconnectionHandler {
   private readonly _logger: Logger;
+
   private readonly _reconnectCallback: () => Promise<boolean>;
+
   private _currentReconnectionProcess: ReconnectionProcess | null = null;
+
   private _reconnectionDisplay?: ReconnectDisplay;
 
   constructor(logger: Logger, overrideDisplay?: ReconnectDisplay, reconnectCallback?: () => Promise<boolean>) {
@@ -17,31 +23,32 @@ export class DefaultReconnectionHandler implements ReconnectionHandler {
     this._reconnectCallback = reconnectCallback || Blazor.reconnect!;
   }
 
-  onConnectionDown (options: ReconnectionOptions, error?: Error) {
+  onConnectionDown(options: ReconnectionOptions, _error?: Error): void {
     if (!this._reconnectionDisplay) {
       const modal = document.getElementById(options.dialogId);
       this._reconnectionDisplay = modal
-          ? new UserSpecifiedDisplay(modal, options.maxRetries, document)
-          : new DefaultReconnectDisplay(options.dialogId, options.maxRetries, document, this._logger);
+        ? new UserSpecifiedDisplay(modal, options.maxRetries, document)
+        : new DefaultReconnectDisplay(options.dialogId, options.maxRetries, document, this._logger);
     }
 
     if (!this._currentReconnectionProcess) {
-      this._currentReconnectionProcess = new ReconnectionProcess(options, this._logger, this._reconnectCallback, this._reconnectionDisplay!);
+      this._currentReconnectionProcess = new ReconnectionProcess(options, this._logger, this._reconnectCallback, this._reconnectionDisplay);
     }
   }
 
-  onConnectionUp() {
+  onConnectionUp(): void {
     if (this._currentReconnectionProcess) {
       this._currentReconnectionProcess.dispose();
       this._currentReconnectionProcess = null;
     }
   }
-};
+}
 
 class ReconnectionProcess {
   static readonly MaximumFirstRetryInterval = 3000;
 
   readonly reconnectDisplay: ReconnectDisplay;
+
   isDisposed = false;
 
   constructor(options: ReconnectionOptions, private logger: Logger, private reconnectCallback: () => Promise<boolean>, display: ReconnectDisplay) {
@@ -59,9 +66,9 @@ class ReconnectionProcess {
     for (let i = 0; i < options.maxRetries; i++) {
       this.reconnectDisplay.update(i + 1);
 
-      const delayDuration = i == 0 && options.retryIntervalMilliseconds > ReconnectionProcess.MaximumFirstRetryInterval
-                            ? ReconnectionProcess.MaximumFirstRetryInterval
-                            : options.retryIntervalMilliseconds;
+      const delayDuration = i === 0 && options.retryIntervalMilliseconds > ReconnectionProcess.MaximumFirstRetryInterval
+        ? ReconnectionProcess.MaximumFirstRetryInterval
+        : options.retryIntervalMilliseconds;
       await this.delay(delayDuration);
 
       if (this.isDisposed) {

@@ -4,22 +4,21 @@
 using System.Net;
 using System.Net.Sockets;
 
-namespace Microsoft.AspNetCore.SpaServices.Util
+namespace Microsoft.AspNetCore.SpaServices.Util;
+
+internal static class TcpPortFinder
 {
-    internal static class TcpPortFinder
+    public static int FindAvailablePort()
     {
-        public static int FindAvailablePort()
+        var listener = new TcpListener(IPAddress.Loopback, 0);
+        listener.Start();
+        try
         {
-            var listener = new TcpListener(IPAddress.Loopback, 0);
-            listener.Start();
-            try
-            {
-                return ((IPEndPoint)listener.LocalEndpoint).Port;
-            }
-            finally
-            {
-                listener.Stop();
-            }
+            return ((IPEndPoint)listener.LocalEndpoint).Port;
+        }
+        finally
+        {
+            listener.Stop();
         }
     }
 }

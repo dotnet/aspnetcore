@@ -1,19 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Linq;
-using System.Threading;
 using System.Collections.Immutable;
+using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Analyzers.DelegateEndpoints;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CodeActions;
+using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.CodeFixes;
-using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.Editing;
 
-namespace Microsoft.AspNetCore.Analyzers.DelegateEndpoints.Fixers;
+namespace Microsoft.AspNetCore.Analyzers.RouteHandlers.Fixers;
 
 public class DetectMismatchedParameterOptionalityFixer : CodeFixProvider
 {

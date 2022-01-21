@@ -1,77 +1,74 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
+namespace Microsoft.AspNetCore.Server.IIS.Core;
 
-namespace Microsoft.AspNetCore.Server.IIS.Core
+internal class IISNativeApplication
 {
-    internal class IISNativeApplication
+    private readonly NativeSafeHandle _nativeApplication;
+    private readonly object _sync = new object();
+
+    public IISNativeApplication(NativeSafeHandle nativeApplication)
     {
-        private readonly NativeSafeHandle _nativeApplication;
-        private readonly object _sync = new object();
+        _nativeApplication = nativeApplication;
+    }
 
-        public IISNativeApplication(NativeSafeHandle nativeApplication)
+    public void StopIncomingRequests()
+    {
+        lock (_sync)
         {
-            _nativeApplication = nativeApplication;
-        }
-
-        public void StopIncomingRequests()
-        {
-            lock (_sync)
+            if (!_nativeApplication.IsInvalid)
             {
-                if (!_nativeApplication.IsInvalid)
-                {
-                    NativeMethods.HttpStopIncomingRequests(_nativeApplication);
-                }
+                NativeMethods.HttpStopIncomingRequests(_nativeApplication);
             }
         }
+    }
 
-        public void StopCallsIntoManaged()
+    public void StopCallsIntoManaged()
+    {
+        lock (_sync)
         {
-            lock (_sync)
+            if (!_nativeApplication.IsInvalid)
             {
-                if (!_nativeApplication.IsInvalid)
-                {
-                    NativeMethods.HttpStopCallsIntoManaged(_nativeApplication);
-                }
+                NativeMethods.HttpStopCallsIntoManaged(_nativeApplication);
             }
         }
+    }
 
-        public unsafe void RegisterCallbacks(
-            delegate* unmanaged<IntPtr, IntPtr, NativeMethods.REQUEST_NOTIFICATION_STATUS> requestCallback,
-            delegate* unmanaged<IntPtr, int> shutdownCallback,
-            delegate* unmanaged<IntPtr, void> disconnectCallback,
-            delegate* unmanaged<IntPtr, int, int, NativeMethods.REQUEST_NOTIFICATION_STATUS> asyncCallback,
-            delegate* unmanaged<IntPtr, void> requestsDrainedHandler,
-            IntPtr pvRequestContext,
-            IntPtr pvShutdownContext)
+    public unsafe void RegisterCallbacks(
+        delegate* unmanaged<IntPtr, IntPtr, NativeMethods.REQUEST_NOTIFICATION_STATUS> requestCallback,
+        delegate* unmanaged<IntPtr, int> shutdownCallback,
+        delegate* unmanaged<IntPtr, void> disconnectCallback,
+        delegate* unmanaged<IntPtr, int, int, NativeMethods.REQUEST_NOTIFICATION_STATUS> asyncCallback,
+        delegate* unmanaged<IntPtr, void> requestsDrainedHandler,
+        IntPtr pvRequestContext,
+        IntPtr pvShutdownContext)
+    {
+        NativeMethods.HttpRegisterCallbacks(
+            _nativeApplication,
+            requestCallback,
+            shutdownCallback,
+            disconnectCallback,
+            asyncCallback,
+            requestsDrainedHandler,
+            pvRequestContext,
+            pvShutdownContext);
+    }
+
+    public void Dispose()
+    {
+        lock (_sync)
         {
-            NativeMethods.HttpRegisterCallbacks(
-                _nativeApplication,
-                requestCallback,
-                shutdownCallback,
-                disconnectCallback,
-                asyncCallback,
-                requestsDrainedHandler,
-                pvRequestContext,
-                pvShutdownContext);
-        }
+            GC.SuppressFinalize(this);
 
-        public void Dispose()
-        {
-            lock (_sync)
-            {
-                GC.SuppressFinalize(this);
-
-                // Don't need to await here because pinvokes should never been called after disposing the safe handle.
-                _nativeApplication.Dispose();
-            }
+            // Don't need to await here because pinvokes should never been called after disposing the safe handle.
+            _nativeApplication.Dispose();
         }
+    }
 
-        ~IISNativeApplication()
-        {
-            // If this finalize is invoked, try our best to block all calls into managed.
-            StopCallsIntoManaged();
-        }
+    ~IISNativeApplication()
+    {
+        // If this finalize is invoked, try our best to block all calls into managed.
+        StopCallsIntoManaged();
     }
 }

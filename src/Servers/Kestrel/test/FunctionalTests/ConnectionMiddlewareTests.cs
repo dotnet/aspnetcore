@@ -13,165 +13,163 @@ using Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 
-#if LIBUV
-namespace Microsoft.AspNetCore.Server.Kestrel.Libuv.FunctionalTests
-#elif SOCKETS
-namespace Microsoft.AspNetCore.Server.Kestrel.Sockets.FunctionalTests
+#if SOCKETS
+namespace Microsoft.AspNetCore.Server.Kestrel.Sockets.FunctionalTests;
 #else
-namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
+namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
 #endif
+
+public class ConnectionMiddlewareTests : LoggedTest
 {
-    public class ConnectionMiddlewareTests : LoggedTest
+    [Fact]
+    public async Task ThrowingSynchronousConnectionMiddlewareDoesNotCrashServer()
     {
-        [Fact]
-        public async Task ThrowingSynchronousConnectionMiddlewareDoesNotCrashServer()
+        var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
+        listenOptions.Use(next => context => throw new Exception());
+
+        var serviceContext = new TestServiceContext(LoggerFactory);
+
+        await using (var server = new TestServer(TestApp.EchoApp, serviceContext, listenOptions))
         {
-            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
-            listenOptions.Use(next => context => throw new Exception());
-
-            var serviceContext = new TestServiceContext(LoggerFactory);
-
-            await using (var server = new TestServer(TestApp.EchoApp, serviceContext, listenOptions))
+            using (var connection = server.CreateConnection())
             {
-                using (var connection = server.CreateConnection())
+                // Will throw because the exception in the connection adapter will close the connection.
+                await Assert.ThrowsAnyAsync<IOException>(async () =>
                 {
-                    // Will throw because the exception in the connection adapter will close the connection.
-                    await Assert.ThrowsAnyAsync<IOException>(async () =>
+                    await connection.Send(
+                        "POST / HTTP/1.0",
+                        "Content-Length: 1000",
+                        "\r\n");
+
+                    for (var i = 0; i < 1000; i++)
                     {
-                        await connection.Send(
-                           "POST / HTTP/1.0",
-                           "Content-Length: 1000",
-                           "\r\n");
+                        await connection.Send("a");
+                        await Task.Delay(5);
+                    }
+                });
+            }
+        }
+    }
 
-                        for (var i = 0; i < 1000; i++)
-                        {
-                            await connection.Send("a");
-                            await Task.Delay(5);
-                        }
-                    });
-                }
+    [Fact]
+    public async Task DisposeAsyncAfterReplacingTransportClosesConnection()
+    {
+        var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
+
+        var connectionCloseTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var mockDuplexPipe = new MockDuplexPipe();
+
+        listenOptions.Use(next =>
+        {
+            return async context =>
+            {
+                context.Transport = mockDuplexPipe;
+                await context.DisposeAsync();
+                await connectionCloseTcs.Task;
+            };
+        });
+
+        var serviceContext = new TestServiceContext(LoggerFactory);
+
+        await using (var server = new TestServer(TestApp.EmptyApp, serviceContext, listenOptions))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                await connection.WaitForConnectionClose();
+                connectionCloseTcs.SetResult();
             }
         }
 
-        [Fact]
-        public async Task DisposeAsyncAfterReplacingTransportClosesConnection()
+        Assert.False(mockDuplexPipe.WasCompleted);
+    }
+
+    private class MockDuplexPipe : IDuplexPipe
+    {
+        public bool WasCompleted { get; private set; }
+
+        public PipeReader Input => new MockPipeReader(this);
+
+        public PipeWriter Output => new MockPipeWriter(this);
+
+        private class MockPipeReader : PipeReader
         {
-            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
+            private readonly MockDuplexPipe _duplexPipe;
 
-            var connectionCloseTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            var mockDuplexPipe = new MockDuplexPipe();
-
-            listenOptions.Use(next =>
+            public MockPipeReader(MockDuplexPipe duplexPipe)
             {
-                return async context =>
-                {
-                    context.Transport = mockDuplexPipe;
-                    await context.DisposeAsync();
-                    await connectionCloseTcs.Task;
-                };
-            });
-
-            var serviceContext = new TestServiceContext(LoggerFactory);
-
-            await using (var server = new TestServer(TestApp.EmptyApp, serviceContext, listenOptions))
-            {
-                using (var connection = server.CreateConnection())
-                {
-                    await connection.WaitForConnectionClose();
-                    connectionCloseTcs.SetResult();
-                }
+                _duplexPipe = duplexPipe;
             }
 
-            Assert.False(mockDuplexPipe.WasCompleted);
+            public override void AdvanceTo(SequencePosition consumed)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void CancelPendingRead()
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void Complete(Exception exception = null)
+            {
+                _duplexPipe.WasCompleted = true;
+            }
+
+            public override ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override bool TryRead(out ReadResult result)
+            {
+                throw new NotImplementedException();
+            }
         }
 
-        private class MockDuplexPipe : IDuplexPipe
+        private class MockPipeWriter : PipeWriter
         {
-            public bool WasCompleted { get; private set; }
+            private readonly MockDuplexPipe _duplexPipe;
 
-            public PipeReader Input => new MockPipeReader(this);
-
-            public PipeWriter Output => new MockPipeWriter(this);
-
-            private class MockPipeReader : PipeReader
+            public MockPipeWriter(MockDuplexPipe duplexPipe)
             {
-                private readonly MockDuplexPipe _duplexPipe;
-
-                public MockPipeReader(MockDuplexPipe duplexPipe)
-                {
-                    _duplexPipe = duplexPipe;
-                }
-
-                public override void AdvanceTo(SequencePosition consumed)
-                {
-                    throw new NotImplementedException();
-                }
-
-                public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
-                {
-                    throw new NotImplementedException();
-                }
-
-                public override void CancelPendingRead()
-                {
-                    throw new NotImplementedException();
-                }
-
-                public override void Complete(Exception exception = null)
-                {
-                    _duplexPipe.WasCompleted = true;
-                }
-
-                public override ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
-                {
-                    throw new NotImplementedException();
-                }
-
-                public override bool TryRead(out ReadResult result)
-                {
-                    throw new NotImplementedException();
-                }
+                _duplexPipe = duplexPipe;
             }
 
-            private class MockPipeWriter : PipeWriter
+            public override void Advance(int bytes)
             {
-                private readonly MockDuplexPipe _duplexPipe;
+                throw new NotImplementedException();
+            }
 
-                public MockPipeWriter(MockDuplexPipe duplexPipe)
-                {
-                    _duplexPipe = duplexPipe;
-                }
+            public override void CancelPendingFlush()
+            {
+                throw new NotImplementedException();
+            }
 
-                public override void Advance(int bytes)
-                {
-                    throw new NotImplementedException();
-                }
+            public override void Complete(Exception exception = null)
+            {
+                _duplexPipe.WasCompleted = true;
+            }
 
-                public override void CancelPendingFlush()
-                {
-                    throw new NotImplementedException();
-                }
+            public override ValueTask<FlushResult> FlushAsync(CancellationToken cancellationToken = default)
+            {
+                throw new NotImplementedException();
+            }
 
-                public override void Complete(Exception exception = null)
-                {
-                    _duplexPipe.WasCompleted = true;
-                }
+            public override Memory<byte> GetMemory(int sizeHint = 0)
+            {
+                throw new NotImplementedException();
+            }
 
-                public override ValueTask<FlushResult> FlushAsync(CancellationToken cancellationToken = default)
-                {
-                    throw new NotImplementedException();
-                }
-
-                public override Memory<byte> GetMemory(int sizeHint = 0)
-                {
-                    throw new NotImplementedException();
-                }
-
-                public override Span<byte> GetSpan(int sizeHint = 0)
-                {
-                    throw new NotImplementedException();
-                }
+            public override Span<byte> GetSpan(int sizeHint = 0)
+            {
+                throw new NotImplementedException();
             }
         }
     }
 }
+

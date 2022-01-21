@@ -3,140 +3,137 @@
 
 #nullable enable
 
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Core;
 
-namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
+namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+
+/// <summary>
+/// The default implementation of <see cref="IValidationStrategy"/> for a complex object.
+/// </summary>
+internal class DefaultComplexObjectValidationStrategy : IValidationStrategy
 {
     /// <summary>
-    /// The default implementation of <see cref="IValidationStrategy"/> for a complex object.
+    /// Gets an instance of <see cref="DefaultComplexObjectValidationStrategy"/>.
     /// </summary>
-    internal class DefaultComplexObjectValidationStrategy : IValidationStrategy
+    public static readonly IValidationStrategy Instance = new DefaultComplexObjectValidationStrategy();
+
+    private DefaultComplexObjectValidationStrategy()
     {
-        /// <summary>
-        /// Gets an instance of <see cref="DefaultComplexObjectValidationStrategy"/>.
-        /// </summary>
-        public static readonly IValidationStrategy Instance = new DefaultComplexObjectValidationStrategy();
+    }
 
-        private DefaultComplexObjectValidationStrategy()
-        {
-        }
+    /// <inheritdoc />
+    public IEnumerator<ValidationEntry> GetChildren(
+        ModelMetadata metadata,
+        string key,
+        object model)
+    {
+        return new Enumerator(metadata, key, model);
+    }
 
-        /// <inheritdoc />
-        public IEnumerator<ValidationEntry> GetChildren(
-            ModelMetadata metadata,
+    private class Enumerator : IEnumerator<ValidationEntry>
+    {
+        private readonly string _key;
+        private readonly object _model;
+        private readonly int _count;
+        private readonly ModelMetadata _modelMetadata;
+        private readonly IReadOnlyList<ModelMetadata> _parameters;
+        private readonly IReadOnlyList<ModelMetadata> _properties;
+
+        private ValidationEntry _entry;
+        private int _index;
+
+        public Enumerator(
+            ModelMetadata modelMetadata,
             string key,
             object model)
         {
-            return new Enumerator(metadata, key, model);
+            _modelMetadata = modelMetadata;
+            _key = key;
+            _model = model;
+
+            if (_modelMetadata.BoundConstructor == null)
+            {
+                _parameters = Array.Empty<ModelMetadata>();
+            }
+            else
+            {
+                _modelMetadata.ThrowIfRecordTypeHasValidationOnProperties();
+                _parameters = _modelMetadata.BoundConstructor.BoundConstructorParameters!;
+            }
+
+            _properties = _modelMetadata.BoundProperties;
+            _count = _properties.Count + _parameters.Count;
+
+            _index = -1;
         }
 
-        private class Enumerator : IEnumerator<ValidationEntry>
+        public ValidationEntry Current => _entry;
+
+        object IEnumerator.Current => Current;
+
+        public bool MoveNext()
         {
-            private readonly string _key;
-            private readonly object _model;
-            private readonly int _count;
-            private readonly ModelMetadata _modelMetadata;
-            private readonly IReadOnlyList<ModelMetadata> _parameters;
-            private readonly IReadOnlyList<ModelMetadata> _properties;
+            _index++;
 
-            private ValidationEntry _entry;
-            private int _index;
-
-            public Enumerator(
-                ModelMetadata modelMetadata,
-                string key,
-                object model)
+            if (_index >= _count)
             {
-                _modelMetadata = modelMetadata;
-                _key = key;
-                _model = model;
+                return false;
+            }
 
-                if (_modelMetadata.BoundConstructor == null)
+            if (_index < _parameters.Count)
+            {
+                var parameter = _parameters[_index];
+                var parameterName = parameter.BinderModelName ?? parameter.ParameterName;
+                var key = ModelNames.CreatePropertyModelName(_key, parameterName);
+
+                if (_model is null)
                 {
-                    _parameters = Array.Empty<ModelMetadata>();
+                    _entry = new ValidationEntry(parameter, key, model: null);
                 }
                 else
                 {
-                    _modelMetadata.ThrowIfRecordTypeHasValidationOnProperties();
-                    _parameters = _modelMetadata.BoundConstructor.BoundConstructorParameters!;
+                    if (!_modelMetadata.BoundConstructorParameterMapping.TryGetValue(parameter, out var property))
+                    {
+                        throw new InvalidOperationException(
+                            Resources.FormatValidationStrategy_MappedPropertyNotFound(parameter, _modelMetadata.ModelType));
+                    }
+
+                    _entry = new ValidationEntry(parameter, key, () => GetModel(_model, property));
                 }
-
-                _properties = _modelMetadata.BoundProperties;
-                _count = _properties.Count + _parameters.Count;
-
-                _index = -1;
             }
-
-            public ValidationEntry Current => _entry;
-
-            object IEnumerator.Current => Current;
-
-            public bool MoveNext()
+            else
             {
-                _index++;
+                var property = _properties[_index - _parameters.Count];
+                var propertyName = property.ValidationModelName ?? property.BinderModelName ?? property.PropertyName;
+                var key = ModelNames.CreatePropertyModelName(_key, propertyName);
 
-                if (_index >= _count)
+                if (_model == null)
                 {
-                    return false;
-                }
-
-                if (_index < _parameters.Count)
-                {
-                    var parameter = _parameters[_index];
-                    var parameterName = parameter.BinderModelName ?? parameter.ParameterName;
-                    var key = ModelNames.CreatePropertyModelName(_key, parameterName);
-
-                    if (_model is null)
-                    {
-                        _entry = new ValidationEntry(parameter, key, model: null);
-                    }
-                    else
-                    {
-                        if (!_modelMetadata.BoundConstructorParameterMapping.TryGetValue(parameter, out var property))
-                        {
-                            throw new InvalidOperationException(
-                                Resources.FormatValidationStrategy_MappedPropertyNotFound(parameter, _modelMetadata.ModelType));
-                        }
-
-                        _entry = new ValidationEntry(parameter, key, () => GetModel(_model, property));
-                    }
+                    // Performance: Never create a delegate when container is null.
+                    _entry = new ValidationEntry(property, key, model: null);
                 }
                 else
                 {
-                    var property = _properties[_index - _parameters.Count];
-                    var propertyName = property.BinderModelName ?? property.PropertyName;
-                    var key = ModelNames.CreatePropertyModelName(_key, propertyName);
-
-                    if (_model == null)
-                    {
-                        // Performance: Never create a delegate when container is null.
-                        _entry = new ValidationEntry(property, key, model: null);
-                    }
-                    else
-                    {
-                        _entry = new ValidationEntry(property, key, () => GetModel(_model, property));
-                    }
+                    _entry = new ValidationEntry(property, key, () => GetModel(_model, property));
                 }
-
-                return true;
             }
 
-            public void Dispose()
-            {
-            }
+            return true;
+        }
 
-            public void Reset()
-            {
-                throw new NotImplementedException();
-            }
+        public void Dispose()
+        {
+        }
 
-            private static object? GetModel(object container, ModelMetadata property)
-            {
-                return property.PropertyGetter!(container);
-            }
+        public void Reset()
+        {
+            throw new NotImplementedException();
+        }
+
+        private static object? GetModel(object container, ModelMetadata property)
+        {
+            return property.PropertyGetter!(container);
         }
     }
 }

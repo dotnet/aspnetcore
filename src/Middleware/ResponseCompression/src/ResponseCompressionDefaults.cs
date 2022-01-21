@@ -1,21 +1,19 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
+namespace Microsoft.AspNetCore.ResponseCompression;
 
-namespace Microsoft.AspNetCore.ResponseCompression
+/// <summary>
+/// Defaults for the ResponseCompressionMiddleware
+/// </summary>
+public class ResponseCompressionDefaults
 {
     /// <summary>
-    /// Defaults for the ResponseCompressionMiddleware
+    /// Default MIME types to compress responses for.
     /// </summary>
-    public class ResponseCompressionDefaults
+    // This list is not intended to be exhaustive, it's a baseline for the 90% case.
+    public static readonly IEnumerable<string> MimeTypes = new[]
     {
-        /// <summary>
-        /// Default MIME types to compress responses for.
-        /// </summary>
-        // This list is not intended to be exhaustive, it's a baseline for the 90% case.
-        public static readonly IEnumerable<string> MimeTypes = new[]
-        {
             // General
             "text/plain",
             // Static files
@@ -30,5 +28,4 @@ namespace Microsoft.AspNetCore.ResponseCompression
             // WebAssembly
             "application/wasm",
         };
-    }
 }

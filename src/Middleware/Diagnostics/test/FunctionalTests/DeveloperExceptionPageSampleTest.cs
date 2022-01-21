@@ -3,34 +3,31 @@
 
 using System.Net;
 using System.Net.Http;
-using System.Threading.Tasks;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Diagnostics.FunctionalTests
+namespace Microsoft.AspNetCore.Diagnostics.FunctionalTests;
+
+public class DeveloperExceptionPageSampleTest : IClassFixture<TestFixture<DeveloperExceptionPageSample.Startup>>
 {
-    public class DeveloperExceptionPageSampleTest : IClassFixture<TestFixture<DeveloperExceptionPageSample.Startup>>
+    public DeveloperExceptionPageSampleTest(TestFixture<DeveloperExceptionPageSample.Startup> fixture)
     {
-        public DeveloperExceptionPageSampleTest(TestFixture<DeveloperExceptionPageSample.Startup> fixture)
-        {
-            Client = fixture.Client;
-        }
+        Client = fixture.Client;
+    }
 
-        public HttpClient Client { get; }
+    public HttpClient Client { get; }
 
 
-        [Fact]
-        public async Task DeveloperExceptionPage_ShowsError()
-        {
-            // Arrange
-            var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/");
+    [Fact]
+    public async Task DeveloperExceptionPage_ShowsError()
+    {
+        // Arrange
+        var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/");
 
-            // Act
-            var response = await Client.SendAsync(request);
+        // Act
+        var response = await Client.SendAsync(request);
 
-            // Assert
-            var body = await response.Content.ReadAsStringAsync();
-            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-            Assert.Contains("Exception: Demonstration exception.", body);
-        }
+        // Assert
+        var body = await response.Content.ReadAsStringAsync();
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+        Assert.Contains("Exception: Demonstration exception.", body);
     }
 }

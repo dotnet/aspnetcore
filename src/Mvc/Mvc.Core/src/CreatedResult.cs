@@ -1,97 +1,94 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Mvc
+namespace Microsoft.AspNetCore.Mvc;
+
+/// <summary>
+/// An <see cref="ActionResult"/> that returns a Created (201) response with a Location header.
+/// </summary>
+[DefaultStatusCode(DefaultStatusCode)]
+public class CreatedResult : ObjectResult
 {
+    private const int DefaultStatusCode = StatusCodes.Status201Created;
+
+    private string _location;
+
     /// <summary>
-    /// An <see cref="ActionResult"/> that returns a Created (201) response with a Location header.
+    /// Initializes a new instance of the <see cref="CreatedResult"/> class with the values
+    /// provided.
     /// </summary>
-    [DefaultStatusCode(DefaultStatusCode)]
-    public class CreatedResult : ObjectResult
+    /// <param name="location">The location at which the content has been created.</param>
+    /// <param name="value">The value to format in the entity body.</param>
+    public CreatedResult(string location, object? value)
+        : base(value)
     {
-        private const int DefaultStatusCode = StatusCodes.Status201Created;
-
-        private string _location;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CreatedResult"/> class with the values
-        /// provided.
-        /// </summary>
-        /// <param name="location">The location at which the content has been created.</param>
-        /// <param name="value">The value to format in the entity body.</param>
-        public CreatedResult(string location, object? value)
-            : base(value)
+        if (location == null)
         {
-            if (location == null)
-            {
-                throw new ArgumentNullException(nameof(location));
-            }
-
-            Location = location;
-            StatusCode = DefaultStatusCode;
+            throw new ArgumentNullException(nameof(location));
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CreatedResult"/> class with the values
-        /// provided.
-        /// </summary>
-        /// <param name="location">The location at which the content has been created.</param>
-        /// <param name="value">The value to format in the entity body.</param>
-        public CreatedResult(Uri location, object? value)
-            : base(value)
+        Location = location;
+        StatusCode = DefaultStatusCode;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CreatedResult"/> class with the values
+    /// provided.
+    /// </summary>
+    /// <param name="location">The location at which the content has been created.</param>
+    /// <param name="value">The value to format in the entity body.</param>
+    public CreatedResult(Uri location, object? value)
+        : base(value)
+    {
+        if (location == null)
         {
-            if (location == null)
-            {
-                throw new ArgumentNullException(nameof(location));
-            }
-
-            if (location.IsAbsoluteUri)
-            {
-                Location = location.AbsoluteUri;
-            }
-            else
-            {
-                Location = location.GetComponents(UriComponents.SerializationInfoString, UriFormat.UriEscaped);
-            }
-
-            StatusCode = DefaultStatusCode;
+            throw new ArgumentNullException(nameof(location));
         }
 
-        /// <summary>
-        /// Gets or sets the location at which the content has been created.
-        /// </summary>
-        public string Location
+        if (location.IsAbsoluteUri)
         {
-            get => _location;
-            [MemberNotNull(nameof(_location))]
-            set
-            {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
-
-                _location = value;
-            }
+            Location = location.AbsoluteUri;
+        }
+        else
+        {
+            Location = location.GetComponents(UriComponents.SerializationInfoString, UriFormat.UriEscaped);
         }
 
-        /// <inheritdoc />
-        public override void OnFormatting(ActionContext context)
+        StatusCode = DefaultStatusCode;
+    }
+
+    /// <summary>
+    /// Gets or sets the location at which the content has been created.
+    /// </summary>
+    public string Location
+    {
+        get => _location;
+        [MemberNotNull(nameof(_location))]
+        set
         {
-            if (context == null)
+            if (value == null)
             {
-                throw new ArgumentNullException(nameof(context));
+                throw new ArgumentNullException(nameof(value));
             }
 
-            base.OnFormatting(context);
-
-            context.HttpContext.Response.Headers.Location = Location;
+            _location = value;
         }
+    }
+
+    /// <inheritdoc />
+    public override void OnFormatting(ActionContext context)
+    {
+        if (context == null)
+        {
+            throw new ArgumentNullException(nameof(context));
+        }
+
+        base.OnFormatting(context);
+
+        context.HttpContext.Response.Headers.Location = Location;
     }
 }

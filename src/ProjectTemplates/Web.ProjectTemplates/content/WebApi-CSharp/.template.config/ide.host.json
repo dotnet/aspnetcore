@@ -40,6 +40,9 @@
       "name": {
         "text": "Enable _OpenAPI support"
       },
+      "description": {
+        "text": "Enables OpenAPI (Swagger) support"
+      },
       "invertBoolean": true,
       "isVisible": true,
       "defaultValue": true

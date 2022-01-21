@@ -1,82 +1,79 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace Microsoft.AspNetCore.Mvc.Filters
+namespace Microsoft.AspNetCore.Mvc.Filters;
+
+internal class PageHandlerPageFilter : IAsyncPageFilter, IOrderedFilter
 {
-    internal class PageHandlerPageFilter : IAsyncPageFilter, IOrderedFilter
+    /// <remarks>
+    /// Filters on handlers run furthest from the action.
+    /// </remarks>t
+    public int Order => int.MinValue;
+
+    public Task OnPageHandlerExecutionAsync(PageHandlerExecutingContext context, PageHandlerExecutionDelegate next)
     {
-        /// <remarks>
-        /// Filters on handlers run furthest from the action.
-        /// </remarks>t
-        public int Order => int.MinValue;
-
-        public Task OnPageHandlerExecutionAsync(PageHandlerExecutingContext context, PageHandlerExecutionDelegate next)
+        if (context == null)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            if (next == null)
-            {
-                throw new ArgumentNullException(nameof(next));
-            }
-
-            var handlerInstance = context.HandlerInstance;
-            if (handlerInstance == null)
-            {
-                throw new InvalidOperationException(Resources.FormatPropertyOfTypeCannotBeNull(
-                    nameof(context.HandlerInstance),
-                    nameof(PageHandlerExecutedContext)));
-            }
-
-            if (handlerInstance is IAsyncPageFilter asyncPageFilter)
-            {
-                return asyncPageFilter.OnPageHandlerExecutionAsync(context, next);
-            }
-            else if (handlerInstance is IPageFilter pageFilter)
-            {
-                return ExecuteSyncFilter(context, next, pageFilter);
-            }
-            else
-            {
-                return next();
-            }
+            throw new ArgumentNullException(nameof(context));
         }
 
-        public Task OnPageHandlerSelectionAsync(PageHandlerSelectedContext context)
+        if (next == null)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            if (context.HandlerInstance is IAsyncPageFilter asyncPageFilter)
-            {
-                return asyncPageFilter.OnPageHandlerSelectionAsync(context);
-            }
-            else if (context.HandlerInstance is IPageFilter pageFilter)
-            {
-                pageFilter.OnPageHandlerSelected(context);
-            }
-
-            return Task.CompletedTask;
+            throw new ArgumentNullException(nameof(next));
         }
 
-        private static async Task ExecuteSyncFilter(
-            PageHandlerExecutingContext context,
-            PageHandlerExecutionDelegate next,
-            IPageFilter pageFilter)
+        var handlerInstance = context.HandlerInstance;
+        if (handlerInstance == null)
         {
-            pageFilter.OnPageHandlerExecuting(context);
-            if (context.Result == null)
-            {
-                pageFilter.OnPageHandlerExecuted(await next());
-            }
+            throw new InvalidOperationException(Resources.FormatPropertyOfTypeCannotBeNull(
+                nameof(context.HandlerInstance),
+                nameof(PageHandlerExecutedContext)));
+        }
+
+        if (handlerInstance is IAsyncPageFilter asyncPageFilter)
+        {
+            return asyncPageFilter.OnPageHandlerExecutionAsync(context, next);
+        }
+        else if (handlerInstance is IPageFilter pageFilter)
+        {
+            return ExecuteSyncFilter(context, next, pageFilter);
+        }
+        else
+        {
+            return next();
+        }
+    }
+
+    public Task OnPageHandlerSelectionAsync(PageHandlerSelectedContext context)
+    {
+        if (context == null)
+        {
+            throw new ArgumentNullException(nameof(context));
+        }
+
+        if (context.HandlerInstance is IAsyncPageFilter asyncPageFilter)
+        {
+            return asyncPageFilter.OnPageHandlerSelectionAsync(context);
+        }
+        else if (context.HandlerInstance is IPageFilter pageFilter)
+        {
+            pageFilter.OnPageHandlerSelected(context);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private static async Task ExecuteSyncFilter(
+        PageHandlerExecutingContext context,
+        PageHandlerExecutionDelegate next,
+        IPageFilter pageFilter)
+    {
+        pageFilter.OnPageHandlerExecuting(context);
+        if (context.Result == null)
+        {
+            pageFilter.OnPageHandlerExecuted(await next());
         }
     }
 }

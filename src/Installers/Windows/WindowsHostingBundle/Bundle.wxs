@@ -57,13 +57,33 @@
         <!-- Bundle variables -->
         <Variable Name="BundleNameShort" Value="$(var.BundleNameShort)"/>
         <Variable Name="BundleNameSub" Value="$(var.BundleNameSub)"/>
-        <Variable Name="OPT_NO_ANCM" Value="0" bal:Overridable="yes"/>
-        <Variable Name="OPT_NO_FTS" Value="0" bal:Overridable="yes"/>
-        <Variable Name="OPT_NO_LTS" Value="0" bal:Overridable="yes"/>
-        <Variable Name="OPT_NO_SHAREDFX" Value="0" bal:Overridable="yes"/>
-        <Variable Name="OPT_NO_RUNTIME" Value="0" bal:Overridable="yes"/>
-        <Variable Name="OPT_NO_X86" Value="0" bal:Overridable="yes"/>
-        <Variable Name="OPT_NO_SHARED_CONFIG_CHECK" Value="0" bal:Overridable="yes" />
+        <Variable Name="OPT_NO_ANCM" bal:Overridable="yes"/>
+        <Variable Name="OPT_NO_SHAREDFX" bal:Overridable="yes"/>
+        <Variable Name="OPT_NO_RUNTIME" bal:Overridable="yes"/>
+        <Variable Name="OPT_NO_X86" bal:Overridable="yes"/>
+        <Variable Name="OPT_NO_SHARED_CONFIG_CHECK" bal:Overridable="yes" />
+
+        <!-- Use values from the registry for switches, if the registry values are set & the user hasn't passed any switches from the command line -->
+
+        <?define Options=OPT_NO_ANCM;OPT_NO_SHAREDFX;OPT_NO_RUNTIME;OPT_NO_X86;OPT_NO_SHARED_CONFIG_CHECK ?>
+        <?define RegistrySeachCondition="NOT (OPT_NO_ANCM OR OPT_NO_ANCM=0 OR OPT_NO_SHAREDFX OR OPT_NO_SHAREDFX=0 OR OPT_NO_RUNTIME OR OPT_NO_RUNTIME=0 OR OPT_NO_X86 OR OPT_NO_X86=0 OR OPT_NO_SHARED_CONFIG_CHECK OR OPT_NO_SHARED_CONFIG_CHECK=0)" ?>
+
+        <?foreach Option in $(var.Options) ?>
+            <util:RegistrySearch Id="$(var.Option)_should_be_set" 
+                             Condition="$(var.RegistrySeachCondition)"
+                             Root="HKLM" 
+                             Key="Software\Microsoft\dotnet\host\options\$(var.MajorVersion).$(var.MinorVersion)" 
+                             Value="$(var.Option)" 
+                             Result="exists" 
+                             Variable="$(var.Option)_Exists"/>
+
+            <util:RegistrySearch Condition="$(var.Option)_Exists"     
+                             After="$(var.Option)_should_be_set"
+                             Root="HKLM" Key="Software\Microsoft\dotnet\host\options\$(var.MajorVersion).$(var.MinorVersion)" 
+                             Value="$(var.Option)" 
+                             Variable="$(var.Option)"
+                             Result="value" />
+        <?endforeach?>
 
         <!-- These variables control the state of conditional UI text elements.
              They are disabled by default and enabled based on whether or not we detect that IIS is installed -->
@@ -73,11 +93,17 @@
         <Variable Name="ModifyNoIISState" Value="disable"/>
 
         <Chain ParallelCache="yes">
+            <MsiPackage SourceFile="$(var.HostOptions.TargetPath)">
+                <MsiProperty Name="OPT_NO_ANCM" Value="[OPT_NO_ANCM]"/>
+                <MsiProperty Name="OPT_NO_SHAREDFX" Value="[OPT_NO_SHAREDFX]"/>
+                <MsiProperty Name="OPT_NO_RUNTIME" Value="[OPT_NO_RUNTIME]"/>
+                <MsiProperty Name="OPT_NO_X86" Value="[OPT_NO_X86]"/>
+                <MsiProperty Name="OPT_NO_SHARED_CONFIG_CHECK" Value="[OPT_NO_SHARED_CONFIG_CHECK]"/>
+            </MsiPackage> 
             <PackageGroupRef Id="PG_ANCM" />
             <PackageGroupRef Id="PG_DOTNET_REDIST_LTS_BUNDLE" />
             <!--<PackageGroupRef Id="PG_DOTNET_REDIST_FTS_BUNDLE" />-->
-            <PackageGroupRef Id="PG_AspNetCoreSharedFramework_x86" />
-            <PackageGroupRef Id="PG_AspNetCoreSharedFramework_x64" />
+            <PackageGroupRef Id="PG_SHAREDFX_REDIST_BUNDLE" />
         </Chain>
     </Bundle>
 </Wix>

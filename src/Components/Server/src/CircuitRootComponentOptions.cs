@@ -3,20 +3,19 @@
 
 using Microsoft.AspNetCore.Components.Web;
 
-namespace Microsoft.AspNetCore.Components.Server
-{
-    /// <summary>
-    /// Options for root components within the circuit.
-    /// </summary>
-    public class CircuitRootComponentOptions : IJSComponentConfiguration
-    {
-        /// <inheritdoc />
-        public JSComponentConfigurationStore JSComponents { get; } = new();
+namespace Microsoft.AspNetCore.Components.Server;
 
-        /// <summary>
-        /// Gets or sets the maximum number of root components added from JavaScript.
-        /// </summary>
-        /// <value>Defaults to <c>100</c>.</value>
-        public int MaxJSRootComponents { get; set; } = 100;
-    }
+/// <summary>
+/// Options for root components within the circuit.
+/// </summary>
+public class CircuitRootComponentOptions : IJSComponentConfiguration
+{
+    /// <inheritdoc />
+    public JSComponentConfigurationStore JSComponents { get; } = new();
+
+    /// <summary>
+    /// Gets or sets the maximum number of root components added from JavaScript.
+    /// </summary>
+    /// <value>Defaults to <c>100</c>.</value>
+    public int MaxJSRootComponents { get; set; } = 100;
 }

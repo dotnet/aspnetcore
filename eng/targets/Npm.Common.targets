@@ -1,5 +1,4 @@
 <Project DefaultTargets="Build" InitialTargets="_CheckForInvalidConfiguration">
-
   <!-- Version of this SDK is set in global.json -->
   <Sdk Name="Yarn.MSBuild" />
 
@@ -9,7 +8,7 @@
     <PackageJson>$(MSBuildProjectDirectory)\package.json</PackageJson>
     <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)' == ''">$(MSBuildProjectDirectory)\obj\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$([MSBuild]::NormalizeDirectory('$(BaseIntermediateOutputPath)'))$(Configuration)\</IntermediateOutputPath>
-    <InstallArgs Condition="'$(RestoreLockedMode)' == 'true'">--frozen-lockfile</InstallArgs>
+    <InstallArgs>--frozen-lockfile</InstallArgs>
     <_BackupPackageJson>$(IntermediateOutputPath)$(MSBuildProjectName).package.json.bak</_BackupPackageJson>
     <BuildDependsOn>
       PrepareForBuild;
@@ -132,10 +131,9 @@
     <Move SourceFiles="$(_BackupPackageJson)" DestinationFiles="$(PackageJson)" />
   </Target>
 
-  <Target Name="Test" Condition="'$(IsTestProject)' == 'true' AND '$(SkipTests)' != 'true'">
+  <Target Name="Test" Condition=" $(IsTestProject) AND '$(SkipTests)' != 'true'">
     <Telemetry EventName="NETCORE_ENGINEERING_TELEMETRY" EventData="Category=Test" />
     <Message Importance="High" Text="Running npm tests for $(MSBuildProjectName)" />
     <Yarn Command="$(NpmTestArgs)" StandardOutputImportance="High" StandardErrorImportance="High" IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)" />
   </Target>
-
 </Project>

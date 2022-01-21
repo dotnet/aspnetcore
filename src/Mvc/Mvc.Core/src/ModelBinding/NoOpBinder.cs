@@ -3,17 +3,15 @@
 
 #nullable enable
 
-using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Mvc.ModelBinding
+namespace Microsoft.AspNetCore.Mvc.ModelBinding;
+
+internal class NoOpBinder : IModelBinder
 {
-    internal class NoOpBinder : IModelBinder
-    {
-        public static readonly IModelBinder Instance = new NoOpBinder();
+    public static readonly IModelBinder Instance = new NoOpBinder();
 
-        public Task BindModelAsync(ModelBindingContext bindingContext)
-        {
-            return Task.CompletedTask;
-        }
+    public Task BindModelAsync(ModelBindingContext bindingContext)
+    {
+        return Task.CompletedTask;
     }
 }

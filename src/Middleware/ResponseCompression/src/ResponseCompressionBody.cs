@@ -1,312 +1,313 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.IO.Pipelines;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.ResponseCompression
+namespace Microsoft.AspNetCore.ResponseCompression;
+
+/// <summary>
+/// Stream wrapper that create specific compression stream only if necessary.
+/// </summary>
+internal class ResponseCompressionBody : Stream, IHttpResponseBodyFeature, IHttpsCompressionFeature
 {
-    /// <summary>
-    /// Stream wrapper that create specific compression stream only if necessary.
-    /// </summary>
-    internal class ResponseCompressionBody : Stream, IHttpResponseBodyFeature, IHttpsCompressionFeature
+    private readonly HttpContext _context;
+    private readonly IResponseCompressionProvider _provider;
+    private readonly IHttpResponseBodyFeature _innerBodyFeature;
+    private readonly Stream _innerStream;
+
+    private ICompressionProvider? _compressionProvider;
+    private bool _compressionChecked;
+    private Stream? _compressionStream;
+    private PipeWriter? _pipeAdapter;
+    private bool _providerCreated;
+    private bool _autoFlush;
+    private bool _complete;
+
+    internal ResponseCompressionBody(HttpContext context, IResponseCompressionProvider provider,
+        IHttpResponseBodyFeature innerBodyFeature)
     {
-        private readonly HttpContext _context;
-        private readonly IResponseCompressionProvider _provider;
-        private readonly IHttpResponseBodyFeature _innerBodyFeature;
-        private readonly Stream _innerStream;
+        _context = context;
+        _provider = provider;
+        _innerBodyFeature = innerBodyFeature;
+        _innerStream = innerBodyFeature.Stream;
+    }
 
-        private ICompressionProvider? _compressionProvider;
-        private bool _compressionChecked;
-        private Stream? _compressionStream;
-        private PipeWriter? _pipeAdapter;
-        private bool _providerCreated;
-        private bool _autoFlush;
-        private bool _complete;
-
-        internal ResponseCompressionBody(HttpContext context, IResponseCompressionProvider provider,
-            IHttpResponseBodyFeature innerBodyFeature)
+    internal async Task FinishCompressionAsync()
+    {
+        if (_complete)
         {
-            _context = context;
-            _provider = provider;
-            _innerBodyFeature = innerBodyFeature;
-            _innerStream = innerBodyFeature.Stream;
+            return;
         }
 
-        internal async Task FinishCompressionAsync()
+        _complete = true;
+
+        if (_pipeAdapter != null)
         {
-            if (_complete)
-            {
-                return;
-            }
-
-            _complete = true;
-
-            if (_pipeAdapter != null)
-            {
-                await _pipeAdapter.CompleteAsync();
-            }
-
-            if (_compressionStream != null)
-            {
-                await _compressionStream.DisposeAsync();
-            }
-
-            // Adds the compression headers for HEAD requests even if the body was not used.
-            if (!_compressionChecked && HttpMethods.IsHead(_context.Request.Method))
-            {
-                InitializeCompressionHeaders();
-            }
+            await _pipeAdapter.CompleteAsync();
         }
 
-        HttpsCompressionMode IHttpsCompressionFeature.Mode { get; set; } = HttpsCompressionMode.Default;
-
-        public override bool CanRead => false;
-
-        public override bool CanSeek => false;
-
-        public override bool CanWrite => _innerStream.CanWrite;
-
-        public override long Length
+        if (_compressionStream != null)
         {
-            get { throw new NotSupportedException(); }
+            await _compressionStream.DisposeAsync();
         }
 
-        public override long Position
+        // Adds the compression headers for HEAD requests even if the body was not used.
+        if (!_compressionChecked && HttpMethods.IsHead(_context.Request.Method))
         {
-            get { throw new NotSupportedException(); }
-            set { throw new NotSupportedException(); }
+            InitializeCompressionHeaders();
+        }
+    }
+
+    HttpsCompressionMode IHttpsCompressionFeature.Mode { get; set; } = HttpsCompressionMode.Default;
+
+    public override bool CanRead => false;
+
+    public override bool CanSeek => false;
+
+    public override bool CanWrite => _innerStream.CanWrite;
+
+    public override long Length
+    {
+        get { throw new NotSupportedException(); }
+    }
+
+    public override long Position
+    {
+        get { throw new NotSupportedException(); }
+        set { throw new NotSupportedException(); }
+    }
+
+    public Stream Stream => this;
+
+    public PipeWriter Writer
+    {
+        get
+        {
+            if (_pipeAdapter == null)
+            {
+                _pipeAdapter = PipeWriter.Create(Stream, new StreamPipeWriterOptions(leaveOpen: true));
+            }
+
+            return _pipeAdapter;
+        }
+    }
+
+    public override void Flush()
+    {
+        if (!_compressionChecked)
+        {
+            OnWrite();
+            // Flush the original stream to send the headers. Flushing the compression stream won't
+            // flush the original stream if no data has been written yet.
+            _innerStream.Flush();
+            return;
         }
 
-        public Stream Stream => this;
-
-        public PipeWriter Writer
+        if (_compressionStream != null)
         {
-            get
-            {
-                if (_pipeAdapter == null)
-                {
-                    _pipeAdapter = PipeWriter.Create(Stream, new StreamPipeWriterOptions(leaveOpen: true));
-                }
-
-                return _pipeAdapter;
-            }
+            _compressionStream.Flush();
         }
-
-        public override void Flush()
+        else
         {
-            if (!_compressionChecked)
-            {
-                OnWrite();
-                // Flush the original stream to send the headers. Flushing the compression stream won't
-                // flush the original stream if no data has been written yet.
-                _innerStream.Flush();
-                return;
-            }
-
-            if (_compressionStream != null)
-            {
-                _compressionStream.Flush();
-            }
-            else
-            {
-                _innerStream.Flush();
-            }
+            _innerStream.Flush();
         }
+    }
 
-        public override Task FlushAsync(CancellationToken cancellationToken)
+    public override Task FlushAsync(CancellationToken cancellationToken)
+    {
+        if (!_compressionChecked)
         {
-            if (!_compressionChecked)
-            {
-                OnWrite();
-                // Flush the original stream to send the headers. Flushing the compression stream won't
-                // flush the original stream if no data has been written yet.
-                return _innerStream.FlushAsync(cancellationToken);
-            }
-
-            if (_compressionStream != null)
-            {
-                return _compressionStream.FlushAsync(cancellationToken);
-            }
-
+            OnWrite();
+            // Flush the original stream to send the headers. Flushing the compression stream won't
+            // flush the original stream if no data has been written yet.
             return _innerStream.FlushAsync(cancellationToken);
         }
 
-        public override int Read(byte[] buffer, int offset, int count)
+        if (_compressionStream != null)
         {
-            throw new NotSupportedException();
+            return _compressionStream.FlushAsync(cancellationToken);
         }
 
-        public override long Seek(long offset, SeekOrigin origin)
-        {
-            throw new NotSupportedException();
-        }
+        return _innerStream.FlushAsync(cancellationToken);
+    }
 
-        public override void SetLength(long value)
-        {
-            throw new NotSupportedException();
-        }
+    public override int Read(byte[] buffer, int offset, int count)
+    {
+        throw new NotSupportedException();
+    }
 
-        public override void Write(byte[] buffer, int offset, int count)
-        {
-            OnWrite();
+    public override long Seek(long offset, SeekOrigin origin)
+    {
+        throw new NotSupportedException();
+    }
 
-            if (_compressionStream != null)
+    public override void SetLength(long value)
+    {
+        throw new NotSupportedException();
+    }
+
+    public override void Write(byte[] buffer, int offset, int count)
+    {
+        OnWrite();
+
+        if (_compressionStream != null)
+        {
+            _compressionStream.Write(buffer, offset, count);
+            if (_autoFlush)
             {
-                _compressionStream.Write(buffer, offset, count);
-                if (_autoFlush)
+                _compressionStream.Flush();
+            }
+        }
+        else
+        {
+            _innerStream.Write(buffer, offset, count);
+        }
+    }
+
+    public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
+        => TaskToApm.Begin(WriteAsync(buffer, offset, count, CancellationToken.None), callback, state);
+
+    public override void EndWrite(IAsyncResult asyncResult)
+        => TaskToApm.End(asyncResult);
+
+    public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        => await WriteAsync(buffer.AsMemory(offset, count), cancellationToken);
+
+    public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
+    {
+        OnWrite();
+
+        if (_compressionStream != null)
+        {
+            await _compressionStream.WriteAsync(buffer, cancellationToken);
+            if (_autoFlush)
+            {
+                await _compressionStream.FlushAsync(cancellationToken);
+            }
+        }
+        else
+        {
+            await _innerStream.WriteAsync(buffer, cancellationToken);
+        }
+    }
+
+    /// <summary>
+    /// Checks if the response should be compressed and sets the response headers.
+    /// </summary>
+    /// <returns>The compression provider to use if compression is enabled, otherwise null.</returns>
+    private ICompressionProvider? InitializeCompressionHeaders()
+    {
+        if (_provider.ShouldCompressResponse(_context))
+        {
+            var headers = _context.Response.Headers;
+            // If the MIME type indicates that the response could be compressed, caches will need to vary by the Accept-Encoding header
+            var varyValues = headers.GetCommaSeparatedValues(HeaderNames.Vary);
+            var varyByAcceptEncoding = false;
+
+            for (var i = 0; i < varyValues.Length; i++)
+            {
+                if (string.Equals(varyValues[i], HeaderNames.AcceptEncoding, StringComparison.OrdinalIgnoreCase))
                 {
-                    _compressionStream.Flush();
+                    varyByAcceptEncoding = true;
+                    break;
                 }
             }
-            else
+
+            if (!varyByAcceptEncoding)
             {
-                _innerStream.Write(buffer, offset, count);
+                // Can't use += as StringValues does not override operator+
+                // and the implict conversions will cause an incorrect string concat https://github.com/dotnet/runtime/issues/52507
+                headers.Vary = StringValues.Concat(headers.Vary, HeaderNames.AcceptEncoding);
             }
+
+            var compressionProvider = ResolveCompressionProvider();
+            if (compressionProvider != null)
+            {
+                // Can't use += as StringValues does not override operator+
+                // and the implict conversions will cause an incorrect string concat https://github.com/dotnet/runtime/issues/52507
+                headers.ContentEncoding = StringValues.Concat(headers.ContentEncoding, compressionProvider.EncodingName);
+                headers.ContentMD5 = default; // Reset the MD5 because the content changed.
+                headers.ContentLength = default;
+            }
+
+            return compressionProvider;
         }
 
-        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
-            => TaskToApm.Begin(WriteAsync(buffer, offset, count, CancellationToken.None), callback, state);
+        return null;
+    }
 
-        public override void EndWrite(IAsyncResult asyncResult)
-            => TaskToApm.End(asyncResult);
-
-        public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-            => await WriteAsync(buffer.AsMemory(offset, count), cancellationToken);
-
-        public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
+    private void OnWrite()
+    {
+        if (!_compressionChecked)
         {
-            OnWrite();
+            _compressionChecked = true;
 
-            if (_compressionStream != null)
+            var compressionProvider = InitializeCompressionHeaders();
+
+            if (compressionProvider != null)
             {
-                await _compressionStream.WriteAsync(buffer, cancellationToken);
-                if (_autoFlush)
-                {
-                    await _compressionStream.FlushAsync(cancellationToken);
-                }
-            }
-            else
-            {
-                await _innerStream.WriteAsync(buffer, cancellationToken);
+                _compressionStream = compressionProvider.CreateStream(_innerStream);
             }
         }
+    }
 
-        private void InitializeCompressionHeaders()
+    private ICompressionProvider? ResolveCompressionProvider()
+    {
+        if (!_providerCreated)
         {
-            if (_provider.ShouldCompressResponse(_context))
-            {
-                var headers = _context.Response.Headers;
-                // If the MIME type indicates that the response could be compressed, caches will need to vary by the Accept-Encoding header
-                var varyValues = headers.GetCommaSeparatedValues(HeaderNames.Vary);
-                var varyByAcceptEncoding = false;
-
-                for (var i = 0; i < varyValues.Length; i++)
-                {
-                    if (string.Equals(varyValues[i], HeaderNames.AcceptEncoding, StringComparison.OrdinalIgnoreCase))
-                    {
-                        varyByAcceptEncoding = true;
-                        break;
-                    }
-                }
-
-                if (!varyByAcceptEncoding)
-                {
-                    // Can't use += as StringValues does not override operator+
-                    // and the implict conversions will cause an incorrect string concat https://github.com/dotnet/runtime/issues/52507
-                    headers.Vary = StringValues.Concat(headers.Vary, HeaderNames.AcceptEncoding);
-                }
-
-                var compressionProvider = ResolveCompressionProvider();
-                if (compressionProvider != null)
-                {
-                    // Can't use += as StringValues does not override operator+
-                    // and the implict conversions will cause an incorrect string concat https://github.com/dotnet/runtime/issues/52507
-                    headers.ContentEncoding = StringValues.Concat(headers.ContentEncoding, compressionProvider.EncodingName);
-                    headers.ContentMD5 = default; // Reset the MD5 because the content changed.
-                    headers.ContentLength = default;
-                }
-            }
+            _providerCreated = true;
+            _compressionProvider = _provider.GetCompressionProvider(_context);
         }
 
-        private void OnWrite()
+        return _compressionProvider;
+    }
+
+    // For this to be effective it needs to be called before the first write.
+    public void DisableBuffering()
+    {
+        if (ResolveCompressionProvider()?.SupportsFlush == false)
         {
-            if (!_compressionChecked)
-            {
-                _compressionChecked = true;
-
-                InitializeCompressionHeaders();
-
-                if (_compressionProvider != null)
-                {
-                    _compressionStream = _compressionProvider.CreateStream(_innerStream);
-                }
-            }
+            // Don't compress, some of the providers don't implement Flush (e.g. .NET 4.5.1 GZip/Deflate stream)
+            // which would block real-time responses like SignalR.
+            _compressionChecked = true;
         }
-
-        private ICompressionProvider? ResolveCompressionProvider()
+        else
         {
-            if (!_providerCreated)
-            {
-                _providerCreated = true;
-                _compressionProvider = _provider.GetCompressionProvider(_context);
-            }
-
-            return _compressionProvider;
+            _autoFlush = true;
         }
+        _innerBodyFeature.DisableBuffering();
+    }
 
-        // For this to be effective it needs to be called before the first write.
-        public void DisableBuffering()
+    public Task SendFileAsync(string path, long offset, long? count, CancellationToken cancellation)
+    {
+        OnWrite();
+
+        if (_compressionStream != null)
         {
-            if (ResolveCompressionProvider()?.SupportsFlush == false)
-            {
-                // Don't compress, some of the providers don't implement Flush (e.g. .NET 4.5.1 GZip/Deflate stream)
-                // which would block real-time responses like SignalR.
-                _compressionChecked = true;
-            }
-            else
-            {
-                _autoFlush = true;
-            }
-            _innerBodyFeature.DisableBuffering();
+            return SendFileFallback.SendFileAsync(Stream, path, offset, count, cancellation);
         }
 
-        public Task SendFileAsync(string path, long offset, long? count, CancellationToken cancellation)
+        return _innerBodyFeature.SendFileAsync(path, offset, count, cancellation);
+    }
+
+    public Task StartAsync(CancellationToken token = default)
+    {
+        OnWrite();
+        return _innerBodyFeature.StartAsync(token);
+    }
+
+    public async Task CompleteAsync()
+    {
+        if (_complete)
         {
-            OnWrite();
-
-            if (_compressionStream != null)
-            {
-                return SendFileFallback.SendFileAsync(Stream, path, offset, count, cancellation);
-            }
-
-            return _innerBodyFeature.SendFileAsync(path, offset, count, cancellation);
+            return;
         }
 
-        public Task StartAsync(CancellationToken token = default)
-        {
-            OnWrite();
-            return _innerBodyFeature.StartAsync(token);
-        }
-
-        public async Task CompleteAsync()
-        {
-            if (_complete)
-            {
-                return;
-            }
-
-            await FinishCompressionAsync(); // Sets _complete
-            await _innerBodyFeature.CompleteAsync();
-        }
+        await FinishCompressionAsync(); // Sets _complete
+        await _innerBodyFeature.CompleteAsync();
     }
 }

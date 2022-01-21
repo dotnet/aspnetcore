@@ -4,7 +4,7 @@ parameters:
 
   # Optional: A defined YAML pool - https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=vsts&tabs=schema#pool
   pool:
-    vmImage: vs2017-win2016
+    vmImage: 'windows-2019'
 
   CeapexPat: $(dn-bot-ceapex-package-r) # PAT for the loc AzDO instance https://dev.azure.com/ceapex
   GithubPat: $(BotAccount-dotnet-bot-repo-PAT)
@@ -12,6 +12,7 @@ parameters:
   SourcesDirectory: $(Build.SourcesDirectory)
   CreatePr: true
   AutoCompletePr: false
+  ReusePr: true
   UseLfLineEndings: true
   UseCheckedInLocProjectJson: false
   LanguageSet: VS_Main_Languages
@@ -64,6 +65,8 @@ jobs:
         ${{ if eq(parameters.CreatePr, true) }}:
           isAutoCompletePrSelected: ${{ parameters.AutoCompletePr }}
           isUseLfLineEndingsSelected: ${{ parameters.UseLfLineEndings }}
+          ${{ if eq(parameters.RepoType, 'gitHub') }}:
+            isShouldReusePrSelected: ${{ parameters.ReusePr }}
         packageSourceAuth: patAuth
         patVariable: ${{ parameters.CeapexPat }}
         ${{ if eq(parameters.RepoType, 'gitHub') }}:

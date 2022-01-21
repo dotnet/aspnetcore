@@ -3,22 +3,20 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace ControllersFromServicesClassLibrary
+namespace ControllersFromServicesClassLibrary;
+
+public class EmployeeRecords : Controller
 {
-    public class EmployeeRecords : Controller
+    [HttpPut("/employee/update_records")]
+    public IActionResult UpdateRecords(string recordId)
     {
-        [HttpPut("/employee/update_records")]
-        public IActionResult UpdateRecords(string recordId)
-        {
-            return Content("Updated record " + recordId);
-        }
+        return Content("Updated record " + recordId);
+    }
 
-        [HttpPost]
-        // This action uses conventional routing.
-        public IActionResult Save(string id)
-        {
-            return Content("Saved record employee #" + id);
-        }
-
+    [HttpPost]
+    // This action uses conventional routing.
+    public IActionResult Save(string id)
+    {
+        return Content("Saved record employee #" + id);
     }
 }

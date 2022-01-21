@@ -13,146 +13,145 @@ using Xunit;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 
 #if IISEXPRESS_FUNCTIONALS
-namespace Microsoft.AspNetCore.Server.IIS.IISExpress.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.IISExpress.FunctionalTests;
 #elif NEWHANDLER_FUNCTIONALS
-namespace Microsoft.AspNetCore.Server.IIS.NewHandler.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.NewHandler.FunctionalTests;
 #elif NEWSHIM_FUNCTIONALS
-namespace Microsoft.AspNetCore.Server.IIS.NewShim.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.NewShim.FunctionalTests;
 #endif
 
 #else
-namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 #endif
+
+[Collection(PublishedSitesCollection.Name)]
+public class StdOutRedirectionTests : IISFunctionalTestBase
 {
-    [Collection(PublishedSitesCollection.Name)]
-    public class StdOutRedirectionTests : IISFunctionalTestBase
+    public StdOutRedirectionTests(PublishedSitesFixture fixture) : base(fixture)
     {
-        public StdOutRedirectionTests(PublishedSitesFixture fixture) : base(fixture)
-        {
-        }
+    }
 
-        [ConditionalFact]
-        [RequiresNewShim]
-        public async Task FrameworkNotFoundExceptionLogged_Pipe()
-        {
-            var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
+    [ConditionalFact]
+    [RequiresNewShim]
+    public async Task FrameworkNotFoundExceptionLogged_Pipe()
+    {
+        var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
 
-            var deploymentResult = await DeployAsync(deploymentParameters);
+        var deploymentResult = await DeployAsync(deploymentParameters);
 
-            Helpers.ModifyFrameworkVersionInRuntimeConfig(deploymentResult);
+        Helpers.ModifyFrameworkVersionInRuntimeConfig(deploymentResult);
 
-            var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
-            Assert.False(response.IsSuccessStatusCode);
+        var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+        Assert.False(response.IsSuccessStatusCode);
 
-            StopServer();
+        StopServer();
 
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult,
-                @"The framework 'Microsoft.NETCore.App', version '2.9.9' \(x64\) was not found.", Logger);
-        }
+        EventLogHelpers.VerifyEventLogEvent(deploymentResult,
+            @"The framework 'Microsoft.NETCore.App', version '2.9.9' \(x64\) was not found.", Logger);
+    }
 
-        [ConditionalFact]
-        [RequiresNewShim]
-        public async Task FrameworkNotFoundExceptionLogged_File()
-        {
-            var deploymentParameters =
-                Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
+    [ConditionalFact]
+    [RequiresNewShim]
+    public async Task FrameworkNotFoundExceptionLogged_File()
+    {
+        var deploymentParameters =
+            Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
 
-            deploymentParameters.EnableLogging(LogFolderPath);
+        deploymentParameters.EnableLogging(LogFolderPath);
 
-            var deploymentResult = await DeployAsync(deploymentParameters);
+        var deploymentResult = await DeployAsync(deploymentParameters);
 
-            Helpers.ModifyFrameworkVersionInRuntimeConfig(deploymentResult);
+        Helpers.ModifyFrameworkVersionInRuntimeConfig(deploymentResult);
 
-            var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
-            Assert.False(response.IsSuccessStatusCode);
+        var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+        Assert.False(response.IsSuccessStatusCode);
 
-            StopServer();
+        StopServer();
 
-            var contents = Helpers.ReadAllTextFromFile(Helpers.GetExpectedLogName(deploymentResult, LogFolderPath), Logger);
-            var expectedString = "The framework 'Microsoft.NETCore.App', version '2.9.9' (x64) was not found.";
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult, 
-                @"The framework 'Microsoft.NETCore.App', version '2.9.9' \(x64\) was not found.", Logger);
-            Assert.Contains(expectedString, contents);
-        }
+        var contents = Helpers.ReadAllTextFromFile(Helpers.GetExpectedLogName(deploymentResult, LogFolderPath), Logger);
+        var expectedString = "The framework 'Microsoft.NETCore.App', version '2.9.9' (x64) was not found.";
+        EventLogHelpers.VerifyEventLogEvent(deploymentResult,
+            @"The framework 'Microsoft.NETCore.App', version '2.9.9' \(x64\) was not found.", Logger);
+        Assert.Contains(expectedString, contents);
+    }
 
-        [ConditionalFact]
-        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
-        [SkipIfDebug]
-        public async Task EnableCoreHostTraceLogging_TwoLogFilesCreated()
-        {
-            var deploymentParameters =
-                Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
-            deploymentParameters.TransformArguments((a, _) => $"{a} CheckLargeStdOutWrites");
+    [ConditionalFact]
+    [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+    [SkipIfDebug]
+    public async Task EnableCoreHostTraceLogging_TwoLogFilesCreated()
+    {
+        var deploymentParameters =
+            Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
+        deploymentParameters.TransformArguments((a, _) => $"{a} CheckLargeStdOutWrites");
 
-            deploymentParameters.EnvironmentVariables["COREHOST_TRACE"] = "1";
+        deploymentParameters.EnvironmentVariables["COREHOST_TRACE"] = "1";
 
-            deploymentParameters.EnableLogging(LogFolderPath);
+        deploymentParameters.EnableLogging(LogFolderPath);
 
-            var deploymentResult = await DeployAsync(deploymentParameters);
+        var deploymentResult = await DeployAsync(deploymentParameters);
 
-            var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
-            Assert.False(response.IsSuccessStatusCode);
+        var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+        Assert.False(response.IsSuccessStatusCode);
 
-            StopServer();
+        StopServer();
 
-            var fileInDirectory = Directory.GetFiles(LogFolderPath).Single();
-            var contents = Helpers.ReadAllTextFromFile(fileInDirectory, Logger);
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult, "Invoked hostfxr", Logger);
-            Assert.Contains("Invoked hostfxr", contents);
-        }
+        var fileInDirectory = Directory.GetFiles(LogFolderPath).Single();
+        var contents = Helpers.ReadAllTextFromFile(fileInDirectory, Logger);
+        EventLogHelpers.VerifyEventLogEvent(deploymentResult, "Invoked hostfxr", Logger);
+        Assert.Contains("Invoked hostfxr", contents);
+    }
 
-        [ConditionalTheory]
-        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
-        [SkipIfDebug]
-        [InlineData("CheckLargeStdErrWrites")]
-        [InlineData("CheckLargeStdOutWrites")]
-        [InlineData("CheckOversizedStdErrWrites")]
-        [InlineData("CheckOversizedStdOutWrites")]
-        public async Task EnableCoreHostTraceLogging_PipeCaptureNativeLogs(string path)
-        {
-            var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
-            deploymentParameters.EnvironmentVariables["COREHOST_TRACE"] = "1";
-            deploymentParameters.TransformArguments((a, _) => $"{a} {path}");
+    [ConditionalTheory]
+    [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+    [SkipIfDebug]
+    [InlineData("CheckLargeStdErrWrites")]
+    [InlineData("CheckLargeStdOutWrites")]
+    [InlineData("CheckOversizedStdErrWrites")]
+    [InlineData("CheckOversizedStdOutWrites")]
+    public async Task EnableCoreHostTraceLogging_PipeCaptureNativeLogs(string path)
+    {
+        var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
+        deploymentParameters.EnvironmentVariables["COREHOST_TRACE"] = "1";
+        deploymentParameters.TransformArguments((a, _) => $"{a} {path}");
 
-            var deploymentResult = await DeployAsync(deploymentParameters);
+        var deploymentResult = await DeployAsync(deploymentParameters);
 
-            var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+        var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
 
-            Assert.False(response.IsSuccessStatusCode);
+        Assert.False(response.IsSuccessStatusCode);
 
-            StopServer();
+        StopServer();
 
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult, "Invoked hostfxr", Logger);
-        }
+        EventLogHelpers.VerifyEventLogEvent(deploymentResult, "Invoked hostfxr", Logger);
+    }
 
-        [ConditionalTheory]
-        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
-        [SkipIfDebug]
-        [InlineData("CheckLargeStdErrWrites")]
-        [InlineData("CheckLargeStdOutWrites")]
-        [InlineData("CheckOversizedStdErrWrites")]
-        [InlineData("CheckOversizedStdOutWrites")]
-        public async Task EnableCoreHostTraceLogging_FileCaptureNativeLogs(string path)
-        {
-            var deploymentParameters =
-                Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
-            deploymentParameters.EnvironmentVariables["COREHOST_TRACE"] = "1";
-            deploymentParameters.TransformArguments((a, _) => $"{a} {path}");
+    [ConditionalTheory]
+    [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+    [SkipIfDebug]
+    [InlineData("CheckLargeStdErrWrites")]
+    [InlineData("CheckLargeStdOutWrites")]
+    [InlineData("CheckOversizedStdErrWrites")]
+    [InlineData("CheckOversizedStdOutWrites")]
+    public async Task EnableCoreHostTraceLogging_FileCaptureNativeLogs(string path)
+    {
+        var deploymentParameters =
+            Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
+        deploymentParameters.EnvironmentVariables["COREHOST_TRACE"] = "1";
+        deploymentParameters.TransformArguments((a, _) => $"{a} {path}");
 
-            deploymentParameters.EnableLogging(LogFolderPath);
+        deploymentParameters.EnableLogging(LogFolderPath);
 
-            var deploymentResult = await DeployAsync(deploymentParameters);
+        var deploymentResult = await DeployAsync(deploymentParameters);
 
-            var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
-            Assert.False(response.IsSuccessStatusCode);
+        var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+        Assert.False(response.IsSuccessStatusCode);
 
-            StopServer();
+        StopServer();
 
-            var fileInDirectory = Directory.GetFiles(LogFolderPath).First();
-            var contents = Helpers.ReadAllTextFromFile(fileInDirectory, Logger);
+        var fileInDirectory = Directory.GetFiles(LogFolderPath).First();
+        var contents = Helpers.ReadAllTextFromFile(fileInDirectory, Logger);
 
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult, "Invoked hostfxr", Logger);
-            Assert.Contains("Invoked hostfxr", contents);
-        }
+        EventLogHelpers.VerifyEventLogEvent(deploymentResult, "Invoked hostfxr", Logger);
+        Assert.Contains("Invoked hostfxr", contents);
     }
 }

@@ -4,21 +4,20 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace RazorPagesWebSite
+namespace RazorPagesWebSite;
+
+public class PolymorphicBinding : PageModel
 {
-    public class PolymorphicBinding : PageModel
+    [ModelBinder(typeof(PolymorphicModelBinder))]
+    public IUserModel UserModel { get; set; }
+
+    public IActionResult OnPost()
     {
-        [ModelBinder(typeof(PolymorphicModelBinder))]
-        public IUserModel UserModel { get; set; }
-
-        public IActionResult OnPost()
+        if (!ModelState.IsValid)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            return new ContentResult { Content = UserModel.ToString() };
+            return BadRequest(ModelState);
         }
+
+        return new ContentResult { Content = UserModel.ToString() };
     }
 }

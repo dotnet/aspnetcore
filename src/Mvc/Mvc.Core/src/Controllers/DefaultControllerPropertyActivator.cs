@@ -1,80 +1,77 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.Extensions.Internal;
 
-namespace Microsoft.AspNetCore.Mvc.Controllers
+namespace Microsoft.AspNetCore.Mvc.Controllers;
+
+internal sealed class DefaultControllerPropertyActivator : IControllerPropertyActivator
 {
-    internal sealed class DefaultControllerPropertyActivator : IControllerPropertyActivator
+    private static readonly Func<Type, PropertyActivator<ControllerContext>[]> _getPropertiesToActivate =
+        GetPropertiesToActivate;
+    private readonly ConcurrentDictionary<Type, PropertyActivator<ControllerContext>[]> _activateActions = new();
+
+    public void Activate(ControllerContext context, object controller)
     {
-        private static readonly Func<Type, PropertyActivator<ControllerContext>[]> _getPropertiesToActivate =
-            GetPropertiesToActivate;
-        private readonly ConcurrentDictionary<Type, PropertyActivator<ControllerContext>[]> _activateActions = new();
+        var controllerType = controller.GetType();
+        var propertiesToActivate = _activateActions!.GetOrAdd(
+            controllerType,
+            _getPropertiesToActivate);
 
-        public void Activate(ControllerContext context, object controller)
+        for (var i = 0; i < propertiesToActivate.Length; i++)
         {
-            var controllerType = controller.GetType();
-            var propertiesToActivate = _activateActions!.GetOrAdd(
-                controllerType,
-                _getPropertiesToActivate);
+            var activateInfo = propertiesToActivate[i];
+            activateInfo.Activate(controller, context);
+        }
+    }
 
+    public void ClearCache() => _activateActions.Clear();
+
+    public Action<ControllerContext, object> GetActivatorDelegate(ControllerActionDescriptor actionDescriptor)
+    {
+        if (actionDescriptor == null)
+        {
+            throw new ArgumentNullException(nameof(actionDescriptor));
+        }
+
+        var controllerType = actionDescriptor.ControllerTypeInfo?.AsType();
+        if (controllerType == null)
+        {
+            throw new ArgumentException(Resources.FormatPropertyOfTypeCannotBeNull(
+                nameof(actionDescriptor.ControllerTypeInfo),
+                nameof(actionDescriptor)),
+                nameof(actionDescriptor));
+        }
+
+        var propertiesToActivate = GetPropertiesToActivate(controllerType);
+        void Activate(ControllerContext controllerContext, object controller)
+        {
             for (var i = 0; i < propertiesToActivate.Length; i++)
             {
                 var activateInfo = propertiesToActivate[i];
-                activateInfo.Activate(controller, context);
+                activateInfo.Activate(controller, controllerContext);
             }
         }
 
-        public void ClearCache() => _activateActions.Clear();
+        return Activate;
+    }
 
-        public Action<ControllerContext, object> GetActivatorDelegate(ControllerActionDescriptor actionDescriptor)
-        {
-            if (actionDescriptor == null)
-            {
-                throw new ArgumentNullException(nameof(actionDescriptor));
-            }
+    private static PropertyActivator<ControllerContext>[] GetPropertiesToActivate(Type type)
+    {
+        IEnumerable<PropertyActivator<ControllerContext>> activators;
+        activators = PropertyActivator<ControllerContext>.GetPropertiesToActivate(
+            type,
+            typeof(ActionContextAttribute),
+            p => new PropertyActivator<ControllerContext>(p, c => c));
 
-            var controllerType = actionDescriptor.ControllerTypeInfo?.AsType();
-            if (controllerType == null)
-            {
-                throw new ArgumentException(Resources.FormatPropertyOfTypeCannotBeNull(
-                    nameof(actionDescriptor.ControllerTypeInfo),
-                    nameof(actionDescriptor)),
-                    nameof(actionDescriptor));
-            }
+        activators = activators.Concat(PropertyActivator<ControllerContext>.GetPropertiesToActivate(
+            type,
+            typeof(ControllerContextAttribute),
+            p => new PropertyActivator<ControllerContext>(p, c => c)));
 
-            var propertiesToActivate = GetPropertiesToActivate(controllerType);
-            void Activate(ControllerContext controllerContext, object controller)
-            {
-                for (var i = 0; i < propertiesToActivate.Length; i++)
-                {
-                    var activateInfo = propertiesToActivate[i];
-                    activateInfo.Activate(controller, controllerContext);
-                }
-            }
-
-            return Activate;
-        }
-
-        private static PropertyActivator<ControllerContext>[] GetPropertiesToActivate(Type type)
-        {
-            IEnumerable<PropertyActivator<ControllerContext>> activators;
-            activators = PropertyActivator<ControllerContext>.GetPropertiesToActivate(
-                type,
-                typeof(ActionContextAttribute),
-                p => new PropertyActivator<ControllerContext>(p, c => c));
-
-            activators = activators.Concat(PropertyActivator<ControllerContext>.GetPropertiesToActivate(
-                type,
-                typeof(ControllerContextAttribute),
-                p => new PropertyActivator<ControllerContext>(p, c => c)));
-
-            return activators.ToArray();
-        }
+        return activators.ToArray();
     }
 }

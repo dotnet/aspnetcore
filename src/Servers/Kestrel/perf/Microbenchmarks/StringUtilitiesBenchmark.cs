@@ -6,30 +6,29 @@ using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
+namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks;
+
+public class StringUtilitiesBenchmark
 {
-    public class StringUtilitiesBenchmark
+    private const int Iterations = 500_000;
+
+    [Benchmark(Baseline = true, OperationsPerInvoke = Iterations)]
+    public void UintToString()
     {
-        private const int Iterations = 500_000;
-
-        [Benchmark(Baseline = true, OperationsPerInvoke = Iterations)]
-        public void UintToString()
+        var connectionId = CorrelationIdGenerator.GetNextId();
+        for (uint i = 0; i < Iterations; i++)
         {
-            var connectionId = CorrelationIdGenerator.GetNextId();
-            for (uint i = 0; i < Iterations; i++)
-            {
-                var id = connectionId + ':' + i.ToString("X8", CultureInfo.InvariantCulture);
-            }
+            var id = connectionId + ':' + i.ToString("X8", CultureInfo.InvariantCulture);
         }
+    }
 
-        [Benchmark(OperationsPerInvoke = Iterations)]
-        public void ConcatAsHexSuffix()
+    [Benchmark(OperationsPerInvoke = Iterations)]
+    public void ConcatAsHexSuffix()
+    {
+        var connectionId = CorrelationIdGenerator.GetNextId();
+        for (uint i = 0; i < Iterations; i++)
         {
-            var connectionId = CorrelationIdGenerator.GetNextId();
-            for (uint i = 0; i < Iterations; i++)
-            {
-                var id = StringUtilities.ConcatAsHexSuffix(connectionId, ':', i);
-            }
+            var id = StringUtilities.ConcatAsHexSuffix(connectionId, ':', i);
         }
     }
 }

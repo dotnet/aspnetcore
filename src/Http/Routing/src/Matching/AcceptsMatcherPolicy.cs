@@ -257,7 +257,7 @@ internal sealed class AcceptsMatcherPolicy : MatcherPolicy, IEndpointComparerPol
             .ToArray();
     }
 
-    private Endpoint CreateRejectionEndpoint()
+    private static Endpoint CreateRejectionEndpoint()
     {
         return new Endpoint(
             (context) =>
@@ -378,7 +378,6 @@ internal sealed class AcceptsMatcherPolicy : MatcherPolicy, IEndpointComparerPol
             var destinations = _destinations;
             for (var i = 0; i < destinations.Length; i++)
             {
-
                 var destination = destinations[i].mediaType;
                 if (requestMediaType.IsSubsetOf(destination))
                 {

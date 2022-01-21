@@ -2,28 +2,26 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Authorization.Infrastructure;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Authorization.Test
+namespace Microsoft.AspNetCore.Authorization.Test;
+
+public class DenyAnonymousAuthorizationRequirementTests
 {
-    public class DenyAnonymousAuthorizationRequirementTests
+    private DenyAnonymousAuthorizationRequirement CreateRequirement()
     {
-        private DenyAnonymousAuthorizationRequirement CreateRequirement()
-        {
-            return new DenyAnonymousAuthorizationRequirement();
-        }
+        return new DenyAnonymousAuthorizationRequirement();
+    }
 
-        [Fact]
-        public void ToString_ShouldReturnFormatValue()
-        {
-            // Arrange
-            var requirement = CreateRequirement();
+    [Fact]
+    public void ToString_ShouldReturnFormatValue()
+    {
+        // Arrange
+        var requirement = CreateRequirement();
 
-            // Act
-            var formattedValue = requirement.ToString();
+        // Act
+        var formattedValue = requirement.ToString();
 
-            // Assert
-            Assert.Equal("DenyAnonymousAuthorizationRequirement: Requires an authenticated user.", formattedValue);
-        }
+        // Assert
+        Assert.Equal("DenyAnonymousAuthorizationRequirement: Requires an authenticated user.", formattedValue);
     }
 }

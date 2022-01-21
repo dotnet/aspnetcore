@@ -19,395 +19,394 @@ using Moq;
 using Moq.Protected;
 using Xunit;
 
-namespace Microsoft.AspNetCore.SignalR.Client.Tests
+namespace Microsoft.AspNetCore.SignalR.Client.Tests;
+
+public class ServerSentEventsTransportTests : VerifiableLoggedTest
 {
-    public class ServerSentEventsTransportTests : VerifiableLoggedTest
+    [Fact]
+    public async Task CanStartStopSSETransport()
     {
-        [Fact]
-        public async Task CanStartStopSSETransport()
+        var eventStreamTcs = new TaskCompletionSource();
+        var copyToAsyncTcs = new TaskCompletionSource();
+
+        var mockHttpHandler = new Mock<HttpMessageHandler>();
+        mockHttpHandler.Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+            .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
+            {
+                await Task.Yield();
+                // Receive loop started - allow stopping the transport
+                eventStreamTcs.SetResult();
+
+                // returns unfinished task to block pipelines
+                var mockStream = new Mock<Stream>();
+                mockStream
+                    .Setup(s => s.CopyToAsync(It.IsAny<Stream>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+                    .Returns(copyToAsyncTcs.Task);
+                mockStream.Setup(s => s.CanRead).Returns(true);
+                return new HttpResponseMessage { Content = new StreamContent(mockStream.Object) };
+            });
+
+        try
         {
-            var eventStreamTcs = new TaskCompletionSource();
-            var copyToAsyncTcs = new TaskCompletionSource();
+            using (var httpClient = new HttpClient(mockHttpHandler.Object))
+            using (StartVerifiableLog())
+            {
+                var sseTransport = new ServerSentEventsTransport(httpClient, loggerFactory: LoggerFactory);
+                await sseTransport.StartAsync(
+                    new Uri("http://fakeuri.org"), TransferFormat.Text).DefaultTimeout();
 
-            var mockHttpHandler = new Mock<HttpMessageHandler>();
-            mockHttpHandler.Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
-                {
-                    await Task.Yield();
-                    // Receive loop started - allow stopping the transport
-                    eventStreamTcs.SetResult();
+                await eventStreamTcs.Task.DefaultTimeout();
+                await sseTransport.StopAsync().DefaultTimeout();
+                await sseTransport.Running.DefaultTimeout();
+            }
+        }
+        finally
+        {
+            copyToAsyncTcs.SetResult();
+        }
+    }
 
-                    // returns unfinished task to block pipelines
-                    var mockStream = new Mock<Stream>();
-                    mockStream
-                        .Setup(s => s.CopyToAsync(It.IsAny<Stream>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
-                        .Returns(copyToAsyncTcs.Task);
-                    mockStream.Setup(s => s.CanRead).Returns(true);
-                    return new HttpResponseMessage { Content = new StreamContent(mockStream.Object) };
-                });
+    [Fact]
+    public async Task SSETransportStopsSendAndReceiveLoopsWhenTransportStopped()
+    {
+        var mockHttpHandler = new Mock<HttpMessageHandler>();
+        mockHttpHandler.Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+            .Returns<HttpRequestMessage, CancellationToken>((request, cancellationToken) =>
+            {
+                var mockStream = new Mock<Stream>();
+                mockStream
+                    .Setup(s => s.ReadAsync(It.IsAny<Memory<byte>>(), It.IsAny<CancellationToken>()))
+                    .Returns<Memory<byte>, CancellationToken>(async (data, t) =>
+                    {
+                        if (t.IsCancellationRequested)
+                        {
+                            return 0;
+                        }
 
+                        int count = Encoding.ASCII.GetBytes("data: 3:abc\r\n\r\n", data.Span);
+                        await Task.Delay(100);
+                        return count;
+                    });
+                mockStream.Setup(s => s.CanRead).Returns(true);
+
+                return Task.FromResult(new HttpResponseMessage { Content = new StreamContent(mockStream.Object) });
+            });
+
+        using (var httpClient = new HttpClient(mockHttpHandler.Object))
+        using (StartVerifiableLog())
+        {
+            var sseTransport = new ServerSentEventsTransport(httpClient, loggerFactory: LoggerFactory);
+
+            Task transportActiveTask;
             try
             {
-                using (var httpClient = new HttpClient(mockHttpHandler.Object))
-                using (StartVerifiableLog())
-                {
-                    var sseTransport = new ServerSentEventsTransport(httpClient, loggerFactory: LoggerFactory);
-                    await sseTransport.StartAsync(
-                        new Uri("http://fakeuri.org"), TransferFormat.Text).DefaultTimeout();
+                await sseTransport.StartAsync(
+                    new Uri("http://fakeuri.org"), TransferFormat.Text).DefaultTimeout();
 
-                    await eventStreamTcs.Task.DefaultTimeout();
-                    await sseTransport.StopAsync().DefaultTimeout();
-                    await sseTransport.Running.DefaultTimeout();
-                }
+                transportActiveTask = sseTransport.Running;
+                Assert.False(transportActiveTask.IsCompleted);
+                var message = await sseTransport.Input.ReadSingleAsync().DefaultTimeout();
+                Assert.StartsWith("3:abc", Encoding.ASCII.GetString(message));
             }
             finally
             {
-                copyToAsyncTcs.SetResult();
+                await sseTransport.StopAsync().DefaultTimeout();
             }
+
+            await transportActiveTask.DefaultTimeout();
         }
+    }
 
-        [Fact]
-        public async Task SSETransportStopsSendAndReceiveLoopsWhenTransportStopped()
-        {
-            var mockHttpHandler = new Mock<HttpMessageHandler>();
-            mockHttpHandler.Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                .Returns<HttpRequestMessage, CancellationToken>((request, cancellationToken) =>
-                {
-                    var mockStream = new Mock<Stream>();
-                    mockStream
-                        .Setup(s => s.ReadAsync(It.IsAny<Memory<byte>>(), It.IsAny<CancellationToken>()))
-                        .Returns<Memory<byte>, CancellationToken>(async (data, t) =>
-                        {
-                            if (t.IsCancellationRequested)
-                            {
-                                return 0;
-                            }
-
-                            int count = Encoding.ASCII.GetBytes("data: 3:abc\r\n\r\n", data.Span);
-                            await Task.Delay(100);
-                            return count;
-                        });
-                    mockStream.Setup(s => s.CanRead).Returns(true);
-
-                    return Task.FromResult(new HttpResponseMessage { Content = new StreamContent(mockStream.Object) });
-                });
-
-            using (var httpClient = new HttpClient(mockHttpHandler.Object))
-            using (StartVerifiableLog())
+    [Fact]
+    public async Task SSETransportStopsWithErrorIfServerSendsIncompleteResults()
+    {
+        var mockHttpHandler = new Mock<HttpMessageHandler>();
+        var calls = 0;
+        mockHttpHandler.Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+            .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
             {
-                var sseTransport = new ServerSentEventsTransport(httpClient, loggerFactory: LoggerFactory);
+                await Task.Yield();
 
-                Task transportActiveTask;
-                try
-                {
-                    await sseTransport.StartAsync(
-                        new Uri("http://fakeuri.org"), TransferFormat.Text).DefaultTimeout();
-
-                    transportActiveTask = sseTransport.Running;
-                    Assert.False(transportActiveTask.IsCompleted);
-                    var message = await sseTransport.Input.ReadSingleAsync().DefaultTimeout();
-                    Assert.StartsWith("3:abc", Encoding.ASCII.GetString(message));
-                }
-                finally
-                {
-                    await sseTransport.StopAsync().DefaultTimeout();
-                }
-
-                await transportActiveTask.DefaultTimeout();
-            }
-        }
-
-        [Fact]
-        public async Task SSETransportStopsWithErrorIfServerSendsIncompleteResults()
-        {
-            var mockHttpHandler = new Mock<HttpMessageHandler>();
-            var calls = 0;
-            mockHttpHandler.Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
-                {
-                    await Task.Yield();
-
-                    var mockStream = new Mock<Stream>();
-                    mockStream
-                        .Setup(s => s.ReadAsync(It.IsAny<Memory<byte>>(), It.IsAny<CancellationToken>()))
-                        .Returns<Memory<byte>, CancellationToken>((data, t) =>
-                        {
-                            if (calls == 0)
-                            {
-                                calls++;
-                                return new ValueTask<int>(Encoding.ASCII.GetBytes("data: 3:a", data.Span));
-                            }
-                            return new ValueTask<int>(0);
-                        });
-                    mockStream.Setup(s => s.CanRead).Returns(true);
-
-                    return new HttpResponseMessage { Content = new StreamContent(mockStream.Object) };
-                });
-
-            using (var httpClient = new HttpClient(mockHttpHandler.Object))
-            using (StartVerifiableLog())
-            {
-                var sseTransport = new ServerSentEventsTransport(httpClient, loggerFactory: LoggerFactory);
-
-                await sseTransport.StartAsync(
-                    new Uri("http://fakeuri.org"), TransferFormat.Text).DefaultTimeout();
-
-                var exception = await Assert.ThrowsAsync<FormatException>(() => sseTransport.Input.ReadAllAsync());
-
-                await sseTransport.Running.DefaultTimeout();
-
-                Assert.Equal("Incomplete message.", exception.Message);
-            }
-        }
-
-        [Fact]
-        public async Task SSETransportStopsWithErrorIfSendingMessageFails()
-        {
-            bool ExpectedErrors(WriteContext writeContext)
-            {
-                return writeContext.LoggerName == typeof(ServerSentEventsTransport).FullName &&
-                       writeContext.EventId.Name == "ErrorSending";
-            }
-
-            var eventStreamTcs = new TaskCompletionSource();
-            var readTcs = new TaskCompletionSource<int>();
-
-            var mockHttpHandler = new Mock<HttpMessageHandler>();
-            mockHttpHandler.Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
-                {
-                    await Task.Yield();
-
-                    if (request.Headers.Accept?.Contains(new MediaTypeWithQualityHeaderValue("text/event-stream")) == true)
+                var mockStream = new Mock<Stream>();
+                mockStream
+                    .Setup(s => s.ReadAsync(It.IsAny<Memory<byte>>(), It.IsAny<CancellationToken>()))
+                    .Returns<Memory<byte>, CancellationToken>((data, t) =>
                     {
-                        // Receive loop started - allow stopping the transport
-                        eventStreamTcs.SetResult();
+                        if (calls == 0)
+                        {
+                            calls++;
+                            return new ValueTask<int>(Encoding.ASCII.GetBytes("data: 3:a", data.Span));
+                        }
+                        return new ValueTask<int>(0);
+                    });
+                mockStream.Setup(s => s.CanRead).Returns(true);
 
-                        // returns unfinished task to block pipelines
-                        var mockStream = new Mock<Stream>();
-                        mockStream
-                            .Setup(s => s.ReadAsync(It.IsAny<Memory<byte>>(), It.IsAny<CancellationToken>()))
-                            .Returns<Memory<byte>, CancellationToken>(async (data, ct) =>
-                            {
-                                using (ct.Register(() => readTcs.TrySetCanceled()))
-                                {
-                                    return await readTcs.Task;
-                                }
-                            });
-                        mockStream.Setup(s => s.CanRead).Returns(true);
-                        return new HttpResponseMessage { Content = new StreamContent(mockStream.Object) };
-                    }
+                return new HttpResponseMessage { Content = new StreamContent(mockStream.Object) };
+            });
 
-                    return ResponseUtils.CreateResponse(System.Net.HttpStatusCode.InternalServerError);
-                });
+        using (var httpClient = new HttpClient(mockHttpHandler.Object))
+        using (StartVerifiableLog())
+        {
+            var sseTransport = new ServerSentEventsTransport(httpClient, loggerFactory: LoggerFactory);
 
-            using (var httpClient = new HttpClient(mockHttpHandler.Object))
-            using (StartVerifiableLog(expectedErrorsFilter: ExpectedErrors))
-            {
-                var sseTransport = new ServerSentEventsTransport(httpClient, loggerFactory: LoggerFactory);
+            await sseTransport.StartAsync(
+                new Uri("http://fakeuri.org"), TransferFormat.Text).DefaultTimeout();
 
-                await sseTransport.StartAsync(
-                    new Uri("http://fakeuri.org"), TransferFormat.Text).DefaultTimeout();
-                await eventStreamTcs.Task;
+            var exception = await Assert.ThrowsAsync<FormatException>(() => sseTransport.Input.ReadAllAsync());
 
-                await sseTransport.Output.WriteAsync(new byte[] { 0x42 });
+            await sseTransport.Running.DefaultTimeout();
 
-                var exception = await Assert.ThrowsAsync<HttpRequestException>(() => sseTransport.Input.ReadAllAsync().DefaultTimeout());
-                Assert.Contains("500", exception.Message);
+            Assert.Equal("Incomplete message.", exception.Message);
+        }
+    }
 
-                // Errors are only communicated through the pipe
-                await sseTransport.Running.DefaultTimeout();
-            }
+    [Fact]
+    public async Task SSETransportStopsWithErrorIfSendingMessageFails()
+    {
+        bool ExpectedErrors(WriteContext writeContext)
+        {
+            return writeContext.LoggerName == typeof(ServerSentEventsTransport).FullName &&
+                   writeContext.EventId.Name == "ErrorSending";
         }
 
-        [Fact]
-        public async Task SSETransportStopsIfChannelClosed()
-        {
-            var eventStreamTcs = new TaskCompletionSource();
-            var readTcs = new TaskCompletionSource<int>();
+        var eventStreamTcs = new TaskCompletionSource();
+        var readTcs = new TaskCompletionSource<int>();
 
-            var mockHttpHandler = new Mock<HttpMessageHandler>();
-            mockHttpHandler.Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
+        var mockHttpHandler = new Mock<HttpMessageHandler>();
+        mockHttpHandler.Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+            .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
+            {
+                await Task.Yield();
+
+                if (request.Headers.Accept?.Contains(new MediaTypeWithQualityHeaderValue("text/event-stream")) == true)
                 {
-                    await Task.Yield();
-
                     // Receive loop started - allow stopping the transport
                     eventStreamTcs.SetResult();
 
                     // returns unfinished task to block pipelines
                     var mockStream = new Mock<Stream>();
                     mockStream
-                            .Setup(s => s.ReadAsync(It.IsAny<Memory<byte>>(), It.IsAny<CancellationToken>()))
-                            .Returns<Memory<byte>, CancellationToken>(async (data, ct) =>
+                        .Setup(s => s.ReadAsync(It.IsAny<Memory<byte>>(), It.IsAny<CancellationToken>()))
+                        .Returns<Memory<byte>, CancellationToken>(async (data, ct) =>
+                        {
+                            using (ct.Register(() => readTcs.TrySetCanceled()))
                             {
-                                using (ct.Register(() => readTcs.TrySetCanceled()))
-                                {
-                                    return await readTcs.Task;
-                                }
-                            });
+                                return await readTcs.Task;
+                            }
+                        });
                     mockStream.Setup(s => s.CanRead).Returns(true);
                     return new HttpResponseMessage { Content = new StreamContent(mockStream.Object) };
-                });
+                }
 
-            using (var httpClient = new HttpClient(mockHttpHandler.Object))
-            using (StartVerifiableLog())
-            {
-                var sseTransport = new ServerSentEventsTransport(httpClient, loggerFactory: LoggerFactory);
+                return ResponseUtils.CreateResponse(System.Net.HttpStatusCode.InternalServerError);
+            });
 
-                await sseTransport.StartAsync(
-                    new Uri("http://fakeuri.org"), TransferFormat.Text).DefaultTimeout();
-                await eventStreamTcs.Task.DefaultTimeout();
-
-                sseTransport.Output.Complete();
-
-                await sseTransport.Running.DefaultTimeout();
-            }
-        }
-
-        [Fact]
-        public async Task SSETransportStopsIfTheServerClosesTheStream()
+        using (var httpClient = new HttpClient(mockHttpHandler.Object))
+        using (StartVerifiableLog(expectedErrorsFilter: ExpectedErrors))
         {
-            var mockHttpHandler = new Mock<HttpMessageHandler>();
-            mockHttpHandler.Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
-                {
-                    await Task.Yield();
-                    return new HttpResponseMessage { Content = new StringContent("data: 3:abc\r\n\r\n") };
-                });
+            var sseTransport = new ServerSentEventsTransport(httpClient, loggerFactory: LoggerFactory);
 
-            using (var httpClient = new HttpClient(mockHttpHandler.Object))
-            using (StartVerifiableLog())
-            {
-                var sseTransport = new ServerSentEventsTransport(httpClient, loggerFactory: LoggerFactory);
+            await sseTransport.StartAsync(
+                new Uri("http://fakeuri.org"), TransferFormat.Text).DefaultTimeout();
+            await eventStreamTcs.Task;
 
-                await sseTransport.StartAsync(
-                    new Uri("http://fakeuri.org"), TransferFormat.Text).DefaultTimeout();
+            await sseTransport.Output.WriteAsync(new byte[] { 0x42 });
 
-                var message = await sseTransport.Input.ReadSingleAsync().DefaultTimeout();
-                Assert.Equal("3:abc", Encoding.ASCII.GetString(message));
+            var exception = await Assert.ThrowsAsync<HttpRequestException>(() => sseTransport.Input.ReadAllAsync().DefaultTimeout());
+            Assert.Contains("500", exception.Message);
 
-                await sseTransport.Running.DefaultTimeout();
-            }
+            // Errors are only communicated through the pipe
+            await sseTransport.Running.DefaultTimeout();
         }
+    }
 
-        [Fact]
-        public async Task SSETransportCancelsSendOnStop()
-        {
-            var eventStreamTcs = new TaskCompletionSource();
-            var readTcs = new TaskCompletionSource();
-            var sendSyncPoint = new SyncPoint();
+    [Fact]
+    public async Task SSETransportStopsIfChannelClosed()
+    {
+        var eventStreamTcs = new TaskCompletionSource();
+        var readTcs = new TaskCompletionSource<int>();
 
-            var mockHttpHandler = new Mock<HttpMessageHandler>();
-            mockHttpHandler.Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
-                {
-                    await Task.Yield();
+        var mockHttpHandler = new Mock<HttpMessageHandler>();
+        mockHttpHandler.Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+            .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
+            {
+                await Task.Yield();
 
-                    if (request.Headers.Accept?.Contains(new MediaTypeWithQualityHeaderValue("text/event-stream")) == true)
-                    {
-                        // Receive loop started - allow stopping the transport
-                        eventStreamTcs.SetResult();
+                // Receive loop started - allow stopping the transport
+                eventStreamTcs.SetResult();
 
-                        // returns unfinished task to block pipelines
-                        var mockStream = new Mock<Stream>();
-                        mockStream
-                            .Setup(s => s.ReadAsync(It.IsAny<Memory<byte>>(), It.IsAny<CancellationToken>()))
-                            .Returns(async () =>
+                // returns unfinished task to block pipelines
+                var mockStream = new Mock<Stream>();
+                mockStream
+                        .Setup(s => s.ReadAsync(It.IsAny<Memory<byte>>(), It.IsAny<CancellationToken>()))
+                        .Returns<Memory<byte>, CancellationToken>(async (data, ct) =>
+                        {
+                            using (ct.Register(() => readTcs.TrySetCanceled()))
                             {
-                                await readTcs.Task;
+                                return await readTcs.Task;
+                            }
+                        });
+                mockStream.Setup(s => s.CanRead).Returns(true);
+                return new HttpResponseMessage { Content = new StreamContent(mockStream.Object) };
+            });
 
-                                throw new TaskCanceledException();
-                            });
-                        mockStream.Setup(s => s.CanRead).Returns(true);
-                        return new HttpResponseMessage { Content = new StreamContent(mockStream.Object) };
-                    }
-
-                    // Throw TaskCanceledException from SSE send's SendAsync on stop
-                    cancellationToken.Register(s => ((SyncPoint)s).Continue(), sendSyncPoint);
-                    await sendSyncPoint.WaitToContinue();
-                    throw new TaskCanceledException();
-                });
-
-            using (var httpClient = new HttpClient(mockHttpHandler.Object))
-            using (StartVerifiableLog())
-            {
-                var sseTransport = new ServerSentEventsTransport(httpClient, loggerFactory: LoggerFactory);
-
-                await sseTransport.StartAsync(
-                    new Uri("http://fakeuri.org"), TransferFormat.Text).DefaultTimeout();
-                await eventStreamTcs.Task;
-
-                await sseTransport.Output.WriteAsync(new byte[] { 0x42 });
-
-                // For send request to be in progress
-                await sendSyncPoint.WaitForSyncPoint();
-
-                var stopTask = sseTransport.StopAsync();
-
-                readTcs.SetResult();
-                sendSyncPoint.Continue();
-
-                await stopTask;
-            }
-        }
-
-        [Fact]
-        public async Task SSETransportDoesNotSupportBinary()
+        using (var httpClient = new HttpClient(mockHttpHandler.Object))
+        using (StartVerifiableLog())
         {
-            var mockHttpHandler = new Mock<HttpMessageHandler>();
-            mockHttpHandler.Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
-                {
-                    await Task.Yield();
-                    return new HttpResponseMessage { Content = new StringContent(string.Empty) };
-                });
+            var sseTransport = new ServerSentEventsTransport(httpClient, loggerFactory: LoggerFactory);
 
-            using (var httpClient = new HttpClient(mockHttpHandler.Object))
-            using (StartVerifiableLog())
-            {
-                var sseTransport = new ServerSentEventsTransport(httpClient, loggerFactory: LoggerFactory);
+            await sseTransport.StartAsync(
+                new Uri("http://fakeuri.org"), TransferFormat.Text).DefaultTimeout();
+            await eventStreamTcs.Task.DefaultTimeout();
 
-                var ex = await Assert.ThrowsAsync<ArgumentException>(() => sseTransport.StartAsync(new Uri("http://fakeuri.org"), TransferFormat.Binary).DefaultTimeout());
+            sseTransport.Output.Complete();
 
-                Assert.Equal("transferFormat", ex.ParamName);
-                Assert.Equal($"The 'Binary' transfer format is not supported by this transport.", ex.GetLocalizationSafeMessage());
-            }
+            await sseTransport.Running.DefaultTimeout();
         }
+    }
 
-        [Theory]
-        [InlineData(TransferFormat.Binary)] // Binary not supported
-        [InlineData(TransferFormat.Text | TransferFormat.Binary)] // Multiple values not allowed
-        [InlineData((TransferFormat)42)] // Unexpected value
-        public async Task SSETransportThrowsForInvalidTransferFormat(TransferFormat transferFormat)
-        {
-            var mockHttpHandler = new Mock<HttpMessageHandler>();
-            mockHttpHandler.Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
-                {
-                    await Task.Yield();
-                    return new HttpResponseMessage { Content = new StringContent(string.Empty) };
-                });
-
-            using (var httpClient = new HttpClient(mockHttpHandler.Object))
-            using (StartVerifiableLog())
+    [Fact]
+    public async Task SSETransportStopsIfTheServerClosesTheStream()
+    {
+        var mockHttpHandler = new Mock<HttpMessageHandler>();
+        mockHttpHandler.Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+            .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
             {
-                var sseTransport = new ServerSentEventsTransport(httpClient, loggerFactory: LoggerFactory);
-                var exception = await Assert.ThrowsAsync<ArgumentException>(() =>
-                    sseTransport.StartAsync(new Uri("http://fakeuri.org"), transferFormat));
+                await Task.Yield();
+                return new HttpResponseMessage { Content = new StringContent("data: 3:abc\r\n\r\n") };
+            });
 
-                Assert.Contains($"The '{transferFormat}' transfer format is not supported by this transport.", exception.Message);
-                Assert.Equal("transferFormat", exception.ParamName);
-            }
+        using (var httpClient = new HttpClient(mockHttpHandler.Object))
+        using (StartVerifiableLog())
+        {
+            var sseTransport = new ServerSentEventsTransport(httpClient, loggerFactory: LoggerFactory);
+
+            await sseTransport.StartAsync(
+                new Uri("http://fakeuri.org"), TransferFormat.Text).DefaultTimeout();
+
+            var message = await sseTransport.Input.ReadSingleAsync().DefaultTimeout();
+            Assert.Equal("3:abc", Encoding.ASCII.GetString(message));
+
+            await sseTransport.Running.DefaultTimeout();
+        }
+    }
+
+    [Fact]
+    public async Task SSETransportCancelsSendOnStop()
+    {
+        var eventStreamTcs = new TaskCompletionSource();
+        var readTcs = new TaskCompletionSource();
+        var sendSyncPoint = new SyncPoint();
+
+        var mockHttpHandler = new Mock<HttpMessageHandler>();
+        mockHttpHandler.Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+            .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
+            {
+                await Task.Yield();
+
+                if (request.Headers.Accept?.Contains(new MediaTypeWithQualityHeaderValue("text/event-stream")) == true)
+                {
+                    // Receive loop started - allow stopping the transport
+                    eventStreamTcs.SetResult();
+
+                    // returns unfinished task to block pipelines
+                    var mockStream = new Mock<Stream>();
+                    mockStream
+                        .Setup(s => s.ReadAsync(It.IsAny<Memory<byte>>(), It.IsAny<CancellationToken>()))
+                        .Returns(async () =>
+                        {
+                            await readTcs.Task;
+
+                            throw new TaskCanceledException();
+                        });
+                    mockStream.Setup(s => s.CanRead).Returns(true);
+                    return new HttpResponseMessage { Content = new StreamContent(mockStream.Object) };
+                }
+
+                // Throw TaskCanceledException from SSE send's SendAsync on stop
+                cancellationToken.Register(s => ((SyncPoint)s).Continue(), sendSyncPoint);
+                await sendSyncPoint.WaitToContinue();
+                throw new TaskCanceledException();
+            });
+
+        using (var httpClient = new HttpClient(mockHttpHandler.Object))
+        using (StartVerifiableLog())
+        {
+            var sseTransport = new ServerSentEventsTransport(httpClient, loggerFactory: LoggerFactory);
+
+            await sseTransport.StartAsync(
+                new Uri("http://fakeuri.org"), TransferFormat.Text).DefaultTimeout();
+            await eventStreamTcs.Task;
+
+            await sseTransport.Output.WriteAsync(new byte[] { 0x42 });
+
+            // For send request to be in progress
+            await sendSyncPoint.WaitForSyncPoint();
+
+            var stopTask = sseTransport.StopAsync();
+
+            readTcs.SetResult();
+            sendSyncPoint.Continue();
+
+            await stopTask;
+        }
+    }
+
+    [Fact]
+    public async Task SSETransportDoesNotSupportBinary()
+    {
+        var mockHttpHandler = new Mock<HttpMessageHandler>();
+        mockHttpHandler.Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+            .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
+            {
+                await Task.Yield();
+                return new HttpResponseMessage { Content = new StringContent(string.Empty) };
+            });
+
+        using (var httpClient = new HttpClient(mockHttpHandler.Object))
+        using (StartVerifiableLog())
+        {
+            var sseTransport = new ServerSentEventsTransport(httpClient, loggerFactory: LoggerFactory);
+
+            var ex = await Assert.ThrowsAsync<ArgumentException>(() => sseTransport.StartAsync(new Uri("http://fakeuri.org"), TransferFormat.Binary).DefaultTimeout());
+
+            Assert.Equal("transferFormat", ex.ParamName);
+            Assert.Equal($"The 'Binary' transfer format is not supported by this transport.", ex.GetLocalizationSafeMessage());
+        }
+    }
+
+    [Theory]
+    [InlineData(TransferFormat.Binary)] // Binary not supported
+    [InlineData(TransferFormat.Text | TransferFormat.Binary)] // Multiple values not allowed
+    [InlineData((TransferFormat)42)] // Unexpected value
+    public async Task SSETransportThrowsForInvalidTransferFormat(TransferFormat transferFormat)
+    {
+        var mockHttpHandler = new Mock<HttpMessageHandler>();
+        mockHttpHandler.Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+            .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
+            {
+                await Task.Yield();
+                return new HttpResponseMessage { Content = new StringContent(string.Empty) };
+            });
+
+        using (var httpClient = new HttpClient(mockHttpHandler.Object))
+        using (StartVerifiableLog())
+        {
+            var sseTransport = new ServerSentEventsTransport(httpClient, loggerFactory: LoggerFactory);
+            var exception = await Assert.ThrowsAsync<ArgumentException>(() =>
+                sseTransport.StartAsync(new Uri("http://fakeuri.org"), transferFormat));
+
+            Assert.Contains($"The '{transferFormat}' transfer format is not supported by this transport.", exception.Message);
+            Assert.Equal("transferFormat", exception.ParamName);
         }
     }
 }

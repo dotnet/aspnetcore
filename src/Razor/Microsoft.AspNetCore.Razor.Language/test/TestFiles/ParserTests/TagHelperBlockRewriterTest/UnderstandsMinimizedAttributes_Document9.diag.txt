@@ -1,2 +1,0 @@
-(1,8): Error RZ2008: Attribute 'string-prefix-' on tag helper element 'input' requires a value. Tag helper bound attributes of type 'System.String' cannot be empty or contain only whitespace.
-(1,8): Error RZ1029: The tag helper attribute 'string-prefix-' in element 'input' is missing a key. The syntax is '<input string-prefix-{ key }="value">'.

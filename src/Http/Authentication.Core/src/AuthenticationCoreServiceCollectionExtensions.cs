@@ -1,56 +1,55 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace Microsoft.Extensions.DependencyInjection
+namespace Microsoft.Extensions.DependencyInjection;
+
+/// <summary>
+/// Extension methods for setting up authentication services in an <see cref="IServiceCollection" />.
+/// </summary>
+public static class AuthenticationCoreServiceCollectionExtensions
 {
     /// <summary>
-    /// Extension methods for setting up authentication services in an <see cref="IServiceCollection" />.
+    /// Add core authentication services needed for <see cref="IAuthenticationService"/>.
     /// </summary>
-    public static class AuthenticationCoreServiceCollectionExtensions
+    /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+    /// <returns>The service collection.</returns>
+    public static IServiceCollection AddAuthenticationCore(this IServiceCollection services)
     {
-        /// <summary>
-        /// Add core authentication services needed for <see cref="IAuthenticationService"/>.
-        /// </summary>
-        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
-        /// <returns>The service collection.</returns>
-        public static IServiceCollection AddAuthenticationCore(this IServiceCollection services)
+        if (services == null)
         {
-            if (services == null)
-            {
-                throw new ArgumentNullException(nameof(services));
-            }
-
-            services.TryAddScoped<IAuthenticationService, AuthenticationService>();
-            services.TryAddSingleton<IClaimsTransformation, NoopClaimsTransformation>(); // Can be replaced with scoped ones that use DbContext
-            services.TryAddScoped<IAuthenticationHandlerProvider, AuthenticationHandlerProvider>();
-            services.TryAddSingleton<IAuthenticationSchemeProvider, AuthenticationSchemeProvider>();
-            return services;
+            throw new ArgumentNullException(nameof(services));
         }
 
-        /// <summary>
-        /// Add core authentication services needed for <see cref="IAuthenticationService"/>.
-        /// </summary>
-        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
-        /// <param name="configureOptions">Used to configure the <see cref="AuthenticationOptions"/>.</param>
-        /// <returns>The service collection.</returns>
-        public static IServiceCollection AddAuthenticationCore(this IServiceCollection services, Action<AuthenticationOptions> configureOptions) {
-            if (services == null)
-            {
-                throw new ArgumentNullException(nameof(services));
-            }
+        services.TryAddScoped<IAuthenticationService, AuthenticationService>();
+        services.TryAddSingleton<IClaimsTransformation, NoopClaimsTransformation>(); // Can be replaced with scoped ones that use DbContext
+        services.TryAddScoped<IAuthenticationHandlerProvider, AuthenticationHandlerProvider>();
+        services.TryAddSingleton<IAuthenticationSchemeProvider, AuthenticationSchemeProvider>();
+        return services;
+    }
 
-            if (configureOptions == null)
-            {
-                throw new ArgumentNullException(nameof(configureOptions));
-            }
-
-            services.AddAuthenticationCore();
-            services.Configure(configureOptions);
-            return services;
+    /// <summary>
+    /// Add core authentication services needed for <see cref="IAuthenticationService"/>.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+    /// <param name="configureOptions">Used to configure the <see cref="AuthenticationOptions"/>.</param>
+    /// <returns>The service collection.</returns>
+    public static IServiceCollection AddAuthenticationCore(this IServiceCollection services, Action<AuthenticationOptions> configureOptions)
+    {
+        if (services == null)
+        {
+            throw new ArgumentNullException(nameof(services));
         }
+
+        if (configureOptions == null)
+        {
+            throw new ArgumentNullException(nameof(configureOptions));
+        }
+
+        services.AddAuthenticationCore();
+        services.Configure(configureOptions);
+        return services;
     }
 }

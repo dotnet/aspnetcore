@@ -4,15 +4,14 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using TestHelper;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Components.Analyzers
+namespace Microsoft.AspNetCore.Components.Analyzers;
+
+public class ComponentParameterUsageAnalyzerTest : DiagnosticVerifier
 {
-    public class ComponentParameterUsageAnalyzerTest : DiagnosticVerifier
+    public ComponentParameterUsageAnalyzerTest()
     {
-        public ComponentParameterUsageAnalyzerTest()
-        {
-            ComponentTestSource = $@"
+        ComponentTestSource = $@"
     namespace ConsoleApplication1
     {{
         using {typeof(ParameterAttribute).Namespace};
@@ -23,14 +22,14 @@ namespace Microsoft.AspNetCore.Components.Analyzers
             public string NonParameter {{ get; set; }}
         }}
     }}" + ComponentsTestDeclarations.Source;
-        }
+    }
 
-        private string ComponentTestSource { get; }
+    private string ComponentTestSource { get; }
 
-        [Fact]
-        public void ComponentPropertySimpleAssignment_Warns()
-        {
-            var test = $@"
+    [Fact]
+    public void ComponentPropertySimpleAssignment_Warns()
+    {
+        var test = $@"
     namespace ConsoleApplication1
     {{
         using {typeof(ParameterAttribute).Namespace};
@@ -45,23 +44,23 @@ namespace Microsoft.AspNetCore.Components.Analyzers
         }}
     }}" + ComponentTestSource;
 
-            VerifyCSharpDiagnostic(test,
-                new DiagnosticResult
+        VerifyCSharpDiagnostic(test,
+            new DiagnosticResult
+            {
+                Id = DiagnosticDescriptors.ComponentParametersShouldNotBeSetOutsideOfTheirDeclaredComponent.Id,
+                Message = "Component parameter 'TestProperty' should not be set outside of its component.",
+                Severity = DiagnosticSeverity.Warning,
+                Locations = new[]
                 {
-                    Id = DiagnosticDescriptors.ComponentParametersShouldNotBeSetOutsideOfTheirDeclaredComponent.Id,
-                    Message = "Component parameter 'TestProperty' should not be set outside of its component.",
-                    Severity = DiagnosticSeverity.Warning,
-                    Locations = new[]
-                    {
                         new DiagnosticResultLocation("Test0.cs", 11, 17)
-                    }
-                });
-        }
+                }
+            });
+    }
 
-        [Fact]
-        public void ComponentPropertyCoalesceAssignment__Warns()
-        {
-            var test = $@"
+    [Fact]
+    public void ComponentPropertyCoalesceAssignment__Warns()
+    {
+        var test = $@"
     namespace ConsoleApplication1
     {{
         using {typeof(ParameterAttribute).Namespace};
@@ -76,23 +75,23 @@ namespace Microsoft.AspNetCore.Components.Analyzers
         }}
     }}" + ComponentTestSource;
 
-            VerifyCSharpDiagnostic(test,
-                new DiagnosticResult
+        VerifyCSharpDiagnostic(test,
+            new DiagnosticResult
+            {
+                Id = DiagnosticDescriptors.ComponentParametersShouldNotBeSetOutsideOfTheirDeclaredComponent.Id,
+                Message = "Component parameter 'TestProperty' should not be set outside of its component.",
+                Severity = DiagnosticSeverity.Warning,
+                Locations = new[]
                 {
-                    Id = DiagnosticDescriptors.ComponentParametersShouldNotBeSetOutsideOfTheirDeclaredComponent.Id,
-                    Message = "Component parameter 'TestProperty' should not be set outside of its component.",
-                    Severity = DiagnosticSeverity.Warning,
-                    Locations = new[]
-                    {
                         new DiagnosticResultLocation("Test0.cs", 11, 17)
-                    }
-                });
-        }
+                }
+            });
+    }
 
-        [Fact]
-        public void ComponentPropertyCompoundAssignment__Warns()
-        {
-            var test = $@"
+    [Fact]
+    public void ComponentPropertyCompoundAssignment__Warns()
+    {
+        var test = $@"
     namespace ConsoleApplication1
     {{
         using {typeof(ParameterAttribute).Namespace};
@@ -107,23 +106,23 @@ namespace Microsoft.AspNetCore.Components.Analyzers
         }}
     }}" + ComponentTestSource;
 
-            VerifyCSharpDiagnostic(test,
-                new DiagnosticResult
+        VerifyCSharpDiagnostic(test,
+            new DiagnosticResult
+            {
+                Id = DiagnosticDescriptors.ComponentParametersShouldNotBeSetOutsideOfTheirDeclaredComponent.Id,
+                Message = "Component parameter 'TestProperty' should not be set outside of its component.",
+                Severity = DiagnosticSeverity.Warning,
+                Locations = new[]
                 {
-                    Id = DiagnosticDescriptors.ComponentParametersShouldNotBeSetOutsideOfTheirDeclaredComponent.Id,
-                    Message = "Component parameter 'TestProperty' should not be set outside of its component.",
-                    Severity = DiagnosticSeverity.Warning,
-                    Locations = new[]
-                    {
                         new DiagnosticResultLocation("Test0.cs", 11, 17)
-                    }
-                });
-        }
+                }
+            });
+    }
 
-        [Fact]
-        public void ComponentPropertyIncrement_Warns()
-        {
-            var test = $@"
+    [Fact]
+    public void ComponentPropertyIncrement_Warns()
+    {
+        var test = $@"
     namespace ConsoleApplication1
     {{
         using {typeof(ParameterAttribute).Namespace};
@@ -138,23 +137,23 @@ namespace Microsoft.AspNetCore.Components.Analyzers
         }}
     }}" + ComponentTestSource;
 
-            VerifyCSharpDiagnostic(test,
-                new DiagnosticResult
+        VerifyCSharpDiagnostic(test,
+            new DiagnosticResult
+            {
+                Id = DiagnosticDescriptors.ComponentParametersShouldNotBeSetOutsideOfTheirDeclaredComponent.Id,
+                Message = "Component parameter 'TestInt' should not be set outside of its component.",
+                Severity = DiagnosticSeverity.Warning,
+                Locations = new[]
                 {
-                    Id = DiagnosticDescriptors.ComponentParametersShouldNotBeSetOutsideOfTheirDeclaredComponent.Id,
-                    Message = "Component parameter 'TestInt' should not be set outside of its component.",
-                    Severity = DiagnosticSeverity.Warning,
-                    Locations = new[]
-                    {
                         new DiagnosticResultLocation("Test0.cs", 11, 17)
-                    }
-                });
-        }
+                }
+            });
+    }
 
-        [Fact]
-        public void ComponentPropertyDecrement_Warns()
-        {
-            var test = $@"
+    [Fact]
+    public void ComponentPropertyDecrement_Warns()
+    {
+        var test = $@"
     namespace ConsoleApplication1
     {{
         using {typeof(ParameterAttribute).Namespace};
@@ -169,23 +168,23 @@ namespace Microsoft.AspNetCore.Components.Analyzers
         }}
     }}" + ComponentTestSource;
 
-            VerifyCSharpDiagnostic(test,
-                new DiagnosticResult
+        VerifyCSharpDiagnostic(test,
+            new DiagnosticResult
+            {
+                Id = DiagnosticDescriptors.ComponentParametersShouldNotBeSetOutsideOfTheirDeclaredComponent.Id,
+                Message = "Component parameter 'TestInt' should not be set outside of its component.",
+                Severity = DiagnosticSeverity.Warning,
+                Locations = new[]
                 {
-                    Id = DiagnosticDescriptors.ComponentParametersShouldNotBeSetOutsideOfTheirDeclaredComponent.Id,
-                    Message = "Component parameter 'TestInt' should not be set outside of its component.",
-                    Severity = DiagnosticSeverity.Warning,
-                    Locations = new[]
-                    {
                         new DiagnosticResultLocation("Test0.cs", 11, 17)
-                    }
-                });
-        }
+                }
+            });
+    }
 
-        [Fact]
-        public void ComponentPropertyExpression_Ignores()
-        {
-            var test = $@"
+    [Fact]
+    public void ComponentPropertyExpression_Ignores()
+    {
+        var test = $@"
     namespace ConsoleApplication1
     {{
         using {typeof(ParameterAttribute).Namespace};
@@ -198,13 +197,13 @@ namespace Microsoft.AspNetCore.Components.Analyzers
         }}
     }}" + ComponentTestSource;
 
-            VerifyCSharpDiagnostic(test);
-        }
+        VerifyCSharpDiagnostic(test);
+    }
 
-        [Fact]
-        public void ComponentPropertyExpressionInStatement_Ignores()
-        {
-            var test = $@"
+    [Fact]
+    public void ComponentPropertyExpressionInStatement_Ignores()
+    {
+        var test = $@"
     namespace ConsoleApplication1
     {{
         using {typeof(ParameterAttribute).Namespace};
@@ -220,13 +219,13 @@ namespace Microsoft.AspNetCore.Components.Analyzers
         }}
     }}" + ComponentTestSource;
 
-            VerifyCSharpDiagnostic(test);
-        }
+        VerifyCSharpDiagnostic(test);
+    }
 
-        [Fact]
-        public void RetrievalOfComponentPropertyValueInAssignment_Ignores()
-        {
-            var test = $@"
+    [Fact]
+    public void RetrievalOfComponentPropertyValueInAssignment_Ignores()
+    {
+        var test = $@"
     namespace ConsoleApplication1
     {{
         using {typeof(ParameterAttribute).Namespace};
@@ -242,13 +241,13 @@ namespace Microsoft.AspNetCore.Components.Analyzers
         }}
     }}" + ComponentTestSource;
 
-            VerifyCSharpDiagnostic(test);
-        }
+        VerifyCSharpDiagnostic(test);
+    }
 
-        [Fact]
-        public void ShadowedComponentPropertyAssignment_Ignores()
-        {
-            var test = $@"
+    [Fact]
+    public void ShadowedComponentPropertyAssignment_Ignores()
+    {
+        var test = $@"
     namespace ConsoleApplication1
     {{
         using {typeof(ParameterAttribute).Namespace};
@@ -267,13 +266,13 @@ namespace Microsoft.AspNetCore.Components.Analyzers
         }}
     }}" + ComponentTestSource;
 
-            VerifyCSharpDiagnostic(test);
-        }
+        VerifyCSharpDiagnostic(test);
+    }
 
-        [Fact]
-        public void InheritedImplicitComponentPropertyAssignment_Ignores()
-        {
-            var test = $@"
+    [Fact]
+    public void InheritedImplicitComponentPropertyAssignment_Ignores()
+    {
+        var test = $@"
     namespace ConsoleApplication1
     {{
         using {typeof(ParameterAttribute).Namespace};
@@ -286,13 +285,13 @@ namespace Microsoft.AspNetCore.Components.Analyzers
         }}
     }}" + ComponentTestSource;
 
-            VerifyCSharpDiagnostic(test);
-        }
+        VerifyCSharpDiagnostic(test);
+    }
 
-        [Fact]
-        public void ImplicitComponentPropertyAssignment_Ignores()
-        {
-            var test = $@"
+    [Fact]
+    public void ImplicitComponentPropertyAssignment_Ignores()
+    {
+        var test = $@"
     namespace ConsoleApplication1
     {{
         using {typeof(ParameterAttribute).Namespace};
@@ -307,13 +306,13 @@ namespace Microsoft.AspNetCore.Components.Analyzers
         }}
     }}" + ComponentTestSource;
 
-            VerifyCSharpDiagnostic(test);
-        }
+        VerifyCSharpDiagnostic(test);
+    }
 
-        [Fact]
-        public void ComponentPropertyAssignment_NonParameter_Ignores()
-        {
-            var test = $@"
+    [Fact]
+    public void ComponentPropertyAssignment_NonParameter_Ignores()
+    {
+        var test = $@"
     namespace ConsoleApplication1
     {{
         using {typeof(ParameterAttribute).Namespace};
@@ -328,13 +327,13 @@ namespace Microsoft.AspNetCore.Components.Analyzers
         }}
     }}" + ComponentTestSource;
 
-            VerifyCSharpDiagnostic(test);
-        }
+        VerifyCSharpDiagnostic(test);
+    }
 
-        [Fact]
-        public void NonComponentPropertyAssignment_Ignores()
-        {
-            var test = $@"
+    [Fact]
+    public void NonComponentPropertyAssignment_Ignores()
+    {
+        var test = $@"
     namespace ConsoleApplication1
     {{
         using {typeof(ParameterAttribute).Namespace};
@@ -353,9 +352,8 @@ namespace Microsoft.AspNetCore.Components.Analyzers
         }}
     }}" + ComponentTestSource;
 
-            VerifyCSharpDiagnostic(test);
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer() => new ComponentParameterUsageAnalyzer();
+        VerifyCSharpDiagnostic(test);
     }
+
+    protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer() => new ComponentParameterUsageAnalyzer();
 }

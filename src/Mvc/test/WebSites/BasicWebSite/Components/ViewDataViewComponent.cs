@@ -3,10 +3,9 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace BasicWebSite.Components
+namespace BasicWebSite.Components;
+
+public class ViewDataViewComponent : ViewComponent
 {
-    public class ViewDataViewComponent : ViewComponent
-    {
-        public IViewComponentResult Invoke() => View();
-    }
+    public IViewComponentResult Invoke() => View();
 }

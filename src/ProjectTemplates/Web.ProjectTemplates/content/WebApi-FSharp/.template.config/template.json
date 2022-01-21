@@ -126,12 +126,12 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "net6.0",
-          "description": "Target net6.0"
+          "choice": "net7.0",
+          "description": "Target net7.0"
         }
       ],
-      "replaces": "net6.0",
-      "defaultValue": "net6.0"
+      "replaces": "net7.0",
+      "defaultValue": "net7.0"
     },
     "copyrightYear": {
       "type": "generated",
@@ -162,6 +162,7 @@
   "defaultName": "WebApplication",
   "postActions": [
     {
+      "id": "restore",
       "condition": "(!skipRestore)",
       "description": "Restore NuGet packages required by this project.",
       "manualInstructions": [

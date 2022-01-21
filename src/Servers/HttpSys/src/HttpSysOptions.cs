@@ -1,266 +1,264 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Globalization;
 using System.Text;
 using Microsoft.AspNetCore.Http.Features;
 
-namespace Microsoft.AspNetCore.Server.HttpSys
+namespace Microsoft.AspNetCore.Server.HttpSys;
+
+/// <summary>
+/// Contains the options used by HttpSys.
+/// </summary>
+public class HttpSysOptions
 {
+    private const uint MaximumRequestQueueNameLength = 260;
+    private const Http503VerbosityLevel DefaultRejectionVerbosityLevel = Http503VerbosityLevel.Basic; // Http.sys default.
+    private const long DefaultRequestQueueLength = 1000; // Http.sys default.
+    internal static readonly int DefaultMaxAccepts = 5 * Environment.ProcessorCount;
+    // Matches the default maxAllowedContentLength in IIS (~28.6 MB)
+    // https://www.iis.net/configreference/system.webserver/security/requestfiltering/requestlimits#005
+    private const long DefaultMaxRequestBodySize = 30000000;
+
+    private Http503VerbosityLevel _rejectionVebosityLevel = DefaultRejectionVerbosityLevel;
+    // The native request queue
+    private long _requestQueueLength = DefaultRequestQueueLength;
+    private long? _maxConnections;
+    private RequestQueue? _requestQueue;
+    private UrlGroup? _urlGroup;
+    private long? _maxRequestBodySize = DefaultMaxRequestBodySize;
+    private string? _requestQueueName;
+
     /// <summary>
-    /// Contains the options used by HttpSys.
+    /// Initializes a new <see cref="HttpSysOptions"/>.
     /// </summary>
-    public class HttpSysOptions
+    public HttpSysOptions()
     {
-        private const uint MaximumRequestQueueNameLength = 260;
-        private const Http503VerbosityLevel DefaultRejectionVerbosityLevel = Http503VerbosityLevel.Basic; // Http.sys default.
-        private const long DefaultRequestQueueLength = 1000; // Http.sys default.
-        internal static readonly int DefaultMaxAccepts = 5 * Environment.ProcessorCount;
-        // Matches the default maxAllowedContentLength in IIS (~28.6 MB)
-        // https://www.iis.net/configreference/system.webserver/security/requestfiltering/requestlimits#005
-        private const long DefaultMaxRequestBodySize = 30000000;
+    }
 
-        private Http503VerbosityLevel _rejectionVebosityLevel = DefaultRejectionVerbosityLevel;
-        // The native request queue
-        private long _requestQueueLength = DefaultRequestQueueLength;
-        private long? _maxConnections;
-        private RequestQueue? _requestQueue;
-        private UrlGroup? _urlGroup;
-        private long? _maxRequestBodySize = DefaultMaxRequestBodySize;
-        private string? _requestQueueName;
-
-        /// <summary>
-        /// Initializes a new <see cref="HttpSysOptions"/>.
-        /// </summary>
-        public HttpSysOptions()
+    /// <summary>
+    /// The name of the Http.Sys request queue
+    /// </summary>
+    public string? RequestQueueName
+    {
+        get => _requestQueueName;
+        set
         {
+            if (value?.Length > MaximumRequestQueueNameLength)
+            {
+                throw new ArgumentOutOfRangeException(nameof(value),
+                                                      value,
+                                                      $"The request queue name should be fewer than {MaximumRequestQueueNameLength} characters in length");
+            }
+            _requestQueueName = value;
         }
+    }
 
-        /// <summary>
-        /// The name of the Http.Sys request queue
-        /// </summary>
-        public string? RequestQueueName
+    /// <summary>
+    /// Indicates if this server instance is responsible for creating and configuring the request queue,
+    /// of if it should attach to an existing queue. The default is to create.
+    /// </summary>
+    public RequestQueueMode RequestQueueMode { get; set; }
+
+    /// <summary>
+    /// Indicates how client certificates should be populated. The default is to allow a certificate without renegotiation.
+    /// This does not change the netsh 'clientcertnegotiation' binding option which will need to be enabled for
+    /// ClientCertificateMethod.AllowCertificate to resolve a certificate.
+    /// </summary>
+    public ClientCertificateMethod ClientCertificateMethod { get; set; } = ClientCertificateMethod.AllowCertificate;
+
+    /// <summary>
+    /// Gets or sets the number of concurrent workers draining requests from the Http.sys queue.
+    /// </summary>
+    /// <remarks>
+    /// Defaults to 5 times the number of processors as returned by <see cref="Environment.ProcessorCount" />.
+    /// </remarks>
+    public int MaxAccepts { get; set; } = DefaultMaxAccepts;
+
+    /// <summary>
+    /// Attempts kernel mode caching for responses with eligible headers. The response may not include
+    /// Set-Cookie, Vary, or Pragma headers. It must include a Cache-Control header with Public and
+    /// either a Shared-Max-Age or Max-Age value, or an Expires header.
+    /// </summary>
+    public bool EnableResponseCaching { get; set; } = true;
+
+    /// <summary>
+    /// The url prefixes to register with Http.Sys. These may be modified at any time prior to disposing
+    /// the listener.
+    /// When attached to an existing queue the prefixes are only used to compute PathBase for requests.
+    /// </summary>
+    public UrlPrefixCollection UrlPrefixes { get; } = new UrlPrefixCollection();
+
+    /// <summary>
+    /// Http.Sys authentication settings. These may be modified at any time prior to disposing
+    /// the listener.
+    /// </summary>
+    public AuthenticationManager Authentication { get; } = new AuthenticationManager();
+
+    /// <summary>
+    /// Exposes the Http.Sys timeout configurations.  These may also be configured in the registry.
+    /// These may be modified at any time prior to disposing the listener.
+    /// These settings do not apply when attaching to an existing queue.
+    /// </summary>
+    public TimeoutManager Timeouts { get; } = new TimeoutManager();
+
+    /// <summary>
+    /// Gets or Sets if response body writes that fail due to client disconnects should throw exceptions or
+    /// complete normally. The default is false.
+    /// </summary>
+    public bool ThrowWriteExceptions { get; set; }
+
+    /// <summary>
+    /// Gets or sets the maximum number of concurrent connections to accept, -1 for infinite, or null to
+    /// use the machine wide setting from the registry. The default value is null.
+    /// This settings does not apply when attaching to an existing queue.
+    /// </summary>
+    public long? MaxConnections
+    {
+        get => _maxConnections;
+        set
         {
-            get => _requestQueueName;
-            set
+            if (value.HasValue && value < -1)
             {
-                if (value?.Length > MaximumRequestQueueNameLength)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(value),
-                                                          value,
-                                                          $"The request queue name should be fewer than {MaximumRequestQueueNameLength} characters in length");
-                }
-                _requestQueueName = value;
+                throw new ArgumentOutOfRangeException(nameof(value), value, "The value must be positive, or -1 for infinite.");
             }
+
+            if (value.HasValue && _urlGroup != null)
+            {
+                _urlGroup.SetMaxConnections(value.Value);
+            }
+
+            _maxConnections = value;
         }
+    }
 
-        /// <summary>
-        /// Indicates if this server instance is responsible for creating and configuring the request queue,
-        /// of if it should attach to an existing queue. The default is to create.
-        /// </summary>
-        public RequestQueueMode RequestQueueMode { get; set; }
-
-        /// <summary>
-        /// Indicates how client certificates should be populated. The default is to allow a certificate without renegotiation.
-        /// This does not change the netsh 'clientcertnegotiation' binding option which will need to be enabled for
-        /// ClientCertificateMethod.AllowCertificate to resolve a certificate.
-        /// </summary>
-        public ClientCertificateMethod ClientCertificateMethod { get; set; } = ClientCertificateMethod.AllowCertificate;
-
-        /// <summary>
-        /// Gets or sets the number of concurrent workers draining requests from the Http.sys queue.
-        /// </summary>
-        /// <remarks>
-        /// Defaults to 5 times the number of processors as returned by <see cref="Environment.ProcessorCount" />.
-        /// </remarks>
-        public int MaxAccepts { get; set; } = DefaultMaxAccepts;
-
-        /// <summary>
-        /// Attempts kernel mode caching for responses with eligible headers. The response may not include
-        /// Set-Cookie, Vary, or Pragma headers. It must include a Cache-Control header with Public and
-        /// either a Shared-Max-Age or Max-Age value, or an Expires header.
-        /// </summary>
-        public bool EnableResponseCaching { get; set; } = true;
-
-        /// <summary>
-        /// The url prefixes to register with Http.Sys. These may be modified at any time prior to disposing
-        /// the listener.
-        /// When attached to an existing queue the prefixes are only used to compute PathBase for requests.
-        /// </summary>
-        public UrlPrefixCollection UrlPrefixes { get; } = new UrlPrefixCollection();
-
-        /// <summary>
-        /// Http.Sys authentication settings. These may be modified at any time prior to disposing
-        /// the listener.
-        /// </summary>
-        public AuthenticationManager Authentication { get; } = new AuthenticationManager();
-
-        /// <summary>
-        /// Exposes the Http.Sys timeout configurations.  These may also be configured in the registry.
-        /// These may be modified at any time prior to disposing the listener.
-        /// These settings do not apply when attaching to an existing queue.
-        /// </summary>
-        public TimeoutManager Timeouts { get; } = new TimeoutManager();
-
-        /// <summary>
-        /// Gets or Sets if response body writes that fail due to client disconnects should throw exceptions or
-        /// complete normally. The default is false.
-        /// </summary>
-        public bool ThrowWriteExceptions { get; set; }
-
-        /// <summary>
-        /// Gets or sets the maximum number of concurrent connections to accept, -1 for infinite, or null to
-        /// use the machine wide setting from the registry. The default value is null.
-        /// This settings does not apply when attaching to an existing queue.
-        /// </summary>
-        public long? MaxConnections
+    /// <summary>
+    /// Gets or sets the maximum number of requests that will be queued up in Http.Sys.
+    /// This settings does not apply when attaching to an existing queue.
+    /// </summary>
+    public long RequestQueueLimit
+    {
+        get
         {
-            get => _maxConnections;
-            set
-            {
-                if (value.HasValue && value < -1)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(value), value, "The value must be positive, or -1 for infinite.");
-                }
-
-                if (value.HasValue && _urlGroup != null)
-                {
-                    _urlGroup.SetMaxConnections(value.Value);
-                }
-
-                _maxConnections = value;
-            }
+            return _requestQueueLength;
         }
-
-        /// <summary>
-        /// Gets or sets the maximum number of requests that will be queued up in Http.Sys.
-        /// This settings does not apply when attaching to an existing queue.
-        /// </summary>
-        public long RequestQueueLimit
+        set
         {
-            get
+            if (value <= 0)
             {
-                return _requestQueueLength;
-            }
-            set
-            {
-                if (value <= 0)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(value), value, "The value must be greater than zero.");
-                }
-
-                if (_requestQueue != null)
-                {
-                    _requestQueue.SetLengthLimit(_requestQueueLength);
-                }
-                // Only store it if it succeeds or hasn't started yet
-                _requestQueueLength = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the maximum allowed size of any request body in bytes.
-        /// When set to null, the maximum request body size is unlimited.
-        /// This limit has no effect on upgraded connections which are always unlimited.
-        /// This can be overridden per-request via <see cref="IHttpMaxRequestBodySizeFeature"/>.
-        /// </summary>
-        /// <remarks>
-        /// Defaults to 30,000,000 bytes, which is approximately 28.6MB.
-        /// </remarks>
-        public long? MaxRequestBodySize
-        {
-            get => _maxRequestBodySize;
-            set
-            {
-                if (value < 0)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(value), value, "The value must be greater or equal to zero.");
-                }
-                _maxRequestBodySize = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets a value that controls whether synchronous IO is allowed for the HttpContext.Request.Body and HttpContext.Response.Body.
-        /// The default is `false`.
-        /// </summary>
-        public bool AllowSynchronousIO { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value that controls how http.sys reacts when rejecting requests due to throttling conditions - like when the request
-        /// queue limit is reached. The default in http.sys is "Basic" which means http.sys is just resetting the TCP connection. IIS uses Limited
-        /// as its default behavior which will result in sending back a 503 - Service Unavailable back to the client.
-        /// This settings does not apply when attaching to an existing queue.
-        /// </summary>
-        public Http503VerbosityLevel Http503Verbosity
-        {
-            get
-            {
-                return _rejectionVebosityLevel;
-            }
-            set
-            {
-                if (value < Http503VerbosityLevel.Basic || value > Http503VerbosityLevel.Full)
-                {
-                    string message = String.Format(
-                        CultureInfo.InvariantCulture,
-                        "The value must be one of the values defined in the '{0}' enum.",
-                        typeof(Http503VerbosityLevel).Name);
-
-                    throw new ArgumentOutOfRangeException(nameof(value), value, message);
-                }
-
-                if (_requestQueue != null)
-                {
-                    _requestQueue.SetRejectionVerbosity(value);
-                }
-                // Only store it if it succeeds or hasn't started yet
-                _rejectionVebosityLevel = value;
-            }
-        }
-
-        /// <summary>
-        /// Inline request processing instead of dispatching to the threadpool.
-        /// </summary>
-        /// <remarks>
-        /// Enabling this setting will run application code on the IO thread to reduce request processing latency.
-        /// However, this will limit parallel request processing to <see cref="MaxAccepts"/>. This setting can make
-        /// overall throughput worse if requests take long to process.
-        /// </remarks>
-        public bool UnsafePreferInlineScheduling { get; set; }
-
-        /// <summary>
-        /// Configures request headers to use <see cref="Encoding.Latin1"/> encoding.
-        /// </summary>
-        /// <remarks>
-        /// Defaults to `false`, in which case <see cref="Encoding.UTF8"/> will be used. />.
-        /// </remarks>
-        public bool UseLatin1RequestHeaders { get; set; }
-
-        // Not called when attaching to an existing queue.
-        internal void Apply(UrlGroup urlGroup, RequestQueue requestQueue)
-        {
-            _urlGroup = urlGroup;
-            _requestQueue = requestQueue;
-
-            if (_maxConnections.HasValue)
-            {
-                _urlGroup.SetMaxConnections(_maxConnections.Value);
+                throw new ArgumentOutOfRangeException(nameof(value), value, "The value must be greater than zero.");
             }
 
-            if (_requestQueueLength != DefaultRequestQueueLength)
+            if (_requestQueue != null)
             {
                 _requestQueue.SetLengthLimit(_requestQueueLength);
             }
+            // Only store it if it succeeds or hasn't started yet
+            _requestQueueLength = value;
+        }
+    }
 
-            if (_rejectionVebosityLevel != DefaultRejectionVerbosityLevel)
+    /// <summary>
+    /// Gets or sets the maximum allowed size of any request body in bytes.
+    /// When set to null, the maximum request body size is unlimited.
+    /// This limit has no effect on upgraded connections which are always unlimited.
+    /// This can be overridden per-request via <see cref="IHttpMaxRequestBodySizeFeature"/>.
+    /// </summary>
+    /// <remarks>
+    /// Defaults to 30,000,000 bytes, which is approximately 28.6MB.
+    /// </remarks>
+    public long? MaxRequestBodySize
+    {
+        get => _maxRequestBodySize;
+        set
+        {
+            if (value < 0)
             {
-                _requestQueue.SetRejectionVerbosity(_rejectionVebosityLevel);
+                throw new ArgumentOutOfRangeException(nameof(value), value, "The value must be greater or equal to zero.");
+            }
+            _maxRequestBodySize = value;
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets a value that controls whether synchronous IO is allowed for the HttpContext.Request.Body and HttpContext.Response.Body.
+    /// The default is `false`.
+    /// </summary>
+    public bool AllowSynchronousIO { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value that controls how http.sys reacts when rejecting requests due to throttling conditions - like when the request
+    /// queue limit is reached. The default in http.sys is "Basic" which means http.sys is just resetting the TCP connection. IIS uses Limited
+    /// as its default behavior which will result in sending back a 503 - Service Unavailable back to the client.
+    /// This settings does not apply when attaching to an existing queue.
+    /// </summary>
+    public Http503VerbosityLevel Http503Verbosity
+    {
+        get
+        {
+            return _rejectionVebosityLevel;
+        }
+        set
+        {
+            if (value < Http503VerbosityLevel.Basic || value > Http503VerbosityLevel.Full)
+            {
+                string message = String.Format(
+                    CultureInfo.InvariantCulture,
+                    "The value must be one of the values defined in the '{0}' enum.",
+                    typeof(Http503VerbosityLevel).Name);
+
+                throw new ArgumentOutOfRangeException(nameof(value), value, message);
             }
 
-            Authentication.SetUrlGroupSecurity(urlGroup);
-            Timeouts.SetUrlGroupTimeouts(urlGroup);
+            if (_requestQueue != null)
+            {
+                _requestQueue.SetRejectionVerbosity(value);
+            }
+            // Only store it if it succeeds or hasn't started yet
+            _rejectionVebosityLevel = value;
         }
+    }
+
+    /// <summary>
+    /// Inline request processing instead of dispatching to the threadpool.
+    /// </summary>
+    /// <remarks>
+    /// Enabling this setting will run application code on the IO thread to reduce request processing latency.
+    /// However, this will limit parallel request processing to <see cref="MaxAccepts"/>. This setting can make
+    /// overall throughput worse if requests take long to process.
+    /// </remarks>
+    public bool UnsafePreferInlineScheduling { get; set; }
+
+    /// <summary>
+    /// Configures request headers to use <see cref="Encoding.Latin1"/> encoding.
+    /// </summary>
+    /// <remarks>
+    /// Defaults to `false`, in which case <see cref="Encoding.UTF8"/> will be used. />.
+    /// </remarks>
+    public bool UseLatin1RequestHeaders { get; set; }
+
+    // Not called when attaching to an existing queue.
+    internal void Apply(UrlGroup urlGroup, RequestQueue requestQueue)
+    {
+        _urlGroup = urlGroup;
+        _requestQueue = requestQueue;
+
+        if (_maxConnections.HasValue)
+        {
+            _urlGroup.SetMaxConnections(_maxConnections.Value);
+        }
+
+        if (_requestQueueLength != DefaultRequestQueueLength)
+        {
+            _requestQueue.SetLengthLimit(_requestQueueLength);
+        }
+
+        if (_rejectionVebosityLevel != DefaultRejectionVerbosityLevel)
+        {
+            _requestQueue.SetRejectionVerbosity(_rejectionVebosityLevel);
+        }
+
+        Authentication.SetUrlGroupSecurity(urlGroup);
+        Timeouts.SetUrlGroupTimeouts(urlGroup);
     }
 }

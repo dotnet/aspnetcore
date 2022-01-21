@@ -1,12 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.HttpSys.Internal
+namespace Microsoft.AspNetCore.HttpSys.Internal;
+
+internal enum SslStatus : byte
 {
-    internal enum SslStatus : byte
-    {
-        Insecure,
-        NoClientCert,
-        ClientCert
-    }
+    Insecure,
+    NoClientCert,
+    ClientCert
 }

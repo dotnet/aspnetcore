@@ -1,53 +1,49 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Components
+namespace Microsoft.AspNetCore.Components;
+
+public partial class ParameterViewTest
 {
-    public partial class ParameterViewTest
+    [Fact]
+    public void CanInitializeUsingComponentWithNoDescendants()
     {
-        [Fact]
-        public void CanInitializeUsingComponentWithNoDescendants()
+        // Arrange
+        var frames = new[]
         {
-            // Arrange
-            var frames = new[]
-            {
                 RenderTreeFrame.ChildComponent(0, typeof(FakeComponent)).WithComponentSubtreeLength(1)
             };
-            var parameters = new ParameterView(ParameterViewLifetime.Unbound, frames, 0);
+        var parameters = new ParameterView(ParameterViewLifetime.Unbound, frames, 0);
 
-            // Assert
-            Assert.Empty(ToEnumerable(parameters));
-        }
+        // Assert
+        Assert.Empty(ToEnumerable(parameters));
+    }
 
-        [Fact]
-        public void CanInitializeUsingElementWithNoDescendants()
+    [Fact]
+    public void CanInitializeUsingElementWithNoDescendants()
+    {
+        // Arrange
+        var frames = new[]
         {
-            // Arrange
-            var frames = new[]
-            {
                 RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(1)
             };
-            var parameters = new ParameterView(ParameterViewLifetime.Unbound, frames, 0);
+        var parameters = new ParameterView(ParameterViewLifetime.Unbound, frames, 0);
 
-            // Assert
-            Assert.Empty(ToEnumerable(parameters));
-        }
+        // Assert
+        Assert.Empty(ToEnumerable(parameters));
+    }
 
-        [Fact]
-        public void EnumerationStopsAtEndOfOwnerDescendants()
+    [Fact]
+    public void EnumerationStopsAtEndOfOwnerDescendants()
+    {
+        // Arrange
+        var attribute1Value = new object();
+        var attribute2Value = new object();
+        var frames = new[]
         {
-            // Arrange
-            var attribute1Value = new object();
-            var attribute2Value = new object();
-            var frames = new[]
-            {
                 RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(3),
                 RenderTreeFrame.Attribute(1, "attribute 1", attribute1Value),
                 RenderTreeFrame.Attribute(2, "attribute 2", attribute2Value),
@@ -56,45 +52,45 @@ namespace Microsoft.AspNetCore.Components
                 // end of the owner's descendants
                 RenderTreeFrame.Attribute(3, "orphaned attribute", "value")
             };
-            var parameters = new ParameterView(ParameterViewLifetime.Unbound, frames, 0);
+        var parameters = new ParameterView(ParameterViewLifetime.Unbound, frames, 0);
 
-            // Assert
-            Assert.Collection(ToEnumerable(parameters),
-                AssertParameter("attribute 1", attribute1Value, false),
-                AssertParameter("attribute 2", attribute2Value, false));
-        }
+        // Assert
+        Assert.Collection(ToEnumerable(parameters),
+            AssertParameter("attribute 1", attribute1Value, false),
+            AssertParameter("attribute 2", attribute2Value, false));
+    }
 
-        [Fact]
-        public void EnumerationStopsAtEndOfOwnerAttributes()
+    [Fact]
+    public void EnumerationStopsAtEndOfOwnerAttributes()
+    {
+        // Arrange
+        var attribute1Value = new object();
+        var attribute2Value = new object();
+        var frames = new[]
         {
-            // Arrange
-            var attribute1Value = new object();
-            var attribute2Value = new object();
-            var frames = new[]
-            {
                 RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(3),
                 RenderTreeFrame.Attribute(1, "attribute 1", attribute1Value),
                 RenderTreeFrame.Attribute(2, "attribute 2", attribute2Value),
                 RenderTreeFrame.Element(3, "child element").WithElementSubtreeLength(2),
                 RenderTreeFrame.Attribute(4, "child attribute", "some value")
             };
-            var parameters = new ParameterView(ParameterViewLifetime.Unbound, frames, 0);
+        var parameters = new ParameterView(ParameterViewLifetime.Unbound, frames, 0);
 
-            // Assert
-            Assert.Collection(ToEnumerable(parameters),
-                AssertParameter("attribute 1", attribute1Value, false),
-                AssertParameter("attribute 2", attribute2Value, false));
-        }
+        // Assert
+        Assert.Collection(ToEnumerable(parameters),
+            AssertParameter("attribute 1", attribute1Value, false),
+            AssertParameter("attribute 2", attribute2Value, false));
+    }
 
-        [Fact]
-        public void EnumerationIncludesCascadingParameters()
+    [Fact]
+    public void EnumerationIncludesCascadingParameters()
+    {
+        // Arrange
+        var attribute1Value = new object();
+        var attribute2Value = new object();
+        var attribute3Value = new object();
+        var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
         {
-            // Arrange
-            var attribute1Value = new object();
-            var attribute2Value = new object();
-            var attribute3Value = new object();
-            var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
-            {
                 RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
                 RenderTreeFrame.Attribute(1, "attribute 1", attribute1Value)
             }, 0).WithCascadingParameters(new List<CascadingParameterState>
@@ -103,93 +99,93 @@ namespace Microsoft.AspNetCore.Components
                 new CascadingParameterState("attribute 3", new TestCascadingValue(attribute3Value)),
             });
 
-            // Assert
-            Assert.Collection(ToEnumerable(parameters),
-                AssertParameter("attribute 1", attribute1Value, false),
-                AssertParameter("attribute 2", attribute2Value, true),
-                AssertParameter("attribute 3", attribute3Value, true));
-        }
+        // Assert
+        Assert.Collection(ToEnumerable(parameters),
+            AssertParameter("attribute 1", attribute1Value, false),
+            AssertParameter("attribute 2", attribute2Value, true),
+            AssertParameter("attribute 3", attribute3Value, true));
+    }
 
-        [Fact]
-        public void CanTryGetNonExistingValue()
+    [Fact]
+    public void CanTryGetNonExistingValue()
+    {
+        // Arrange
+        var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
         {
-            // Arrange
-            var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
-            {
                 RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
                 RenderTreeFrame.Attribute(1, "some other entry", new object())
             }, 0);
 
-            // Act
-            var didFind = parameters.TryGetValue<string>("nonexisting entry", out var value);
+        // Act
+        var didFind = parameters.TryGetValue<string>("nonexisting entry", out var value);
 
-            // Assert
-            Assert.False(didFind);
-            Assert.Null(value);
-        }
+        // Assert
+        Assert.False(didFind);
+        Assert.Null(value);
+    }
 
-        [Fact]
-        public void CanTryGetExistingValueWithCorrectType()
+    [Fact]
+    public void CanTryGetExistingValueWithCorrectType()
+    {
+        // Arrange
+        var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
         {
-            // Arrange
-            var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
-            {
                 RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
                 RenderTreeFrame.Attribute(1, "my entry", "hello")
             }, 0);
 
-            // Act
-            var didFind = parameters.TryGetValue<string>("my entry", out var value);
+        // Act
+        var didFind = parameters.TryGetValue<string>("my entry", out var value);
 
-            // Assert
-            Assert.True(didFind);
-            Assert.Equal("hello", value);
-        }
+        // Assert
+        Assert.True(didFind);
+        Assert.Equal("hello", value);
+    }
 
-        [Fact]
-        public void CanGetValueOrDefault_WithExistingValue()
+    [Fact]
+    public void CanGetValueOrDefault_WithExistingValue()
+    {
+        // Arrange
+        var myEntryValue = new object();
+        var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
         {
-            // Arrange
-            var myEntryValue = new object();
-            var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
-            {
                 RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
                 RenderTreeFrame.Attribute(1, "my entry", myEntryValue),
                 RenderTreeFrame.Attribute(1, "my other entry", new object())
             }, 0);
 
-            // Act
-            var result = parameters.GetValueOrDefault<object>("my entry");
+        // Act
+        var result = parameters.GetValueOrDefault<object>("my entry");
 
-            // Assert
-            Assert.Same(myEntryValue, result);
-        }
+        // Assert
+        Assert.Same(myEntryValue, result);
+    }
 
-        [Fact]
-        public void CanGetValueOrDefault_WithMultipleMatchingValues()
+    [Fact]
+    public void CanGetValueOrDefault_WithMultipleMatchingValues()
+    {
+        // Arrange
+        var myEntryValue = new object();
+        var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
         {
-            // Arrange
-            var myEntryValue = new object();
-            var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
-            {
                 RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(3),
                 RenderTreeFrame.Attribute(1, "my entry", myEntryValue),
                 RenderTreeFrame.Attribute(1, "my entry", new object()),
             }, 0);
 
-            // Act
-            var result = parameters.GetValueOrDefault<object>("my entry");
+        // Act
+        var result = parameters.GetValueOrDefault<object>("my entry");
 
-            // Assert: Picks first match
-            Assert.Same(myEntryValue, result);
-        }
+        // Assert: Picks first match
+        Assert.Same(myEntryValue, result);
+    }
 
-        [Fact]
-        public void CanGetValueOrDefault_WithNonExistingValue()
+    [Fact]
+    public void CanGetValueOrDefault_WithNonExistingValue()
+    {
+        // Arrange
+        var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
         {
-            // Arrange
-            var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
-            {
                 RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
                 RenderTreeFrame.Attribute(1, "some other entry", new object())
             }, 0).WithCascadingParameters(new List<CascadingParameterState>
@@ -197,115 +193,115 @@ namespace Microsoft.AspNetCore.Components
                 new CascadingParameterState("another entry", new TestCascadingValue(null))
             });
 
-            // Act
-            var result = parameters.GetValueOrDefault<DateTime>("nonexisting entry");
+        // Act
+        var result = parameters.GetValueOrDefault<DateTime>("nonexisting entry");
 
-            // Assert
-            Assert.Equal(default, result);
-        }
+        // Assert
+        Assert.Equal(default, result);
+    }
 
-        [Fact]
-        public void CanGetValueOrDefault_WithNonExistingValueAndExplicitDefault()
+    [Fact]
+    public void CanGetValueOrDefault_WithNonExistingValueAndExplicitDefault()
+    {
+        // Arrange
+        var explicitDefaultValue = new DateTime(2018, 3, 20);
+        var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
         {
-            // Arrange
-            var explicitDefaultValue = new DateTime(2018, 3, 20);
-            var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
-            {
                 RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
                 RenderTreeFrame.Attribute(1, "some other entry", new object())
             }, 0);
 
-            // Act
-            var result = parameters.GetValueOrDefault("nonexisting entry", explicitDefaultValue);
+        // Act
+        var result = parameters.GetValueOrDefault("nonexisting entry", explicitDefaultValue);
 
-            // Assert
-            Assert.Equal(explicitDefaultValue, result);
-        }
+        // Assert
+        Assert.Equal(explicitDefaultValue, result);
+    }
 
-        [Fact]
-        public void ThrowsIfTryGetExistingValueWithIncorrectType()
+    [Fact]
+    public void ThrowsIfTryGetExistingValueWithIncorrectType()
+    {
+        // Arrange
+        var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
         {
-            // Arrange
-            var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
-            {
                 RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
                 RenderTreeFrame.Attribute(1, "my entry", "hello")
             }, 0);
 
-            // Act/Assert
-            Assert.Throws<InvalidCastException>(() =>
-            {
-                parameters.TryGetValue<bool>("my entry", out var value);
-            });
-        }
-
-        [Fact]
-        public void FromDictionary_CanBeInitializedWithEmptyDictionary()
+        // Act/Assert
+        Assert.Throws<InvalidCastException>(() =>
         {
-            // Arrange
-            var dictionary = new Dictionary<string, object>();
+            parameters.TryGetValue<bool>("my entry", out var value);
+        });
+    }
 
-            // Act
-            var collection = ParameterView.FromDictionary(dictionary);
+    [Fact]
+    public void FromDictionary_CanBeInitializedWithEmptyDictionary()
+    {
+        // Arrange
+        var dictionary = new Dictionary<string, object>();
 
-            // Assert
-            Assert.Empty(collection.ToDictionary());
-        }
+        // Act
+        var collection = ParameterView.FromDictionary(dictionary);
 
-        [Fact]
-        public void FromDictionary_RoundTrips()
+        // Assert
+        Assert.Empty(collection.ToDictionary());
+    }
+
+    [Fact]
+    public void FromDictionary_RoundTrips()
+    {
+        // Arrange
+        var dictionary = new Dictionary<string, object>
         {
-            // Arrange
-            var dictionary = new Dictionary<string, object>
-            {
-                ["IntValue"] = 1,
-                ["StringValue"] = "String"
-            };
+            ["IntValue"] = 1,
+            ["StringValue"] = "String"
+        };
 
-            // Act
-            var collection = ParameterView.FromDictionary(dictionary);
+        // Act
+        var collection = ParameterView.FromDictionary(dictionary);
 
-            // Assert
-            Assert.Equal(dictionary, collection.ToDictionary());
-        }
+        // Assert
+        Assert.Equal(dictionary, collection.ToDictionary());
+    }
 
 
-        [Fact]
-        public void CanConvertToReadOnlyDictionary()
+    [Fact]
+    public void CanConvertToReadOnlyDictionary()
+    {
+        // Arrange
+        var entry2Value = new object();
+        var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
         {
-            // Arrange
-            var entry2Value = new object();
-            var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
-            {
                 RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(3),
                 RenderTreeFrame.Attribute(0, "entry 1", "value 1"),
                 RenderTreeFrame.Attribute(0, "entry 2", entry2Value),
             }, 0);
 
-            // Act
-            IReadOnlyDictionary<string, object> dict = parameters.ToDictionary();
+        // Act
+        IReadOnlyDictionary<string, object> dict = parameters.ToDictionary();
 
-            // Assert
-            Assert.Collection(dict,
-                entry =>
-                {
-                    Assert.Equal("entry 1", entry.Key);
-                    Assert.Equal("value 1", entry.Value);
-                },
-                entry =>
-                {
-                    Assert.Equal("entry 2", entry.Key);
-                    Assert.Same(entry2Value, entry.Value);
-                });
-        }
-
-        [Fact]
-        public void CanGetValueOrDefault_WithMatchingCascadingParameter()
-        {
-            // Arrange
-            var myEntryValue = new object();
-            var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
+        // Assert
+        Assert.Collection(dict,
+            entry =>
             {
+                Assert.Equal("entry 1", entry.Key);
+                Assert.Equal("value 1", entry.Value);
+            },
+            entry =>
+            {
+                Assert.Equal("entry 2", entry.Key);
+                Assert.Same(entry2Value, entry.Value);
+            });
+    }
+
+    [Fact]
+    public void CanGetValueOrDefault_WithMatchingCascadingParameter()
+    {
+        // Arrange
+        var myEntryValue = new object();
+        var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
+        {
                 RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
                 RenderTreeFrame.Attribute(1, "unrelated value", new object())
             }, 0).WithCascadingParameters(new List<CascadingParameterState>
@@ -315,82 +311,82 @@ namespace Microsoft.AspNetCore.Components
                 new CascadingParameterState("unrelated value 3", new TestCascadingValue(null)),
             });
 
-            // Act
-            var result = parameters.GetValueOrDefault<object>("my entry");
+        // Act
+        var result = parameters.GetValueOrDefault<object>("my entry");
 
-            // Assert
-            Assert.Same(myEntryValue, result);
-        }
+        // Assert
+        Assert.Same(myEntryValue, result);
+    }
 
-        [Fact]
-        public void CannotReadAfterLifetimeExpiry()
+    [Fact]
+    public void CannotReadAfterLifetimeExpiry()
+    {
+        // Arrange
+        var builder = new RenderBatchBuilder();
+        var lifetime = new ParameterViewLifetime(builder);
+        var frames = new[]
         {
-            // Arrange
-            var builder = new RenderBatchBuilder();
-            var lifetime = new ParameterViewLifetime(builder);
-            var frames = new[]
-            {
                 RenderTreeFrame.ChildComponent(0, typeof(FakeComponent)).WithComponentSubtreeLength(1)
             };
-            var parameterView = new ParameterView(lifetime, frames, 0);
+        var parameterView = new ParameterView(lifetime, frames, 0);
 
-            // Act
-            builder.InvalidateParameterViews();
+        // Act
+        builder.InvalidateParameterViews();
 
-            // Assert
-            Assert.Throws<InvalidOperationException>(() => parameterView.GetEnumerator());
-            Assert.Throws<InvalidOperationException>(() => parameterView.GetValueOrDefault<object>("anything"));
-            Assert.Throws<InvalidOperationException>(() => parameterView.SetParameterProperties(new object()));
-            Assert.Throws<InvalidOperationException>(() => parameterView.ToDictionary());
-            var ex = Assert.Throws<InvalidOperationException>(() => parameterView.TryGetValue<object>("anything", out _));
+        // Assert
+        Assert.Throws<InvalidOperationException>(() => parameterView.GetEnumerator());
+        Assert.Throws<InvalidOperationException>(() => parameterView.GetValueOrDefault<object>("anything"));
+        Assert.Throws<InvalidOperationException>(() => parameterView.SetParameterProperties(new object()));
+        Assert.Throws<InvalidOperationException>(() => parameterView.ToDictionary());
+        var ex = Assert.Throws<InvalidOperationException>(() => parameterView.TryGetValue<object>("anything", out _));
 
-            // It's enough to assert about one of the messages
-            Assert.Equal($"The {nameof(ParameterView)} instance can no longer be read because it has expired. {nameof(ParameterView)} can only be read synchronously and must not be stored for later use.", ex.Message);
-        }
+        // It's enough to assert about one of the messages
+        Assert.Equal($"The {nameof(ParameterView)} instance can no longer be read because it has expired. {nameof(ParameterView)} can only be read synchronously and must not be stored for later use.", ex.Message);
+    }
 
-        [Fact]
-        public void Clone_EmptyParameterView()
+    [Fact]
+    public void Clone_EmptyParameterView()
+    {
+        // Arrange
+        var initial = ParameterView.Empty;
+
+        // Act
+        var cloned = initial.Clone();
+
+        // Assert
+        Assert.Empty(ToEnumerable(cloned));
+    }
+
+    [Fact]
+    public void Clone_ParameterViewSingleParameter()
+    {
+        // Arrange
+        var attribute1Value = new object();
+        var initial = new ParameterView(ParameterViewLifetime.Unbound, new[]
         {
-            // Arrange
-            var initial = ParameterView.Empty;
-
-            // Act
-            var cloned = initial.Clone();
-
-            // Assert
-            Assert.Empty(ToEnumerable(cloned));
-        }
-
-        [Fact]
-        public void Clone_ParameterViewSingleParameter()
-        {
-            // Arrange
-            var attribute1Value = new object();
-            var initial = new ParameterView(ParameterViewLifetime.Unbound, new[]
-            {
                  RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
                  RenderTreeFrame.Attribute(1, "attribute 1", attribute1Value),
             }, 0);
 
 
-            // Act
-            var cloned = initial.Clone();
+        // Act
+        var cloned = initial.Clone();
 
-            // Assert
-            Assert.Collection(
-                ToEnumerable(cloned),
-                p => AssertParameter("attribute 1", attribute1Value, expectedIsCascading: false));
-        }
+        // Assert
+        Assert.Collection(
+            ToEnumerable(cloned),
+            p => AssertParameter("attribute 1", attribute1Value, expectedIsCascading: false));
+    }
 
-        [Fact]
-        public void Clone_ParameterPreservesOrder()
+    [Fact]
+    public void Clone_ParameterPreservesOrder()
+    {
+        // Arrange
+        var attribute1Value = new object();
+        var attribute2Value = new object();
+        var attribute3Value = new object();
+        var initial = new ParameterView(ParameterViewLifetime.Unbound, new[]
         {
-            // Arrange
-            var attribute1Value = new object();
-            var attribute2Value = new object();
-            var attribute3Value = new object();
-            var initial = new ParameterView(ParameterViewLifetime.Unbound, new[]
-            {
                  RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(4),
                  RenderTreeFrame.Attribute(1, "attribute 1", attribute1Value),
                  RenderTreeFrame.Attribute(1, "attribute 2", attribute2Value),
@@ -398,63 +394,62 @@ namespace Microsoft.AspNetCore.Components
             }, 0);
 
 
-            // Act
-            var cloned = initial.Clone();
+        // Act
+        var cloned = initial.Clone();
 
-            // Assert
-            Assert.Collection(
-                ToEnumerable(cloned),
-                p => AssertParameter("attribute 1", attribute1Value, expectedIsCascading: false),
-                p => AssertParameter("attribute 2", attribute2Value, expectedIsCascading: false),
-                p => AssertParameter("attribute 3", attribute3Value, expectedIsCascading: false));
-        }
+        // Assert
+        Assert.Collection(
+            ToEnumerable(cloned),
+            p => AssertParameter("attribute 1", attribute1Value, expectedIsCascading: false),
+            p => AssertParameter("attribute 2", attribute2Value, expectedIsCascading: false),
+            p => AssertParameter("attribute 3", attribute3Value, expectedIsCascading: false));
+    }
 
-        private Action<ParameterValue> AssertParameter(string expectedName, object expectedValue, bool expectedIsCascading)
+    private Action<ParameterValue> AssertParameter(string expectedName, object expectedValue, bool expectedIsCascading)
+    {
+        return parameter =>
         {
-            return parameter =>
-            {
-                Assert.Equal(expectedName, parameter.Name);
-                Assert.Same(expectedValue, parameter.Value);
-                Assert.Equal(expectedIsCascading, parameter.Cascading);
-            };
-        }
+            Assert.Equal(expectedName, parameter.Name);
+            Assert.Same(expectedValue, parameter.Value);
+            Assert.Equal(expectedIsCascading, parameter.Cascading);
+        };
+    }
 
-        public IEnumerable<ParameterValue> ToEnumerable(ParameterView parameters)
+    public IEnumerable<ParameterValue> ToEnumerable(ParameterView parameters)
+    {
+        foreach (var item in parameters)
         {
-            foreach (var item in parameters)
-            {
-                yield return item;
-            }
+            yield return item;
         }
+    }
 
-        private class FakeComponent : IComponent
+    private class FakeComponent : IComponent
+    {
+        public void Attach(RenderHandle renderHandle)
+            => throw new NotImplementedException();
+
+        public Task SetParametersAsync(ParameterView parameters)
+            => throw new NotImplementedException();
+    }
+
+    private class TestCascadingValue : ICascadingValueComponent
+    {
+        public TestCascadingValue(object value)
         {
-            public void Attach(RenderHandle renderHandle)
-                => throw new NotImplementedException();
-
-            public Task SetParametersAsync(ParameterView parameters)
-                => throw new NotImplementedException();
+            CurrentValue = value;
         }
 
-        private class TestCascadingValue : ICascadingValueComponent
-        {
-            public TestCascadingValue(object value)
-            {
-                CurrentValue = value;
-            }
+        public object CurrentValue { get; }
 
-            public object CurrentValue { get; }
+        public bool CurrentValueIsFixed => false;
 
-            public bool CurrentValueIsFixed => false;
+        public bool CanSupplyValue(Type valueType, string valueName)
+            => throw new NotImplementedException();
 
-            public bool CanSupplyValue(Type valueType, string valueName)
-                => throw new NotImplementedException();
+        public void Subscribe(ComponentState subscriber)
+            => throw new NotImplementedException();
 
-            public void Subscribe(ComponentState subscriber)
-                => throw new NotImplementedException();
-
-            public void Unsubscribe(ComponentState subscriber)
-                => throw new NotImplementedException();
-        }
+        public void Unsubscribe(ComponentState subscriber)
+            => throw new NotImplementedException();
     }
 }

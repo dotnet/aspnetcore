@@ -70,7 +70,6 @@ if ("$Version" -eq "2019") {
 }
 if ("$Version" -eq "2022") {
     $vsversion = 17;
-    $Channel = "Preview";
 }
 $channelUri = "https://aka.ms/vs/$vsversion/release"
 $responseFileName = "vs.$vsversion"

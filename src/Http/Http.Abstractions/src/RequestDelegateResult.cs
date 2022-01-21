@@ -1,33 +1,29 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Threading.Tasks;
+namespace Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Http
+/// <summary>
+/// The result of creating a <see cref="RequestDelegate" /> from a <see cref="Delegate" />
+/// </summary>
+public sealed class RequestDelegateResult
 {
     /// <summary>
-    /// The result of creating a <see cref="RequestDelegate" /> from a <see cref="Delegate" />
+    /// Creates a new instance of <see cref="RequestDelegateResult"/>.
     /// </summary>
-    public sealed class RequestDelegateResult
+    public RequestDelegateResult(RequestDelegate requestDelegate, IReadOnlyList<object> metadata)
     {
-        /// <summary>
-        /// Creates a new instance of <see cref="RequestDelegateResult"/>.
-        /// </summary>
-        public RequestDelegateResult(RequestDelegate requestDelegate, IReadOnlyList<object> metadata)
-        {
-            RequestDelegate = requestDelegate;
-            EndpointMetadata = metadata;
-        }
-
-        /// <summary>
-        /// Gets the <see cref="RequestDelegate" />
-        /// </summary>
-        public RequestDelegate RequestDelegate { get;}
-
-        /// <summary>
-        /// Gets endpoint metadata inferred from creating the <see cref="RequestDelegate" />
-        /// </summary>
-        public IReadOnlyList<object> EndpointMetadata { get;}
+        RequestDelegate = requestDelegate;
+        EndpointMetadata = metadata;
     }
 
+    /// <summary>
+    /// Gets the <see cref="RequestDelegate" />
+    /// </summary>
+    public RequestDelegate RequestDelegate { get; }
+
+    /// <summary>
+    /// Gets endpoint metadata inferred from creating the <see cref="RequestDelegate" />
+    /// </summary>
+    public IReadOnlyList<object> EndpointMetadata { get; }
 }

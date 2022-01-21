@@ -25,6 +25,7 @@ function deactivate ([switch]$init) {
     }
 
     Remove-Item env:DOTNET_ROOT -ea ignore
+    Remove-Item 'env:DOTNET_ROOT(x86)' -ea Ignore
     Remove-Item env:DOTNET_MULTILEVEL_LOOKUP -ea ignore
     if (-not $init) {
         # Remove the deactivate function

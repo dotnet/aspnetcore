@@ -1,11 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -14,18 +10,18 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Microsoft.AspNetCore.Mvc.Microbenchmarks
-{
-    public class ActionSelectorBenchmark
-    {
-        private const int Seed = 1000;
+namespace Microsoft.AspNetCore.Mvc.Microbenchmarks;
 
-        // About 35 or so plausible sounding conventional routing actions.
-        //
-        // We include some duplicates here, because that's what happens when you have one method that handles
-        // GET and one that handles POST.
-        private static readonly ActionDescriptor[] _actions = new ActionDescriptor[]
-        {
+public class ActionSelectorBenchmark
+{
+    private const int Seed = 1000;
+
+    // About 35 or so plausible sounding conventional routing actions.
+    //
+    // We include some duplicates here, because that's what happens when you have one method that handles
+    // GET and one that handles POST.
+    private static readonly ActionDescriptor[] _actions = new ActionDescriptor[]
+    {
             CreateActionDescriptor(new { area = "Admin", controller = "Account", action = "AddUser" }),
             CreateActionDescriptor(new { area = "Admin", controller = "Account", action = "AddUser" }),
             CreateActionDescriptor(new { area = "Admin", controller = "Account", action = "DeleteUser" }),
@@ -68,197 +64,196 @@ namespace Microsoft.AspNetCore.Mvc.Microbenchmarks
             CreateActionDescriptor(new { area = "", controller = "Home", action = "About" }),
             CreateActionDescriptor(new { area = "", controller = "Home", action = "Contact" }),
             CreateActionDescriptor(new { area = "", controller = "Home", action = "Support" }),
+    };
+
+    private static readonly KeyValuePair<RouteValueDictionary, IReadOnlyList<ActionDescriptor>>[] _dataSet = GetDataSet(_actions);
+
+    private static readonly IActionSelector _actionSelector = CreateActionSelector(_actions);
+
+    [Benchmark(Description = "conventional action selection implementation")]
+    public void SelectCandidates_MatchRouteData()
+    {
+        var routeContext = new RouteContext(new DefaultHttpContext());
+
+        for (var i = 0; i < _dataSet.Length; i++)
+        {
+            var routeValues = _dataSet[i].Key;
+            var expected = _dataSet[i].Value;
+
+            var state = routeContext.RouteData.PushState(MockRouter.Instance, routeValues, null);
+
+            var actual = _actionSelector.SelectCandidates(routeContext);
+            Verify(expected, actual);
+
+            state.Restore();
+        }
+    }
+
+    [Benchmark(Baseline = true, Description = "conventional action selection baseline")]
+    public void SelectCandidates_Baseline()
+    {
+        var routeContext = new RouteContext(new DefaultHttpContext());
+
+        for (var i = 0; i < _dataSet.Length; i++)
+        {
+            var routeValues = _dataSet[i].Key;
+            var expected = _dataSet[i].Value;
+
+            var state = routeContext.RouteData.PushState(MockRouter.Instance, routeValues, null);
+
+            var actual = NaiveSelectCandidates(_actions, routeContext.RouteData.Values);
+            Verify(expected, actual);
+
+            state.Restore();
+        }
+    }
+
+    // A naive implementation we can use to generate match data for inputs, and for a baseline.
+    private static IReadOnlyList<ActionDescriptor> NaiveSelectCandidates(ActionDescriptor[] actions, RouteValueDictionary routeValues)
+    {
+        var results = new List<ActionDescriptor>();
+        for (var i = 0; i < actions.Length; i++)
+        {
+            var action = actions[i];
+
+            var isMatch = true;
+            foreach (var kvp in action.RouteValues)
+            {
+                var routeValue = Convert.ToString(routeValues[kvp.Key], CultureInfo.InvariantCulture) ??
+                    string.Empty;
+                if (string.IsNullOrEmpty(kvp.Value) && string.IsNullOrEmpty(routeValue))
+                {
+                    // Match
+                }
+                else if (string.Equals(kvp.Value, routeValue, StringComparison.OrdinalIgnoreCase))
+                {
+                    // Match;
+                }
+                else
+                {
+                    isMatch = false;
+                    break;
+                }
+            }
+
+            if (isMatch)
+            {
+                results.Add(action);
+            }
+        }
+
+        return results;
+    }
+
+    private static ActionDescriptor CreateActionDescriptor(object obj)
+    {
+        // Our real ActionDescriptors don't use RVD, they use a regular old dictionary.
+        // Just using RVD here to understand the anonymous object for brevity.
+        var routeValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var kvp in new RouteValueDictionary(obj))
+        {
+            routeValues.Add(kvp.Key, Convert.ToString(kvp.Value, CultureInfo.InvariantCulture) ?? string.Empty);
+        }
+
+        return new ActionDescriptor()
+        {
+            RouteValues = routeValues,
         };
+    }
 
-        private static readonly KeyValuePair<RouteValueDictionary, IReadOnlyList<ActionDescriptor>>[] _dataSet = GetDataSet(_actions);
+    private static KeyValuePair<RouteValueDictionary, IReadOnlyList<ActionDescriptor>>[] GetDataSet(ActionDescriptor[] actions)
+    {
+        var random = new Random(Seed);
 
-        private static readonly IActionSelector _actionSelector = CreateActionSelector(_actions);
+        var data = new List<KeyValuePair<RouteValueDictionary, IReadOnlyList<ActionDescriptor>>>();
 
-        [Benchmark(Description = "conventional action selection implementation")]
-        public void SelectCandidates_MatchRouteData()
+        for (var i = 0; i < actions.Length; i += 2)
         {
-            var routeContext = new RouteContext(new DefaultHttpContext());
-
-            for (var i = 0; i < _dataSet.Length; i++)
+            var action = actions[i];
+            var routeValues = new RouteValueDictionary(action.RouteValues);
+            var matches = NaiveSelectCandidates(actions, routeValues);
+            if (matches.Count == 0)
             {
-                var routeValues = _dataSet[i].Key;
-                var expected = _dataSet[i].Value;
-
-                var state = routeContext.RouteData.PushState(MockRouter.Instance, routeValues, null);
-
-                var actual = _actionSelector.SelectCandidates(routeContext);
-                Verify(expected, actual);
-
-                state.Restore();
+                throw new InvalidOperationException("This should have at least one match.");
             }
+
+
+            data.Add(new KeyValuePair<RouteValueDictionary, IReadOnlyList<ActionDescriptor>>(routeValues, matches));
         }
 
-        [Benchmark(Baseline = true, Description = "conventional action selection baseline")]
-        public void SelectCandidates_Baseline()
+        for (var i = 1; i < actions.Length; i += 3)
         {
-            var routeContext = new RouteContext(new DefaultHttpContext());
+            var action = actions[i];
+            var routeValues = new RouteValueDictionary(action.RouteValues);
 
-            for (var i = 0; i < _dataSet.Length; i++)
+            // Make one of the route values not match.
+            routeValues[routeValues.First().Key] = ((string)routeValues.First().Value) + "fkdkfdkkf";
+
+            var matches = NaiveSelectCandidates(actions, routeValues);
+            if (matches.Count != 0)
             {
-                var routeValues = _dataSet[i].Key;
-                var expected = _dataSet[i].Value;
-
-                var state = routeContext.RouteData.PushState(MockRouter.Instance, routeValues, null);
-
-                var actual = NaiveSelectCandidates(_actions, routeContext.RouteData.Values);
-                Verify(expected, actual);
-
-                state.Restore();
+                throw new InvalidOperationException("This should have 0 matches.");
             }
+
+            data.Add(new KeyValuePair<RouteValueDictionary, IReadOnlyList<ActionDescriptor>>(routeValues, matches));
         }
 
-        // A naive implementation we can use to generate match data for inputs, and for a baseline.
-        private static IReadOnlyList<ActionDescriptor> NaiveSelectCandidates(ActionDescriptor[] actions, RouteValueDictionary routeValues)
+        return data.ToArray();
+    }
+
+    private static void Verify(IReadOnlyList<ActionDescriptor> expected, IReadOnlyList<ActionDescriptor> actual)
+    {
+        if (expected.Count == 0 && actual == null)
         {
-            var results = new List<ActionDescriptor>();
-            for (var i = 0; i < actions.Length; i++)
-            {
-                var action = actions[i];
-
-                var isMatch = true;
-                foreach (var kvp in action.RouteValues)
-                {
-                    var routeValue = Convert.ToString(routeValues[kvp.Key], CultureInfo.InvariantCulture) ??
-                        string.Empty;
-                    if (string.IsNullOrEmpty(kvp.Value) && string.IsNullOrEmpty(routeValue))
-                    {
-                        // Match
-                    }
-                    else if (string.Equals(kvp.Value, routeValue, StringComparison.OrdinalIgnoreCase))
-                    {
-                        // Match;
-                    }
-                    else
-                    {
-                        isMatch = false;
-                        break;
-                    }
-                }
-
-                if (isMatch)
-                {
-                    results.Add(action);
-                }
-            }
-
-            return results;
+            return;
         }
 
-        private static ActionDescriptor CreateActionDescriptor(object obj)
+        if (expected.Count != actual.Count)
         {
-            // Our real ActionDescriptors don't use RVD, they use a regular old dictionary.
-            // Just using RVD here to understand the anonymous object for brevity.
-            var routeValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var kvp in new RouteValueDictionary(obj))
-            {
-                routeValues.Add(kvp.Key, Convert.ToString(kvp.Value, CultureInfo.InvariantCulture) ?? string.Empty);
-            }
-
-            return new ActionDescriptor()
-            {
-                RouteValues = routeValues,
-            };
+            throw new InvalidOperationException("The count is different.");
         }
 
-        private static KeyValuePair<RouteValueDictionary, IReadOnlyList<ActionDescriptor>>[] GetDataSet(ActionDescriptor[] actions)
+        for (var i = 0; i < actual.Count; i++)
         {
-            var random = new Random(Seed);
-
-            var data = new List<KeyValuePair<RouteValueDictionary, IReadOnlyList<ActionDescriptor>>>();
-
-            for (var i = 0; i < actions.Length; i += 2)
+            if (!object.ReferenceEquals(expected[i], actual[i]))
             {
-                var action = actions[i];
-                var routeValues = new RouteValueDictionary(action.RouteValues);
-                var matches = NaiveSelectCandidates(actions, routeValues);
-                if (matches.Count == 0)
-                {
-                    throw new InvalidOperationException("This should have at least one match.");
-                }
-
-
-                data.Add(new KeyValuePair<RouteValueDictionary, IReadOnlyList<ActionDescriptor>>(routeValues, matches));
-            }
-
-            for (var i = 1; i < actions.Length; i += 3)
-            {
-                var action = actions[i];
-                var routeValues = new RouteValueDictionary(action.RouteValues);
-
-                // Make one of the route values not match.
-                routeValues[routeValues.First().Key] = ((string)routeValues.First().Value) + "fkdkfdkkf";
-
-                var matches = NaiveSelectCandidates(actions, routeValues);
-                if (matches.Count != 0)
-                {
-                    throw new InvalidOperationException("This should have 0 matches.");
-                }
-
-                data.Add(new KeyValuePair<RouteValueDictionary, IReadOnlyList<ActionDescriptor>>(routeValues, matches));
-            }
-
-            return data.ToArray();
-        }
-
-        private static void Verify(IReadOnlyList<ActionDescriptor> expected, IReadOnlyList<ActionDescriptor> actual)
-        {
-            if (expected.Count == 0 && actual == null)
-            {
-                return;
-            }
-
-            if (expected.Count != actual.Count)
-            {
-                throw new InvalidOperationException("The count is different.");
-            }
-
-            for (var i = 0; i < actual.Count; i++)
-            {
-                if (!object.ReferenceEquals(expected[i], actual[i]))
-                {
-                    throw new InvalidOperationException("The actions don't match.");
-                }
+                throw new InvalidOperationException("The actions don't match.");
             }
         }
+    }
 
-        private static IActionSelector CreateActionSelector(ActionDescriptor[] actions)
+    private static IActionSelector CreateActionSelector(ActionDescriptor[] actions)
+    {
+        var actionCollection = new MockActionDescriptorCollectionProvider(actions);
+
+        return new ActionSelector(
+            actionCollection,
+            new ActionConstraintCache(actionCollection, Enumerable.Empty<IActionConstraintProvider>()),
+            NullLoggerFactory.Instance);
+    }
+
+    private class MockActionDescriptorCollectionProvider : IActionDescriptorCollectionProvider
+    {
+        public MockActionDescriptorCollectionProvider(ActionDescriptor[] actions)
         {
-            var actionCollection = new MockActionDescriptorCollectionProvider(actions);
-
-            return new ActionSelector(
-                actionCollection,
-                new ActionConstraintCache(actionCollection, Enumerable.Empty<IActionConstraintProvider>()),
-                NullLoggerFactory.Instance);
+            ActionDescriptors = new ActionDescriptorCollection(actions, 0);
         }
 
-        private class MockActionDescriptorCollectionProvider : IActionDescriptorCollectionProvider
-        {
-            public MockActionDescriptorCollectionProvider(ActionDescriptor[] actions)
-            {
-                ActionDescriptors = new ActionDescriptorCollection(actions, 0);
-            }
+        public ActionDescriptorCollection ActionDescriptors { get; }
+    }
 
-            public ActionDescriptorCollection ActionDescriptors { get; }
+    private class MockRouter : IRouter
+    {
+        public static readonly IRouter Instance = new MockRouter();
+
+        public VirtualPathData GetVirtualPath(VirtualPathContext context)
+        {
+            throw new NotImplementedException();
         }
 
-        private class MockRouter : IRouter
+        public Task RouteAsync(RouteContext context)
         {
-            public static readonly IRouter Instance = new MockRouter();
-
-            public VirtualPathData GetVirtualPath(VirtualPathContext context)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task RouteAsync(RouteContext context)
-            {
-                throw new NotImplementedException();
-            }
+            throw new NotImplementedException();
         }
     }
 }

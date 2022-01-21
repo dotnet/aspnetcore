@@ -48,11 +48,11 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "net6.0",
-          "description": "Target net6.0"
+          "choice": "net7.0",
+          "description": "Target net7.0"
         }
       ],
-      "defaultValue": "net6.0"
+      "defaultValue": "net7.0"
     },
     "HostIdentifier": {
       "type": "bind",
@@ -83,6 +83,7 @@
   "defaultName": "RazorClassLibrary",
   "postActions": [
     {
+      "id": "restore",
       "condition": "(!skipRestore)",
       "description": "Restore NuGet packages required by this project.",
       "manualInstructions": [
@@ -94,6 +95,7 @@
       "continueOnError": true
     },
     {
+      "id": "openInEditor",
       "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
       "description": "Opens Areas/MyFeature/Pages/Page1.cshtml in the editor",
       "manualInstructions": [],

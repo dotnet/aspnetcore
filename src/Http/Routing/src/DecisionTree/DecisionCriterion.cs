@@ -3,14 +3,12 @@
 
 #nullable disable
 
-using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Routing.DecisionTree
+namespace Microsoft.AspNetCore.Routing.DecisionTree;
+
+internal class DecisionCriterion<TItem>
 {
-    internal class DecisionCriterion<TItem>
-    {
-        public string Key { get; set; }
+    public string Key { get; set; }
 
-        public Dictionary<object, DecisionTreeNode<TItem>> Branches { get; set; }
-    }
+    public Dictionary<object, DecisionTreeNode<TItem>> Branches { get; set; }
 }

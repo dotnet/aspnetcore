@@ -4,7 +4,7 @@ ENV StressRunDuration=0
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Setup for nodejs
-RUN curl -sL https://deb.nodesource.com/setup_13.x | bash -
+RUN curl -sL https://deb.nodesource.com/setup_16.x | bash -
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \

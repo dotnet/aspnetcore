@@ -3,16 +3,15 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace SecurityWebSite.Controllers
+namespace SecurityWebSite.Controllers;
+
+[IgnoreAntiforgeryToken]
+public class IgnoreAntiforgeryController : Controller
 {
-    [IgnoreAntiforgeryToken]
-    public class IgnoreAntiforgeryController : Controller
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult Index()
     {
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult Index()
-        {
-            return Content("Ok");
-        }
+        return Content("Ok");
     }
 }

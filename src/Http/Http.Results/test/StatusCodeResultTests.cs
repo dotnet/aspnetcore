@@ -4,42 +4,40 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Http.Result
+namespace Microsoft.AspNetCore.Http.Result;
+
+public class StatusCodeResultTests
 {
-    public class StatusCodeResultTests
+    [Fact]
+    public void StatusCodeResult_ExecuteResultSetsResponseStatusCode()
     {
-        [Fact]
-        public void StatusCodeResult_ExecuteResultSetsResponseStatusCode()
-        {
-            // Arrange
-            var result = new StatusCodeResult(StatusCodes.Status404NotFound);
+        // Arrange
+        var result = new StatusCodeResult(StatusCodes.Status404NotFound);
 
-            var httpContext = GetHttpContext();
+        var httpContext = GetHttpContext();
 
-            // Act
-            result.ExecuteAsync(httpContext);
+        // Act
+        result.ExecuteAsync(httpContext);
 
-            // Assert
-            Assert.Equal(StatusCodes.Status404NotFound, httpContext.Response.StatusCode);
-        }
+        // Assert
+        Assert.Equal(StatusCodes.Status404NotFound, httpContext.Response.StatusCode);
+    }
 
-        private static IServiceCollection CreateServices()
-        {
-            var services = new ServiceCollection();
-            services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
-            return services;
-        }
+    private static IServiceCollection CreateServices()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+        return services;
+    }
 
-        private static HttpContext GetHttpContext()
-        {
-            var services = CreateServices();
+    private static HttpContext GetHttpContext()
+    {
+        var services = CreateServices();
 
-            var httpContext = new DefaultHttpContext();
-            httpContext.RequestServices = services.BuildServiceProvider();
+        var httpContext = new DefaultHttpContext();
+        httpContext.RequestServices = services.BuildServiceProvider();
 
-            return httpContext;
-        }
+        return httpContext;
     }
 }

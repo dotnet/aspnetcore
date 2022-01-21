@@ -2,41 +2,39 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 
-using System;
 using System.Collections.Concurrent;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 
-namespace Microsoft.AspNetCore.Mvc.Routing
+namespace Microsoft.AspNetCore.Mvc.Routing;
+
+internal class DynamicControllerEndpointSelectorCache
 {
-    internal class DynamicControllerEndpointSelectorCache
+    private readonly ConcurrentDictionary<int, EndpointDataSource> _dataSourceCache = new();
+    private readonly ConcurrentDictionary<int, DynamicControllerEndpointSelector> _endpointSelectorCache = new();
+
+    public void AddDataSource(ControllerActionEndpointDataSource dataSource)
     {
-        private readonly ConcurrentDictionary<int, EndpointDataSource> _dataSourceCache = new();
-        private readonly ConcurrentDictionary<int, DynamicControllerEndpointSelector> _endpointSelectorCache = new();
+        _dataSourceCache.GetOrAdd(dataSource.DataSourceId, dataSource);
+    }
 
-        public void AddDataSource(ControllerActionEndpointDataSource dataSource)
+    // For testing purposes only
+    internal void AddDataSource(EndpointDataSource dataSource, int key) =>
+        _dataSourceCache.GetOrAdd(key, dataSource);
+
+    public DynamicControllerEndpointSelector GetEndpointSelector(Endpoint endpoint)
+    {
+        var dataSourceId = endpoint.Metadata.GetMetadata<ControllerEndpointDataSourceIdMetadata>()!;
+        return _endpointSelectorCache.GetOrAdd(dataSourceId.Id, key => EnsureDataSource(key));
+    }
+
+    private DynamicControllerEndpointSelector EnsureDataSource(int key)
+    {
+        if (!_dataSourceCache.TryGetValue(key, out var dataSource))
         {
-            _dataSourceCache.GetOrAdd(dataSource.DataSourceId, dataSource);
+            throw new InvalidOperationException($"Data source with key '{key}' not registered.");
         }
 
-        // For testing purposes only
-        internal void AddDataSource(EndpointDataSource dataSource, int key) =>
-            _dataSourceCache.GetOrAdd(key, dataSource);
-
-        public DynamicControllerEndpointSelector GetEndpointSelector(Endpoint endpoint)
-        {
-            var dataSourceId = endpoint.Metadata.GetMetadata<ControllerEndpointDataSourceIdMetadata>()!;
-            return _endpointSelectorCache.GetOrAdd(dataSourceId.Id, key => EnsureDataSource(key));
-        }
-
-        private DynamicControllerEndpointSelector EnsureDataSource(int key)
-        {
-            if (!_dataSourceCache.TryGetValue(key, out var dataSource))
-            {
-                throw new InvalidOperationException($"Data source with key '{key}' not registered.");
-            }
-
-            return new DynamicControllerEndpointSelector(dataSource);
-        }
+        return new DynamicControllerEndpointSelector(dataSource);
     }
 }

@@ -14,41 +14,39 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests;
+
+public class QuicTransportFactoryTests : TestApplicationErrorLoggerLoggedTest
 {
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/35070")]
-    public class QuicTransportFactoryTests : TestApplicationErrorLoggerLoggedTest
+    [ConditionalFact]
+    [MsQuicSupported]
+    public async Task BindAsync_NoFeature_Error()
     {
-        [ConditionalFact]
-        [MsQuicSupported]
-        public async Task BindAsync_NoFeature_Error()
-        {
-            // Arrange
-            var quicTransportOptions = new QuicTransportOptions();
-            var quicTransportFactory = new QuicTransportFactory(NullLoggerFactory.Instance, Options.Create(quicTransportOptions));
+        // Arrange
+        var quicTransportOptions = new QuicTransportOptions();
+        var quicTransportFactory = new QuicTransportFactory(NullLoggerFactory.Instance, Options.Create(quicTransportOptions));
 
-            // Act
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => quicTransportFactory.BindAsync(new IPEndPoint(0, 0), features: null, cancellationToken: CancellationToken.None).AsTask()).DefaultTimeout();
+        // Act
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => quicTransportFactory.BindAsync(new IPEndPoint(0, 0), features: null, cancellationToken: CancellationToken.None).AsTask()).DefaultTimeout();
 
-            // Assert
-            Assert.Equal("Couldn't find HTTPS configuration for QUIC transport.", ex.Message);
-        }
+        // Assert
+        Assert.Equal("Couldn't find HTTPS configuration for QUIC transport.", ex.Message);
+    }
 
-        [ConditionalFact]
-        [MsQuicSupported]
-        public async Task BindAsync_NoServerCertificate_Error()
-        {
-            // Arrange
-            var quicTransportOptions = new QuicTransportOptions();
-            var quicTransportFactory = new QuicTransportFactory(NullLoggerFactory.Instance, Options.Create(quicTransportOptions));
-            var features = new FeatureCollection();
-            features.Set(new SslServerAuthenticationOptions());
+    [ConditionalFact]
+    [MsQuicSupported]
+    public async Task BindAsync_NoServerCertificate_Error()
+    {
+        // Arrange
+        var quicTransportOptions = new QuicTransportOptions();
+        var quicTransportFactory = new QuicTransportFactory(NullLoggerFactory.Instance, Options.Create(quicTransportOptions));
+        var features = new FeatureCollection();
+        features.Set(new SslServerAuthenticationOptions());
 
-            // Act
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => quicTransportFactory.BindAsync(new IPEndPoint(0, 0), features: features, cancellationToken: CancellationToken.None).AsTask()).DefaultTimeout();
+        // Act
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => quicTransportFactory.BindAsync(new IPEndPoint(0, 0), features: features, cancellationToken: CancellationToken.None).AsTask()).DefaultTimeout();
 
-            // Assert
-            Assert.Equal("SslServerAuthenticationOptions must provide a server certificate using ServerCertificate, ServerCertificateContext, or ServerCertificateSelectionCallback.", ex.Message);
-        }
+        // Assert
+        Assert.Equal("SslServerAuthenticationOptions must provide a server certificate using ServerCertificate, ServerCertificateContext, or ServerCertificateSelectionCallback.", ex.Message);
     }
 }

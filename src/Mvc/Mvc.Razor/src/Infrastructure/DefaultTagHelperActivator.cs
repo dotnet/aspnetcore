@@ -1,35 +1,33 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Mvc.Razor.Infrastructure
+namespace Microsoft.AspNetCore.Mvc.Razor.Infrastructure;
+
+/// <summary>
+/// Default implementation of <see cref="ITagHelperActivator"/>.
+/// </summary>
+internal class DefaultTagHelperActivator : ITagHelperActivator
 {
-    /// <summary>
-    /// Default implementation of <see cref="ITagHelperActivator"/>.
-    /// </summary>
-    internal class DefaultTagHelperActivator : ITagHelperActivator
+    /// <inheritdoc />
+    public TTagHelper Create<TTagHelper>(ViewContext context)
+        where TTagHelper : ITagHelper
     {
-        /// <inheritdoc />
-        public TTagHelper Create<TTagHelper>(ViewContext context)
-            where TTagHelper : ITagHelper
+        if (context == null)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            return Cache<TTagHelper>.Create(context.HttpContext.RequestServices);
+            throw new ArgumentNullException(nameof(context));
         }
 
-        private static class Cache<TTagHelper>
-        {
-            private static readonly ObjectFactory _objectFactory = ActivatorUtilities.CreateFactory(typeof(TTagHelper), Type.EmptyTypes);
+        return Cache<TTagHelper>.Create(context.HttpContext.RequestServices);
+    }
 
-            public static TTagHelper Create(IServiceProvider serviceProvider) => (TTagHelper)_objectFactory(serviceProvider, arguments: null);
-        }
+    private static class Cache<TTagHelper>
+    {
+        private static readonly ObjectFactory _objectFactory = ActivatorUtilities.CreateFactory(typeof(TTagHelper), Type.EmptyTypes);
+
+        public static TTagHelper Create(IServiceProvider serviceProvider) => (TTagHelper)_objectFactory(serviceProvider, arguments: null);
     }
 }

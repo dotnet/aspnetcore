@@ -1,63 +1,62 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Rewrite
+namespace Microsoft.AspNetCore.Rewrite;
+
+/// <summary>
+/// Represents a string iterator, with captures.
+/// </summary>
+internal class ParserContext
 {
-    /// <summary>
-    /// Represents a string iterator, with captures.
-    /// </summary>
-    internal class ParserContext
+    public readonly string Template;
+    public int Index { get; set; }
+    private int? _mark;
+
+    public ParserContext(string condition)
     {
-        public readonly string Template;
-        public int Index { get; set; }
-        private int? _mark;
+        Template = condition;
+        Index = -1;
+    }
 
-        public ParserContext(string condition)
+    public char Current => (Index < Template.Length && Index >= 0) ? Template[Index] : (char)0;
+
+    public bool Back()
+    {
+        return --Index >= 0;
+    }
+
+    public bool Next()
+    {
+        return ++Index < Template.Length;
+    }
+
+    public bool HasNext()
+    {
+        return (Index + 1) < Template.Length;
+    }
+
+    public void Mark()
+    {
+        _mark = Index;
+    }
+
+    public int GetIndex()
+    {
+        return Index;
+    }
+
+    public string? Capture()
+    {
+        // TODO make this return a range rather than a string.
+        if (_mark.HasValue)
         {
-            Template = condition;
-            Index = -1;
+            var value = Template.Substring(_mark.Value, Index - _mark.Value);
+            _mark = null;
+            return value;
         }
-
-        public char Current => (Index < Template.Length && Index >= 0) ? Template[Index] : (char)0;
-
-        public bool Back()
+        else
         {
-            return --Index >= 0;
-        }
-
-        public bool Next()
-        {
-            return ++Index < Template.Length;
-        }
-
-        public bool HasNext()
-        {
-            return (Index + 1) < Template.Length;
-        }
-
-        public void Mark()
-        {
-            _mark = Index;
-        }
-
-        public int GetIndex()
-        {
-            return Index;
-        }
-
-        public string? Capture()
-        {
-            // TODO make this return a range rather than a string.
-            if (_mark.HasValue)
-            {
-                var value = Template.Substring(_mark.Value, Index - _mark.Value);
-                _mark = null;
-                return value;
-            }
-            else
-            {
-                return null;
-            }
+            return null;
         }
     }
 }

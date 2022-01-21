@@ -1,26 +1,23 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Localization
+namespace Microsoft.AspNetCore.Localization;
+
+public class RequestLocalizationOptionsExtensionsTest
 {
-    public class RequestLocalizationOptionsExtensionsTest
+    [Fact]
+    public void AddInitialRequestCultureProvider_ShouldBeInsertedAtFirstPostion()
     {
-        [Fact]
-        public void AddInitialRequestCultureProvider_ShouldBeInsertedAtFirstPostion()
-        {
-            // Arrange
-            var options = new RequestLocalizationOptions();
-            var provider = new CustomRequestCultureProvider(context => Task.FromResult(new ProviderCultureResult("ar-YE")));
+        // Arrange
+        var options = new RequestLocalizationOptions();
+        var provider = new CustomRequestCultureProvider(context => Task.FromResult(new ProviderCultureResult("ar-YE")));
 
-            // Act
-            options.AddInitialRequestCultureProvider(provider);
+        // Act
+        options.AddInitialRequestCultureProvider(provider);
 
-            // Assert
-            Assert.Same(provider, options.RequestCultureProviders[0]);
-        }
+        // Assert
+        Assert.Same(provider, options.RequestCultureProviders[0]);
     }
 }

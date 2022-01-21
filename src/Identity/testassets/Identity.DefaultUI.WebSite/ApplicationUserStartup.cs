@@ -2,14 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Identity.DefaultUI.WebSite.Data;
-using Microsoft.Extensions.Configuration;
 
-namespace Identity.DefaultUI.WebSite
+namespace Identity.DefaultUI.WebSite;
+
+public class ApplicationUserStartup : StartupBase<ApplicationUser, ApplicationDbContext>
 {
-    public class ApplicationUserStartup : StartupBase<ApplicationUser, ApplicationDbContext>
+    public ApplicationUserStartup(IConfiguration configuration) : base(configuration)
     {
-        public ApplicationUserStartup(IConfiguration configuration) : base(configuration)
-        {
-        }
     }
 }

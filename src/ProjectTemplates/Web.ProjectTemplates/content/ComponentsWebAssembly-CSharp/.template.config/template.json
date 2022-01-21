@@ -38,7 +38,7 @@
     },
     {
       "condition": "(!Hosted)",
-      "path": "ComponentsWebAssembly-CSharp.Client.csproj"
+      "path": "ComponentsWebAssembly-CSharp.csproj"
     },
     {
       "condition": "(Hosted && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
@@ -286,12 +286,12 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "net6.0",
-          "description": "Target net6.0"
+          "choice": "net7.0",
+          "description": "Target net7.0"
         }
       ],
-      "replaces": "net6.0",
-      "defaultValue": "net6.0"
+      "replaces": "net7.0",
+      "defaultValue": "net7.0"
     },
     "HostIdentifier": {
       "type": "bind",
@@ -599,6 +599,7 @@
   },
   "postActions": [
     {
+      "id": "restore",
       "condition": "(!skipRestore && Hosted)",
       "description": "Restore NuGet packages required by this project.",
       "manualInstructions": [
@@ -610,6 +611,7 @@
       "continueOnError": true
     },
     {
+      "id": "restoreClient",
       "condition": "(!skipRestore && !Hosted)",
       "description": "Restore NuGet packages required by this project.",
       "manualInstructions": [

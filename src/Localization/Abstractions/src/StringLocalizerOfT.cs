@@ -3,62 +3,60 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 
-namespace Microsoft.Extensions.Localization
+namespace Microsoft.Extensions.Localization;
+
+/// <summary>
+/// Provides strings for <typeparamref name="TResourceSource"/>.
+/// </summary>
+/// <typeparam name="TResourceSource">The <see cref="Type"/> to provide strings for.</typeparam>
+public class StringLocalizer<TResourceSource> : IStringLocalizer<TResourceSource>
 {
+    private readonly IStringLocalizer _localizer;
+
     /// <summary>
-    /// Provides strings for <typeparamref name="TResourceSource"/>.
+    /// Creates a new <see cref="StringLocalizer{TResourceSource}"/>.
     /// </summary>
-    /// <typeparam name="TResourceSource">The <see cref="Type"/> to provide strings for.</typeparam>
-    public class StringLocalizer<TResourceSource> : IStringLocalizer<TResourceSource>
+    /// <param name="factory">The <see cref="IStringLocalizerFactory"/> to use.</param>
+    public StringLocalizer(IStringLocalizerFactory factory)
     {
-        private readonly IStringLocalizer _localizer;
-
-        /// <summary>
-        /// Creates a new <see cref="StringLocalizer{TResourceSource}"/>.
-        /// </summary>
-        /// <param name="factory">The <see cref="IStringLocalizerFactory"/> to use.</param>
-        public StringLocalizer(IStringLocalizerFactory factory)
+        if (factory == null)
         {
-            if (factory == null)
-            {
-                throw new ArgumentNullException(nameof(factory));
-            }
-
-            _localizer = factory.Create(typeof(TResourceSource));
+            throw new ArgumentNullException(nameof(factory));
         }
 
-        /// <inheritdoc />
-        public virtual LocalizedString this[string name]
-        {
-            get
-            {
-                if (name == null)
-                {
-                    throw new ArgumentNullException(nameof(name));
-                }
-
-                return _localizer[name];
-            }
-        }
-
-        /// <inheritdoc />
-        public virtual LocalizedString this[string name, params object[] arguments]
-        {
-            get
-            {
-                if (name == null)
-                {
-                    throw new ArgumentNullException(nameof(name));
-                }
-
-                return _localizer[name, arguments];
-            }
-        }
-
-        /// <inheritdoc />
-        public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures) =>
-            _localizer.GetAllStrings(includeParentCultures);
+        _localizer = factory.Create(typeof(TResourceSource));
     }
+
+    /// <inheritdoc />
+    public virtual LocalizedString this[string name]
+    {
+        get
+        {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            return _localizer[name];
+        }
+    }
+
+    /// <inheritdoc />
+    public virtual LocalizedString this[string name, params object[] arguments]
+    {
+        get
+        {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            return _localizer[name, arguments];
+        }
+    }
+
+    /// <inheritdoc />
+    public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures) =>
+        _localizer.GetAllStrings(includeParentCultures);
 }

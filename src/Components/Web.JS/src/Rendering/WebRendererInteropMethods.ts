@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 import { DotNet } from '@microsoft/dotnet-js-interop';
 import { EventDescriptor } from './Events/EventDelegator';
 import { enableJSRootComponents, JSComponentParametersByIdentifier, JSComponentIdentifiersByInitializer } from './JSRootComponents';
@@ -41,6 +44,6 @@ function getInteropMethods(rendererId: number): DotNet.DotNetObject {
 // On some hosting platforms, we may need to defer the event dispatch, so they can register this middleware to do so
 type DispatchEventMiddlware = (browserRendererId: number, eventHandlerId: number, continuation: () => void) => void;
 let dispatchEventMiddleware: DispatchEventMiddlware = (browserRendererId, eventHandlerId, continuation) => continuation();
-export function setDispatchEventMiddleware(middleware: DispatchEventMiddlware) {
+export function setDispatchEventMiddleware(middleware: DispatchEventMiddlware): void {
   dispatchEventMiddleware = middleware;
 }

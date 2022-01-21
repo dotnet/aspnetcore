@@ -1,5 +1,4 @@
 <Project>
-
   <PropertyGroup>
     <LangVersion>preview</LangVersion>
 
@@ -12,16 +11,16 @@
     <PackageReference Include="MicroBuild.Core" Version="0.3.0" PrivateAssets="All" AllowExplicitReference="true" ExcludeAssets="All" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(IsTestProject)' == 'true' ">
+  <ItemGroup Condition=" $(IsTestProject) ">
     <Reference Include="Microsoft.AspNetCore.Testing" />
     <Reference Include="Moq" />
     <Reference Include="NETStandard.Library" />
-    <Compile Include="$(SharedSourceRoot)test\SuccessfulTests.cs" LinkBase="SharedTests" />
+    <Compile Include="$(SharedSourceRoot)test\SuccessfulTests.cs" LinkBase="SharedTests" Visible="false" />
   </ItemGroup>
 
-  <Import Project="$(RepoRoot)src\Testing\src\build\Microsoft.AspNetCore.Testing.props" Condition=" '$(IsTestProject)' == 'true' " />
+  <Import Project="$(RepoRoot)src\Testing\src\build\Microsoft.AspNetCore.Testing.props" Condition=" $(IsTestProject) " />
 
-  <ItemDefinitionGroup Condition=" '$(IsTestProject)' == 'true' ">
+  <ItemDefinitionGroup Condition=" $(IsTestProject) ">
     <Content>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
@@ -33,5 +32,4 @@
     <IgnoreYarnWarnings>false</IgnoreYarnWarnings>
     <IgnoreYarnWarnings Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</IgnoreYarnWarnings>
   </PropertyGroup>
-
 </Project>

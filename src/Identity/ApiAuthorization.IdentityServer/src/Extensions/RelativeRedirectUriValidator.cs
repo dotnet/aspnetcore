@@ -1,71 +1,67 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Validation;
 
-namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
+namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
+
+internal class RelativeRedirectUriValidator : StrictRedirectUriValidator
 {
-    internal class RelativeRedirectUriValidator : StrictRedirectUriValidator
+    public RelativeRedirectUriValidator(IAbsoluteUrlFactory absoluteUrlFactory)
     {
-        public RelativeRedirectUriValidator(IAbsoluteUrlFactory absoluteUrlFactory)
+        if (absoluteUrlFactory == null)
         {
-            if (absoluteUrlFactory == null)
-            {
-                throw new ArgumentNullException(nameof(absoluteUrlFactory));
-            }
-
-            AbsoluteUrlFactory = absoluteUrlFactory;
+            throw new ArgumentNullException(nameof(absoluteUrlFactory));
         }
 
-        public IAbsoluteUrlFactory AbsoluteUrlFactory { get; }
+        AbsoluteUrlFactory = absoluteUrlFactory;
+    }
 
-        public override Task<bool> IsRedirectUriValidAsync(string requestedUri, Client client)
+    public IAbsoluteUrlFactory AbsoluteUrlFactory { get; }
+
+    public override Task<bool> IsRedirectUriValidAsync(string requestedUri, Client client)
+    {
+        if (IsLocalSPA(client))
         {
-            if (IsLocalSPA(client))
-            {
-                return ValidateRelativeUris(requestedUri, client.RedirectUris);
-            }
-            else
-            {
-                return base.IsRedirectUriValidAsync(requestedUri, client);
-            }
+            return ValidateRelativeUris(requestedUri, client.RedirectUris);
         }
-
-        public override Task<bool> IsPostLogoutRedirectUriValidAsync(string requestedUri, Client client)
+        else
         {
-            if (IsLocalSPA(client))
-            {
-                return ValidateRelativeUris(requestedUri, client.PostLogoutRedirectUris);
-            }
-            else
-            {
-                return base.IsPostLogoutRedirectUriValidAsync(requestedUri, client);
-            }
+            return base.IsRedirectUriValidAsync(requestedUri, client);
         }
+    }
 
-        private static bool IsLocalSPA(Client client) =>
-            client.Properties.TryGetValue(ApplicationProfilesPropertyNames.Profile, out var clientType) &&
-            ApplicationProfiles.IdentityServerSPA == clientType;
-
-        private Task<bool> ValidateRelativeUris(string requestedUri, IEnumerable<string> clientUris)
+    public override Task<bool> IsPostLogoutRedirectUriValidAsync(string requestedUri, Client client)
+    {
+        if (IsLocalSPA(client))
         {
-            foreach (var url in clientUris)
+            return ValidateRelativeUris(requestedUri, client.PostLogoutRedirectUris);
+        }
+        else
+        {
+            return base.IsPostLogoutRedirectUriValidAsync(requestedUri, client);
+        }
+    }
+
+    private static bool IsLocalSPA(Client client) =>
+        client.Properties.TryGetValue(ApplicationProfilesPropertyNames.Profile, out var clientType) &&
+        ApplicationProfiles.IdentityServerSPA == clientType;
+
+    private Task<bool> ValidateRelativeUris(string requestedUri, IEnumerable<string> clientUris)
+    {
+        foreach (var url in clientUris)
+        {
+            if (Uri.IsWellFormedUriString(url, UriKind.Relative))
             {
-                if (Uri.IsWellFormedUriString(url, UriKind.Relative))
+                var newUri = AbsoluteUrlFactory.GetAbsoluteUrl(url);
+                if (string.Equals(newUri, requestedUri, StringComparison.Ordinal))
                 {
-                    var newUri = AbsoluteUrlFactory.GetAbsoluteUrl(url);
-                    if (string.Equals(newUri, requestedUri, StringComparison.Ordinal))
-                    {
-                        return Task.FromResult(true);
-                    }
+                    return Task.FromResult(true);
                 }
             }
-
-            return Task.FromResult(false);
         }
+
+        return Task.FromResult(false);
     }
 }

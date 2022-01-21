@@ -3,44 +3,40 @@
 
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization.Policy;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Authorization;
-using Microsoft.Extensions.DependencyInjection;
 
-namespace SecurityWebSite
+namespace SecurityWebSite;
+
+public class StartupWithGlobalDenyAnonymousFilter
 {
-    public class StartupWithGlobalDenyAnonymousFilter
+    public void ConfigureServices(IServiceCollection services)
     {
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services
-                .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-                .AddCookie(options =>
-                {
-                    options.LoginPath = "/Home/Login";
-                    options.LogoutPath = "/Home/Logout";
-                }).AddCookie("Cookie2");
-
-            services.AddMvc(o =>
+        services
+            .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+            .AddCookie(options =>
             {
-                o.Filters.Add(new AuthorizeFilter());
-            });
+                options.LoginPath = "/Home/Login";
+                options.LogoutPath = "/Home/Logout";
+            }).AddCookie("Cookie2");
 
-            services.AddScoped<IPolicyEvaluator, CountingPolicyEvaluator>();
-        }
-
-        public void Configure(IApplicationBuilder app)
+        services.AddMvc(o =>
         {
-            app.UseRouting();
+            o.Filters.Add(new AuthorizeFilter());
+        });
 
-            app.UseAuthentication();
-            app.UseAuthorization();
+        services.AddScoped<IPolicyEvaluator, CountingPolicyEvaluator>();
+    }
 
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapDefaultControllerRoute();
-            });
-        }
+    public void Configure(IApplicationBuilder app)
+    {
+        app.UseRouting();
+
+        app.UseAuthentication();
+        app.UseAuthorization();
+
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapDefaultControllerRoute();
+        });
     }
 }

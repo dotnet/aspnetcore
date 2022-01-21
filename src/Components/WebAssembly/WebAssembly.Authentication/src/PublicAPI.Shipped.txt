@@ -1,56 +1,13 @@
-﻿#nullable enable
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessToken
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessToken.AccessToken() -> void
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessToken.Expires.get -> System.DateTimeOffset
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessToken.Expires.set -> void
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenNotAvailableException
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenNotAvailableException.Redirect() -> void
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenRequestOptions
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenRequestOptions.AccessTokenRequestOptions() -> void
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenResult
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenResult.Status.get -> Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenResultStatus
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenResultStatus
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenResultStatus.RequiresRedirect = 1 -> Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenResultStatus
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenResultStatus.Success = 0 -> Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenResultStatus
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.ApiAuthorizationProviderOptions
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.ApiAuthorizationProviderOptions.ApiAuthorizationProviderOptions() -> void
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.AuthorizationMessageHandler
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.BaseAddressAuthorizationMessageHandler
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.IAccessTokenProvider
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.Internal.IAccessTokenProviderAccessor
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.OidcProviderOptions
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.OidcProviderOptions.OidcProviderOptions() -> void
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationActions
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationActions.RemoteAuthenticationActions() -> void
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationApplicationPathsOptions
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationApplicationPathsOptions.RemoteAuthenticationApplicationPathsOptions() -> void
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationContext<TRemoteAuthenticationState>.RemoteAuthenticationContext() -> void
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationDefaults
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationDefaults.RemoteAuthenticationDefaults() -> void
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationOptions<TRemoteAuthenticationProviderOptions>
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationOptions<TRemoteAuthenticationProviderOptions>.ProviderOptions.get -> TRemoteAuthenticationProviderOptions
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationOptions<TRemoteAuthenticationProviderOptions>.RemoteAuthenticationOptions() -> void
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationResult<TRemoteAuthenticationState>.RemoteAuthenticationResult() -> void
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationResult<TRemoteAuthenticationState>.Status.get -> Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationStatus
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationResult<TRemoteAuthenticationState>.Status.set -> void
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationState
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationState.RemoteAuthenticationState() -> void
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationStatus
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationStatus.Failure = 2 -> Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationStatus
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationStatus.OperationCompleted = 3 -> Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationStatus
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationStatus.Redirect = 0 -> Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationStatus
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationStatus.Success = 1 -> Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationStatus
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationUserOptions
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationUserOptions.RemoteAuthenticationUserOptions() -> void
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticatorView
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticatorView.RemoteAuthenticatorView() -> void
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticatorViewCore<TAuthenticationState>.RemoteAuthenticatorViewCore() -> void
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteUserAccount
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteUserAccount.RemoteUserAccount() -> void
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.SignOutSessionStateManager
-Microsoft.Extensions.DependencyInjection.RemoteAuthenticationBuilderExtensions
-Microsoft.Extensions.DependencyInjection.WebAssemblyAuthenticationServiceCollectionExtensions
-virtual Microsoft.AspNetCore.Components.WebAssembly.Authentication.SignOutSessionStateManager.SetSignOutState() -> System.Threading.Tasks.ValueTask
+#nullable enable
+~const Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationActions.LogIn = "login" -> string
+~const Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationActions.LogInCallback = "login-callback" -> string
+~const Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationActions.LogInFailed = "login-failed" -> string
+~const Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationActions.LogOut = "logout" -> string
+~const Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationActions.LogOutCallback = "logout-callback" -> string
+~const Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationActions.LogOutFailed = "logout-failed" -> string
+~const Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationActions.LogOutSucceeded = "logged-out" -> string
+~const Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationActions.Profile = "profile" -> string
+~const Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationActions.Register = "register" -> string
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessToken.GrantedScopes.get -> System.Collections.Generic.IReadOnlyList<string>
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessToken.GrantedScopes.set -> void
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessToken.Value.get -> string
@@ -73,12 +30,13 @@ virtual Microsoft.AspNetCore.Components.WebAssembly.Authentication.SignOutSessio
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.BaseAddressAuthorizationMessageHandler.BaseAddressAuthorizationMessageHandler(Microsoft.AspNetCore.Components.WebAssembly.Authentication.IAccessTokenProvider provider, Microsoft.AspNetCore.Components.NavigationManager navigationManager) -> void
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.IAccessTokenProvider.RequestAccessToken() -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenResult>
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.IAccessTokenProvider.RequestAccessToken(Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenRequestOptions options) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenResult>
+~Microsoft.AspNetCore.Components.WebAssembly.Authentication.Internal.IAccessTokenProviderAccessor.TokenProvider.get -> Microsoft.AspNetCore.Components.WebAssembly.Authentication.IAccessTokenProvider
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.IRemoteAuthenticationService<TRemoteAuthenticationState>
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.IRemoteAuthenticationService<TRemoteAuthenticationState>.CompleteSignInAsync(Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationContext<TRemoteAuthenticationState> context) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationResult<TRemoteAuthenticationState>>
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.IRemoteAuthenticationService<TRemoteAuthenticationState>.CompleteSignOutAsync(Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationContext<TRemoteAuthenticationState> context) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationResult<TRemoteAuthenticationState>>
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.IRemoteAuthenticationService<TRemoteAuthenticationState>.SignInAsync(Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationContext<TRemoteAuthenticationState> context) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationResult<TRemoteAuthenticationState>>
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.IRemoteAuthenticationService<TRemoteAuthenticationState>.SignOutAsync(Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationContext<TRemoteAuthenticationState> context) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationResult<TRemoteAuthenticationState>>
-~Microsoft.AspNetCore.Components.WebAssembly.Authentication.Internal.IAccessTokenProviderAccessor.TokenProvider.get -> Microsoft.AspNetCore.Components.WebAssembly.Authentication.IAccessTokenProvider
+~Microsoft.AspNetCore.Components.WebAssembly.Authentication.OidcProviderOptions.AdditionalProviderParameters.get -> System.Collections.Generic.IDictionary<string, string>
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.OidcProviderOptions.Authority.get -> string
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.OidcProviderOptions.Authority.set -> void
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.OidcProviderOptions.ClientId.get -> string
@@ -133,7 +91,7 @@ virtual Microsoft.AspNetCore.Components.WebAssembly.Authentication.SignOutSessio
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationService<TRemoteAuthenticationState, TAccount, TProviderOptions>.JsRuntime.get -> Microsoft.JSInterop.IJSRuntime
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationService<TRemoteAuthenticationState, TAccount, TProviderOptions>.Navigation.get -> Microsoft.AspNetCore.Components.NavigationManager
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationService<TRemoteAuthenticationState, TAccount, TProviderOptions>.Options.get -> Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationOptions<TProviderOptions>
-~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationService<TRemoteAuthenticationState, TAccount, TProviderOptions>.RemoteAuthenticationService(Microsoft.JSInterop.IJSRuntime jsRuntime, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationOptions<TProviderOptions>> options, Microsoft.AspNetCore.Components.NavigationManager navigation, Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccountClaimsPrincipalFactory<TAccount> accountClaimsPrincipalFactory) -> void
+~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationService<TRemoteAuthenticationState, TAccount, TProviderOptions>.RemoteAuthenticationService(Microsoft.JSInterop.IJSRuntime jsRuntime, Microsoft.Extensions.Options.IOptionsSnapshot<Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationOptions<TProviderOptions>> options, Microsoft.AspNetCore.Components.NavigationManager navigation, Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccountClaimsPrincipalFactory<TAccount> accountClaimsPrincipalFactory) -> void
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationState.ReturnUrl.get -> string
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationState.ReturnUrl.set -> void
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationUserOptions.AuthenticationType.get -> string
@@ -151,10 +109,12 @@ virtual Microsoft.AspNetCore.Components.WebAssembly.Authentication.SignOutSessio
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticatorViewCore<TAuthenticationState>.ApplicationPaths.set -> void
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticatorViewCore<TAuthenticationState>.AuthenticationState.get -> TAuthenticationState
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticatorViewCore<TAuthenticationState>.AuthenticationState.set -> void
-~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticatorViewCore<TAuthenticationState>.CompletingLogOut.get -> Microsoft.AspNetCore.Components.RenderFragment
-~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticatorViewCore<TAuthenticationState>.CompletingLogOut.set -> void
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticatorViewCore<TAuthenticationState>.CompletingLoggingIn.get -> Microsoft.AspNetCore.Components.RenderFragment
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticatorViewCore<TAuthenticationState>.CompletingLoggingIn.set -> void
+~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticatorViewCore<TAuthenticationState>.CompletingLogOut.get -> Microsoft.AspNetCore.Components.RenderFragment
+~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticatorViewCore<TAuthenticationState>.CompletingLogOut.set -> void
+~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticatorViewCore<TAuthenticationState>.LoggingIn.get -> Microsoft.AspNetCore.Components.RenderFragment
+~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticatorViewCore<TAuthenticationState>.LoggingIn.set -> void
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticatorViewCore<TAuthenticationState>.LogInFailed.get -> Microsoft.AspNetCore.Components.RenderFragment<string>
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticatorViewCore<TAuthenticationState>.LogInFailed.set -> void
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticatorViewCore<TAuthenticationState>.LogOut.get -> Microsoft.AspNetCore.Components.RenderFragment
@@ -163,8 +123,6 @@ virtual Microsoft.AspNetCore.Components.WebAssembly.Authentication.SignOutSessio
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticatorViewCore<TAuthenticationState>.LogOutFailed.set -> void
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticatorViewCore<TAuthenticationState>.LogOutSucceeded.get -> Microsoft.AspNetCore.Components.RenderFragment
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticatorViewCore<TAuthenticationState>.LogOutSucceeded.set -> void
-~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticatorViewCore<TAuthenticationState>.LoggingIn.get -> Microsoft.AspNetCore.Components.RenderFragment
-~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticatorViewCore<TAuthenticationState>.LoggingIn.set -> void
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticatorViewCore<TAuthenticationState>.OnLogInSucceeded.get -> Microsoft.AspNetCore.Components.EventCallback<TAuthenticationState>
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticatorViewCore<TAuthenticationState>.OnLogInSucceeded.set -> void
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticatorViewCore<TAuthenticationState>.OnLogOutSucceeded.get -> Microsoft.AspNetCore.Components.EventCallback<TAuthenticationState>
@@ -178,15 +136,6 @@ virtual Microsoft.AspNetCore.Components.WebAssembly.Authentication.SignOutSessio
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.SignOutSessionStateManager.SignOutSessionStateManager(Microsoft.JSInterop.IJSRuntime jsRuntime) -> void
 ~Microsoft.Extensions.DependencyInjection.IRemoteAuthenticationBuilder<TRemoteAuthenticationState, TAccount>
 ~Microsoft.Extensions.DependencyInjection.IRemoteAuthenticationBuilder<TRemoteAuthenticationState, TAccount>.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection
-~const Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationActions.LogIn = "login" -> string
-~const Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationActions.LogInCallback = "login-callback" -> string
-~const Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationActions.LogInFailed = "login-failed" -> string
-~const Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationActions.LogOut = "logout" -> string
-~const Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationActions.LogOutCallback = "logout-callback" -> string
-~const Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationActions.LogOutFailed = "logout-failed" -> string
-~const Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationActions.LogOutSucceeded = "logged-out" -> string
-~const Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationActions.Profile = "profile" -> string
-~const Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationActions.Register = "register" -> string
 ~override Microsoft.AspNetCore.Components.WebAssembly.Authentication.AuthorizationMessageHandler.SendAsync(System.Net.Http.HttpRequestMessage request, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage>
 ~override Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationService<TRemoteAuthenticationState, TAccount, TProviderOptions>.GetAuthenticationStateAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Authorization.AuthenticationState>
 ~override Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticatorViewCore<TAuthenticationState>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder) -> void
@@ -224,3 +173,55 @@ virtual Microsoft.AspNetCore.Components.WebAssembly.Authentication.SignOutSessio
 ~virtual Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationService<TRemoteAuthenticationState, TAccount, TProviderOptions>.SignInAsync(Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationContext<TRemoteAuthenticationState> context) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationResult<TRemoteAuthenticationState>>
 ~virtual Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationService<TRemoteAuthenticationState, TAccount, TProviderOptions>.SignOutAsync(Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationContext<TRemoteAuthenticationState> context) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationResult<TRemoteAuthenticationState>>
 ~virtual Microsoft.AspNetCore.Components.WebAssembly.Authentication.SignOutSessionStateManager.ValidateSignOutState() -> System.Threading.Tasks.Task<bool>
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessToken
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessToken.AccessToken() -> void
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessToken.Expires.get -> System.DateTimeOffset
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessToken.Expires.set -> void
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenNotAvailableException
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenNotAvailableException.Redirect() -> void
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenRequestOptions
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenRequestOptions.AccessTokenRequestOptions() -> void
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenResult
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenResult.Status.get -> Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenResultStatus
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenResultStatus
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenResultStatus.RequiresRedirect = 1 -> Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenResultStatus
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenResultStatus.Success = 0 -> Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenResultStatus
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.ApiAuthorizationProviderOptions
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.ApiAuthorizationProviderOptions.ApiAuthorizationProviderOptions() -> void
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.AuthorizationMessageHandler
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.BaseAddressAuthorizationMessageHandler
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.IAccessTokenProvider
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.Internal.IAccessTokenProviderAccessor
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.OidcProviderOptions
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.OidcProviderOptions.OidcProviderOptions() -> void
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationActions
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationActions.RemoteAuthenticationActions() -> void
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationApplicationPathsOptions
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationApplicationPathsOptions.RemoteAuthenticationApplicationPathsOptions() -> void
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationContext<TRemoteAuthenticationState>.RemoteAuthenticationContext() -> void
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationDefaults
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationDefaults.RemoteAuthenticationDefaults() -> void
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationOptions<TRemoteAuthenticationProviderOptions>
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationOptions<TRemoteAuthenticationProviderOptions>.ProviderOptions.get -> TRemoteAuthenticationProviderOptions
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationOptions<TRemoteAuthenticationProviderOptions>.RemoteAuthenticationOptions() -> void
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationResult<TRemoteAuthenticationState>.RemoteAuthenticationResult() -> void
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationResult<TRemoteAuthenticationState>.Status.get -> Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationStatus
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationResult<TRemoteAuthenticationState>.Status.set -> void
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationState
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationState.RemoteAuthenticationState() -> void
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationStatus
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationStatus.Failure = 2 -> Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationStatus
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationStatus.OperationCompleted = 3 -> Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationStatus
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationStatus.Redirect = 0 -> Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationStatus
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationStatus.Success = 1 -> Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationStatus
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationUserOptions
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationUserOptions.RemoteAuthenticationUserOptions() -> void
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticatorView
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticatorView.RemoteAuthenticatorView() -> void
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticatorViewCore<TAuthenticationState>.RemoteAuthenticatorViewCore() -> void
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteUserAccount
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteUserAccount.RemoteUserAccount() -> void
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.SignOutSessionStateManager
+Microsoft.Extensions.DependencyInjection.RemoteAuthenticationBuilderExtensions
+Microsoft.Extensions.DependencyInjection.WebAssemblyAuthenticationServiceCollectionExtensions
+virtual Microsoft.AspNetCore.Components.WebAssembly.Authentication.SignOutSessionStateManager.SetSignOutState() -> System.Threading.Tasks.ValueTask

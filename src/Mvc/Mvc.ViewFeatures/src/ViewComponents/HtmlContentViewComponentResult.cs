@@ -3,63 +3,60 @@
 
 #nullable enable
 
-using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
 
-namespace Microsoft.AspNetCore.Mvc.ViewComponents
+namespace Microsoft.AspNetCore.Mvc.ViewComponents;
+
+/// <summary>
+/// An <see cref="IViewComponentResult"/> which writes an <see cref="IHtmlContent"/> when executed.
+/// </summary>
+/// <remarks>
+/// The provided content will be HTML-encoded as specified when the content was created. To encoded and write
+/// text, use a <see cref="ContentViewComponentResult"/>.
+/// </remarks>
+public class HtmlContentViewComponentResult : IViewComponentResult
 {
     /// <summary>
-    /// An <see cref="IViewComponentResult"/> which writes an <see cref="IHtmlContent"/> when executed.
+    /// Initializes a new <see cref="HtmlContentViewComponentResult"/>.
     /// </summary>
-    /// <remarks>
-    /// The provided content will be HTML-encoded as specified when the content was created. To encoded and write
-    /// text, use a <see cref="ContentViewComponentResult"/>.
-    /// </remarks>
-    public class HtmlContentViewComponentResult : IViewComponentResult
+    public HtmlContentViewComponentResult(IHtmlContent encodedContent)
     {
-        /// <summary>
-        /// Initializes a new <see cref="HtmlContentViewComponentResult"/>.
-        /// </summary>
-        public HtmlContentViewComponentResult(IHtmlContent encodedContent)
+        if (encodedContent == null)
         {
-            if (encodedContent == null)
-            {
-                throw new ArgumentNullException(nameof(encodedContent));
-            }
-
-            EncodedContent = encodedContent;
+            throw new ArgumentNullException(nameof(encodedContent));
         }
 
-        /// <summary>
-        /// Gets the encoded content.
-        /// </summary>
-        public IHtmlContent EncodedContent { get; }
+        EncodedContent = encodedContent;
+    }
 
-        /// <summary>
-        /// Writes the <see cref="EncodedContent"/>.
-        /// </summary>
-        /// <param name="context">The <see cref="ViewComponentContext"/>.</param>
-        public void Execute(ViewComponentContext context)
+    /// <summary>
+    /// Gets the encoded content.
+    /// </summary>
+    public IHtmlContent EncodedContent { get; }
+
+    /// <summary>
+    /// Writes the <see cref="EncodedContent"/>.
+    /// </summary>
+    /// <param name="context">The <see cref="ViewComponentContext"/>.</param>
+    public void Execute(ViewComponentContext context)
+    {
+        if (context == null)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            context.Writer.Write(EncodedContent);
+            throw new ArgumentNullException(nameof(context));
         }
 
-        /// <summary>
-        /// Writes the <see cref="EncodedContent"/>.
-        /// </summary>
-        /// <param name="context">The <see cref="ViewComponentContext"/>.</param>
-        /// <returns>A completed <see cref="Task"/>.</returns>
-        public Task ExecuteAsync(ViewComponentContext context)
-        {
-            Execute(context);
+        context.Writer.Write(EncodedContent);
+    }
 
-            return Task.CompletedTask;
-        }
+    /// <summary>
+    /// Writes the <see cref="EncodedContent"/>.
+    /// </summary>
+    /// <param name="context">The <see cref="ViewComponentContext"/>.</param>
+    /// <returns>A completed <see cref="Task"/>.</returns>
+    public Task ExecuteAsync(ViewComponentContext context)
+    {
+        Execute(context);
+
+        return Task.CompletedTask;
     }
 }

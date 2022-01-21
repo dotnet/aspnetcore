@@ -1,7 +1,15 @@
 #nullable enable
 Microsoft.Extensions.Configuration.KeyPerFile.KeyPerFileConfigurationProvider
 Microsoft.Extensions.Configuration.KeyPerFile.KeyPerFileConfigurationProvider.Dispose() -> void
+Microsoft.Extensions.Configuration.KeyPerFile.KeyPerFileConfigurationProvider.KeyPerFileConfigurationProvider(Microsoft.Extensions.Configuration.KeyPerFile.KeyPerFileConfigurationSource! source) -> void
 Microsoft.Extensions.Configuration.KeyPerFile.KeyPerFileConfigurationSource
+Microsoft.Extensions.Configuration.KeyPerFile.KeyPerFileConfigurationSource.Build(Microsoft.Extensions.Configuration.IConfigurationBuilder! builder) -> Microsoft.Extensions.Configuration.IConfigurationProvider!
+Microsoft.Extensions.Configuration.KeyPerFile.KeyPerFileConfigurationSource.FileProvider.get -> Microsoft.Extensions.FileProviders.IFileProvider?
+Microsoft.Extensions.Configuration.KeyPerFile.KeyPerFileConfigurationSource.FileProvider.set -> void
+Microsoft.Extensions.Configuration.KeyPerFile.KeyPerFileConfigurationSource.IgnoreCondition.get -> System.Func<string!, bool>!
+Microsoft.Extensions.Configuration.KeyPerFile.KeyPerFileConfigurationSource.IgnoreCondition.set -> void
+Microsoft.Extensions.Configuration.KeyPerFile.KeyPerFileConfigurationSource.IgnorePrefix.get -> string!
+Microsoft.Extensions.Configuration.KeyPerFile.KeyPerFileConfigurationSource.IgnorePrefix.set -> void
 Microsoft.Extensions.Configuration.KeyPerFile.KeyPerFileConfigurationSource.KeyPerFileConfigurationSource() -> void
 Microsoft.Extensions.Configuration.KeyPerFile.KeyPerFileConfigurationSource.Optional.get -> bool
 Microsoft.Extensions.Configuration.KeyPerFile.KeyPerFileConfigurationSource.Optional.set -> void
@@ -9,18 +17,12 @@ Microsoft.Extensions.Configuration.KeyPerFile.KeyPerFileConfigurationSource.Relo
 Microsoft.Extensions.Configuration.KeyPerFile.KeyPerFileConfigurationSource.ReloadDelay.set -> void
 Microsoft.Extensions.Configuration.KeyPerFile.KeyPerFileConfigurationSource.ReloadOnChange.get -> bool
 Microsoft.Extensions.Configuration.KeyPerFile.KeyPerFileConfigurationSource.ReloadOnChange.set -> void
+Microsoft.Extensions.Configuration.KeyPerFile.KeyPerFileConfigurationSource.SectionDelimiter.get -> string!
+Microsoft.Extensions.Configuration.KeyPerFile.KeyPerFileConfigurationSource.SectionDelimiter.set -> void
 Microsoft.Extensions.Configuration.KeyPerFileConfigurationBuilderExtensions
 override Microsoft.Extensions.Configuration.KeyPerFile.KeyPerFileConfigurationProvider.Load() -> void
-~Microsoft.Extensions.Configuration.KeyPerFile.KeyPerFileConfigurationProvider.KeyPerFileConfigurationProvider(Microsoft.Extensions.Configuration.KeyPerFile.KeyPerFileConfigurationSource source) -> void
-~Microsoft.Extensions.Configuration.KeyPerFile.KeyPerFileConfigurationSource.Build(Microsoft.Extensions.Configuration.IConfigurationBuilder builder) -> Microsoft.Extensions.Configuration.IConfigurationProvider
-~Microsoft.Extensions.Configuration.KeyPerFile.KeyPerFileConfigurationSource.FileProvider.get -> Microsoft.Extensions.FileProviders.IFileProvider
-~Microsoft.Extensions.Configuration.KeyPerFile.KeyPerFileConfigurationSource.FileProvider.set -> void
-~Microsoft.Extensions.Configuration.KeyPerFile.KeyPerFileConfigurationSource.IgnoreCondition.get -> System.Func<string, bool>
-~Microsoft.Extensions.Configuration.KeyPerFile.KeyPerFileConfigurationSource.IgnoreCondition.set -> void
-~Microsoft.Extensions.Configuration.KeyPerFile.KeyPerFileConfigurationSource.IgnorePrefix.get -> string
-~Microsoft.Extensions.Configuration.KeyPerFile.KeyPerFileConfigurationSource.IgnorePrefix.set -> void
-~override Microsoft.Extensions.Configuration.KeyPerFile.KeyPerFileConfigurationProvider.ToString() -> string
-~static Microsoft.Extensions.Configuration.KeyPerFileConfigurationBuilderExtensions.AddKeyPerFile(this Microsoft.Extensions.Configuration.IConfigurationBuilder builder, System.Action<Microsoft.Extensions.Configuration.KeyPerFile.KeyPerFileConfigurationSource> configureSource) -> Microsoft.Extensions.Configuration.IConfigurationBuilder
-~static Microsoft.Extensions.Configuration.KeyPerFileConfigurationBuilderExtensions.AddKeyPerFile(this Microsoft.Extensions.Configuration.IConfigurationBuilder builder, string directoryPath) -> Microsoft.Extensions.Configuration.IConfigurationBuilder
-~static Microsoft.Extensions.Configuration.KeyPerFileConfigurationBuilderExtensions.AddKeyPerFile(this Microsoft.Extensions.Configuration.IConfigurationBuilder builder, string directoryPath, bool optional) -> Microsoft.Extensions.Configuration.IConfigurationBuilder
-~static Microsoft.Extensions.Configuration.KeyPerFileConfigurationBuilderExtensions.AddKeyPerFile(this Microsoft.Extensions.Configuration.IConfigurationBuilder builder, string directoryPath, bool optional, bool reloadOnChange) -> Microsoft.Extensions.Configuration.IConfigurationBuilder
+override Microsoft.Extensions.Configuration.KeyPerFile.KeyPerFileConfigurationProvider.ToString() -> string!
+static Microsoft.Extensions.Configuration.KeyPerFileConfigurationBuilderExtensions.AddKeyPerFile(this Microsoft.Extensions.Configuration.IConfigurationBuilder! builder, string! directoryPath) -> Microsoft.Extensions.Configuration.IConfigurationBuilder!
+static Microsoft.Extensions.Configuration.KeyPerFileConfigurationBuilderExtensions.AddKeyPerFile(this Microsoft.Extensions.Configuration.IConfigurationBuilder! builder, string! directoryPath, bool optional) -> Microsoft.Extensions.Configuration.IConfigurationBuilder!
+static Microsoft.Extensions.Configuration.KeyPerFileConfigurationBuilderExtensions.AddKeyPerFile(this Microsoft.Extensions.Configuration.IConfigurationBuilder! builder, string! directoryPath, bool optional, bool reloadOnChange) -> Microsoft.Extensions.Configuration.IConfigurationBuilder!
+static Microsoft.Extensions.Configuration.KeyPerFileConfigurationBuilderExtensions.AddKeyPerFile(this Microsoft.Extensions.Configuration.IConfigurationBuilder! builder, System.Action<Microsoft.Extensions.Configuration.KeyPerFile.KeyPerFileConfigurationSource!>! configureSource) -> Microsoft.Extensions.Configuration.IConfigurationBuilder!

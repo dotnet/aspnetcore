@@ -88,9 +88,9 @@ Visual Studio 2019 (16.10 Preview 3) is required to build the repo locally. If y
 > You can do so by running the `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser` command
 > in PowerShell. For more information on execution policies, you can read the [execution policy docs](https://docs.microsoft.com/powershell/module/microsoft.powershell.security/set-executionpolicy).
 
-The [global.json](/global.json) file specifies the minimum requirements needed to build using `msbuild`. The [eng/scripts/vs.json](/eng/scripts/vs.json) file provides a description of the components needed to build within VS. If you plan on developing in Visual Studio, you will need to have these components installed.
+The [global.json](/global.json) file specifies the minimum requirements needed to build using `msbuild`. The [eng/scripts/vs.16.json](/eng/scripts/vs.16.json) file provides a description of the components needed to build within VS. If you plan on developing in Visual Studio, you will need to have these components installed.
 
-> :bulb: The `InstallVisualStudio.ps1` script mentioned above reads from the `vs.json` file to determine what components to install.
+> :bulb: The `InstallVisualStudio.ps1` script mentioned above reads from the `vs.17.json` file to determine what components to install.
 
 #### [Git](https://git-scm.org) on Windows
 
@@ -98,7 +98,7 @@ If you're reading this, you probably already have Git installed to support cloni
 
 #### [NodeJS](https://nodejs.org) on Windows
 
-Building the repo requires version 14.17.6 or newer of Node. You can find installation executables for Node at <https://nodejs.org>.
+Building the repo requires version 16.11.0 or newer of Node. You can find installation executables for Node at <https://nodejs.org>.
 
 #### [Yarn](https://yarnpkg.com/) on Windows
 
@@ -124,11 +124,26 @@ Alternatively, you can run [eng/scripts/InstallJdk.ps1](/eng/scripts/InstallJdk.
 ```powershell
 ./eng/scripts/InstallJdk.ps1
 ```
+NOTE : In order to execute the script you may need to set the right Execution policy. If not you may get an error that the script "cannot be loaded because the execution of scripts is disabled on this system". To get past that you can do the following. As an Administrator, you can set the execution policy by typing this into your PowerShell window:
+
+```powershell
+Set-ExecutionPolicy RemoteSigned
+```
+
+And when you are finished with the script return the execution policy.
+
+```powershell
+Set-ExecutionPolicy Restricted
+```
 
 The build should find any JDK 11 or newer installation on the machine as long as the `JAVA_HOME` environment variable is set. Typically, your installation will do this automatically. However, if it is not set you can set the environment variable manually:
 
 - Set `JAVA_HOME` to `RepoRoot/.tools/jdk/win-x64/` if you used the `InstallJdk.ps1` script.
 - Set `JAVA_HOME` to `C:/Program Files/Java/jdk<version>/` if you installed the JDK globally.
+
+You can temporarily set your environmental variable for the scope of the active powershell session using the command
+
+- $env:JAVA_HOME = "C:/[RepoRoot]/.tools/jdk/win-x64/"
 
 #### Chrome
 
@@ -141,6 +156,8 @@ The following extensions are recommended when developing in the ASP.NET Core rep
 - [C# extension](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csharp)
 
 - [EditorConfig](https://marketplace.visualstudio.com/items?itemName=EditorConfig.EditorConfig)
+
+- [C# XML Documentation Comments](https://marketplace.visualstudio.com/items?itemName=k--kato.docomment)
 
 #### WiX (Optional)
 
@@ -269,6 +286,8 @@ code .
 > in `~/.vscode-server/server-env-setup`.
 > See <https://code.visualstudio.com/docs/remote/wsl#_advanced-environment-setup-script> for details.
 
+In Visual Studio Code, press `CTRL + SHIFT + P` (`CMD + SHIFT + P` on mac) to open command palette, then search and select for `Run Tasks` option. In task list, there are couple of most used tasks are already defined, in that you can select `Build entire repository` option from it to build the repository. Once you select that option, on next window you need to select configuration type from `Debug` OR `Release`. For development purpose one can go with `Debug` option and for actual testing one can choose `Release` mode as binaries will be optimized in this mode.
+
 ### Building on command-line
 
 When developing in VS Code, you'll need to use the `build.cmd` or `build.sh` scripts in order to build the project. You can learn more about the command line options available, check out [the section below](#using-dotnet-on-command-line-in-this-repo).
@@ -284,7 +303,7 @@ To build a code change associated with a modification, run the build script in t
 On Windows, you can run the command script:
 
 ```powershell
-.\build.cmd
+.\eng\build.cmd
 ```
 
 On macOS/Linux, you can run the shell script:
@@ -293,7 +312,7 @@ On macOS/Linux, you can run the shell script:
 ./build.sh
 ```
 
-> :bulb: Before using the `build.cmd` or `build.sh` at the top-level or in a subfolder, you will need to make sure that [the dependencies documented above](#step-2-install-pre-requisites) have been installed.
+> :bulb: Before using the `.\eng\build.cmd` or `.\eng\build.sh` at the top-level or in a subfolder, you will need to make sure that [the dependencies documented above](#step-2-install-pre-requisites) have been installed.
 
 By default, all of the C# projects are built. Some C# projects require NodeJS to be installed to compile JavaScript assets which are then checked in as source. If NodeJS is detected on the path, the NodeJS projects will be compiled as part of building C# projects. If NodeJS is not detected on the path, the JavaScript assets checked in previously will be used instead. To disable building NodeJS projects, specify `-noBuildNodeJS` or `--no-build-nodejs` on the command line.
 
@@ -369,9 +388,9 @@ See ["Artifacts"](./Artifacts.md) for more explanation of the different folders 
 Building installers does not run as part of `build.cmd` run without parameters, so you should opt-in for building them:
 
 ```powershell
-.\build.cmd -all -pack -arch x64
-.\build.cmd -all -pack -arch x86 -noBuildJava
-.\build.cmd -buildInstallers
+.\eng\build.cmd -all -pack -arch x64
+.\eng\build.cmd -all -pack -arch x86 -noBuildJava
+.\eng\build.cmd -buildInstallers
 ```
 
 _Note_: Additional build steps listed above aren't necessary on Linux or macOS.

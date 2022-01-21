@@ -1,83 +1,80 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Rewrite.UrlActions
+namespace Microsoft.AspNetCore.Rewrite.UrlActions;
+
+internal class RedirectAction : UrlAction
 {
-    internal class RedirectAction : UrlAction
-    {
-        public int StatusCode { get; }
-        public bool QueryStringAppend { get; }
-        public bool QueryStringDelete { get; }
-        public bool EscapeBackReferences { get; }
+    public int StatusCode { get; }
+    public bool QueryStringAppend { get; }
+    public bool QueryStringDelete { get; }
+    public bool EscapeBackReferences { get; }
 
-        public RedirectAction(
-            int statusCode,
-            Pattern pattern,
-            bool queryStringAppend,
-            bool queryStringDelete,
-            bool escapeBackReferences)
+    public RedirectAction(
+        int statusCode,
+        Pattern pattern,
+        bool queryStringAppend,
+        bool queryStringDelete,
+        bool escapeBackReferences)
+    {
+        StatusCode = statusCode;
+        Url = pattern;
+        QueryStringAppend = queryStringAppend;
+        QueryStringDelete = queryStringDelete;
+        EscapeBackReferences = escapeBackReferences;
+    }
+
+    public override void ApplyAction(RewriteContext context, BackReferenceCollection? ruleBackReferences, BackReferenceCollection? conditionBackReferences)
+    {
+        var pattern = Url!.Evaluate(context, ruleBackReferences, conditionBackReferences);
+        var response = context.HttpContext.Response;
+        var pathBase = context.HttpContext.Request.PathBase;
+        if (EscapeBackReferences)
         {
-            StatusCode = statusCode;
-            Url = pattern;
-            QueryStringAppend = queryStringAppend;
-            QueryStringDelete = queryStringDelete;
-            EscapeBackReferences = escapeBackReferences;
+            // because escapebackreferences will be encapsulated by the pattern, just escape the pattern
+            pattern = Uri.EscapeDataString(pattern);
         }
 
-        public override void ApplyAction(RewriteContext context, BackReferenceCollection? ruleBackReferences, BackReferenceCollection? conditionBackReferences)
+        if (string.IsNullOrEmpty(pattern))
         {
-            var pattern = Url!.Evaluate(context, ruleBackReferences, conditionBackReferences);
-            var response = context.HttpContext.Response;
-            var pathBase = context.HttpContext.Request.PathBase;
-            if (EscapeBackReferences)
-            {
-                // because escapebackreferences will be encapsulated by the pattern, just escape the pattern
-                pattern = Uri.EscapeDataString(pattern);
-            }
+            response.Headers.Location = pathBase.HasValue ? pathBase.Value : "/";
+            return;
+        }
 
-            if (string.IsNullOrEmpty(pattern))
-            {
-                response.Headers.Location = pathBase.HasValue ? pathBase.Value : "/";
-                return;
-            }
+        if (pattern.IndexOf(Uri.SchemeDelimiter, StringComparison.Ordinal) == -1 && pattern[0] != '/')
+        {
+            pattern = '/' + pattern;
+        }
+        response.StatusCode = StatusCode;
 
-            if (pattern.IndexOf(Uri.SchemeDelimiter, StringComparison.Ordinal) == -1 && pattern[0] != '/')
-            {
-                pattern = '/' + pattern;
-            }
-            response.StatusCode = StatusCode;
+        // url can either contain the full url or the path and query
+        // always add to location header.
+        // TODO check for false positives
+        var split = pattern.IndexOf('?');
+        if (split >= 0 && QueryStringAppend)
+        {
+            var query = context.HttpContext.Request.QueryString.Add(
+                QueryString.FromUriComponent(
+                    pattern.Substring(split)));
 
-            // url can either contain the full url or the path and query
-            // always add to location header.
-            // TODO check for false positives
-            var split = pattern.IndexOf('?');
-            if (split >= 0 && QueryStringAppend)
+            // not using the response.redirect here because status codes may be 301, 302, 307, 308
+            response.Headers.Location = pathBase + pattern.Substring(0, split) + query;
+        }
+        else
+        {
+            // If the request url has a query string and the target does not, append the query string
+            // by default.
+            if (QueryStringDelete)
             {
-                var query = context.HttpContext.Request.QueryString.Add(
-                    QueryString.FromUriComponent(
-                        pattern.Substring(split)));
-
-                // not using the response.redirect here because status codes may be 301, 302, 307, 308
-                response.Headers.Location = pathBase + pattern.Substring(0, split) + query;
+                response.Headers.Location = pathBase + pattern;
             }
             else
             {
-                // If the request url has a query string and the target does not, append the query string
-                // by default.
-                if (QueryStringDelete)
-                {
-                    response.Headers.Location = pathBase + pattern;
-                }
-                else
-                {
-                    response.Headers.Location = pathBase + pattern + context.HttpContext.Request.QueryString;
-                }
+                response.Headers.Location = pathBase + pattern + context.HttpContext.Request.QueryString;
             }
-            context.Result = RuleResult.EndResponse;
         }
+        context.Result = RuleResult.EndResponse;
     }
 }

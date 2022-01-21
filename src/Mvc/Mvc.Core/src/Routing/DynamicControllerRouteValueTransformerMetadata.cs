@@ -2,35 +2,33 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 
-using System;
 using Microsoft.AspNetCore.Routing;
 
-namespace Microsoft.AspNetCore.Mvc.Routing
+namespace Microsoft.AspNetCore.Mvc.Routing;
+
+internal class DynamicControllerRouteValueTransformerMetadata : IDynamicEndpointMetadata
 {
-    internal class DynamicControllerRouteValueTransformerMetadata : IDynamicEndpointMetadata
+    public DynamicControllerRouteValueTransformerMetadata(Type selectorType, object? state)
     {
-        public DynamicControllerRouteValueTransformerMetadata(Type selectorType, object? state)
+        if (selectorType == null)
         {
-            if (selectorType == null)
-            {
-                throw new ArgumentNullException(nameof(selectorType));
-            }
-
-            if (!typeof(DynamicRouteValueTransformer).IsAssignableFrom(selectorType))
-            {
-                throw new ArgumentException(
-                    $"The provided type must be a subclass of {typeof(DynamicRouteValueTransformer)}",
-                    nameof(selectorType));
-            }
-
-            SelectorType = selectorType;
-            State = state;
+            throw new ArgumentNullException(nameof(selectorType));
         }
 
-        public bool IsDynamic => true;
+        if (!typeof(DynamicRouteValueTransformer).IsAssignableFrom(selectorType))
+        {
+            throw new ArgumentException(
+                $"The provided type must be a subclass of {typeof(DynamicRouteValueTransformer)}",
+                nameof(selectorType));
+        }
 
-        public Type SelectorType { get; }
-
-        public object? State { get; }
+        SelectorType = selectorType;
+        State = state;
     }
+
+    public bool IsDynamic => true;
+
+    public Type SelectorType { get; }
+
+    public object? State { get; }
 }

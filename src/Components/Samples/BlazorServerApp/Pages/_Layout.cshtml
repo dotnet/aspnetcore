@@ -17,12 +17,10 @@
 
     <script src="_framework/blazor.server.js" autostart="false"></script>
     <script>
-        (function start() {
-            Blazor.start({
-                logLevel: 1, // LogLevel.Debug
-                configureSignalR: builder => builder.configureLogging("debug") // LogLevel.Debug
-            });
-        })()
+        Blazor.start({
+            logLevel: 1, // LogLevel.Debug
+            configureSignalR: builder => builder.configureLogging("debug") // LogLevel.Debug
+        });
     </script>
 </body>
 </html>

@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 import { DotNet } from '@microsoft/dotnet-js-interop';
 import { Blazor } from './GlobalExports';
 import { HubConnectionBuilder, HubConnection, HttpTransportType } from '@microsoft/signalr';
@@ -86,7 +89,7 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
   (hubProtocol as unknown as { name: string }).name = 'blazorpack';
 
   const connectionBuilder = new HubConnectionBuilder()
-    .withUrl('_blazor', HttpTransportType.WebSockets)
+    .withUrl('_blazor')
     .withHubProtocol(hubProtocol);
 
   options.configureSignalR(connectionBuilder);
@@ -111,7 +114,7 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
           complete: () => controller.close(),
           error: (err) => controller.error(err),
         });
-      }
+      },
     });
 
     DotNet.jsCallDispatcher.supplyDotNetStream(streamId, readableStream);
@@ -144,16 +147,25 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
       // Throw this exception so it can be handled at the reconnection layer, and don't show the
       // error notification.
       throw ex;
-    } else if (!isNestedError(ex)) {
-      showErrorNotification();
-    } else if (ex.innerErrors && ex.innerErrors.some(e => e.errorType === 'UnsupportedTransportError' && e.transport === HttpTransportType.WebSockets)) {
-      showErrorNotification('Unable to connect, please ensure you are using an updated browser that supports WebSockets.');
-    } else if (ex.innerErrors && ex.innerErrors.some(e => e.errorType === 'FailedToStartTransportError' && e.transport === HttpTransportType.WebSockets)) {
-      showErrorNotification('Unable to connect, please ensure WebSockets are available. A VPN or proxy may be blocking the connection.');
-    } else if (ex.innerErrors && ex.innerErrors.some(e => e.errorType === 'DisabledTransportError' && e.transport === HttpTransportType.LongPolling)) {
-      logger.log(LogLevel.Error, 'Unable to initiate a SignalR connection to the server. This might be because the server is not configured to support WebSockets. To troubleshoot this, visit https://aka.ms/blazor-server-websockets-error.');
+    } else {
       showErrorNotification();
     }
+
+    if (ex.innerErrors) {
+      if (ex.innerErrors.some(e => e.errorType === 'UnsupportedTransportError' && e.transport === HttpTransportType.WebSockets)) {
+        logger.log(LogLevel.Error, 'Unable to connect, please ensure you are using an updated browser that supports WebSockets.');
+      } else if (ex.innerErrors.some(e => e.errorType === 'FailedToStartTransportError' && e.transport === HttpTransportType.WebSockets)) {
+        logger.log(LogLevel.Error, 'Unable to connect, please ensure WebSockets are available. A VPN or proxy may be blocking the connection.');
+      } else if (ex.innerErrors.some(e => e.errorType === 'DisabledTransportError' && e.transport === HttpTransportType.LongPolling)) {
+        logger.log(LogLevel.Error, 'Unable to initiate a SignalR connection to the server. This might be because the server is not configured to support WebSockets. For additional details, visit https://aka.ms/blazor-server-websockets-error.');
+      }
+    }
+  }
+
+  // Check if the connection is established using the long polling transport,
+  // using the `features.inherentKeepAlive` property only present with long polling.
+  if ((connection as any).connection?.features?.inherentKeepAlive) {
+    logger.log(LogLevel.Warning, 'Failed to connect via WebSockets, using the Long Polling fallback transport. This may be due to a VPN or proxy blocking the connection. To troubleshoot this, visit https://aka.ms/blazor-server-using-fallback-long-polling.');
   }
 
   DotNet.attachDispatcher({
@@ -169,13 +181,7 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
   });
 
   return connection;
-
-  function isNestedError(error: any): error is AggregateError {
-    return error && ('innerErrors' in error);
-  }
 }
-
-type AggregateError = Error & { innerErrors: { errorType: string, transport: HttpTransportType }[] };
 
 function unhandledError(connection: HubConnection, err: Error, logger: Logger): void {
   logger.log(LogLevel.Error, err);

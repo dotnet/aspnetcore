@@ -1,9 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Builder.WebSocketOptions.AllowedOrigins.get -> System.Collections.Generic.IList<string!>!
-Microsoft.AspNetCore.WebSockets.WebSocketMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
-~Microsoft.AspNetCore.WebSockets.WebSocketMiddleware.WebSocketMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.WebSocketOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
-override Microsoft.AspNetCore.WebSockets.ExtendedWebSocketAcceptContext.SubProtocol.get -> string?
-override Microsoft.AspNetCore.WebSockets.ExtendedWebSocketAcceptContext.SubProtocol.set -> void
-static Microsoft.AspNetCore.Builder.WebSocketMiddlewareExtensions.UseWebSockets(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
-static Microsoft.AspNetCore.Builder.WebSocketMiddlewareExtensions.UseWebSockets(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, Microsoft.AspNetCore.Builder.WebSocketOptions! options) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
-static Microsoft.AspNetCore.WebSockets.WebSocketsDependencyInjectionExtensions.AddWebSockets(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Builder.WebSocketOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

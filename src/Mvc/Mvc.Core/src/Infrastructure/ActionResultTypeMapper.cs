@@ -3,44 +3,42 @@
 
 #nullable enable
 
-using System;
 
-namespace Microsoft.AspNetCore.Mvc.Infrastructure
+namespace Microsoft.AspNetCore.Mvc.Infrastructure;
+
+internal class ActionResultTypeMapper : IActionResultTypeMapper
 {
-    internal class ActionResultTypeMapper : IActionResultTypeMapper
+    public Type GetResultDataType(Type returnType)
     {
-        public Type GetResultDataType(Type returnType)
+        if (returnType == null)
         {
-            if (returnType == null)
-            {
-                throw new ArgumentNullException(nameof(returnType));
-            }
-
-            if (returnType.IsGenericType &&
-                returnType.GetGenericTypeDefinition() == typeof(ActionResult<>))
-            {
-                return returnType.GetGenericArguments()[0];
-            }
-
-            return returnType;
+            throw new ArgumentNullException(nameof(returnType));
         }
 
-        public IActionResult Convert(object? value, Type returnType)
+        if (returnType.IsGenericType &&
+            returnType.GetGenericTypeDefinition() == typeof(ActionResult<>))
         {
-            if (returnType == null)
-            {
-                throw new ArgumentNullException(nameof(returnType));
-            }
-
-            if (value is IConvertToActionResult converter)
-            {
-                return converter.Convert();
-            }
-
-            return new ObjectResult(value)
-            {
-                DeclaredType = returnType,
-            };
+            return returnType.GetGenericArguments()[0];
         }
+
+        return returnType;
+    }
+
+    public IActionResult Convert(object? value, Type returnType)
+    {
+        if (returnType == null)
+        {
+            throw new ArgumentNullException(nameof(returnType));
+        }
+
+        if (value is IConvertToActionResult converter)
+        {
+            return converter.Convert();
+        }
+
+        return new ObjectResult(value)
+        {
+            DeclaredType = returnType,
+        };
     }
 }

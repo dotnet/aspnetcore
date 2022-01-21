@@ -6,20 +6,23 @@ using Microsoft.AspNetCore.Components.HotReload;
 
 [assembly: MetadataUpdateHandler(typeof(HotReloadManager))]
 
-namespace Microsoft.AspNetCore.Components.HotReload
+namespace Microsoft.AspNetCore.Components.HotReload;
+
+internal sealed class HotReloadManager
 {
-    internal static class HotReloadManager
-    {
-        public static event Action? OnDeltaApplied;
+    public static readonly HotReloadManager Default = new();
 
-        /// <summary>
-        /// Gets a value that determines if OnDeltaApplied is subscribed to.
-        /// </summary>
-        public static bool IsSubscribedTo => OnDeltaApplied is not null;
+    public bool MetadataUpdateSupported { get; set; } = MetadataUpdater.IsSupported;
 
-        /// <summary>
-        /// MetadataUpdateHandler event. This is invoked by the hot reload host via reflection.
-        /// </summary>
-        public static void UpdateApplication(Type[]? _) => OnDeltaApplied?.Invoke();
-    }
+    /// <summary>
+    /// Gets a value that determines if OnDeltaApplied is subscribed to.
+    /// </summary>
+    public bool IsSubscribedTo => OnDeltaApplied is not null;
+
+    public event Action? OnDeltaApplied;
+
+    /// <summary>
+    /// MetadataUpdateHandler event. This is invoked by the hot reload host via reflection.
+    /// </summary>
+    public static void UpdateApplication(Type[]? _) => Default.OnDeltaApplied?.Invoke();
 }

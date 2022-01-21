@@ -12,40 +12,39 @@ using Microsoft.AspNetCore.Testing;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
+
+public class HttpConnectionTests
 {
-    public class HttpConnectionTests
+    [Fact]
+    public async Task WriteDataRateTimeoutAbortsConnection()
     {
-        [Fact]
-        public async Task WriteDataRateTimeoutAbortsConnection()
+        var mockConnectionContext = new Mock<ConnectionContext>();
+
+        var httpConnectionContext = TestContextFactory.CreateHttpConnectionContext(
+            serviceContext: new TestServiceContext(),
+            connectionContext: mockConnectionContext.Object,
+            connectionFeatures: new FeatureCollection(),
+            transport: new DuplexPipe(Mock.Of<PipeReader>(), Mock.Of<PipeWriter>()));
+
+        var httpConnection = new HttpConnection(httpConnectionContext);
+
+        var aborted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var http1Connection = new Http1Connection(httpConnectionContext);
+
+        httpConnection.Initialize(http1Connection);
+        http1Connection.Reset();
+        http1Connection.RequestAborted.Register(() =>
         {
-            var mockConnectionContext = new Mock<ConnectionContext>();
+            aborted.SetResult();
+        });
 
-            var httpConnectionContext = TestContextFactory.CreateHttpConnectionContext(
-                serviceContext: new TestServiceContext(),
-                connectionContext: mockConnectionContext.Object,
-                connectionFeatures: new FeatureCollection(),
-                transport: new DuplexPipe(Mock.Of<PipeReader>(), Mock.Of<PipeWriter>()));
+        httpConnection.OnTimeout(TimeoutReason.WriteDataRate);
 
-            var httpConnection = new HttpConnection(httpConnectionContext);
+        mockConnectionContext
+            .Verify(c => c.Abort(It.Is<ConnectionAbortedException>(ex => ex.Message == CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied)),
+                Times.Once);
 
-            var aborted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            var http1Connection = new Http1Connection(httpConnectionContext);
-
-            httpConnection.Initialize(http1Connection);
-            http1Connection.Reset();
-            http1Connection.RequestAborted.Register(() =>
-            {
-                aborted.SetResult();
-            });
-
-            httpConnection.OnTimeout(TimeoutReason.WriteDataRate);
-
-            mockConnectionContext
-                .Verify(c => c.Abort(It.Is<ConnectionAbortedException>(ex => ex.Message == CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied)),
-                    Times.Once);
-
-            await aborted.Task.DefaultTimeout();
-        }
+        await aborted.Task.DefaultTimeout();
     }
 }

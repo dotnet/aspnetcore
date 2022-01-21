@@ -1,13 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Threading.Tasks;
+namespace Microsoft.AspNetCore.Mvc.Razor;
 
-namespace Microsoft.AspNetCore.Mvc.Razor
-{
-    /// <summary>
-    /// A delegate for RenderAsync.
-    /// </summary>
-    /// <returns></returns>
-    public delegate Task RenderAsyncDelegate();
-}
+/// <summary>
+/// A delegate for RenderAsync.
+/// </summary>
+/// <returns></returns>
+public delegate Task RenderAsyncDelegate();

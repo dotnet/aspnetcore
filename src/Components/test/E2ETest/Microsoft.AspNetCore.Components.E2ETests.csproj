@@ -14,8 +14,9 @@
     <SkipTests Condition="'$(SeleniumE2ETestsSupported)' != 'true'">true</SkipTests>
     <SkipTests Condition="'$(SeleniumE2ETestsSupported)' == 'true'">false</SkipTests>
 
-    <!-- Until we resolve reliability issues, we're disabling these E2E tests in the main CI job -->
-    <SkipTests Condition="'$(SkipComponentsE2ETests)' == 'true'">true</SkipTests>
+    <!-- Skip building and running the Components E2E tests in CI unless explicitly configured otherwise via EXECUTE_COMPONENTS_E2E_TESTS -->
+    <ExcludeFromBuild Condition="'$(ContinuousIntegrationBuild)' == 'true' and '$(EXECUTE_COMPONENTS_E2E_TESTS)' != 'true'">true</ExcludeFromBuild>
+    <SkipTests Condition="'$(ContinuousIntegrationBuild)' == 'true' and '$(EXECUTE_COMPONENTS_E2E_TESTS)' != 'true'">true</SkipTests>
 
     <!-- Tests do not work on Helix or when bin/ directory is not in project directory due to undeclared dependency on test content. -->
     <BaseOutputPath />
@@ -37,7 +38,6 @@
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
-    <Reference Include="Ignitor" />
   </ItemGroup>
 
   <ItemGroup>
@@ -58,7 +58,7 @@
   <ItemGroup Condition="'$(TestTrimmedApps)' == 'true'">
     <ProjectReference Include="..\..\benchmarkapps\Wasm.Performance\TestApp\Wasm.Performance.TestApp.csproj"
       Targets="Build;Publish"
-      Properties="TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\Wasm.Performance.TestApp\" />
+      Properties="BuildProjectReferences=false;TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\Wasm.Performance.TestApp\" />
 
     <ProjectReference
       Include="..\testassets\BasicTestApp\BasicTestApp.csproj"
@@ -68,17 +68,17 @@
     <ProjectReference
       Include="..\testassets\GlobalizationWasmApp\GlobalizationWasmApp.csproj"
       Targets="Build;Publish"
-      Properties="TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\GlobalizationWasmApp\;" />
+      Properties="BuildProjectReferences=false;TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\GlobalizationWasmApp\;" />
 
     <ProjectReference
       Include="..\..\WebAssembly\testassets\StandaloneApp\StandaloneApp.csproj"
       Targets="Build;Publish"
-      Properties="TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\StandaloneApp\;" />
+      Properties="BuildProjectReferences=false;TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\StandaloneApp\;" />
 
     <ProjectReference
       Include="..\..\WebAssembly\testassets\Wasm.Prerendered.Server\Wasm.Prerendered.Server.csproj"
       Targets="Build;Publish"
-      Properties="TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\Wasm.Prerendered.Server\;" />
+      Properties="BuildProjectReferences=false;TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\Wasm.Prerendered.Server\;" />
   </ItemGroup>
 
   <!-- Shared testing infrastructure for running E2E tests using selenium -->

@@ -3,170 +3,166 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Reflection;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace Microsoft.AspNetCore.Testing
+namespace Microsoft.AspNetCore.Testing;
+
+internal class AspNetTestRunner : XunitTestRunner
 {
-    internal class AspNetTestRunner : XunitTestRunner
+    private readonly TestOutputHelper _testOutputHelper;
+    private readonly bool _ownsTestOutputHelper;
+
+    public AspNetTestRunner(
+        ITest test,
+        IMessageBus messageBus,
+        Type testClass,
+        object[] constructorArguments,
+        MethodInfo testMethod,
+        object[] testMethodArguments,
+        string skipReason,
+        IReadOnlyList<BeforeAfterTestAttribute> beforeAfterAttributes,
+        ExceptionAggregator aggregator,
+        CancellationTokenSource cancellationTokenSource)
+        : base(test, messageBus, testClass, constructorArguments, testMethod, testMethodArguments, skipReason, beforeAfterAttributes, aggregator, cancellationTokenSource)
     {
-        private readonly TestOutputHelper _testOutputHelper;
-        private readonly bool _ownsTestOutputHelper;
-
-        public AspNetTestRunner(
-            ITest test,
-            IMessageBus messageBus,
-            Type testClass,
-            object[] constructorArguments,
-            MethodInfo testMethod,
-            object[] testMethodArguments,
-            string skipReason,
-            IReadOnlyList<BeforeAfterTestAttribute> beforeAfterAttributes,
-            ExceptionAggregator aggregator,
-            CancellationTokenSource cancellationTokenSource)
-            : base(test, messageBus, testClass, constructorArguments, testMethod, testMethodArguments, skipReason, beforeAfterAttributes, aggregator, cancellationTokenSource)
+        // Prioritize using ITestOutputHelper from constructor.
+        if (ConstructorArguments != null)
         {
-            // Prioritize using ITestOutputHelper from constructor.
-            if (ConstructorArguments != null)
+            foreach (var obj in ConstructorArguments)
             {
-                foreach (var obj in ConstructorArguments)
-                {
-                    _testOutputHelper = obj as TestOutputHelper;
-                    if (_testOutputHelper != null)
-                    {
-                        break;
-                    }
-                }
-            }
-
-            // No ITestOutputHelper in constructor so we'll create it ourselves.
-            if (_testOutputHelper == null)
-            {
-                _testOutputHelper = new TestOutputHelper();
-                _ownsTestOutputHelper = true;
-            }
-        }
-
-        protected override async Task<Tuple<decimal, string>> InvokeTestAsync(ExceptionAggregator aggregator)
-        {
-            if (_ownsTestOutputHelper)
-            {
-                _testOutputHelper.Initialize(MessageBus, Test);
-            }
-
-            var retryAttribute = GetRetryAttribute(TestMethod);
-            var result = retryAttribute is null
-                ? await base.InvokeTestAsync(aggregator)
-                : await RunTestCaseWithRetryAsync(retryAttribute, aggregator);
-
-            if (_ownsTestOutputHelper)
-            {
-                // Update result with output if we created our own ITestOutputHelper.
-                // The string returned from this method is what VS displays as the test output.
-                result = new Tuple<decimal, string>(result.Item1, _testOutputHelper.Output);
-                _testOutputHelper.Uninitialize();
-            }
-
-            return result;
-        }
-
-        private async Task<Tuple<decimal, string>> RunTestCaseWithRetryAsync(RetryAttribute retryAttribute, ExceptionAggregator aggregator)
-        {
-            var totalTimeTaken = 0m;
-            List<string> messages = new();
-            var numAttempts = Math.Max(1, retryAttribute.MaxRetries);
-
-            for (var attempt = 1; attempt <= numAttempts; attempt++)
-            {
-                var result = await base.InvokeTestAsync(aggregator);
-                totalTimeTaken += result.Item1;
-                messages.Add(result.Item2);
-
-                if (!aggregator.HasExceptions)
+                _testOutputHelper = obj as TestOutputHelper;
+                if (_testOutputHelper != null)
                 {
                     break;
                 }
-                else if (attempt < numAttempts)
-                {
-                    // We can't use the ITestOutputHelper here because there's no active test
-                    messages.Add($"[{TestCase.DisplayName}] Attempt {attempt} of {retryAttribute.MaxRetries} failed due to {aggregator.ToException()}");
-
-                    await Task.Delay(5000);
-                    aggregator.Clear();
-                }
             }
-
-            return new(totalTimeTaken, string.Join(Environment.NewLine, messages));
         }
 
-        protected override async Task<decimal> InvokeTestMethodAsync(ExceptionAggregator aggregator)
+        // No ITestOutputHelper in constructor so we'll create it ourselves.
+        if (_testOutputHelper == null)
         {
-            var repeatAttribute = GetRepeatAttribute(TestMethod);
-            if (repeatAttribute == null)
-            {
-                return await InvokeTestMethodCoreAsync(aggregator);
-            }
-
-            var repeatContext = new RepeatContext(repeatAttribute.RunCount);
-            RepeatContext.Current = repeatContext;
-
-            var timeTaken = 0.0M;
-            for (repeatContext.CurrentIteration = 0; repeatContext.CurrentIteration < repeatContext.Limit; repeatContext.CurrentIteration++)
-            {
-                timeTaken = await InvokeTestMethodCoreAsync(aggregator);
-                if (aggregator.HasExceptions)
-                {
-                    return timeTaken;
-                }
-            }
-
-            return timeTaken;
+            _testOutputHelper = new TestOutputHelper();
+            _ownsTestOutputHelper = true;
         }
+    }
 
-        private Task<decimal> InvokeTestMethodCoreAsync(ExceptionAggregator aggregator)
+    protected override async Task<Tuple<decimal, string>> InvokeTestAsync(ExceptionAggregator aggregator)
+    {
+        if (_ownsTestOutputHelper)
         {
-            var invoker = new AspNetTestInvoker(Test, MessageBus, TestClass, ConstructorArguments, TestMethod, TestMethodArguments, BeforeAfterAttributes, aggregator, CancellationTokenSource, _testOutputHelper);
-            return invoker.RunAsync();
+            _testOutputHelper.Initialize(MessageBus, Test);
         }
 
-        private RepeatAttribute GetRepeatAttribute(MethodInfo methodInfo)
+        var retryAttribute = GetRetryAttribute(TestMethod);
+        var result = retryAttribute is null
+            ? await base.InvokeTestAsync(aggregator)
+            : await RunTestCaseWithRetryAsync(retryAttribute, aggregator);
+
+        if (_ownsTestOutputHelper)
         {
-            var attributeCandidate = methodInfo.GetCustomAttribute<RepeatAttribute>();
-            if (attributeCandidate != null)
-            {
-                return attributeCandidate;
-            }
-
-            attributeCandidate = methodInfo.DeclaringType.GetCustomAttribute<RepeatAttribute>();
-            if (attributeCandidate != null)
-            {
-                return attributeCandidate;
-            }
-
-            return methodInfo.DeclaringType.Assembly.GetCustomAttribute<RepeatAttribute>();
+            // Update result with output if we created our own ITestOutputHelper.
+            // The string returned from this method is what VS displays as the test output.
+            result = new Tuple<decimal, string>(result.Item1, _testOutputHelper.Output);
+            _testOutputHelper.Uninitialize();
         }
 
-        private RetryAttribute GetRetryAttribute(MethodInfo methodInfo)
+        return result;
+    }
+
+    private async Task<Tuple<decimal, string>> RunTestCaseWithRetryAsync(RetryAttribute retryAttribute, ExceptionAggregator aggregator)
+    {
+        var totalTimeTaken = 0m;
+        List<string> messages = new();
+        var numAttempts = Math.Max(1, retryAttribute.MaxRetries);
+
+        for (var attempt = 1; attempt <= numAttempts; attempt++)
         {
-            var attributeCandidate = methodInfo.GetCustomAttribute<RetryAttribute>();
-            if (attributeCandidate != null)
-            {
-                return attributeCandidate;
-            }
+            var result = await base.InvokeTestAsync(aggregator);
+            totalTimeTaken += result.Item1;
+            messages.Add(result.Item2);
 
-            attributeCandidate = methodInfo.DeclaringType.GetCustomAttribute<RetryAttribute>();
-            if (attributeCandidate != null)
+            if (!aggregator.HasExceptions)
             {
-                return attributeCandidate;
+                break;
             }
+            else if (attempt < numAttempts)
+            {
+                // We can't use the ITestOutputHelper here because there's no active test
+                messages.Add($"[{TestCase.DisplayName}] Attempt {attempt} of {retryAttribute.MaxRetries} failed due to {aggregator.ToException()}");
 
-            return methodInfo.DeclaringType.Assembly.GetCustomAttribute<RetryAttribute>();
+                await Task.Delay(5000);
+                aggregator.Clear();
+            }
         }
+
+        return new(totalTimeTaken, string.Join(Environment.NewLine, messages));
+    }
+
+    protected override async Task<decimal> InvokeTestMethodAsync(ExceptionAggregator aggregator)
+    {
+        var repeatAttribute = GetRepeatAttribute(TestMethod);
+        if (repeatAttribute == null)
+        {
+            return await InvokeTestMethodCoreAsync(aggregator);
+        }
+
+        var repeatContext = new RepeatContext(repeatAttribute.RunCount);
+        RepeatContext.Current = repeatContext;
+
+        var timeTaken = 0.0M;
+        for (repeatContext.CurrentIteration = 0; repeatContext.CurrentIteration < repeatContext.Limit; repeatContext.CurrentIteration++)
+        {
+            timeTaken = await InvokeTestMethodCoreAsync(aggregator);
+            if (aggregator.HasExceptions)
+            {
+                return timeTaken;
+            }
+        }
+
+        return timeTaken;
+    }
+
+    private Task<decimal> InvokeTestMethodCoreAsync(ExceptionAggregator aggregator)
+    {
+        var invoker = new AspNetTestInvoker(Test, MessageBus, TestClass, ConstructorArguments, TestMethod, TestMethodArguments, BeforeAfterAttributes, aggregator, CancellationTokenSource, _testOutputHelper);
+        return invoker.RunAsync();
+    }
+
+    private static RepeatAttribute GetRepeatAttribute(MethodInfo methodInfo)
+    {
+        var attributeCandidate = methodInfo.GetCustomAttribute<RepeatAttribute>();
+        if (attributeCandidate != null)
+        {
+            return attributeCandidate;
+        }
+
+        attributeCandidate = methodInfo.DeclaringType.GetCustomAttribute<RepeatAttribute>();
+        if (attributeCandidate != null)
+        {
+            return attributeCandidate;
+        }
+
+        return methodInfo.DeclaringType.Assembly.GetCustomAttribute<RepeatAttribute>();
+    }
+
+    private static RetryAttribute GetRetryAttribute(MethodInfo methodInfo)
+    {
+        var attributeCandidate = methodInfo.GetCustomAttribute<RetryAttribute>();
+        if (attributeCandidate != null)
+        {
+            return attributeCandidate;
+        }
+
+        attributeCandidate = methodInfo.DeclaringType.GetCustomAttribute<RetryAttribute>();
+        if (attributeCandidate != null)
+        {
+            return attributeCandidate;
+        }
+
+        return methodInfo.DeclaringType.Assembly.GetCustomAttribute<RetryAttribute>();
     }
 }

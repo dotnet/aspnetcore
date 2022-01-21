@@ -1,1 +1,0 @@
-x:\dir\subdir\Test\TestComponent.cshtml(1,42): Error RZ10000: The component 'Column' is missing required type arguments. Specify the missing types using the attributes: 'TItem'.

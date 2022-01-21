@@ -1,10 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
+namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
+
+internal class ServiceDefinition
 {
-    internal class ServiceDefinition
-    {
-        public string Profile { get; set; }
-    }
+    public string Profile { get; set; }
 }

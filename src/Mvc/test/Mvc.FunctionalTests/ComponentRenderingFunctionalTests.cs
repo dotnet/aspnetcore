@@ -1,110 +1,106 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Net;
 using System.Net.Http;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using AngleSharp.Parser.Html;
 using BasicWebSite;
 using BasicWebSite.Services;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.FunctionalTests
+namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
+
+public class ComponentRenderingFunctionalTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting>>
 {
-    public class ComponentRenderingFunctionalTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting>>
+    public ComponentRenderingFunctionalTests(MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting> fixture)
     {
-        public ComponentRenderingFunctionalTests(MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting> fixture)
-        {
-            Factory = fixture;
-        }
+        Factory = fixture;
+    }
 
-        public MvcTestFixture<StartupWithoutEndpointRouting> Factory { get; }
+    public MvcTestFixture<StartupWithoutEndpointRouting> Factory { get; }
 
-        [Fact]
-        public async Task Renders_BasicComponent()
-        {
-            // Arrange & Act
-            var client = CreateClient(Factory);
+    [Fact]
+    public async Task Renders_BasicComponent()
+    {
+        // Arrange & Act
+        var client = CreateClient(Factory);
 
-            var response = await client.GetAsync("http://localhost/components");
+        var response = await client.GetAsync("http://localhost/components");
 
-            // Assert
-            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
-            var content = await response.Content.ReadAsStringAsync();
+        // Assert
+        await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+        var content = await response.Content.ReadAsStringAsync();
 
-            AssertComponent("<p>Hello world!</p>", "Greetings", content);
-        }
+        AssertComponent("<p>Hello world!</p>", "Greetings", content);
+    }
 
-        [Fact]
-        public async Task Renders_RoutingComponent()
-        {
-            // Arrange & Act
-            var client = CreateClient(Factory.WithWebHostBuilder(builder => builder.ConfigureServices(services => services.AddServerSideBlazor())));
+    [Fact]
+    public async Task Renders_RoutingComponent()
+    {
+        // Arrange & Act
+        var client = CreateClient(Factory.WithWebHostBuilder(builder => builder.ConfigureServices(services => services.AddServerSideBlazor())));
 
-            var response = await client.GetAsync("http://localhost/components/routable");
+        var response = await client.GetAsync("http://localhost/components/routable");
 
-            // Assert
-            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
-            var content = await response.Content.ReadAsStringAsync();
+        // Assert
+        await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+        var content = await response.Content.ReadAsStringAsync();
 
-            AssertComponent("Router component\n<p>Routed successfully</p>", "Routing", content);
-        }
+        AssertComponent("Router component\n<p>Routed successfully</p>", "Routing", content);
+    }
 
-        [Fact]
-        public async Task Redirects_Navigation_Component()
-        {
-            // Arrange & Act
-            var fixture = Factory.WithWebHostBuilder(builder => builder.ConfigureServices(services => services.AddServerSideBlazor()));
-            fixture.ClientOptions.AllowAutoRedirect = false;
-            var client = CreateClient(fixture);
+    [Fact]
+    public async Task Redirects_Navigation_Component()
+    {
+        // Arrange & Act
+        var fixture = Factory.WithWebHostBuilder(builder => builder.ConfigureServices(services => services.AddServerSideBlazor()));
+        fixture.ClientOptions.AllowAutoRedirect = false;
+        var client = CreateClient(fixture);
 
-            var response = await client.GetAsync("http://localhost/components/Navigation");
+        var response = await client.GetAsync("http://localhost/components/Navigation");
 
-            // Assert
-            await response.AssertStatusCodeAsync(HttpStatusCode.Redirect);
-            Assert.Equal("http://localhost/navigation-redirect", response.Headers.Location.ToString());
-        }
+        // Assert
+        await response.AssertStatusCodeAsync(HttpStatusCode.Redirect);
+        Assert.Equal("http://localhost/navigation-redirect", response.Headers.Location.ToString());
+    }
 
-        [Fact]
-        public async Task Renders_RoutingComponent_UsingRazorComponents_Prerenderer()
-        {
-            // Arrange & Act
-            var client = CreateClient(Factory
-                .WithWebHostBuilder(builder => builder.ConfigureServices(services => services.AddServerSideBlazor())));
+    [Fact]
+    public async Task Renders_RoutingComponent_UsingRazorComponents_Prerenderer()
+    {
+        // Arrange & Act
+        var client = CreateClient(Factory
+            .WithWebHostBuilder(builder => builder.ConfigureServices(services => services.AddServerSideBlazor())));
 
-            var response = await client.GetAsync("http://localhost/components/routable");
+        var response = await client.GetAsync("http://localhost/components/routable");
 
-            // Assert
-            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
-            var content = await response.Content.ReadAsStringAsync();
+        // Assert
+        await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+        var content = await response.Content.ReadAsStringAsync();
 
-            AssertComponent("Router component\n<p>Routed successfully</p>", "Routing", content);
-        }
+        AssertComponent("Router component\n<p>Routed successfully</p>", "Routing", content);
+    }
 
-        [Fact]
-        public async Task Renders_ThrowingComponent_UsingRazorComponents_Prerenderer()
-        {
-            // Arrange & Act
-            var client = CreateClient(Factory.WithWebHostBuilder(builder => builder.ConfigureServices(services => services.AddServerSideBlazor())));
+    [Fact]
+    public async Task Renders_ThrowingComponent_UsingRazorComponents_Prerenderer()
+    {
+        // Arrange & Act
+        var client = CreateClient(Factory.WithWebHostBuilder(builder => builder.ConfigureServices(services => services.AddServerSideBlazor())));
 
-            var response = await client.GetAsync("http://localhost/components/throws");
+        var response = await client.GetAsync("http://localhost/components/throws");
 
-            // Assert
-            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-            var content = await response.Content.ReadAsStringAsync();
+        // Assert
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+        var content = await response.Content.ReadAsStringAsync();
 
-            Assert.Contains("InvalidTimeZoneException: test", content);
-        }
+        Assert.Contains("InvalidTimeZoneException: test", content);
+    }
 
-        [Fact]
-        public async Task Renders_AsyncComponent()
-        {
-            // Arrange & Act
-            var expectedHtml = @"<h1>Weather forecast</h1>
+    [Fact]
+    public async Task Renders_AsyncComponent()
+    {
+        // Arrange & Act
+        var expectedHtml = @"<h1>Weather forecast</h1>
 
 <p>This component demonstrates fetching data from the server.</p>
 
@@ -152,55 +148,54 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         </tbody>
     </table>
 ";
-            var client = CreateClient(Factory);
-            var response = await client.GetAsync("http://localhost/components");
+        var client = CreateClient(Factory);
+        var response = await client.GetAsync("http://localhost/components");
 
-            // Assert
-            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
-            var content = await response.Content.ReadAsStringAsync();
+        // Assert
+        await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+        var content = await response.Content.ReadAsStringAsync();
 
-            AssertComponent(expectedHtml, "FetchData", content);
-        }
+        AssertComponent(expectedHtml, "FetchData", content);
+    }
 
-        private void AssertComponent(string expectedContent, string divId, string responseContent)
-        {
-            var parser = new HtmlParser();
-            var htmlDocument = parser.Parse(responseContent);
-            var div = htmlDocument.Body.QuerySelector($"#{divId}");
-            var content = div.InnerHtml;
-            Assert.Equal(
-                expectedContent.Replace("\r\n","\n"),
-                content.Replace("\r\n","\n"));
-        }
+    private void AssertComponent(string expectedContent, string divId, string responseContent)
+    {
+        var parser = new HtmlParser();
+        var htmlDocument = parser.Parse(responseContent);
+        var div = htmlDocument.Body.QuerySelector($"#{divId}");
+        var content = div.InnerHtml;
+        Assert.Equal(
+            expectedContent.Replace("\r\n", "\n"),
+            content.Replace("\r\n", "\n"));
+    }
 
-        // A simple delegating handler used in setting up test services so that we can configure
-        // services that talk back to the TestServer using HttpClient.
-        private class LoopHttpHandler : DelegatingHandler
-        {
-        }
+    // A simple delegating handler used in setting up test services so that we can configure
+    // services that talk back to the TestServer using HttpClient.
+    private class LoopHttpHandler : DelegatingHandler
+    {
+    }
 
-        private HttpClient CreateClient(
-            WebApplicationFactory<BasicWebSite.StartupWithoutEndpointRouting> fixture)
-        {
-            var loopHandler = new LoopHttpHandler();
+    private HttpClient CreateClient(
+        WebApplicationFactory<BasicWebSite.StartupWithoutEndpointRouting> fixture)
+    {
+        var loopHandler = new LoopHttpHandler();
 
-            var client = fixture
-                .WithWebHostBuilder(builder => builder.ConfigureServices(ConfigureTestWeatherForecastService))
-                .CreateClient();
+        var client = fixture
+            .WithWebHostBuilder(builder => builder.ConfigureServices(ConfigureTestWeatherForecastService))
+            .CreateClient();
 
-            // We configure the inner handler with a handler to this TestServer instance so that calls to the
-            // server can get routed properly.
-            loopHandler.InnerHandler = fixture.Server.CreateHandler();
+        // We configure the inner handler with a handler to this TestServer instance so that calls to the
+        // server can get routed properly.
+        loopHandler.InnerHandler = fixture.Server.CreateHandler();
 
-            void ConfigureTestWeatherForecastService(IServiceCollection services) =>
-                // We configure the test service here with an HttpClient that uses this loopback handler to talk
-                // to this TestServer instance.
-                services.AddSingleton(new WeatherForecastService(new HttpClient(loopHandler)
-                {
-                    BaseAddress = fixture.ClientOptions.BaseAddress
-                }));
+        void ConfigureTestWeatherForecastService(IServiceCollection services) =>
+            // We configure the test service here with an HttpClient that uses this loopback handler to talk
+            // to this TestServer instance.
+            services.AddSingleton(new WeatherForecastService(new HttpClient(loopHandler)
+            {
+                BaseAddress = fixture.ClientOptions.BaseAddress
+            }));
 
-            return client;
-        }
+        return client;
     }
 }

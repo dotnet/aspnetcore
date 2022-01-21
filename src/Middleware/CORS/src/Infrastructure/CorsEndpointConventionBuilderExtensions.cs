@@ -1,65 +1,62 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Cors.Infrastructure;
-using Microsoft.AspNetCore.Routing;
 
-namespace Microsoft.AspNetCore.Builder
+namespace Microsoft.AspNetCore.Builder;
+
+/// <summary>
+/// CORS extension methods for <see cref="IEndpointConventionBuilder"/>.
+/// </summary>
+public static class CorsEndpointConventionBuilderExtensions
 {
     /// <summary>
-    /// CORS extension methods for <see cref="IEndpointConventionBuilder"/>.
+    /// Adds a CORS policy with the specified name to the endpoint(s).
     /// </summary>
-    public static class CorsEndpointConventionBuilderExtensions
+    /// <param name="builder">The endpoint convention builder.</param>
+    /// <param name="policyName">The CORS policy name.</param>
+    /// <returns>The original convention builder parameter.</returns>
+    public static TBuilder RequireCors<TBuilder>(this TBuilder builder, string policyName) where TBuilder : IEndpointConventionBuilder
     {
-        /// <summary>
-        /// Adds a CORS policy with the specified name to the endpoint(s).
-        /// </summary>
-        /// <param name="builder">The endpoint convention builder.</param>
-        /// <param name="policyName">The CORS policy name.</param>
-        /// <returns>The original convention builder parameter.</returns>
-        public static TBuilder RequireCors<TBuilder>(this TBuilder builder, string policyName) where TBuilder : IEndpointConventionBuilder
+        if (builder == null)
         {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            builder.Add(endpointBuilder =>
-            {
-                endpointBuilder.Metadata.Add(new EnableCorsAttribute(policyName));
-            });
-            return builder;
+            throw new ArgumentNullException(nameof(builder));
         }
 
-        /// <summary>
-        /// Adds the specified CORS policy to the endpoint(s).
-        /// </summary>
-        /// <param name="builder">The endpoint convention builder.</param>
-        /// <param name="configurePolicy">A delegate which can use a policy builder to build a policy.</param>
-        /// <returns>The original convention builder parameter.</returns>
-        public static TBuilder RequireCors<TBuilder>(this TBuilder builder, Action<CorsPolicyBuilder> configurePolicy) where TBuilder : IEndpointConventionBuilder
+        builder.Add(endpointBuilder =>
         {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
+            endpointBuilder.Metadata.Add(new EnableCorsAttribute(policyName));
+        });
+        return builder;
+    }
 
-            if (configurePolicy == null)
-            {
-                throw new ArgumentNullException(nameof(configurePolicy));
-            }
-
-            var policyBuilder = new CorsPolicyBuilder();
-            configurePolicy(policyBuilder);
-            var policy = policyBuilder.Build();
-
-            builder.Add(endpointBuilder =>
-            {
-                endpointBuilder.Metadata.Add(new CorsPolicyMetadata(policy));
-            });
-            return builder;
+    /// <summary>
+    /// Adds the specified CORS policy to the endpoint(s).
+    /// </summary>
+    /// <param name="builder">The endpoint convention builder.</param>
+    /// <param name="configurePolicy">A delegate which can use a policy builder to build a policy.</param>
+    /// <returns>The original convention builder parameter.</returns>
+    public static TBuilder RequireCors<TBuilder>(this TBuilder builder, Action<CorsPolicyBuilder> configurePolicy) where TBuilder : IEndpointConventionBuilder
+    {
+        if (builder == null)
+        {
+            throw new ArgumentNullException(nameof(builder));
         }
+
+        if (configurePolicy == null)
+        {
+            throw new ArgumentNullException(nameof(configurePolicy));
+        }
+
+        var policyBuilder = new CorsPolicyBuilder();
+        configurePolicy(policyBuilder);
+        var policy = policyBuilder.Build();
+
+        builder.Add(endpointBuilder =>
+        {
+            endpointBuilder.Metadata.Add(new CorsPolicyMetadata(policy));
+        });
+        return builder;
     }
 }

@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 export function discoverComponents(document: Document, type: 'webassembly' | 'server'): ServerComponentDescriptor[] | WebAssemblyComponentDescriptor[] {
   switch (type){
     case 'webassembly':
@@ -26,14 +29,14 @@ function discoverServerComponents(document: Document): ServerComponentDescriptor
   return discoveredComponents.sort((a, b): number => a.sequence - b.sequence);
 }
 
-const blazorStateCommentRegularExpression = /^\s*Blazor-Component-State:(?<state>[a-zA-Z0-9\+\/=]+)$/;
+const blazorStateCommentRegularExpression = /^\s*Blazor-Component-State:(?<state>[a-zA-Z0-9+/=]+)$/;
 
 export function discoverPersistedState(node: Node): string | null | undefined {
   if (node.nodeType === Node.COMMENT_NODE) {
     const content = node.textContent || '';
     const parsedState = blazorStateCommentRegularExpression.exec(content);
     const value = parsedState && parsedState.groups && parsedState.groups['state'];
-    if(value){
+    if (value){
       node.parentNode?.removeChild(node);
     }
     return value;
@@ -47,7 +50,7 @@ export function discoverPersistedState(node: Node): string | null | undefined {
   for (let index = 0; index < nodes.length; index++) {
     const candidate = nodes[index];
     const result = discoverPersistedState(candidate);
-    if(result){
+    if (result){
       return result;
     }
   }

@@ -1,148 +1,142 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.Tracing;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Internal;
-using Xunit;
 
-namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests
+namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests;
+
+public class ConcurrencyLimiterEventSourceTests
 {
-    public class ConcurrencyLimiterEventSourceTests
+    [Fact]
+    public void MatchesNameAndGuid()
     {
-        [Fact]
-        public void MatchesNameAndGuid()
-        {
-            var eventSource = new ConcurrencyLimiterEventSource();
+        var eventSource = new ConcurrencyLimiterEventSource();
 
-            Assert.Equal("Microsoft.AspNetCore.ConcurrencyLimiter", eventSource.Name);
-            Assert.Equal(Guid.Parse("a605548a-6963-55cf-f000-99a6013deb01"), eventSource.Guid);
-        }
+        Assert.Equal("Microsoft.AspNetCore.ConcurrencyLimiter", eventSource.Name);
+        Assert.Equal(Guid.Parse("a605548a-6963-55cf-f000-99a6013deb01"), eventSource.Guid);
+    }
 
-        [Fact]
-        public void RecordsRequestsRejected()
-        {
-            // Arrange
-            var expectedId = 1;
-            var eventListener = new TestEventListener(expectedId);
-            var eventSource = GetConcurrencyLimiterEventSource();
-            eventListener.EnableEvents(eventSource, EventLevel.Informational);
+    [Fact]
+    public void RecordsRequestsRejected()
+    {
+        // Arrange
+        var expectedId = 1;
+        var eventListener = new TestEventListener(expectedId);
+        var eventSource = GetConcurrencyLimiterEventSource();
+        eventListener.EnableEvents(eventSource, EventLevel.Informational);
 
-            // Act
-            eventSource.RequestRejected();
+        // Act
+        eventSource.RequestRejected();
 
-            // Assert
-            var eventData = eventListener.EventData;
-            Assert.NotNull(eventData);
-            Assert.Equal(expectedId, eventData.EventId);
-            Assert.Equal(EventLevel.Warning, eventData.Level);
-            Assert.Same(eventSource, eventData.EventSource);
-            Assert.Null(eventData.Message);
-            Assert.Empty(eventData.Payload);
-        }
+        // Assert
+        var eventData = eventListener.EventData;
+        Assert.NotNull(eventData);
+        Assert.Equal(expectedId, eventData.EventId);
+        Assert.Equal(EventLevel.Warning, eventData.Level);
+        Assert.Same(eventSource, eventData.EventSource);
+        Assert.Null(eventData.Message);
+        Assert.Empty(eventData.Payload);
+    }
 
-        [Fact]
-        public async Task TracksQueueLength()
-        {
-            // Arrange
-            using var eventListener = new TestCounterListener(new[] {
+    [Fact]
+    public async Task TracksQueueLength()
+    {
+        // Arrange
+        using var eventListener = new TestCounterListener(new[] {
                 "queue-length",
                 "queue-duration",
                 "requests-rejected",
             });
 
-            using var eventSource = GetConcurrencyLimiterEventSource();
+        using var eventSource = GetConcurrencyLimiterEventSource();
 
-            using var timeoutTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        using var timeoutTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30));
 
-            var lengthValues = eventListener.GetCounterValues("queue-length", timeoutTokenSource.Token).GetAsyncEnumerator();
+        var lengthValues = eventListener.GetCounterValues("queue-length", timeoutTokenSource.Token).GetAsyncEnumerator();
 
-            eventListener.EnableEvents(eventSource, EventLevel.Informational, EventKeywords.None,
-                new Dictionary<string, string>
-                {
+        eventListener.EnableEvents(eventSource, EventLevel.Informational, EventKeywords.None,
+            new Dictionary<string, string>
+            {
                     {"EventCounterIntervalSec", ".1" }
-                });
+            });
 
-            // Act
-            eventSource.RequestRejected();
+        // Act
+        eventSource.RequestRejected();
 
-            Assert.True(await UntilValueMatches(lengthValues, 0));
+        Assert.True(await UntilValueMatches(lengthValues, 0));
+        using (eventSource.QueueTimer())
+        {
+            Assert.True(await UntilValueMatches(lengthValues, 1));
+
             using (eventSource.QueueTimer())
             {
-                Assert.True(await UntilValueMatches(lengthValues, 1));
-
-                using (eventSource.QueueTimer())
-                {
-                    Assert.True(await UntilValueMatches(lengthValues, 2));
-                }
-
-                Assert.True(await UntilValueMatches(lengthValues, 1));
+                Assert.True(await UntilValueMatches(lengthValues, 2));
             }
 
-            Assert.True(await UntilValueMatches(lengthValues, 0));
+            Assert.True(await UntilValueMatches(lengthValues, 1));
         }
 
-        [Fact]
-        public async Task TracksDurationSpentInQueue()
-        {
-            // Arrange
-            using var eventListener = new TestCounterListener(new[] {
+        Assert.True(await UntilValueMatches(lengthValues, 0));
+    }
+
+    [Fact]
+    public async Task TracksDurationSpentInQueue()
+    {
+        // Arrange
+        using var eventListener = new TestCounterListener(new[] {
                 "queue-length",
                 "queue-duration",
                 "requests-rejected",
             });
 
-            using var eventSource = GetConcurrencyLimiterEventSource();
+        using var eventSource = GetConcurrencyLimiterEventSource();
 
-            using var timeoutTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        using var timeoutTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 
-            var durationValues = eventListener.GetCounterValues("queue-duration", timeoutTokenSource.Token).GetAsyncEnumerator();
+        var durationValues = eventListener.GetCounterValues("queue-duration", timeoutTokenSource.Token).GetAsyncEnumerator();
 
-            eventListener.EnableEvents(eventSource, EventLevel.Informational, EventKeywords.None,
-                new Dictionary<string, string>
-                {
+        eventListener.EnableEvents(eventSource, EventLevel.Informational, EventKeywords.None,
+            new Dictionary<string, string>
+            {
                     {"EventCounterIntervalSec", ".1" }
-                });
+            });
 
-            // Act
+        // Act
+        Assert.True(await UntilValueMatches(durationValues, 0));
+
+        using (eventSource.QueueTimer())
+        {
             Assert.True(await UntilValueMatches(durationValues, 0));
-
-            using (eventSource.QueueTimer())
-            {
-                Assert.True(await UntilValueMatches(durationValues, 0));
-            }
-
-            // check that something (anything!) has been written
-            while (await durationValues.MoveNextAsync())
-            {
-                if (durationValues.Current > 0)
-                {
-                    return;
-                }
-            }
-
-            throw new TimeoutException();
         }
 
-        private async Task<bool> UntilValueMatches(IAsyncEnumerator<double> enumerator, int value)
+        // check that something (anything!) has been written
+        while (await durationValues.MoveNextAsync())
         {
-            while (await enumerator.MoveNextAsync())
+            if (durationValues.Current > 0)
             {
-                if (enumerator.Current == value)
-                {
-                    return true;
-                }
+                return;
             }
-
-            return false;
         }
 
-        private static ConcurrencyLimiterEventSource GetConcurrencyLimiterEventSource()
+        throw new TimeoutException();
+    }
+
+    private async Task<bool> UntilValueMatches(IAsyncEnumerator<double> enumerator, int value)
+    {
+        while (await enumerator.MoveNextAsync())
         {
-            return new ConcurrencyLimiterEventSource(Guid.NewGuid().ToString());
+            if (enumerator.Current == value)
+            {
+                return true;
+            }
         }
+
+        return false;
+    }
+
+    private static ConcurrencyLimiterEventSource GetConcurrencyLimiterEventSource()
+    {
+        return new ConcurrencyLimiterEventSource(Guid.NewGuid().ToString());
     }
 }

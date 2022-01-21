@@ -3,19 +3,17 @@
 
 #nullable enable
 
-using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Mvc.ViewEngines
+namespace Microsoft.AspNetCore.Mvc.ViewEngines;
+
+/// <summary>
+/// Represents an <see cref="IViewEngine"/> that delegates to one of a collection of view engines.
+/// </summary>
+public interface ICompositeViewEngine : IViewEngine
 {
     /// <summary>
-    /// Represents an <see cref="IViewEngine"/> that delegates to one of a collection of view engines.
+    /// Gets the list of <see cref="IViewEngine"/> this instance of <see cref="ICompositeViewEngine"/> delegates
+    /// to.
     /// </summary>
-    public interface ICompositeViewEngine : IViewEngine
-    {
-        /// <summary>
-        /// Gets the list of <see cref="IViewEngine"/> this instance of <see cref="ICompositeViewEngine"/> delegates
-        /// to.
-        /// </summary>
-        IReadOnlyList<IViewEngine> ViewEngines { get; }
-    }
+    IReadOnlyList<IViewEngine> ViewEngines { get; }
 }

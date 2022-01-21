@@ -24,7 +24,7 @@ export enum LogLevel {
 }
 
 /** An abstraction that provides a sink for diagnostic messages. */
-export interface Logger { // eslint-disable-line @typescript-eslint/interface-name-prefix
+export interface Logger {
   /** Called by the framework to emit a diagnostic message.
    *
    * @param {LogLevel} logLevel The severity level of the message.

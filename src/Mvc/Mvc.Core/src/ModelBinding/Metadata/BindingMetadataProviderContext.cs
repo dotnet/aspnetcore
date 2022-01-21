@@ -3,67 +3,64 @@
 
 #nullable enable
 
-using System;
-using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
+namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
+
+/// <summary>
+/// A context for an <see cref="IBindingMetadataProvider"/>.
+/// </summary>
+public class BindingMetadataProviderContext
 {
     /// <summary>
-    /// A context for an <see cref="IBindingMetadataProvider"/>.
+    /// Creates a new <see cref="BindingMetadataProviderContext"/>.
     /// </summary>
-    public class BindingMetadataProviderContext
+    /// <param name="key">The <see cref="ModelMetadataIdentity"/> for the <see cref="ModelMetadata"/>.</param>
+    /// <param name="attributes">The attributes for the <see cref="ModelMetadata"/>.</param>
+    public BindingMetadataProviderContext(
+        ModelMetadataIdentity key,
+        ModelAttributes attributes)
     {
-        /// <summary>
-        /// Creates a new <see cref="BindingMetadataProviderContext"/>.
-        /// </summary>
-        /// <param name="key">The <see cref="ModelMetadataIdentity"/> for the <see cref="ModelMetadata"/>.</param>
-        /// <param name="attributes">The attributes for the <see cref="ModelMetadata"/>.</param>
-        public BindingMetadataProviderContext(
-            ModelMetadataIdentity key,
-            ModelAttributes attributes)
+        if (attributes == null)
         {
-            if (attributes == null)
-            {
-                throw new ArgumentNullException(nameof(attributes));
-            }
-
-            Key = key;
-            Attributes = attributes.Attributes;
-            ParameterAttributes = attributes.ParameterAttributes;
-            PropertyAttributes = attributes.PropertyAttributes;
-            TypeAttributes = attributes.TypeAttributes;
-
-            BindingMetadata = new BindingMetadata();
+            throw new ArgumentNullException(nameof(attributes));
         }
 
-        /// <summary>
-        /// Gets the attributes.
-        /// </summary>
-        public IReadOnlyList<object> Attributes { get; }
+        Key = key;
+        Attributes = attributes.Attributes;
+        ParameterAttributes = attributes.ParameterAttributes;
+        PropertyAttributes = attributes.PropertyAttributes;
+        TypeAttributes = attributes.TypeAttributes;
 
-        /// <summary>
-        /// Gets the <see cref="ModelMetadataIdentity"/>.
-        /// </summary>
-        public ModelMetadataIdentity Key { get; }
-
-        /// <summary>
-        /// Gets the parameter attributes.
-        /// </summary>
-        public IReadOnlyList<object>? ParameterAttributes { get; }
-
-        /// <summary>
-        /// Gets the property attributes.
-        /// </summary>
-        public IReadOnlyList<object>? PropertyAttributes { get; }
-
-        /// <summary>
-        /// Gets the type attributes.
-        /// </summary>
-        public IReadOnlyList<object>? TypeAttributes { get; }
-
-        /// <summary>
-        /// Gets the <see cref="Metadata.BindingMetadata"/>.
-        /// </summary>
-        public BindingMetadata BindingMetadata { get; }
+        BindingMetadata = new BindingMetadata();
     }
+
+    /// <summary>
+    /// Gets the attributes.
+    /// </summary>
+    public IReadOnlyList<object> Attributes { get; }
+
+    /// <summary>
+    /// Gets the <see cref="ModelMetadataIdentity"/>.
+    /// </summary>
+    public ModelMetadataIdentity Key { get; }
+
+    /// <summary>
+    /// Gets the parameter attributes.
+    /// </summary>
+    public IReadOnlyList<object>? ParameterAttributes { get; }
+
+    /// <summary>
+    /// Gets the property attributes.
+    /// </summary>
+    public IReadOnlyList<object>? PropertyAttributes { get; }
+
+    /// <summary>
+    /// Gets the type attributes.
+    /// </summary>
+    public IReadOnlyList<object>? TypeAttributes { get; }
+
+    /// <summary>
+    /// Gets the <see cref="Metadata.BindingMetadata"/>.
+    /// </summary>
+    public BindingMetadata BindingMetadata { get; }
 }

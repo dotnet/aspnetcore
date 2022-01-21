@@ -3,18 +3,17 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace ApiExplorerWebSite.Controllers
-{
-    public class ApiExplorerInboundOutBoundController : Controller
-    {
-        [HttpGet("ApiExplorerInboundOutbound/SuppressedForLinkGeneration")]
-        public void SuppressedForLinkGeneration()
-        {
-        }
+namespace ApiExplorerWebSite.Controllers;
 
-        [HttpGet("ApiExplorerInboundOutbound/SuppressedForPathMatching")]
-        public void SuppressedForPathMatching()
-        {
-        }
+public class ApiExplorerInboundOutBoundController : Controller
+{
+    [HttpGet("ApiExplorerInboundOutbound/SuppressedForLinkGeneration")]
+    public void SuppressedForLinkGeneration()
+    {
+    }
+
+    [HttpGet("ApiExplorerInboundOutbound/SuppressedForPathMatching")]
+    public void SuppressedForPathMatching()
+    {
     }
 }

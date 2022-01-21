@@ -1,31 +1,29 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+
+internal interface ITimeoutControl
 {
-    internal interface ITimeoutControl
-    {
-        TimeoutReason TimerReason { get; }
+    TimeoutReason TimerReason { get; }
 
-        void SetTimeout(long ticks, TimeoutReason timeoutReason);
-        void ResetTimeout(long ticks, TimeoutReason timeoutReason);
-        void CancelTimeout();
+    void SetTimeout(long ticks, TimeoutReason timeoutReason);
+    void ResetTimeout(long ticks, TimeoutReason timeoutReason);
+    void CancelTimeout();
 
-        void InitializeHttp2(InputFlowControl connectionInputFlowControl);
-        void Tick(DateTimeOffset now);
+    void InitializeHttp2(InputFlowControl connectionInputFlowControl);
+    void Tick(DateTimeOffset now);
 
-        void StartRequestBody(MinDataRate minRate);
-        void StopRequestBody();
-        void StartTimingRead();
-        void StopTimingRead();
-        void BytesRead(long count);
+    void StartRequestBody(MinDataRate minRate);
+    void StopRequestBody();
+    void StartTimingRead();
+    void StopTimingRead();
+    void BytesRead(long count);
 
-        void StartTimingWrite();
-        void StopTimingWrite();
-        void BytesWrittenToBuffer(MinDataRate minRate, long count);
-        long GetResponseDrainDeadline(long ticks, MinDataRate minRate);
-    }
+    void StartTimingWrite();
+    void StopTimingWrite();
+    void BytesWrittenToBuffer(MinDataRate minRate, long count);
+    long GetResponseDrainDeadline(long ticks, MinDataRate minRate);
 }

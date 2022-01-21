@@ -4,24 +4,22 @@
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
-namespace Microsoft.AspNetCore.Mvc.Razor
+namespace Microsoft.AspNetCore.Mvc.Razor;
+
+/// <summary>
+/// Represents the properties and methods that are needed in order to render a view that uses Razor syntax.
+/// </summary>
+/// <typeparam name="TModel">The type of the view data model.</typeparam>
+public abstract class RazorPage<TModel> : RazorPage
 {
     /// <summary>
-    /// Represents the properties and methods that are needed in order to render a view that uses Razor syntax.
+    /// Gets the Model property of the <see cref="ViewData"/> property.
     /// </summary>
-    /// <typeparam name="TModel">The type of the view data model.</typeparam>
-    public abstract class RazorPage<TModel> : RazorPage
-    {
-        /// <summary>
-        /// Gets the Model property of the <see cref="ViewData"/> property.
-        /// </summary>
-        public TModel? Model => ViewData == null ? default(TModel) : ViewData.Model;
+    public TModel Model => ViewData.Model;
 
-        /// <summary>
-        /// Gets or sets the dictionary for view data.
-        /// </summary>
-        [RazorInject]
-        public ViewDataDictionary<TModel> ViewData { get; set; } = default!;
-
-    }
+    /// <summary>
+    /// Gets or sets the dictionary for view data.
+    /// </summary>
+    [RazorInject]
+    public ViewDataDictionary<TModel> ViewData { get; set; } = default!;
 }

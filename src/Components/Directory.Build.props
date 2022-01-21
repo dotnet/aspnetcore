@@ -10,9 +10,6 @@
 
     <ComponentsSharedSourceRoot>$(MSBuildThisFileDirectory)Shared\</ComponentsSharedSourceRoot>
 
-    <!-- So we can use the tool from source within the repo without having to pack -->
-    <BlazorToolsDir>$(MSBuildThisFileDirectory)Blazor\Build\src\bin\$(Configuration)\$(DefaultNetCoreTargetFramework)\</BlazorToolsDir>
-
     <PackageThirdPartyNoticesFile>$(MSBuildThisFileDirectory)THIRD-PARTY-NOTICES.txt</PackageThirdPartyNoticesFile>
   </PropertyGroup>
 

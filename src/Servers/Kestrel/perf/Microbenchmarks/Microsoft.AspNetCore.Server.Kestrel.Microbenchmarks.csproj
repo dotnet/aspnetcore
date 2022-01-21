@@ -19,7 +19,6 @@
     <Compile Include="$(KestrelSharedSourceRoot)test\KestrelTestLoggerProvider.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TestApplicationErrorLogger.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TestHttp1Connection.cs" />
-    <Compile Include="$(KestrelSharedSourceRoot)test\TestKestrelTrace.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TestContextFactory.cs" />
     <Compile Include="..\..\Transport.Sockets\src\Internal\IOQueue.cs" Link="Internal\IOQueue.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)\ConnectionCompletion.cs" Link="Internal\ConnectionCompletion.cs" />
@@ -32,7 +31,6 @@
   <ItemGroup>
     <Reference Include="BenchmarkDotNet" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
-    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
 

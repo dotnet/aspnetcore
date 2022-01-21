@@ -5,41 +5,40 @@ using System;
 using System.Threading;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
-namespace Microsoft.AspNetCore.Testing
+namespace Microsoft.AspNetCore.Testing;
+
+public class MockSystemClock : ISystemClock
 {
-    public class MockSystemClock : ISystemClock
+    private long _utcNowTicks;
+
+    public MockSystemClock()
     {
-        private long _utcNowTicks;
+        // Use a random DateTimeOffset to ensure tests that incorrectly use the current DateTimeOffset fail always instead of only rarely.
+        // Pick a date between the min DateTimeOffset and a day before the max DateTimeOffset so there's room to advance the clock.
+        _utcNowTicks = NextLong(DateTimeOffset.MinValue.Ticks, DateTimeOffset.MaxValue.Ticks - TimeSpan.FromDays(1).Ticks);
+    }
 
-        public MockSystemClock()
+    public DateTimeOffset UtcNow
+    {
+        get
         {
-            // Use a random DateTimeOffset to ensure tests that incorrectly use the current DateTimeOffset fail always instead of only rarely.
-            // Pick a date between the min DateTimeOffset and a day before the max DateTimeOffset so there's room to advance the clock.
-            _utcNowTicks = NextLong(DateTimeOffset.MinValue.Ticks, DateTimeOffset.MaxValue.Ticks - TimeSpan.FromDays(1).Ticks);
+            UtcNowCalled++;
+            return new DateTimeOffset(Interlocked.Read(ref _utcNowTicks), TimeSpan.Zero);
         }
-
-        public DateTimeOffset UtcNow
+        set
         {
-            get
-            {
-                UtcNowCalled++;
-                return new DateTimeOffset(Interlocked.Read(ref _utcNowTicks), TimeSpan.Zero);
-            }
-            set
-            {
-                Interlocked.Exchange(ref _utcNowTicks, value.Ticks);
-            }
+            Interlocked.Exchange(ref _utcNowTicks, value.Ticks);
         }
+    }
 
-        public long UtcNowTicks => UtcNow.Ticks;
+    public long UtcNowTicks => UtcNow.Ticks;
 
-        public DateTimeOffset UtcNowUnsynchronized => UtcNow;
+    public DateTimeOffset UtcNowUnsynchronized => UtcNow;
 
-        public int UtcNowCalled { get; private set; }
+    public int UtcNowCalled { get; private set; }
 
-        private long NextLong(long minValue, long maxValue)
-        {
-            return (long)(Random.Shared.NextDouble() * (maxValue - minValue) + minValue);
-        }
+    private long NextLong(long minValue, long maxValue)
+    {
+        return (long)(Random.Shared.NextDouble() * (maxValue - minValue) + minValue);
     }
 }

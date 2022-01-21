@@ -1,20 +1,18 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using TestHelper;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Components.Analyzers.Test
+namespace Microsoft.AspNetCore.Components.Analyzers.Test;
+
+public class ComponentParameterCaptureUnmatchedValuesMustBeUniqueTest : DiagnosticVerifier
 {
-    public class ComponentParameterCaptureUnmatchedValuesMustBeUniqueTest : DiagnosticVerifier
+    [Fact]
+    public void IgnoresPropertiesWithCaptureUnmatchedValuesFalse()
     {
-        [Fact]
-        public void IgnoresPropertiesWithCaptureUnmatchedValuesFalse()
-        {
-            var test = $@"
+        var test = $@"
     namespace ConsoleApplication1
     {{
         using System.Collections.Generic;
@@ -26,13 +24,13 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
         }}
     }}" + ComponentsTestDeclarations.Source;
 
-            VerifyCSharpDiagnostic(test);
-        }
+        VerifyCSharpDiagnostic(test);
+    }
 
-        [Fact]
-        public void AddsDiagnosticForMultipleCaptureUnmatchedValuesProperties()
-        {
-            var test = $@"
+    [Fact]
+    public void AddsDiagnosticForMultipleCaptureUnmatchedValuesProperties()
+    {
+        var test = $@"
     namespace ConsoleApplication1
     {{
         using System.Collections.Generic;
@@ -44,26 +42,25 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
         }}
     }}" + ComponentsTestDeclarations.Source;
 
-            var message = @"Component type 'ConsoleApplication1.TypeName' defines properties multiple parameters with CaptureUnmatchedValues. Properties: " + Environment.NewLine +
+        var message = @"Component type 'ConsoleApplication1.TypeName' defines properties multiple parameters with CaptureUnmatchedValues. Properties: " + Environment.NewLine +
 "ConsoleApplication1.TypeName.MyOtherProperty" + Environment.NewLine +
 "ConsoleApplication1.TypeName.MyProperty";
 
-            VerifyCSharpDiagnostic(test,
-                    new DiagnosticResult
+        VerifyCSharpDiagnostic(test,
+                new DiagnosticResult
+                {
+                    Id = DiagnosticDescriptors.ComponentParameterCaptureUnmatchedValuesMustBeUnique.Id,
+                    Message = message,
+                    Severity = DiagnosticSeverity.Warning,
+                    Locations = new[]
                     {
-                        Id = DiagnosticDescriptors.ComponentParameterCaptureUnmatchedValuesMustBeUnique.Id,
-                        Message = message,
-                        Severity = DiagnosticSeverity.Warning,
-                        Locations = new[]
-                        {
                         new DiagnosticResultLocation("Test0.cs", 6, 15)
-                        }
-                    });
-        }
+                    }
+                });
+    }
 
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new ComponentParameterAnalyzer();
-        }
+    protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
+    {
+        return new ComponentParameterAnalyzer();
     }
 }

@@ -1,46 +1,6 @@
 #nullable enable
-*REMOVED*Microsoft.AspNetCore.Http.Endpoint.Endpoint(Microsoft.AspNetCore.Http.RequestDelegate! requestDelegate, Microsoft.AspNetCore.Http.EndpointMetadataCollection? metadata, string? displayName) -> void
-*REMOVED*Microsoft.AspNetCore.Http.Endpoint.RequestDelegate.get -> Microsoft.AspNetCore.Http.RequestDelegate!
-*REMOVED*Microsoft.AspNetCore.Routing.RouteValueDictionary.TryAdd(string! key, object! value) -> bool
-*REMOVED*static Microsoft.AspNetCore.Builder.UseMiddlewareExtensions.UseMiddleware(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, System.Type! middleware, params object![]! args) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
-*REMOVED*static Microsoft.AspNetCore.Builder.UseMiddlewareExtensions.UseMiddleware<TMiddleware>(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, params object![]! args) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
-*REMOVED*abstract Microsoft.AspNetCore.Http.HttpRequest.ContentType.get -> string!
 *REMOVED*abstract Microsoft.AspNetCore.Http.HttpResponse.ContentType.get -> string!
-Microsoft.AspNetCore.Http.IResult
-Microsoft.AspNetCore.Http.IResult.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.Http.Metadata.IAcceptsMetadata
-Microsoft.AspNetCore.Http.Metadata.IAcceptsMetadata.ContentTypes.get -> System.Collections.Generic.IReadOnlyList<string!>!
-Microsoft.AspNetCore.Http.Metadata.IAcceptsMetadata.IsOptional.get -> bool
-Microsoft.AspNetCore.Http.Metadata.IAcceptsMetadata.RequestType.get -> System.Type?
-Microsoft.AspNetCore.Http.Metadata.IFromBodyMetadata
-Microsoft.AspNetCore.Http.Metadata.IFromBodyMetadata.AllowEmpty.get -> bool
-Microsoft.AspNetCore.Http.Metadata.IFromHeaderMetadata
-Microsoft.AspNetCore.Http.Metadata.IFromHeaderMetadata.Name.get -> string?
-Microsoft.AspNetCore.Http.Metadata.IFromQueryMetadata
-Microsoft.AspNetCore.Http.Metadata.IFromQueryMetadata.Name.get -> string?
-Microsoft.AspNetCore.Http.Metadata.IFromRouteMetadata
-Microsoft.AspNetCore.Http.Metadata.IFromRouteMetadata.Name.get -> string?
-Microsoft.AspNetCore.Http.Metadata.IFromServiceMetadata
-Microsoft.AspNetCore.Http.Metadata.ITagsMetadata
-Microsoft.AspNetCore.Http.Metadata.ITagsMetadata.Tags.get -> System.Collections.Generic.IReadOnlyList<string!>!
-Microsoft.AspNetCore.Http.Endpoint.Endpoint(Microsoft.AspNetCore.Http.RequestDelegate? requestDelegate, Microsoft.AspNetCore.Http.EndpointMetadataCollection? metadata, string? displayName) -> void
-Microsoft.AspNetCore.Http.Endpoint.RequestDelegate.get -> Microsoft.AspNetCore.Http.RequestDelegate?
-Microsoft.AspNetCore.Http.RequestDelegateResult
-Microsoft.AspNetCore.Http.RequestDelegateResult.EndpointMetadata.get -> System.Collections.Generic.IReadOnlyList<object!>!
-Microsoft.AspNetCore.Http.RequestDelegateResult.RequestDelegate.get -> Microsoft.AspNetCore.Http.RequestDelegate!
-Microsoft.AspNetCore.Http.RequestDelegateResult.RequestDelegateResult(Microsoft.AspNetCore.Http.RequestDelegate! requestDelegate, System.Collections.Generic.IReadOnlyList<object!>! metadata) -> void
-Microsoft.AspNetCore.Routing.RouteValueDictionary.TryAdd(string! key, object? value) -> bool
-static Microsoft.AspNetCore.Builder.MapExtensions.Map(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, string! pathMatch, System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder!>! configuration) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+Microsoft.AspNetCore.Http.Metadata.IFromFormMetadata
+Microsoft.AspNetCore.Http.Metadata.IFromFormMetadata.Name.get -> string?
 abstract Microsoft.AspNetCore.Http.HttpResponse.ContentType.get -> string?
-static readonly Microsoft.AspNetCore.Http.HttpProtocol.Http09 -> string!
-static Microsoft.AspNetCore.Http.HttpProtocol.IsHttp09(string! protocol) -> bool
-abstract Microsoft.AspNetCore.Http.HttpRequest.ContentType.get -> string?
-static Microsoft.AspNetCore.Builder.UseExtensions.Use(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, System.Func<Microsoft.AspNetCore.Http.HttpContext!, Microsoft.AspNetCore.Http.RequestDelegate!, System.Threading.Tasks.Task!>! middleware) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
-static Microsoft.AspNetCore.Builder.UseMiddlewareExtensions.UseMiddleware(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, System.Type! middleware, params object?[]! args) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
-static Microsoft.AspNetCore.Builder.UseMiddlewareExtensions.UseMiddleware<TMiddleware>(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, params object?[]! args) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
-virtual Microsoft.AspNetCore.Http.ConnectionInfo.RequestClose() -> void
-virtual Microsoft.AspNetCore.Http.WebSocketManager.AcceptWebSocketAsync(Microsoft.AspNetCore.Http.WebSocketAcceptContext! acceptContext) -> System.Threading.Tasks.Task<System.Net.WebSockets.WebSocket!>!
-Microsoft.AspNetCore.Http.Metadata.IProducesResponseTypeMetadata
-Microsoft.AspNetCore.Http.Metadata.IProducesResponseTypeMetadata.StatusCode.get -> int
-Microsoft.AspNetCore.Http.Metadata.IProducesResponseTypeMetadata.Type.get -> System.Type?
-Microsoft.AspNetCore.Http.Metadata.IProducesResponseTypeMetadata.ContentTypes.get -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.AspNetCore.Http.Metadata.ISkipStatusCodePagesMetadata

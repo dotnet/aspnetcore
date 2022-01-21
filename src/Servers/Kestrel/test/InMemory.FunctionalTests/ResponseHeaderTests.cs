@@ -10,95 +10,94 @@ using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
+namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
+
+public class ResponseHeaderTests : TestApplicationErrorLoggerLoggedTest
 {
-    public class ResponseHeaderTests : TestApplicationErrorLoggerLoggedTest
+    [Fact]
+    public async Task ResponseHeaders_WithNonAscii_Throws()
     {
-        [Fact]
-        public async Task ResponseHeaders_WithNonAscii_Throws()
+        await using var server = new TestServer(context =>
         {
-            await using var server = new TestServer(context =>
-            {
-                Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("Custom你好Name", "Custom Value"));
-                Assert.Throws<InvalidOperationException>(() => context.Response.ContentType = "Custom 你好 Type"); // Special cased
-                Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Accept = "Custom 你好 Accept"); // Not special cased
-                Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("CustomName", "Custom 你好 Value"));
-                Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("CustomName", "Custom \r Value"));
-                context.Response.ContentLength = 11;
-                return context.Response.WriteAsync("Hello World");
-            }, new TestServiceContext(LoggerFactory));
-            using var connection = server.CreateConnection();
-            await connection.Send(
-                "GET / HTTP/1.1",
-                "Host:",
-                "",
-                "");
+            Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("Custom你好Name", "Custom Value"));
+            Assert.Throws<InvalidOperationException>(() => context.Response.ContentType = "Custom 你好 Type"); // Special cased
+            Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Accept = "Custom 你好 Accept"); // Not special cased
+            Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("CustomName", "Custom 你好 Value"));
+            Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("CustomName", "Custom \r Value"));
+            context.Response.ContentLength = 11;
+            return context.Response.WriteAsync("Hello World");
+        }, new TestServiceContext(LoggerFactory));
+        using var connection = server.CreateConnection();
+        await connection.Send(
+            "GET / HTTP/1.1",
+            "Host:",
+            "",
+            "");
 
-            await connection.Receive(
-                $"HTTP/1.1 200 OK",
-                "Content-Length: 11",
-                $"Date: {server.Context.DateHeaderValue}",
-                "",
-                "Hello World");
-        }
+        await connection.Receive(
+            $"HTTP/1.1 200 OK",
+            "Content-Length: 11",
+            $"Date: {server.Context.DateHeaderValue}",
+            "",
+            "Hello World");
+    }
 
-        [Fact]
-        public async Task ResponseHeaders_WithNonAsciiWithCustomEncoding_Works()
+    [Fact]
+    public async Task ResponseHeaders_WithNonAsciiWithCustomEncoding_Works()
+    {
+        var testContext = new TestServiceContext(LoggerFactory);
+        testContext.ServerOptions.ResponseHeaderEncodingSelector = _ => Encoding.UTF8;
+
+        await using var server = new TestServer(context =>
         {
-            var testContext = new TestServiceContext(LoggerFactory);
-            testContext.ServerOptions.ResponseHeaderEncodingSelector = _ => Encoding.UTF8;
+            Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("Custom你好Name", "Custom Value"));
+            Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("CustomName", "Custom \r Value"));
+            context.Response.ContentType = "Custom 你好 Type";
+            context.Response.Headers.Accept = "Custom 你好 Accept";
+            context.Response.Headers.Append("CustomName", "Custom 你好 Value");
+            context.Response.ContentLength = 11;
+            return context.Response.WriteAsync("Hello World");
+        }, testContext);
 
-            await using var server = new TestServer(context =>
-            {
-                Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("Custom你好Name", "Custom Value"));
-                Assert.Throws<InvalidOperationException>(() => context.Response.Headers.Append("CustomName", "Custom \r Value"));
-                context.Response.ContentType = "Custom 你好 Type";
-                context.Response.Headers.Accept = "Custom 你好 Accept";
-                context.Response.Headers.Append("CustomName", "Custom 你好 Value");
-                context.Response.ContentLength = 11;
-                return context.Response.WriteAsync("Hello World");
-            }, testContext);
+        using var connection = server.CreateConnection(Encoding.UTF8);
+        await connection.Send(
+            "GET / HTTP/1.1",
+            "Host:",
+            "",
+            "");
 
-            using var connection = server.CreateConnection(Encoding.UTF8);
-            await connection.Send(
-                "GET / HTTP/1.1",
-                "Host:",
-                "",
-                "");
+        await connection.Receive(
+            $"HTTP/1.1 200 OK",
+            "Content-Length: 11",
+            "Content-Type: Custom 你好 Type",
+            $"Date: {server.Context.DateHeaderValue}",
+            "Accept: Custom 你好 Accept",
+            "CustomName: Custom 你好 Value",
+            "",
+            "Hello World");
+    }
 
-            await connection.Receive(
-                $"HTTP/1.1 200 OK",
-                "Content-Length: 11",
-                "Content-Type: Custom 你好 Type",
-                $"Date: {server.Context.DateHeaderValue}",
-                "Accept: Custom 你好 Accept",
-                "CustomName: Custom 你好 Value",
-                "",
-                "Hello World");
-        }
+    [Fact]
+    public async Task ResponseHeaders_WithInvalidValuesAndCustomEncoder_AbortsConnection()
+    {
+        var testContext = new TestServiceContext(LoggerFactory);
+        var encoding = Encoding.GetEncoding(Encoding.Latin1.CodePage, EncoderFallback.ExceptionFallback,
+            DecoderFallback.ExceptionFallback);
+        testContext.ServerOptions.ResponseHeaderEncodingSelector = _ => encoding;
 
-        [Fact]
-        public async Task ResponseHeaders_WithInvalidValuesAndCustomEncoder_AbortsConnection()
+        await using var server = new TestServer(context =>
         {
-            var testContext = new TestServiceContext(LoggerFactory);
-            var encoding = Encoding.GetEncoding(Encoding.Latin1.CodePage, EncoderFallback.ExceptionFallback,
-                DecoderFallback.ExceptionFallback);
-            testContext.ServerOptions.ResponseHeaderEncodingSelector = _ => encoding;
+            context.Response.Headers.Append("CustomName", "Custom 你好 Value");
+            context.Response.ContentLength = 11;
+            return context.Response.WriteAsync("Hello World");
+        }, testContext);
+        using var connection = server.CreateConnection();
+        await connection.Send(
+            "GET / HTTP/1.1",
+            "Host:",
+            "",
+            "");
 
-            await using var server = new TestServer(context =>
-            {
-                context.Response.Headers.Append("CustomName", "Custom 你好 Value");
-                context.Response.ContentLength = 11;
-                return context.Response.WriteAsync("Hello World");
-            }, testContext);
-            using var connection = server.CreateConnection();
-            await connection.Send(
-                "GET / HTTP/1.1",
-                "Host:",
-                "",
-                "");
-
-            await connection.ReceiveEnd();
-        }
+        await connection.ReceiveEnd();
     }
 }

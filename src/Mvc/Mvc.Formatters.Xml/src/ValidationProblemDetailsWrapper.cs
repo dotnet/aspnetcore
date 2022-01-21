@@ -1,126 +1,124 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Xml;
 using System.Xml.Serialization;
 
-namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
+namespace Microsoft.AspNetCore.Mvc.Formatters.Xml;
+
+/// <summary>
+/// Wrapper class for <see cref="ValidationProblemDetails"/> to enable it to be serialized by the xml formatters.
+/// </summary>
+[XmlRoot("problem", Namespace = "urn:ietf:rfc:7807")]
+public class ValidationProblemDetailsWrapper : ProblemDetailsWrapper, IUnwrappable
 {
+    private const string ErrorKey = "MVC-Errors";
+
     /// <summary>
-    /// Wrapper class for <see cref="ValidationProblemDetails"/> to enable it to be serialized by the xml formatters.
+    /// Initializes a new instance of <see cref="ValidationProblemDetailsWrapper"/>.
     /// </summary>
-    [XmlRoot("problem", Namespace = "urn:ietf:rfc:7807")]
-    public class ValidationProblemDetailsWrapper : ProblemDetailsWrapper, IUnwrappable
+    public ValidationProblemDetailsWrapper()
+        : this(new ValidationProblemDetails())
     {
-        private const string ErrorKey = "MVC-Errors";
+    }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="ValidationProblemDetailsWrapper"/>.
-        /// </summary>
-        public ValidationProblemDetailsWrapper()
-            : this(new ValidationProblemDetails())
+    /// <summary>
+    /// Initializes a new instance of <see cref="ValidationProblemDetailsWrapper"/> for the specified
+    /// <paramref name="problemDetails"/>.
+    /// </summary>
+    /// <param name="problemDetails">The <see cref="ProblemDetails"/>.</param>
+    public ValidationProblemDetailsWrapper(ValidationProblemDetails problemDetails)
+        : base(problemDetails)
+    {
+        ProblemDetails = problemDetails;
+    }
+
+    internal new ValidationProblemDetails ProblemDetails { get; }
+
+    /// <inheritdoc />
+    protected override void ReadValue(XmlReader reader, string name)
+    {
+        if (reader == null)
         {
+            throw new ArgumentNullException(nameof(reader));
         }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="ValidationProblemDetailsWrapper"/> for the specified
-        /// <paramref name="problemDetails"/>.
-        /// </summary>
-        /// <param name="problemDetails">The <see cref="ProblemDetails"/>.</param>
-        public ValidationProblemDetailsWrapper(ValidationProblemDetails problemDetails)
-            : base(problemDetails)
+        if (string.Equals(name, ErrorKey, StringComparison.Ordinal))
         {
-            ProblemDetails = problemDetails;
+            reader.Read();
+            ReadErrorProperty(reader);
+        }
+        else
+        {
+            base.ReadValue(reader, name);
+        }
+    }
+
+    private void ReadErrorProperty(XmlReader reader)
+    {
+        if (reader.IsEmptyElement)
+        {
+            return;
         }
 
-        internal new ValidationProblemDetails ProblemDetails { get; }
-
-        /// <inheritdoc />
-        protected override void ReadValue(XmlReader reader, string name)
+        while (reader.NodeType != XmlNodeType.EndElement)
         {
-            if (reader == null)
+            var key = XmlConvert.DecodeName(reader.LocalName);
+            var value = reader.ReadInnerXml();
+            if (string.Equals(EmptyKey, key, StringComparison.Ordinal))
             {
-                throw new ArgumentNullException(nameof(reader));
+                key = string.Empty;
             }
 
-            if (string.Equals(name, ErrorKey, StringComparison.Ordinal))
-            {
-                reader.Read();
-                ReadErrorProperty(reader);
-            }
-            else
-            {
-                base.ReadValue(reader, name);
-            }
+            ProblemDetails.Errors.Add(key, new[] { value });
+            reader.MoveToContent();
+        }
+    }
+
+    /// <inheritdoc />
+    public override void WriteXml(XmlWriter writer)
+    {
+        if (writer == null)
+        {
+            throw new ArgumentNullException(nameof(writer));
         }
 
-        private void ReadErrorProperty(XmlReader reader)
+        base.WriteXml(writer);
+
+        if (ProblemDetails.Errors.Count == 0)
         {
-            if (reader.IsEmptyElement)
-            {
-                return;
-            }
-
-            while (reader.NodeType != XmlNodeType.EndElement)
-            {
-                var key = XmlConvert.DecodeName(reader.LocalName);
-                var value = reader.ReadInnerXml();
-                if (string.Equals(EmptyKey, key, StringComparison.Ordinal))
-                {
-                    key = string.Empty;
-                }
-
-                ProblemDetails.Errors.Add(key, new[] { value });
-                reader.MoveToContent();
-            }
+            return;
         }
 
-        /// <inheritdoc />
-        public override void WriteXml(XmlWriter writer)
+        writer.WriteStartElement(XmlConvert.EncodeLocalName(ErrorKey));
+
+        foreach (var keyValuePair in ProblemDetails.Errors)
         {
-            if (writer == null)
+            var key = keyValuePair.Key;
+            var value = keyValuePair.Value;
+            if (string.IsNullOrEmpty(key))
             {
-                throw new ArgumentNullException(nameof(writer));
+                key = EmptyKey;
             }
 
-            base.WriteXml(writer);
-
-            if (ProblemDetails.Errors.Count == 0)
+            writer.WriteStartElement(XmlConvert.EncodeLocalName(key));
+            if (value != null)
             {
-                return;
+                writer.WriteValue(value);
             }
 
-            writer.WriteStartElement(XmlConvert.EncodeLocalName(ErrorKey));
-
-            foreach (var keyValuePair in ProblemDetails.Errors)
-            {
-                var key = keyValuePair.Key;
-                var value = keyValuePair.Value;
-                if (string.IsNullOrEmpty(key))
-                {
-                    key = EmptyKey;
-                }
-
-                writer.WriteStartElement(XmlConvert.EncodeLocalName(key));
-                if (value != null)
-                {
-                    writer.WriteValue(value);
-                }
-
-                writer.WriteEndElement();
-            }
             writer.WriteEndElement();
         }
+        writer.WriteEndElement();
+    }
 
-        object IUnwrappable.Unwrap(Type declaredType)
+    object IUnwrappable.Unwrap(Type declaredType)
+    {
+        if (declaredType == null)
         {
-            if (declaredType == null)
-            {
-                throw new ArgumentNullException(nameof(declaredType));
-            }
-
-            return ProblemDetails;
+            throw new ArgumentNullException(nameof(declaredType));
         }
+
+        return ProblemDetails;
     }
 }

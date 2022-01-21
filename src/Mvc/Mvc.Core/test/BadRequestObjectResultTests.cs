@@ -3,34 +3,32 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc
+namespace Microsoft.AspNetCore.Mvc;
+
+public class BadRequestObjectResultTests
 {
-    public class BadRequestObjectResultTests
+    [Fact]
+    public void BadRequestObjectResult_SetsStatusCodeAndValue()
     {
-        [Fact]
-        public void BadRequestObjectResult_SetsStatusCodeAndValue()
-        {
-            // Arrange & Act
-            var obj = new object();
-            var badRequestObjectResult = new BadRequestObjectResult(obj);
+        // Arrange & Act
+        var obj = new object();
+        var badRequestObjectResult = new BadRequestObjectResult(obj);
 
-            // Assert
-            Assert.Equal(StatusCodes.Status400BadRequest, badRequestObjectResult.StatusCode);
-            Assert.Equal(obj, badRequestObjectResult.Value);
-        }
+        // Assert
+        Assert.Equal(StatusCodes.Status400BadRequest, badRequestObjectResult.StatusCode);
+        Assert.Equal(obj, badRequestObjectResult.Value);
+    }
 
-        [Fact]
-        public void BadRequestObjectResult_ModelState_SetsStatusCodeAndValue()
-        {
-            // Arrange & Act
-            var badRequestObjectResult = new BadRequestObjectResult(new ModelStateDictionary());
+    [Fact]
+    public void BadRequestObjectResult_ModelState_SetsStatusCodeAndValue()
+    {
+        // Arrange & Act
+        var badRequestObjectResult = new BadRequestObjectResult(new ModelStateDictionary());
 
-            // Assert
-            Assert.Equal(StatusCodes.Status400BadRequest, badRequestObjectResult.StatusCode);
-            var errors = Assert.IsType<SerializableError>(badRequestObjectResult.Value);
-            Assert.Empty(errors);
-        }
+        // Assert
+        Assert.Equal(StatusCodes.Status400BadRequest, badRequestObjectResult.StatusCode);
+        var errors = Assert.IsType<SerializableError>(badRequestObjectResult.Value);
+        Assert.Empty(errors);
     }
 }

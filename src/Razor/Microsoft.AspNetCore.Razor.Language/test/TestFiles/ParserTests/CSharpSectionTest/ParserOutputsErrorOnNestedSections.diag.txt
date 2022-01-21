@@ -1,2 +1,0 @@
-(1,16): Error RZ2002: Section blocks ("@section Header { ... }") cannot be nested.  Only one level of section blocks are allowed.
-(1,17): Error RZ2005: The 'section` directive must appear at the start of the line.

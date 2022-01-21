@@ -3,36 +3,34 @@
 
 #nullable enable
 
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 
-namespace Microsoft.AspNetCore.Mvc.Infrastructure
+namespace Microsoft.AspNetCore.Mvc.Infrastructure;
+
+internal class ActionInvokerFactory : IActionInvokerFactory
 {
-    internal class ActionInvokerFactory : IActionInvokerFactory
+    private readonly IActionInvokerProvider[] _actionInvokerProviders;
+
+    public ActionInvokerFactory(IEnumerable<IActionInvokerProvider> actionInvokerProviders)
     {
-        private readonly IActionInvokerProvider[] _actionInvokerProviders;
+        _actionInvokerProviders = actionInvokerProviders.OrderBy(item => item.Order).ToArray();
+    }
 
-        public ActionInvokerFactory(IEnumerable<IActionInvokerProvider> actionInvokerProviders)
+    public IActionInvoker? CreateInvoker(ActionContext actionContext)
+    {
+        var context = new ActionInvokerProviderContext(actionContext);
+
+        foreach (var provider in _actionInvokerProviders)
         {
-            _actionInvokerProviders = actionInvokerProviders.OrderBy(item => item.Order).ToArray();
+            provider.OnProvidersExecuting(context);
         }
 
-        public IActionInvoker? CreateInvoker(ActionContext actionContext)
+        for (var i = _actionInvokerProviders.Length - 1; i >= 0; i--)
         {
-            var context = new ActionInvokerProviderContext(actionContext);
-
-            foreach (var provider in _actionInvokerProviders)
-            {
-                provider.OnProvidersExecuting(context);
-            }
-
-            for (var i = _actionInvokerProviders.Length - 1; i >= 0; i--)
-            {
-                _actionInvokerProviders[i].OnProvidersExecuted(context);
-            }
-
-            return context.Result;
+            _actionInvokerProviders[i].OnProvidersExecuted(context);
         }
+
+        return context.Result;
     }
 }

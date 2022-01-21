@@ -1,112 +1,109 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Reflection;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
+namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
+
+/// <summary>
+/// <see cref="IPageActivatorProvider"/> that uses type activation to create Razor Page instances.
+/// </summary>
+internal class DefaultPageModelActivatorProvider : IPageModelActivatorProvider
 {
-    /// <summary>
-    /// <see cref="IPageActivatorProvider"/> that uses type activation to create Razor Page instances.
-    /// </summary>
-    internal class DefaultPageModelActivatorProvider : IPageModelActivatorProvider
+    private readonly Action<PageContext, object> _disposer = Dispose;
+    private readonly Func<PageContext, object, ValueTask> _asyncDisposer = DisposeAsync;
+    private readonly Func<PageContext, object, ValueTask> _syncAsyncDisposer = SyncDisposeAsync;
+
+    /// <inheritdoc />
+    public virtual Func<PageContext, object> CreateActivator(CompiledPageActionDescriptor actionDescriptor)
     {
-        private readonly Action<PageContext, object> _disposer = Dispose;
-        private readonly Func<PageContext, object, ValueTask> _asyncDisposer = DisposeAsync;
-        private readonly Func<PageContext, object, ValueTask> _syncAsyncDisposer = SyncDisposeAsync;
-
-        /// <inheritdoc />
-        public virtual Func<PageContext, object> CreateActivator(CompiledPageActionDescriptor actionDescriptor)
+        if (actionDescriptor == null)
         {
-            if (actionDescriptor == null)
-            {
-                throw new ArgumentNullException(nameof(actionDescriptor));
-            }
-
-            var modelTypeInfo = actionDescriptor.ModelTypeInfo?.AsType();
-            if (modelTypeInfo == null)
-            {
-                throw new ArgumentException(Resources.FormatPropertyOfTypeCannotBeNull(
-                    nameof(actionDescriptor.ModelTypeInfo),
-                    nameof(actionDescriptor)),
-                    nameof(actionDescriptor));
-            }
-
-            var factory = ActivatorUtilities.CreateFactory(modelTypeInfo, Type.EmptyTypes);
-            return (context) => factory(context.HttpContext.RequestServices, Array.Empty<object>());
+            throw new ArgumentNullException(nameof(actionDescriptor));
         }
 
-        public virtual Action<PageContext, object>? CreateReleaser(CompiledPageActionDescriptor actionDescriptor)
+        var modelTypeInfo = actionDescriptor.ModelTypeInfo?.AsType();
+        if (modelTypeInfo == null)
         {
-            if (actionDescriptor == null)
-            {
-                throw new ArgumentNullException(nameof(actionDescriptor));
-            }
-
-            if (typeof(IDisposable).GetTypeInfo().IsAssignableFrom(actionDescriptor.ModelTypeInfo))
-            {
-                return _disposer;
-            }
-
-            return null;
+            throw new ArgumentException(Resources.FormatPropertyOfTypeCannotBeNull(
+                nameof(actionDescriptor.ModelTypeInfo),
+                nameof(actionDescriptor)),
+                nameof(actionDescriptor));
         }
 
-        public virtual Func<PageContext, object, ValueTask>? CreateAsyncReleaser(CompiledPageActionDescriptor actionDescriptor)
+        var factory = ActivatorUtilities.CreateFactory(modelTypeInfo, Type.EmptyTypes);
+        return (context) => factory(context.HttpContext.RequestServices, Array.Empty<object>());
+    }
+
+    public virtual Action<PageContext, object>? CreateReleaser(CompiledPageActionDescriptor actionDescriptor)
+    {
+        if (actionDescriptor == null)
         {
-            if (actionDescriptor == null)
-            {
-                throw new ArgumentNullException(nameof(actionDescriptor));
-            }
-
-            if (typeof(IAsyncDisposable).GetTypeInfo().IsAssignableFrom(actionDescriptor.ModelTypeInfo))
-            {
-                return _asyncDisposer;
-            }
-
-            if (typeof(IDisposable).GetTypeInfo().IsAssignableFrom(actionDescriptor.ModelTypeInfo))
-            {
-                return _syncAsyncDisposer;
-            }
-
-            return null;
+            throw new ArgumentNullException(nameof(actionDescriptor));
         }
 
-        private static void Dispose(PageContext context, object page)
+        if (typeof(IDisposable).GetTypeInfo().IsAssignableFrom(actionDescriptor.ModelTypeInfo))
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            if (page == null)
-            {
-                throw new ArgumentNullException(nameof(page));
-            }
-
-            ((IDisposable)page).Dispose();
+            return _disposer;
         }
 
-        private static ValueTask DisposeAsync(PageContext context, object page)
+        return null;
+    }
+
+    public virtual Func<PageContext, object, ValueTask>? CreateAsyncReleaser(CompiledPageActionDescriptor actionDescriptor)
+    {
+        if (actionDescriptor == null)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            if (page == null)
-            {
-                throw new ArgumentNullException(nameof(page));
-            }
-
-            return ((IAsyncDisposable)page).DisposeAsync();
+            throw new ArgumentNullException(nameof(actionDescriptor));
         }
 
-        private static ValueTask SyncDisposeAsync(PageContext context, object page)
+        if (typeof(IAsyncDisposable).GetTypeInfo().IsAssignableFrom(actionDescriptor.ModelTypeInfo))
         {
-            Dispose(context, page);
-            return default;
+            return _asyncDisposer;
         }
+
+        if (typeof(IDisposable).GetTypeInfo().IsAssignableFrom(actionDescriptor.ModelTypeInfo))
+        {
+            return _syncAsyncDisposer;
+        }
+
+        return null;
+    }
+
+    private static void Dispose(PageContext context, object page)
+    {
+        if (context == null)
+        {
+            throw new ArgumentNullException(nameof(context));
+        }
+
+        if (page == null)
+        {
+            throw new ArgumentNullException(nameof(page));
+        }
+
+        ((IDisposable)page).Dispose();
+    }
+
+    private static ValueTask DisposeAsync(PageContext context, object page)
+    {
+        if (context == null)
+        {
+            throw new ArgumentNullException(nameof(context));
+        }
+
+        if (page == null)
+        {
+            throw new ArgumentNullException(nameof(page));
+        }
+
+        return ((IAsyncDisposable)page).DisposeAsync();
+    }
+
+    private static ValueTask SyncDisposeAsync(PageContext context, object page)
+    {
+        Dispose(context, page);
+        return default;
     }
 }

@@ -8,103 +8,102 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
+
+internal sealed class SocketConnectionListener : IConnectionListener
 {
-    internal sealed class SocketConnectionListener : IConnectionListener
+    private readonly SocketConnectionContextFactory _factory;
+    private readonly ILogger _logger;
+    private Socket? _listenSocket;
+    private readonly SocketTransportOptions _options;
+
+    public EndPoint EndPoint { get; private set; }
+
+    internal SocketConnectionListener(
+        EndPoint endpoint,
+        SocketTransportOptions options,
+        ILoggerFactory loggerFactory)
     {
-        private readonly SocketConnectionContextFactory _factory;
-        private readonly ISocketsTrace _trace;
-        private Socket? _listenSocket;
-        private readonly SocketTransportOptions _options;
+        EndPoint = endpoint;
+        _options = options;
+        var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets");
+        _logger = logger;
+        _factory = new SocketConnectionContextFactory(new SocketConnectionFactoryOptions(options), logger);
+    }
 
-        public EndPoint EndPoint { get; private set; }
-
-        internal SocketConnectionListener(
-            EndPoint endpoint,
-            SocketTransportOptions options,
-            ILoggerFactory loggerFactory)
+    internal void Bind()
+    {
+        if (_listenSocket != null)
         {
-            EndPoint = endpoint;
-            _options = options;
-            var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets");
-            _trace = new SocketsTrace(logger);
-            _factory = new SocketConnectionContextFactory(new SocketConnectionFactoryOptions(options), logger);
+            throw new InvalidOperationException(SocketsStrings.TransportAlreadyBound);
         }
 
-        internal void Bind()
+        Socket listenSocket;
+        try
         {
-            if (_listenSocket != null)
-            {
-                throw new InvalidOperationException(SocketsStrings.TransportAlreadyBound);
-            }
+            listenSocket = _options.CreateBoundListenSocket(EndPoint);
+        }
+        catch (SocketException e) when (e.SocketErrorCode == SocketError.AddressAlreadyInUse)
+        {
+            throw new AddressInUseException(e.Message, e);
+        }
 
-            Socket listenSocket;
+        Debug.Assert(listenSocket.LocalEndPoint != null);
+        EndPoint = listenSocket.LocalEndPoint;
+
+        listenSocket.Listen(_options.Backlog);
+
+        _listenSocket = listenSocket;
+    }
+
+    public async ValueTask<ConnectionContext?> AcceptAsync(CancellationToken cancellationToken = default)
+    {
+        while (true)
+        {
             try
             {
-                listenSocket = _options.CreateBoundListenSocket(EndPoint);
+                Debug.Assert(_listenSocket != null, "Bind must be called first.");
+
+                var acceptSocket = await _listenSocket.AcceptAsync(cancellationToken);
+
+                // Only apply no delay to Tcp based endpoints
+                if (acceptSocket.LocalEndPoint is IPEndPoint)
+                {
+                    acceptSocket.NoDelay = _options.NoDelay;
+                }
+
+                return _factory.Create(acceptSocket);
             }
-            catch (SocketException e) when (e.SocketErrorCode == SocketError.AddressAlreadyInUse)
+            catch (ObjectDisposedException)
             {
-                throw new AddressInUseException(e.Message, e);
+                // A call was made to UnbindAsync/DisposeAsync just return null which signals we're done
+                return null;
             }
-
-            Debug.Assert(listenSocket.LocalEndPoint != null);
-            EndPoint = listenSocket.LocalEndPoint;
-
-            listenSocket.Listen(_options.Backlog);
-
-            _listenSocket = listenSocket;
-        }
-
-        public async ValueTask<ConnectionContext?> AcceptAsync(CancellationToken cancellationToken = default)
-        {
-            while (true)
+            catch (SocketException e) when (e.SocketErrorCode == SocketError.OperationAborted)
             {
-                try
-                {
-                    Debug.Assert(_listenSocket != null, "Bind must be called first.");
-
-                    var acceptSocket = await _listenSocket.AcceptAsync(cancellationToken);
-
-                    // Only apply no delay to Tcp based endpoints
-                    if (acceptSocket.LocalEndPoint is IPEndPoint)
-                    {
-                        acceptSocket.NoDelay = _options.NoDelay;
-                    }
-
-                    return _factory.Create(acceptSocket);
-                }
-                catch (ObjectDisposedException)
-                {
-                    // A call was made to UnbindAsync/DisposeAsync just return null which signals we're done
-                    return null;
-                }
-                catch (SocketException e) when (e.SocketErrorCode == SocketError.OperationAborted)
-                {
-                    // A call was made to UnbindAsync/DisposeAsync just return null which signals we're done
-                    return null;
-                }
-                catch (SocketException)
-                {
-                    // The connection got reset while it was in the backlog, so we try again.
-                    _trace.ConnectionReset(connectionId: "(null)");
-                }
+                // A call was made to UnbindAsync/DisposeAsync just return null which signals we're done
+                return null;
+            }
+            catch (SocketException)
+            {
+                // The connection got reset while it was in the backlog, so we try again.
+                SocketsLog.ConnectionReset(_logger, connectionId: "(null)");
             }
         }
+    }
 
-        public ValueTask UnbindAsync(CancellationToken cancellationToken = default)
-        {
-            _listenSocket?.Dispose();
-            return default;
-        }
+    public ValueTask UnbindAsync(CancellationToken cancellationToken = default)
+    {
+        _listenSocket?.Dispose();
+        return default;
+    }
 
-        public ValueTask DisposeAsync()
-        {
-            _listenSocket?.Dispose();
+    public ValueTask DisposeAsync()
+    {
+        _listenSocket?.Dispose();
 
-            _factory.Dispose();
+        _factory.Dispose();
 
-            return default;
-        }
+        return default;
     }
 }

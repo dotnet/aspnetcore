@@ -1,43 +1,40 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Cors.Infrastructure
+namespace Microsoft.AspNetCore.Cors.Infrastructure;
+
+/// <inheritdoc />
+public class DefaultCorsPolicyProvider : ICorsPolicyProvider
 {
-    /// <inheritdoc />
-    public class DefaultCorsPolicyProvider : ICorsPolicyProvider
+    private static readonly Task<CorsPolicy?> NullResult = Task.FromResult<CorsPolicy?>(null);
+    private readonly CorsOptions _options;
+
+    /// <summary>
+    /// Creates a new instance of <see cref="DefaultCorsPolicyProvider"/>.
+    /// </summary>
+    /// <param name="options">The options configured for the application.</param>
+    public DefaultCorsPolicyProvider(IOptions<CorsOptions> options)
     {
-        private static readonly Task<CorsPolicy?> NullResult = Task.FromResult<CorsPolicy?>(null);
-        private readonly CorsOptions _options;
+        _options = options.Value;
+    }
 
-        /// <summary>
-        /// Creates a new instance of <see cref="DefaultCorsPolicyProvider"/>.
-        /// </summary>
-        /// <param name="options">The options configured for the application.</param>
-        public DefaultCorsPolicyProvider(IOptions<CorsOptions> options)
+    /// <inheritdoc />
+    public Task<CorsPolicy?> GetPolicyAsync(HttpContext context, string? policyName)
+    {
+        if (context == null)
         {
-            _options = options.Value;
+            throw new ArgumentNullException(nameof(context));
         }
 
-        /// <inheritdoc />
-        public Task<CorsPolicy?> GetPolicyAsync(HttpContext context, string? policyName)
+        policyName ??= _options.DefaultPolicyName;
+        if (_options.PolicyMap.TryGetValue(policyName, out var result))
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            policyName ??= _options.DefaultPolicyName;
-            if (_options.PolicyMap.TryGetValue(policyName, out var result))
-            {
-                return result.policyTask!;
-            }
-
-            return NullResult;
+            return result.policyTask!;
         }
+
+        return NullResult;
     }
 }

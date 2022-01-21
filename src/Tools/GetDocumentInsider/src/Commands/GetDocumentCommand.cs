@@ -11,146 +11,145 @@ using System.Runtime.Loader;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Tools.Internal;
 
-namespace Microsoft.Extensions.ApiDescription.Tool.Commands
+namespace Microsoft.Extensions.ApiDescription.Tool.Commands;
+
+internal class GetDocumentCommand : ProjectCommandBase
 {
-    internal class GetDocumentCommand : ProjectCommandBase
+    private CommandOption _fileListPath;
+    private CommandOption _output;
+
+    public GetDocumentCommand(IConsole console) : base(console)
     {
-        private CommandOption _fileListPath;
-        private CommandOption _output;
+    }
 
-        public GetDocumentCommand(IConsole console) : base(console)
+    public override void Configure(CommandLineApplication command)
+    {
+        base.Configure(command);
+
+        _fileListPath = command.Option("--file-list <Path>", Resources.FileListDescription);
+        _output = command.Option("--output <Directory>", Resources.OutputDescription);
+    }
+
+    protected override void Validate()
+    {
+        base.Validate();
+
+        if (!_fileListPath.HasValue())
         {
+            throw new CommandException(Resources.FormatMissingOption(_fileListPath.LongName));
         }
 
-        public override void Configure(CommandLineApplication command)
+        if (!_output.HasValue())
         {
-            base.Configure(command);
-
-            _fileListPath = command.Option("--file-list <Path>", Resources.FileListDescription);
-            _output = command.Option("--output <Directory>", Resources.OutputDescription);
+            throw new CommandException(Resources.FormatMissingOption(_output.LongName));
         }
+    }
 
-        protected override void Validate()
+    protected override int Execute()
+    {
+        var thisAssembly = typeof(GetDocumentCommand).Assembly;
+
+        var toolsDirectory = ToolsDirectory.Value();
+        var packagedAssemblies = Directory
+            .EnumerateFiles(toolsDirectory, "*.dll")
+            .Except(new[] { Path.GetFullPath(thisAssembly.Location) })
+            .ToDictionary(path => Path.GetFileNameWithoutExtension(path), path => new AssemblyInfo(path));
+
+        // Explicitly load all assemblies we need first to preserve target project as much as possible. This
+        // executable is always run in the target project's context (either through location or .deps.json file).
+        foreach (var keyValuePair in packagedAssemblies)
         {
-            base.Validate();
-
-            if (!_fileListPath.HasValue())
+            try
             {
-                throw new CommandException(Resources.FormatMissingOption(_fileListPath.LongName));
+                keyValuePair.Value.Assembly = Assembly.Load(new AssemblyName(keyValuePair.Key));
             }
-
-            if (!_output.HasValue())
+            catch
             {
-                throw new CommandException(Resources.FormatMissingOption(_output.LongName));
+                // Ignore all failures because missing assemblies should be loadable from tools directory.
             }
         }
-
-        protected override int Execute()
-        {
-            var thisAssembly = typeof(GetDocumentCommand).Assembly;
-
-            var toolsDirectory = ToolsDirectory.Value();
-            var packagedAssemblies = Directory
-                .EnumerateFiles(toolsDirectory, "*.dll")
-                .Except(new[] { Path.GetFullPath(thisAssembly.Location) })
-                .ToDictionary(path => Path.GetFileNameWithoutExtension(path), path => new AssemblyInfo(path));
-
-            // Explicitly load all assemblies we need first to preserve target project as much as possible. This
-            // executable is always run in the target project's context (either through location or .deps.json file).
-            foreach (var keyValuePair in packagedAssemblies)
-            {
-                try
-                {
-                    keyValuePair.Value.Assembly = Assembly.Load(new AssemblyName(keyValuePair.Key));
-                }
-                catch
-                {
-                    // Ignore all failures because missing assemblies should be loadable from tools directory.
-                }
-            }
 
 #if NETCOREAPP2_1
-            AssemblyLoadContext.Default.Resolving += (loadContext, assemblyName) =>
+        AssemblyLoadContext.Default.Resolving += (loadContext, assemblyName) =>
+        {
+            var name = assemblyName.Name;
+            if (!packagedAssemblies.TryGetValue(name, out var info))
             {
-                var name = assemblyName.Name;
-                if (!packagedAssemblies.TryGetValue(name, out var info))
-                {
-                    return null;
-                }
+                return null;
+            }
 
-                var assemblyPath = info.Path;
-                if (!File.Exists(assemblyPath))
-                {
-                    throw new InvalidOperationException(
-                        $"Referenced assembly '{name}' was not found in '{toolsDirectory}'.");
-                }
-
-                return loadContext.LoadFromAssemblyPath(assemblyPath);
-            };
-
-#elif NET461
-            AppDomain.CurrentDomain.AssemblyResolve += (source, eventArgs) =>
+            var assemblyPath = info.Path;
+            if (!File.Exists(assemblyPath))
             {
-                var assemblyName = new AssemblyName(eventArgs.Name);
-                var name = assemblyName.Name;
-                if (!packagedAssemblies.TryGetValue(name, out var info))
-                {
-                    return null;
-                }
+                throw new InvalidOperationException(
+                    $"Referenced assembly '{name}' was not found in '{toolsDirectory}'.");
+            }
 
-                var assembly = info.Assembly;
-                if (assembly != null)
-                {
-                    // Loaded already
-                    return assembly;
-                }
+            return loadContext.LoadFromAssemblyPath(assemblyPath);
+        };
 
-                var assemblyPath = info.Path;
-                if (!File.Exists(assemblyPath))
-                {
-                    throw new InvalidOperationException(
-                        $"Referenced assembly '{name}' was not found in '{toolsDirectory}'.");
-                }
+#elif NETFRAMEWORK
+        AppDomain.CurrentDomain.AssemblyResolve += (source, eventArgs) =>
+        {
+            var assemblyName = new AssemblyName(eventArgs.Name);
+            var name = assemblyName.Name;
+            if (!packagedAssemblies.TryGetValue(name, out var info))
+            {
+                return null;
+            }
 
-                return Assembly.LoadFile(assemblyPath);
-            };
+            var assembly = info.Assembly;
+            if (assembly != null)
+            {
+                // Loaded already
+                return assembly;
+            }
+
+            var assemblyPath = info.Path;
+            if (!File.Exists(assemblyPath))
+            {
+                throw new InvalidOperationException(
+                    $"Referenced assembly '{name}' was not found in '{toolsDirectory}'.");
+            }
+
+            return Assembly.LoadFile(assemblyPath);
+        };
 #else
 #error Target frameworks need to be updated.
 #endif
 
-            // Now safe to reference the application's code.
-            try
-            {
-                var assemblyPath = AssemblyPath.Value();
-                var context = new GetDocumentCommandContext
-                {
-                    AssemblyPath = assemblyPath,
-                    AssemblyName = Path.GetFileNameWithoutExtension(assemblyPath),
-                    FileListPath = _fileListPath.Value(),
-                    OutputDirectory = _output.Value(),
-                    ProjectName = ProjectName.Value(),
-                    Reporter = Reporter,
-                };
-
-                return new GetDocumentCommandWorker(context).Process();
-            }
-            catch (Exception ex)
-            {
-                Reporter.WriteError(ex.ToString());
-                return 2;
-            }
-        }
-
-        private class AssemblyInfo
+        // Now safe to reference the application's code.
+        try
         {
-            public AssemblyInfo(string path)
+            var assemblyPath = AssemblyPath.Value();
+            var context = new GetDocumentCommandContext
             {
-                Path = path;
-            }
+                AssemblyPath = assemblyPath,
+                AssemblyName = Path.GetFileNameWithoutExtension(assemblyPath),
+                FileListPath = _fileListPath.Value(),
+                OutputDirectory = _output.Value(),
+                ProjectName = ProjectName.Value(),
+                Reporter = Reporter,
+            };
 
-            public string Path { get; }
-
-            public Assembly Assembly { get; set; }
+            return new GetDocumentCommandWorker(context).Process();
         }
+        catch (Exception ex)
+        {
+            Reporter.WriteError(ex.ToString());
+            return 2;
+        }
+    }
+
+    private class AssemblyInfo
+    {
+        public AssemblyInfo(string path)
+        {
+            Path = path;
+        }
+
+        public string Path { get; }
+
+        public Assembly Assembly { get; set; }
     }
 }

@@ -1,5 +1,4 @@
 <Project>
-
   <!-- For 'legacy' .csproj files, set map TargetFrameworkVersion back to TargetFramework -->
   <PropertyGroup Condition=" '$(TargetFramework)' == '' AND '$(TargetFrameworks)' == '' ">
     <TargetFramework>net$(TargetFrameworkVersion.TrimStart('vV').Replace('.',''))</TargetFramework>
@@ -23,20 +22,23 @@
     <Nullable Condition=" '$(Nullable)' == '' AND '$(_IsSrcProject)' == 'true'">enable</Nullable>
 
     <!-- Strip out non-public nullable annotations for src projects. This should help with size reduction -->
-     <Features Condition="'$(_IsSrcProject)' == 'true'">$(Features);nullablePublicOnly</Features>
+    <Features Condition="'$(_IsSrcProject)' == 'true'">$(Features);nullablePublicOnly</Features>
 
     <!-- Turn off platform compatibility analyzer warnings in test, test assets, and samples. -->
-    <NoWarn Condition=" '$(IsTestProject)' == 'true' OR
+    <NoWarn Condition=" $(IsTestProject) OR
         '$(IsTestAssetProject)' == 'true' OR
         '$(ISBenchmarkProject)' == 'true' OR
         '$(IsSampleProject)' == 'true' OR
         '$(IsMicrobenchmarksProject)' == 'true'">$(NoWarn);CA1416</NoWarn>
 
+    <!-- Turn off unused usings warning for multi-targeted projects. Fixing them using ifdefs looks worse than ignoring the warnings. -->
+    <NoWarn Condition="'$(TargetFrameworks)' != ''">$(NoWarn);IDE0005</NoWarn>
+
     <!-- Enable .NET code style analysis during build for src projects. -->
-    <!-- Workaround bug where turning this on produces warnings in VS -->
-    <!-- See https://github.com/dotnet/roslyn/issues/54867 for more info. -->
-    <EnforceCodeStyleInBuild Condition="'$(BuildingInsideVisualStudio)' == 'true' AND $([MSBuild]::VersionGreaterThanOrEquals('$(VisualStudioVersion)', '17.0'))">false</EnforceCodeStyleInBuild>
     <EnforceCodeStyleInBuild Condition="'$(EnforceCodeStyleInBuild)' == ''">true</EnforceCodeStyleInBuild>
+
+    <!-- Enable trimming annotation validation in DI. See https://github.com/dotnet/runtime/blob/main/docs/workflow/trimming/feature-switches.md -->
+    <VerifyDependencyInjectionOpenGenericServiceTrimmability Condition=" $(IsTestProject) ">true</VerifyDependencyInjectionOpenGenericServiceTrimmability>
   </PropertyGroup>
 
   <!-- Enable implicit usings for projects that target the default TFM -->
@@ -49,7 +51,7 @@
     <Using Remove="System.Linq" Condition="'$(_IsSrcProject)' == 'true'" />
     <!-- System.Net.Http types will frequently conflict with ASP.NET Core types-->
     <Using Remove="System.Net.Http" />
-    <Using Include="Xunit" Condition="'$(IsTestProject)' == 'true' OR '$(IsUnitTestProject)' == 'true'" />
+    <Using Include="Xunit" Condition=" $(IsTestProject) " />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(DotNetBuildFromSource)' != 'true' AND $(AddPublicApiAnalyzers) ">
@@ -140,5 +142,4 @@
 
   <Import Project="Packaging.targets" />
   <Import Project="ResolveReferences.targets" />
-
 </Project>

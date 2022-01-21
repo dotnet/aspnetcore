@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -16,91 +15,90 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 
-namespace Microsoft.Extensions.DependencyInjection
+namespace Microsoft.Extensions.DependencyInjection;
+
+/// <summary>
+/// Extension methods to configure an <see cref="IServiceCollection"/> for components.
+/// </summary>
+public static class ComponentServiceCollectionExtensions
 {
     /// <summary>
-    /// Extension methods to configure an <see cref="IServiceCollection"/> for components.
+    /// Adds Server-Side Blazor services to the service collection.
     /// </summary>
-    public static class ComponentServiceCollectionExtensions
+    /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+    /// <param name="configure">A callback to configure <see cref="CircuitOptions"/>.</param>
+    /// <returns>An <see cref="IServerSideBlazorBuilder"/> that can be used to further customize the configuration.</returns>
+    public static IServerSideBlazorBuilder AddServerSideBlazor(this IServiceCollection services, Action<CircuitOptions>? configure = null)
     {
-        /// <summary>
-        /// Adds Server-Side Blazor services to the service collection.
-        /// </summary>
-        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
-        /// <param name="configure">A callback to configure <see cref="CircuitOptions"/>.</param>
-        /// <returns>An <see cref="IServerSideBlazorBuilder"/> that can be used to further customize the configuration.</returns>
-        public static IServerSideBlazorBuilder AddServerSideBlazor(this IServiceCollection services, Action<CircuitOptions>? configure = null)
+        var builder = new DefaultServerSideBlazorBuilder(services);
+
+        services.AddDataProtection();
+
+        services.TryAddScoped<ProtectedLocalStorage>();
+        services.TryAddScoped<ProtectedSessionStorage>();
+
+        // This call INTENTIONALLY uses the AddHubOptions on the SignalR builder, because it will merge
+        // the global HubOptions before running the configure callback. We want to ensure that happens
+        // once. Our AddHubOptions method doesn't do this.
+        //
+        // We need to restrict the set of protocols used by default to our specialized one. Users have
+        // the chance to modify options further via the builder.
+        //
+        // Other than the options, the things exposed by the SignalR builder aren't very meaningful in
+        // the Server-Side Blazor context and thus aren't exposed.
+        services.AddSignalR().AddHubOptions<ComponentHub>(options =>
         {
-            var builder = new DefaultServerSideBlazorBuilder(services);
+            options.SupportedProtocols.Clear();
+            options.SupportedProtocols.Add(BlazorPackHubProtocol.ProtocolName);
+        });
 
-            services.AddDataProtection();
+        // Register the Blazor specific hub protocol
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IHubProtocol, BlazorPackHubProtocol>());
 
-            services.TryAddScoped<ProtectedLocalStorage>();
-            services.TryAddScoped<ProtectedSessionStorage>();
+        // Here we add a bunch of services that don't vary in any way based on the
+        // user's configuration. So even if the user has multiple independent server-side
+        // Components entrypoints, this lot is the same and repeated registrations are a no-op.
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<StaticFileOptions>, ConfigureStaticFilesOptions>());
+        services.TryAddSingleton<ICircuitFactory, CircuitFactory>();
+        services.TryAddSingleton<IServerComponentDeserializer, ServerComponentDeserializer>();
+        services.TryAddSingleton<ICircuitHandleRegistry, CircuitHandleRegistry>();
+        services.TryAddSingleton<RootComponentTypeCache>();
+        services.TryAddSingleton<ComponentParameterDeserializer>();
+        services.TryAddSingleton<ComponentParametersTypeCache>();
+        services.TryAddSingleton<CircuitIdFactory>();
+        services.TryAddScoped<IErrorBoundaryLogger, RemoteErrorBoundaryLogger>();
 
-            // This call INTENTIONALLY uses the AddHubOptions on the SignalR builder, because it will merge
-            // the global HubOptions before running the configure callback. We want to ensure that happens
-            // once. Our AddHubOptions method doesn't do this.
-            //
-            // We need to restrict the set of protocols used by default to our specialized one. Users have
-            // the chance to modify options further via the builder.
-            //
-            // Other than the options, the things exposed by the SignalR builder aren't very meaningful in
-            // the Server-Side Blazor context and thus aren't exposed.
-            services.AddSignalR().AddHubOptions<ComponentHub>(options =>
-            {
-                options.SupportedProtocols.Clear();
-                options.SupportedProtocols.Add(BlazorPackHubProtocol.ProtocolName);
-            });
+        services.TryAddScoped(s => s.GetRequiredService<ICircuitAccessor>().Circuit);
+        services.TryAddScoped<ICircuitAccessor, DefaultCircuitAccessor>();
 
-            // Register the Blazor specific hub protocol
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<IHubProtocol, BlazorPackHubProtocol>());
+        services.TryAddSingleton<CircuitRegistry>();
 
-            // Here we add a bunch of services that don't vary in any way based on the
-            // user's configuration. So even if the user has multiple independent server-side
-            // Components entrypoints, this lot is the same and repeated registrations are a no-op.
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<StaticFileOptions>, ConfigureStaticFilesOptions>());
-            services.TryAddSingleton<ICircuitFactory, CircuitFactory>();
-            services.TryAddSingleton<IServerComponentDeserializer, ServerComponentDeserializer>();
-            services.TryAddSingleton<ICircuitHandleRegistry, CircuitHandleRegistry>();
-            services.TryAddSingleton<RootComponentTypeCache>();
-            services.TryAddSingleton<ComponentParameterDeserializer>();
-            services.TryAddSingleton<ComponentParametersTypeCache>();
-            services.TryAddSingleton<CircuitIdFactory>();
-            services.TryAddScoped<IErrorBoundaryLogger, RemoteErrorBoundaryLogger>();
+        // Standard blazor hosting services implementations
+        //
+        // These intentionally replace the non-interactive versions included in MVC.
+        services.AddScoped<NavigationManager, RemoteNavigationManager>();
+        services.AddScoped<IJSRuntime, RemoteJSRuntime>();
+        services.AddScoped<INavigationInterception, RemoteNavigationInterception>();
+        services.AddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
 
-            services.TryAddScoped(s => s.GetRequiredService<ICircuitAccessor>().Circuit);
-            services.TryAddScoped<ICircuitAccessor, DefaultCircuitAccessor>();
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<CircuitOptions>, CircuitOptionsJSInteropDetailedErrorsConfiguration>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<CircuitOptions>, CircuitOptionsJavaScriptInitializersConfiguration>());
 
-            services.TryAddSingleton<CircuitRegistry>();
-
-            // Standard blazor hosting services implementations
-            //
-            // These intentionally replace the non-interactive versions included in MVC.
-            services.AddScoped<NavigationManager, RemoteNavigationManager>();
-            services.AddScoped<IJSRuntime, RemoteJSRuntime>();
-            services.AddScoped<INavigationInterception, RemoteNavigationInterception>();
-            services.AddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
-
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<CircuitOptions>, CircuitOptionsJSInteropDetailedErrorsConfiguration>());
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<CircuitOptions>, CircuitOptionsJavaScriptInitializersConfiguration>());
-
-            if (configure != null)
-            {
-                services.Configure(configure);
-            }
-
-            return builder;
+        if (configure != null)
+        {
+            services.Configure(configure);
         }
 
-        private class DefaultServerSideBlazorBuilder : IServerSideBlazorBuilder
-        {
-            public DefaultServerSideBlazorBuilder(IServiceCollection services)
-            {
-                Services = services;
-            }
+        return builder;
+    }
 
-            public IServiceCollection Services { get; }
+    private class DefaultServerSideBlazorBuilder : IServerSideBlazorBuilder
+    {
+        public DefaultServerSideBlazorBuilder(IServiceCollection services)
+        {
+            Services = services;
         }
+
+        public IServiceCollection Services { get; }
     }
 }

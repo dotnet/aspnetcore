@@ -1,18 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+namespace Microsoft.AspNetCore.Mvc.Routing;
 
-using System.Threading;
-
-namespace Microsoft.AspNetCore.Mvc.Routing
+internal class ControllerActionEndpointDataSourceIdProvider
 {
-    internal class ControllerActionEndpointDataSourceIdProvider
-    {
-        private int _nextId = 1;
+    private int _nextId = 1;
 
-        internal int CreateId()
-        {
-            return Interlocked.Increment(ref _nextId);
-        }
+    internal int CreateId()
+    {
+        return Interlocked.Increment(ref _nextId);
     }
 }

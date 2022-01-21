@@ -11,27 +11,27 @@
 
     <h2>Image Tag Helper Test</h2>
     <!-- Plain image tag -->
-    <img src="~/images/red.png" alt="Red block" title="&lt;the title>">
+    <img src="~/images/red.png" alt="Red block" title="&lt;the title>" id="1">
 
     <!-- Plain image tag with file version -->
-    <img src="~/images/red.png" alt="Red versioned" title="Red versioned" asp-append-version="true" />
+    <img src="~/images/red.png" alt="Red versioned" title="Red versioned" asp-append-version="true" id="2"/>
 
     <!-- Plain image tag with file version set to false -->
-    <img src="~/images/red.png" alt="Red explicitly not versioned" title="Red versioned" asp-append-version="false">
+    <img src="~/images/red.png" alt="Red explicitly not versioned" title="Red versioned" asp-append-version="false" id="3">
 
     <!-- Plain image tag with absolute path and file version -->
-    <img src="http://contoso.com/hello/world" alt="Absolute path versioned" asp-append-version="true">
+    <img src="http://contoso.com/hello/world" alt="Absolute path versioned" asp-append-version="true" id="4">
 
     <!-- Plain image tag with file version and path to file that does not exist -->
-    <img src="~/images/fake.png" alt="Path to non existing file" asp-append-version="true" />
+    <img src="~/images/fake.png" alt="Path to non existing file" asp-append-version="true" id="5"/>
 
     <!-- Plain image tag with file version and path containing query string -->
-    <img src="~/images/red.png?abc=def" alt="Path with query string" asp-append-version="true">
+    <img src="~/images/red.png?abc=def" alt="Path with query string" asp-append-version="true" id="6">
 
     <!-- Plain image tag with file version and path containing fragment -->
-    <img src="~/images/red.png#abc" alt="Path with query string" asp-append-version="true" />
+    <img src="~/images/red.png#abc" alt="Path with query string" asp-append-version="true" id="7"/>
 
     <!-- Plain image tag with file version and path linking to some action -->
-    <img src="/controller/action" alt="Path linking to some action" asp-append-version="true">
+    <img src="/controller/action" alt="Path linking to some action" asp-append-version="true" id="8">
 </body>
 </html>

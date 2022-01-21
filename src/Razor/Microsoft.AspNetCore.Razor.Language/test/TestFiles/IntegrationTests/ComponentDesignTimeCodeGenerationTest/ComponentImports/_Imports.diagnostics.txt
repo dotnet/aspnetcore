@@ -1,2 +1,0 @@
-x:\dir\subdir\Test\_Imports.razor(5,2): Error RZ10003: Markup, code and block directives are not valid in component imports.
-x:\dir\subdir\Test\_Imports.razor(6,1): Error RZ10003: Markup, code and block directives are not valid in component imports.

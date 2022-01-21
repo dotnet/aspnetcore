@@ -20,8 +20,8 @@
     <Compile Include="..\shared\**\*.cs" />
     <Compile Include="..\InProcessWebSite\*.cs" />
     <Compile Include="..\InProcessWebSite\Properties\*.cs" />
-    <None Include="..\InProcessWebSite\wwwroot\**" CopyToOutputDirectory="Always" LinkBase="wwwroot/"/>
-    <None Include="..\InProcessWebSite\web.config" CopyToOutputDirectory="Always" />
+    <None Include="..\InProcessWebSite\wwwroot\**" CopyToOutputDirectory="PreserveNewest" LinkBase="wwwroot/"/>
+    <None Include="..\InProcessWebSite\web.config" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
@@ -54,6 +54,9 @@
       <AllowExplicitReference>true</AllowExplicitReference>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.2.0" >
+      <AllowExplicitReference>true</AllowExplicitReference>
+    </PackageReference>
+    <PackageReference Include="System.Text.Encodings.Web" Version="4.5.1" >
       <AllowExplicitReference>true</AllowExplicitReference>
     </PackageReference>
     <Reference Include="xunit.assert" />

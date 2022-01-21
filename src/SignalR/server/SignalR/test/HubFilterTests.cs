@@ -9,122 +9,202 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
-namespace Microsoft.AspNetCore.SignalR.Tests
+namespace Microsoft.AspNetCore.SignalR.Tests;
+
+public class HubFilterTests : VerifiableLoggedTest
 {
-    public class HubFilterTests : VerifiableLoggedTest
+    [Fact]
+    public async Task GlobalHubFilterByType_MethodsAreCalled()
     {
-        [Fact]
-        public async Task GlobalHubFilterByType_MethodsAreCalled()
+        using (StartVerifiableLog())
         {
-            using (StartVerifiableLog())
+            var tcsService = new TcsService();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
             {
-                var tcsService = new TcsService();
-                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+                services.AddSignalR(options =>
                 {
-                    services.AddSignalR(options =>
-                    {
-                        options.AddFilter<VerifyMethodFilter>();
-                    });
+                    options.AddFilter<VerifyMethodFilter>();
+                });
 
-                    services.AddSingleton(tcsService);
-                }, LoggerFactory);
+                services.AddSingleton(tcsService);
+            }, LoggerFactory);
 
-                await AssertMethodsCalled(serviceProvider, tcsService);
+            await AssertMethodsCalled(serviceProvider, tcsService);
+        }
+    }
+
+    [Fact]
+    public async Task GlobalHubFilterByInstance_MethodsAreCalled()
+    {
+        using (StartVerifiableLog())
+        {
+            var tcsService = new TcsService();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+            {
+                services.AddSignalR(options =>
+                {
+                    options.AddFilter(new VerifyMethodFilter(tcsService));
+                });
+            }, LoggerFactory);
+
+            await AssertMethodsCalled(serviceProvider, tcsService);
+        }
+    }
+
+    [Fact]
+    public async Task PerHubFilterByInstance_MethodsAreCalled()
+    {
+        using (StartVerifiableLog())
+        {
+            var tcsService = new TcsService();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+            {
+                services.AddSignalR().AddHubOptions<MethodHub>(options =>
+                {
+                    options.AddFilter(new VerifyMethodFilter(tcsService));
+                });
+            }, LoggerFactory);
+
+            await AssertMethodsCalled(serviceProvider, tcsService);
+        }
+    }
+
+    [Fact]
+    public async Task PerHubFilterByCompileTimeType_MethodsAreCalled()
+    {
+        using (StartVerifiableLog())
+        {
+            var tcsService = new TcsService();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+            {
+                services.AddSignalR().AddHubOptions<MethodHub>(options =>
+                {
+                    options.AddFilter<VerifyMethodFilter>();
+                });
+
+                services.AddSingleton(tcsService);
+            }, LoggerFactory);
+
+            await AssertMethodsCalled(serviceProvider, tcsService);
+        }
+    }
+
+    [Fact]
+    public async Task PerHubFilterByRuntimeType_MethodsAreCalled()
+    {
+        using (StartVerifiableLog())
+        {
+            var tcsService = new TcsService();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+            {
+                services.AddSignalR().AddHubOptions<MethodHub>(options =>
+                {
+                    options.AddFilter(typeof(VerifyMethodFilter));
+                });
+
+                services.AddSingleton(tcsService);
+            }, LoggerFactory);
+
+            await AssertMethodsCalled(serviceProvider, tcsService);
+        }
+    }
+
+    private async Task AssertMethodsCalled(IServiceProvider serviceProvider, TcsService tcsService)
+    {
+        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+        using (var client = new TestClient())
+        {
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+            await tcsService.StartedMethod.Task.DefaultTimeout();
+            await client.Connected.DefaultTimeout();
+            await tcsService.EndMethod.Task.DefaultTimeout();
+
+            tcsService.Reset();
+            var message = await client.InvokeAsync(nameof(MethodHub.Echo), "Hello world!").DefaultTimeout();
+            await tcsService.EndMethod.Task.DefaultTimeout();
+            tcsService.Reset();
+
+            Assert.Null(message.Error);
+
+            client.Dispose();
+
+            await connectionHandlerTask.DefaultTimeout();
+
+            await tcsService.EndMethod.Task.DefaultTimeout();
+        }
+    }
+
+    [Fact]
+    public async Task HubFilterDoesNotNeedToImplementMethods()
+    {
+        using (StartVerifiableLog())
+        {
+            var tcsService = new TcsService();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+            {
+                services.AddSignalR().AddHubOptions<DynamicTestHub>(options =>
+                {
+                    options.AddFilter(typeof(EmptyFilter));
+                });
+            }, LoggerFactory);
+
+
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<DynamicTestHub>>();
+
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                await client.Connected.DefaultTimeout();
+
+                var completion = await client.InvokeAsync(nameof(DynamicTestHub.Echo), "hello");
+                Assert.Null(completion.Error);
+                Assert.Equal("hello", completion.Result);
+
+                client.Dispose();
+
+                await connectionHandlerTask.DefaultTimeout();
             }
         }
+    }
 
-        [Fact]
-        public async Task GlobalHubFilterByInstance_MethodsAreCalled()
+    [Fact]
+    public async Task MutlipleFilters_MethodsAreCalled()
+    {
+        using (StartVerifiableLog())
         {
-            using (StartVerifiableLog())
+            var tcsService1 = new TcsService();
+            var tcsService2 = new TcsService();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
             {
-                var tcsService = new TcsService();
-                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+                services.AddSignalR(options =>
                 {
-                    services.AddSignalR(options =>
-                    {
-                        options.AddFilter(new VerifyMethodFilter(tcsService));
-                    });
-                }, LoggerFactory);
+                    options.AddFilter(new VerifyMethodFilter(tcsService1));
+                    options.AddFilter(new VerifyMethodFilter(tcsService2));
+                });
+            }, LoggerFactory);
 
-                await AssertMethodsCalled(serviceProvider, tcsService);
-            }
-        }
-
-        [Fact]
-        public async Task PerHubFilterByInstance_MethodsAreCalled()
-        {
-            using (StartVerifiableLog())
-            {
-                var tcsService = new TcsService();
-                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
-                {
-                    services.AddSignalR().AddHubOptions<MethodHub>(options =>
-                    {
-                        options.AddFilter(new VerifyMethodFilter(tcsService));
-                    });
-                }, LoggerFactory);
-
-                await AssertMethodsCalled(serviceProvider, tcsService);
-            }
-        }
-
-        [Fact]
-        public async Task PerHubFilterByCompileTimeType_MethodsAreCalled()
-        {
-            using (StartVerifiableLog())
-            {
-                var tcsService = new TcsService();
-                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
-                {
-                    services.AddSignalR().AddHubOptions<MethodHub>(options =>
-                    {
-                        options.AddFilter<VerifyMethodFilter>();
-                    });
-
-                    services.AddSingleton(tcsService);
-                }, LoggerFactory);
-
-                await AssertMethodsCalled(serviceProvider, tcsService);
-            }
-        }
-
-        [Fact]
-        public async Task PerHubFilterByRuntimeType_MethodsAreCalled()
-        {
-            using (StartVerifiableLog())
-            {
-                var tcsService = new TcsService();
-                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
-                {
-                    services.AddSignalR().AddHubOptions<MethodHub>(options =>
-                    {
-                        options.AddFilter(typeof(VerifyMethodFilter));
-                    });
-
-                    services.AddSingleton(tcsService);
-                }, LoggerFactory);
-
-                await AssertMethodsCalled(serviceProvider, tcsService);
-            }
-        }
-
-        private async Task AssertMethodsCalled(IServiceProvider serviceProvider, TcsService tcsService)
-        {
             var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
 
             using (var client = new TestClient())
             {
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
 
-                await tcsService.StartedMethod.Task.DefaultTimeout();
+                await tcsService1.StartedMethod.Task.DefaultTimeout();
+                await tcsService2.StartedMethod.Task.DefaultTimeout();
                 await client.Connected.DefaultTimeout();
-                await tcsService.EndMethod.Task.DefaultTimeout();
+                await tcsService1.EndMethod.Task.DefaultTimeout();
+                await tcsService2.EndMethod.Task.DefaultTimeout();
 
-                tcsService.Reset();
+                tcsService1.Reset();
+                tcsService2.Reset();
                 var message = await client.InvokeAsync(nameof(MethodHub.Echo), "Hello world!").DefaultTimeout();
-                await tcsService.EndMethod.Task.DefaultTimeout();
-                tcsService.Reset();
+                await tcsService1.EndMethod.Task.DefaultTimeout();
+                await tcsService2.EndMethod.Task.DefaultTimeout();
+                tcsService1.Reset();
+                tcsService2.Reset();
 
                 Assert.Null(message.Error);
 
@@ -132,769 +212,688 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 await connectionHandlerTask.DefaultTimeout();
 
-                await tcsService.EndMethod.Task.DefaultTimeout();
+                await tcsService1.EndMethod.Task.DefaultTimeout();
+                await tcsService2.EndMethod.Task.DefaultTimeout();
             }
         }
+    }
 
-        [Fact]
-        public async Task HubFilterDoesNotNeedToImplementMethods()
+    [Fact]
+    public async Task MixingTypeAndInstanceGlobalFilters_MethodsAreCalled()
+    {
+        using (StartVerifiableLog())
         {
-            using (StartVerifiableLog())
+            var tcsService1 = new TcsService();
+            var tcsService2 = new TcsService();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
             {
-                var tcsService = new TcsService();
-                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+                services.AddSignalR(options =>
                 {
-                    services.AddSignalR().AddHubOptions<DynamicTestHub>(options =>
-                    {
-                        options.AddFilter(typeof(EmptyFilter));
-                    });
-                }, LoggerFactory);
+                    options.AddFilter(new VerifyMethodFilter(tcsService1));
+                    options.AddFilter<VerifyMethodFilter>();
+                });
 
+                services.AddSingleton(tcsService2);
+            }, LoggerFactory);
 
-                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<DynamicTestHub>>();
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
 
-                using (var client = new TestClient())
-                {
-                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
 
-                    await client.Connected.DefaultTimeout();
+                await tcsService1.StartedMethod.Task.DefaultTimeout();
+                await tcsService2.StartedMethod.Task.DefaultTimeout();
+                await client.Connected.DefaultTimeout();
+                await tcsService1.EndMethod.Task.DefaultTimeout();
+                await tcsService2.EndMethod.Task.DefaultTimeout();
 
-                    var completion = await client.InvokeAsync(nameof(DynamicTestHub.Echo), "hello");
-                    Assert.Null(completion.Error);
-                    Assert.Equal("hello", completion.Result);
+                tcsService1.Reset();
+                tcsService2.Reset();
+                var message = await client.InvokeAsync(nameof(MethodHub.Echo), "Hello world!").DefaultTimeout();
+                await tcsService1.EndMethod.Task.DefaultTimeout();
+                await tcsService2.EndMethod.Task.DefaultTimeout();
+                tcsService1.Reset();
+                tcsService2.Reset();
 
-                    client.Dispose();
+                Assert.Null(message.Error);
 
-                    await connectionHandlerTask.DefaultTimeout();
-                }
+                client.Dispose();
+
+                await connectionHandlerTask.DefaultTimeout();
+
+                await tcsService1.EndMethod.Task.DefaultTimeout();
+                await tcsService2.EndMethod.Task.DefaultTimeout();
             }
         }
+    }
 
-        [Fact]
-        public async Task MutlipleFilters_MethodsAreCalled()
+    [Fact]
+    public async Task MixingTypeAndInstanceHubSpecificFilters_MethodsAreCalled()
+    {
+        using (StartVerifiableLog())
         {
-            using (StartVerifiableLog())
+            var tcsService1 = new TcsService();
+            var tcsService2 = new TcsService();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
             {
-                var tcsService1 = new TcsService();
-                var tcsService2 = new TcsService();
-                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+                services.AddSignalR()
+                .AddHubOptions<MethodHub>(options =>
                 {
-                    services.AddSignalR(options =>
-                    {
-                        options.AddFilter(new VerifyMethodFilter(tcsService1));
-                        options.AddFilter(new VerifyMethodFilter(tcsService2));
-                    });
-                }, LoggerFactory);
+                    options.AddFilter(new VerifyMethodFilter(tcsService1));
+                    options.AddFilter<VerifyMethodFilter>();
+                });
 
-                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+                services.AddSingleton(tcsService2);
+            }, LoggerFactory);
 
-                using (var client = new TestClient())
-                {
-                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
 
-                    await tcsService1.StartedMethod.Task.DefaultTimeout();
-                    await tcsService2.StartedMethod.Task.DefaultTimeout();
-                    await client.Connected.DefaultTimeout();
-                    await tcsService1.EndMethod.Task.DefaultTimeout();
-                    await tcsService2.EndMethod.Task.DefaultTimeout();
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
 
-                    tcsService1.Reset();
-                    tcsService2.Reset();
-                    var message = await client.InvokeAsync(nameof(MethodHub.Echo), "Hello world!").DefaultTimeout();
-                    await tcsService1.EndMethod.Task.DefaultTimeout();
-                    await tcsService2.EndMethod.Task.DefaultTimeout();
-                    tcsService1.Reset();
-                    tcsService2.Reset();
+                await tcsService1.StartedMethod.Task.DefaultTimeout();
+                await tcsService2.StartedMethod.Task.DefaultTimeout();
+                await client.Connected.DefaultTimeout();
+                await tcsService1.EndMethod.Task.DefaultTimeout();
+                await tcsService2.EndMethod.Task.DefaultTimeout();
 
-                    Assert.Null(message.Error);
+                tcsService1.Reset();
+                tcsService2.Reset();
+                var message = await client.InvokeAsync(nameof(MethodHub.Echo), "Hello world!").DefaultTimeout();
+                await tcsService1.EndMethod.Task.DefaultTimeout();
+                await tcsService2.EndMethod.Task.DefaultTimeout();
+                tcsService1.Reset();
+                tcsService2.Reset();
 
-                    client.Dispose();
+                Assert.Null(message.Error);
 
-                    await connectionHandlerTask.DefaultTimeout();
+                client.Dispose();
 
-                    await tcsService1.EndMethod.Task.DefaultTimeout();
-                    await tcsService2.EndMethod.Task.DefaultTimeout();
-                }
+                await connectionHandlerTask.DefaultTimeout();
+
+                await tcsService1.EndMethod.Task.DefaultTimeout();
+                await tcsService2.EndMethod.Task.DefaultTimeout();
             }
         }
+    }
 
-        [Fact]
-        public async Task MixingTypeAndInstanceGlobalFilters_MethodsAreCalled()
+    [Fact]
+    public async Task GlobalFiltersRunInOrder()
+    {
+        using (StartVerifiableLog())
         {
-            using (StartVerifiableLog())
+            var syncPoint1 = SyncPoint.Create(3, out var syncPoints1);
+            var syncPoint2 = SyncPoint.Create(3, out var syncPoints2);
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
             {
-                var tcsService1 = new TcsService();
-                var tcsService2 = new TcsService();
-                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+                services.AddSignalR(options =>
                 {
-                    services.AddSignalR(options =>
-                    {
-                        options.AddFilter(new VerifyMethodFilter(tcsService1));
-                        options.AddFilter<VerifyMethodFilter>();
-                    });
+                    options.AddFilter(new SyncPointFilter(syncPoints1));
+                    options.AddFilter(new SyncPointFilter(syncPoints2));
+                });
+            }, LoggerFactory);
 
-                    services.AddSingleton(tcsService2);
-                }, LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
 
-                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
 
-                using (var client = new TestClient())
-                {
-                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+                await syncPoints1[0].WaitForSyncPoint().DefaultTimeout();
+                // Second filter wont run yet because first filter is waiting on SyncPoint
+                Assert.False(syncPoints2[0].WaitForSyncPoint().IsCompleted);
+                syncPoints1[0].Continue();
 
-                    await tcsService1.StartedMethod.Task.DefaultTimeout();
-                    await tcsService2.StartedMethod.Task.DefaultTimeout();
-                    await client.Connected.DefaultTimeout();
-                    await tcsService1.EndMethod.Task.DefaultTimeout();
-                    await tcsService2.EndMethod.Task.DefaultTimeout();
+                await syncPoints2[0].WaitForSyncPoint().DefaultTimeout();
+                syncPoints2[0].Continue();
+                await client.Connected.DefaultTimeout();
 
-                    tcsService1.Reset();
-                    tcsService2.Reset();
-                    var message = await client.InvokeAsync(nameof(MethodHub.Echo), "Hello world!").DefaultTimeout();
-                    await tcsService1.EndMethod.Task.DefaultTimeout();
-                    await tcsService2.EndMethod.Task.DefaultTimeout();
-                    tcsService1.Reset();
-                    tcsService2.Reset();
+                var invokeTask = client.InvokeAsync(nameof(MethodHub.Echo), "Hello world!");
 
-                    Assert.Null(message.Error);
+                await syncPoints1[1].WaitForSyncPoint().DefaultTimeout();
+                // Second filter wont run yet because first filter is waiting on SyncPoint
+                Assert.False(syncPoints2[1].WaitForSyncPoint().IsCompleted);
+                syncPoints1[1].Continue();
 
-                    client.Dispose();
+                await syncPoints2[1].WaitForSyncPoint().DefaultTimeout();
+                syncPoints2[1].Continue();
+                var message = await invokeTask.DefaultTimeout();
 
-                    await connectionHandlerTask.DefaultTimeout();
+                Assert.Null(message.Error);
 
-                    await tcsService1.EndMethod.Task.DefaultTimeout();
-                    await tcsService2.EndMethod.Task.DefaultTimeout();
-                }
+                client.Dispose();
+
+                await syncPoints1[2].WaitForSyncPoint().DefaultTimeout();
+                // Second filter wont run yet because first filter is waiting on SyncPoint
+                Assert.False(syncPoints2[2].WaitForSyncPoint().IsCompleted);
+                syncPoints1[2].Continue();
+
+                await syncPoints2[2].WaitForSyncPoint().DefaultTimeout();
+                syncPoints2[2].Continue();
+
+                await connectionHandlerTask.DefaultTimeout();
             }
         }
+    }
 
-        [Fact]
-        public async Task MixingTypeAndInstanceHubSpecificFilters_MethodsAreCalled()
+    [Fact]
+    public async Task HubSpecificFiltersRunInOrder()
+    {
+        using (StartVerifiableLog())
         {
-            using (StartVerifiableLog())
+            var syncPoint1 = SyncPoint.Create(3, out var syncPoints1);
+            var syncPoint2 = SyncPoint.Create(3, out var syncPoints2);
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
             {
-                var tcsService1 = new TcsService();
-                var tcsService2 = new TcsService();
-                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+                services.AddSignalR()
+                .AddHubOptions<MethodHub>(options =>
                 {
-                    services.AddSignalR()
-                    .AddHubOptions<MethodHub>(options =>
-                    {
-                        options.AddFilter(new VerifyMethodFilter(tcsService1));
-                        options.AddFilter<VerifyMethodFilter>();
-                    });
+                    options.AddFilter(new SyncPointFilter(syncPoints1));
+                    options.AddFilter(new SyncPointFilter(syncPoints2));
+                });
+            }, LoggerFactory);
 
-                    services.AddSingleton(tcsService2);
-                }, LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
 
-                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
 
-                using (var client = new TestClient())
-                {
-                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+                await syncPoints1[0].WaitForSyncPoint().DefaultTimeout();
+                // Second filter wont run yet because first filter is waiting on SyncPoint
+                Assert.False(syncPoints2[0].WaitForSyncPoint().IsCompleted);
+                syncPoints1[0].Continue();
 
-                    await tcsService1.StartedMethod.Task.DefaultTimeout();
-                    await tcsService2.StartedMethod.Task.DefaultTimeout();
-                    await client.Connected.DefaultTimeout();
-                    await tcsService1.EndMethod.Task.DefaultTimeout();
-                    await tcsService2.EndMethod.Task.DefaultTimeout();
+                await syncPoints2[0].WaitForSyncPoint().DefaultTimeout();
+                syncPoints2[0].Continue();
+                await client.Connected.DefaultTimeout();
 
-                    tcsService1.Reset();
-                    tcsService2.Reset();
-                    var message = await client.InvokeAsync(nameof(MethodHub.Echo), "Hello world!").DefaultTimeout();
-                    await tcsService1.EndMethod.Task.DefaultTimeout();
-                    await tcsService2.EndMethod.Task.DefaultTimeout();
-                    tcsService1.Reset();
-                    tcsService2.Reset();
+                var invokeTask = client.InvokeAsync(nameof(MethodHub.Echo), "Hello world!");
 
-                    Assert.Null(message.Error);
+                await syncPoints1[1].WaitForSyncPoint().DefaultTimeout();
+                // Second filter wont run yet because first filter is waiting on SyncPoint
+                Assert.False(syncPoints2[1].WaitForSyncPoint().IsCompleted);
+                syncPoints1[1].Continue();
 
-                    client.Dispose();
+                await syncPoints2[1].WaitForSyncPoint().DefaultTimeout();
+                syncPoints2[1].Continue();
+                var message = await invokeTask.DefaultTimeout();
 
-                    await connectionHandlerTask.DefaultTimeout();
+                Assert.Null(message.Error);
 
-                    await tcsService1.EndMethod.Task.DefaultTimeout();
-                    await tcsService2.EndMethod.Task.DefaultTimeout();
-                }
+                client.Dispose();
+
+                await syncPoints1[2].WaitForSyncPoint().DefaultTimeout();
+                // Second filter wont run yet because first filter is waiting on SyncPoint
+                Assert.False(syncPoints2[2].WaitForSyncPoint().IsCompleted);
+                syncPoints1[2].Continue();
+
+                await syncPoints2[2].WaitForSyncPoint().DefaultTimeout();
+                syncPoints2[2].Continue();
+
+                await connectionHandlerTask.DefaultTimeout();
             }
         }
+    }
 
-        [Fact]
-        public async Task GlobalFiltersRunInOrder()
+    [Fact]
+    public async Task GlobalFiltersRunBeforeHubSpecificFilters()
+    {
+        using (StartVerifiableLog())
         {
-            using (StartVerifiableLog())
+            var syncPoint1 = SyncPoint.Create(3, out var syncPoints1);
+            var syncPoint2 = SyncPoint.Create(3, out var syncPoints2);
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
             {
-                var syncPoint1 = SyncPoint.Create(3, out var syncPoints1);
-                var syncPoint2 = SyncPoint.Create(3, out var syncPoints2);
-                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+                services.AddSignalR(options =>
                 {
-                    services.AddSignalR(options =>
-                    {
-                        options.AddFilter(new SyncPointFilter(syncPoints1));
-                        options.AddFilter(new SyncPointFilter(syncPoints2));
-                    });
-                }, LoggerFactory);
-
-                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
-
-                using (var client = new TestClient())
+                    options.AddFilter(new SyncPointFilter(syncPoints1));
+                })
+                .AddHubOptions<MethodHub>(options =>
                 {
-                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+                    options.AddFilter(new SyncPointFilter(syncPoints2));
+                });
+            }, LoggerFactory);
 
-                    await syncPoints1[0].WaitForSyncPoint().DefaultTimeout();
-                    // Second filter wont run yet because first filter is waiting on SyncPoint
-                    Assert.False(syncPoints2[0].WaitForSyncPoint().IsCompleted);
-                    syncPoints1[0].Continue();
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
 
-                    await syncPoints2[0].WaitForSyncPoint().DefaultTimeout();
-                    syncPoints2[0].Continue();
-                    await client.Connected.DefaultTimeout();
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
 
-                    var invokeTask = client.InvokeAsync(nameof(MethodHub.Echo), "Hello world!");
+                await syncPoints1[0].WaitForSyncPoint().DefaultTimeout();
+                // Second filter wont run yet because first filter is waiting on SyncPoint
+                Assert.False(syncPoints2[0].WaitForSyncPoint().IsCompleted);
+                syncPoints1[0].Continue();
 
-                    await syncPoints1[1].WaitForSyncPoint().DefaultTimeout();
-                    // Second filter wont run yet because first filter is waiting on SyncPoint
-                    Assert.False(syncPoints2[1].WaitForSyncPoint().IsCompleted);
-                    syncPoints1[1].Continue();
+                await syncPoints2[0].WaitForSyncPoint().DefaultTimeout();
+                syncPoints2[0].Continue();
+                await client.Connected.DefaultTimeout();
 
-                    await syncPoints2[1].WaitForSyncPoint().DefaultTimeout();
-                    syncPoints2[1].Continue();
-                    var message = await invokeTask.DefaultTimeout();
+                var invokeTask = client.InvokeAsync(nameof(MethodHub.Echo), "Hello world!");
 
-                    Assert.Null(message.Error);
+                await syncPoints1[1].WaitForSyncPoint().DefaultTimeout();
+                // Second filter wont run yet because first filter is waiting on SyncPoint
+                Assert.False(syncPoints2[1].WaitForSyncPoint().IsCompleted);
+                syncPoints1[1].Continue();
 
-                    client.Dispose();
+                await syncPoints2[1].WaitForSyncPoint().DefaultTimeout();
+                syncPoints2[1].Continue();
+                var message = await invokeTask.DefaultTimeout();
 
-                    await syncPoints1[2].WaitForSyncPoint().DefaultTimeout();
-                    // Second filter wont run yet because first filter is waiting on SyncPoint
-                    Assert.False(syncPoints2[2].WaitForSyncPoint().IsCompleted);
-                    syncPoints1[2].Continue();
+                Assert.Null(message.Error);
 
-                    await syncPoints2[2].WaitForSyncPoint().DefaultTimeout();
-                    syncPoints2[2].Continue();
+                client.Dispose();
 
-                    await connectionHandlerTask.DefaultTimeout();
-                }
+                await syncPoints1[2].WaitForSyncPoint().DefaultTimeout();
+                // Second filter wont run yet because first filter is waiting on SyncPoint
+                Assert.False(syncPoints2[2].WaitForSyncPoint().IsCompleted);
+                syncPoints1[2].Continue();
+
+                await syncPoints2[2].WaitForSyncPoint().DefaultTimeout();
+                syncPoints2[2].Continue();
+
+                await connectionHandlerTask.DefaultTimeout();
             }
         }
+    }
 
-        [Fact]
-        public async Task HubSpecificFiltersRunInOrder()
+    [Fact]
+    public async Task FilterCanBeResolvedFromDI()
+    {
+        using (StartVerifiableLog())
         {
-            using (StartVerifiableLog())
+            var tcsService = new TcsService();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
             {
-                var syncPoint1 = SyncPoint.Create(3, out var syncPoints1);
-                var syncPoint2 = SyncPoint.Create(3, out var syncPoints2);
-                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+                services.AddSignalR(options =>
                 {
-                    services.AddSignalR()
-                    .AddHubOptions<MethodHub>(options =>
-                    {
-                        options.AddFilter(new SyncPointFilter(syncPoints1));
-                        options.AddFilter(new SyncPointFilter(syncPoints2));
-                    });
-                }, LoggerFactory);
+                    options.AddFilter<VerifyMethodFilter>();
+                });
 
-                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+                // If this instance wasn't resolved, then the tcsService.StartedMethod waits would never trigger and fail the test
+                services.AddSingleton(new VerifyMethodFilter(tcsService));
+            }, LoggerFactory);
 
-                using (var client = new TestClient())
+            await AssertMethodsCalled(serviceProvider, tcsService);
+        }
+    }
+
+    [Fact]
+    public async Task FiltersHaveTransientScopeByDefault()
+    {
+        using (StartVerifiableLog())
+        {
+            var counter = new FilterCounter();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+            {
+                services.AddSignalR(options =>
                 {
-                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+                    options.AddFilter<CounterFilter>();
+                });
 
-                    await syncPoints1[0].WaitForSyncPoint().DefaultTimeout();
-                    // Second filter wont run yet because first filter is waiting on SyncPoint
-                    Assert.False(syncPoints2[0].WaitForSyncPoint().IsCompleted);
-                    syncPoints1[0].Continue();
+                services.AddSingleton(counter);
+            }, LoggerFactory);
 
-                    await syncPoints2[0].WaitForSyncPoint().DefaultTimeout();
-                    syncPoints2[0].Continue();
-                    await client.Connected.DefaultTimeout();
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
 
-                    var invokeTask = client.InvokeAsync(nameof(MethodHub.Echo), "Hello world!");
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
 
-                    await syncPoints1[1].WaitForSyncPoint().DefaultTimeout();
-                    // Second filter wont run yet because first filter is waiting on SyncPoint
-                    Assert.False(syncPoints2[1].WaitForSyncPoint().IsCompleted);
-                    syncPoints1[1].Continue();
+                await client.Connected.DefaultTimeout();
+                // Filter is transient, so these counts are reset every time the filter is created
+                Assert.Equal(1, counter.OnConnectedAsyncCount);
+                Assert.Equal(0, counter.InvokeMethodAsyncCount);
+                Assert.Equal(0, counter.OnDisconnectedAsyncCount);
 
-                    await syncPoints2[1].WaitForSyncPoint().DefaultTimeout();
-                    syncPoints2[1].Continue();
-                    var message = await invokeTask.DefaultTimeout();
+                var message = await client.InvokeAsync(nameof(MethodHub.Echo), "Hello world!").DefaultTimeout();
+                // Filter is transient, so these counts are reset every time the filter is created
+                Assert.Equal(0, counter.OnConnectedAsyncCount);
+                Assert.Equal(1, counter.InvokeMethodAsyncCount);
+                Assert.Equal(0, counter.OnDisconnectedAsyncCount);
 
-                    Assert.Null(message.Error);
+                Assert.Null(message.Error);
 
-                    client.Dispose();
+                client.Dispose();
 
-                    await syncPoints1[2].WaitForSyncPoint().DefaultTimeout();
-                    // Second filter wont run yet because first filter is waiting on SyncPoint
-                    Assert.False(syncPoints2[2].WaitForSyncPoint().IsCompleted);
-                    syncPoints1[2].Continue();
+                await connectionHandlerTask.DefaultTimeout();
 
-                    await syncPoints2[2].WaitForSyncPoint().DefaultTimeout();
-                    syncPoints2[2].Continue();
-
-                    await connectionHandlerTask.DefaultTimeout();
-                }
+                // Filter is transient, so these counts are reset every time the filter is created
+                Assert.Equal(0, counter.OnConnectedAsyncCount);
+                Assert.Equal(0, counter.InvokeMethodAsyncCount);
+                Assert.Equal(1, counter.OnDisconnectedAsyncCount);
             }
         }
+    }
 
-        [Fact]
-        public async Task GlobalFiltersRunBeforeHubSpecificFilters()
+    [Fact]
+    public async Task FiltersCanBeSingletonIfAddedToDI()
+    {
+        using (StartVerifiableLog())
         {
-            using (StartVerifiableLog())
+            var counter = new FilterCounter();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
             {
-                var syncPoint1 = SyncPoint.Create(3, out var syncPoints1);
-                var syncPoint2 = SyncPoint.Create(3, out var syncPoints2);
-                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+                services.AddSignalR(options =>
                 {
-                    services.AddSignalR(options =>
-                    {
-                        options.AddFilter(new SyncPointFilter(syncPoints1));
-                    })
-                    .AddHubOptions<MethodHub>(options =>
-                    {
-                        options.AddFilter(new SyncPointFilter(syncPoints2));
-                    });
-                }, LoggerFactory);
+                    options.AddFilter<CounterFilter>();
+                });
 
-                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+                services.AddSingleton<CounterFilter>();
+                services.AddSingleton(counter);
+            }, LoggerFactory);
 
-                using (var client = new TestClient())
-                {
-                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
 
-                    await syncPoints1[0].WaitForSyncPoint().DefaultTimeout();
-                    // Second filter wont run yet because first filter is waiting on SyncPoint
-                    Assert.False(syncPoints2[0].WaitForSyncPoint().IsCompleted);
-                    syncPoints1[0].Continue();
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
 
-                    await syncPoints2[0].WaitForSyncPoint().DefaultTimeout();
-                    syncPoints2[0].Continue();
-                    await client.Connected.DefaultTimeout();
+                await client.Connected.DefaultTimeout();
+                Assert.Equal(1, counter.OnConnectedAsyncCount);
+                Assert.Equal(0, counter.InvokeMethodAsyncCount);
+                Assert.Equal(0, counter.OnDisconnectedAsyncCount);
 
-                    var invokeTask = client.InvokeAsync(nameof(MethodHub.Echo), "Hello world!");
+                var message = await client.InvokeAsync(nameof(MethodHub.Echo), "Hello world!").DefaultTimeout();
+                Assert.Equal(1, counter.OnConnectedAsyncCount);
+                Assert.Equal(1, counter.InvokeMethodAsyncCount);
+                Assert.Equal(0, counter.OnDisconnectedAsyncCount);
 
-                    await syncPoints1[1].WaitForSyncPoint().DefaultTimeout();
-                    // Second filter wont run yet because first filter is waiting on SyncPoint
-                    Assert.False(syncPoints2[1].WaitForSyncPoint().IsCompleted);
-                    syncPoints1[1].Continue();
+                Assert.Null(message.Error);
 
-                    await syncPoints2[1].WaitForSyncPoint().DefaultTimeout();
-                    syncPoints2[1].Continue();
-                    var message = await invokeTask.DefaultTimeout();
+                client.Dispose();
 
-                    Assert.Null(message.Error);
+                await connectionHandlerTask.DefaultTimeout();
 
-                    client.Dispose();
-
-                    await syncPoints1[2].WaitForSyncPoint().DefaultTimeout();
-                    // Second filter wont run yet because first filter is waiting on SyncPoint
-                    Assert.False(syncPoints2[2].WaitForSyncPoint().IsCompleted);
-                    syncPoints1[2].Continue();
-
-                    await syncPoints2[2].WaitForSyncPoint().DefaultTimeout();
-                    syncPoints2[2].Continue();
-
-                    await connectionHandlerTask.DefaultTimeout();
-                }
+                Assert.Equal(1, counter.OnConnectedAsyncCount);
+                Assert.Equal(1, counter.InvokeMethodAsyncCount);
+                Assert.Equal(1, counter.OnDisconnectedAsyncCount);
             }
         }
+    }
 
-        [Fact]
-        public async Task FilterCanBeResolvedFromDI()
+    [Fact]
+    public async Task ConnectionContinuesIfOnConnectedAsyncThrowsAndFilterDoesNot()
+    {
+        using (StartVerifiableLog())
         {
-            using (StartVerifiableLog())
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
             {
-                var tcsService = new TcsService();
-                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+                services.AddSignalR(options =>
                 {
-                    services.AddSignalR(options =>
-                    {
-                        options.AddFilter<VerifyMethodFilter>();
-                    });
+                    options.EnableDetailedErrors = true;
+                    options.AddFilter<NoExceptionFilter>();
+                });
+            }, LoggerFactory);
 
-                    // If this instance wasn't resolved, then the tcsService.StartedMethod waits would never trigger and fail the test
-                    services.AddSingleton(new VerifyMethodFilter(tcsService));
-                }, LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<OnConnectedThrowsHub>>();
 
-                await AssertMethodsCalled(serviceProvider, tcsService);
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                // Verify connection still connected, can't invoke a method if the connection is disconnected
+                var message = await client.InvokeAsync("Method");
+                Assert.Equal("Failed to invoke 'Method' due to an error on the server. HubException: Method does not exist.", message.Error);
+
+                client.Dispose();
+
+                await connectionHandlerTask.DefaultTimeout();
             }
         }
+    }
 
-        [Fact]
-        public async Task FiltersHaveTransientScopeByDefault()
+    [Fact]
+    public async Task ConnectionContinuesIfOnConnectedAsyncNotCalledByFilter()
+    {
+        using (StartVerifiableLog())
         {
-            using (StartVerifiableLog())
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
             {
-                var counter = new FilterCounter();
-                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+                services.AddSignalR(options =>
                 {
-                    services.AddSignalR(options =>
-                    {
-                        options.AddFilter<CounterFilter>();
-                    });
+                    options.EnableDetailedErrors = true;
+                    options.AddFilter(new SkipNextFilter(skipOnConnected: true));
+                });
+            }, LoggerFactory);
 
-                    services.AddSingleton(counter);
-                }, LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
 
-                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
 
-                using (var client = new TestClient())
-                {
-                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+                // Verify connection still connected, can't invoke a method if the connection is disconnected
+                var message = await client.InvokeAsync("Method");
+                Assert.Equal("Failed to invoke 'Method' due to an error on the server. HubException: Method does not exist.", message.Error);
 
-                    await client.Connected.DefaultTimeout();
-                    // Filter is transient, so these counts are reset every time the filter is created
-                    Assert.Equal(1, counter.OnConnectedAsyncCount);
-                    Assert.Equal(0, counter.InvokeMethodAsyncCount);
-                    Assert.Equal(0, counter.OnDisconnectedAsyncCount);
+                client.Dispose();
 
-                    var message = await client.InvokeAsync(nameof(MethodHub.Echo), "Hello world!").DefaultTimeout();
-                    // Filter is transient, so these counts are reset every time the filter is created
-                    Assert.Equal(0, counter.OnConnectedAsyncCount);
-                    Assert.Equal(1, counter.InvokeMethodAsyncCount);
-                    Assert.Equal(0, counter.OnDisconnectedAsyncCount);
-
-                    Assert.Null(message.Error);
-
-                    client.Dispose();
-
-                    await connectionHandlerTask.DefaultTimeout();
-
-                    // Filter is transient, so these counts are reset every time the filter is created
-                    Assert.Equal(0, counter.OnConnectedAsyncCount);
-                    Assert.Equal(0, counter.InvokeMethodAsyncCount);
-                    Assert.Equal(1, counter.OnDisconnectedAsyncCount);
-                }
+                await connectionHandlerTask.DefaultTimeout();
             }
         }
+    }
 
-        [Fact]
-        public async Task FiltersCanBeSingletonIfAddedToDI()
+    [Fact]
+    public async Task FilterCanSkipCallingHubMethod()
+    {
+        using (StartVerifiableLog())
         {
-            using (StartVerifiableLog())
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
             {
-                var counter = new FilterCounter();
-                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+                services.AddSignalR(options =>
                 {
-                    services.AddSignalR(options =>
-                    {
-                        options.AddFilter<CounterFilter>();
-                    });
+                    options.AddFilter(new SkipNextFilter(skipInvoke: true));
+                });
+            }, LoggerFactory);
 
-                    services.AddSingleton<CounterFilter>();
-                    services.AddSingleton(counter);
-                }, LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
 
-                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
 
-                using (var client = new TestClient())
-                {
-                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+                await client.Connected.DefaultTimeout();
 
-                    await client.Connected.DefaultTimeout();
-                    Assert.Equal(1, counter.OnConnectedAsyncCount);
-                    Assert.Equal(0, counter.InvokeMethodAsyncCount);
-                    Assert.Equal(0, counter.OnDisconnectedAsyncCount);
+                var message = await client.InvokeAsync(nameof(MethodHub.Echo), "Hello world!").DefaultTimeout();
 
-                    var message = await client.InvokeAsync(nameof(MethodHub.Echo), "Hello world!").DefaultTimeout();
-                    Assert.Equal(1, counter.OnConnectedAsyncCount);
-                    Assert.Equal(1, counter.InvokeMethodAsyncCount);
-                    Assert.Equal(0, counter.OnDisconnectedAsyncCount);
+                Assert.Null(message.Error);
+                Assert.Null(message.Result);
 
-                    Assert.Null(message.Error);
+                client.Dispose();
 
-                    client.Dispose();
-
-                    await connectionHandlerTask.DefaultTimeout();
-
-                    Assert.Equal(1, counter.OnConnectedAsyncCount);
-                    Assert.Equal(1, counter.InvokeMethodAsyncCount);
-                    Assert.Equal(1, counter.OnDisconnectedAsyncCount);
-                }
+                await connectionHandlerTask.DefaultTimeout();
             }
         }
+    }
 
-        [Fact]
-        public async Task ConnectionContinuesIfOnConnectedAsyncThrowsAndFilterDoesNot()
+    [Fact]
+    public async Task FiltersWithIDisposableAreDisposed()
+    {
+        using (StartVerifiableLog())
         {
-            using (StartVerifiableLog())
+            var tcsService = new TcsService();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
             {
-                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+                services.AddSignalR(options =>
                 {
-                    services.AddSignalR(options =>
-                    {
-                        options.EnableDetailedErrors = true;
-                        options.AddFilter<NoExceptionFilter>();
-                    });
-                }, LoggerFactory);
+                    options.EnableDetailedErrors = true;
+                    options.AddFilter<DisposableFilter>();
+                });
 
-                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<OnConnectedThrowsHub>>();
+                services.AddSingleton(tcsService);
+            }, LoggerFactory);
 
-                using (var client = new TestClient())
-                {
-                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
 
-                    // Verify connection still connected, can't invoke a method if the connection is disconnected
-                    var message = await client.InvokeAsync("Method");
-                    Assert.Equal("Failed to invoke 'Method' due to an error on the server. HubException: Method does not exist.", message.Error);
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
 
-                    client.Dispose();
+                // OnConnectedAsync creates and destroys the filter
+                await tcsService.StartedMethod.Task.DefaultTimeout();
+                tcsService.Reset();
 
-                    await connectionHandlerTask.DefaultTimeout();
-                }
+                var message = await client.InvokeAsync("Echo", "Hello");
+                Assert.Equal("Hello", message.Result);
+                await tcsService.StartedMethod.Task.DefaultTimeout();
+                tcsService.Reset();
+
+                client.Dispose();
+
+                // OnDisconnectedAsync creates and destroys the filter
+                await tcsService.StartedMethod.Task.DefaultTimeout();
+                await connectionHandlerTask.DefaultTimeout();
             }
         }
+    }
 
-        [Fact]
-        public async Task ConnectionContinuesIfOnConnectedAsyncNotCalledByFilter()
+    [Fact]
+    public async Task InstanceFiltersWithIDisposableAreNotDisposed()
+    {
+        using (StartVerifiableLog())
         {
-            using (StartVerifiableLog())
+            var tcsService = new TcsService();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
             {
-                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+                services.AddSignalR(options =>
                 {
-                    services.AddSignalR(options =>
-                    {
-                        options.EnableDetailedErrors = true;
-                        options.AddFilter(new SkipNextFilter(skipOnConnected: true));
-                    });
-                }, LoggerFactory);
+                    options.EnableDetailedErrors = true;
+                    options.AddFilter(new DisposableFilter(tcsService));
+                });
 
-                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+                services.AddSingleton(tcsService);
+            }, LoggerFactory);
 
-                using (var client = new TestClient())
-                {
-                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
 
-                    // Verify connection still connected, can't invoke a method if the connection is disconnected
-                    var message = await client.InvokeAsync("Method");
-                    Assert.Equal("Failed to invoke 'Method' due to an error on the server. HubException: Method does not exist.", message.Error);
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
 
-                    client.Dispose();
+                var message = await client.InvokeAsync("Echo", "Hello");
+                Assert.Equal("Hello", message.Result);
 
-                    await connectionHandlerTask.DefaultTimeout();
-                }
+                client.Dispose();
+
+                await connectionHandlerTask.DefaultTimeout();
+
+                Assert.False(tcsService.StartedMethod.Task.IsCompleted);
             }
         }
+    }
 
-        [Fact]
-        public async Task FilterCanSkipCallingHubMethod()
+    [Fact]
+    public async Task FiltersWithIAsyncDisposableAreDisposed()
+    {
+        using (StartVerifiableLog())
         {
-            using (StartVerifiableLog())
+            var tcsService = new TcsService();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
             {
-                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+                services.AddSignalR(options =>
                 {
-                    services.AddSignalR(options =>
-                    {
-                        options.AddFilter(new SkipNextFilter(skipInvoke: true));
-                    });
-                }, LoggerFactory);
+                    options.EnableDetailedErrors = true;
+                    options.AddFilter<AsyncDisposableFilter>();
+                });
 
-                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+                services.AddSingleton(tcsService);
+            }, LoggerFactory);
 
-                using (var client = new TestClient())
-                {
-                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
 
-                    await client.Connected.DefaultTimeout();
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
 
-                    var message = await client.InvokeAsync(nameof(MethodHub.Echo), "Hello world!").DefaultTimeout();
+                // OnConnectedAsync creates and destroys the filter
+                await tcsService.StartedMethod.Task.DefaultTimeout();
+                tcsService.Reset();
 
-                    Assert.Null(message.Error);
-                    Assert.Null(message.Result);
+                var message = await client.InvokeAsync("Echo", "Hello");
+                Assert.Equal("Hello", message.Result);
+                await tcsService.StartedMethod.Task.DefaultTimeout();
+                tcsService.Reset();
 
-                    client.Dispose();
+                client.Dispose();
 
-                    await connectionHandlerTask.DefaultTimeout();
-                }
+                // OnDisconnectedAsync creates and destroys the filter
+                await tcsService.StartedMethod.Task.DefaultTimeout();
+                await connectionHandlerTask.DefaultTimeout();
             }
         }
+    }
 
-        [Fact]
-        public async Task FiltersWithIDisposableAreDisposed()
+    [Fact]
+    public async Task InstanceFiltersWithIAsyncDisposableAreNotDisposed()
+    {
+        using (StartVerifiableLog())
         {
-            using (StartVerifiableLog())
+            var tcsService = new TcsService();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
             {
-                var tcsService = new TcsService();
-                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+                services.AddSignalR(options =>
                 {
-                    services.AddSignalR(options =>
-                    {
-                        options.EnableDetailedErrors = true;
-                        options.AddFilter<DisposableFilter>();
-                    });
+                    options.EnableDetailedErrors = true;
+                    options.AddFilter(new AsyncDisposableFilter(tcsService));
+                });
 
-                    services.AddSingleton(tcsService);
-                }, LoggerFactory);
+                services.AddSingleton(tcsService);
+            }, LoggerFactory);
 
-                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
 
-                using (var client = new TestClient())
-                {
-                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
 
-                    // OnConnectedAsync creates and destroys the filter
-                    await tcsService.StartedMethod.Task.DefaultTimeout();
-                    tcsService.Reset();
+                var message = await client.InvokeAsync("Echo", "Hello");
+                Assert.Equal("Hello", message.Result);
 
-                    var message = await client.InvokeAsync("Echo", "Hello");
-                    Assert.Equal("Hello", message.Result);
-                    await tcsService.StartedMethod.Task.DefaultTimeout();
-                    tcsService.Reset();
+                client.Dispose();
 
-                    client.Dispose();
+                await connectionHandlerTask.DefaultTimeout();
 
-                    // OnDisconnectedAsync creates and destroys the filter
-                    await tcsService.StartedMethod.Task.DefaultTimeout();
-                    await connectionHandlerTask.DefaultTimeout();
-                }
+                Assert.False(tcsService.StartedMethod.Task.IsCompleted);
             }
         }
+    }
 
-        [Fact]
-        public async Task InstanceFiltersWithIDisposableAreNotDisposed()
+    [Fact]
+    public async Task InvokeFailsWhenFilterCallsNonExistantMethod()
+    {
+        bool ExpectedErrors(WriteContext writeContext)
         {
-            using (StartVerifiableLog())
-            {
-                var tcsService = new TcsService();
-                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
-                {
-                    services.AddSignalR(options =>
-                    {
-                        options.EnableDetailedErrors = true;
-                        options.AddFilter(new DisposableFilter(tcsService));
-                    });
-
-                    services.AddSingleton(tcsService);
-                }, LoggerFactory);
-
-                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
-
-                using (var client = new TestClient())
-                {
-                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
-
-                    var message = await client.InvokeAsync("Echo", "Hello");
-                    Assert.Equal("Hello", message.Result);
-
-                    client.Dispose();
-
-                    await connectionHandlerTask.DefaultTimeout();
-
-                    Assert.False(tcsService.StartedMethod.Task.IsCompleted);
-                }
-            }
+            return writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
+                   writeContext.EventId.Name == "FailedInvokingHubMethod";
         }
 
-        [Fact]
-        public async Task FiltersWithIAsyncDisposableAreDisposed()
+        using (StartVerifiableLog(expectedErrorsFilter: ExpectedErrors))
         {
-            using (StartVerifiableLog())
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
             {
-                var tcsService = new TcsService();
-                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+                services.AddSignalR(options =>
                 {
-                    services.AddSignalR(options =>
-                    {
-                        options.EnableDetailedErrors = true;
-                        options.AddFilter<AsyncDisposableFilter>();
-                    });
+                    options.EnableDetailedErrors = true;
+                    options.AddFilter<ChangeMethodFilter>();
+                });
+            }, LoggerFactory);
 
-                    services.AddSingleton(tcsService);
-                }, LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
 
-                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
-
-                using (var client = new TestClient())
-                {
-                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
-
-                    // OnConnectedAsync creates and destroys the filter
-                    await tcsService.StartedMethod.Task.DefaultTimeout();
-                    tcsService.Reset();
-
-                    var message = await client.InvokeAsync("Echo", "Hello");
-                    Assert.Equal("Hello", message.Result);
-                    await tcsService.StartedMethod.Task.DefaultTimeout();
-                    tcsService.Reset();
-
-                    client.Dispose();
-
-                    // OnDisconnectedAsync creates and destroys the filter
-                    await tcsService.StartedMethod.Task.DefaultTimeout();
-                    await connectionHandlerTask.DefaultTimeout();
-                }
-            }
-        }
-
-        [Fact]
-        public async Task InstanceFiltersWithIAsyncDisposableAreNotDisposed()
-        {
-            using (StartVerifiableLog())
+            using (var client = new TestClient())
             {
-                var tcsService = new TcsService();
-                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
-                {
-                    services.AddSignalR(options =>
-                    {
-                        options.EnableDetailedErrors = true;
-                        options.AddFilter(new AsyncDisposableFilter(tcsService));
-                    });
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
 
-                    services.AddSingleton(tcsService);
-                }, LoggerFactory);
+                var message = await client.InvokeAsync("Echo", "Hello");
+                Assert.Equal("An unexpected error occurred invoking 'Echo' on the server. HubException: Unknown hub method 'BaseMethod'", message.Error);
 
-                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+                client.Dispose();
 
-                using (var client = new TestClient())
-                {
-                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
-
-                    var message = await client.InvokeAsync("Echo", "Hello");
-                    Assert.Equal("Hello", message.Result);
-
-                    client.Dispose();
-
-                    await connectionHandlerTask.DefaultTimeout();
-
-                    Assert.False(tcsService.StartedMethod.Task.IsCompleted);
-                }
-            }
-        }
-
-        [Fact]
-        public async Task InvokeFailsWhenFilterCallsNonExistantMethod()
-        {
-            bool ExpectedErrors(WriteContext writeContext)
-            {
-                return writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
-                       writeContext.EventId.Name == "FailedInvokingHubMethod";
-            }
-
-            using (StartVerifiableLog(expectedErrorsFilter: ExpectedErrors))
-            {
-                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
-                {
-                    services.AddSignalR(options =>
-                    {
-                        options.EnableDetailedErrors = true;
-                        options.AddFilter<ChangeMethodFilter>();
-                    });
-                }, LoggerFactory);
-
-                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
-
-                using (var client = new TestClient())
-                {
-                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
-
-                    var message = await client.InvokeAsync("Echo", "Hello");
-                    Assert.Equal("An unexpected error occurred invoking 'Echo' on the server. HubException: Unknown hub method 'BaseMethod'", message.Error);
-
-                    client.Dispose();
-
-                    await connectionHandlerTask.DefaultTimeout();
-                }
+                await connectionHandlerTask.DefaultTimeout();
             }
         }
     }

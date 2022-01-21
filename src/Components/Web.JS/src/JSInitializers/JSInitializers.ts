@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 import { Blazor } from '../GlobalExports';
 
 type BeforeBlazorStartedCallback = (...args: unknown[]) => Promise<void>;
@@ -34,7 +37,7 @@ export class JSInitializer {
     }
   }
 
-  async invokeAfterStartedCallbacks(blazor: typeof Blazor) {
+  async invokeAfterStartedCallbacks(blazor: typeof Blazor): Promise<void> {
     await Promise.all(this.afterStartedCallbacks.map(callback => callback(blazor)));
   }
 }

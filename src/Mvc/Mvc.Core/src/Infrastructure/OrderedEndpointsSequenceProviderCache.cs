@@ -5,15 +5,14 @@
 using System.Collections.Concurrent;
 using Microsoft.AspNetCore.Routing;
 
-namespace Microsoft.AspNetCore.Mvc.Infrastructure
-{
-    internal class OrderedEndpointsSequenceProviderCache
-    {
-        private readonly ConcurrentDictionary<IEndpointRouteBuilder, OrderedEndpointsSequenceProvider> _sequenceProviderCache = new();
+namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
-        public OrderedEndpointsSequenceProvider GetOrCreateOrderedEndpointsSequenceProvider(IEndpointRouteBuilder endpoints)
-        {
-            return _sequenceProviderCache.GetOrAdd(endpoints, new OrderedEndpointsSequenceProvider());
-        }
+internal class OrderedEndpointsSequenceProviderCache
+{
+    private readonly ConcurrentDictionary<IEndpointRouteBuilder, OrderedEndpointsSequenceProvider> _sequenceProviderCache = new();
+
+    public OrderedEndpointsSequenceProvider GetOrCreateOrderedEndpointsSequenceProvider(IEndpointRouteBuilder endpoints)
+    {
+        return _sequenceProviderCache.GetOrAdd(endpoints, new OrderedEndpointsSequenceProvider());
     }
 }

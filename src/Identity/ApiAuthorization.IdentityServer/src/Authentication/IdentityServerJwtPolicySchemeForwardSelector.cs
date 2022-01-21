@@ -1,33 +1,31 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 
-namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Authentication
+namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Authentication;
+
+internal class IdentityServerJwtPolicySchemeForwardSelector
 {
-    internal class IdentityServerJwtPolicySchemeForwardSelector
+    private readonly PathString _identityPath;
+    private readonly string _IdentityServerJwtScheme;
+
+    public IdentityServerJwtPolicySchemeForwardSelector(
+        string identityPath,
+        string IdentityServerJwtScheme)
     {
-        private readonly PathString _identityPath;
-        private readonly string _IdentityServerJwtScheme;
+        _identityPath = identityPath;
+        _IdentityServerJwtScheme = IdentityServerJwtScheme;
+    }
 
-        public IdentityServerJwtPolicySchemeForwardSelector(
-            string identityPath,
-            string IdentityServerJwtScheme)
+    public string SelectScheme(HttpContext ctx)
+    {
+        if (ctx.Request.Path.StartsWithSegments(_identityPath, StringComparison.OrdinalIgnoreCase))
         {
-            _identityPath = identityPath;
-            _IdentityServerJwtScheme = IdentityServerJwtScheme;
+            return IdentityConstants.ApplicationScheme;
         }
 
-        public string SelectScheme(HttpContext ctx)
-        {
-            if (ctx.Request.Path.StartsWithSegments(_identityPath, StringComparison.OrdinalIgnoreCase))
-            {
-                return IdentityConstants.ApplicationScheme;
-            }
-
-            return _IdentityServerJwtScheme;
-        }
+        return _IdentityServerJwtScheme;
     }
 }

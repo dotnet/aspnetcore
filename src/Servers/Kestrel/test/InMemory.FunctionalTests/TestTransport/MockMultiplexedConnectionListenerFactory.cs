@@ -8,42 +8,41 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport
+namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
+
+internal class MockMultiplexedConnectionListenerFactory : IMultiplexedConnectionListenerFactory
 {
-    internal class MockMultiplexedConnectionListenerFactory : IMultiplexedConnectionListenerFactory
+    public Action<EndPoint, IFeatureCollection> OnBindAsync { get; set; }
+
+    public ValueTask<IMultiplexedConnectionListener> BindAsync(EndPoint endpoint, IFeatureCollection features = null, CancellationToken cancellationToken = default)
     {
-        public Action<EndPoint, IFeatureCollection> OnBindAsync { get; set; }
+        OnBindAsync?.Invoke(endpoint, features);
 
-        public ValueTask<IMultiplexedConnectionListener> BindAsync(EndPoint endpoint, IFeatureCollection features = null, CancellationToken cancellationToken = default)
+        return ValueTask.FromResult<IMultiplexedConnectionListener>(new MockMultiplexedConnectionListener(endpoint));
+    }
+
+    private class MockMultiplexedConnectionListener : IMultiplexedConnectionListener
+    {
+        public MockMultiplexedConnectionListener(EndPoint endpoint)
         {
-            OnBindAsync?.Invoke(endpoint, features);
-
-            return ValueTask.FromResult<IMultiplexedConnectionListener>(new MockMultiplexedConnectionListener(endpoint));
+            EndPoint = endpoint;
         }
 
-        private class MockMultiplexedConnectionListener : IMultiplexedConnectionListener
+        public EndPoint EndPoint { get; }
+
+        public ValueTask<MultiplexedConnectionContext> AcceptAsync(IFeatureCollection features = null, CancellationToken cancellationToken = default)
         {
-            public MockMultiplexedConnectionListener(EndPoint endpoint)
-            {
-                EndPoint = endpoint;
-            }
+            return ValueTask.FromResult<MultiplexedConnectionContext>(null);
+        }
 
-            public EndPoint EndPoint { get; }
+        public ValueTask DisposeAsync()
+        {
+            return default;
+        }
 
-            public ValueTask<MultiplexedConnectionContext> AcceptAsync(IFeatureCollection features = null, CancellationToken cancellationToken = default)
-            {
-                return ValueTask.FromResult<MultiplexedConnectionContext>(null);
-            }
-
-            public ValueTask DisposeAsync()
-            {
-                return default;
-            }
-
-            public ValueTask UnbindAsync(CancellationToken cancellationToken = default)
-            {
-                return default;
-            }
+        public ValueTask UnbindAsync(CancellationToken cancellationToken = default)
+        {
+            return default;
         }
     }
 }

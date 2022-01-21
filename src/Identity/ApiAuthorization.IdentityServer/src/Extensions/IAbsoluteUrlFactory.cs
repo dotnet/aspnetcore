@@ -3,11 +3,10 @@
 
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
+namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
+
+internal interface IAbsoluteUrlFactory
 {
-    internal interface IAbsoluteUrlFactory
-    {
-        string GetAbsoluteUrl(string path);
-        string GetAbsoluteUrl(HttpContext context, string path);
-    }
+    string GetAbsoluteUrl(string path);
+    string GetAbsoluteUrl(HttpContext context, string path);
 }

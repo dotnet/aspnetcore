@@ -4,27 +4,25 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Rewrite.PatternSegments;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Rewrite.Tests.PatternSegments
+namespace Microsoft.AspNetCore.Rewrite.Tests.PatternSegments;
+
+public class IsHttpsModSegmentTests
 {
-    public class IsHttpsModSegmentTests
+    [Theory]
+    [InlineData("http", "off")]
+    [InlineData("https", "on")]
+    public void IsHttps_AssertCorrectBehaviorWhenProvidedHttpContext(string input, string expected)
     {
-        [Theory]
-        [InlineData("http", "off")]
-        [InlineData("https", "on")]
-        public void IsHttps_AssertCorrectBehaviorWhenProvidedHttpContext(string input, string expected)
-        {
-            // Arrange
-            var segement = new IsHttpsModSegment();
-            var context = new RewriteContext { HttpContext = new DefaultHttpContext() };
-            context.HttpContext.Request.Scheme = input;
+        // Arrange
+        var segement = new IsHttpsModSegment();
+        var context = new RewriteContext { HttpContext = new DefaultHttpContext() };
+        context.HttpContext.Request.Scheme = input;
 
-            // Act
-            var results = segement.Evaluate(context, null, null);
+        // Act
+        var results = segement.Evaluate(context, null, null);
 
-            // Assert
-            Assert.Equal(expected, results);
-        }
+        // Assert
+        Assert.Equal(expected, results);
     }
 }

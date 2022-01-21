@@ -9,95 +9,94 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using Xunit;
 
-namespace Microsoft.AspNetCore.JsonPatch.IntegrationTests
-{
-    public class HeterogenousCollectionTests
-    {
-        [Fact]
-        public void AddItemToList()
-        {
-            // Arrange
-            var targetObject = new Canvas()
-            {
-                Items = new List<Shape>()
-            };
+namespace Microsoft.AspNetCore.JsonPatch.IntegrationTests;
 
-            var circleJObject = JObject.Parse(@"{
+public class HeterogenousCollectionTests
+{
+    [Fact]
+    public void AddItemToList()
+    {
+        // Arrange
+        var targetObject = new Canvas()
+        {
+            Items = new List<Shape>()
+        };
+
+        var circleJObject = JObject.Parse(@"{
               Type: 'Circle',
               ShapeProperty: 'Shape property',
               CircleProperty: 'Circle property'
             }");
 
-            var patchDocument = new JsonPatchDocument
-            {
-                ContractResolver = new CanvasContractResolver()
-            };
+        var patchDocument = new JsonPatchDocument
+        {
+            ContractResolver = new CanvasContractResolver()
+        };
 
-            patchDocument.Add("/Items/-", circleJObject);
+        patchDocument.Add("/Items/-", circleJObject);
 
-            // Act
-            patchDocument.ApplyTo(targetObject);
+        // Act
+        patchDocument.ApplyTo(targetObject);
 
-            // Assert
-            var circle = targetObject.Items[0] as Circle;
-            Assert.NotNull(circle);
-            Assert.Equal("Shape property", circle.ShapeProperty);
-            Assert.Equal("Circle property", circle.CircleProperty);
+        // Assert
+        var circle = targetObject.Items[0] as Circle;
+        Assert.NotNull(circle);
+        Assert.Equal("Shape property", circle.ShapeProperty);
+        Assert.Equal("Circle property", circle.CircleProperty);
+    }
+}
+
+public class CanvasContractResolver : DefaultContractResolver
+{
+    protected override JsonConverter ResolveContractConverter(Type objectType)
+    {
+        if (objectType == typeof(Shape))
+        {
+            return new ShapeJsonConverter();
         }
+
+        return base.ResolveContractConverter(objectType);
+    }
+}
+
+public class ShapeJsonConverter : CustomCreationConverter<Shape>
+{
+    private const string TypeProperty = "Type";
+
+    public override bool CanRead => true;
+
+    public override Shape Create(Type objectType)
+    {
+        throw new NotImplementedException();
     }
 
-    public class CanvasContractResolver : DefaultContractResolver
+    public override object ReadJson(
+        JsonReader reader,
+        Type objectType,
+        object existingValue,
+        JsonSerializer serializer)
     {
-        protected override JsonConverter ResolveContractConverter(Type objectType)
-        {
-            if (objectType == typeof(Shape))
-            {
-                return new ShapeJsonConverter();
-            }
+        var jObject = JObject.Load(reader);
 
-            return base.ResolveContractConverter(objectType);
-        }
+        var target = CreateShape(jObject);
+        serializer.Populate(jObject.CreateReader(), target);
+
+        return target;
     }
 
-    public class ShapeJsonConverter : CustomCreationConverter<Shape>
+    private Shape CreateShape(JObject jObject)
     {
-        private const string TypeProperty = "Type";
+        var typeProperty = jObject.GetValue(TypeProperty).ToString();
 
-        public override bool CanRead => true;
-
-        public override Shape Create(Type objectType)
+        switch (typeProperty)
         {
-            throw new NotImplementedException();
+            case "Circle":
+                return new Circle();
+
+            case "Rectangle":
+                return new Rectangle();
         }
 
-        public override object ReadJson(
-            JsonReader reader,
-            Type objectType,
-            object existingValue,
-            JsonSerializer serializer)
-        {
-            var jObject = JObject.Load(reader);
-
-            var target = CreateShape(jObject);
-            serializer.Populate(jObject.CreateReader(), target);
-
-            return target;
-        }
-
-        private Shape CreateShape(JObject jObject)
-        {
-            var typeProperty = jObject.GetValue(TypeProperty).ToString();
-
-            switch (typeProperty)
-            {
-                case "Circle":
-                    return new Circle();
-
-                case "Rectangle":
-                    return new Rectangle();
-            }
-
-            throw new NotSupportedException();
-        }
+        throw new NotSupportedException();
     }
 }

@@ -3,60 +3,58 @@
 
 #nullable enable
 
-using System;
 
-namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
+namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
+
+/// <summary>
+/// Provides <see cref="BindingMetadata"/> for a <see cref="DefaultModelMetadata"/>.
+/// </summary>
+public class BindingSourceMetadataProvider : IBindingMetadataProvider
 {
     /// <summary>
-    /// Provides <see cref="BindingMetadata"/> for a <see cref="DefaultModelMetadata"/>.
+    /// Creates a new <see cref="BindingSourceMetadataProvider"/> for the given <paramref name="type"/>.
     /// </summary>
-    public class BindingSourceMetadataProvider : IBindingMetadataProvider
+    /// <param name="type">
+    /// The <see cref="Type"/>. The provider sets <see cref="BindingSource"/> of the given <see cref="Type"/> or
+    /// anything assignable to the given <see cref="Type"/>.
+    /// </param>
+    /// <param name="bindingSource">
+    /// The <see cref="BindingSource"/> to assign to the given <paramref name="type"/>.
+    /// </param>
+    public BindingSourceMetadataProvider(Type type, BindingSource? bindingSource)
     {
-        /// <summary>
-        /// Creates a new <see cref="BindingSourceMetadataProvider"/> for the given <paramref name="type"/>.
-        /// </summary>
-        /// <param name="type">
-        /// The <see cref="Type"/>. The provider sets <see cref="BindingSource"/> of the given <see cref="Type"/> or
-        /// anything assignable to the given <see cref="Type"/>.
-        /// </param>
-        /// <param name="bindingSource">
-        /// The <see cref="BindingSource"/> to assign to the given <paramref name="type"/>.
-        /// </param>
-        public BindingSourceMetadataProvider(Type type, BindingSource? bindingSource)
+        if (type == null)
         {
-            if (type == null)
-            {
-                throw new ArgumentNullException(nameof(type));
-            }
-
-            Type = type;
-            BindingSource = bindingSource;
+            throw new ArgumentNullException(nameof(type));
         }
 
+        Type = type;
+        BindingSource = bindingSource;
+    }
 
-        /// <summary>
-        /// The <see cref="Type"/>. The provider sets <see cref="BindingSource"/> of the given <see cref="Type"/> or
-        /// anything assignable to the given <see cref="Type"/>.
-        /// </summary>
-        public Type Type { get; }
 
-        /// <summary>
-        /// The <see cref="BindingSource"/> to assign to the Type.
-        /// </summary>
-        public BindingSource? BindingSource { get; }
+    /// <summary>
+    /// The <see cref="Type"/>. The provider sets <see cref="BindingSource"/> of the given <see cref="Type"/> or
+    /// anything assignable to the given <see cref="Type"/>.
+    /// </summary>
+    public Type Type { get; }
 
-        /// <inheritdoc />
-        public void CreateBindingMetadata(BindingMetadataProviderContext context)
+    /// <summary>
+    /// The <see cref="BindingSource"/> to assign to the Type.
+    /// </summary>
+    public BindingSource? BindingSource { get; }
+
+    /// <inheritdoc />
+    public void CreateBindingMetadata(BindingMetadataProviderContext context)
+    {
+        if (context == null)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            throw new ArgumentNullException(nameof(context));
+        }
 
-            if (Type.IsAssignableFrom(context.Key.ModelType))
-            {
-                context.BindingMetadata.BindingSource = BindingSource;
-            }
+        if (Type.IsAssignableFrom(context.Key.ModelType))
+        {
+            context.BindingMetadata.BindingSource = BindingSource;
         }
     }
 }

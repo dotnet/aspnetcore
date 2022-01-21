@@ -18,7 +18,6 @@ export PATH="$PATH:$DIR:$DIR/node/bin"
 # Set playwright stuff
 export PLAYWRIGHT_BROWSERS_PATH="$DIR/ms-playwright"
 if [[ "$helixQueue" == *"OSX"* ]]; then
-    export PLAYWRIGHT_DRIVER_PATH="$DIR/.playwright/osx/native/playwright.sh"
     PLAYWRIGHT_NODE_PATH=$DIR/.playwright/osx/native/node
 else
     export PLAYWRIGHT_DRIVER_PATH="$DIR/.playwright/unix/native/playwright.sh"

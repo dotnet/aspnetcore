@@ -1,6 +1,22 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.CommandLine;
+using System.Diagnostics.Tracing;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Security;
+using System.Net.Sockets;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -8,22 +24,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
-using System;
-using System.CommandLine;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Net.Security;
-using System.Runtime.InteropServices;
-using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Diagnostics.Tracing;
-using System.Text;
-using System.Net;
-using System.Net.Sockets;
 
 /// <summary>
 /// Simple HttpClient stress app that launches Kestrel in-proc and runs many concurrent requests of varying types against it.
@@ -36,12 +36,12 @@ public class Program
         cmd.AddOption(new Option("-n", "Max number of requests to make concurrently.") { Argument = new Argument<int>("numWorkers", 1) });
         cmd.AddOption(new Option("-maxContentLength", "Max content length for request and response bodies.") { Argument = new Argument<int>("numBytes", 1000) });
         cmd.AddOption(new Option("-http", "HTTP version (1.1 or 2.0)") { Argument = new Argument<Version[]>("version", new[] { HttpVersion.Version20 }) });
-        cmd.AddOption(new Option("-connectionLifetime", "Max connection lifetime length (milliseconds).") { Argument = new Argument<int?>("connectionLifetime", null)});
+        cmd.AddOption(new Option("-connectionLifetime", "Max connection lifetime length (milliseconds).") { Argument = new Argument<int?>("connectionLifetime", null) });
         cmd.AddOption(new Option("-ops", "Indices of the operations to use") { Argument = new Argument<int[]>("space-delimited indices", null) });
         cmd.AddOption(new Option("-trace", "Enable Microsoft-System-Net-Http tracing.") { Argument = new Argument<string>("\"console\" or path") });
         cmd.AddOption(new Option("-aspnetlog", "Enable ASP.NET warning and error logging.") { Argument = new Argument<bool>("enable", false) });
         cmd.AddOption(new Option("-listOps", "List available options.") { Argument = new Argument<bool>("enable", false) });
-        cmd.AddOption(new Option("-seed", "Seed for generating pseudo-random parameters for a given -n argument.") { Argument = new Argument<int?>("seed", null)});
+        cmd.AddOption(new Option("-seed", "Seed for generating pseudo-random parameters for a given -n argument.") { Argument = new Argument<int?>("seed", null) });
 
         ParseResult cmdline = cmd.Parse(args);
         if (cmdline.Errors.Count > 0)
@@ -55,15 +55,15 @@ public class Program
             return;
         }
 
-        Run(concurrentRequests  : cmdline.ValueForOption<int>("-n"),
-            maxContentLength    : cmdline.ValueForOption<int>("-maxContentLength"),
-            httpVersions        : cmdline.ValueForOption<Version[]>("-http"),
-            connectionLifetime  : cmdline.ValueForOption<int?>("-connectionLifetime"),
-            opIndices           : cmdline.ValueForOption<int[]>("-ops"),
-            logPath             : cmdline.HasOption("-trace") ? cmdline.ValueForOption<string>("-trace") : null,
-            aspnetLog           : cmdline.ValueForOption<bool>("-aspnetlog"),
-            listOps             : cmdline.ValueForOption<bool>("-listOps"),
-            seed                : cmdline.ValueForOption<int?>("-seed") ?? Random.Shared.Next());
+        Run(concurrentRequests: cmdline.ValueForOption<int>("-n"),
+            maxContentLength: cmdline.ValueForOption<int>("-maxContentLength"),
+            httpVersions: cmdline.ValueForOption<Version[]>("-http"),
+            connectionLifetime: cmdline.ValueForOption<int?>("-connectionLifetime"),
+            opIndices: cmdline.ValueForOption<int[]>("-ops"),
+            logPath: cmdline.HasOption("-trace") ? cmdline.ValueForOption<string>("-trace") : null,
+            aspnetLog: cmdline.ValueForOption<bool>("-aspnetlog"),
+            listOps: cmdline.ValueForOption<bool>("-listOps"),
+            seed: cmdline.ValueForOption<int?>("-seed") ?? Random.Shared.Next());
     }
 
     private static void Run(int concurrentRequests, int maxContentLength, Version[] httpVersions, int? connectionLifetime, int[] opIndices, string logPath, bool aspnetLog, bool listOps, int seed)
@@ -324,7 +324,10 @@ public class Program
                         throw new Exception($"Expected {maxContentLength}, got {m.Content.Headers.ContentLength}");
                     }
                     string r = await m.Content.ReadAsStringAsync();
-                    if (r.Length > 0) throw new Exception($"Got unexpected response: {r}");
+                    if (r.Length > 0)
+                    {
+                        throw new Exception($"Got unexpected response: {r}");
+                    }
                 }
             }),
 
@@ -339,7 +342,10 @@ public class Program
                 {
                     ValidateResponse(m, httpVersion);
                     string r = await m.Content.ReadAsStringAsync();
-                    if (r != "") throw new Exception($"Got unexpected response: {r}");
+                    if (r != "")
+                    {
+                        throw new Exception($"Got unexpected response: {r}");
+                    }
                 }
             }),
         };
@@ -614,7 +620,7 @@ public class Program
             HttpClient = httpClient;
 
             // deterministic hashing copied from System.Runtime.Hashing
-            int Combine(int h1, int h2)
+            static int Combine(int h1, int h2)
             {
                 uint rol5 = ((uint)h1 << 5) | ((uint)h1 >> 27);
                 return ((int)rol5 + h1) ^ h2;
@@ -712,7 +718,9 @@ public class Program
         protected override void OnEventSourceCreated(EventSource eventSource)
         {
             if (eventSource.Name == "Microsoft-System-Net-Http")
+            {
                 EnableEvents(eventSource, EventLevel.LogAlways);
+            }
         }
 
         protected override void OnEventWritten(EventWrittenEventArgs eventData)
@@ -724,7 +732,10 @@ public class Program
                     var sb = new StringBuilder().Append(FormattableString.Invariant($"[{eventData.EventName}] "));
                     for (int i = 0; i < eventData.Payload.Count; i++)
                     {
-                        if (i > 0) sb.Append(", ");
+                        if (i > 0)
+                        {
+                            sb.Append(", ");
+                        }
                         sb.Append(eventData.PayloadNames[i]).Append(": ").Append(eventData.Payload[i]);
                     }
                     _writer.WriteLine(sb);
@@ -736,7 +747,10 @@ public class Program
                     Console.ResetColor();
                     for (int i = 0; i < eventData.Payload.Count; i++)
                     {
-                        if (i > 0) Console.Write(", ");
+                        if (i > 0)
+                        {
+                            Console.Write(", ");
+                        }
                         Console.ForegroundColor = ConsoleColor.DarkGray;
                         Console.Write(eventData.PayloadNames[i] + ": ");
                         Console.ResetColor();

@@ -1,68 +1,66 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Mvc.ViewComponents
+namespace Microsoft.AspNetCore.Mvc.ViewComponents;
+
+internal class DefaultViewComponentInvokerFactory : IViewComponentInvokerFactory
 {
-    internal class DefaultViewComponentInvokerFactory : IViewComponentInvokerFactory
+    private readonly IViewComponentFactory _viewComponentFactory;
+    private readonly ViewComponentInvokerCache _viewComponentInvokerCache;
+    private readonly ILogger _logger;
+    private readonly DiagnosticListener _diagnosticListener;
+
+    public DefaultViewComponentInvokerFactory(
+        IViewComponentFactory viewComponentFactory,
+        ViewComponentInvokerCache viewComponentInvokerCache,
+        DiagnosticListener diagnosticListener,
+        ILoggerFactory loggerFactory)
     {
-        private readonly IViewComponentFactory _viewComponentFactory;
-        private readonly ViewComponentInvokerCache _viewComponentInvokerCache;
-        private readonly ILogger _logger;
-        private readonly DiagnosticListener _diagnosticListener;
-
-        public DefaultViewComponentInvokerFactory(
-            IViewComponentFactory viewComponentFactory,
-            ViewComponentInvokerCache viewComponentInvokerCache,
-            DiagnosticListener diagnosticListener,
-            ILoggerFactory loggerFactory)
+        if (viewComponentFactory == null)
         {
-            if (viewComponentFactory == null)
-            {
-                throw new ArgumentNullException(nameof(viewComponentFactory));
-            }
-
-            if (viewComponentInvokerCache == null)
-            {
-                throw new ArgumentNullException(nameof(viewComponentInvokerCache));
-            }
-
-            if (diagnosticListener == null)
-            {
-                throw new ArgumentNullException(nameof(diagnosticListener));
-            }
-
-            if (loggerFactory == null)
-            {
-                throw new ArgumentNullException(nameof(loggerFactory));
-            }
-
-            _viewComponentFactory = viewComponentFactory;
-            _diagnosticListener = diagnosticListener;
-            _viewComponentInvokerCache = viewComponentInvokerCache;
-
-            _logger = loggerFactory.CreateLogger<DefaultViewComponentInvoker>();
+            throw new ArgumentNullException(nameof(viewComponentFactory));
         }
 
-        /// <inheritdoc />
-        // We don't currently make use of the descriptor or the arguments here (they are available on the context).
-        // We might do this some day to cache which method we select, so resist the urge to 'clean' this without
-        // considering that possibility.
-        public IViewComponentInvoker CreateInstance(ViewComponentContext context)
+        if (viewComponentInvokerCache == null)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            return new DefaultViewComponentInvoker(
-                _viewComponentFactory,
-                _viewComponentInvokerCache,
-                _diagnosticListener,
-                _logger);
+            throw new ArgumentNullException(nameof(viewComponentInvokerCache));
         }
+
+        if (diagnosticListener == null)
+        {
+            throw new ArgumentNullException(nameof(diagnosticListener));
+        }
+
+        if (loggerFactory == null)
+        {
+            throw new ArgumentNullException(nameof(loggerFactory));
+        }
+
+        _viewComponentFactory = viewComponentFactory;
+        _diagnosticListener = diagnosticListener;
+        _viewComponentInvokerCache = viewComponentInvokerCache;
+
+        _logger = loggerFactory.CreateLogger<DefaultViewComponentInvoker>();
+    }
+
+    /// <inheritdoc />
+    // We don't currently make use of the descriptor or the arguments here (they are available on the context).
+    // We might do this some day to cache which method we select, so resist the urge to 'clean' this without
+    // considering that possibility.
+    public IViewComponentInvoker CreateInstance(ViewComponentContext context)
+    {
+        if (context == null)
+        {
+            throw new ArgumentNullException(nameof(context));
+        }
+
+        return new DefaultViewComponentInvoker(
+            _viewComponentFactory,
+            _viewComponentInvokerCache,
+            _diagnosticListener,
+            _logger);
     }
 }

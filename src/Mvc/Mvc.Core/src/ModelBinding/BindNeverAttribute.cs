@@ -3,24 +3,22 @@
 
 #nullable enable
 
-using System;
 
-namespace Microsoft.AspNetCore.Mvc.ModelBinding
+namespace Microsoft.AspNetCore.Mvc.ModelBinding;
+
+/// <summary>
+/// Indicates that a property should be excluded from model binding. When applied to a property, the model binding
+/// system excludes that property. When applied to a type, the model binding system excludes all properties that
+/// type defines.
+/// </summary>
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Property | AttributeTargets.Parameter, AllowMultiple = false, Inherited = true)]
+public sealed class BindNeverAttribute : BindingBehaviorAttribute
 {
     /// <summary>
-    /// Indicates that a property should be excluded from model binding. When applied to a property, the model binding
-    /// system excludes that property. When applied to a type, the model binding system excludes all properties that
-    /// type defines.
+    /// Initializes a new <see cref="BindNeverAttribute"/> instance.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property | AttributeTargets.Parameter, AllowMultiple = false, Inherited = true)]
-    public sealed class BindNeverAttribute : BindingBehaviorAttribute
+    public BindNeverAttribute()
+        : base(BindingBehavior.Never)
     {
-        /// <summary>
-        /// Initializes a new <see cref="BindNeverAttribute"/> instance.
-        /// </summary>
-        public BindNeverAttribute()
-            : base(BindingBehavior.Never)
-        {
-        }
     }
 }

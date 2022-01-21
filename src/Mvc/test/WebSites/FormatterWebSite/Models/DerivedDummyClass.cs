@@ -1,10 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace FormatterWebSite
+namespace FormatterWebSite;
+
+public class DerivedDummyClass : DummyClass
 {
-    public class DerivedDummyClass : DummyClass
-    {
-        public int SampleIntInDerived { get; set; }
-    }
+    public int SampleIntInDerived { get; set; }
 }

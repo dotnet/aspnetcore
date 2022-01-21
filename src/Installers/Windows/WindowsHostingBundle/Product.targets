@@ -3,6 +3,7 @@
     <DotNetDarkOutputPath>$(IntermediateOutputPath)d\</DotNetDarkOutputPath>
     <DepsPath>$(BaseIntermediateOutputPath)</DepsPath>
     <DefineConstants>$(DefineConstants);DepsPath=$(DepsPath)</DefineConstants>
+    <DefineConstants>$(DefineConstants);InstallersOutputPath=$(InstallersOutputPath)</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,34 +1,31 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Threading.Tasks;
 using Microsoft.JSInterop;
 
-namespace Microsoft.AspNetCore.Components.Forms
+namespace Microsoft.AspNetCore.Components.Forms;
+
+internal class InputFileJsCallbacksRelay : IDisposable
 {
-    internal class InputFileJsCallbacksRelay : IDisposable
+    private readonly IInputFileJsCallbacks _callbacks;
+
+    public IDisposable DotNetReference { get; }
+
+    [DynamicDependency(nameof(NotifyChange))]
+    public InputFileJsCallbacksRelay(IInputFileJsCallbacks callbacks)
     {
-        private readonly IInputFileJsCallbacks _callbacks;
+        _callbacks = callbacks;
 
-        public IDisposable DotNetReference { get; }
+        DotNetReference = DotNetObjectReference.Create(this);
+    }
 
-        [DynamicDependency(nameof(NotifyChange))]
-        public InputFileJsCallbacksRelay(IInputFileJsCallbacks callbacks)
-        {
-            _callbacks = callbacks;
+    [JSInvokable]
+    public Task NotifyChange(BrowserFile[] files)
+        => _callbacks.NotifyChange(files);
 
-            DotNetReference = DotNetObjectReference.Create(this);
-        }
-
-        [JSInvokable]
-        public Task NotifyChange(BrowserFile[] files)
-            => _callbacks.NotifyChange(files);
-
-        public void Dispose()
-        {
-            DotNetReference.Dispose();
-        }
+    public void Dispose()
+    {
+        DotNetReference.Dispose();
     }
 }

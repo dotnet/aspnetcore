@@ -1,60 +1,58 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Net;
 using System.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Server;
 
-namespace Microsoft.AspNetCore.Builder
+namespace Microsoft.AspNetCore.Builder;
+
+/// <summary>
+/// Provides infrastructure for debugging Blazor WebAssembly applications.
+/// </summary>
+public static class WebAssemblyNetDebugProxyAppBuilderExtensions
 {
     /// <summary>
-    /// Provides infrastructure for debugging Blazor WebAssembly applications.
+    /// Adds middleware needed for debugging Blazor WebAssembly applications
+    /// inside Chromium dev tools.
     /// </summary>
-    public static class WebAssemblyNetDebugProxyAppBuilderExtensions
+    public static void UseWebAssemblyDebugging(this IApplicationBuilder app)
     {
-        /// <summary>
-        /// Adds middleware needed for debugging Blazor WebAssembly applications
-        /// inside Chromium dev tools.
-        /// </summary>
-        public static void UseWebAssemblyDebugging(this IApplicationBuilder app)
+        app.Map("/_framework/debug", app =>
         {
-            app.Map("/_framework/debug", app =>
+            app.Run(async (context) =>
             {
-                app.Run(async (context) =>
+                var queryParams = HttpUtility.ParseQueryString(context.Request.QueryString.Value!);
+                var browserParam = queryParams.Get("browser");
+                Uri? browserUrl = null;
+                var devToolsHost = "http://localhost:9222";
+                if (browserParam != null)
                 {
-                    var queryParams = HttpUtility.ParseQueryString(context.Request.QueryString.Value!);
-                    var browserParam = queryParams.Get("browser");
-                    Uri? browserUrl = null;
-                    var devToolsHost = "http://localhost:9222";
-                    if (browserParam != null)
-                    {
-                        browserUrl = new Uri(browserParam);
-                        devToolsHost = $"http://{browserUrl.Host}:{browserUrl.Port}";
-                    }
+                    browserUrl = new Uri(browserParam);
+                    devToolsHost = $"http://{browserUrl.Host}:{browserUrl.Port}";
+                }
 
-                    var debugProxyBaseUrl = await DebugProxyLauncher.EnsureLaunchedAndGetUrl(context.RequestServices, devToolsHost);
-                    var requestPath = context.Request.Path.ToString();
-                    if (requestPath == string.Empty)
-                    {
-                        requestPath = "/";
-                    }
+                var debugProxyBaseUrl = await DebugProxyLauncher.EnsureLaunchedAndGetUrl(context.RequestServices, devToolsHost);
+                var requestPath = context.Request.Path.ToString();
+                if (requestPath == string.Empty)
+                {
+                    requestPath = "/";
+                }
 
-                    switch (requestPath)
-                    {
-                        case "/":
-                            var targetPickerUi = new TargetPickerUi(debugProxyBaseUrl, devToolsHost);
-                            await targetPickerUi.Display(context);
-                            break;
-                        case "/ws-proxy":
-                            context.Response.Redirect($"{debugProxyBaseUrl}{browserUrl!.PathAndQuery}");
-                            break;
-                        default:
-                            context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                            break;
-                    }
-                });
+                switch (requestPath)
+                {
+                    case "/":
+                        var targetPickerUi = new TargetPickerUi(debugProxyBaseUrl, devToolsHost);
+                        await targetPickerUi.Display(context);
+                        break;
+                    case "/ws-proxy":
+                        context.Response.Redirect($"{debugProxyBaseUrl}{browserUrl!.PathAndQuery}");
+                        break;
+                    default:
+                        context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                        break;
+                }
             });
-        }
+        });
     }
 }

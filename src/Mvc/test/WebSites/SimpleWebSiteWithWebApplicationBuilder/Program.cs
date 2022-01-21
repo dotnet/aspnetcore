@@ -34,11 +34,18 @@ app.MapGet("/many-results", (int id) =>
 app.MapGet("/problem", () => Results.Problem("Some problem"));
 
 app.MapGet("/environment", (IHostEnvironment environment) => environment.EnvironmentName);
+app.MapGet("/webroot", (IWebHostEnvironment environment) => environment.WebRootPath);
 
 app.MapGet("/greeting", (IConfiguration config) => config["Greeting"]);
 
 app.MapPost("/accepts-default", (Person person) => Results.Ok(person.Name));
 app.MapPost("/accepts-xml", () => Accepted()).Accepts<Person>("application/xml");
+
+app.MapPost("/fileupload", async (IFormFile file) =>
+{
+    await using var uploadStream = file.OpenReadStream();
+    return uploadStream.Length;
+});
 
 app.Run();
 
@@ -48,4 +55,11 @@ public class MyController : ControllerBase
 {
     [HttpGet("/greet")]
     public string Greet() => $"Hello human";
+}
+
+namespace SimpleWebSiteWithWebApplicationBuilder
+{
+    public partial class Program
+    {
+    }
 }

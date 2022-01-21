@@ -4,7 +4,6 @@
   <PropertyGroup>
     <PackageId>@microsoft/dotnet-js-interop</PackageId>
     <IsPackable>true</IsPackable>
-    <IsTestProject>false</IsTestProject>
     <IsShipping>true</IsShipping>
   </PropertyGroup>
 

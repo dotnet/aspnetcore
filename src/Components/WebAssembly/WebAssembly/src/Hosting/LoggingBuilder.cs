@@ -4,15 +4,14 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
-{
-    internal class LoggingBuilder : ILoggingBuilder
-    {
-        public LoggingBuilder(IServiceCollection services)
-        {
-            Services = services;
-        }
+namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
-        public IServiceCollection Services { get; }
+internal class LoggingBuilder : ILoggingBuilder
+{
+    public LoggingBuilder(IServiceCollection services)
+    {
+        Services = services;
     }
+
+    public IServiceCollection Services { get; }
 }

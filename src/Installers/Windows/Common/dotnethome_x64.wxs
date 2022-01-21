@@ -5,23 +5,28 @@
     <?define Platform = "$(sys.BUILDARCH)"?>
   <?endif?>
 
-  <!-- InstallerArchitecture matches the expected values for PROCESSOR_ARCHITECTURE
-       https://docs.microsoft.com/en-us/windows/win32/winprog64/wow64-implementation-details  -->
+  <!-- InstallerNativeMachine matches the expected values for image file machine constants
+       https://docs.microsoft.com/en-us/windows/win32/sysinfo/image-file-machine-constants -->
   <?if $(var.Platform)~=x86?>
-    <?define InstallerArchitecture="X86"?>
+    <?define InstallerNativeMachine=332?>
   <?elseif $(var.Platform)~=x64?>
-    <?define InstallerArchitecture="AMD64"?>
+    <?define InstallerNativeMachine=34404?>
   <?elseif $(var.Platform)~=arm64?>
-    <?define InstallerArchitecture="ARM64"?>
+    <?define InstallerNativeMachine=43620?>
   <?else?>
-    <?error Unknown platform, $(var.Platform) ?>?
+    <?error Unknown platform, $(var.Platform) ?>
   <?endif?>
 
   <Fragment>
-    <!-- Identify when installing in emulation as when PROCESSOR_ARCHITECTURE does not match the installer architecture
-          https://docs.microsoft.com/en-us/windows/win32/winprog64/wow64-implementation-details -->
+    <!-- Identify when installing in emulation as when WIX_NATIVE_MACHINE does not match the installer
+         native machine (where supported).  Also detect running under WOW on x86 using VersionNT64,
+         since WIX_NATIVE_MACHINE cannot be retrieved on older Windows builds. -->
+    <PropertyRef Id="WIX_NATIVE_MACHINE" />
     <SetProperty Action="Set_NON_NATIVE_ARCHITECTURE" Id="NON_NATIVE_ARCHITECTURE" Value="true" Before="CostFinalize">
-      NOT %PROCESSOR_ARCHITECTURE="$(var.InstallerArchitecture)"
+     <?if $(var.Platform)~=x86?>
+      VersionNT64 OR
+     <?endif?>
+      WIX_NATIVE_MACHINE AND NOT WIX_NATIVE_MACHINE="$(var.InstallerNativeMachine)"
     </SetProperty>
   </Fragment>
 

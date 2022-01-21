@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.TestObjects;
@@ -12,36 +9,36 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Routing.Matching
+namespace Microsoft.AspNetCore.Routing.Matching;
+
+public partial class MatcherBuilderMultipleEntryBenchmark : EndpointRoutingBenchmarkBase
 {
-    public partial class MatcherBuilderMultipleEntryBenchmark : EndpointRoutingBenchmarkBase
+    private IServiceProvider _services;
+    private List<MatcherPolicy> _policies;
+    private ILoggerFactory _loggerFactory;
+    private DefaultEndpointSelector _selector;
+    private DefaultParameterPolicyFactory _parameterPolicyFactory;
+
+    [GlobalSetup]
+    public void Setup()
     {
-        private IServiceProvider _services;
-        private List<MatcherPolicy> _policies;
-        private ILoggerFactory _loggerFactory;
-        private DefaultEndpointSelector _selector;
-        private DefaultParameterPolicyFactory _parameterPolicyFactory;
+        Endpoints = new RouteEndpoint[10];
+        Endpoints[0] = CreateEndpoint("/product", "GET");
+        Endpoints[1] = CreateEndpoint("/product/{id}", "GET");
 
-        [GlobalSetup]
-        public void Setup()
-        {
-            Endpoints = new RouteEndpoint[10];
-            Endpoints[0] = CreateEndpoint("/product", "GET");
-            Endpoints[1] = CreateEndpoint("/product/{id}", "GET");
+        Endpoints[2] = CreateEndpoint("/account", "GET");
+        Endpoints[3] = CreateEndpoint("/account/{id}");
+        Endpoints[4] = CreateEndpoint("/account/{id}", "POST");
+        Endpoints[5] = CreateEndpoint("/account/{id}", "UPDATE");
 
-            Endpoints[2] = CreateEndpoint("/account", "GET");
-            Endpoints[3] = CreateEndpoint("/account/{id}");
-            Endpoints[4] = CreateEndpoint("/account/{id}", "POST");
-            Endpoints[5] = CreateEndpoint("/account/{id}", "UPDATE");
+        Endpoints[6] = CreateEndpoint("/v2/account", "GET");
+        Endpoints[7] = CreateEndpoint("/v2/account/{id}");
+        Endpoints[8] = CreateEndpoint("/v2/account/{id}", "POST");
+        Endpoints[9] = CreateEndpoint("/v2/account/{id}", "UPDATE");
 
-            Endpoints[6] = CreateEndpoint("/v2/account", "GET");
-            Endpoints[7] = CreateEndpoint("/v2/account/{id}");
-            Endpoints[8] = CreateEndpoint("/v2/account/{id}", "POST");
-            Endpoints[9] = CreateEndpoint("/v2/account/{id}", "UPDATE");
-
-            // Define an unordered mixture of policies that implement INodeBuilderPolicy,
-            // IEndpointComparerPolicy and/or IEndpointSelectorPolicy
-            _policies = new List<MatcherPolicy>()
+        // Define an unordered mixture of policies that implement INodeBuilderPolicy,
+        // IEndpointComparerPolicy and/or IEndpointSelectorPolicy
+        _policies = new List<MatcherPolicy>()
                 {
                     CreateNodeBuilderPolicy(4),
                     CreateUberPolicy(2),
@@ -55,154 +52,153 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     CreateUberPolicy(12),
                     CreateEndpointComparerPolicy(11)
                 };
-            _loggerFactory = NullLoggerFactory.Instance;
-            _selector = new DefaultEndpointSelector();
-            _parameterPolicyFactory = new DefaultParameterPolicyFactory(Options.Create(new RouteOptions()), new TestServiceProvider());
+        _loggerFactory = NullLoggerFactory.Instance;
+        _selector = new DefaultEndpointSelector();
+        _parameterPolicyFactory = new DefaultParameterPolicyFactory(Options.Create(new RouteOptions()), new TestServiceProvider());
 
-            _services = CreateServices();
+        _services = CreateServices();
+    }
+
+    private Matcher SetupMatcher(MatcherBuilder builder)
+    {
+        for (int i = 0; i < Endpoints.Length; i++)
+        {
+            builder.AddEndpoint(Endpoints[i]);
+        }
+        return builder.Build();
+    }
+
+    [Benchmark]
+    public void Dfa()
+    {
+        var builder = _services.GetRequiredService<DfaMatcherBuilder>();
+        SetupMatcher(builder);
+    }
+
+    [Benchmark]
+    public void Constructor_Policies()
+    {
+        new DfaMatcherBuilder(_loggerFactory, _parameterPolicyFactory, _selector, _policies);
+    }
+
+    private static MatcherPolicy CreateNodeBuilderPolicy(int order)
+    {
+        return new TestNodeBuilderPolicy(order);
+    }
+    private static MatcherPolicy CreateEndpointComparerPolicy(int order)
+    {
+        return new TestEndpointComparerPolicy(order);
+    }
+
+    private static MatcherPolicy CreateEndpointSelectorPolicy(int order)
+    {
+        return new TestEndpointSelectorPolicy(order);
+    }
+
+    private static MatcherPolicy CreateUberPolicy(int order)
+    {
+        return new TestUberPolicy(order);
+    }
+
+    private class TestUberPolicy : TestMatcherPolicyBase, INodeBuilderPolicy, IEndpointComparerPolicy
+    {
+        public TestUberPolicy(int order) : base(order)
+        {
         }
 
-        private Matcher SetupMatcher(MatcherBuilder builder)
+        public IComparer<Endpoint> Comparer => new TestEndpointComparer();
+
+        public bool AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
         {
-            for (int i = 0; i < Endpoints.Length; i++)
-            {
-                builder.AddEndpoint(Endpoints[i]);
-            }
-            return builder.Build();
+            return false;
         }
 
-        [Benchmark]
-        public void Dfa()
+        public PolicyJumpTable BuildJumpTable(int exitDestination, IReadOnlyList<PolicyJumpTableEdge> edges)
         {
-            var builder = _services.GetRequiredService<DfaMatcherBuilder>();
-            SetupMatcher(builder);
+            throw new NotImplementedException();
         }
 
-        [Benchmark]
-        public void Constructor_Policies()
+        public IReadOnlyList<PolicyNodeEdge> GetEdges(IReadOnlyList<Endpoint> endpoints)
         {
-            new DfaMatcherBuilder(_loggerFactory, _parameterPolicyFactory, _selector, _policies);
+            throw new NotImplementedException();
+        }
+    }
+
+    private class TestNodeBuilderPolicy : TestMatcherPolicyBase, INodeBuilderPolicy
+    {
+        public TestNodeBuilderPolicy(int order) : base(order)
+        {
         }
 
-        private static MatcherPolicy CreateNodeBuilderPolicy(int order)
+        public bool AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
         {
-            return new TestNodeBuilderPolicy(order);
-        }
-        private static MatcherPolicy CreateEndpointComparerPolicy(int order)
-        {
-            return new TestEndpointComparerPolicy(order);
+            return false;
         }
 
-        private static MatcherPolicy CreateEndpointSelectorPolicy(int order)
+        public PolicyJumpTable BuildJumpTable(int exitDestination, IReadOnlyList<PolicyJumpTableEdge> edges)
         {
-            return new TestEndpointSelectorPolicy(order);
+            throw new NotImplementedException();
         }
 
-        private static MatcherPolicy CreateUberPolicy(int order)
+        public IReadOnlyList<PolicyNodeEdge> GetEdges(IReadOnlyList<Endpoint> endpoints)
         {
-            return new TestUberPolicy(order);
+            throw new NotImplementedException();
+        }
+    }
+
+    private class TestEndpointComparerPolicy : TestMatcherPolicyBase, IEndpointComparerPolicy
+    {
+        public TestEndpointComparerPolicy(int order) : base(order)
+        {
         }
 
-        private class TestUberPolicy : TestMatcherPolicyBase, INodeBuilderPolicy, IEndpointComparerPolicy
+        public IComparer<Endpoint> Comparer => new TestEndpointComparer();
+
+        public bool AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
         {
-            public TestUberPolicy(int order) : base(order)
-            {
-            }
-
-            public IComparer<Endpoint> Comparer => new TestEndpointComparer();
-
-            public bool AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
-            {
-                return false;
-            }
-
-            public PolicyJumpTable BuildJumpTable(int exitDestination, IReadOnlyList<PolicyJumpTableEdge> edges)
-            {
-                throw new NotImplementedException();
-            }
-
-            public IReadOnlyList<PolicyNodeEdge> GetEdges(IReadOnlyList<Endpoint> endpoints)
-            {
-                throw new NotImplementedException();
-            }
+            return false;
         }
 
-        private class TestNodeBuilderPolicy : TestMatcherPolicyBase, INodeBuilderPolicy
+        public Task ApplyAsync(HttpContext httpContext, CandidateSet candidates)
         {
-            public TestNodeBuilderPolicy(int order) : base(order)
-            {
-            }
+            throw new NotImplementedException();
+        }
+    }
 
-            public bool AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
-            {
-                return false;
-            }
-
-            public PolicyJumpTable BuildJumpTable(int exitDestination, IReadOnlyList<PolicyJumpTableEdge> edges)
-            {
-                throw new NotImplementedException();
-            }
-
-            public IReadOnlyList<PolicyNodeEdge> GetEdges(IReadOnlyList<Endpoint> endpoints)
-            {
-                throw new NotImplementedException();
-            }
+    private class TestEndpointSelectorPolicy : TestMatcherPolicyBase, IEndpointSelectorPolicy
+    {
+        public TestEndpointSelectorPolicy(int order) : base(order)
+        {
         }
 
-        private class TestEndpointComparerPolicy : TestMatcherPolicyBase, IEndpointComparerPolicy
+        public bool AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
         {
-            public TestEndpointComparerPolicy(int order) : base(order)
-            {
-            }
-
-            public IComparer<Endpoint> Comparer => new TestEndpointComparer();
-
-            public bool AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
-            {
-                return false;
-            }
-
-            public Task ApplyAsync(HttpContext httpContext, CandidateSet candidates)
-            {
-                throw new NotImplementedException();
-            }
+            return false;
         }
 
-        private class TestEndpointSelectorPolicy : TestMatcherPolicyBase, IEndpointSelectorPolicy
+        public Task ApplyAsync(HttpContext httpContext, CandidateSet candidates)
         {
-            public TestEndpointSelectorPolicy(int order) : base(order)
-            {
-            }
+            throw new NotImplementedException();
+        }
+    }
 
-            public bool AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
-            {
-                return false;
-            }
+    private abstract class TestMatcherPolicyBase : MatcherPolicy
+    {
+        private readonly int _order;
 
-            public Task ApplyAsync(HttpContext httpContext, CandidateSet candidates)
-            {
-                throw new NotImplementedException();
-            }
+        protected TestMatcherPolicyBase(int order)
+        {
+            _order = order;
         }
 
-        private abstract class TestMatcherPolicyBase : MatcherPolicy
+        public override int Order { get { return _order; } }
+    }
+
+    private class TestEndpointComparer : IComparer<Endpoint>
+    {
+        public int Compare(Endpoint x, Endpoint y)
         {
-            private readonly int _order;
-
-            protected TestMatcherPolicyBase(int order)
-            {
-                _order = order;
-            }
-
-            public override int Order { get { return _order; } }
-        }
-
-        private class TestEndpointComparer : IComparer<Endpoint>
-        {
-            public int Compare(Endpoint x, Endpoint y)
-            {
-                return 0;
-            }
+            return 0;
         }
     }
 }

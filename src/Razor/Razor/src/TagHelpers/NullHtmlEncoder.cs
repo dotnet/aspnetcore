@@ -1,118 +1,115 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text.Encodings.Web;
 
-namespace Microsoft.AspNetCore.Razor.TagHelpers
+namespace Microsoft.AspNetCore.Razor.TagHelpers;
+
+/// <summary>
+/// A <see cref="HtmlEncoder"/> that does not encode. Should not be used when writing directly to a response
+/// expected to contain valid HTML.
+/// </summary>
+public sealed class NullHtmlEncoder : HtmlEncoder
 {
     /// <summary>
-    /// A <see cref="HtmlEncoder"/> that does not encode. Should not be used when writing directly to a response
-    /// expected to contain valid HTML.
+    /// Initializes a <see cref="NullHtmlEncoder"/> instance.
     /// </summary>
-    public sealed class NullHtmlEncoder : HtmlEncoder
+    private NullHtmlEncoder()
     {
-        /// <summary>
-        /// Initializes a <see cref="NullHtmlEncoder"/> instance.
-        /// </summary>
-        private NullHtmlEncoder()
+    }
+
+    /// <summary>
+    /// A <see cref="HtmlEncoder"/> instance that does not encode. Should not be used when writing directly to a
+    /// response expected to contain valid HTML.
+    /// </summary>
+    public static new NullHtmlEncoder Default { get; } = new NullHtmlEncoder();
+
+    /// <inheritdoc />
+    public override int MaxOutputCharactersPerInputCharacter => 1;
+
+    /// <inheritdoc />
+    public override string Encode(string value)
+    {
+        if (value == null)
         {
+            throw new ArgumentNullException(nameof(value));
         }
 
-        /// <summary>
-        /// A <see cref="HtmlEncoder"/> instance that does not encode. Should not be used when writing directly to a
-        /// response expected to contain valid HTML.
-        /// </summary>
-        public static new NullHtmlEncoder Default { get; } = new NullHtmlEncoder();
+        return value;
+    }
 
-        /// <inheritdoc />
-        public override int MaxOutputCharactersPerInputCharacter => 1;
-
-        /// <inheritdoc />
-        public override string Encode(string value)
+    /// <inheritdoc />
+    public override void Encode(TextWriter output, char[] value, int startIndex, int characterCount)
+    {
+        if (output == null)
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-
-            return value;
+            throw new ArgumentNullException(nameof(output));
         }
 
-        /// <inheritdoc />
-        public override void Encode(TextWriter output, char[] value, int startIndex, int characterCount)
+        if (value == null)
         {
-            if (output == null)
-            {
-                throw new ArgumentNullException(nameof(output));
-            }
-
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-
-            if (characterCount == 0)
-            {
-                return;
-            }
-
-            output.Write(value, startIndex, characterCount);
+            throw new ArgumentNullException(nameof(value));
         }
 
-        public override void Encode(TextWriter output, string value, int startIndex, int characterCount)
+        if (characterCount == 0)
         {
-            if (output == null)
-            {
-                throw new ArgumentNullException(nameof(output));
-            }
-
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-
-            if (characterCount == 0)
-            {
-                return;
-            }
-
-            var span = value.AsSpan(startIndex, characterCount);
-
-            output.Write(span);
+            return;
         }
 
-        /// <inheritdoc />
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override unsafe int FindFirstCharacterToEncode(char* text, int textLength)
+        output.Write(value, startIndex, characterCount);
+    }
+
+    public override void Encode(TextWriter output, string value, int startIndex, int characterCount)
+    {
+        if (output == null)
         {
-            return -1;
+            throw new ArgumentNullException(nameof(output));
         }
 
-        /// <inheritdoc />
-        public override unsafe bool TryEncodeUnicodeScalar(
-            int unicodeScalar,
-            char* buffer,
-            int bufferLength,
-            out int numberOfCharactersWritten)
+        if (value == null)
         {
-            if (buffer == null)
-            {
-                throw new ArgumentNullException(nameof(buffer));
-            }
-
-            numberOfCharactersWritten = 0;
-
-            return false;
+            throw new ArgumentNullException(nameof(value));
         }
 
-        /// <inheritdoc />
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override bool WillEncode(int unicodeScalar)
+        if (characterCount == 0)
         {
-            return false;
+            return;
         }
+
+        var span = value.AsSpan(startIndex, characterCount);
+
+        output.Write(span);
+    }
+
+    /// <inheritdoc />
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public override unsafe int FindFirstCharacterToEncode(char* text, int textLength)
+    {
+        return -1;
+    }
+
+    /// <inheritdoc />
+    public override unsafe bool TryEncodeUnicodeScalar(
+        int unicodeScalar,
+        char* buffer,
+        int bufferLength,
+        out int numberOfCharactersWritten)
+    {
+        if (buffer == null)
+        {
+            throw new ArgumentNullException(nameof(buffer));
+        }
+
+        numberOfCharactersWritten = 0;
+
+        return false;
+    }
+
+    /// <inheritdoc />
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public override bool WillEncode(int unicodeScalar)
+    {
+        return false;
     }
 }

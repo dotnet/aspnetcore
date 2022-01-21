@@ -1,5 +1,5 @@
 # Dockerfile that creates a container suitable to build dotnet-cli
-FROM mcr.microsoft.com/dotnet-buildtools/prereqs:rhel-7-rpmpkg-e1b4a89-20175311035359
+FROM mcr.microsoft.com/dotnet-buildtools/prereqs:centos-7-rpmpkg-20210714125435-9b5bbc2
 
 # Setup User to match Host User, and give superuser permissions
 ARG USER
@@ -8,6 +8,15 @@ ARG GROUP_ID
 ARG WORKDIR
 
 WORKDIR ${WORKDIR}
+
+# Workaround per https://github.com/dotnet/aspnetcore/pull/37192#issuecomment-936589233
+RUN gem uninstall fpm
+RUN yum remove -y rubygems
+RUN yum remove -y ruby-devel
+RUN yum --enablerepo=centos-sclo-rh -y install rh-ruby25
+RUN yum --enablerepo=centos-sclo-rh -y install rh-ruby25-ruby-devel
+RUN yum --enablerepo=centos-sclo-rh -y install rh-ruby25-rubygems
+RUN scl enable rh-ruby25 'gem install --no-document fpm'
 
 RUN useradd -m ${USER} --uid ${USER_ID} -g root
 RUN echo '${USER} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers

@@ -3,37 +3,36 @@
 
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
 
-namespace Microsoft.AspNetCore.Components.Server.Circuits
+namespace Microsoft.AspNetCore.Components.Server.Circuits;
+
+internal class CircuitJSComponentInterop : JSComponentInterop
 {
-    internal class CircuitJSComponentInterop : JSComponentInterop
+    private readonly CircuitOptions _circuitOptions;
+    private int _jsRootComponentCount;
+
+    internal CircuitJSComponentInterop(CircuitOptions circuitOptions)
+        : base(circuitOptions.RootComponents.JSComponents)
     {
-        private readonly CircuitOptions _circuitOptions;
-        private int _jsRootComponentCount;
+        _circuitOptions = circuitOptions;
+    }
 
-        internal CircuitJSComponentInterop(CircuitOptions circuitOptions)
-            : base(circuitOptions.RootComponents.JSComponents)
+    protected override int AddRootComponent(string identifier, string domElementSelector)
+    {
+        if (_jsRootComponentCount >= _circuitOptions.RootComponents.MaxJSRootComponents)
         {
-            _circuitOptions = circuitOptions;
+            throw new InvalidOperationException($"Cannot add further JS root components because the configured limit of {_circuitOptions.RootComponents.MaxJSRootComponents} has been reached.");
         }
 
-        protected override int AddRootComponent(string identifier, string domElementSelector)
-        {
-            if (_jsRootComponentCount >= _circuitOptions.RootComponents.MaxJSRootComponents)
-            {
-                throw new InvalidOperationException($"Cannot add further JS root components because the configured limit of {_circuitOptions.RootComponents.MaxJSRootComponents} has been reached.");
-            }
+        var id = base.AddRootComponent(identifier, domElementSelector);
+        _jsRootComponentCount++;
+        return id;
+    }
 
-            var id = base.AddRootComponent(identifier, domElementSelector);
-            _jsRootComponentCount++;
-            return id;
-        }
+    protected override void RemoveRootComponent(int componentId)
+    {
+        base.RemoveRootComponent(componentId);
 
-        protected override void RemoveRootComponent(int componentId)
-        {
-            base.RemoveRootComponent(componentId);
-
-            // It didn't throw, so the root component did exist before and was actually removed
-            _jsRootComponentCount--;
-        }
+        // It didn't throw, so the root component did exist before and was actually removed
+        _jsRootComponentCount--;
     }
 }

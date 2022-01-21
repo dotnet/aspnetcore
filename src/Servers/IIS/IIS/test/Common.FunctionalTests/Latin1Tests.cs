@@ -15,81 +15,80 @@ using Xunit;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 
 #if IISEXPRESS_FUNCTIONALS
-namespace Microsoft.AspNetCore.Server.IIS.IISExpress.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.IISExpress.FunctionalTests;
 #elif NEWHANDLER_FUNCTIONALS
-namespace Microsoft.AspNetCore.Server.IIS.NewHandler.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.NewHandler.FunctionalTests;
 #elif NEWSHIM_FUNCTIONALS
-namespace Microsoft.AspNetCore.Server.IIS.NewShim.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.NewShim.FunctionalTests;
 #endif
 
 #else
-namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 #endif
+
+[Collection(PublishedSitesCollection.Name)]
+public class Latin1Tests : IISFunctionalTestBase
 {
-    [Collection(PublishedSitesCollection.Name)]
-    public class Latin1Tests : IISFunctionalTestBase
+    public Latin1Tests(PublishedSitesFixture fixture) : base(fixture)
     {
-        public Latin1Tests(PublishedSitesFixture fixture) : base(fixture)
+    }
+
+    [ConditionalFact]
+    [RequiresNewHandler]
+    public async Task Latin1Works()
+    {
+        var deploymentParameters = Fixture.GetBaseDeploymentParameters();
+        deploymentParameters.TransformArguments((a, _) => $"{a} AddLatin1");
+
+        var deploymentResult = await DeployAsync(deploymentParameters);
+
+        var client = new HttpClient(new LoggingHandler(new WinHttpHandler() { SendTimeout = TimeSpan.FromMinutes(3) }, deploymentResult.Logger));
+
+        var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{deploymentResult.ApplicationBaseUri}Latin1");
+        requestMessage.Headers.Add("foo", "£");
+
+        var result = await client.SendAsync(requestMessage);
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+    }
+
+    [ConditionalFact]
+    [RequiresNewHandler]
+    public async Task Latin1ReplacedWithoutAppContextSwitch()
+    {
+        var deploymentParameters = Fixture.GetBaseDeploymentParameters();
+        deploymentParameters.TransformArguments((a, _) => $"{a}");
+
+        var deploymentResult = await DeployAsync(deploymentParameters);
+
+        var client = new HttpClient(new LoggingHandler(new WinHttpHandler() { SendTimeout = TimeSpan.FromMinutes(3) }, deploymentResult.Logger));
+
+        var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{deploymentResult.ApplicationBaseUri}InvalidCharacter");
+        requestMessage.Headers.Add("foo", "£");
+
+        var result = await client.SendAsync(requestMessage);
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+    }
+
+    [ConditionalFact]
+    [RequiresNewHandler]
+    public async Task Latin1InvalidCharacters_HttpSysRejects()
+    {
+        var deploymentParameters = Fixture.GetBaseDeploymentParameters();
+        deploymentParameters.TransformArguments((a, _) => $"{a} AddLatin1");
+
+        var deploymentResult = await DeployAsync(deploymentParameters);
+
+        using (var connection = new TestConnection(deploymentResult.HttpClient.BaseAddress.Port))
         {
-        }
+            await connection.Send(
+                "GET /ReadAndFlushEcho HTTP/1.1",
+                "Host: localhost",
+                "Connection: close",
+                "foo: £\0a",
+                "",
+                "");
 
-        [ConditionalFact]
-        [RequiresNewHandler]
-        public async Task Latin1Works()
-        {
-            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
-            deploymentParameters.TransformArguments((a, _) => $"{a} AddLatin1");
-
-            var deploymentResult = await DeployAsync(deploymentParameters);
-
-            var client = new HttpClient(new LoggingHandler(new WinHttpHandler() { SendTimeout = TimeSpan.FromMinutes(3) }, deploymentResult.Logger));
-
-            var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{deploymentResult.ApplicationBaseUri}Latin1");
-            requestMessage.Headers.Add("foo", "£");
-
-            var result = await client.SendAsync(requestMessage);
-            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
-        }
-
-        [ConditionalFact]
-        [RequiresNewHandler]
-        public async Task Latin1ReplacedWithoutAppContextSwitch()
-        {
-            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
-            deploymentParameters.TransformArguments((a, _) => $"{a}");
-
-            var deploymentResult = await DeployAsync(deploymentParameters);
-
-            var client = new HttpClient(new LoggingHandler(new WinHttpHandler() { SendTimeout = TimeSpan.FromMinutes(3) }, deploymentResult.Logger));
-
-            var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{deploymentResult.ApplicationBaseUri}InvalidCharacter");
-            requestMessage.Headers.Add("foo", "£");
-
-            var result = await client.SendAsync(requestMessage);
-            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
-        }
-
-        [ConditionalFact]
-        [RequiresNewHandler]
-        public async Task Latin1InvalidCharacters_HttpSysRejects()
-        {
-            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
-            deploymentParameters.TransformArguments((a, _) => $"{a} AddLatin1");
-
-            var deploymentResult = await DeployAsync(deploymentParameters);
-
-            using (var connection = new TestConnection(deploymentResult.HttpClient.BaseAddress.Port))
-            {
-                await connection.Send(
-                    "GET /ReadAndFlushEcho HTTP/1.1",
-                    "Host: localhost",
-                    "Connection: close",
-                    "foo: £\0a",
-                    "",
-                    "");
-
-                await connection.ReceiveStartsWith("HTTP/1.1 400 Bad Request");
-            }
+            await connection.ReceiveStartsWith("HTTP/1.1 400 Bad Request");
         }
     }
 }

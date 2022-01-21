@@ -1,10 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Http.Features
+namespace Microsoft.AspNetCore.Http.Features;
+
+public interface IThing
 {
-    public interface IThing
-    {
-        string Hello();
-    }
+    string Hello();
 }

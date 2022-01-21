@@ -9,41 +9,40 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
 
-namespace Microsoft.AspNetCore.Mvc.ViewFeatures
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
+
+public static class HtmlGeneratorUtilities
 {
-    public static class HtmlGeneratorUtilities
+    public static IHtmlGenerator GetHtmlGenerator(IModelMetadataProvider provider)
     {
-        public static IHtmlGenerator GetHtmlGenerator(IModelMetadataProvider provider)
-        {
-            var options = new MvcViewOptions();
-            var urlHelperFactory = new Mock<IUrlHelperFactory>();
-            urlHelperFactory
-                .Setup(f => f.GetUrlHelper(It.IsAny<ActionContext>()))
-                .Returns(Mock.Of<IUrlHelper>());
+        var options = new MvcViewOptions();
+        var urlHelperFactory = new Mock<IUrlHelperFactory>();
+        urlHelperFactory
+            .Setup(f => f.GetUrlHelper(It.IsAny<ActionContext>()))
+            .Returns(Mock.Of<IUrlHelper>());
 
-            return GetHtmlGenerator(provider, urlHelperFactory.Object, options);
-        }
+        return GetHtmlGenerator(provider, urlHelperFactory.Object, options);
+    }
 
-        public static IHtmlGenerator GetHtmlGenerator(IModelMetadataProvider provider, IUrlHelperFactory urlHelperFactory, MvcViewOptions options)
-        {
-            var optionsAccessor = new Mock<IOptions<MvcViewOptions>>();
-            optionsAccessor
-                .SetupGet(o => o.Value)
-                .Returns(options);
+    public static IHtmlGenerator GetHtmlGenerator(IModelMetadataProvider provider, IUrlHelperFactory urlHelperFactory, MvcViewOptions options)
+    {
+        var optionsAccessor = new Mock<IOptions<MvcViewOptions>>();
+        optionsAccessor
+            .SetupGet(o => o.Value)
+            .Returns(options);
 
-            var attributeProvider = new DefaultValidationHtmlAttributeProvider(
+        var attributeProvider = new DefaultValidationHtmlAttributeProvider(
+            optionsAccessor.Object,
+            provider,
+            new ClientValidatorCache());
+
+        var htmlGenerator = new DefaultHtmlGenerator(
+                Mock.Of<IAntiforgery>(),
                 optionsAccessor.Object,
                 provider,
-                new ClientValidatorCache());
-
-            var htmlGenerator = new DefaultHtmlGenerator(
-                    Mock.Of<IAntiforgery>(),
-                    optionsAccessor.Object,
-                    provider,
-                    urlHelperFactory,
-                    new HtmlTestEncoder(),
-                    attributeProvider);
-            return htmlGenerator;
-        }
+                urlHelperFactory,
+                new HtmlTestEncoder(),
+                attributeProvider);
+        return htmlGenerator;
     }
 }

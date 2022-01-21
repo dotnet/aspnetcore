@@ -1,53 +1,50 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-namespace Microsoft.AspNetCore.Rewrite
+namespace Microsoft.AspNetCore.Rewrite;
+
+internal class BackReferenceCollection
 {
-    internal class BackReferenceCollection
+    private readonly List<string> _backReferences = new List<string>();
+
+    public BackReferenceCollection(GroupCollection references)
     {
-        private readonly List<string> _backReferences = new List<string>();
-
-        public BackReferenceCollection(GroupCollection references)
+        if (references != null)
         {
-            if (references != null)
+            for (var i = 0; i < references.Count; i++)
             {
-                for (var i = 0; i < references.Count; i++)
-                {
-                    _backReferences.Add(references[i].Value);
-                }
+                _backReferences.Add(references[i].Value);
             }
         }
+    }
 
-        public BackReferenceCollection(string reference)
-        {
-            _backReferences.Add(reference);
-        }
+    public BackReferenceCollection(string reference)
+    {
+        _backReferences.Add(reference);
+    }
 
-        public string this[int index]
+    public string this[int index]
+    {
+        get
         {
-            get
+            if (index < _backReferences.Count)
             {
-                if (index < _backReferences.Count)
-                {
-                    return _backReferences[index];
-                }
-                else
-                {
-                    throw new IndexOutOfRangeException($"Cannot access back reference at index {index}. Only {_backReferences.Count} back references were captured.");
-                }
+                return _backReferences[index];
+            }
+            else
+            {
+                throw new IndexOutOfRangeException($"Cannot access back reference at index {index}. Only {_backReferences.Count} back references were captured.");
             }
         }
+    }
 
-        public void Add(BackReferenceCollection references)
+    public void Add(BackReferenceCollection references)
+    {
+        if (references != null)
         {
-            if (references != null)
-            {
-                _backReferences.AddRange(references._backReferences);
-            }
+            _backReferences.AddRange(references._backReferences);
         }
     }
 }

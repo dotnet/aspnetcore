@@ -1,50 +1,46 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using System.Net;
-using System.Threading.Tasks;
 using StackExchange.Redis;
 
-namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
+namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis;
+
+/// <summary>
+/// Options used to configure <see cref="RedisHubLifetimeManager{THub}"/>.
+/// </summary>
+public class RedisOptions
 {
     /// <summary>
-    /// Options used to configure <see cref="RedisHubLifetimeManager{THub}"/>.
+    /// Gets or sets configuration options exposed by <c>StackExchange.Redis</c>.
     /// </summary>
-    public class RedisOptions
+    public ConfigurationOptions Configuration { get; set; } = new ConfigurationOptions
     {
-        /// <summary>
-        /// Gets or sets configuration options exposed by <c>StackExchange.Redis</c>.
-        /// </summary>
-        public ConfigurationOptions Configuration { get; set; } = new ConfigurationOptions
-        {
-            // Enable reconnecting by default
-            AbortOnConnectFail = false
-        };
+        // Enable reconnecting by default
+        AbortOnConnectFail = false
+    };
 
-        /// <summary>
-        /// Gets or sets the Redis connection factory.
-        /// </summary>
-        public Func<TextWriter, Task<IConnectionMultiplexer>>? ConnectionFactory { get; set; }
+    /// <summary>
+    /// Gets or sets the Redis connection factory.
+    /// </summary>
+    public Func<TextWriter, Task<IConnectionMultiplexer>>? ConnectionFactory { get; set; }
 
-        internal async Task<IConnectionMultiplexer> ConnectAsync(TextWriter log)
+    internal async Task<IConnectionMultiplexer> ConnectAsync(TextWriter log)
+    {
+        // Factory is publicly settable. Assigning to a local variable before null check for thread safety.
+        var factory = ConnectionFactory;
+        if (factory == null)
         {
-            // Factory is publicly settable. Assigning to a local variable before null check for thread safety.
-            var factory = ConnectionFactory;
-            if (factory == null)
+            // REVIEW: Should we do this?
+            if (Configuration.EndPoints.Count == 0)
             {
-                // REVIEW: Should we do this?
-                if (Configuration.EndPoints.Count == 0)
-                {
-                    Configuration.EndPoints.Add(IPAddress.Loopback, 0);
-                    Configuration.SetDefaultPorts();
-                }
-
-                return await ConnectionMultiplexer.ConnectAsync(Configuration, log);
+                Configuration.EndPoints.Add(IPAddress.Loopback, 0);
+                Configuration.SetDefaultPorts();
             }
 
-            return await factory(log);
+            return await ConnectionMultiplexer.ConnectAsync(Configuration, log);
         }
+
+        return await factory(log);
     }
 }
