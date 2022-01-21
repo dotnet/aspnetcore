@@ -137,7 +137,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
         PrivateAssets="All"
         GeneratePathProperty="true" />
 
-    <ProjectReference Condition=" '$(BuildIisNativeProjects)' == 'true' AND $(BuildNative) "
+    <ProjectReference Condition=" '$(UseIisNativeAssets)' == 'true' AND $(BuildNative) "
         Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj">
       <SetPlatform>Platform=$(NativePlatform)</SetPlatform>
       <!-- Custom attribute used to distinguish managed from native references. -->
@@ -148,7 +148,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <Targets>Build;GetTargetPath</Targets>
     </ProjectReference>
 
-    <_ResolvedNativeProjectReferencePaths Condition=" '$(BuildIisNativeProjects)' == 'true' AND !$(BuildNative) "
+    <_ResolvedNativeProjectReferencePaths Condition=" '$(UseIisNativeAssets)' == 'true' AND !$(BuildNative) "
         Include="$(ArtifactsBinDir)InProcessRequestHandler\$(NativePlatform)\$(Configuration)\aspnetcorev2_inprocess.dll">
       <IsNativeImage>true</IsNativeImage>
     </_ResolvedNativeProjectReferencePaths>
@@ -233,7 +233,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
   <Target Name="_WarnAboutUnbuiltNativeDependencies"
           BeforeTargets="Build"
-          Condition=" '$(BuildIisNativeProjects)' == 'true' AND !$(BuildNative) AND
+          Condition=" '$(UseIisNativeAssets)' == 'true' AND !$(BuildNative) AND
               !EXISTS('$(ArtifactsBinDir)InProcessRequestHandler\$(NativePlatform)\$(Configuration)\aspnetcorev2_inprocess.dll') ">
     <Warning Text="This project has native dependencies which were not built. Without this, tests may not function correctly. Run `build.cmd -BuildNative -BuildManaged` to build both C# and C++." />
   </Target>

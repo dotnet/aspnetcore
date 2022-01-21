@@ -63,7 +63,7 @@
     the end of processes using the GenerateBuildDependencyFile target.
   -->
   <Target Name="InjectRequestHandler"
-          Condition=" '$(InProcessTestSite)' == 'true' AND '$(BuildIisNativeProjects)' == 'true' AND '$(TargetFrameworkIdentifier)' != '.NETFramework'"
+          Condition=" '$(InProcessTestSite)' == 'true' AND '$(UseIisNativeAssets)' == 'true' AND '$(TargetFrameworkIdentifier)' != '.NETFramework'"
           BeforeTargets="BuildDepsJson;CoreBuild"
           DependsOnTargets="GenerateBuildDependencyFile;PrepareInjectionApp">
     <Exec Command="$(InjectDepsApp) &quot;$(ProjectDepsFilePath)&quot; $(RuntimeIdentifier) " />
@@ -76,7 +76,7 @@
     (GenerateSingleFileBundle also uses the intermediate .desp file but only in single-file publish cases ignored here.)
   -->
   <Target Name="InjectRequestHandlerOnPublish"
-          Condition=" '$(InProcessTestSite)' == 'true' AND '$(BuildIisNativeProjects)' == 'true' AND '$(TargetFrameworkIdentifier)' != '.NETFramework'"
+          Condition=" '$(InProcessTestSite)' == 'true' AND '$(UseIisNativeAssets)' == 'true' AND '$(TargetFrameworkIdentifier)' != '.NETFramework'"
           BeforeTargets="Publish"
           DependsOnTargets="GeneratePublishDependencyFile;CopyFilesToPublishDirectory;PrepareInjectionApp">
     <Exec Command="$(InjectDepsApp) &quot;$(PublishDepsFilePath)&quot; $(RuntimeIdentifier) " />

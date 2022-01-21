@@ -30,10 +30,10 @@
 
   <Target Name="ValidateNativeComponentsBuilt" AfterTargets="Build" >
     <Error Text="Required dll from ANCM has not been built. To build ANCM, you must use MSBuild.exe."
-        Condition="'$(BuildIisNativeProjects)' == 'true' AND !Exists('$(AspNetCoreModuleV2InProcessHandlerDll)')" />
+        Condition="'$(UseIisNativeAssets)' == 'true' AND !Exists('$(AspNetCoreModuleV2InProcessHandlerDll)')" />
   </Target>
 
-  <ItemGroup Condition=" '$(BuildIisNativeProjects)' == 'true' ">
+  <ItemGroup Condition=" '$(UseIisNativeAssets)' == 'true' ">
     <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\..\AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj" Platform="x64" />
     <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\..\AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj" Platform="Win32" />
     <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\..\AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj" Platform="ARM64" />    

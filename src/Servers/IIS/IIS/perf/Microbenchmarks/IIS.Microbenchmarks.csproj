@@ -17,7 +17,7 @@
     <Content Include="..\..\test\Common.FunctionalTests\Infrastructure\*.config" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(BuildIisNativeProjects)' == 'true'">
+  <ItemGroup Condition="'$(UseIisNativeAssets)' == 'true'">
     <None Include="$(ArtifactsBinDir)InProcessRequestHandler\x64\$(Configuration)\aspnetcorev2_inprocess.dll" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="%(FileName)%(Extension)" />
     <None Include="$(ArtifactsBinDir)InProcessRequestHandler\x64\$(Configuration)\aspnetcorev2_inprocess.pdb" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="%(FileName)%(Extension)" />
     <None Include="$(ArtifactsBinDir)AspNetCoreModuleShim\x64\$(Configuration)\aspnetcorev2.dll" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="%(FileName)%(Extension)" />
