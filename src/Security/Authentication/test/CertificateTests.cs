@@ -289,6 +289,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
 
+        [Fact]
         public async Task VerifyClientCertWithUntrustedRootAndTrustedChainEndsUpInForbidden()
         {
             using var host = await CreateHost(
