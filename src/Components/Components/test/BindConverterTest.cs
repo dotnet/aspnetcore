@@ -298,6 +298,77 @@ public class BindConverterTest
         Assert.Equal(expected, actual);
     }
 
+    [Fact]
+    public void TryConvertTo_Guid_Valid()
+    {
+        // Arrange
+        var expected = Guid.NewGuid();
+        var incomingValue = expected.ToString();
+
+        // Act
+        var successfullyConverted = BindConverter.TryConvertTo<Guid>(incomingValue, CultureInfo.CurrentCulture, out var actual);
+
+        // Assert
+        Assert.Equal(expected, actual);
+        Assert.True(successfullyConverted);
+    }
+
+    [Theory]
+    [InlineData("invalidguid")]
+    [InlineData("")]
+    [InlineData(null)]
+    public void TryConvertTo_Guid_Invalid(string incomingValue)
+    {
+        // Act
+        var successfullyConverted = BindConverter.TryConvertTo<Guid>(incomingValue, CultureInfo.CurrentCulture, out var actual);
+
+        // Assert
+        Assert.False(successfullyConverted);
+        Assert.Equal(Guid.Empty, actual);
+    }
+
+    [Fact]
+    public void TryConvertTo_NullableGuid_Valid()
+    {
+        // Arrange
+        var expected = Guid.NewGuid();
+        var incomingValue = expected.ToString();
+
+        // Act
+        var successfullyConverted = BindConverter.TryConvertTo<Guid?>(incomingValue, CultureInfo.CurrentCulture, out var actual);
+
+        // Assert
+        Assert.True(successfullyConverted);
+        Assert.Equal(expected, actual.Value);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void TryConvertTo_NullableGuid_ValidEmptyOrNull(string incomingValue)
+    {
+        // Act
+        var successfullyConverted = BindConverter.TryConvertTo<Guid?>(incomingValue, CultureInfo.CurrentCulture, out var actual);
+
+        // Assert
+        Assert.True(successfullyConverted);
+        Assert.Null(actual);
+    }
+
+    [Fact]
+    public void TryConvertTo_NullableGuid__Invalid()
+    {
+        // Arrange
+        var value = "invalidguid";
+
+        // Act
+        var successfullyConverted = BindConverter.TryConvertTo<Guid?>(value, CultureInfo.CurrentCulture, out var actual);
+
+        // Assert
+        Assert.False(successfullyConverted);
+        Assert.Null(actual);
+    }
+
     private enum SomeLetters
     {
         A,
