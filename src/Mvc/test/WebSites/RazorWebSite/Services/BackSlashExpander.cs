@@ -17,7 +17,6 @@ public class BackSlashExpander : IViewLocationExpander
         if (context.ActionContext is ViewContext viewContext && (string)viewContext.ViewData["back-slash"] == "true")
         {
             return new[] { $@"Views\BackSlash\{context.ViewName}.cshtml" };
-
         }
 
         return viewLocations;

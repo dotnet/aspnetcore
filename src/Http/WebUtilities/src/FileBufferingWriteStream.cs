@@ -101,6 +101,10 @@ public sealed class FileBufferingWriteStream : Stream
     public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         => throw new NotSupportedException();
 
+    /// <inheritdoc/>
+    public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken)
+        => throw new NotSupportedException();
+
     /// <inheritdoc />
     public override void Write(byte[] buffer, int offset, int count)
     {

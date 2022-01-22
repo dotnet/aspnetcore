@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System.Buffers;
 using System.Globalization;
 using System.IO.Pipelines;
 using System.Linq.Expressions;
@@ -1374,6 +1375,132 @@ public class RequestDelegateFactoryTests : LoggedTest
         var deserializedRequestBody = httpContext.Items["body"];
         Assert.NotNull(deserializedRequestBody);
         Assert.Equal(originalTodo.Name, ((ITodo)deserializedRequestBody!).Name);
+    }
+
+    public static object[][] RawFromBodyActions
+    {
+        get
+        {
+            void TestStream(HttpContext httpContext, Stream stream)
+            {
+                var ms = new MemoryStream();
+                stream.CopyTo(ms);
+                httpContext.Items.Add("body", ms.ToArray());
+            }
+
+            async Task TestPipeReader(HttpContext httpContext, PipeReader reader)
+            {
+                var ms = new MemoryStream();
+                await reader.CopyToAsync(ms);
+                httpContext.Items.Add("body", ms.ToArray());
+            }
+
+            return new[]
+            {
+                new object[] { (Action<HttpContext, Stream>)TestStream },
+                new object[] { (Func<HttpContext, PipeReader, Task>)TestPipeReader }
+            };
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(RawFromBodyActions))]
+    public async Task RequestDelegatePopulatesFromRawBodyParameter(Delegate action)
+    {
+        var httpContext = CreateHttpContext();
+
+        var requestBodyBytes = JsonSerializer.SerializeToUtf8Bytes(new
+        {
+            Name = "Write more tests!"
+        });
+
+        var stream = new MemoryStream(requestBodyBytes);
+        httpContext.Request.Body = stream;
+
+        httpContext.Request.Headers["Content-Length"] = stream.Length.ToString(CultureInfo.InvariantCulture);
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        var mock = new Mock<IServiceProvider>();
+        httpContext.RequestServices = mock.Object;
+
+        var factoryResult = RequestDelegateFactory.Create(action);
+
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Same(httpContext.Request.Body, stream);
+
+        // Assert that we can read the body from both the pipe reader and Stream after executing
+        httpContext.Request.Body.Position = 0;
+        byte[] data = new byte[requestBodyBytes.Length];
+        int read = await httpContext.Request.Body.ReadAsync(data.AsMemory());
+        Assert.Equal(read, data.Length);
+        Assert.Equal(requestBodyBytes, data);
+
+        httpContext.Request.Body.Position = 0;
+        var result = await httpContext.Request.BodyReader.ReadAsync();
+        Assert.Equal(requestBodyBytes.Length, result.Buffer.Length);
+        Assert.Equal(requestBodyBytes, result.Buffer.ToArray());
+        httpContext.Request.BodyReader.AdvanceTo(result.Buffer.End);
+
+        var rawRequestBody = httpContext.Items["body"];
+        Assert.NotNull(rawRequestBody);
+        Assert.Equal(requestBodyBytes, (byte[])rawRequestBody!);
+    }
+
+    [Theory]
+    [MemberData(nameof(RawFromBodyActions))]
+    public async Task RequestDelegatePopulatesFromRawBodyParameterPipeReader(Delegate action)
+    {
+        var httpContext = CreateHttpContext();
+
+        var requestBodyBytes = JsonSerializer.SerializeToUtf8Bytes(new
+        {
+            Name = "Write more tests!"
+        });
+
+        var pipeReader = PipeReader.Create(new MemoryStream(requestBodyBytes));
+        var stream = pipeReader.AsStream();
+        httpContext.Features.Set<IRequestBodyPipeFeature>(new PipeRequestBodyFeature(pipeReader));
+        httpContext.Request.Body = stream;
+
+        httpContext.Request.Headers["Content-Length"] = requestBodyBytes.Length.ToString(CultureInfo.InvariantCulture);
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        var mock = new Mock<IServiceProvider>();
+        httpContext.RequestServices = mock.Object;
+
+        var factoryResult = RequestDelegateFactory.Create(action);
+
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Same(httpContext.Request.Body, stream);
+        Assert.Same(httpContext.Request.BodyReader, pipeReader);
+
+        // Assert that we can read the body from both the pipe reader and Stream after executing and verify that they are empty (the pipe reader isn't seekable here)
+        int read = await httpContext.Request.Body.ReadAsync(new byte[requestBodyBytes.Length].AsMemory());
+        Assert.Equal(0, read);
+
+        var result = await httpContext.Request.BodyReader.ReadAsync();
+        Assert.Equal(0, result.Buffer.Length);
+        Assert.True(result.IsCompleted);
+        httpContext.Request.BodyReader.AdvanceTo(result.Buffer.End);
+
+        var rawRequestBody = httpContext.Items["body"];
+        Assert.NotNull(rawRequestBody);
+        Assert.Equal(requestBodyBytes, (byte[])rawRequestBody!);
+    }
+
+    class PipeRequestBodyFeature : IRequestBodyPipeFeature
+    {
+        public PipeRequestBodyFeature(PipeReader pipeReader)
+        {
+            Reader = pipeReader;
+        }
+        public PipeReader Reader { get; set; }
     }
 
     [Theory]

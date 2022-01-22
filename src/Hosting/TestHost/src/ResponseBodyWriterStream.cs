@@ -69,4 +69,9 @@ internal class ResponseBodyWriterStream : Stream
     {
         await _responseWriter.WriteAsync(new ReadOnlyMemory<byte>(buffer, offset, count), cancellationToken);
     }
+
+    public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
+    {
+        await _responseWriter.WriteAsync(buffer, cancellationToken);
+    }
 }

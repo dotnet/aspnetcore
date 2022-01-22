@@ -78,7 +78,6 @@ public class DynamicObjectAdapter : IAdapter
 
         errorMessage = null;
         return true;
-
     }
 
     public virtual bool TryReplace(

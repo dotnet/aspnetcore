@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.AspNetCore.Razor.Language;
@@ -10,7 +11,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
 
-internal static class PageDirectiveFeature
+internal static partial class PageDirectiveFeature
 {
     private static readonly RazorProjectEngine PageDirectiveEngine = RazorProjectEngine.Create(RazorConfiguration.Default, new EmptyRazorProjectFileSystem(), builder =>
     {
@@ -42,7 +43,7 @@ internal static class PageDirectiveFeature
         {
             if (pageDirective.DirectiveNode is MalformedDirectiveIntermediateNode malformedNode)
             {
-                logger.MalformedPageDirective(projectItem.FilePath, malformedNode.Diagnostics);
+                Log.MalformedPageDirective(logger, projectItem.FilePath, malformedNode.Diagnostics);
             }
 
             template = pageDirective.RouteTemplate;
@@ -112,6 +113,26 @@ internal static class PageDirectiveFeature
 
             /// <inheritdoc />
             public override Stream Read() => throw new NotSupportedException();
+        }
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(104, LogLevel.Warning, "The page directive at '{FilePath}' is malformed. Please fix the following issues: {Diagnostics}", EventName = "MalformedPageDirective", SkipEnabledCheck = true)]
+        private static partial void MalformedPageDirective(ILogger logger, string filePath, string[] diagnostics);
+
+        public static void MalformedPageDirective(ILogger logger, string filePath, IList<RazorDiagnostic> diagnostics)
+        {
+            if (logger.IsEnabled(LogLevel.Warning))
+            {
+                var messages = new string[diagnostics.Count];
+                for (var i = 0; i < diagnostics.Count; i++)
+                {
+                    messages[i] = diagnostics[i].GetMessage(CultureInfo.CurrentCulture);
+                }
+
+                MalformedPageDirective(logger, filePath, messages);
+            }
         }
     }
 }

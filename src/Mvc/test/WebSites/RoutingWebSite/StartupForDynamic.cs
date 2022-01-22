@@ -35,7 +35,6 @@ public class StartupForDynamic
             endpoints.MapDynamicPageRoute<Transformer>("v2/dynamicpage/{**slug}", new DynamicVersion { Version = "V2" });
 
             endpoints.MapControllerRoute("link", "link_generation/{controller}/{action}/{id?}");
-
         });
 
         app.Map("/afterrouting", b => b.Run(c =>

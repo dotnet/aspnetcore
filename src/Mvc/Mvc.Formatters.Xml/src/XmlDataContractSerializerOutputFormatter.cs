@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters;
 /// This class handles serialization of objects
 /// to XML using <see cref="DataContractSerializer"/>
 /// </summary>
-public class XmlDataContractSerializerOutputFormatter : TextOutputFormatter
+public partial class XmlDataContractSerializerOutputFormatter : TextOutputFormatter
 {
     private readonly ConcurrentDictionary<Type, object> _serializerCache = new ConcurrentDictionary<Type, object>();
     private readonly ILogger _logger;
@@ -169,7 +169,7 @@ public class XmlDataContractSerializerOutputFormatter : TextOutputFormatter
         }
         catch (Exception ex)
         {
-            _logger.FailedToCreateDataContractSerializer(type.FullName!, ex);
+            Log.FailedToCreateDataContractSerializer(_logger, type.FullName!, ex);
 
             // We do not surface the caught exception because if CanWriteResult returns
             // false, then this Formatter is not picked up at all.
@@ -330,22 +330,20 @@ public class XmlDataContractSerializerOutputFormatter : TextOutputFormatter
         return (DataContractSerializer)serializer!;
     }
 
-    private static class Log
+    private static partial class Log
     {
-        private static readonly LogDefineOptions SkipEnabledCheckLogOptions = new() { SkipEnabledCheck = true };
-
-        private static readonly Action<ILogger, string, Exception?> _bufferingAsyncEnumerable = LoggerMessage.Define<string>(
-            LogLevel.Debug,
-            new EventId(1, "BufferingAsyncEnumerable"),
-            "Buffering IAsyncEnumerable instance of type '{Type}'.",
-            SkipEnabledCheckLogOptions);
+        [LoggerMessage(1, LogLevel.Debug, "Buffering IAsyncEnumerable instance of type '{Type}'.", EventName = "BufferingAsyncEnumerable", SkipEnabledCheck = true)]
+        private static partial void BufferingAsyncEnumerable(ILogger logger, string type);
 
         public static void BufferingAsyncEnumerable(ILogger logger, object asyncEnumerable)
         {
             if (logger.IsEnabled(LogLevel.Debug))
             {
-                _bufferingAsyncEnumerable(logger, asyncEnumerable.GetType().FullName!, null);
+                BufferingAsyncEnumerable(logger, asyncEnumerable.GetType().FullName!);
             }
         }
+
+        [LoggerMessage(2, LogLevel.Warning, "An error occurred while trying to create a DataContractSerializer for the type '{Type}'.", EventName = "FailedToCreateDataContractSerializer")]
+        public static partial void FailedToCreateDataContractSerializer(ILogger logger, string type, Exception exception);
     }
 }

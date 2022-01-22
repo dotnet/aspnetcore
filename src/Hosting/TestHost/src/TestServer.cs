@@ -27,7 +27,6 @@ public class TestServer : IServer
     public TestServer(IServiceProvider services, IOptions<TestServerOptions> optionsAccessor)
         : this(services, new FeatureCollection(), optionsAccessor)
     {
-
     }
 
     /// <summary>

@@ -20,4 +20,7 @@ internal abstract class WriteOnlyStream : Stream
 
     public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
       => throw new NotSupportedException();
+
+    public override ValueTask<int> ReadAsync(Memory<byte> memory, CancellationToken cancellationToken)
+        => throw new NotSupportedException();
 }

@@ -14,7 +14,6 @@ public class TestBodyTagHelperComponent : ITagHelperComponent
 
     public TestBodyTagHelperComponent() : this(1, "<script>'This was injected!!'</script>")
     {
-
     }
 
     public TestBodyTagHelperComponent(int order, string html)

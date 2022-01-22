@@ -84,7 +84,6 @@ internal sealed class ParameterBindingMethodCache
                         Expression.Condition(success, Expression.Convert(enumAsObject, type), Expression.Default(type))),
                     success);
                 };
-
             }
 
             if (TryGetDateTimeTryParseMethod(type, out methodInfo))

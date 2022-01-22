@@ -317,7 +317,6 @@ public sealed class CandidateSet
                 }
 
                 break;
-
         }
     }
 

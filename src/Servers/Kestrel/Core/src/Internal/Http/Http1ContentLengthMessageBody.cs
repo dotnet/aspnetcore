@@ -54,7 +54,6 @@ internal sealed class Http1ContentLengthMessageBody : Http1MessageBody
         // We internally track an int for that.
         while (true)
         {
-
             try
             {
                 var readAwaitable = _context.Input.ReadAsync(cancellationToken);

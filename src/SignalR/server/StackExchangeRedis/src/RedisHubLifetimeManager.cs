@@ -3,6 +3,7 @@
 
 using System.Linq;
 using System.Text;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal;
@@ -110,7 +111,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
         RedisLog.Unsubscribe(_logger, connectionChannel);
         tasks.Add(_bus!.UnsubscribeAsync(connectionChannel));
 
-        var feature = connection.Features.Get<IRedisFeature>()!;
+        var feature = connection.Features.GetRequiredFeature<IRedisFeature>();
         var groupNames = feature.Groups;
 
         if (groupNames != null)
@@ -314,7 +315,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
 
     private Task AddGroupAsyncCore(HubConnectionContext connection, string groupName)
     {
-        var feature = connection.Features.Get<IRedisFeature>()!;
+        var feature = connection.Features.GetRequiredFeature<IRedisFeature>();
         var groupNames = feature.Groups;
 
         lock (groupNames)
@@ -344,7 +345,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
             return _bus!.UnsubscribeAsync(channelName);
         });
 
-        var feature = connection.Features.Get<IRedisFeature>()!;
+        var feature = connection.Features.GetRequiredFeature<IRedisFeature>();
         var groupNames = feature.Groups;
         if (groupNames != null)
         {

@@ -38,5 +38,4 @@ public class AdministrationController : Controller
         await HttpContext.SignInAsync("Cookie2", new ClaimsPrincipal(new ClaimsIdentity("Cookie2")));
         return Content("SignInCookie2");
     }
-
 }

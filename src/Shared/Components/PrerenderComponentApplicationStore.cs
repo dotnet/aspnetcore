@@ -8,7 +8,6 @@ namespace Microsoft.AspNetCore.Components;
 
 internal class PrerenderComponentApplicationStore : IPersistentComponentStateStore
 {
-
     public PrerenderComponentApplicationStore()
     {
         ExistingState = new();

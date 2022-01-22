@@ -57,6 +57,8 @@ internal class ResponseBodyReaderStream : Stream
 
     public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) => throw new NotSupportedException();
 
+    public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken) => throw new NotSupportedException();
+
     #endregion NotSupported
 
     public override int Read(byte[] buffer, int offset, int count)
@@ -64,9 +66,15 @@ internal class ResponseBodyReaderStream : Stream
         return ReadAsync(buffer, offset, count, CancellationToken.None).GetAwaiter().GetResult();
     }
 
-    public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+    public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
         VerifyBuffer(buffer, offset, count);
+
+        return ReadAsync(buffer.AsMemory(offset, count), cancellationToken).AsTask();
+    }
+
+    public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+    {
         CheckAborted();
 
         if (_readerComplete)
@@ -90,9 +98,9 @@ internal class ResponseBodyReaderStream : Stream
         }
 
         var readableBuffer = result.Buffer;
-        var actual = Math.Min(readableBuffer.Length, count);
+        var actual = Math.Min(readableBuffer.Length, buffer.Length);
         readableBuffer = readableBuffer.Slice(0, actual);
-        readableBuffer.CopyTo(new Span<byte>(buffer, offset, count));
+        readableBuffer.CopyTo(buffer.Span);
         _pipe.Reader.AdvanceTo(readableBuffer.End);
         return (int)actual;
     }

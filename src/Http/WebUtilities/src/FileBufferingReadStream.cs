@@ -403,6 +403,12 @@ public class FileBufferingReadStream : Stream
     }
 
     /// <inheritdoc/>
+    public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
+    {
+        throw new NotSupportedException();
+    }
+
+    /// <inheritdoc/>
     public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
         throw new NotSupportedException();

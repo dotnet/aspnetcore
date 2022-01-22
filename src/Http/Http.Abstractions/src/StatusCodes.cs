@@ -126,7 +126,6 @@ public static class StatusCodes
     /// <summary>
     /// HTTP status code 400.
     /// </summary>
-
     public const int Status400BadRequest = 400;
 
     /// <summary>
@@ -287,7 +286,6 @@ public static class StatusCodes
     /// <summary>
     /// HTTP status code 500.
     /// </summary>
-
     public const int Status500InternalServerError = 500;
 
     /// <summary>

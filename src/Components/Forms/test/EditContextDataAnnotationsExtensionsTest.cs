@@ -2,16 +2,19 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Components.Test.Helpers;
 
 namespace Microsoft.AspNetCore.Components.Forms;
 
 public class EditContextDataAnnotationsExtensionsTest
 {
+    private static readonly IServiceProvider _serviceProvider = new TestServiceProvider();
+
     [Fact]
     public void CannotUseNullEditContext()
     {
         var editContext = (EditContext)null;
-        var ex = Assert.Throws<ArgumentNullException>(() => editContext.EnableDataAnnotationsValidation());
+        var ex = Assert.Throws<ArgumentNullException>(() => editContext.EnableDataAnnotationsValidation(_serviceProvider));
         Assert.Equal("editContext", ex.ParamName);
     }
 
@@ -31,7 +34,7 @@ public class EditContextDataAnnotationsExtensionsTest
         // Arrange
         var model = new TestModel { IntFrom1To100 = 101 };
         var editContext = new EditContext(model);
-        editContext.EnableDataAnnotationsValidation();
+        editContext.EnableDataAnnotationsValidation(_serviceProvider);
 
         // Act
         var isValid = editContext.Validate();
@@ -61,7 +64,7 @@ public class EditContextDataAnnotationsExtensionsTest
         // Arrange
         var model = new TestModel { IntFrom1To100 = 101 };
         var editContext = new EditContext(model);
-        editContext.EnableDataAnnotationsValidation();
+        editContext.EnableDataAnnotationsValidation(_serviceProvider);
 
         // Act/Assert 1: Initially invalid
         Assert.False(editContext.Validate());
@@ -78,7 +81,7 @@ public class EditContextDataAnnotationsExtensionsTest
         // Arrange
         var model = new TestModel { IntFrom1To100 = 101 };
         var editContext = new EditContext(model);
-        editContext.EnableDataAnnotationsValidation();
+        editContext.EnableDataAnnotationsValidation(_serviceProvider);
         var onValidationStateChangedCount = 0;
         editContext.OnValidationStateChanged += (sender, eventArgs) => onValidationStateChangedCount++;
 
@@ -106,7 +109,7 @@ public class EditContextDataAnnotationsExtensionsTest
         var model = new TestModel { IntFrom1To100 = 101 };
         var independentTopLevelModel = new object(); // To show we can validate things on any model, not just the top-level one
         var editContext = new EditContext(independentTopLevelModel);
-        editContext.EnableDataAnnotationsValidation();
+        editContext.EnableDataAnnotationsValidation(_serviceProvider);
         var onValidationStateChangedCount = 0;
         var requiredStringIdentifier = new FieldIdentifier(model, nameof(TestModel.RequiredString));
         var intFrom1To100Identifier = new FieldIdentifier(model, nameof(TestModel.IntFrom1To100));
@@ -146,7 +149,7 @@ public class EditContextDataAnnotationsExtensionsTest
     {
         // Arrange
         var editContext = new EditContext(new TestModel());
-        editContext.EnableDataAnnotationsValidation();
+        editContext.EnableDataAnnotationsValidation(_serviceProvider);
         var onValidationStateChangedCount = 0;
         editContext.OnValidationStateChanged += (sender, eventArgs) => onValidationStateChangedCount++;
 
@@ -165,7 +168,7 @@ public class EditContextDataAnnotationsExtensionsTest
         // Arrange
         var model = new TestModel { IntFrom1To100 = 101 };
         var editContext = new EditContext(model);
-        var subscription = editContext.EnableDataAnnotationsValidation();
+        var subscription = editContext.EnableDataAnnotationsValidation(_serviceProvider);
 
         // Act/Assert 1: when we're attached
         Assert.False(editContext.Validate());

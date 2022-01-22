@@ -1,1 +1,4 @@
 #nullable enable
+Microsoft.AspNetCore.Http.Features.FeatureCollectionExtensions
+static Microsoft.AspNetCore.Http.Features.FeatureCollectionExtensions.GetRequiredFeature(this Microsoft.AspNetCore.Http.Features.IFeatureCollection! featureCollection, System.Type! key) -> object!
+static Microsoft.AspNetCore.Http.Features.FeatureCollectionExtensions.GetRequiredFeature<TFeature>(this Microsoft.AspNetCore.Http.Features.IFeatureCollection! featureCollection) -> TFeature

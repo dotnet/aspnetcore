@@ -49,6 +49,5 @@ internal sealed class XmlSerializerMvcOptionsSetup : IConfigureOptions<MvcOption
         var outputFormatter = new XmlSerializerOutputFormatter(_loggerFactory);
         outputFormatter.WrapperProviderFactories.Add(new ProblemDetailsWrapperProviderFactory());
         options.OutputFormatters.Add(outputFormatter);
-
     }
 }

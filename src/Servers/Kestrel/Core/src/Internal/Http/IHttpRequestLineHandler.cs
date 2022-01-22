@@ -59,7 +59,6 @@ public readonly struct TargetOffsetPathLength
 
     public int Length
     {
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
         {

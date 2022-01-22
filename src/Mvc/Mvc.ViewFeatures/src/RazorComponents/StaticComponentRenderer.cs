@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,7 +24,7 @@ internal class StaticComponentRenderer
         _renderer = renderer;
     }
 
-    public async Task<IEnumerable<string>> PrerenderComponentAsync(
+    public async ValueTask<IHtmlContent> PrerenderComponentAsync(
         ParameterView parameters,
         HttpContext httpContext,
         Type componentType)
@@ -51,10 +52,10 @@ internal class StaticComponentRenderer
             }
 
             httpContext.Response.Redirect(navigationException.Location);
-            return Array.Empty<string>();
+            return HtmlString.Empty;
         }
 
-        return result.Tokens;
+        return result.HtmlContent;
     }
 
     private Task InitializeStandardComponentServicesAsync(HttpContext httpContext)

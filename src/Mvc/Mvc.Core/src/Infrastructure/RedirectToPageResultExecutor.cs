@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -12,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 /// <summary>
 /// A <see cref="IActionResultExecutor{RedirectToPageResult}"/> for <see cref="RedirectToPageResult"/>.
 /// </summary>
-public class RedirectToPageResultExecutor : IActionResultExecutor<RedirectToPageResult>
+public partial class RedirectToPageResultExecutor : IActionResultExecutor<RedirectToPageResult>
 {
     private readonly ILogger _logger;
     private readonly IUrlHelperFactory _urlHelperFactory;
@@ -65,7 +64,7 @@ public class RedirectToPageResultExecutor : IActionResultExecutor<RedirectToPage
             throw new InvalidOperationException(Resources.FormatNoRoutesMatchedForPage(result.PageName));
         }
 
-        _logger.RedirectToPageResultExecuting(result.PageName);
+        Log.RedirectToPageResultExecuting(_logger, result.PageName);
 
         if (result.PreserveMethod)
         {
@@ -79,5 +78,11 @@ public class RedirectToPageResultExecutor : IActionResultExecutor<RedirectToPage
         }
 
         return Task.CompletedTask;
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(1, LogLevel.Information, "Executing RedirectToPageResult, redirecting to {Page}.", EventName = "RedirectToPageResultExecuting")]
+        public static partial void RedirectToPageResultExecuting(ILogger logger, string? page);
     }
 }

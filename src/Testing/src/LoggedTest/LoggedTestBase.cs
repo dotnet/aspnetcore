@@ -116,7 +116,6 @@ public class LoggedTestBase : ILoggedTest, ITestMethodLifecycle
 
     Task ITestMethodLifecycle.OnTestStartAsync(TestContext context, CancellationToken cancellationToken)
     {
-
         Context = context;
         return InitializeAsync(context, context.TestMethod, context.MethodArguments, context.Output);
     }

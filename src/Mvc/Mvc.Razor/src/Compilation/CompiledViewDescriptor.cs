@@ -16,7 +16,6 @@ public class CompiledViewDescriptor
     /// </summary>
     public CompiledViewDescriptor()
     {
-
     }
 
     /// <summary>

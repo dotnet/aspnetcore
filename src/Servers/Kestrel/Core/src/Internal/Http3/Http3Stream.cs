@@ -11,6 +11,7 @@ using System.Threading.Tasks.Sources;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -85,9 +86,9 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
         _context = context;
 
-        _errorCodeFeature = _context.ConnectionFeatures.Get<IProtocolErrorCodeFeature>()!;
-        _streamIdFeature = _context.ConnectionFeatures.Get<IStreamIdFeature>()!;
-        _streamAbortFeature = _context.ConnectionFeatures.Get<IStreamAbortFeature>()!;
+        _errorCodeFeature = _context.ConnectionFeatures.GetRequiredFeature<IProtocolErrorCodeFeature>();
+        _streamIdFeature = _context.ConnectionFeatures.GetRequiredFeature<IStreamIdFeature>();
+        _streamAbortFeature = _context.ConnectionFeatures.GetRequiredFeature<IStreamAbortFeature>();
 
         _appCompletedTaskSource.Reset();
         _isClosed = 0;

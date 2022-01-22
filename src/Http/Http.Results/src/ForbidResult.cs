@@ -117,5 +117,4 @@ internal sealed partial class ForbidResult : IResult
         [LoggerMessage(1, LogLevel.Information, "Executing ChallengeResult with authentication schemes ({Schemes}).", EventName = "ChallengeResultExecuting", SkipEnabledCheck = true)]
         private static partial void ForbidResultExecuting(ILogger logger, string[] schemes);
     }
-
 }

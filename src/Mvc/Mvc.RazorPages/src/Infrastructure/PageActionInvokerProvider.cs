@@ -104,6 +104,5 @@ internal class PageActionInvokerProvider : IActionInvokerProvider
 
     public void OnProvidersExecuted(ActionInvokerProviderContext context)
     {
-
     }
 }

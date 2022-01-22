@@ -62,5 +62,4 @@ public static class AuthenticationServiceCollectionExtensions
         services.Configure(configureOptions);
         return builder;
     }
-
 }

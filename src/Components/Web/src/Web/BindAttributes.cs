@@ -10,7 +10,6 @@ namespace Microsoft.AspNetCore.Components.Web;
 /// To extend the set of <c>bind</c> attributes, define a public class named
 /// <c>BindAttributes</c> and annotate it with the appropriate attributes.
 /// </remarks>
-
 // Handles cases like <input @bind="..." /> - this is a fallback and will be ignored
 // when a specific type attribute is applied.
 [BindInputElement(null, null, "value", "onchange", isInvariantCulture: false, format: null)]

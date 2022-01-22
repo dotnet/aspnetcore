@@ -47,7 +47,6 @@ internal static class JQueryKeyValuePairNormalizer
         var indexOpen = key.IndexOf('[');
         if (indexOpen == -1)
         {
-
             // Fast path, no normalization needed.
             // This skips string conversion and allocating the string builder.
             return key;
