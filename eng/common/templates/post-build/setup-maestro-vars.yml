@@ -18,7 +18,6 @@ jobs:
         inputs:
           buildType: current
           artifactName: ReleaseConfigs
-          checkDownloadedFiles: true
 
     - task: PowerShell@2
       name: setReleaseVars

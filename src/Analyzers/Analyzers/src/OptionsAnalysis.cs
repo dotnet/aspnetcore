@@ -1,22 +1,23 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 
-namespace Microsoft.AspNetCore.Analyzers;
-
-internal class OptionsAnalysis
+namespace Microsoft.AspNetCore.Analyzers
 {
-    public OptionsAnalysis(IMethodSymbol configureServicesMethod, ImmutableArray<OptionsItem> options)
+    internal class OptionsAnalysis
     {
-        ConfigureServicesMethod = configureServicesMethod;
-        Options = options;
+        public OptionsAnalysis(IMethodSymbol configureServicesMethod, ImmutableArray<OptionsItem> options)
+        {
+            ConfigureServicesMethod = configureServicesMethod;
+            Options = options;
+        }
+
+        public INamedTypeSymbol StartupType => ConfigureServicesMethod.ContainingType;
+
+        public IMethodSymbol ConfigureServicesMethod { get; }
+
+        public ImmutableArray<OptionsItem> Options { get; }
     }
-
-    public INamedTypeSymbol StartupType => ConfigureServicesMethod.ContainingType;
-
-    public IMethodSymbol ConfigureServicesMethod { get; }
-
-    public ImmutableArray<OptionsItem> Options { get; }
 }

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -7,11 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(RepoRoot)src\Analyzers\Analyzers\src\Microsoft.AspNetCore.Analyzers.csproj" />
+    <Content Include="TestFiles\**\*.*" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 
-    <Reference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing.XUnit" />
+  <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)src\Analyzers\Analyzers\src\Microsoft.AspNetCore.Analyzers.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Analyzers\Microsoft.AspNetCore.Analyzer.Testing\src\Microsoft.AspNetCore.Analyzer.Testing.csproj" />
+
     <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
-    <Reference Include="Microsoft.Extensions.DependencyModel" />
 
     <!--
         These tests include startup code for most parts of our stack. This list will grow as we add more.
@@ -19,12 +22,6 @@
     <Reference Include="Microsoft.AspNetCore.Components.Server" />
     <Reference Include="Microsoft.AspNetCore.Mvc" />
     <Reference Include="Microsoft.AspNetCore.SignalR" />
-    <Reference Include="Microsoft.AspNetCore" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)AnalyzerTesting\TestCompilation.cs" LinkBase="AnalyzerTesting" />
-    <Compile Include="$(SharedSourceRoot)AnalyzerTesting\TestReferences.cs" LinkBase="AnalyzerTesting" />
   </ItemGroup>
 
 </Project>

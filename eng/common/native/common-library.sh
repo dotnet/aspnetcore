@@ -148,12 +148,8 @@ function NewScriptShim {
   fi
   
   if [[ ! -f $tool_file_path ]]; then
-    # try to see if the path is lower cased
-    tool_file_path="$(echo $tool_file_path | tr "[:upper:]" "[:lower:]")" 
-    if [[ ! -f $tool_file_path ]]; then
-      Write-PipelineTelemetryError -category 'NativeToolsBootstrap' "Specified tool file path:'$tool_file_path' does not exist"
-      return 1
-    fi
+    Write-PipelineTelemetryError -category 'NativeToolsBootstrap' "Specified tool file path:'$tool_file_path' does not exist"
+    return 1
   fi
 
   local shim_contents=$'#!/usr/bin/env bash\n'

@@ -1,10 +1,9 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
-using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -68,7 +67,7 @@ namespace RunTests
                 Quarantined = parseResult.ValueForOption<bool>("--quarantined"),
                 RuntimeVersion = sharedFxVersion,
                 Target = parseResult.ValueForOption<string>("--target"),
-                Timeout = TimeSpan.Parse(parseResult.ValueForOption<string>("--helixTimeout"), CultureInfo.InvariantCulture),
+                Timeout = TimeSpan.Parse(parseResult.ValueForOption<string>("--helixTimeout")),
 
                 // When targeting pack builds, it has exactly the same version as the shared framework.
                 AspNetRef = $"Microsoft.AspNetCore.App.Ref.{sharedFxVersion}.nupkg",

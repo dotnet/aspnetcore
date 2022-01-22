@@ -1,84 +1,48 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Diagnostics.CodeAnalysis;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
-using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
-namespace Microsoft.AspNetCore.Components.Reflection;
-
-internal class MemberAssignment
+namespace Microsoft.AspNetCore.Components.Reflection
 {
-    public static IEnumerable<PropertyInfo> GetPropertiesIncludingInherited(
-        [DynamicallyAccessedMembers(Component)] Type type,
-        BindingFlags bindingFlags)
+    internal class MemberAssignment
     {
-        var dictionary = new Dictionary<string, object>(StringComparer.Ordinal);
-
-        Type? currentType = type;
-
-        while (currentType != null)
+        public static IEnumerable<PropertyInfo> GetPropertiesIncludingInherited(
+            Type type, BindingFlags bindingFlags)
         {
-            var properties = currentType.GetProperties(bindingFlags | BindingFlags.DeclaredOnly);
-            foreach (var property in properties)
+            var dictionary = new Dictionary<string, List<PropertyInfo>>();
+
+            Type? currentType = type;
+
+            while (currentType != null)
             {
-                if (!dictionary.TryGetValue(property.Name, out var others))
+                var properties = currentType.GetProperties(bindingFlags)
+                    .Where(prop => prop.DeclaringType == currentType);
+                foreach (var property in properties)
                 {
-                    dictionary.Add(property.Name, property);
-                }
-                else if (!IsInheritedProperty(property, others))
-                {
-                    List<PropertyInfo> many;
-                    if (others is PropertyInfo single)
+                    if (!dictionary.TryGetValue(property.Name, out var others))
                     {
-                        many = new List<PropertyInfo> { single };
-                        dictionary[property.Name] = many;
+                        others = new List<PropertyInfo>();
+                        dictionary.Add(property.Name, others);
                     }
-                    else
+
+                    if (others.Any(other => other.GetMethod?.GetBaseDefinition() == property.GetMethod?.GetBaseDefinition()))
                     {
-                        many = (List<PropertyInfo>)others;
+                        // This is an inheritance case. We can safely ignore the value of property since
+                        // we have seen a more derived value.
+                        continue;
                     }
-                    many.Add(property);
+
+                    others.Add(property);
                 }
+
+                currentType = currentType.BaseType;
             }
 
-            currentType = currentType.BaseType;
+            return dictionary.Values.SelectMany(p => p);
         }
-
-        foreach (var item in dictionary)
-        {
-            if (item.Value is PropertyInfo property)
-            {
-                yield return property;
-                continue;
-            }
-
-            var list = (List<PropertyInfo>)item.Value;
-            var count = list.Count;
-            for (var i = 0; i < count; i++)
-            {
-                yield return list[i];
-            }
-        }
-    }
-
-    private static bool IsInheritedProperty(PropertyInfo property, object others)
-    {
-        if (others is PropertyInfo single)
-        {
-            return single.GetMethod?.GetBaseDefinition() == property.GetMethod?.GetBaseDefinition();
-        }
-
-        var many = (List<PropertyInfo>)others;
-        foreach (var other in CollectionsMarshal.AsSpan(many))
-        {
-            if (other.GetMethod?.GetBaseDefinition() == property.GetMethod?.GetBaseDefinition())
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

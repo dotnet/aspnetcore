@@ -1,111 +1,83 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Buffers;
-using System.Text.Json;
+using System;
+using System.IO;
 using MessagePack;
 using Microsoft.AspNetCore.SignalR.Protocol;
 
-namespace Microsoft.AspNetCore.Components.Server.BlazorPack;
-
-internal sealed class BlazorPackHubProtocolWorker : MessagePackHubProtocolWorker
+namespace Microsoft.AspNetCore.Components.Server.BlazorPack
 {
-    protected override object DeserializeObject(ref MessagePackReader reader, Type type, string field)
+    internal sealed class BlazorPackHubProtocolWorker : MessagePackHubProtocolWorker
     {
-        try
+        protected override object DeserializeObject(ref MessagePackReader reader, Type type, string field)
         {
-            if (type == typeof(string))
+            try
             {
-                return ReadString(ref reader, "argument");
-            }
-            else if (type == typeof(bool))
-            {
-                return reader.ReadBoolean();
-            }
-            else if (type == typeof(int))
-            {
-                return reader.ReadInt32();
-            }
-            else if (type == typeof(long))
-            {
-                return reader.ReadInt64();
-            }
-            else if (type == typeof(float))
-            {
-                return reader.ReadSingle();
-            }
-            else if (type == typeof(byte[]))
-            {
-                var bytes = reader.ReadBytes();
-                if (!bytes.HasValue)
+                if (type == typeof(string))
                 {
-                    return null;
+                    return ReadString(ref reader, "argument");
                 }
-                else if (bytes.Value.Length == 0)
+                else if (type == typeof(bool))
                 {
-                    return Array.Empty<byte>();
+                    return reader.ReadBoolean();
                 }
+                else if (type == typeof(int))
+                {
+                    return reader.ReadInt32();
+                }
+                else if (type == typeof(long))
+                {
+                    return reader.ReadInt64();
+                }
+                else if (type == typeof(float))
+                {
+                    return reader.ReadSingle();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidDataException($"Deserializing object of the `{type.Name}` type for '{field}' failed.", ex);
+            }
 
-                return bytes.Value.ToArray();
-            }
-            else if (type == typeof(JsonElement))
-            {
-                var bytes = reader.ReadBytes();
-                if (bytes is null)
-                {
-                    return default;
-                }
-
-                var jsonReader = new Utf8JsonReader(bytes.Value);
-                return JsonElement.ParseValue(ref jsonReader);
-            }
-        }
-        catch (Exception ex)
-        {
-            throw new InvalidDataException($"Deserializing object of the `{type.Name}` type for '{field}' failed.", ex);
+            throw new FormatException($"Type {type} is not supported");
         }
 
-        throw new FormatException($"Type {type} is not supported");
-    }
-
-    protected override void Serialize(ref MessagePackWriter writer, Type type, object value)
-    {
-        switch (value)
+        protected override void Serialize(ref MessagePackWriter writer, Type type, object value)
         {
-            case null:
-                writer.WriteNil();
-                break;
+            switch (value)
+            {
+                case null:
+                    writer.WriteNil();
+                    break;
 
-            case bool boolValue:
-                writer.Write(boolValue);
-                break;
+                case bool boolValue:
+                    writer.Write(boolValue);
+                    break;
 
-            case string stringValue:
-                writer.Write(stringValue);
-                break;
+                case string stringValue:
+                    writer.Write(stringValue);
+                    break;
 
-            case int intValue:
-                writer.Write(intValue);
-                break;
+                case int intValue:
+                    writer.Write(intValue);
+                    break;
 
-            case long longValue:
-                writer.Write(longValue);
-                break;
+                case long longValue:
+                    writer.Write(longValue);
+                    break;
 
-            case float floatValue:
-                writer.Write(floatValue);
-                break;
+                case float floatValue:
+                    writer.Write(floatValue);
+                    break;
 
-            case ArraySegment<byte> bytes:
-                writer.Write(bytes);
-                break;
+                case ArraySegment<byte> bytes:
+                    writer.Write(bytes);
+                    break;
 
-            case byte[] byteArray:
-                writer.Write(byteArray);
-                break;
-
-            default:
-                throw new FormatException($"Unsupported argument type {type}");
+                default:
+                    throw new FormatException($"Unsupported argument type {type}");
+            }
         }
     }
 }

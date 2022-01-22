@@ -1,94 +1,97 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 using System.Globalization;
+using Microsoft.Extensions.Internal;
 
-namespace Microsoft.Extensions.Caching.SqlServer;
-
-internal class SqlQueries
+namespace Microsoft.Extensions.Caching.SqlServer
 {
-    private const string TableInfoFormat =
-        "SELECT TABLE_CATALOG, TABLE_SCHEMA, TABLE_NAME, TABLE_TYPE " +
-        "FROM INFORMATION_SCHEMA.TABLES " +
-        "WHERE TABLE_SCHEMA = '{0}' " +
-        "AND TABLE_NAME = '{1}'";
+    internal class SqlQueries
+    {
+        private const string TableInfoFormat =
+            "SELECT TABLE_CATALOG, TABLE_SCHEMA, TABLE_NAME, TABLE_TYPE " +
+            "FROM INFORMATION_SCHEMA.TABLES " +
+            "WHERE TABLE_SCHEMA = '{0}' " +
+            "AND TABLE_NAME = '{1}'";
 
-    private const string UpdateCacheItemFormat =
-    "UPDATE {0} " +
-    "SET ExpiresAtTime = " +
-        "(CASE " +
-            "WHEN DATEDIFF(SECOND, @UtcNow, AbsoluteExpiration) <= SlidingExpirationInSeconds " +
-            "THEN AbsoluteExpiration " +
-            "ELSE " +
-            "DATEADD(SECOND, SlidingExpirationInSeconds, @UtcNow) " +
-        "END) " +
-    "WHERE Id = @Id " +
-    "AND @UtcNow <= ExpiresAtTime " +
-    "AND SlidingExpirationInSeconds IS NOT NULL " +
-    "AND (AbsoluteExpiration IS NULL OR AbsoluteExpiration <> ExpiresAtTime) ;";
-
-    private const string GetCacheItemFormat =
-        "SELECT Value " +
-        "FROM {0} WHERE Id = @Id AND @UtcNow <= ExpiresAtTime;";
-
-    private const string SetCacheItemFormat =
-        "DECLARE @ExpiresAtTime DATETIMEOFFSET; " +
-        "SET @ExpiresAtTime = " +
-        "(CASE " +
-                "WHEN (@SlidingExpirationInSeconds IS NUll) " +
-                "THEN @AbsoluteExpiration " +
+        private const string UpdateCacheItemFormat =
+        "UPDATE {0} " +
+        "SET ExpiresAtTime = " +
+            "(CASE " +
+                "WHEN DATEDIFF(SECOND, @UtcNow, AbsoluteExpiration) <= SlidingExpirationInSeconds " +
+                "THEN AbsoluteExpiration " +
                 "ELSE " +
-                "DATEADD(SECOND, Convert(bigint, @SlidingExpirationInSeconds), @UtcNow) " +
-        "END);" +
-        "UPDATE {0} SET Value = @Value, ExpiresAtTime = @ExpiresAtTime," +
-        "SlidingExpirationInSeconds = @SlidingExpirationInSeconds, AbsoluteExpiration = @AbsoluteExpiration " +
+                "DATEADD(SECOND, SlidingExpirationInSeconds, @UtcNow) " +
+            "END) " +
         "WHERE Id = @Id " +
-        "IF (@@ROWCOUNT = 0) " +
-        "BEGIN " +
-            "INSERT INTO {0} " +
-            "(Id, Value, ExpiresAtTime, SlidingExpirationInSeconds, AbsoluteExpiration) " +
-            "VALUES (@Id, @Value, @ExpiresAtTime, @SlidingExpirationInSeconds, @AbsoluteExpiration); " +
-        "END ";
+        "AND @UtcNow <= ExpiresAtTime " +
+        "AND SlidingExpirationInSeconds IS NOT NULL " +
+        "AND (AbsoluteExpiration IS NULL OR AbsoluteExpiration <> ExpiresAtTime) ;";
 
-    private const string DeleteCacheItemFormat = "DELETE FROM {0} WHERE Id = @Id";
+        private const string GetCacheItemFormat =
+            "SELECT Value " +
+            "FROM {0} WHERE Id = @Id AND @UtcNow <= ExpiresAtTime;";
 
-    public const string DeleteExpiredCacheItemsFormat = "DELETE FROM {0} WHERE @UtcNow > ExpiresAtTime";
+        private const string SetCacheItemFormat =
+            "DECLARE @ExpiresAtTime DATETIMEOFFSET; " +
+            "SET @ExpiresAtTime = " +
+            "(CASE " +
+                    "WHEN (@SlidingExpirationInSeconds IS NUll) " +
+                    "THEN @AbsoluteExpiration " +
+                    "ELSE " +
+                    "DATEADD(SECOND, Convert(bigint, @SlidingExpirationInSeconds), @UtcNow) " +
+            "END);" +
+            "UPDATE {0} SET Value = @Value, ExpiresAtTime = @ExpiresAtTime," +
+            "SlidingExpirationInSeconds = @SlidingExpirationInSeconds, AbsoluteExpiration = @AbsoluteExpiration " +
+            "WHERE Id = @Id " +
+            "IF (@@ROWCOUNT = 0) " +
+            "BEGIN " +
+                "INSERT INTO {0} " +
+                "(Id, Value, ExpiresAtTime, SlidingExpirationInSeconds, AbsoluteExpiration) " +
+                "VALUES (@Id, @Value, @ExpiresAtTime, @SlidingExpirationInSeconds, @AbsoluteExpiration); " +
+            "END ";
 
-    public SqlQueries(string schemaName, string tableName)
-    {
-        var tableNameWithSchema = string.Format(
-            CultureInfo.InvariantCulture,
-            "{0}.{1}", DelimitIdentifier(schemaName), DelimitIdentifier(tableName));
+        private const string DeleteCacheItemFormat = "DELETE FROM {0} WHERE Id = @Id";
 
-        // when retrieving an item, we do an UPDATE first and then a SELECT
-        GetCacheItem = string.Format(CultureInfo.InvariantCulture, UpdateCacheItemFormat + GetCacheItemFormat, tableNameWithSchema);
-        GetCacheItemWithoutValue = string.Format(CultureInfo.InvariantCulture, UpdateCacheItemFormat, tableNameWithSchema);
-        DeleteCacheItem = string.Format(CultureInfo.InvariantCulture, DeleteCacheItemFormat, tableNameWithSchema);
-        DeleteExpiredCacheItems = string.Format(CultureInfo.InvariantCulture, DeleteExpiredCacheItemsFormat, tableNameWithSchema);
-        SetCacheItem = string.Format(CultureInfo.InvariantCulture, SetCacheItemFormat, tableNameWithSchema);
-        TableInfo = string.Format(CultureInfo.InvariantCulture, TableInfoFormat, EscapeLiteral(schemaName), EscapeLiteral(tableName));
-    }
+        public const string DeleteExpiredCacheItemsFormat = "DELETE FROM {0} WHERE @UtcNow > ExpiresAtTime";
 
-    public string TableInfo { get; }
+        public SqlQueries(string schemaName, string tableName)
+        {
+            var tableNameWithSchema = string.Format(
+                CultureInfo.InvariantCulture,
+                "{0}.{1}", DelimitIdentifier(schemaName), DelimitIdentifier(tableName));
 
-    public string GetCacheItem { get; }
+            // when retrieving an item, we do an UPDATE first and then a SELECT
+            GetCacheItem = string.Format(CultureInfo.InvariantCulture, UpdateCacheItemFormat + GetCacheItemFormat, tableNameWithSchema);
+            GetCacheItemWithoutValue = string.Format(CultureInfo.InvariantCulture, UpdateCacheItemFormat, tableNameWithSchema);
+            DeleteCacheItem = string.Format(CultureInfo.InvariantCulture, DeleteCacheItemFormat, tableNameWithSchema);
+            DeleteExpiredCacheItems = string.Format(CultureInfo.InvariantCulture, DeleteExpiredCacheItemsFormat, tableNameWithSchema);
+            SetCacheItem = string.Format(CultureInfo.InvariantCulture, SetCacheItemFormat, tableNameWithSchema);
+            TableInfo = string.Format(CultureInfo.InvariantCulture, TableInfoFormat, EscapeLiteral(schemaName), EscapeLiteral(tableName));
+        }
 
-    public string GetCacheItemWithoutValue { get; }
+        public string TableInfo { get; }
 
-    public string SetCacheItem { get; }
+        public string GetCacheItem { get; }
 
-    public string DeleteCacheItem { get; }
+        public string GetCacheItemWithoutValue { get; }
 
-    public string DeleteExpiredCacheItems { get; }
+        public string SetCacheItem { get; }
 
-    // From EF's SqlServerQuerySqlGenerator
-    private static string DelimitIdentifier(string identifier)
-    {
-        return "[" + identifier.Replace("]", "]]") + "]";
-    }
+        public string DeleteCacheItem { get; }
 
-    private static string EscapeLiteral(string literal)
-    {
-        return literal.Replace("'", "''");
+        public string DeleteExpiredCacheItems { get; }
+
+        // From EF's SqlServerQuerySqlGenerator
+        private string DelimitIdentifier(string identifier)
+        {
+            return "[" + identifier.Replace("]", "]]") + "]";
+        }
+
+        private string EscapeLiteral(string literal)
+        {
+            return literal.Replace("'", "''");
+        }
     }
 }

@@ -1,43 +1,43 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
 
-namespace Microsoft.AspNetCore.Analyzers;
-
-internal class OptionsAnalyzer
+namespace Microsoft.AspNetCore.Analyzers
 {
-    private readonly StartupAnalysisBuilder _context;
-
-    public OptionsAnalyzer(StartupAnalysisBuilder context)
+    internal class OptionsAnalyzer
     {
-        _context = context;
-    }
+        private readonly StartupAnalysisBuilder _context;
 
-    public void AnalyzeConfigureServices(OperationBlockStartAnalysisContext context)
-    {
-        var configureServicesMethod = (IMethodSymbol)context.OwningSymbol;
-        var options = ImmutableArray.CreateBuilder<OptionsItem>();
-        context.RegisterOperationAction(context =>
+        public OptionsAnalyzer(StartupAnalysisBuilder context)
         {
-            if (context.Operation is ISimpleAssignmentOperation operation &&
-                operation.Value.ConstantValue.HasValue &&
-                operation.Target is IPropertyReferenceOperation property &&
-                property.Property?.ContainingType?.Name != null &&
-                property.Property.ContainingType.Name.EndsWith("Options", StringComparison.Ordinal))
+            _context = context;
+        }
+
+        public void AnalyzeConfigureServices(OperationBlockStartAnalysisContext context)
+        {
+            var configureServicesMethod = (IMethodSymbol)context.OwningSymbol;
+            var options = ImmutableArray.CreateBuilder<OptionsItem>();
+            context.RegisterOperationAction(context =>
             {
-                options.Add(new OptionsItem(property.Property, operation.Value.ConstantValue.Value));
-            }
+                if (context.Operation is ISimpleAssignmentOperation operation &&
+                    operation.Value.ConstantValue.HasValue &&
+                    operation.Target is IPropertyReferenceOperation property &&
+                    property.Property?.ContainingType?.Name != null &&
+                    property.Property.ContainingType.Name.EndsWith("Options"))
+                {
+                    options.Add(new OptionsItem(property.Property, operation.Value.ConstantValue.Value));
+                }
 
-        }, OperationKind.SimpleAssignment);
+            }, OperationKind.SimpleAssignment);
 
-        context.RegisterOperationBlockEndAction(context =>
-        {
-            _context.ReportAnalysis(new OptionsAnalysis(configureServicesMethod, options.ToImmutable()));
-        });
+            context.RegisterOperationBlockEndAction(context =>
+            {
+                _context.ReportAnalysis(new OptionsAnalysis(configureServicesMethod, options.ToImmutable()));
+            });
+        }
     }
 }

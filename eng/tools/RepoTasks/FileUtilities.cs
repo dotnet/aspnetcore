@@ -1,5 +1,5 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -7,41 +7,42 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 
-namespace RepoTasks;
-
-internal static partial class FileUtilities
+namespace RepoTasks
 {
-    private static readonly HashSet<string> s_assemblyExtensions = new HashSet<string>(
-        new[] { ".dll", ".exe", ".winmd" },
-        StringComparer.OrdinalIgnoreCase);
-
-    public static Version GetFileVersion(string sourcePath)
+    internal static partial class FileUtilities
     {
-        var fvi = FileVersionInfo.GetVersionInfo(sourcePath);
+        private static readonly HashSet<string> s_assemblyExtensions = new HashSet<string>(
+            new[] { ".dll", ".exe", ".winmd" },
+            StringComparer.OrdinalIgnoreCase);
 
-        if (fvi != null)
+        public static Version GetFileVersion(string sourcePath)
         {
-            return new Version(fvi.FileMajorPart, fvi.FileMinorPart, fvi.FileBuildPart, fvi.FilePrivatePart);
-        }
+            var fvi = FileVersionInfo.GetVersionInfo(sourcePath);
 
-        return null;
-    }
+            if (fvi != null)
+            {
+                return new Version(fvi.FileMajorPart, fvi.FileMinorPart, fvi.FileBuildPart, fvi.FilePrivatePart);
+            }
 
-    public static AssemblyName GetAssemblyName(string path)
-    {
-        if (!s_assemblyExtensions.Contains(Path.GetExtension(path)))
-        {
             return null;
         }
 
-        try
+        public static AssemblyName GetAssemblyName(string path)
         {
-            return AssemblyName.GetAssemblyName(path);
-        }
-        catch (BadImageFormatException)
-        {
-            // Not a valid assembly.
-            return null;
+            if (!s_assemblyExtensions.Contains(Path.GetExtension(path)))
+            {
+                return null;
+            }
+
+            try
+            {
+                return AssemblyName.GetAssemblyName(path);
+            }
+            catch (BadImageFormatException)
+            {
+                // Not a valid assembly.
+                return null;
+            }
         }
     }
 }

@@ -1,11 +1,11 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Microsoft.AspNetCore.Components.Analyzers;
-
-public static class ComponentsTestDeclarations
+namespace Microsoft.AspNetCore.Components.Analyzers
 {
-    public static readonly string Source = $@"
+    public static class ComponentsTestDeclarations
+    {
+        public static readonly string Source = $@"
     namespace {typeof(ParameterAttribute).Namespace}
     {{
         public class {typeof(ParameterAttribute).Name} : System.Attribute
@@ -22,4 +22,5 @@ public static class ComponentsTestDeclarations
         }}
     }}
 ";
+    }
 }

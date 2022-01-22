@@ -1,90 +1,92 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 // Most of the code in this file comes from the default Roslyn Analyzer project template
 
 using Microsoft.CodeAnalysis;
+using System;
 
-namespace TestHelper;
-
-/// <summary>
-/// Location where the diagnostic appears, as determined by path, line number, and column number.
-/// </summary>
-public struct DiagnosticResultLocation
+namespace TestHelper
 {
-    public DiagnosticResultLocation(string path, int line, int column)
+    /// <summary>
+    /// Location where the diagnostic appears, as determined by path, line number, and column number.
+    /// </summary>
+    public struct DiagnosticResultLocation
     {
-        if (line < -1)
+        public DiagnosticResultLocation(string path, int line, int column)
         {
-            throw new ArgumentOutOfRangeException(nameof(line), "line must be >= -1");
-        }
-
-        if (column < -1)
-        {
-            throw new ArgumentOutOfRangeException(nameof(column), "column must be >= -1");
-        }
-
-        this.Path = path;
-        this.Line = line;
-        this.Column = column;
-    }
-
-    public string Path { get; }
-    public int Line { get; }
-    public int Column { get; }
-}
-
-/// <summary>
-/// Struct that stores information about a Diagnostic appearing in a source
-/// </summary>
-public struct DiagnosticResult
-{
-    private DiagnosticResultLocation[] locations;
-
-    public DiagnosticResultLocation[] Locations
-    {
-        get
-        {
-            if (this.locations == null)
+            if (line < -1)
             {
-                this.locations = new DiagnosticResultLocation[] { };
+                throw new ArgumentOutOfRangeException(nameof(line), "line must be >= -1");
             }
-            return this.locations;
+
+            if (column < -1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(column), "column must be >= -1");
+            }
+
+            this.Path = path;
+            this.Line = line;
+            this.Column = column;
         }
 
-        set
-        {
-            this.locations = value;
-        }
+        public string Path { get; }
+        public int Line { get; }
+        public int Column { get; }
     }
 
-    public DiagnosticSeverity Severity { get; set; }
-
-    public string Id { get; set; }
-
-    public string Message { get; set; }
-
-    public string Path
+    /// <summary>
+    /// Struct that stores information about a Diagnostic appearing in a source
+    /// </summary>
+    public struct DiagnosticResult
     {
-        get
+        private DiagnosticResultLocation[] locations;
+
+        public DiagnosticResultLocation[] Locations
         {
-            return this.Locations.Length > 0 ? this.Locations[0].Path : "";
+            get
+            {
+                if (this.locations == null)
+                {
+                    this.locations = new DiagnosticResultLocation[] { };
+                }
+                return this.locations;
+            }
+
+            set
+            {
+                this.locations = value;
+            }
         }
-    }
 
-    public int Line
-    {
-        get
+        public DiagnosticSeverity Severity { get; set; }
+
+        public string Id { get; set; }
+
+        public string Message { get; set; }
+
+        public string Path
         {
-            return this.Locations.Length > 0 ? this.Locations[0].Line : -1;
+            get
+            {
+                return this.Locations.Length > 0 ? this.Locations[0].Path : "";
+            }
         }
-    }
 
-    public int Column
-    {
-        get
+        public int Line
         {
-            return this.Locations.Length > 0 ? this.Locations[0].Column : -1;
+            get
+            {
+                return this.Locations.Length > 0 ? this.Locations[0].Line : -1;
+            }
+        }
+
+        public int Column
+        {
+            get
+            {
+                return this.Locations.Length > 0 ? this.Locations[0].Column : -1;
+            }
         }
     }
 }

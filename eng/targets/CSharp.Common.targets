@@ -1,4 +1,5 @@
 <Project>
+
   <!-- For 'legacy' .csproj files, set map TargetFrameworkVersion back to TargetFramework -->
   <PropertyGroup Condition=" '$(TargetFramework)' == '' AND '$(TargetFrameworks)' == '' ">
     <TargetFramework>net$(TargetFrameworkVersion.TrimStart('vV').Replace('.',''))</TargetFramework>
@@ -15,44 +16,12 @@
     <!-- Public members should not use oblivious types. Not done with all nullable annotations. -->
     <NoWarn>$(NoWarn);RS0041</NoWarn>
 
-    <_IsSrcProject Condition="'$(IsImplementationProject)' == 'true' OR
-        '$(IsAnalyzersProject)' == true OR
-        '$(IsSpecificationTestProject)' == 'true'">true</_IsSrcProject>
-
-    <Nullable Condition=" '$(Nullable)' == '' AND '$(_IsSrcProject)' == 'true'">enable</Nullable>
-
-    <!-- Strip out non-public nullable annotations for src projects. This should help with size reduction -->
-    <Features Condition="'$(_IsSrcProject)' == 'true'">$(Features);nullablePublicOnly</Features>
-
     <!-- Turn off platform compatibility analyzer warnings in test, test assets, and samples. -->
-    <NoWarn Condition=" $(IsTestProject) OR
+    <NoWarn Condition=" '$(IsTestProject)' == 'true' OR
         '$(IsTestAssetProject)' == 'true' OR
         '$(ISBenchmarkProject)' == 'true' OR
-        '$(IsSampleProject)' == 'true' OR
-        '$(IsMicrobenchmarksProject)' == 'true'">$(NoWarn);CA1416</NoWarn>
-
-    <!-- Turn off unused usings warning for multi-targeted projects. Fixing them using ifdefs looks worse than ignoring the warnings. -->
-    <NoWarn Condition="'$(TargetFrameworks)' != ''">$(NoWarn);IDE0005</NoWarn>
-
-    <!-- Enable .NET code style analysis during build for src projects. -->
-    <EnforceCodeStyleInBuild Condition="'$(EnforceCodeStyleInBuild)' == ''">true</EnforceCodeStyleInBuild>
-
-    <!-- Enable trimming annotation validation in DI. See https://github.com/dotnet/runtime/blob/main/docs/workflow/trimming/feature-switches.md -->
-    <VerifyDependencyInjectionOpenGenericServiceTrimmability Condition=" $(IsTestProject) ">true</VerifyDependencyInjectionOpenGenericServiceTrimmability>
+        '$(IsSampleProject)' == 'true' ">$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
-
-  <!-- Enable implicit usings for projects that target the default TFM -->
-  <PropertyGroup Condition="'$(ImplicitUsings)' == '' AND '$(TargetFrameworks)' == '' AND '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">
-    <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
-
-  <ItemGroup Condition="'$(ImplicitUsings)' == 'enable'">
-    <!-- We should make it obvious when Linq is being used in shipping code -->
-    <Using Remove="System.Linq" Condition="'$(_IsSrcProject)' == 'true'" />
-    <!-- System.Net.Http types will frequently conflict with ASP.NET Core types-->
-    <Using Remove="System.Net.Http" />
-    <Using Include="Xunit" Condition=" $(IsTestProject) " />
-  </ItemGroup>
 
   <ItemGroup Condition=" '$(DotNetBuildFromSource)' != 'true' AND $(AddPublicApiAnalyzers) ">
     <Reference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" ExcludeAssets="Compile" PrivateAssets="All" />
@@ -92,11 +61,6 @@
         <_Parameter1>Serviceable</_Parameter1>
         <_Parameter2>True</_Parameter2>
       </AssemblyAttribute>
-
-      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(Trimmable)' == 'true'">
-        <_Parameter1>IsTrimmable</_Parameter1>
-        <_Parameter2>True</_Parameter2>
-      </AssemblyAttribute>
     </ItemGroup>
   </Target>
 
@@ -116,9 +80,7 @@
 
         SuppressNullableAttributesImport to disable. Used when attributes are already present from another project because of InternalsVisibleTo.
      -->
-    <When Condition=" ('$(Nullable)' == 'annotations' OR '$(Nullable)' == 'enable') AND
-        '$(SuppressNullableAttributesImport)' != 'true' AND
-        (('$(TargetFrameworkIdentifier)' == '.NETStandard' AND $([MSBuild]::VersionLessThanOrEquals('$(TargetFrameworkVersion)', '2.0'))) OR '$(TargetFrameworkIdentifier)' == '.NETFramework')">
+    <When Condition="'$(Nullable)' != '' AND '$(SuppressNullableAttributesImport)' != 'true' AND ('$(TargetFrameworkIdentifier)' == '.NETStandard' OR '$(TargetFrameworkIdentifier)' == '.NETFramework')">
       <PropertyGroup>
         <DefineConstants>$(DefineConstants),INTERNAL_NULLABLE_ATTRIBUTES</DefineConstants>
         <NoWarn>$(NoWarn);nullable</NoWarn>
@@ -129,17 +91,7 @@
     </When>
   </Choose>
 
-  <Target Name="ValidateBenchmarks" BeforeTargets="Test" Condition="'$(IsMicrobenchmarksProject)' == 'true' AND '$(SkipMicrobenchmarksValidation)' != 'true'">
-    <Message Text="%0ARunning benchmark validation for:%0A$(MSBuildProjectName)%0A"
-    Importance="High" />
-
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="GetTargetPath">
-      <Output TaskParameter="TargetOutputs" PropertyName="ExecPath" />
-    </MSBuild>
-
-    <Exec Command="dotnet $(ExecPath) -f * --validate-fast" IgnoreStandardErrorWarningFormat="true" StandardOutputImportance="low" />
-  </Target>
-
   <Import Project="Packaging.targets" />
   <Import Project="ResolveReferences.targets" />
+
 </Project>

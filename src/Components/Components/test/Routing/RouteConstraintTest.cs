@@ -1,33 +1,36 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Microsoft.AspNetCore.Components.Routing;
+using Xunit;
 
-public class RouteConstraintTest
+namespace Microsoft.AspNetCore.Components.Routing
 {
-    [Fact]
-    public void Parse_CreatesDifferentConstraints_ForDifferentKinds()
+    public class RouteConstraintTest
     {
-        // Arrange
-        var original = RouteConstraint.Parse("ignore", "ignore", "int");
+        [Fact]
+        public void Parse_CreatesDifferentConstraints_ForDifferentKinds()
+        {
+            // Arrange
+            var original = RouteConstraint.Parse("ignore", "ignore", "int");
 
-        // Act
-        var another = RouteConstraint.Parse("ignore", "ignore", "guid");
+            // Act
+            var another = RouteConstraint.Parse("ignore", "ignore", "guid");
 
-        // Assert
-        Assert.NotSame(original, another);
-    }
+            // Assert
+            Assert.NotSame(original, another);
+        }
 
-    [Fact]
-    public void Parse_CachesCreatedConstraint_ForSameKind()
-    {
-        // Arrange
-        var original = RouteConstraint.Parse("ignore", "ignore", "int");
+        [Fact]
+        public void Parse_CachesCreatedConstraint_ForSameKind()
+        {
+            // Arrange
+            var original = RouteConstraint.Parse("ignore", "ignore", "int");
 
-        // Act
-        var another = RouteConstraint.Parse("ignore", "ignore", "int");
+            // Act
+            var another = RouteConstraint.Parse("ignore", "ignore", "int");
 
-        // Assert
-        Assert.Same(original, another);
+            // Assert
+            Assert.Same(original, another);
+        }
     }
 }

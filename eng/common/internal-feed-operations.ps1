@@ -45,11 +45,11 @@ function SetupCredProvider {
   # Then, we set the 'VSS_NUGET_EXTERNAL_FEED_ENDPOINTS' environment variable to restore from the stable 
   # feeds successfully
 
-  $nugetConfigPath = Join-Path $RepoRoot "NuGet.config"
+  $nugetConfigPath = "$RepoRoot\NuGet.config"
 
   if (-Not (Test-Path -Path $nugetConfigPath)) {
     Write-PipelineTelemetryError -Category 'Build' -Message 'NuGet.config file not found in repo root!'
-    ExitWithExitCode 1
+    ExitWithExitCode 1  
   }
   
   $endpoints = New-Object System.Collections.ArrayList
@@ -63,6 +63,8 @@ function SetupCredProvider {
   }
 
   if (($endpoints | Measure-Object).Count -gt 0) {
+      # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Endpoint code example with no real credentials.")]
+      # Create the JSON object. It should look like '{"endpointCredentials": [{"endpoint":"http://example.index.json", "username":"optional", "password":"accesstoken"}]}'
       $endpointCredentials = @{endpointCredentials=$endpoints} | ConvertTo-Json -Compress
 
      # Create the environment variables the AzDo way
@@ -85,7 +87,7 @@ function SetupCredProvider {
 
 #Workaround for https://github.com/microsoft/msbuild/issues/4430
 function InstallDotNetSdkAndRestoreArcade {
-  $dotnetTempDir = Join-Path $RepoRoot "dotnet"
+  $dotnetTempDir = "$RepoRoot\dotnet"
   $dotnetSdkVersion="2.1.507" # After experimentation we know this version works when restoring the SDK (compared to 3.0.*)
   $dotnet = "$dotnetTempDir\dotnet.exe"
   $restoreProjPath = "$PSScriptRoot\restore.proj"

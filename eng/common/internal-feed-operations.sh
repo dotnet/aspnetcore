@@ -39,7 +39,7 @@ function SetupCredProvider {
   # Then, we set the 'VSS_NUGET_EXTERNAL_FEED_ENDPOINTS' environment variable to restore from the stable 
   # feeds successfully
 
-  local nugetConfigPath="{$repo_root}NuGet.config"
+  local nugetConfigPath="$repo_root/NuGet.config"
 
   if [ ! "$nugetConfigPath" ]; then
     Write-PipelineTelemetryError -category 'Build' "NuGet.config file not found in repo's root!"
@@ -62,6 +62,8 @@ function SetupCredProvider {
   endpoints+=']'
 
   if [ ${#endpoints} -gt 2 ]; then 
+      # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Endpoint code example with no real credentials.")]
+      # Create the JSON object. It should look like '{"endpointCredentials": [{"endpoint":"http://example.index.json", "username":"optional", "password":"accesstoken"}]}'
       local endpointCredentials="{\"endpointCredentials\": "$endpoints"}"
 
       echo "##vso[task.setvariable variable=VSS_NUGET_EXTERNAL_FEED_ENDPOINTS]$endpointCredentials"

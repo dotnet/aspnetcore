@@ -8,11 +8,6 @@ on:
     # Once per day at midnight PST (8 UTC)
     - cron: '0 8 * * *'
 
-permissions:
-  contents: write
-  issues: write
-  pull-requests: write
-
 jobs:
   compare_repos:
     # Comment out this line to test the scripts in a fork
@@ -23,17 +18,17 @@ jobs:
     - name: Checkout aspnetcore
       uses: actions/checkout@v2.0.0
       with:
-        # Test this script using changes in a fork
+        # Test this script using changes in a fork 
         repository: 'dotnet/aspnetcore'
         path: aspnetcore
-        ref: main
+        ref: master
     - name: Checkout runtime
       uses: actions/checkout@v2.0.0
       with:
-        # Test this script using changes in a fork
+        # Test this script using changes in a fork 
         repository: 'dotnet/runtime'
         path: runtime
-        ref: main
+        ref: master
     - name: Copy
       shell: cmd
       working-directory: .\runtime\src\libraries\Common\src\System\Net\Http\aspnetcore\
@@ -59,19 +54,19 @@ jobs:
       run: |
         # Test this script using an issue in the local forked repo
         $issue = 'https://api.github.com/repos/dotnet/aspnetcore/issues/18943'
-        $sendpr = .\aspnetcore\.github\workflows\ReportDiff.ps1
-        echo "::set-output name=sendpr::$sendpr"
+        $changed = .\aspnetcore\.github\workflows\ReportDiff.ps1
+        echo "::set-output name=changed::$changed"
     - name: Send PR
-      if: steps.check.outputs.sendpr == 'true'
+      if: steps.check.outputs.changed == 'true'
       # https://github.com/marketplace/actions/create-pull-request
-      uses: dotnet/actions-create-pull-request@v3
+      uses: peter-evans/create-pull-request@v3
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         path: .\aspnetcore
         commit-message: 'Sync shared code from runtime'
         title: 'Sync shared code from runtime'
         body: 'This PR was automatically generated to sync shared code changes from runtime. Fixes #18943'
-        labels: area-runtime
-        base: main
+        labels: area-servers
+        base: master
         branch: github-action/sync-runtime
         branch-suffix: timestamp

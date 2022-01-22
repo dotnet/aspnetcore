@@ -1,16 +1,19 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Microsoft.AspNetCore.Components.Routing;
+using System.Threading.Tasks;
 
-/// <summary>
-/// Contract to setup navigation interception on the client.
-/// </summary>
-public interface INavigationInterception
+namespace Microsoft.AspNetCore.Components.Routing
 {
     /// <summary>
-    /// Enables navigation interception on the client.
+    /// Contract to setup navigation interception on the client.
     /// </summary>
-    /// <returns>A <see cref="Task" /> that represents the asynchronous operation.</returns>
-    Task EnableNavigationInterceptionAsync();
+    public interface INavigationInterception
+    {
+        /// <summary>
+        /// Enables navigation interception on the client.
+        /// </summary>
+        /// <returns>A <see cref="Task" /> that represents the asynchronous operation.</returns>
+        Task EnableNavigationInterceptionAsync();
+    }
 }

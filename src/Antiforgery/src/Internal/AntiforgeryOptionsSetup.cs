@@ -1,40 +1,42 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Antiforgery;
-
-internal class AntiforgeryOptionsSetup : IConfigureOptions<AntiforgeryOptions>
+namespace Microsoft.AspNetCore.Antiforgery
 {
-    private readonly DataProtectionOptions _dataProtectionOptions;
-
-    public AntiforgeryOptionsSetup(IOptions<DataProtectionOptions> dataProtectionOptions)
+    internal class AntiforgeryOptionsSetup : IConfigureOptions<AntiforgeryOptions>
     {
-        _dataProtectionOptions = dataProtectionOptions.Value;
-    }
+        private readonly DataProtectionOptions _dataProtectionOptions;
 
-    public void Configure(AntiforgeryOptions options)
-    {
-        if (options == null)
+        public AntiforgeryOptionsSetup(IOptions<DataProtectionOptions> dataProtectionOptions)
         {
-            throw new ArgumentNullException(nameof(options));
+            _dataProtectionOptions = dataProtectionOptions.Value;
         }
 
-        if (options.Cookie.Name == null)
+        public void Configure(AntiforgeryOptions options)
         {
-            var applicationId = _dataProtectionOptions.ApplicationDiscriminator ?? string.Empty;
-            options.Cookie.Name = AntiforgeryOptions.DefaultCookiePrefix + ComputeCookieName(applicationId);
-        }
-    }
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
 
-    private static string ComputeCookieName(string applicationId)
-    {
-        byte[] fullHash = SHA256.HashData(Encoding.UTF8.GetBytes(applicationId));
-        return WebEncoders.Base64UrlEncode(fullHash, 0, 8);
+            if (options.Cookie.Name == null)
+            {
+                var applicationId = _dataProtectionOptions.ApplicationDiscriminator ?? string.Empty;
+                options.Cookie.Name = AntiforgeryOptions.DefaultCookiePrefix + ComputeCookieName(applicationId);
+            }
+        }
+
+        private static string ComputeCookieName(string applicationId)
+        {
+            byte[] fullHash = SHA256.HashData(Encoding.UTF8.GetBytes(applicationId));
+            return WebEncoders.Base64UrlEncode(fullHash, 0, 8);
+        }
     }
 }

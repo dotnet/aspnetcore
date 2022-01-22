@@ -1,75 +1,77 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.Extensions.DependencyInjection;
-
-/// <summary>
-/// Extension methods for setting up antiforgery services in an <see cref="IServiceCollection" />.
-/// </summary>
-public static class AntiforgeryServiceCollectionExtensions
+namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
-    /// Adds antiforgery services to the specified <see cref="IServiceCollection" />.
+    /// Extension methods for setting up antiforgery services in an <see cref="IServiceCollection" />.
     /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
-    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
-    public static IServiceCollection AddAntiforgery(this IServiceCollection services)
+    public static class AntiforgeryServiceCollectionExtensions
     {
-        if (services == null)
+        /// <summary>
+        /// Adds antiforgery services to the specified <see cref="IServiceCollection" />.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
+        /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+        public static IServiceCollection AddAntiforgery(this IServiceCollection services)
         {
-            throw new ArgumentNullException(nameof(services));
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            services.AddDataProtection();
+
+            // Don't overwrite any options setups that a user may have added.
+            services.TryAddEnumerable(
+                ServiceDescriptor.Transient<IConfigureOptions<AntiforgeryOptions>, AntiforgeryOptionsSetup>());
+
+            services.TryAddSingleton<IAntiforgery, DefaultAntiforgery>();
+            services.TryAddSingleton<IAntiforgeryTokenGenerator, DefaultAntiforgeryTokenGenerator>();
+            services.TryAddSingleton<IAntiforgeryTokenSerializer, DefaultAntiforgeryTokenSerializer>();
+            services.TryAddSingleton<IAntiforgeryTokenStore, DefaultAntiforgeryTokenStore>();
+            services.TryAddSingleton<IClaimUidExtractor, DefaultClaimUidExtractor>();
+            services.TryAddSingleton<IAntiforgeryAdditionalDataProvider, DefaultAntiforgeryAdditionalDataProvider>();
+            services.TryAddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
+
+
+            services.TryAddSingleton<ObjectPool<AntiforgerySerializationContext>>(serviceProvider =>
+            {
+                var provider = serviceProvider.GetRequiredService<ObjectPoolProvider>();
+                var policy = new AntiforgerySerializationContextPooledObjectPolicy();
+                return provider.Create(policy);
+            });
+
+            return services;
         }
 
-        services.AddDataProtection();
-
-        // Don't overwrite any options setups that a user may have added.
-        services.TryAddEnumerable(
-            ServiceDescriptor.Transient<IConfigureOptions<AntiforgeryOptions>, AntiforgeryOptionsSetup>());
-
-        services.TryAddSingleton<IAntiforgery, DefaultAntiforgery>();
-        services.TryAddSingleton<IAntiforgeryTokenGenerator, DefaultAntiforgeryTokenGenerator>();
-        services.TryAddSingleton<IAntiforgeryTokenSerializer, DefaultAntiforgeryTokenSerializer>();
-        services.TryAddSingleton<IAntiforgeryTokenStore, DefaultAntiforgeryTokenStore>();
-        services.TryAddSingleton<IClaimUidExtractor, DefaultClaimUidExtractor>();
-        services.TryAddSingleton<IAntiforgeryAdditionalDataProvider, DefaultAntiforgeryAdditionalDataProvider>();
-        services.TryAddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
-
-
-        services.TryAddSingleton<ObjectPool<AntiforgerySerializationContext>>(serviceProvider =>
+        /// <summary>
+        /// Adds antiforgery services to the specified <see cref="IServiceCollection" />.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
+        /// <param name="setupAction">An <see cref="Action{AntiforgeryOptions}"/> to configure the provided <see cref="AntiforgeryOptions"/>.</param>
+        /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+        public static IServiceCollection AddAntiforgery(this IServiceCollection services, Action<AntiforgeryOptions> setupAction)
         {
-            var provider = serviceProvider.GetRequiredService<ObjectPoolProvider>();
-            var policy = new AntiforgerySerializationContextPooledObjectPolicy();
-            return provider.Create(policy);
-        });
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
 
-        return services;
-    }
+            if (setupAction == null)
+            {
+                throw new ArgumentNullException(nameof(setupAction));
+            }
 
-    /// <summary>
-    /// Adds antiforgery services to the specified <see cref="IServiceCollection" />.
-    /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
-    /// <param name="setupAction">An <see cref="Action{AntiforgeryOptions}"/> to configure the provided <see cref="AntiforgeryOptions"/>.</param>
-    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
-    public static IServiceCollection AddAntiforgery(this IServiceCollection services, Action<AntiforgeryOptions> setupAction)
-    {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
+            services.AddAntiforgery();
+            services.Configure(setupAction);
+            return services;
         }
-
-        if (setupAction == null)
-        {
-            throw new ArgumentNullException(nameof(setupAction));
-        }
-
-        services.AddAntiforgery();
-        services.Configure(setupAction);
-        return services;
     }
 }

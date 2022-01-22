@@ -1,25 +1,26 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Microsoft.AspNetCore.Components.Routing;
-
-internal class RouteTable
+namespace Microsoft.AspNetCore.Components.Routing
 {
-    public RouteTable(RouteEntry[] routes)
+    internal class RouteTable : IRouteTable
     {
-        Routes = routes;
-    }
-
-    public RouteEntry[] Routes { get; }
-
-    public void Route(RouteContext routeContext)
-    {
-        for (var i = 0; i < Routes.Length; i++)
+        public RouteTable(RouteEntry[] routes)
         {
-            Routes[i].Match(routeContext);
-            if (routeContext.Handler != null)
+            Routes = routes;
+        }
+
+        public RouteEntry[] Routes { get; }
+
+        public void Route(RouteContext routeContext)
+        {
+            for (var i = 0; i < Routes.Length; i++)
             {
-                return;
+                Routes[i].Match(routeContext);
+                if (routeContext.Handler != null)
+                {
+                    return;
+                }
             }
         }
     }

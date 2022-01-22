@@ -1,60 +1,62 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.using Microsoft.AspNetCore.Authorization;
 
+using System;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Authentication.AzureAD.UI;
-
-[Obsolete("This is obsolete and will be removed in a future version. Use Microsoft.Identity.Web instead. See https://aka.ms/ms-identity-web.")]
-internal class AzureADOpenIdConnectOptionsConfiguration : IConfigureNamedOptions<OpenIdConnectOptions>
+namespace Microsoft.AspNetCore.Authentication.AzureAD.UI
 {
-    private readonly IOptions<AzureADSchemeOptions> _schemeOptions;
-    private readonly IOptionsMonitor<AzureADOptions> _azureADOptions;
-
-    public AzureADOpenIdConnectOptionsConfiguration(IOptions<AzureADSchemeOptions> schemeOptions, IOptionsMonitor<AzureADOptions> azureADOptions)
+    [Obsolete("This is obsolete and will be removed in a future version. Use Microsoft.Identity.Web instead. See https://aka.ms/ms-identity-web.")]
+    internal class AzureADOpenIdConnectOptionsConfiguration : IConfigureNamedOptions<OpenIdConnectOptions>
     {
-        _schemeOptions = schemeOptions;
-        _azureADOptions = azureADOptions;
-    }
+        private readonly IOptions<AzureADSchemeOptions> _schemeOptions;
+        private readonly IOptionsMonitor<AzureADOptions> _azureADOptions;
 
-    public void Configure(string name, OpenIdConnectOptions options)
-    {
-        var azureADScheme = GetAzureADScheme(name);
-        if (azureADScheme is null)
+        public AzureADOpenIdConnectOptionsConfiguration(IOptions<AzureADSchemeOptions> schemeOptions, IOptionsMonitor<AzureADOptions> azureADOptions)
         {
-            return;
+            _schemeOptions = schemeOptions;
+            _azureADOptions = azureADOptions;
         }
 
-        var azureADOptions = _azureADOptions.Get(azureADScheme);
-        if (name != azureADOptions.OpenIdConnectSchemeName)
+        public void Configure(string name, OpenIdConnectOptions options)
         {
-            return;
-        }
-
-        options.ClientId = azureADOptions.ClientId;
-        options.ClientSecret = azureADOptions.ClientSecret;
-        options.Authority = new Uri(new Uri(azureADOptions.Instance), azureADOptions.TenantId).ToString();
-        options.CallbackPath = azureADOptions.CallbackPath ?? options.CallbackPath;
-        options.SignedOutCallbackPath = azureADOptions.SignedOutCallbackPath ?? options.SignedOutCallbackPath;
-        options.SignInScheme = azureADOptions.CookieSchemeName;
-        options.UseTokenLifetime = true;
-    }
-
-    private string GetAzureADScheme(string name)
-    {
-        foreach (var mapping in _schemeOptions.Value.OpenIDMappings)
-        {
-            if (mapping.Value.OpenIdConnectScheme == name)
+            var azureADScheme = GetAzureADScheme(name);
+            if (azureADScheme is null)
             {
-                return mapping.Key;
+                return;
             }
+
+            var azureADOptions = _azureADOptions.Get(azureADScheme);
+            if (name != azureADOptions.OpenIdConnectSchemeName)
+            {
+                return;
+            }
+
+            options.ClientId = azureADOptions.ClientId;
+            options.ClientSecret = azureADOptions.ClientSecret;
+            options.Authority = new Uri(new Uri(azureADOptions.Instance), azureADOptions.TenantId).ToString();
+            options.CallbackPath = azureADOptions.CallbackPath ?? options.CallbackPath;
+            options.SignedOutCallbackPath = azureADOptions.SignedOutCallbackPath ?? options.SignedOutCallbackPath;
+            options.SignInScheme = azureADOptions.CookieSchemeName;
+            options.UseTokenLifetime = true;
         }
 
-        return null;
-    }
+        private string GetAzureADScheme(string name)
+        {
+            foreach (var mapping in _schemeOptions.Value.OpenIDMappings)
+            {
+                if (mapping.Value.OpenIdConnectScheme == name)
+                {
+                    return mapping.Key;
+                }
+            }
 
-    public void Configure(OpenIdConnectOptions options)
-    {
+            return null;
+        }
+
+        public void Configure(OpenIdConnectOptions options)
+        {
+        }
     }
 }

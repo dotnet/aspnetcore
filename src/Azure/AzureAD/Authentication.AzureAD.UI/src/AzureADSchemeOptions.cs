@@ -1,22 +1,25 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.using Microsoft.AspNetCore.Authorization;
 
-namespace Microsoft.AspNetCore.Authentication.AzureAD.UI;
+using System.Collections.Generic;
 
-internal class AzureADSchemeOptions
+namespace Microsoft.AspNetCore.Authentication.AzureAD.UI
 {
-    public IDictionary<string, AzureADOpenIDSchemeMapping> OpenIDMappings { get; set; } = new Dictionary<string, AzureADOpenIDSchemeMapping>();
-
-    public IDictionary<string, JwtBearerSchemeMapping> JwtBearerMappings { get; set; } = new Dictionary<string, JwtBearerSchemeMapping>();
-
-    public class AzureADOpenIDSchemeMapping
+    internal class AzureADSchemeOptions
     {
-        public string OpenIdConnectScheme { get; set; }
-        public string CookieScheme { get; set; }
-    }
+        public IDictionary<string, AzureADOpenIDSchemeMapping> OpenIDMappings { get; set; } = new Dictionary<string, AzureADOpenIDSchemeMapping>();
 
-    public class JwtBearerSchemeMapping
-    {
-        public string JwtBearerScheme { get; set; }
+        public IDictionary<string, JwtBearerSchemeMapping> JwtBearerMappings { get; set; } = new Dictionary<string, JwtBearerSchemeMapping>();
+
+        public class AzureADOpenIDSchemeMapping
+        {
+            public string OpenIdConnectScheme { get; set; }
+            public string CookieScheme { get; set; }
+        }
+
+        public class JwtBearerSchemeMapping
+        {
+            public string JwtBearerScheme { get; set; }
+        }
     }
 }

@@ -1,21 +1,22 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.CodeAnalysis;
 
-namespace Microsoft.AspNetCore.Analyzers;
-
-internal class OptionsItem
+namespace Microsoft.AspNetCore.Analyzers
 {
-    public OptionsItem(IPropertySymbol property, object constantValue)
+    internal class OptionsItem
     {
-        Property = property;
-        ConstantValue = constantValue;
+        public OptionsItem(IPropertySymbol property, object constantValue)
+        {
+            Property = property;
+            ConstantValue = constantValue;
+        }
+
+        public INamedTypeSymbol OptionsType => Property.ContainingType;
+
+        public IPropertySymbol Property { get; }
+
+        public object ConstantValue { get; }
     }
-
-    public INamedTypeSymbol OptionsType => Property.ContainingType;
-
-    public IPropertySymbol Property { get; }
-
-    public object ConstantValue { get; }
 }

@@ -1,80 +1,77 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Diagnostics.CodeAnalysis;
+using System;
 using System.Reflection;
-using Microsoft.AspNetCore.Components.Rendering;
-using static Microsoft.AspNetCore.Internal.LinkerFlags;
+using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Components;
-
-/// <summary>
-/// Displays the specified content inside the specified layout and any further
-/// nested layouts.
-/// </summary>
-public class LayoutView : IComponent
+namespace Microsoft.AspNetCore.Components
 {
-    private static readonly RenderFragment EmptyRenderFragment = builder => { };
-
-    private RenderHandle _renderHandle;
-
     /// <summary>
-    /// Gets or sets the content to display.
+    /// Displays the specified content inside the specified layout and any further
+    /// nested layouts.
     /// </summary>
-    [Parameter]
-    public RenderFragment ChildContent { get; set; } = default!;
-
-    /// <summary>
-    /// Gets or sets the type of the layout in which to display the content.
-    /// The type must implement <see cref="IComponent"/> and accept a parameter named <see cref="LayoutComponentBase.Body"/>.
-    /// </summary>
-    [Parameter]
-    [DynamicallyAccessedMembers(Component)]
-    public Type Layout { get; set; } = default!;
-
-    /// <inheritdoc />
-    public void Attach(RenderHandle renderHandle)
+    public class LayoutView : IComponent
     {
-        _renderHandle = renderHandle;
-    }
+        private static readonly RenderFragment EmptyRenderFragment = builder => { };
 
-    /// <inheritdoc />
-    public Task SetParametersAsync(ParameterView parameters)
-    {
-        parameters.SetParameterProperties(this);
-        Render();
-        return Task.CompletedTask;
-    }
+        private RenderHandle _renderHandle;
 
-    private void Render()
-    {
-        // In the middle goes the supplied content
-        var fragment = ChildContent ?? EmptyRenderFragment;
+        /// <summary>
+        /// Gets or sets the content to display.
+        /// </summary>
+        [Parameter]
+        public RenderFragment ChildContent { get; set; } = default!;
 
-        // Then repeatedly wrap that in each layer of nested layout until we get
-        // to a layout that has no parent
-        var layoutType = Layout;
-        while (layoutType != null)
+        /// <summary>
+        /// Gets or sets the type of the layout in which to display the content.
+        /// The type must implement <see cref="IComponent"/> and accept a parameter named <see cref="LayoutComponentBase.Body"/>.
+        /// </summary>
+        [Parameter]
+        public Type Layout { get; set; } = default!;
+
+        /// <inheritdoc />
+        public void Attach(RenderHandle renderHandle)
         {
-            fragment = WrapInLayout(layoutType, fragment);
-            layoutType = GetParentLayoutType(layoutType);
+            _renderHandle = renderHandle;
         }
 
-        _renderHandle.Render(fragment);
-    }
-
-    private static RenderFragment WrapInLayout([DynamicallyAccessedMembers(Component)] Type layoutType, RenderFragment bodyParam)
-    {
-        void Render(RenderTreeBuilder builder)
+        /// <inheritdoc />
+        public Task SetParametersAsync(ParameterView parameters)
         {
-            builder.OpenComponent(0, layoutType);
-            builder.AddAttribute(1, LayoutComponentBase.BodyPropertyName, bodyParam);
-            builder.CloseComponent();
-        };
+            parameters.SetParameterProperties(this);
+            Render();
+            return Task.CompletedTask;
+        }
 
-        return Render;
+        private void Render()
+        {
+            // In the middle goes the supplied content
+            var fragment = ChildContent ?? EmptyRenderFragment;
+
+            // Then repeatedly wrap that in each layer of nested layout until we get
+            // to a layout that has no parent
+            var layoutType = Layout;
+            while (layoutType != null)
+            {
+                fragment = WrapInLayout(layoutType, fragment);
+                layoutType = GetParentLayoutType(layoutType);
+            }
+
+            _renderHandle.Render(fragment);
+        }
+
+        private static RenderFragment WrapInLayout(Type layoutType, RenderFragment bodyParam)
+        {
+            return builder =>
+            {
+                builder.OpenComponent(0, layoutType);
+                builder.AddAttribute(1, LayoutComponentBase.BodyPropertyName, bodyParam);
+                builder.CloseComponent();
+            };
+        }
+
+        private static Type? GetParentLayoutType(Type type)
+            => type.GetCustomAttribute<LayoutAttribute>()?.LayoutType;
     }
-
-    private static Type? GetParentLayoutType(Type type)
-        => type.GetCustomAttribute<LayoutAttribute>()?.LayoutType;
 }

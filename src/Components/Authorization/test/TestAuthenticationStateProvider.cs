@@ -1,19 +1,22 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Microsoft.AspNetCore.Components.Authorization;
+using System.Threading.Tasks;
 
-public class TestAuthenticationStateProvider : AuthenticationStateProvider
+namespace Microsoft.AspNetCore.Components.Authorization
 {
-    public Task<AuthenticationState> CurrentAuthStateTask { get; set; }
-
-    public override Task<AuthenticationState> GetAuthenticationStateAsync()
+    public class TestAuthenticationStateProvider : AuthenticationStateProvider
     {
-        return CurrentAuthStateTask;
-    }
+        public Task<AuthenticationState> CurrentAuthStateTask { get; set; }
 
-    internal void TriggerAuthenticationStateChanged(Task<AuthenticationState> authState)
-    {
-        NotifyAuthenticationStateChanged(authState);
+        public override Task<AuthenticationState> GetAuthenticationStateAsync()
+        {
+            return CurrentAuthStateTask;
+        }
+
+        internal void TriggerAuthenticationStateChanged(Task<AuthenticationState> authState)
+        {
+            NotifyAuthenticationStateChanged(authState);
+        }
     }
 }

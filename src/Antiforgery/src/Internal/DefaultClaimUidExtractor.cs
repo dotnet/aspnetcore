@@ -1,151 +1,154 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using Microsoft.Extensions.ObjectPool;
 
-namespace Microsoft.AspNetCore.Antiforgery;
-
-/// <summary>
-/// Default implementation of <see cref="IClaimUidExtractor"/>.
-/// </summary>
-internal class DefaultClaimUidExtractor : IClaimUidExtractor
+namespace Microsoft.AspNetCore.Antiforgery
 {
-    private readonly ObjectPool<AntiforgerySerializationContext> _pool;
-
-    public DefaultClaimUidExtractor(ObjectPool<AntiforgerySerializationContext> pool)
+    /// <summary>
+    /// Default implementation of <see cref="IClaimUidExtractor"/>.
+    /// </summary>
+    internal class DefaultClaimUidExtractor : IClaimUidExtractor
     {
-        _pool = pool;
-    }
+        private readonly ObjectPool<AntiforgerySerializationContext> _pool;
 
-    /// <inheritdoc />
-    public string? ExtractClaimUid(ClaimsPrincipal claimsPrincipal)
-    {
-        Debug.Assert(claimsPrincipal != null);
-
-        var uniqueIdentifierParameters = GetUniqueIdentifierParameters(claimsPrincipal.Identities);
-        if (uniqueIdentifierParameters == null)
+        public DefaultClaimUidExtractor(ObjectPool<AntiforgerySerializationContext> pool)
         {
-            // No authenticated identities containing claims found.
-            return null;
+            _pool = pool;
         }
 
-        var claimUidBytes = ComputeSha256(uniqueIdentifierParameters);
-        return Convert.ToBase64String(claimUidBytes);
-    }
-
-    public static IList<string>? GetUniqueIdentifierParameters(IEnumerable<ClaimsIdentity> claimsIdentities)
-    {
-        var identitiesList = claimsIdentities as List<ClaimsIdentity>;
-        if (identitiesList == null)
+        /// <inheritdoc />
+        public string? ExtractClaimUid(ClaimsPrincipal claimsPrincipal)
         {
-            identitiesList = new List<ClaimsIdentity>(claimsIdentities);
-        }
+            Debug.Assert(claimsPrincipal != null);
 
-        for (var i = 0; i < identitiesList.Count; i++)
-        {
-            var identity = identitiesList[i];
-            if (!identity.IsAuthenticated)
+            var uniqueIdentifierParameters = GetUniqueIdentifierParameters(claimsPrincipal.Identities);
+            if (uniqueIdentifierParameters == null)
             {
-                continue;
+                // No authenticated identities containing claims found.
+                return null;
             }
 
-            var subClaim = identity.FindFirst(
-                claim => string.Equals("sub", claim.Type, StringComparison.Ordinal));
-            if (subClaim != null && !string.IsNullOrEmpty(subClaim.Value))
+            var claimUidBytes = ComputeSha256(uniqueIdentifierParameters);
+            return Convert.ToBase64String(claimUidBytes);
+        }
+
+        public static IList<string>? GetUniqueIdentifierParameters(IEnumerable<ClaimsIdentity> claimsIdentities)
+        {
+            var identitiesList = claimsIdentities as List<ClaimsIdentity>;
+            if (identitiesList == null)
             {
-                return new string[]
+                identitiesList = new List<ClaimsIdentity>(claimsIdentities);
+            }
+
+            for (var i = 0; i < identitiesList.Count; i++)
+            {
+                var identity = identitiesList[i];
+                if (!identity.IsAuthenticated)
                 {
+                    continue;
+                }
+
+                var subClaim = identity.FindFirst(
+                    claim => string.Equals("sub", claim.Type, StringComparison.Ordinal));
+                if (subClaim != null && !string.IsNullOrEmpty(subClaim.Value))
+                {
+                    return new string[]
+                    {
                         subClaim.Type,
                         subClaim.Value,
                         subClaim.Issuer
-                };
-            }
+                    };
+                }
 
-            var nameIdentifierClaim = identity.FindFirst(
-                claim => string.Equals(ClaimTypes.NameIdentifier, claim.Type, StringComparison.Ordinal));
-            if (nameIdentifierClaim != null && !string.IsNullOrEmpty(nameIdentifierClaim.Value))
-            {
-                return new string[]
+                var nameIdentifierClaim = identity.FindFirst(
+                    claim => string.Equals(ClaimTypes.NameIdentifier, claim.Type, StringComparison.Ordinal));
+                if (nameIdentifierClaim != null && !string.IsNullOrEmpty(nameIdentifierClaim.Value))
                 {
+                    return new string[]
+                    {
                         nameIdentifierClaim.Type,
                         nameIdentifierClaim.Value,
                         nameIdentifierClaim.Issuer
-                };
-            }
+                    };
+                }
 
-            var upnClaim = identity.FindFirst(
-                claim => string.Equals(ClaimTypes.Upn, claim.Type, StringComparison.Ordinal));
-            if (upnClaim != null && !string.IsNullOrEmpty(upnClaim.Value))
-            {
-                return new string[]
+                var upnClaim = identity.FindFirst(
+                    claim => string.Equals(ClaimTypes.Upn, claim.Type, StringComparison.Ordinal));
+                if (upnClaim != null && !string.IsNullOrEmpty(upnClaim.Value))
                 {
+                    return new string[]
+                    {
                         upnClaim.Type,
                         upnClaim.Value,
                         upnClaim.Issuer
-                };
+                    };
+                }
             }
-        }
 
-        // We do not understand any of the ClaimsIdentity instances, fallback on serializing all claims in every claims Identity.
-        var allClaims = new List<Claim>();
-        for (var i = 0; i < identitiesList.Count; i++)
-        {
-            if (identitiesList[i].IsAuthenticated)
+            // We do not understand any of the ClaimsIdentity instances, fallback on serializing all claims in every claims Identity.
+            var allClaims = new List<Claim>();
+            for (var i = 0; i < identitiesList.Count; i++)
             {
-                allClaims.AddRange(identitiesList[i].Claims);
+                if (identitiesList[i].IsAuthenticated)
+                {
+                    allClaims.AddRange(identitiesList[i].Claims);
+                }
             }
-        }
 
-        if (allClaims.Count == 0)
-        {
-            // No authenticated identities containing claims found.
-            return null;
-        }
-
-        allClaims.Sort((a, b) => string.Compare(a.Type, b.Type, StringComparison.Ordinal));
-
-        var identifierParameters = new List<string>(allClaims.Count * 3);
-        for (var i = 0; i < allClaims.Count; i++)
-        {
-            var claim = allClaims[i];
-            identifierParameters.Add(claim.Type);
-            identifierParameters.Add(claim.Value);
-            identifierParameters.Add(claim.Issuer);
-        }
-
-        return identifierParameters;
-    }
-
-    private byte[] ComputeSha256(IEnumerable<string> parameters)
-    {
-        var serializationContext = _pool.Get();
-
-        try
-        {
-            var writer = serializationContext.Writer;
-            foreach (string parameter in parameters)
+            if (allClaims.Count == 0)
             {
-                writer.Write(parameter); // also writes the length as a prefix; unambiguous
+                // No authenticated identities containing claims found.
+                return null;
             }
 
-            writer.Flush();
+            allClaims.Sort((a, b) => string.Compare(a.Type, b.Type, StringComparison.Ordinal));
 
-            bool success = serializationContext.Stream.TryGetBuffer(out ArraySegment<byte> buffer);
-            if (!success)
+            var identifierParameters = new List<string>(allClaims.Count * 3);
+            for (var i = 0; i < allClaims.Count; i++)
             {
-                throw new InvalidOperationException();
+                var claim = allClaims[i];
+                identifierParameters.Add(claim.Type);
+                identifierParameters.Add(claim.Value);
+                identifierParameters.Add(claim.Issuer);
             }
 
-            var bytes = SHA256.HashData(buffer);
-
-            return bytes;
+            return identifierParameters;
         }
-        finally
+
+        private byte[] ComputeSha256(IEnumerable<string> parameters)
         {
-            _pool.Return(serializationContext);
+            var serializationContext = _pool.Get();
+
+            try
+            {
+                var writer = serializationContext.Writer;
+                foreach (string parameter in parameters)
+                {
+                    writer.Write(parameter); // also writes the length as a prefix; unambiguous
+                }
+
+                writer.Flush();
+
+                bool success = serializationContext.Stream.TryGetBuffer(out ArraySegment<byte> buffer);
+                if (!success)
+                {
+                    throw new InvalidOperationException();
+                }
+
+                var bytes = SHA256.HashData(buffer);
+
+                return bytes;
+            }
+            finally
+            {
+                _pool.Return(serializationContext);
+            }
         }
     }
 }

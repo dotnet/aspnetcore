@@ -1,21 +1,22 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.Extensions.ObjectPool;
 
-namespace Microsoft.AspNetCore.Antiforgery;
-
-internal class AntiforgerySerializationContextPooledObjectPolicy : IPooledObjectPolicy<AntiforgerySerializationContext>
+namespace Microsoft.AspNetCore.Antiforgery
 {
-    public AntiforgerySerializationContext Create()
+    internal class AntiforgerySerializationContextPooledObjectPolicy : IPooledObjectPolicy<AntiforgerySerializationContext>
     {
-        return new AntiforgerySerializationContext();
-    }
+        public AntiforgerySerializationContext Create()
+        {
+            return new AntiforgerySerializationContext();
+        }
 
-    public bool Return(AntiforgerySerializationContext obj)
-    {
-        obj.Reset();
+        public bool Return(AntiforgerySerializationContext obj)
+        {
+            obj.Reset();
 
-        return true;
+            return true;
+        }
     }
 }

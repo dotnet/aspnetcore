@@ -1,66 +1,67 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable disable warnings
+
+using System;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Components.RenderTree;
-
-public abstract partial class Renderer
+namespace Microsoft.AspNetCore.Components.RenderTree
 {
-    internal static partial class Log
+    public abstract partial class Renderer
     {
-        [LoggerMessage(1, LogLevel.Debug, "Initializing component {ComponentId} ({ComponentType}) as child of {ParentComponentId} ({ParentComponentType})", EventName = "InitializingChildComponent", SkipEnabledCheck = true)]
-        private static partial void InitializingChildComponent(ILogger logger, int componentId, Type componentType, int parentComponentId, Type parentComponentType);
-
-        [LoggerMessage(2, LogLevel.Debug, "Initializing root component {ComponentId} ({ComponentType})", EventName = "InitializingRootComponent", SkipEnabledCheck = true)]
-        private static partial void InitializingRootComponent(ILogger logger, int componentId, Type componentType);
-
-        public static void InitializingComponent(ILogger logger, ComponentState componentState, ComponentState parentComponentState)
+        internal static class Log
         {
-            if (logger.IsEnabled(LogLevel.Debug)) // This is almost always false, so skip the evaluations
+            private static readonly Action<ILogger, int, Type, int, Type, Exception> _initializingChildComponent =
+                LoggerMessage.Define<int, Type, int, Type>(LogLevel.Debug, new EventId(1, "InitializingChildComponent"), "Initializing component {ComponentId} ({ComponentType}) as child of {ParentComponentId} ({ParentComponentId})");
+
+            private static readonly Action<ILogger, int, Type, Exception> _initializingRootComponent =
+                LoggerMessage.Define<int, Type>(LogLevel.Debug, new EventId(2, "InitializingRootComponent"), "Initializing root component {ComponentId} ({ComponentType})");
+
+            private static readonly Action<ILogger, int, Type, Exception> _renderingComponent =
+                LoggerMessage.Define<int, Type>(LogLevel.Debug, new EventId(3, "RenderingComponent"), "Rendering component {ComponentId} of type {ComponentType}");
+
+            private static readonly Action<ILogger, int, Type, Exception> _disposingComponent =
+                LoggerMessage.Define<int, Type>(LogLevel.Debug, new EventId(4, "DisposingComponent"), "Disposing component {ComponentId} of type {ComponentType}");
+
+            private static readonly Action<ILogger, ulong, string, Exception> _handlingEvent =
+                LoggerMessage.Define<ulong, string>(LogLevel.Debug, new EventId(5, "HandlingEvent"), "Handling event {EventId} of type '{EventType}'");
+
+            public static void InitializingComponent(ILogger logger, ComponentState componentState, ComponentState parentComponentState)
             {
-                if (parentComponentState == null)
+                if (logger.IsEnabled(LogLevel.Debug)) // This is almost always false, so skip the evaluations
                 {
-                    InitializingRootComponent(logger, componentState.ComponentId, componentState.Component.GetType());
+                    if (parentComponentState == null)
+                    {
+                        _initializingRootComponent(logger, componentState.ComponentId, componentState.Component.GetType(), null);
+                    }
+                    else
+                    {
+                        _initializingChildComponent(logger, componentState.ComponentId, componentState.Component.GetType(), parentComponentState.ComponentId, parentComponentState.Component.GetType(), null);
+                    }
                 }
-                else
+            }
+
+            public static void RenderingComponent(ILogger logger, ComponentState componentState)
+            {
+                if (logger.IsEnabled(LogLevel.Debug)) // This is almost always false, so skip the evaluations
                 {
-                    InitializingChildComponent(logger, componentState.ComponentId, componentState.Component.GetType(), parentComponentState.ComponentId, parentComponentState.Component.GetType());
+                    _renderingComponent(logger, componentState.ComponentId, componentState.Component.GetType(), null);
                 }
             }
-        }
 
-        [LoggerMessage(3, LogLevel.Debug, "Rendering component {ComponentId} of type {ComponentType}", EventName = "RenderingComponent", SkipEnabledCheck = true)]
-        private static partial void RenderingComponent(ILogger logger, int componentId, Type componentType);
-
-        public static void RenderingComponent(ILogger logger, ComponentState componentState)
-        {
-            if (logger.IsEnabled(LogLevel.Debug)) // This is almost always false, so skip the evaluations
+            public static void DisposingComponent(ILogger<Renderer> logger, ComponentState componentState)
             {
-                RenderingComponent(logger, componentState.ComponentId, componentState.Component.GetType());
+                if (logger.IsEnabled(LogLevel.Debug)) // This is almost always false, so skip the evaluations
+                {
+                    _disposingComponent(logger, componentState.ComponentId, componentState.Component.GetType(), null);
+                }
             }
-        }
 
-        [LoggerMessage(4, LogLevel.Debug, "Disposing component {ComponentId} of type {ComponentType}", EventName = "DisposingComponent", SkipEnabledCheck = true)]
-        private static partial void DisposingComponent(ILogger<Renderer> logger, int componentId, Type componentType);
-
-        public static void DisposingComponent(ILogger<Renderer> logger, ComponentState componentState)
-        {
-            if (logger.IsEnabled(LogLevel.Debug)) // This is almost always false, so skip the evaluations
+            public static void HandlingEvent(ILogger<Renderer> logger, ulong eventHandlerId, EventArgs eventArgs)
             {
-                DisposingComponent(logger, componentState.ComponentId, componentState.Component.GetType());
-            }
-        }
-
-        [LoggerMessage(5, LogLevel.Debug, "Handling event {EventId} of type '{EventType}'", EventName = "HandlingEvent", SkipEnabledCheck = true)]
-        public static partial void HandlingEvent(ILogger<Renderer> logger, ulong eventId, string eventType);
-
-        public static void HandlingEvent(ILogger<Renderer> logger, ulong eventHandlerId, EventArgs? eventArgs)
-        {
-            if (logger.IsEnabled(LogLevel.Debug)) // This is almost always false, so skip the evaluations
-            {
-                HandlingEvent(logger, eventHandlerId, eventArgs?.GetType().Name ?? "null");
+                _handlingEvent(logger, eventHandlerId, eventArgs?.GetType().Name ?? "null", null);
             }
         }
     }

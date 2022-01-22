@@ -5,17 +5,21 @@
      This script installs NodeJs from http://nodejs.org/dist on a machine. 
  .PARAMETER Version
      The version of NodeJS to install.
+ .PARAMETER InstallDir
+     The directory to install NodeJS to.
  .LINK 
      https://nodejs.org/en/
  #> 
 param(
     [Parameter(Mandatory = $true)]
-    $Version
+    $Version,
+    
+    [Parameter(Mandatory = $true)]
+    $InstallDir
 )
 
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue' # Workaround PowerShell/PowerShell#2138
-$InstallDir = $PSScriptRoot + '\nodejs' # Always install to workitem root / nodejs
 
 Set-StrictMode -Version 1
 
@@ -27,7 +31,7 @@ if (Get-Command "node.exe" -ErrorAction SilentlyContinue)
 
 if (Test-Path "$InstallDir\node.exe")
 {
-    Write-Host "Node.exe found at $InstallDir\node.exe"
+    Write-Host "Node.exe found at $InstallDir"
     exit
 }
 
@@ -53,8 +57,11 @@ else {
     [System.IO.Compression.ZipFile]::ExtractToDirectory("nodejs.zip", $tempDir)
 }
 
-Write-Host "Expanded NodeJs to $tempDir, moving $tempDir\$nodeFile to $InstallDir subdir"
-move $tempDir\$nodeFile $InstallDir
+Write-Host "Expanded NodeJs"
+New-Item -Path "$InstallDir" -ItemType "directory" -Force
+Write-Host "Copying $tempDir\$nodeFile\node.exe to $InstallDir"
+Copy-Item "$tempDir\$nodeFile\node.exe" "$InstallDir\node.exe"
+
 if (Test-Path "$InstallDir\node.exe")
 {
     Write-Host "Node.exe copied to $InstallDir"

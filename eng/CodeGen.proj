@@ -2,8 +2,7 @@
 
   <PropertyGroup>
     <BuildManaged>true</BuildManaged>
-    <RepoRoot
-        Condition=" '$(RepoRoot)' == '' OR !HasTrailingSlash('$(RepoRoot)') ">$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..'))</RepoRoot>
+    <RepoRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..'))</RepoRoot>
     <BuildMainlyReferenceProviders>true</BuildMainlyReferenceProviders>
   </PropertyGroup>
 

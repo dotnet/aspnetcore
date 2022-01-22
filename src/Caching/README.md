@@ -1,6 +1,6 @@
 # Caching
 
-This area contains distributed cache implementations for Microsoft SQL Server and Redis. See documentation at <https://docs.microsoft.com/en-us/aspnet/core/performance/caching/distributed?view=aspnetcore-5.0>.
+This area contains distributed cache implementations for Microsoft SQL Server and Redis. See documentation at <https://docs.microsoft.com/en-us/aspnet/core/fundamentals/http-requests#use-polly-based-handlers>.
 
 ## Description
 
@@ -10,7 +10,7 @@ These packages are not part of the ASP.NET Core shared framework but are shipped
 
 ### Build
 
-To build this specific project from source, follow the instructions [on building the project](../../docs/BuildFromSource.md#step-3-build-the-repo).
+To build this specific project from source, follow the instructions [on building a subset of the code](../../docs/BuildFromSource.md#building-a-subset-of-the-code).
 
 ### Test
 

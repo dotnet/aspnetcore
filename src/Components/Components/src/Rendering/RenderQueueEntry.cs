@@ -1,16 +1,19 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Microsoft.AspNetCore.Components.Rendering;
+using System;
 
-internal readonly struct RenderQueueEntry
+namespace Microsoft.AspNetCore.Components.Rendering
 {
-    public readonly ComponentState ComponentState;
-    public readonly RenderFragment RenderFragment;
-
-    public RenderQueueEntry(ComponentState componentState, RenderFragment renderFragment)
+    internal readonly struct RenderQueueEntry
     {
-        ComponentState = componentState;
-        RenderFragment = renderFragment ?? throw new ArgumentNullException(nameof(renderFragment));
+        public readonly ComponentState ComponentState;
+        public readonly RenderFragment RenderFragment;
+
+        public RenderQueueEntry(ComponentState componentState, RenderFragment renderFragment)
+        {
+            ComponentState = componentState;
+            RenderFragment = renderFragment ?? throw new ArgumentNullException(nameof(renderFragment));
+        }
     }
 }

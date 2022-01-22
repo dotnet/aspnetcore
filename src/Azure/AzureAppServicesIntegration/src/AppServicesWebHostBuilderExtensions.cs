@@ -1,29 +1,31 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Hosting;
-
-/// <summary>
-/// Extension method to add Azure AppServices integration to the app.
-/// </summary>
-public static class AppServicesWebHostBuilderExtensions
+namespace Microsoft.AspNetCore.Hosting
 {
     /// <summary>
-    /// Configures application to use Azure AppServices integration.
+    /// Extension method to add Azure AppServices integration to the app.
     /// </summary>
-    /// <param name="hostBuilder"></param>
-    /// <returns></returns>
-    public static IWebHostBuilder UseAzureAppServices(this IWebHostBuilder hostBuilder)
+    public static class AppServicesWebHostBuilderExtensions
     {
-        if (hostBuilder == null)
+        /// <summary>
+        /// Configures application to use Azure AppServices integration.
+        /// </summary>
+        /// <param name="hostBuilder"></param>
+        /// <returns></returns>
+        public static IWebHostBuilder UseAzureAppServices(this IWebHostBuilder hostBuilder)
         {
-            throw new ArgumentNullException(nameof(hostBuilder));
-        }
+            if (hostBuilder == null)
+            {
+                throw new ArgumentNullException(nameof(hostBuilder));
+            }
 #pragma warning disable 618
-        hostBuilder.ConfigureLogging(builder => builder.AddAzureWebAppDiagnostics());
+            hostBuilder.ConfigureLogging(builder => builder.AddAzureWebAppDiagnostics());
 #pragma warning restore 618
-        return hostBuilder;
+            return hostBuilder;
+        }
     }
 }

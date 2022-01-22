@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/runtime-deps:2.1-bionic
+FROM microsoft/dotnet:2.1-runtime-deps-bionic
 
 ARG USER
 ARG USER_ID

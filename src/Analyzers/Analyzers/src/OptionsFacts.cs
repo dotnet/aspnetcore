@@ -1,25 +1,26 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using Microsoft.CodeAnalysis;
 
-namespace Microsoft.AspNetCore.Analyzers;
-
-internal static class OptionsFacts
+namespace Microsoft.AspNetCore.Analyzers
 {
-    public static bool IsEndpointRoutingExplicitlyDisabled(OptionsAnalysis analysis)
+    internal static class OptionsFacts
     {
-        for (var i = 0; i < analysis.Options.Length; i++)
+        public static bool IsEndpointRoutingExplicitlyDisabled(OptionsAnalysis analysis)
         {
-            var item = analysis.Options[i];
-            if (string.Equals(item.OptionsType.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat), SymbolNames.MvcOptions.MetadataName) &&
-                string.Equals(item.Property.Name, SymbolNames.MvcOptions.EnableEndpointRoutingPropertyName, StringComparison.Ordinal))
+            for (var i = 0; i < analysis.Options.Length; i++)
             {
-                return item.ConstantValue as bool? == false;
+                var item = analysis.Options[i];
+                if (string.Equals(item.OptionsType.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat), SymbolNames.MvcOptions.MetadataName) &&
+                    string.Equals(item.Property.Name, SymbolNames.MvcOptions.EnableEndpointRoutingPropertyName, StringComparison.Ordinal))
+                {
+                    return item.ConstantValue as bool? == false;
+                }
             }
-        }
 
-        return false;
+            return false;
+        }
     }
 }

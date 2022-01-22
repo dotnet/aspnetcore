@@ -148,5 +148,5 @@ docker run \
     -v "$DIR:$DIR" \
     ${docker_args[@]+"${docker_args[@]}"} \
     $tagname \
-    ./eng/build.sh \
+    ./build.sh \
     ${build_args[@]+"${build_args[@]}"}

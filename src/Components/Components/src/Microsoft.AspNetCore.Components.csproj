@@ -6,15 +6,10 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <Nullable>enable</Nullable>
-    <Trimmable>true</Trimmable>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="$(ComponentsSharedSourceRoot)src\ArrayBuilder.cs" LinkBase="RenderTree" />
-    <Compile Include="$(ComponentsSharedSourceRoot)src\JsonSerializerOptionsProvider.cs" />
-    <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
-    <Compile Include="$(SharedSourceRoot)QueryStringEnumerable.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>
@@ -32,10 +27,7 @@
   <ItemGroup>
     <SuppressBaselineReference Include="Microsoft.AspNetCore.Components.Analyzers" InNuspecFile="true" />
     <SuppressBaselineReference Include="Microsoft.AspNetCore.Authorization" InNuspecFile="true" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="Properties\ILLink.Substitutions.xml" LogicalName="ILLink.Substitutions.xml" />
+    <SuppressBaselineReference Include="Microsoft.JSInterop" Condition=" '$(AspNetCoreMajorMinorVersion)' == '6.0' " />
   </ItemGroup>
 
   <Target Name="_GetNuspecDependencyPackageVersions">
