@@ -65,14 +65,18 @@ internal static partial class FileResultHelper
             }
             else
             {
+                var from = 0;
+                var length = 0;
+
                 checked
                 {
                     // Overflow should throw
-                    var from = (int)range.From!.Value;
-                    var length = (int)rangeLength;
-
-                    await outputStream.WriteAsync(buffer.Slice(from, length), context.RequestAborted);
+                    from = (int)range.From!.Value;
+                    length = (int)rangeLength;
                 }
+
+                await outputStream.WriteAsync(buffer.Slice(from, length), context.RequestAborted);
+
             }
         }
         catch (OperationCanceledException)
