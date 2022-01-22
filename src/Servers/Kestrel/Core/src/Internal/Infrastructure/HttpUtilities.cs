@@ -106,7 +106,7 @@ internal static partial class HttpUtilities
         => StringUtilities.GetAsciiStringNonNullCharacters(span);
 
     public static string GetAsciiOrUTF8StringNonNullCharacters(this ReadOnlySpan<byte> span)
-        => StringUtilities.GetAsciiOrUTF8StringNonNullCharacters(span, DefaultRequestHeaderEncoding);
+        => span.GetAsciiOrUTF8StringNonNullCharacters(DefaultRequestHeaderEncoding);
 
     public static string GetRequestHeaderString(this ReadOnlySpan<byte> span, string name, Func<string, Encoding?> encodingSelector, bool checkForNewlineChars)
     {

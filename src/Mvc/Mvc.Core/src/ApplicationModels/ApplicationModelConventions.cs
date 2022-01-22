@@ -107,8 +107,7 @@ internal static class ApplicationModelConventions
         IEnumerable<IApplicationModelConvention> conventions,
         IReadOnlyList<object> attributes)
     {
-        return Enumerable.Concat(
-            conventions.OfType<TConvention>(),
+        return conventions.OfType<TConvention>().Concat(
             attributes.OfType<TConvention>());
     }
 }

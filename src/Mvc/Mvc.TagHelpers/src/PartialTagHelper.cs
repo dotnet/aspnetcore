@@ -195,7 +195,7 @@ public class PartialTagHelper : TagHelper
 
         if (!viewEngineResult.Success)
         {
-            var searchedLocations = Enumerable.Concat(getViewLocations, viewEngineResult.SearchedLocations);
+            var searchedLocations = getViewLocations.Concat(viewEngineResult.SearchedLocations);
             return ViewEngineResult.NotFound(partialName, searchedLocations);
         }
 

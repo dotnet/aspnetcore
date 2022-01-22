@@ -20,7 +20,7 @@ public static class HttpRequestRewindExtensions
     /// </remarks>
     public static void EnableBuffering(this HttpRequest request)
     {
-        BufferingHelper.EnableRewind(request);
+        request.EnableRewind();
     }
 
     /// <summary>
@@ -40,7 +40,7 @@ public static class HttpRequestRewindExtensions
     /// </remarks>
     public static void EnableBuffering(this HttpRequest request, int bufferThreshold)
     {
-        BufferingHelper.EnableRewind(request, bufferThreshold);
+        request.EnableRewind(bufferThreshold);
     }
 
     /// <summary>
@@ -59,7 +59,7 @@ public static class HttpRequestRewindExtensions
     /// </remarks>
     public static void EnableBuffering(this HttpRequest request, long bufferLimit)
     {
-        BufferingHelper.EnableRewind(request, bufferLimit: bufferLimit);
+        request.EnableRewind(bufferLimit: bufferLimit);
     }
 
     /// <summary>
@@ -83,6 +83,6 @@ public static class HttpRequestRewindExtensions
     /// </remarks>
     public static void EnableBuffering(this HttpRequest request, int bufferThreshold, long bufferLimit)
     {
-        BufferingHelper.EnableRewind(request, bufferThreshold, bufferLimit);
+        request.EnableRewind(bufferThreshold, bufferLimit);
     }
 }

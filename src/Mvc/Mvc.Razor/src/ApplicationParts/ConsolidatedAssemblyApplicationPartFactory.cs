@@ -19,8 +19,7 @@ public sealed class ConsolidatedAssemblyApplicationPartFactory : ApplicationPart
     /// <inheritdoc />
     public override IEnumerable<ApplicationPart> GetApplicationParts(Assembly assembly)
     {
-        return Enumerable.Concat(
-            DefaultApplicationPartFactory.GetDefaultApplicationParts(assembly),
+        return DefaultApplicationPartFactory.GetDefaultApplicationParts(assembly).Concat(
             CompiledRazorAssemblyApplicationPartFactory.GetDefaultApplicationParts(assembly));
     }
 }

@@ -24,8 +24,7 @@ internal static class CompiledPageActionDescriptorBuilder
         FilterCollection globalFilters)
     {
         var boundProperties = CreateBoundProperties(applicationModel);
-        var filters = Enumerable.Concat(
-                globalFilters.Select(f => new FilterDescriptor(f, FilterScope.Global)),
+        var filters = globalFilters.Select(f => new FilterDescriptor(f, FilterScope.Global)).Concat(
                 applicationModel.Filters.Select(f => new FilterDescriptor(f, FilterScope.Action)))
             .ToArray();
         var handlerMethods = CreateHandlerMethods(applicationModel);
@@ -68,7 +67,7 @@ internal static class CompiledPageActionDescriptorBuilder
         // must appear later in the sequence.
         // In this case, handlerMetadata is attributes on the Page \ PageModel, and endPointMetadata is configured via conventions. and
         // We consider the latter to be more significant.
-        return Enumerable.Concat(handlerMetatdata, endpointMetadata).ToList();
+        return handlerMetatdata.Concat(endpointMetadata).ToList();
     }
 
     // Internal for unit testing

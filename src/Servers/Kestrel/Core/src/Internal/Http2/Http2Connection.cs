@@ -527,7 +527,7 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
             // Line should be long enough for HTTP/1.X and end with \r\n
             if (requestLine.Length > 10 && requestLine[requestLine.Length - 1] == (byte)'\r')
             {
-                httpVersion = HttpUtilities.GetKnownVersion(requestLine.Slice(requestLine.Length - 9, 8));
+                httpVersion = requestLine.Slice(requestLine.Length - 9, 8).GetKnownVersion();
             }
 
             return true;

@@ -112,7 +112,7 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
                     host = host.Slice(0, pivot);
                 }
 
-                if (host == null || MemoryExtensions.Equals(host, WildcardHost, StringComparison.OrdinalIgnoreCase))
+                if (host == null || host.Equals(WildcardHost, StringComparison.OrdinalIgnoreCase))
                 {
                     // Can match any host
                 }
@@ -134,7 +134,7 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
                     continue;
                 }
 
-                if (MemoryExtensions.Equals(port, WildcardHost, StringComparison.OrdinalIgnoreCase))
+                if (port.Equals(WildcardHost, StringComparison.OrdinalIgnoreCase))
                 {
                     // Port is a wildcard, we allow any port.
                 }
