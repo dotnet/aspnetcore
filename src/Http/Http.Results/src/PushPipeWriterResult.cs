@@ -10,12 +10,18 @@ namespace Microsoft.AspNetCore.Http.Result;
 
 internal sealed class PushPipeWriterResult : FileResult
 {
-    private readonly Func<PipeWriter, Task> _pipeWriterCallback;
+    private readonly Func<PipeWriter, long?, long, Task> _pipeWriterCallback;
+
+    public PushPipeWriterResult(Func<PipeWriter, long?, long, Task> pipeWriterCallback, string? contentType) :
+        base(contentType)
+    {
+        _pipeWriterCallback = pipeWriterCallback;
+    }
 
     public PushPipeWriterResult(Func<PipeWriter, Task> pipeWriterCallback, string? contentType) :
         base(contentType)
     {
-        _pipeWriterCallback = pipeWriterCallback;
+        _pipeWriterCallback = (body, _, _) => pipeWriterCallback(body);
     }
 
     protected override ILogger GetLogger(HttpContext httpContext)
@@ -25,6 +31,6 @@ internal sealed class PushPipeWriterResult : FileResult
 
     protected override Task ExecuteAsync(HttpContext httpContext, RangeItemHeaderValue? range, long rangeLength)
     {
-        return _pipeWriterCallback(httpContext.Response.BodyWriter);
+        return _pipeWriterCallback(httpContext.Response.BodyWriter, range?.From, rangeLength);
     }
 }

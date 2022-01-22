@@ -388,7 +388,6 @@ public static class Results
     /// Used to configure the <c>Last-Modified</c> response header and perform conditional range requests.</param>
     /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> to be configure the <c>ETag</c> response header
     /// and perform conditional requests.</param>
-    /// <param name="enableRangeProcessing">Set to <c>true</c> to enable range requests processing.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
 #pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
     public static IResult Stream(
@@ -397,15 +396,46 @@ public static class Results
         string? contentType = null,
         string? fileDownloadName = null,
         DateTimeOffset? lastModified = null,
-        EntityTagHeaderValue? entityTag = null,
-        bool enableRangeProcessing = false)
+        EntityTagHeaderValue? entityTag = null)
     {
         return new PushStreamResult(streamWriterCallback, contentType)
         {
             LastModified = lastModified,
             EntityTag = entityTag,
             FileDownloadName = fileDownloadName,
-            EnableRangeProcessing = enableRangeProcessing,
+        };
+    }
+
+    /// <summary>
+    /// Allows writing to directly to the response body.
+    /// <para>
+    /// This supports range requests (<see cref="StatusCodes.Status206PartialContent"/> or
+    /// <see cref="StatusCodes.Status416RangeNotSatisfiable"/> if the range is not satisfiable).
+    /// </para>
+    /// </summary>
+    /// <param name="streamWriterCallback">The callback that allows users to write directly to the response body.</param>
+    /// <param name="contentType">The <c>Content-Type</c> of the response. Defaults to <c>application/octet-stream</c>.</param>
+    /// <param name="fileDownloadName">The the file name to be used in the <c>Content-Disposition</c> header.</param>
+    /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.
+    /// Used to configure the <c>Last-Modified</c> response header and perform conditional range requests.</param>
+    /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> to be configure the <c>ETag</c> response header
+    /// and perform conditional requests.</param>
+    /// <returns>The created <see cref="IResult"/> for the response.</returns>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+    public static IResult Stream(
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
+        Func<Stream, long?, long, Task> streamWriterCallback,
+        string? contentType = null,
+        string? fileDownloadName = null,
+        DateTimeOffset? lastModified = null,
+        EntityTagHeaderValue? entityTag = null)
+    {
+        return new PushStreamResult(streamWriterCallback, contentType)
+        {
+            LastModified = lastModified,
+            EntityTag = entityTag,
+            FileDownloadName = fileDownloadName,
+            EnableRangeProcessing = true,
         };
     }
 
@@ -423,7 +453,6 @@ public static class Results
     /// Used to configure the <c>Last-Modified</c> response header and perform conditional range requests.</param>
     /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> to be configure the <c>ETag</c> response header
     /// and perform conditional requests.</param>
-    /// <param name="enableRangeProcessing">Set to <c>true</c> to enable range requests processing.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
 #pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
     public static IResult Stream(
@@ -432,15 +461,46 @@ public static class Results
         string? contentType = null,
         string? fileDownloadName = null,
         DateTimeOffset? lastModified = null,
-        EntityTagHeaderValue? entityTag = null,
-        bool enableRangeProcessing = false)
+        EntityTagHeaderValue? entityTag = null)
+    {
+        return new PushPipeWriterResult(pipeWriterCallback, contentType)
+        {
+            LastModified = lastModified,
+            EntityTag = entityTag,
+            FileDownloadName = fileDownloadName
+        };
+    }
+
+    /// <summary>
+    /// Allows writing to directly to the response body.
+    /// <para>
+    /// This supports range requests (<see cref="StatusCodes.Status206PartialContent"/> or
+    /// <see cref="StatusCodes.Status416RangeNotSatisfiable"/> if the range is not satisfiable).
+    /// </para>
+    /// </summary>
+    /// <param name="pipeWriterCallback">The callback that allows users to write directly to the response body.</param>
+    /// <param name="contentType">The <c>Content-Type</c> of the response. Defaults to <c>application/octet-stream</c>.</param>
+    /// <param name="fileDownloadName">The the file name to be used in the <c>Content-Disposition</c> header.</param>
+    /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.
+    /// Used to configure the <c>Last-Modified</c> response header and perform conditional range requests.</param>
+    /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> to be configure the <c>ETag</c> response header
+    /// and perform conditional requests.</param>
+    /// <returns>The created <see cref="IResult"/> for the response.</returns>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+    public static IResult Stream(
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
+        Func<PipeWriter, long?, long, Task> pipeWriterCallback,
+        string? contentType = null,
+        string? fileDownloadName = null,
+        DateTimeOffset? lastModified = null,
+        EntityTagHeaderValue? entityTag = null)
     {
         return new PushPipeWriterResult(pipeWriterCallback, contentType)
         {
             LastModified = lastModified,
             EntityTag = entityTag,
             FileDownloadName = fileDownloadName,
-            EnableRangeProcessing = enableRangeProcessing,
+            EnableRangeProcessing = true,
         };
     }
 
