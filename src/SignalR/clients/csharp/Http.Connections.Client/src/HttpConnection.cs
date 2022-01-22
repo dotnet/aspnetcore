@@ -204,7 +204,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
     {
         using (_logger.BeginScope(_logScope))
         {
-            await StartAsyncCore(transferFormat, cancellationToken).ForceAsync();
+            await StartAsyncCore(transferFormat, cancellationToken);
         }
     }
 
@@ -254,7 +254,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
     {
         using (_logger.BeginScope(_logScope))
         {
-            await DisposeAsyncCore().ForceAsync();
+            await DisposeAsyncCore();
         }
     }
 

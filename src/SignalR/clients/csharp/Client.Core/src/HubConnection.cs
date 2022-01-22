@@ -238,7 +238,7 @@ public partial class HubConnection : IAsyncDisposable
         CheckDisposed();
         using (_logger.BeginScope(_logScope))
         {
-            await StartAsyncInner(cancellationToken).ForceAsync();
+            await StartAsyncInner(cancellationToken);
         }
     }
 
@@ -291,7 +291,7 @@ public partial class HubConnection : IAsyncDisposable
         CheckDisposed();
         using (_logger.BeginScope(_logScope))
         {
-            await StopAsyncCore(disposing: false).ForceAsync();
+            await StopAsyncCore(disposing: false);
         }
     }
 
@@ -307,7 +307,7 @@ public partial class HubConnection : IAsyncDisposable
         {
             using (_logger.BeginScope(_logScope))
             {
-                await StopAsyncCore(disposing: true).ForceAsync();
+                await StopAsyncCore(disposing: true);
             }
         }
     }
@@ -374,7 +374,7 @@ public partial class HubConnection : IAsyncDisposable
     {
         using (_logger.BeginScope(_logScope))
         {
-            return await StreamAsChannelCoreAsyncCore(methodName, returnType, args, cancellationToken).ForceAsync();
+            return await StreamAsChannelCoreAsyncCore(methodName, returnType, args, cancellationToken);
         }
     }
 
@@ -396,7 +396,7 @@ public partial class HubConnection : IAsyncDisposable
     {
         using (_logger.BeginScope(_logScope))
         {
-            return await InvokeCoreAsyncCore(methodName, returnType, args, cancellationToken).ForceAsync();
+            return await InvokeCoreAsyncCore(methodName, returnType, args, cancellationToken);
         }
     }
 
@@ -415,7 +415,7 @@ public partial class HubConnection : IAsyncDisposable
     {
         using (_logger.BeginScope(_logScope))
         {
-            await SendCoreAsyncCore(methodName, args, cancellationToken).ForceAsync();
+            await SendCoreAsyncCore(methodName, args, cancellationToken);
         }
     }
 
