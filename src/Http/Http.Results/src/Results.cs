@@ -334,13 +334,10 @@ public static class Results
     }
 
     /// <summary>
-    /// Writes the specified <see cref="System.IO.Pipelines.PipeReader"/> to the response.
+    /// Writes the contents of specified <see cref="System.IO.Pipelines.PipeReader"/> to the response.
     /// <para>
     /// This supports range requests (<see cref="StatusCodes.Status206PartialContent"/> or
     /// <see cref="StatusCodes.Status416RangeNotSatisfiable"/> if the range is not satisfiable).
-    /// </para>
-    /// <para>
-    /// This API is an alias for <see cref="File(Stream, string, string?, DateTimeOffset?, EntityTagHeaderValue?, bool)"/>.
     /// </para>
     /// </summary>
     /// <param name="pipeReader">The <see cref="System.IO.Pipelines.PipeReader"/> to write to the response.</param>

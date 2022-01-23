@@ -59,7 +59,7 @@ internal static partial class FileResultHelper
 
         try
         {
-            if (range == null)
+            if (range is null)
             {
                 await outputStream.WriteAsync(buffer, context.RequestAborted);
             }

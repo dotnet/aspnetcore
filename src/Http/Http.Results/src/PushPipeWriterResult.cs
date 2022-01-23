@@ -12,14 +12,14 @@ internal sealed class PushPipeWriterResult : FileResult
 {
     private readonly Func<PipeWriter, long?, long, Task> _pipeWriterCallback;
 
-    public PushPipeWriterResult(Func<PipeWriter, long?, long, Task> pipeWriterCallback, string? contentType) :
-        base(contentType)
+    public PushPipeWriterResult(Func<PipeWriter, long?, long, Task> pipeWriterCallback, string? contentType)
+        : base(contentType)
     {
         _pipeWriterCallback = pipeWriterCallback;
     }
 
-    public PushPipeWriterResult(Func<PipeWriter, Task> pipeWriterCallback, string? contentType) :
-        base(contentType)
+    public PushPipeWriterResult(Func<PipeWriter, Task> pipeWriterCallback, string? contentType)
+        : base(contentType)
     {
         _pipeWriterCallback = (body, _, _) => pipeWriterCallback(body);
     }
