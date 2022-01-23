@@ -375,7 +375,7 @@ public static class Results
     }
 
     /// <summary>
-    /// Allows writing to directly to the response body.
+    /// Allows writing directly to the response body.
     /// <para>
     /// This supports range requests (<see cref="StatusCodes.Status206PartialContent"/> or
     /// <see cref="StatusCodes.Status416RangeNotSatisfiable"/> if the range is not satisfiable).
@@ -407,7 +407,7 @@ public static class Results
     }
 
     /// <summary>
-    /// Allows writing to directly to the response body.
+    /// Allows writing directly to the response body.
     /// <para>
     /// This supports range requests (<see cref="StatusCodes.Status206PartialContent"/> or
     /// <see cref="StatusCodes.Status416RangeNotSatisfiable"/> if the range is not satisfiable).
@@ -440,7 +440,7 @@ public static class Results
     }
 
     /// <summary>
-    /// Allows writing to directly to the response body.
+    /// Allows writing directly to the response body.
     /// <para>
     /// This supports range requests (<see cref="StatusCodes.Status206PartialContent"/> or
     /// <see cref="StatusCodes.Status416RangeNotSatisfiable"/> if the range is not satisfiable).
@@ -472,7 +472,7 @@ public static class Results
     }
 
     /// <summary>
-    /// Allows writing to directly to the response body.
+    /// Allows writing directly to the response body.
     /// <para>
     /// This supports range requests (<see cref="StatusCodes.Status206PartialContent"/> or
     /// <see cref="StatusCodes.Status416RangeNotSatisfiable"/> if the range is not satisfiable).

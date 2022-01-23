@@ -7,7 +7,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http.Result;
 
-internal class PushStreamResult : FileResult
+internal sealed class PushStreamResult : FileResult
 {
     private readonly Func<Stream, long?, long, Task> _streamWriterCallback;
 
