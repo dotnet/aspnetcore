@@ -225,8 +225,6 @@ public static class Results
     /// This supports range requests (<see cref="StatusCodes.Status206PartialContent"/> or
     /// <see cref="StatusCodes.Status416RangeNotSatisfiable"/> if the range is not satisfiable).
     /// </para>
-    /// <para>
-    /// This API is an alias for <see cref="File(byte[], string, string?, bool, DateTimeOffset?, EntityTagHeaderValue?)"/>.</para>
     /// </summary>
     /// <param name="contents">The file contents.</param>
     /// <param name="contentType">The Content-Type of the file.</param>
