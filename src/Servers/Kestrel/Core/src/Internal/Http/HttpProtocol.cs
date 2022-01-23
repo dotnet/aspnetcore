@@ -593,7 +593,10 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
         {
             try
             {
-                await TryProduceInvalidRequestResponse();
+                if (_requestRejectedException != null)
+                {
+                    await TryProduceInvalidRequestResponse();
+                }
             }
             catch (Exception ex)
             {
@@ -985,10 +988,12 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
         VerifyAndUpdateWrite(firstWriteByteCount);
     }
 
-    protected Task TryProduceInvalidRequestResponse()
+    protected virtual Task TryProduceInvalidRequestResponse()
     {
-        // If _requestAborted is set, the connection has already been closed.
-        if (_requestRejectedException != null && !_connectionAborted)
+        Debug.Assert(_requestRejectedException != null);
+
+        // If _connectionAborted is set, the connection has already been closed.
+        if (!_connectionAborted)
         {
             return ProduceEnd();
         }

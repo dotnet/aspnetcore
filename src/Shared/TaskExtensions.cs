@@ -14,7 +14,6 @@ namespace Microsoft.AspNetCore.Testing;
 namespace System.Threading.Tasks.Extensions;
 #endif
 
-
 #if AspNetCoreTesting
 public
 #else
@@ -71,7 +70,6 @@ static class TaskExtensions
     {
         return task.AsTask().TimeoutAfter(timeout, filePath, lineNumber);
     }
-
 
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
     public static async Task<T> TimeoutAfter<T>(this Task<T> task, TimeSpan timeout,

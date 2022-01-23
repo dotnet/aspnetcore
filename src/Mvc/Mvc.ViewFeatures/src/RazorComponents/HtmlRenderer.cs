@@ -3,27 +3,26 @@
 
 using System.Diagnostics;
 using System.Runtime.ExceptionServices;
-using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Rendering;
 
-internal class HtmlRenderer : Renderer
+internal sealed class HtmlRenderer : Renderer
 {
     private static readonly HashSet<string> SelfClosingElements = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            "area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"
-        };
+    {
+        "area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"
+    };
 
     private static readonly Task CanceledRenderTask = Task.FromCanceled(new CancellationToken(canceled: true));
+    private readonly IViewBufferScope _viewBufferScope;
 
-    private readonly Func<string, string> _htmlEncoder;
-
-    public HtmlRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, HtmlEncoder htmlEncoder)
+    public HtmlRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, IViewBufferScope viewBufferScope)
         : base(serviceProvider, loggerFactory)
     {
-        _htmlEncoder = htmlEncoder.Encode;
+        _viewBufferScope = viewBufferScope;
     }
 
     public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
@@ -50,10 +49,12 @@ internal class HtmlRenderer : Renderer
     {
         var (componentId, frames) = await CreateInitialRenderAsync(componentType, initialParameters);
 
-        var context = new HtmlRenderingContext();
+        var viewBuffer = new ViewBuffer(_viewBufferScope, nameof(HtmlRenderer), ViewBuffer.ViewPageSize);
+
+        var context = new HtmlRenderingContext { HtmlContentBuilder = viewBuffer, };
         var newPosition = RenderFrames(context, frames, 0, frames.Count);
         Debug.Assert(newPosition == frames.Count);
-        return new ComponentRenderedText(componentId, context.Result);
+        return new ComponentRenderedText(componentId, context.HtmlContentBuilder);
     }
 
     public Task<ComponentRenderedText> RenderComponentAsync<TComponent>(ParameterView initialParameters) where TComponent : IComponent
@@ -95,10 +96,10 @@ internal class HtmlRenderer : Renderer
             case RenderTreeFrameType.Attribute:
                 throw new InvalidOperationException($"Attributes should only be encountered within {nameof(RenderElement)}");
             case RenderTreeFrameType.Text:
-                context.Result.Add(_htmlEncoder(frame.TextContent));
+                context.HtmlContentBuilder.Append(frame.TextContent);
                 return ++position;
             case RenderTreeFrameType.Markup:
-                context.Result.Add(frame.MarkupContent);
+                context.HtmlContentBuilder.AppendHtml(frame.MarkupContent);
                 return ++position;
             case RenderTreeFrameType.Component:
                 return RenderChildComponent(context, frames, position);
@@ -129,9 +130,9 @@ internal class HtmlRenderer : Renderer
         int position)
     {
         ref var frame = ref frames.Array[position];
-        var result = context.Result;
-        result.Add("<");
-        result.Add(frame.ElementName);
+        var result = context.HtmlContentBuilder;
+        result.AppendHtml("<");
+        result.AppendHtml(frame.ElementName);
         var afterAttributes = RenderAttributes(context, frames, position + 1, frame.ElementSubtreeLength - 1, out var capturedValueAttribute);
 
         // When we see an <option> as a descendant of a <select>, and the option's "value" attribute matches the
@@ -141,13 +142,13 @@ internal class HtmlRenderer : Renderer
             && string.Equals(frame.ElementName, "option", StringComparison.OrdinalIgnoreCase)
             && string.Equals(capturedValueAttribute, context.ClosestSelectValueAsString, StringComparison.Ordinal))
         {
-            result.Add(" selected");
+            result.AppendHtml(" selected");
         }
 
         var remainingElements = frame.ElementSubtreeLength + position - afterAttributes;
         if (remainingElements > 0)
         {
-            result.Add(">");
+            result.AppendHtml(">");
 
             var isSelect = string.Equals(frame.ElementName, "select", StringComparison.OrdinalIgnoreCase);
             if (isSelect)
@@ -164,9 +165,9 @@ internal class HtmlRenderer : Renderer
                 context.ClosestSelectValueAsString = null;
             }
 
-            result.Add("</");
-            result.Add(frame.ElementName);
-            result.Add(">");
+            result.AppendHtml("</");
+            result.AppendHtml(frame.ElementName);
+            result.AppendHtml(">");
             Debug.Assert(afterElement == position + frame.ElementSubtreeLength);
             return afterElement;
         }
@@ -174,14 +175,14 @@ internal class HtmlRenderer : Renderer
         {
             if (SelfClosingElements.Contains(frame.ElementName))
             {
-                result.Add(" />");
+                result.AppendHtml(" />");
             }
             else
             {
-                result.Add(">");
-                result.Add("</");
-                result.Add(frame.ElementName);
-                result.Add(">");
+                result.AppendHtml(">");
+                result.AppendHtml("</");
+                result.AppendHtml(frame.ElementName);
+                result.AppendHtml(">");
             }
             Debug.Assert(afterAttributes == position + frame.ElementSubtreeLength);
             return afterAttributes;
@@ -198,7 +199,7 @@ internal class HtmlRenderer : Renderer
         return RenderFrames(context, frames, position, maxElements);
     }
 
-    private int RenderAttributes(
+    private static int RenderAttributes(
         HtmlRenderingContext context,
         ArrayRange<RenderTreeFrame> frames, int position, int maxElements, out string capturedValueAttribute)
     {
@@ -209,7 +210,7 @@ internal class HtmlRenderer : Renderer
             return position;
         }
 
-        var result = context.Result;
+        var result = context.HtmlContentBuilder;
 
         for (var i = 0; i < maxElements; i++)
         {
@@ -228,16 +229,16 @@ internal class HtmlRenderer : Renderer
             switch (frame.AttributeValue)
             {
                 case bool flag when flag:
-                    result.Add(" ");
-                    result.Add(frame.AttributeName);
+                    result.AppendHtml(" ");
+                    result.AppendHtml(frame.AttributeName);
                     break;
                 case string value:
-                    result.Add(" ");
-                    result.Add(frame.AttributeName);
-                    result.Add("=");
-                    result.Add("\"");
-                    result.Add(_htmlEncoder(value));
-                    result.Add("\"");
+                    result.AppendHtml(" ");
+                    result.AppendHtml(frame.AttributeName);
+                    result.AppendHtml("=");
+                    result.AppendHtml("\"");
+                    result.Append(value);
+                    result.AppendHtml("\"");
                     break;
                 default:
                     break;
@@ -257,9 +258,9 @@ internal class HtmlRenderer : Renderer
         return (componentId, GetCurrentRenderTreeFrames(componentId));
     }
 
-    private class HtmlRenderingContext
+    private sealed class HtmlRenderingContext
     {
-        public List<string> Result { get; } = new List<string>();
+        public ViewBuffer HtmlContentBuilder { get; init; }
 
         public string ClosestSelectValueAsString { get; set; }
     }

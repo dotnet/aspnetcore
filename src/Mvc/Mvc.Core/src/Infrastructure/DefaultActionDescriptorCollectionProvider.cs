@@ -7,14 +7,16 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
-internal class DefaultActionDescriptorCollectionProvider : ActionDescriptorCollectionProvider
+internal partial class DefaultActionDescriptorCollectionProvider : ActionDescriptorCollectionProvider
 {
     private readonly IActionDescriptorProvider[] _actionDescriptorProviders;
     private readonly IActionDescriptorChangeProvider[] _actionDescriptorChangeProviders;
+    private readonly ILogger _logger;
 
     // The lock is used to protect WRITES to the following (do not need to protect reads once initialized).
     private readonly object _lock;
@@ -25,7 +27,8 @@ internal class DefaultActionDescriptorCollectionProvider : ActionDescriptorColle
 
     public DefaultActionDescriptorCollectionProvider(
         IEnumerable<IActionDescriptorProvider> actionDescriptorProviders,
-        IEnumerable<IActionDescriptorChangeProvider> actionDescriptorChangeProviders)
+        IEnumerable<IActionDescriptorChangeProvider> actionDescriptorChangeProviders,
+        ILogger<DefaultActionDescriptorCollectionProvider> logger)
     {
         _actionDescriptorProviders = actionDescriptorProviders
             .OrderBy(p => p.Order)
@@ -34,6 +37,8 @@ internal class DefaultActionDescriptorCollectionProvider : ActionDescriptorColle
         _actionDescriptorChangeProviders = actionDescriptorChangeProviders.ToArray();
 
         _lock = new object();
+
+        _logger = logger;
 
         // IMPORTANT: this needs to be the last thing we do in the constructor. Change notifications can happen immediately!
         ChangeToken.OnChange(
@@ -124,6 +129,13 @@ internal class DefaultActionDescriptorCollectionProvider : ActionDescriptorColle
                 _actionDescriptorProviders[i].OnProvidersExecuted(context);
             }
 
+            if (context.Results.Count == 0)
+            {
+                // Emit a log message if after all providers still no action
+                // descriptors detected in the context.
+                Log.NoActionDescriptors(_logger);
+            }
+
             // The sequence for an update is important because we don't want anyone to obtain
             // the new change token but the old action descriptor collection.
             // 1. Obtain the old cancellation token source (don't trigger it yet)
@@ -155,5 +167,15 @@ internal class DefaultActionDescriptorCollectionProvider : ActionDescriptorColle
             // Step 4 - might be null if it's the first time.
             oldCancellationTokenSource?.Cancel();
         }
+    }
+
+    public static partial class Log
+    {
+        [LoggerMessage(
+            EventId = 1,
+            EventName = "NoActionDescriptors",
+            Level = LogLevel.Information,
+            Message = "No action descriptors found. This may indicate an incorrectly configured application or missing application parts. To learn more, visit https://aka.ms/aspnet/mvc/app-parts")]
+        public static partial void NoActionDescriptors(ILogger logger);
     }
 }

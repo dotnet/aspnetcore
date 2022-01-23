@@ -48,7 +48,6 @@ internal class ProcessEx : IDisposable
         proc.BeginOutputReadLine();
         proc.BeginErrorReadLine();
 
-
         // We greedily create a timeout exception message even though a timeout is unlikely to happen for two reasons:
         // 1. To make it less likely for Process getters to throw exceptions like "System.InvalidOperationException: Process has exited, ..."
         // 2. To ensure if/when exceptions are thrown from Process getters, these exceptions can easily be observed.

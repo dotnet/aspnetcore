@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 /// <summary>
 /// An <see cref="IActionResultExecutor{FileStreamResult}"/> for a file stream result.
 /// </summary>
-public class FileStreamResultExecutor : FileResultExecutorBase, IActionResultExecutor<FileStreamResult>
+public partial class FileStreamResultExecutor : FileResultExecutorBase, IActionResultExecutor<FileStreamResult>
 {
     /// <summary>
     /// Initializes a new <see cref="FileStreamResultExecutor"/>.
@@ -92,9 +92,15 @@ public class FileStreamResultExecutor : FileResultExecutorBase, IActionResultExe
 
         if (range != null)
         {
-            Logger.WritingRangeToBody();
+            Log.WritingRangeToBody(Logger);
         }
 
         return WriteFileAsync(context.HttpContext, result.FileStream, range, rangeLength);
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(17, LogLevel.Debug, "Writing the requested range of bytes to the body...", EventName = "WritingRangeToBody")]
+        public static partial void WritingRangeToBody(ILogger logger);
     }
 }

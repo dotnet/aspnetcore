@@ -20,8 +20,8 @@ public static class WebAssemblyHotReload
     private static HotReloadAgent? _hotReloadAgent;
     private static readonly UpdateDelta[] _updateDeltas = new[]
     {
-            new UpdateDelta(),
-        };
+        new UpdateDelta(),
+    };
 
     internal static async Task InitializeAsync()
     {
@@ -42,13 +42,14 @@ public static class WebAssemblyHotReload
     /// For framework use only.
     /// </summary>
     [JSInvokable(nameof(ApplyHotReloadDelta))]
-    public static void ApplyHotReloadDelta(string moduleIdString, byte[] metadataDelta, byte[] ilDeta)
+    public static void ApplyHotReloadDelta(string moduleIdString, byte[] metadataDelta, byte[] ilDelta, byte[] pdbBytes)
     {
         var moduleId = Guid.Parse(moduleIdString);
 
         _updateDeltas[0].ModuleId = moduleId;
         _updateDeltas[0].MetadataDelta = metadataDelta;
-        _updateDeltas[0].ILDelta = ilDeta;
+        _updateDeltas[0].ILDelta = ilDelta;
+        _updateDeltas[0].PdbBytes = pdbBytes;
 
         _hotReloadAgent!.ApplyDeltas(_updateDeltas);
     }

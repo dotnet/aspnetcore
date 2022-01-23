@@ -58,5 +58,4 @@ public class PolicyAuthorizationResult
     /// <returns>The <see cref="PolicyAuthorizationResult"/>.</returns>
     public static PolicyAuthorizationResult Success()
         => new PolicyAuthorizationResult { Succeeded = true };
-
 }

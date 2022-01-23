@@ -149,7 +149,6 @@ internal class HostingApplicationDiagnostics
                     // so call GetTimestamp if currentTimestamp is zero (from above)
                     RecordUnhandledExceptionDiagnostics(httpContext, currentTimestamp, exception);
                 }
-
             }
         }
 

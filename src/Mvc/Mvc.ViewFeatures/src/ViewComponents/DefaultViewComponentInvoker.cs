@@ -3,7 +3,9 @@
 
 #nullable enable
 
+using System.Collections;
 using System.Diagnostics;
+using System.Globalization;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Internal;
@@ -14,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents;
 /// <summary>
 /// Default implementation for <see cref="IViewComponentInvoker"/>.
 /// </summary>
-internal class DefaultViewComponentInvoker : IViewComponentInvoker
+internal partial class DefaultViewComponentInvoker : IViewComponentInvoker
 {
     private readonly IViewComponentFactory _viewComponentFactory;
     private readonly ViewComponentInvokerCache _viewComponentInvokerCache;
@@ -106,12 +108,12 @@ internal class DefaultViewComponentInvoker : IViewComponentInvoker
 
     private async Task<IViewComponentResult> InvokeAsyncCore(ObjectMethodExecutor executor, object component, ViewComponentContext context)
     {
-        using (_logger.ViewComponentScope(context))
+        using (Log.ViewComponentScope(_logger, context))
         {
             var arguments = PrepareArguments(context.Arguments, executor);
 
             _diagnosticListener.BeforeViewComponent(context, component);
-            _logger.ViewComponentExecuting(context, arguments);
+            Log.ViewComponentExecuting(_logger, context, arguments);
 
             var stopwatch = ValueStopwatch.StartNew();
 
@@ -154,7 +156,7 @@ internal class DefaultViewComponentInvoker : IViewComponentInvoker
             }
 
             var viewComponentResult = CoerceToViewComponentResult(resultAsObject);
-            _logger.ViewComponentExecuted(context, stopwatch.GetElapsedTime(), viewComponentResult);
+            Log.ViewComponentExecuted(_logger, context, stopwatch.GetElapsedTime(), viewComponentResult);
             _diagnosticListener.AfterViewComponent(context, viewComponentResult, component);
 
             return viewComponentResult;
@@ -163,12 +165,12 @@ internal class DefaultViewComponentInvoker : IViewComponentInvoker
 
     private IViewComponentResult InvokeSyncCore(ObjectMethodExecutor executor, object component, ViewComponentContext context)
     {
-        using (_logger.ViewComponentScope(context))
+        using (Log.ViewComponentScope(_logger, context))
         {
             var arguments = PrepareArguments(context.Arguments, executor);
 
             _diagnosticListener.BeforeViewComponent(context, component);
-            _logger.ViewComponentExecuting(context, arguments);
+            Log.ViewComponentExecuting(_logger, context, arguments);
 
             var stopwatch = ValueStopwatch.StartNew();
             object? result;
@@ -176,7 +178,7 @@ internal class DefaultViewComponentInvoker : IViewComponentInvoker
             result = executor.Execute(component, arguments);
 
             var viewComponentResult = CoerceToViewComponentResult(result);
-            _logger.ViewComponentExecuted(context, stopwatch.GetElapsedTime(), viewComponentResult);
+            Log.ViewComponentExecuted(_logger, context, stopwatch.GetElapsedTime(), viewComponentResult);
             _diagnosticListener.AfterViewComponent(context, viewComponentResult, component);
 
             return viewComponentResult;
@@ -236,5 +238,111 @@ internal class DefaultViewComponentInvoker : IViewComponentInvoker
         }
 
         return arguments;
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(1, LogLevel.Debug, "Executing view component {ViewComponentName} with arguments ({Arguments}).", EventName = "ViewComponentExecuting", SkipEnabledCheck = true)]
+        private static partial void ViewComponentExecuting(ILogger logger, string viewComponentName, string[] arguments);
+
+        [LoggerMessage(2, LogLevel.Debug, "Executed view component {ViewComponentName} in {ElapsedMilliseconds}ms and returned {ViewComponentResult}", EventName = "ViewComponentExecuted", SkipEnabledCheck = true)]
+        private static partial void ViewComponentExecuted(ILogger logger, string viewComponentName, double elapsedMilliseconds, string? viewComponentResult);
+
+        public static IDisposable? ViewComponentScope(ILogger logger, ViewComponentContext context)
+        {
+            return logger.BeginScope(new ViewComponentLogScope(context.ViewComponentDescriptor));
+        }
+
+#nullable restore
+        public static void ViewComponentExecuting(
+            ILogger logger,
+            ViewComponentContext context,
+            object[] arguments)
+        {
+            if (logger.IsEnabled(LogLevel.Debug))
+            {
+                var formattedArguments = GetFormattedArguments(arguments);
+                ViewComponentExecuting(logger, context.ViewComponentDescriptor.DisplayName, formattedArguments);
+            }
+        }
+
+        public static void ViewComponentExecuted(
+            ILogger logger,
+            ViewComponentContext context,
+            TimeSpan timespan,
+            object result)
+        {
+            // Don't log if logging wasn't enabled at start of request as time will be wildly wrong.
+            if (logger.IsEnabled(LogLevel.Debug))
+            {
+                ViewComponentExecuted(
+                    logger,
+                    context.ViewComponentDescriptor.DisplayName,
+                    timespan.TotalMilliseconds,
+                    Convert.ToString(result, CultureInfo.InvariantCulture));
+            }
+        }
+
+        private static string[] GetFormattedArguments(object[] arguments)
+        {
+            if (arguments == null || arguments.Length == 0)
+            {
+                return Array.Empty<string>();
+            }
+
+            var formattedArguments = new string[arguments.Length];
+            for (var i = 0; i < formattedArguments.Length; i++)
+            {
+                formattedArguments[i] = Convert.ToString(arguments[i], CultureInfo.InvariantCulture);
+            }
+
+            return formattedArguments;
+        }
+
+        private sealed class ViewComponentLogScope : IReadOnlyList<KeyValuePair<string, object>>
+        {
+            private readonly ViewComponentDescriptor _descriptor;
+
+            public ViewComponentLogScope(ViewComponentDescriptor descriptor)
+            {
+                _descriptor = descriptor;
+            }
+
+            public KeyValuePair<string, object> this[int index]
+            {
+                get
+                {
+                    if (index == 0)
+                    {
+                        return new KeyValuePair<string, object>("ViewComponentName", _descriptor.DisplayName);
+                    }
+                    else if (index == 1)
+                    {
+                        return new KeyValuePair<string, object>("ViewComponentId", _descriptor.Id);
+                    }
+                    throw new IndexOutOfRangeException(nameof(index));
+                }
+            }
+
+            public int Count => 2;
+
+            public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+            {
+                for (var i = 0; i < Count; ++i)
+                {
+                    yield return this[i];
+                }
+            }
+
+            public override string ToString()
+            {
+                return _descriptor.DisplayName;
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
+            }
+        }
     }
 }

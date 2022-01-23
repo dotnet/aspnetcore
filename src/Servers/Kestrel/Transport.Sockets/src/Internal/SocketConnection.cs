@@ -118,7 +118,6 @@ internal sealed partial class SocketConnection : TransportConnection
             {
                 await _sendingTask;
             }
-
         }
         catch (Exception ex)
         {

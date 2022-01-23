@@ -171,7 +171,6 @@ public static class ActualApiResponseMetadataFactory
                     // Property assignments override constructor assigned values and defaults.
                     if (creation.Initializer is not null)
                     {
-
                         result = InspectInitializers(symbolCache, creation.Initializer);
                         statusCode = result.statusCode ?? statusCode;
                         returnType = result.returnType ?? returnType;
@@ -365,12 +364,10 @@ public static class ActualApiResponseMetadataFactory
                     return true;
                 }
 
-
                 parent = parent.Parent;
             }
 
             return false;
         }
     }
-
 }

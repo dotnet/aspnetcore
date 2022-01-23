@@ -279,7 +279,6 @@ internal partial class WebSocketsServerTransport : IHttpTransport
 
             _application.Input.Complete();
         }
-
     }
 
     private static bool WebSocketCanSend(WebSocket ws)

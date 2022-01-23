@@ -220,7 +220,6 @@ public class ResourceManagerStringLocalizer : IStringLocalizer
 
         while (true)
         {
-
             var cultureResourceNames = _resourceStringProvider.GetAllResourceStrings(currentCulture, false);
 
             if (cultureResourceNames != null)

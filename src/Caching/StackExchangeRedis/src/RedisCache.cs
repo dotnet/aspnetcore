@@ -124,7 +124,7 @@ public class RedisCache : IDistributedCache, IDisposable
 
         var absoluteExpiration = GetAbsoluteExpiration(creationTime, options);
 
-        var result = _cache.ScriptEvaluate(_setScript, new RedisKey[] { _instance + key },
+        _cache.ScriptEvaluate(_setScript, new RedisKey[] { _instance + key },
             new RedisValue[]
             {
                         absoluteExpiration?.Ticks ?? NotPresent,
@@ -430,9 +430,9 @@ public class RedisCache : IDistributedCache, IDisposable
         }
 
         // Note Refresh has no effect if there is just an absolute expiration (or neither).
-        TimeSpan? expr = null;
         if (sldExpr.HasValue)
         {
+            TimeSpan? expr;
             if (absExpr.HasValue)
             {
                 var relExpr = absExpr.Value - DateTimeOffset.Now;
@@ -457,9 +457,9 @@ public class RedisCache : IDistributedCache, IDisposable
         token.ThrowIfCancellationRequested();
 
         // Note Refresh has no effect if there is just an absolute expiration (or neither).
-        TimeSpan? expr = null;
         if (sldExpr.HasValue)
         {
+            TimeSpan? expr;
             if (absExpr.HasValue)
             {
                 var relExpr = absExpr.Value - DateTimeOffset.Now;

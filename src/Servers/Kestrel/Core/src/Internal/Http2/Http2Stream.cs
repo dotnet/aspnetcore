@@ -167,7 +167,6 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
             // The app can no longer read any more of the request body, so return any bytes that weren't read to the
             // connection's flow-control window.
             _inputFlowControl.Abort();
-
         }
         finally
         {

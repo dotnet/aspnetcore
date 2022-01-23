@@ -185,6 +185,8 @@ describe("connection", () => {
 
                         await connection.start(TransferFormat.Text);
 
+                        await connection.stop();
+
                         await closePromise;
                     });
                 }

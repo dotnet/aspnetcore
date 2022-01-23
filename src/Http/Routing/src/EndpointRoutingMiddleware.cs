@@ -80,7 +80,6 @@ internal sealed partial class EndpointRoutingMiddleware
             await matchTask;
             await middleware.SetRoutingAndContinue(httpContext);
         }
-
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

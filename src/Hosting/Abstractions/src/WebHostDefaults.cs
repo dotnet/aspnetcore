@@ -31,7 +31,6 @@ public static class WebHostDefaults
     /// <summary>
     /// The configuration key associated with the "DetailedErrors" configuration.
     /// </summary>
-
     public static readonly string DetailedErrorsKey = "detailedErrors";
 
     /// <summary>

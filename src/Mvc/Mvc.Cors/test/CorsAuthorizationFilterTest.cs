@@ -131,7 +131,6 @@ public class CorsAuthorizationFilterTest
         RequestHeaders headers = null,
         bool isPreflight = false)
     {
-
         // HttpContext
         var httpContext = new DefaultHttpContext();
         if (headers != null)

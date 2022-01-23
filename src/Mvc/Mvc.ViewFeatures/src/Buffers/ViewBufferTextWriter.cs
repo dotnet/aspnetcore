@@ -273,7 +273,6 @@ internal class ViewBufferTextWriter : TextWriter
         Buffer.AppendHtml(new string(value, start, offset));
         Buffer.AppendHtml(NewLine);
         return Task.CompletedTask;
-
     }
 
     /// <inheritdoc />

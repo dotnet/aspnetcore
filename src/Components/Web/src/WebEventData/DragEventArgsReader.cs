@@ -110,5 +110,4 @@ internal static class DragEventArgsReader
 
         return values;
     }
-
 }

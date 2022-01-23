@@ -89,7 +89,7 @@ internal sealed class EndpointNameAddressScheme : IEndpointAddressScheme<string>
 
         throw new InvalidOperationException(builder.ToString());
 
-        string? GetEndpointName(Endpoint endpoint)
+        static string? GetEndpointName(Endpoint endpoint)
         {
             if (endpoint.Metadata.GetMetadata<ISuppressLinkGenerationMetadata>()?.SuppressLinkGeneration == true)
             {

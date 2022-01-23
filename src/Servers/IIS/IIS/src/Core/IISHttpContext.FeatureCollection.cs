@@ -502,6 +502,5 @@ internal partial class IISHttpContext : IFeatureCollection,
         {
             ResponseHeaders.Connection = ConnectionClose;
         }
-
     }
 }

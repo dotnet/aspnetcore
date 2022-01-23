@@ -143,7 +143,12 @@ internal class SegmentWriteStream : Stream
             throw new ObjectDisposedException("The stream has been closed for writing.");
         }
 
-        while (count > 0)
+        Write(buffer.AsSpan(offset, count));
+    }
+
+    public override void Write(ReadOnlySpan<byte> buffer)
+    {
+        while (!buffer.IsEmpty)
         {
             if ((int)_bufferStream.Length == _segmentSize)
             {
@@ -151,11 +156,10 @@ internal class SegmentWriteStream : Stream
                 _bufferStream.SetLength(0);
             }
 
-            var bytesWritten = Math.Min(count, _segmentSize - (int)_bufferStream.Length);
+            var bytesWritten = Math.Min(buffer.Length, _segmentSize - (int)_bufferStream.Length);
 
-            _bufferStream.Write(buffer, offset, bytesWritten);
-            count -= bytesWritten;
-            offset += bytesWritten;
+            _bufferStream.Write(buffer.Slice(0, bytesWritten));
+            buffer = buffer.Slice(bytesWritten);
             _length += bytesWritten;
         }
     }
@@ -164,6 +168,12 @@ internal class SegmentWriteStream : Stream
     {
         Write(buffer, offset, count);
         return Task.CompletedTask;
+    }
+
+    public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
+    {
+        Write(buffer.Span);
+        return default;
     }
 
     public override void WriteByte(byte value)

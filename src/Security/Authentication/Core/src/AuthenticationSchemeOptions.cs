@@ -87,5 +87,4 @@ public class AuthenticationSchemeOptions
     /// will be used as the target scheme to forward to.
     /// </summary>
     public Func<HttpContext, string?>? ForwardDefaultSelector { get; set; }
-
 }

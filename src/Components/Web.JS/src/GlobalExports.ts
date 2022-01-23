@@ -63,7 +63,7 @@ interface IBlazor {
     attachWebRendererInterop?: typeof attachWebRendererInterop,
 
     // APIs invoked by hot reload
-    applyHotReload?: (id: string, metadataDelta: string, ilDelta: string) => void,
+    applyHotReload?: (id: string, metadataDelta: string, ilDelta: string, pdbDelta: string | undefined) => void,
     getApplyUpdateCapabilities?: () => string,
   }
 }

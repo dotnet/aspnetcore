@@ -325,7 +325,6 @@ public abstract partial class RouteBase : IRouter, INamedRouter
                 _constraintLogger = factory.CreateLogger(typeof(RouteConstraintMatcher).FullName!);
                 _logger = factory.CreateLogger(typeof(RouteBase).FullName!);
             }
-
         }
 
         Debug.Assert(_constraintLogger != null);

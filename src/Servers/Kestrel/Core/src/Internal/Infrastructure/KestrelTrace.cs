@@ -3,6 +3,7 @@
 
 using System.Net.Http;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.Extensions.Logging;
@@ -392,6 +393,17 @@ internal sealed partial class KestrelTrace : ILogger
     public void Http3GoAwayStreamId(string connectionId, long goAwayStreamId)
     {
         Http3GoAwayStreamId(_http3Logger, connectionId, goAwayStreamId);
+    }
+
+    [LoggerMessage(54, LogLevel.Debug, @"Connection id ""{ConnectionId}"": Invalid content received on connection. Possible incorrect HTTP version detected. Expected {ExpectedHttpVersion} but received {DetectedHttpVersion}.", EventName = "PossibleInvalidHttpVersionDetected", SkipEnabledCheck = true)]
+    private static partial void PossibleInvalidHttpVersionDetected(ILogger logger, string connectionId, string expectedHttpVersion, string detectedHttpVersion);
+
+    public void PossibleInvalidHttpVersionDetected(string connectionId, HttpVersion expectedHttpVersion, HttpVersion detectedHttpVersion)
+    {
+        if (_generalLogger.IsEnabled(LogLevel.Debug))
+        {
+            PossibleInvalidHttpVersionDetected(_badRequestsLogger, connectionId, HttpUtilities.VersionToString(expectedHttpVersion), HttpUtilities.VersionToString(detectedHttpVersion));
+        }
     }
 
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)

@@ -71,5 +71,4 @@ internal sealed class PageActionInvokerCacheEntry
     public IReadOnlyList<Func<IRazorPage>> ViewStartFactories { get; }
 
     public FilterItem[] CacheableFilters { get; }
-
 }

@@ -108,6 +108,19 @@
     <PackageReference Include="XunitXml.TestLogger" Version="2.1.26" />
   </ItemGroup>
 
+  <Choose>
+    <When Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' OR '$(IsWindowsOnlyTest)' == 'true' ">
+      <ItemGroup>
+        <HelixProjectPlatform Include="Windows" />
+      </ItemGroup>
+    </When>
+    <Otherwise>
+      <ItemGroup>
+        <HelixProjectPlatform Include="@(HelixAvailablePlatform)" />
+      </ItemGroup>
+    </Otherwise>
+  </Choose>
+
   <Target Name="_SetCreateHelixPayload">
     <PropertyGroup>
       <_SelectedPlatforms>@(HelixProjectPlatform)</_SelectedPlatforms>

@@ -97,7 +97,7 @@ internal class ApiBehaviorApplicationModelProvider : IApplicationModelProvider
             throw new InvalidOperationException(message);
         }
 
-        bool IsAttributeRouted(IList<SelectorModel> selectorModel)
+        static bool IsAttributeRouted(IList<SelectorModel> selectorModel)
         {
             for (var i = 0; i < selectorModel.Count; i++)
             {

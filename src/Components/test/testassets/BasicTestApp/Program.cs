@@ -38,6 +38,7 @@ public class Program
         });
 
         builder.Services.AddScoped<PreserveStateService>();
+        builder.Services.AddTransient<FormsTest.ValidationComponentDI.SaladChef>();
 
         builder.Logging.AddConfiguration(builder.Configuration.GetSection("Logging"));
 

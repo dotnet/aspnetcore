@@ -14,7 +14,6 @@ public class Operation : OperationBase
 
     public Operation()
     {
-
     }
 
     public Operation(string op, string path, string from, object value)

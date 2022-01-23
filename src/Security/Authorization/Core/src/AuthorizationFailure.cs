@@ -57,5 +57,4 @@ public class AuthorizationFailure
     /// <returns>The failure.</returns>
     public static AuthorizationFailure Failed(IEnumerable<IAuthorizationRequirement> failed)
         => new AuthorizationFailure { FailedRequirements = failed };
-
 }
