@@ -31,9 +31,9 @@
     <IISArguments>-h "$(IISAppHostConfig)"</IISArguments>
 
     <AncmInProcessRHPath>aspnetcorev2_inprocess.dll</AncmInProcessRHPath>
-    <!-- TODO: use LocalDotNetRoot instead to find dotnet.exe (see reporoot/Directory.Build.props). Requires a fix to https://github.com/dotnet/aspnetcore/issues/7196 -->
-    <DotNetPath>$(RepoRoot).dotnet\dotnet.exe</DotNetPath>
-    <DotNetPath Condition="'$(NativePlatform)' != 'x64'">$(RepoRoot).dotnet\$(NativePlatform)\dotnet.exe</DotNetPath>
+
+    <DotNetPath>$(DotNetRoot)dotnet.exe</DotNetPath>
+    <DotNetPath Condition="'$(NativePlatform)' != 'x64'">$(DotNetRoot)$(NativePlatform)\dotnet.exe</DotNetPath>
   </PropertyGroup>
 
   <Target Name="CopyLaunchSettings" AfterTargets="CoreBuild">
@@ -50,7 +50,7 @@
 
   <Target Name="PrepareInjectionApp" Condition="'$(InProcessTestSite)' == 'true'">
     <PropertyGroup>
-      <InjectDepsAssembly>$(MSBuildThisFileDirectory)..\IIS\test\testassets\TestTasks\bin\$(Configuration)\$(TargetFramework)\TestTasks</InjectDepsAssembly>
+      <InjectDepsAssembly>$(ArtifactsBinDir)TestTasks\$(Configuration)\$(TargetFramework)\TestTasks</InjectDepsAssembly>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(TargetFrameworkIdentifier)' != '.NETFramework' ">
@@ -110,10 +110,7 @@
   </Target>
 
   <Target Name="PublishTestsAssets" Condition="'$(TestAssetProfile)' == '' AND '@(TestAssetPublishProfile->Count())' != '0'" Returns="@(PublishedTestAsset)">
-
-    <!--
-      _InsidePublishTestsAssets is to avoid invoking this target recursively
-      Platform;PlatformTarget removal is fix builds inside VS -->
+    <!-- Platform;PlatformTarget removal is to fix builds inside VS. -->
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="PublishTestsAsset"
              RemoveProperties="Platform;PlatformTarget"

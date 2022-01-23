@@ -2,13 +2,8 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
 
   <PropertyGroup>
-    <!-- Tests do not work on Helix or when bin/ directory is not in project directory due to undeclared dependency on test content. -->
-    <BaseOutputPath />
-    <OutputPath />
-
     <!-- IIS tests are Windows-only -->
     <IsWindowsOnlyTest>true</IsWindowsOnlyTest>
     <TestDependsOnIIS>true</TestDependsOnIIS>
   </PropertyGroup>
-
 </Project>
