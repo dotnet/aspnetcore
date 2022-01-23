@@ -147,6 +147,8 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
 
     public bool ParseRequest(ref SequenceReader<byte> reader)
     {
+        System.Threading.Thread.Sleep(100);
+        
         switch (_requestProcessingStatus)
         {
             case RequestProcessingStatus.RequestPending:
