@@ -947,6 +947,16 @@ describe("HubConnection", () => {
 
                     expect(numInvocations1).toBe(1);
                     expect(numInvocations2).toBe(1);
+
+                    connection.receive({
+                        arguments: [],
+                        nonblocking: true,
+                        target: eventToTrack,
+                        type: MessageType.Invocation,
+                    });
+
+                    expect(numInvocations1).toBe(1);
+                    expect(numInvocations2).toBe(2);
                 }
                 finally {
                     await hubConnection.stop();
