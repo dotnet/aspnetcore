@@ -918,6 +918,42 @@ describe("HubConnection", () => {
             });
         });
 
+        it("unsubscribing dynamically doesn't affect the current invocation loop", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const eventToTrack = "eventName";
+
+                const connection = new TestConnection();
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    await hubConnection.start();
+
+                    let numInvocations1 = 0;
+                    let numInvocations2 = 0;
+                    const callback1 = () => {
+                        hubConnection.off(eventToTrack, callback1);
+                        numInvocations1++;
+                    }
+                    const callback2 = () => numInvocations2++;
+
+                    hubConnection.on(eventToTrack, callback1);
+                    hubConnection.on(eventToTrack, callback2);
+
+                    connection.receive({
+                        arguments: [],
+                        nonblocking: true,
+                        target: eventToTrack,
+                        type: MessageType.Invocation,
+                    });
+
+                    expect(numInvocations1).toBe(1);
+                    expect(numInvocations2).toBe(1);
+                }
+                finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
         it("unsubscribing from non-existing callbacks no-ops", async () => {
             await VerifyLogger.run(async (logger) => {
                 const connection = new TestConnection();
