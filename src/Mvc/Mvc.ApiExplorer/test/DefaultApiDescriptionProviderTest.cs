@@ -5,7 +5,6 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using System.Text;
-
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
@@ -22,7 +21,6 @@ using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
-
 using Moq;
 
 namespace Microsoft.AspNetCore.Mvc.Description;
@@ -264,7 +262,6 @@ public class DefaultApiDescriptionProviderTest
         var description = Assert.Single(descriptions);
         Assert.Empty(description.ParameterDescriptions);
     }
-
 
     [Theory]
     [InlineData("api/products/{id}")]
