@@ -284,22 +284,22 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>fc3875f14f310cdce716df30a94feb43db79a28a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="7.0.0-beta.22064.25">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="7.0.0-beta.22071.6">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>511824f9ad21a8bc070b4bad2a95acd119c4afa0</Sha>
+      <Sha>e1ea8873d2e0175c1d1e49b3884cd2e9c6ef5007</Sha>
       <SourceBuild RepoName="arcade" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="7.0.0-beta.22064.25">
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="7.0.0-beta.22071.6">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>511824f9ad21a8bc070b4bad2a95acd119c4afa0</Sha>
+      <Sha>e1ea8873d2e0175c1d1e49b3884cd2e9c6ef5007</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Templating" Version="7.0.0-beta.22064.25">
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Templating" Version="7.0.0-beta.22071.6">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>511824f9ad21a8bc070b4bad2a95acd119c4afa0</Sha>
+      <Sha>e1ea8873d2e0175c1d1e49b3884cd2e9c6ef5007</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="7.0.0-beta.22064.25">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="7.0.0-beta.22071.6">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>511824f9ad21a8bc070b4bad2a95acd119c4afa0</Sha>
+      <Sha>e1ea8873d2e0175c1d1e49b3884cd2e9c6ef5007</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>

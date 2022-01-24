@@ -29,14 +29,6 @@ parameters:
   # Optional: download a list of pipeline artifacts. 'downloadArtifacts' controls build artifacts,
   # not pipeline artifacts, so doesn't affect the use of this parameter.
   pipelineArtifactNames: []
-  # Optional: location and ID of the AzDO build that the build/pipeline artifacts should be
-  # downloaded from. By default, uses runtime expressions to decide based on the variables set by
-  # the 'setupMaestroVars' dependency. Overriding this parameter is necessary if SDL tasks are
-  # running without Maestro++/BAR involved, or to download artifacts from a specific existing build
-  # to iterate quickly on SDL changes.
-  AzDOProjectName: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOProjectName'] ]
-  AzDOPipelineId: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOPipelineId'] ]
-  AzDOBuildId: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOBuildId'] ]
 
 jobs:
 - job: Run_SDL
@@ -55,10 +47,13 @@ jobs:
     - name: GuardianVersion
       value: ${{ coalesce(parameters.overrideGuardianVersion, '$(DefaultGuardianVersion)') }}
   pool:
-    vmImage: windows-2019
+    name: NetCore1ESPool-Internal
+    demands: ImageOverride -equals Build.Server.Amd64.VS2019
   steps:
   - checkout: self
     clean: true
+
+  - template: /eng/common/templates/post-build/setup-maestro-vars.yml
 
   - ${{ if ne(parameters.downloadArtifacts, 'false')}}:
     - ${{ if ne(parameters.artifactNames, '') }}:
