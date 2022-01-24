@@ -9,18 +9,12 @@ namespace Microsoft.AspNetCore.Http.Result;
 
 internal sealed class PushStreamResult : FileResult
 {
-    private readonly Func<Stream, long?, long, Task> _streamWriterCallback;
-
-    public PushStreamResult(Func<Stream, long?, long, Task> streamWriterCallback, string? contentType)
-        : base(contentType)
-    {
-        _streamWriterCallback = streamWriterCallback;
-    }
+    private readonly Func<Stream, Task> _streamWriterCallback;
 
     public PushStreamResult(Func<Stream, Task> streamWriterCallback, string? contentType)
         : base(contentType)
     {
-        _streamWriterCallback = (body, _, _) => streamWriterCallback(body);
+        _streamWriterCallback = streamWriterCallback;
     }
 
     protected override ILogger GetLogger(HttpContext httpContext)
@@ -30,6 +24,6 @@ internal sealed class PushStreamResult : FileResult
 
     protected override Task ExecuteAsync(HttpContext httpContext, RangeItemHeaderValue? range, long rangeLength)
     {
-        return _streamWriterCallback(httpContext.Response.Body, range?.From, rangeLength);
+        return _streamWriterCallback(httpContext.Response.Body);
     }
 }
