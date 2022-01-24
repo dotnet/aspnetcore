@@ -33,7 +33,7 @@ public static class EditContextDataAnnotationsExtensions
     /// </summary>
     /// <param name="editContext">The <see cref="EditContext"/>.</param>
     /// <returns>A disposable object whose disposal will remove DataAnnotations validation support from the <see cref="EditContext"/>.</returns>
-    [Obsolete("This API is obsolete and may be removed in future versions.")]
+    [Obsolete("This API is obsolete and may be removed in future versions. Use the overload that accepts an IServiceProvider instead.")]
     public static IDisposable EnableDataAnnotationsValidation(this EditContext editContext)
     {
         return new DataAnnotationsEventSubscriptions(editContext, null!);
@@ -52,7 +52,6 @@ public static class EditContextDataAnnotationsExtensions
         }
         return new DataAnnotationsEventSubscriptions(editContext, serviceProvider);
     }
-
 
     private static event Action? OnClearCache;
 
