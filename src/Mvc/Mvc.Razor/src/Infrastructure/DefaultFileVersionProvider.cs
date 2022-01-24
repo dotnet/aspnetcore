@@ -97,13 +97,10 @@ internal class DefaultFileVersionProvider : IFileVersionProvider
 
     private static string GetHashForFile(IFileInfo fileInfo)
     {
-        using (var sha256 = SHA256.Create())
+        using (var readStream = fileInfo.CreateReadStream())
         {
-            using (var readStream = fileInfo.CreateReadStream())
-            {
-                var hash = sha256.ComputeHash(readStream);
-                return WebEncoders.Base64UrlEncode(hash);
-            }
+            var hash = SHA256.HashData(readStream);
+            return WebEncoders.Base64UrlEncode(hash);
         }
     }
 }
