@@ -75,11 +75,11 @@ public class HubOptions
     }
 
     /// <summary>
-    /// When enabled, will use <see cref="IServiceProviderIsService"/> to guess if a Hub method parameter can be injected from the DI container.
-    /// Parameters can be explicitly marked with an attribute that implements <see cref="IFromServiceMetadata"/> with or without this option enabled.
+    /// Will use <see cref="IServiceProviderIsService"/> to guess if a Hub method parameter can be injected from the DI container.
+    /// Parameters can be explicitly marked with an attribute that implements <see cref="IFromServiceMetadata"/> with or without this option set.
     /// </summary>
     /// <remarks>
-    /// Disabled by default.
+    /// False by default. Hub method arguments will be resolved from a DI container if possible.
     /// </remarks>
-    public bool EnableInferredFromServiceParameters { get; set; }
+    public bool DisableImplicitFromServiceParameters { get; set; }
 }

@@ -28,13 +28,13 @@ internal partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> where TH
     private readonly Func<HubLifetimeContext, Exception?, Task>? _onDisconnectedMiddleware;
 
     public DefaultHubDispatcher(IServiceScopeFactory serviceScopeFactory, IHubContext<THub> hubContext, bool enableDetailedErrors,
-        bool enableInferredFromServiceParameters, ILogger<DefaultHubDispatcher<THub>> logger, List<IHubFilter>? hubFilters)
+        bool disableImplicitFromServiceParameters, ILogger<DefaultHubDispatcher<THub>> logger, List<IHubFilter>? hubFilters)
     {
         _serviceScopeFactory = serviceScopeFactory;
         _hubContext = hubContext;
         _enableDetailedErrors = enableDetailedErrors;
         _logger = logger;
-        DiscoverHubMethods(enableInferredFromServiceParameters);
+        DiscoverHubMethods(disableImplicitFromServiceParameters);
 
         var count = hubFilters?.Count ?? 0;
         if (count != 0)
@@ -648,7 +648,7 @@ internal partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> where TH
         }
     }
 
-    private void DiscoverHubMethods(bool enableInferredFromServiceParameters)
+    private void DiscoverHubMethods(bool disableImplicitFromServiceParameters)
     {
         var hubType = typeof(THub);
         var hubTypeInfo = hubType.GetTypeInfo();
@@ -657,7 +657,7 @@ internal partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> where TH
         using var scope = _serviceScopeFactory.CreateScope();
 
         IServiceProviderIsService? serviceProviderIsService = null;
-        if (enableInferredFromServiceParameters)
+        if (!disableImplicitFromServiceParameters)
         {
             serviceProviderIsService = scope.ServiceProvider.GetService<IServiceProviderIsService>();
         }

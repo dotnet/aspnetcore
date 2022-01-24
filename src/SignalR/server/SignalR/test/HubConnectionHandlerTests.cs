@@ -4689,13 +4689,14 @@ public class HubConnectionHandlerTests : VerifiableLoggedTest
     }
 
     [Fact]
-    public async Task ServiceNotResolvedWithoutAttribute()
+    public async Task ServiceNotResolvedWithoutAttribute_WithSettingDisabledGlobally()
     {
         var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
         {
             provider.AddSignalR(options =>
             {
                 options.EnableDetailedErrors = true;
+                options.DisableImplicitFromServiceParameters = true;
             });
             provider.AddSingleton<Service1>();
         });
@@ -4710,14 +4711,13 @@ public class HubConnectionHandlerTests : VerifiableLoggedTest
     }
 
     [Fact]
-    public async Task ServiceResolvedWithoutAttribute_WithSettingEnabledGlobally()
+    public async Task ServiceResolvedWithoutAttribute()
     {
         var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
         {
             provider.AddSignalR(options =>
             {
                 options.EnableDetailedErrors = true;
-                options.EnableInferredFromServiceParameters = true;
             });
             provider.AddSingleton<Service1>();
         });
@@ -4739,9 +4739,10 @@ public class HubConnectionHandlerTests : VerifiableLoggedTest
             provider.AddSignalR(options =>
             {
                 options.EnableDetailedErrors = true;
+                options.DisableImplicitFromServiceParameters = true;
             }).AddHubOptions<ServicesHub>(options =>
             {
-                options.EnableInferredFromServiceParameters = true;
+                options.DisableImplicitFromServiceParameters = false;
             });
             provider.AddSingleton<Service1>();
         });
@@ -4756,13 +4757,14 @@ public class HubConnectionHandlerTests : VerifiableLoggedTest
     }
 
     [Fact]
-    public async Task ServiceNotResolvedWithAndWithoutAttribute()
+    public async Task ServiceNotResolvedWithAndWithoutAttribute_WithOptionDisabled()
     {
         var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
         {
             provider.AddSignalR(options =>
             {
                 options.EnableDetailedErrors = true;
+                options.DisableImplicitFromServiceParameters = true;
             });
             provider.AddSingleton<Service1>();
             provider.AddSingleton<Service2>();
@@ -4778,14 +4780,13 @@ public class HubConnectionHandlerTests : VerifiableLoggedTest
     }
 
     [Fact]
-    public async Task ServiceResolvedWithAndWithoutAttribute_WithOptionEnabled()
+    public async Task ServiceResolvedWithAndWithoutAttribute()
     {
         var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
         {
             provider.AddSignalR(options =>
             {
                 options.EnableDetailedErrors = true;
-                options.EnableInferredFromServiceParameters = true;
             });
             provider.AddSingleton<Service1>();
             provider.AddSingleton<Service2>();
@@ -4801,14 +4802,13 @@ public class HubConnectionHandlerTests : VerifiableLoggedTest
     }
 
     [Fact]
-    public async Task ServiceNotResolvedIfNotInDI_WithOptionEnabled()
+    public async Task ServiceNotResolvedIfNotInDI()
     {
         var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
         {
             provider.AddSignalR(options =>
             {
                 options.EnableDetailedErrors = true;
-                options.EnableInferredFromServiceParameters = true;
             });
         });
         var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ServicesHub>>();
