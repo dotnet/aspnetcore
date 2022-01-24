@@ -57,7 +57,6 @@ public class StackPolicyTests
         // Should have been pushed out of the stack
         Assert.False(await task2);
 
-        Assert.False(task2.IsCompleted);
         Assert.False(task3.IsCompleted);
         Assert.False(task4.IsCompleted);
     }
