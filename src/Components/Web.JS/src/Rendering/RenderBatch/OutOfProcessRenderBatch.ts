@@ -215,7 +215,7 @@ class OutOfProcessArrayBuilderSegmentReader implements ArrayBuilderSegmentReader
   constructor(private batchDataUint8: Uint8Array) {
   }
 
-  offset<T>(arrayBuilderSegment: ArrayBuilderSegment<T>) {
+  offset<T>(_arrayBuilderSegment: ArrayBuilderSegment<T>): number {
     // Not used by the out-of-process representation of RenderBatch data.
     // This only exists on the ArrayBuilderSegmentReader for the shared-memory representation.
     return 0;

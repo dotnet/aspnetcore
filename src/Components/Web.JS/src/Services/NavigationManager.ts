@@ -16,8 +16,8 @@ export const internalFunctions = {
   listenForNavigationEvents,
   enableNavigationInterception,
   navigateTo,
-  getBaseURI: () => document.baseURI,
-  getLocationHref: () => location.href,
+  getBaseURI: (): string => document.baseURI,
+  getLocationHref: (): string => location.href,
 };
 
 function listenForNavigationEvents(callback: (uri: string, intercepted: boolean) => Promise<void>): void {
