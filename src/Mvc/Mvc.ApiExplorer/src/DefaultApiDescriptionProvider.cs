@@ -271,7 +271,8 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
                         // If we didn't see the parameter in the route and no FromRoute metadata is set, it probably means
                         // the parameter binding source was inferred (InferParameterBindingInfoConvention)  
                         // probably because another route to this action contains it as route parameter and
-                        // will be emoved from the API description
+                        // will be removed from the API description
+                        // https://github.com/dotnet/aspnetcore/issues/26234
                         context.Results.RemoveAt(i);
                     }
                 }
