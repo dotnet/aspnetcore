@@ -45,7 +45,7 @@
 
   <Target Name="PrepareInjectionApp" Condition="'$(InProcessTestSite)' == 'true'">
     <PropertyGroup>
-      <InjectDepsAssembly>$(ArtifactsBinDir)TestTasks\$(Configuration)\$(TargetFramework)\TestTasks</InjectDepsAssembly>
+      <InjectDepsAssembly>$(MSBuildThisFileDirectory)..\IIS\test\testassets\TestTasks\bin\$(Configuration)\$(TargetFramework)\TestTasks</InjectDepsAssembly>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(TargetFrameworkIdentifier)' != '.NETFramework' ">
