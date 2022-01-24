@@ -1,11 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
-
   <Import Project="..\..\..\..\build\testsite.props" />
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <AssemblyName>InProcessWebSite</AssemblyName>
-    <TestAssetOutputName>InProcessNewShimWebSite</TestAssetOutputName>
     <DefineConstants>FORWARDCOMPAT</DefineConstants>
     <CompileUsingReferenceAssemblies>false</CompileUsingReferenceAssemblies>
     <ImplicitUsings>disable</ImplicitUsings>
@@ -61,5 +59,4 @@
     </PackageReference>
     <Reference Include="xunit.assert" />
   </ItemGroup>
-
 </Project>
