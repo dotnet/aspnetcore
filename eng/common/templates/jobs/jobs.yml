@@ -83,7 +83,9 @@ jobs:
         - ${{ if eq(parameters.enableSourceBuild, true) }}:
           - Source_Build_Complete
         pool:
-          vmImage: 'windows-2019'
+          name: NetCore1ESPool-Internal
+          demands: ImageOverride -equals Build.Server.Amd64.VS2019
+
         runAsPublic: ${{ parameters.runAsPublic }}
         publishUsingPipelines: ${{ parameters.enablePublishUsingPipelines }}
         enablePublishBuildArtifacts: ${{ parameters.enablePublishBuildArtifacts }}
