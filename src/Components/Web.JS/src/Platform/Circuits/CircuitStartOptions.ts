@@ -36,7 +36,7 @@ const defaultOptions: CircuitStartOptions = {
     logLevel: LogLevel.Warning,
     reconnectionOptions: {
       maxRetries: 8,
-      retryIntervalMilliseconds: 3000,
+      retryIntervalMilliseconds: 20000,
       dialogId: 'components-reconnect-modal',
       reloadOnCircuitRejected: true,
     },
