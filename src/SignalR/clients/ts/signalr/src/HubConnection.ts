@@ -674,8 +674,9 @@ export class HubConnection {
     private _invokeClientMethod(invocationMessage: InvocationMessage) {
         const methods = this._methods[invocationMessage.target.toLowerCase()];
         if (methods) {
+            const methodsCopy = methods.slice();
             try {
-                methods.forEach((m) => m.apply(this, invocationMessage.arguments));
+                methodsCopy.forEach((m) => m.apply(this, invocationMessage.arguments));
             } catch (e) {
                 this._logger.log(LogLevel.Error, `A callback for the method ${invocationMessage.target.toLowerCase()} threw error '${e}'.`);
             }
