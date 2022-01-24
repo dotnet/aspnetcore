@@ -50,7 +50,6 @@ public static class EditContextDataAnnotationsExtensions
         {
             throw new ArgumentNullException(nameof(serviceProvider));
         }
-        
         return new DataAnnotationsEventSubscriptions(editContext, serviceProvider);
     }
 
