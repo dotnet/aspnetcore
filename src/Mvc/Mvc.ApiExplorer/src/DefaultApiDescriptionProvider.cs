@@ -274,7 +274,6 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
                         // will be emoved from the API description
                         context.Results.RemoveAt(i);
                     }
-
                 }
             }
         }
