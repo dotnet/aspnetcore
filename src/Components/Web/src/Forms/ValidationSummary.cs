@@ -75,8 +75,8 @@ public class ValidationSummary : ComponentBase, IDisposable
                 first = false;
 
                 builder.OpenElement(0, "ul");
-                builder.AddMultipleAttributes(1, AdditionalAttributes);
-                builder.AddAttribute(2, "class", "validation-errors");
+                builder.AddAttribute(1, "class", "validation-errors");
+                builder.AddMultipleAttributes(2, AdditionalAttributes);
             }
 
             builder.OpenElement(3, "li");
