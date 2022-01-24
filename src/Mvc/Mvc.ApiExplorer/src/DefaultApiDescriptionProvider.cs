@@ -241,12 +241,13 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
             routeParameters.Add(routeParameter.Name!, CreateRouteInfo(routeParameter));
         }
 
-        var inferredPathParametersToRemove = new List<ApiParameterDescription>();
-        foreach (var parameter in context.Results)
+        for (var i = context.Results.Count - 1; i >= 0; i--)
         {
+            var parameter = context.Results[i];
+
             if (parameter.Source == BindingSource.Path ||
-                parameter.Source == BindingSource.ModelBinding ||
-                parameter.Source == BindingSource.Custom)
+                   parameter.Source == BindingSource.ModelBinding ||
+                   parameter.Source == BindingSource.Custom)
             {
                 if (routeParameters.TryGetValue(parameter.Name, out var routeInfo))
                 {
@@ -269,20 +270,13 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
                     {
                         // If we didn't see the parameter in the route and no FromRoute metadata is set, it probably means
                         // the parameter binding source was inferred (InferParameterBindingInfoConvention)  
-                        // probably because another route to this action contains it as route parameter.
-                        // let's add it to be removed from the API description
-                        inferredPathParametersToRemove.Add(parameter);
+                        // probably because another route to this action contains it as route parameter and
+                        // will be emoved from the API description
+                        context.Results.RemoveAt(i);
                     }
 
                 }
             }
-        }
-
-        // Remove all parameters detected as Inferred FromPath
-        // but that are not in the route
-        foreach (var inferredParameter in inferredPathParametersToRemove)
-        {
-            context.Results.Remove(inferredParameter);
         }
 
         // Lastly, create a parameter representation for each route parameter that did not find

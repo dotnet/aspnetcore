@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using System.Text;
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
@@ -21,6 +22,7 @@ using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
+
 using Moq;
 
 namespace Microsoft.AspNetCore.Mvc.Description;
@@ -243,44 +245,57 @@ public class DefaultApiDescriptionProviderTest
         }
     }
 
-    [Theory]
-    [InlineData("api/products/{id}", nameof(BindingSource.Path), true)]
-    [InlineData("api/products", nameof(BindingSource.Path), false)]
-    [InlineData("api/products", nameof(BindingSource.Body), true)]
-    [InlineData("api/products", nameof(BindingSource.Query), true)]
-    public void GetApiDescription_WithInferredBindingSource(
-        string template,
-        string inferredBindingSourceName,
-        bool inferredParameterShouldBeIncluded)
+    [Fact]
+    public void GetApiDescription_WithInferredBindingSource_ExcludesPathParametersWhenNotPresentInRoute()
     {
         // Arrange
         var action = CreateActionDescriptor(nameof(FromModelBinding));
-        action.AttributeRouteInfo = new AttributeRouteInfo { Template = template };
+        action.AttributeRouteInfo = new AttributeRouteInfo { Template = "api/products" };
 
-        foreach (var actionParameter in action.Parameters)
+        action.Parameters[0].BindingInfo = new BindingInfo()
         {
-            actionParameter.BindingInfo = new BindingInfo()
-            {
-                BindingSource = new BindingSource(inferredBindingSourceName, displayName: null, isGreedy: false, isFromRequest: true)
-            };
-        }
-
-        var expectedBindingSource = new BindingSource(inferredBindingSourceName, displayName: null, isGreedy: false, isFromRequest: true);
+            BindingSource = new BindingSource("Path", displayName: null, isGreedy: false, isFromRequest: true)
+        };
 
         // Act
         var descriptions = GetApiDescriptions(action);
 
         // Assert
         var description = Assert.Single(descriptions);
+        Assert.Empty(description.ParameterDescriptions);
+    }
 
-        Assert.Equal(inferredParameterShouldBeIncluded, description.ParameterDescriptions.Count == 1);
 
-        if (inferredParameterShouldBeIncluded)
+    [Theory]
+    [InlineData("api/products/{id}")]
+    [InlineData("api/products/{id?}")]
+    [InlineData("api/products/{id=5}")]
+    [InlineData("api/products/{id:int}")]
+    [InlineData("api/products/{id:int?}")]
+    [InlineData("api/products/{id:int=5}")]
+    [InlineData("api/products/{*id}")]
+    [InlineData("api/products/{*id:int}")]
+    [InlineData("api/products/{*id:int=5}")]
+    public void GetApiDescription_WithInferredBindingSource_IncludesPathParametersWhenPresentInRoute(string template)
+    {
+        // Arrange
+        var action = CreateActionDescriptor(nameof(FromModelBinding));
+        action.AttributeRouteInfo = new AttributeRouteInfo { Template = template };
+
+        var bindingSource = new BindingSource("Path", displayName: null, isGreedy: false, isFromRequest: true);
+        action.Parameters[0].BindingInfo = new BindingInfo()
         {
-            var parameter = Assert.Single(description.ParameterDescriptions);
-            Assert.Equal(expectedBindingSource, parameter.Source);
-            Assert.Equal("id", parameter.Name);
-        }
+            BindingSource = bindingSource
+        };
+
+        // Act
+        var descriptions = GetApiDescriptions(action);
+
+        // Assert
+        var description = Assert.Single(descriptions);
+        var parameter = Assert.Single(description.ParameterDescriptions);
+        Assert.Equal(bindingSource, parameter.Source);
+        Assert.Equal("id", parameter.Name);
     }
 
     [Fact]
