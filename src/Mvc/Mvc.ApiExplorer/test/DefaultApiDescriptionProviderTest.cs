@@ -254,7 +254,7 @@ public class DefaultApiDescriptionProviderTest
 
         action.Parameters[0].BindingInfo = new BindingInfo()
         {
-            BindingSource = new BindingSource("Path", displayName: null, isGreedy: false, isFromRequest: true)
+            BindingSource = BindingSource.Path
         };
 
         // Act
@@ -282,10 +282,9 @@ public class DefaultApiDescriptionProviderTest
         var action = CreateActionDescriptor(nameof(FromModelBinding));
         action.AttributeRouteInfo = new AttributeRouteInfo { Template = template };
 
-        var bindingSource = new BindingSource("Path", displayName: null, isGreedy: false, isFromRequest: true);
         action.Parameters[0].BindingInfo = new BindingInfo()
         {
-            BindingSource = bindingSource
+            BindingSource = BindingSource.Path
         };
 
         // Act
@@ -294,7 +293,7 @@ public class DefaultApiDescriptionProviderTest
         // Assert
         var description = Assert.Single(descriptions);
         var parameter = Assert.Single(description.ParameterDescriptions);
-        Assert.Equal(bindingSource, parameter.Source);
+        Assert.Equal(BindingSource.Path, parameter.Source);
         Assert.Equal("id", parameter.Name);
     }
 
