@@ -53,4 +53,4 @@ How does this compare to analogous APIs in other ecosystems and libraries?
 <!--
 Please mention any risks that to your knowledge the API proposal might entail, such as breaking changes, performance regressions, etc.
 -->
-diff --git a/.github/ISSUE_TEMPLATE/25_api_proposal.md b/.github/ISSUE_TEMPLATE/25_api_proposal.md
+
