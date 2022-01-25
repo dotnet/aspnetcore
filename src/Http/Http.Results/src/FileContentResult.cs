@@ -34,7 +34,7 @@ internal sealed partial class FileContentResult : FileResult
         return httpContext.RequestServices.GetRequiredService<ILogger<FileContentResult>>();
     }
 
-    protected override Task ExecuteAsync(HttpContext httpContext, RangeItemHeaderValue? range, long rangeLength)
+    protected override Task ExecuteCoreAsync(HttpContext httpContext, RangeItemHeaderValue? range, long rangeLength)
     {
         return FileResultHelper.WriteFileAsync(httpContext, FileContents, range, rangeLength);
     }

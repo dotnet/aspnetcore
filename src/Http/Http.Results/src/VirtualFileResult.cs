@@ -41,7 +41,7 @@ internal sealed class VirtualFileResult : FileResult, IResult
         set => _fileName = value ?? throw new ArgumentNullException(nameof(value));
     }
 
-    protected override Task ExecuteAsync(HttpContext httpContext, RangeItemHeaderValue? range, long rangeLength)
+    protected override Task ExecuteCoreAsync(HttpContext httpContext, RangeItemHeaderValue? range, long rangeLength)
     {
         var response = httpContext.Response;
         var offset = 0L;

@@ -54,7 +54,7 @@ internal sealed class FileStreamResult : FileResult, IResult
         }
     }
 
-    protected override Task ExecuteAsync(HttpContext context, RangeItemHeaderValue? range, long rangeLength)
+    protected override Task ExecuteCoreAsync(HttpContext context, RangeItemHeaderValue? range, long rangeLength)
     {
         return FileResultHelper.WriteFileAsync(context, FileStream, range, rangeLength);
     }

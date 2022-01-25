@@ -16,7 +16,7 @@ internal abstract class FileResult : FileResultBase, IResult
 
     protected abstract ILogger GetLogger(HttpContext httpContext);
 
-    protected abstract Task ExecuteAsync(HttpContext httpContext, RangeItemHeaderValue? range, long rangeLength);
+    protected abstract Task ExecuteCoreAsync(HttpContext httpContext, RangeItemHeaderValue? range, long rangeLength);
 
     public virtual Task ExecuteAsync(HttpContext httpContext)
     {
@@ -57,6 +57,6 @@ internal abstract class FileResult : FileResultBase, IResult
             FileResultHelper.Log.WritingRangeToBody(logger);
         }
 
-        return ExecuteAsync(httpContext, range, rangeLength);
+        return ExecuteCoreAsync(httpContext, range, rangeLength);
     }
 }

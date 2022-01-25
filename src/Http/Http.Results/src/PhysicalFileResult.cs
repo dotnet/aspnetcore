@@ -53,7 +53,7 @@ internal sealed partial class PhysicalFileResult : FileResult, IResult
         return base.ExecuteAsync(httpContext);
     }
 
-    protected override Task ExecuteAsync(HttpContext httpContext, RangeItemHeaderValue? range, long rangeLength)
+    protected override Task ExecuteCoreAsync(HttpContext httpContext, RangeItemHeaderValue? range, long rangeLength)
     {
         var response = httpContext.Response;
         if (!Path.IsPathRooted(FileName))

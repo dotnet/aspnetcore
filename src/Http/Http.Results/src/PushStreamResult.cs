@@ -22,7 +22,7 @@ internal sealed class PushStreamResult : FileResult
         return httpContext.RequestServices.GetRequiredService<ILogger<PushStreamResult>>();
     }
 
-    protected override Task ExecuteAsync(HttpContext httpContext, RangeItemHeaderValue? range, long rangeLength)
+    protected override Task ExecuteCoreAsync(HttpContext httpContext, RangeItemHeaderValue? range, long rangeLength)
     {
         return _streamWriterCallback(httpContext.Response.Body);
     }
