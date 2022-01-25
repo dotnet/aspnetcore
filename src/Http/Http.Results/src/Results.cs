@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.IO.Pipelines;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
@@ -218,9 +219,40 @@ public static class Results
             EntityTag = entityTag,
         };
 
+    /// <summary>
+    /// Writes the byte-array content to the response.
+    /// <para>
+    /// This supports range requests (<see cref="StatusCodes.Status206PartialContent"/> or
+    /// <see cref="StatusCodes.Status416RangeNotSatisfiable"/> if the range is not satisfiable).
+    /// </para>
+    /// </summary>
+    /// <param name="contents">The file contents.</param>
+    /// <param name="contentType">The Content-Type of the file.</param>
+    /// <param name="fileDownloadName">The suggested file name.</param>
+    /// <param name="enableRangeProcessing">Set to <c>true</c> to enable range requests processing.</param>
+    /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.</param>
+    /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> associated with the file.</param>
+    /// <returns>The created <see cref="IResult"/> for the response.</returns>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+    public static IResult Bytes(
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
+        ReadOnlyMemory<byte> contents,
+        string? contentType = null,
+        string? fileDownloadName = null,
+        bool enableRangeProcessing = false,
+        DateTimeOffset? lastModified = null,
+        EntityTagHeaderValue? entityTag = null)
+        => new FileContentResult(contents, contentType)
+        {
+            FileDownloadName = fileDownloadName,
+            EnableRangeProcessing = enableRangeProcessing,
+            LastModified = lastModified,
+            EntityTag = entityTag,
+        };
+
 
     /// <summary>
-    /// Writes the specified <see cref="Stream"/> to the response.
+    /// Writes the specified <see cref="System.IO.Stream"/> to the response.
     /// <para>
     /// This supports range requests (<see cref="StatusCodes.Status206PartialContent"/> or
     /// <see cref="StatusCodes.Status416RangeNotSatisfiable"/> if the range is not satisfiable).
@@ -229,7 +261,7 @@ public static class Results
     /// This API is an alias for <see cref="Stream(Stream, string, string?, DateTimeOffset?, EntityTagHeaderValue?, bool)"/>.
     /// </para>
     /// </summary>
-    /// <param name="fileStream">The <see cref="Stream"/> with the contents of the file.</param>
+    /// <param name="fileStream">The <see cref="System.IO.Stream"/> with the contents of the file.</param>
     /// <param name="contentType">The Content-Type of the file.</param>
     /// <param name="fileDownloadName">The the file name to be used in the <c>Content-Disposition</c> header.</param>
     /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.
@@ -261,7 +293,7 @@ public static class Results
     }
 
     /// <summary>
-    /// Writes the specified <see cref="Stream"/> to the response.
+    /// Writes the specified <see cref="System.IO.Stream"/> to the response.
     /// <para>
     /// This supports range requests (<see cref="StatusCodes.Status206PartialContent"/> or
     /// <see cref="StatusCodes.Status416RangeNotSatisfiable"/> if the range is not satisfiable).
@@ -270,7 +302,7 @@ public static class Results
     /// This API is an alias for <see cref="File(Stream, string, string?, DateTimeOffset?, EntityTagHeaderValue?, bool)"/>.
     /// </para>
     /// </summary>
-    /// <param name="stream">The <see cref="Stream"/> to write to the response.</param>
+    /// <param name="stream">The <see cref="System.IO.Stream"/> to write to the response.</param>
     /// <param name="contentType">The <c>Content-Type</c> of the response. Defaults to <c>application/octet-stream</c>.</param>
     /// <param name="fileDownloadName">The the file name to be used in the <c>Content-Disposition</c> header.</param>
     /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.
@@ -296,6 +328,76 @@ public static class Results
             EntityTag = entityTag,
             FileDownloadName = fileDownloadName,
             EnableRangeProcessing = enableRangeProcessing,
+        };
+    }
+
+    /// <summary>
+    /// Writes the contents of specified <see cref="System.IO.Pipelines.PipeReader"/> to the response.
+    /// <para>
+    /// This supports range requests (<see cref="StatusCodes.Status206PartialContent"/> or
+    /// <see cref="StatusCodes.Status416RangeNotSatisfiable"/> if the range is not satisfiable).
+    /// </para>
+    /// </summary>
+    /// <param name="pipeReader">The <see cref="System.IO.Pipelines.PipeReader"/> to write to the response.</param>
+    /// <param name="contentType">The <c>Content-Type</c> of the response. Defaults to <c>application/octet-stream</c>.</param>
+    /// <param name="fileDownloadName">The the file name to be used in the <c>Content-Disposition</c> header.</param>
+    /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.
+    /// Used to configure the <c>Last-Modified</c> response header and perform conditional range requests.</param>
+    /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> to be configure the <c>ETag</c> response header
+    /// and perform conditional requests.</param>
+    /// <param name="enableRangeProcessing">Set to <c>true</c> to enable range requests processing.</param>
+    /// <returns>The created <see cref="IResult"/> for the response.</returns>
+    /// <remarks>
+    /// The <paramref name="pipeReader" /> parameter is completed after the response is sent.
+    /// </remarks>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+    public static IResult Stream(
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
+        PipeReader pipeReader,
+        string? contentType = null,
+        string? fileDownloadName = null,
+        DateTimeOffset? lastModified = null,
+        EntityTagHeaderValue? entityTag = null,
+        bool enableRangeProcessing = false)
+    {
+        return new FileStreamResult(pipeReader.AsStream(), contentType)
+        {
+            LastModified = lastModified,
+            EntityTag = entityTag,
+            FileDownloadName = fileDownloadName,
+            EnableRangeProcessing = enableRangeProcessing,
+        };
+    }
+
+    /// <summary>
+    /// Allows writing directly to the response body.
+    /// <para>
+    /// This supports range requests (<see cref="StatusCodes.Status206PartialContent"/> or
+    /// <see cref="StatusCodes.Status416RangeNotSatisfiable"/> if the range is not satisfiable).
+    /// </para>
+    /// </summary>
+    /// <param name="streamWriterCallback">The callback that allows users to write directly to the response body.</param>
+    /// <param name="contentType">The <c>Content-Type</c> of the response. Defaults to <c>application/octet-stream</c>.</param>
+    /// <param name="fileDownloadName">The the file name to be used in the <c>Content-Disposition</c> header.</param>
+    /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.
+    /// Used to configure the <c>Last-Modified</c> response header and perform conditional range requests.</param>
+    /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> to be configure the <c>ETag</c> response header
+    /// and perform conditional requests.</param>
+    /// <returns>The created <see cref="IResult"/> for the response.</returns>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+    public static IResult Stream(
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
+        Func<Stream, Task> streamWriterCallback,
+        string? contentType = null,
+        string? fileDownloadName = null,
+        DateTimeOffset? lastModified = null,
+        EntityTagHeaderValue? entityTag = null)
+    {
+        return new PushStreamResult(streamWriterCallback, contentType)
+        {
+            LastModified = lastModified,
+            EntityTag = entityTag,
+            FileDownloadName = fileDownloadName,
         };
     }
 

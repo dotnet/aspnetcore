@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -49,6 +50,40 @@ internal static partial class FileResultHelper
                 // However, if it was cancelled for any other reason we need to prevent empty responses.
                 context.Abort();
             }
+        }
+    }
+
+    internal static async Task WriteFileAsync(HttpContext context, ReadOnlyMemory<byte> buffer, RangeItemHeaderValue? range, long rangeLength)
+    {
+        var outputStream = context.Response.Body;
+
+        try
+        {
+            if (range is null)
+            {
+                await outputStream.WriteAsync(buffer, context.RequestAborted);
+            }
+            else
+            {
+                var from = 0;
+                var length = 0;
+
+                checked
+                {
+                    // Overflow should throw
+                    from = (int)range.From!.Value;
+                    length = (int)rangeLength;
+                }
+
+                await outputStream.WriteAsync(buffer.Slice(from, length), context.RequestAborted);
+
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Don't throw this exception, it's most likely caused by the client disconnecting.
+            // However, if it was cancelled for any other reason we need to prevent empty responses.
+            context.Abort();
         }
     }
 
