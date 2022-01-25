@@ -143,6 +143,7 @@ public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPo
                 var candidateMethod = metadata.HttpMethods[j];
                 if (!HttpMethods.Equals(httpMethod, candidateMethod))
                 {
+                    methods = methods ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                     methods.Add(candidateMethod);
                     continue;
                 }
@@ -161,7 +162,7 @@ public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPo
         if (needs405Endpoint == true)
         {
             // We saw some endpoints coming in, and we eliminated them all.
-            httpContext.SetEndpoint(CreateRejectionEndpoint(methods.OrderBy(m => m, StringComparer.OrdinalIgnoreCase)));
+            httpContext.SetEndpoint(CreateRejectionEndpoint(methods?.OrderBy(m => m, StringComparer.OrdinalIgnoreCase)));
             httpContext.Request.RouteValues = null!;
         }
 
