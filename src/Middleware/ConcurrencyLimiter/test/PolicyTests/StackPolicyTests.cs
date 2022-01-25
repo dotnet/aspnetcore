@@ -51,16 +51,12 @@ public class StackPolicyTests
         var task4 = stack.TryEnterAsync();
         Assert.False(task4.IsCompleted);
 
-        // It should drop the oldest item, but instead it fails to add the new one.
-        // https://github.com/dotnet/runtime/issues/62817
         var task5 = stack.TryEnterAsync();
-        Assert.True(task5.IsCompleted);
-        Assert.False(await task5);
+        Assert.False(task5.IsCompleted);
 
         // Should have been pushed out of the stack
-        // Assert.False(await task2);
+        Assert.False(await task2);
 
-        Assert.False(task2.IsCompleted);
         Assert.False(task3.IsCompleted);
         Assert.False(task4.IsCompleted);
     }
