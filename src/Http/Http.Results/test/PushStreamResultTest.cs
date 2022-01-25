@@ -24,7 +24,7 @@ public class PushStreamResultTest
         await result.ExecuteAsync(httpContext);
 
         Assert.Equal("Hello World", Encoding.UTF8.GetString(ms.ToArray()));
-        Assert.Equal("application/octec-stream", result.ContentType);
+        Assert.Equal("application/octet-stream", result.ContentType);
     }
 
     [Fact]
