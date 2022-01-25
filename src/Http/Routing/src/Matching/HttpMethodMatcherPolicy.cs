@@ -102,7 +102,7 @@ public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPo
         // We want to return a 405 iff we eliminated ALL of the currently valid endpoints due to HTTP method
         // mismatch.
         bool? needs405Endpoint = null;
-        HashSet<string> methods = new HashSet<string>();
+        HashSet<string>? methods = null;
 
         for (var i = 0; i < candidates.Count; i++)
         {
@@ -397,9 +397,9 @@ public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPo
         }
     }
 
-    private static Endpoint CreateRejectionEndpoint(IEnumerable<string> httpMethods)
+    private static Endpoint CreateRejectionEndpoint(IEnumerable<string>? httpMethods)
     {
-        var allow = string.Join(", ", httpMethods);
+        var allow = httpMethods is null ? string.Empty : string.Join(", ", httpMethods);
         return new Endpoint(
             (context) =>
             {
