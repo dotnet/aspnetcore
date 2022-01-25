@@ -158,7 +158,7 @@ public class HttpMethodMatcherPolicyTest
     {
         var policy = (IEndpointSelectorPolicy)CreatePolicy();
 
-        RouteEndpoint[] endpoints = new RouteEndpoint[candidateNum];
+        var endpoints = new RouteEndpoint[candidateNum];
         for (int i = 0; i < candidateNum; i++)
         {
             endpoints[i] = CreateEndpoint("/", new HttpMethodMetadata(new[] { "DEL" }));
