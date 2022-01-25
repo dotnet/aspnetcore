@@ -67,7 +67,7 @@ public class HubConnectionTests : FunctionalTestBase
         return hubConnectionBuilder.Build();
     }
 
-    private Func<EndPoint, ValueTask<ConnectionContext>> GetHttpConnectionFactory(string url, ILoggerFactory loggerFactory, string path, HttpTransportType transportType, TransferFormat transferFormat)
+    private static Func<EndPoint, ValueTask<ConnectionContext>> GetHttpConnectionFactory(string url, ILoggerFactory loggerFactory, string path, HttpTransportType transportType, TransferFormat transferFormat)
     {
         return async endPoint =>
         {
@@ -75,7 +75,8 @@ public class HubConnectionTests : FunctionalTestBase
             var options = new HttpConnectionOptions { Url = httpEndpoint.Uri, Transports = transportType, DefaultTransferFormat = transferFormat };
             var connection = new HttpConnection(options, loggerFactory);
 
-            await connection.StartAsync();
+            // This is used by CanBlockOnAsyncOperationsWithOneAtATimeSynchronizationContext, so the ConfigureAwait(false) is important.
+            await connection.StartAsync().ConfigureAwait(false);
 
             return connection;
         };
@@ -2086,6 +2087,90 @@ public class HubConnectionTests : FunctionalTestBase
             finally
             {
                 await connection.DisposeAsync().DefaultTimeout();
+            }
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(TransportTypes))]
+    public async Task CanBlockOnAsyncOperationsWithOneAtATimeSynchronizationContext(HttpTransportType transportType)
+    {
+        const int DefaultTimeout = Testing.TaskExtensions.DefaultTimeoutDuration;
+
+        await using var server = await StartServer<Startup>();
+        await using var connection = CreateHubConnection(server.Url, "/default", transportType, HubProtocols["json"], LoggerFactory);
+        await using var oneAtATimeSynchronizationContext = new OneAtATimeSynchronizationContext();
+
+        var originalSynchronizationContext = SynchronizationContext.Current;
+        SynchronizationContext.SetSynchronizationContext(oneAtATimeSynchronizationContext);
+
+        try
+        {
+            // Yield first so the rest of the test runs in the OneAtATimeSynchronizationContext.Run loop
+            await Task.Yield();
+
+            Assert.True(connection.StartAsync().Wait(DefaultTimeout));
+
+            var invokeTask = connection.InvokeAsync<string>(nameof(TestHub.HelloWorld));
+            Assert.True(invokeTask.Wait(DefaultTimeout));
+            Assert.Equal("Hello World!", invokeTask.Result);
+
+            Assert.True(connection.DisposeAsync().AsTask().Wait(DefaultTimeout));
+        }
+        catch (Exception ex)
+        {
+            LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+            throw;
+        }
+        finally
+        {
+            SynchronizationContext.SetSynchronizationContext(originalSynchronizationContext);
+        }
+    }
+
+    private class OneAtATimeSynchronizationContext : SynchronizationContext, IAsyncDisposable
+    {
+        private readonly Channel<(SendOrPostCallback, object)> _taskQueue = Channel.CreateUnbounded<(SendOrPostCallback, object)>();
+        private readonly Task _runTask;
+        private bool _disposed;
+
+        public OneAtATimeSynchronizationContext()
+        {
+            // Task.Run to avoid running with xUnit's AsyncTestSyncContext as well.
+            _runTask = Task.Run(Run);
+        }
+
+        public override void Post(SendOrPostCallback d, object state)
+        {
+            if (_disposed)
+            {
+                // There should be no other calls to Post() after dispose. If there are calls,
+                // the test has most likely failed with a timeout. Let the callbacks run so the
+                // timeout exception gets reported accurately instead of as a long-running test.
+                d(state);
+            }
+
+            _taskQueue.Writer.TryWrite((d, state));
+        }
+
+        public ValueTask DisposeAsync()
+        {
+            _disposed = true;
+            _taskQueue.Writer.Complete();
+            return new ValueTask(_runTask);
+        }
+
+        private async Task Run()
+        {
+            while (await _taskQueue.Reader.WaitToReadAsync())
+            {
+                SetSynchronizationContext(this);
+                while (_taskQueue.Reader.TryRead(out var tuple))
+                {
+                    var (callback, state) = tuple;
+                    callback(state);
+                }
+                SetSynchronizationContext(null);
             }
         }
     }

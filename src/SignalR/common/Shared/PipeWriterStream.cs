@@ -91,7 +91,7 @@ internal class PipeWriterStream : Stream
 
         static async ValueTask WriteSlowAsync(ValueTask<FlushResult> flushTask)
         {
-            var flushResult = await flushTask;
+            var flushResult = await flushTask.ConfigureAwait(false);
 
             // Cancellation can be triggered by PipeWriter.CancelPendingFlush
             if (flushResult.IsCanceled)
