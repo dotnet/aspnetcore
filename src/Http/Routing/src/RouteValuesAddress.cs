@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System.Collections.Immutable;
 namespace Microsoft.AspNetCore.Routing;
 
 /// <summary>
