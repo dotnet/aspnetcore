@@ -8,9 +8,6 @@ import { Logger, LogLevel } from './Logger';
 export class NullLogger implements Logger {
   public static instance: Logger = new NullLogger();
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  private constructor() { }
-
   public log(_logLevel: LogLevel, _message: string): void { // eslint-disable-line @typescript-eslint/no-unused-vars
   }
 }
