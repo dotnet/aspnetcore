@@ -238,13 +238,13 @@ public partial class HubConnection : IAsyncDisposable
         CheckDisposed();
         using (_logger.BeginScope(_logScope))
         {
-            await StartAsyncInner(cancellationToken);
+            await StartAsyncInner(cancellationToken).ConfigureAwait(false);
         }
     }
 
     private async Task StartAsyncInner(CancellationToken cancellationToken = default)
     {
-        await _state.WaitConnectionLockAsync(token: cancellationToken);
+        await _state.WaitConnectionLockAsync(token: cancellationToken).ConfigureAwait(false);
         try
         {
             if (!_state.TryChangeState(HubConnectionState.Disconnected, HubConnectionState.Connecting))
@@ -261,7 +261,7 @@ public partial class HubConnection : IAsyncDisposable
 
             using (CreateLinkedToken(cancellationToken, _state.StopCts.Token, out var linkedToken))
             {
-                await StartAsyncCore(linkedToken);
+                await StartAsyncCore(linkedToken).ConfigureAwait(false);
             }
 
             _state.ChangeState(HubConnectionState.Connecting, HubConnectionState.Connected);
@@ -291,7 +291,7 @@ public partial class HubConnection : IAsyncDisposable
         CheckDisposed();
         using (_logger.BeginScope(_logScope))
         {
-            await StopAsyncCore(disposing: false);
+            await StopAsyncCore(disposing: false).ConfigureAwait(false);
         }
     }
 
@@ -307,7 +307,7 @@ public partial class HubConnection : IAsyncDisposable
         {
             using (_logger.BeginScope(_logScope))
             {
-                await StopAsyncCore(disposing: true);
+                await StopAsyncCore(disposing: true).ConfigureAwait(false);
             }
         }
     }
@@ -374,7 +374,7 @@ public partial class HubConnection : IAsyncDisposable
     {
         using (_logger.BeginScope(_logScope))
         {
-            return await StreamAsChannelCoreAsyncCore(methodName, returnType, args, cancellationToken);
+            return await StreamAsChannelCoreAsyncCore(methodName, returnType, args, cancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -396,7 +396,7 @@ public partial class HubConnection : IAsyncDisposable
     {
         using (_logger.BeginScope(_logScope))
         {
-            return await InvokeCoreAsyncCore(methodName, returnType, args, cancellationToken);
+            return await InvokeCoreAsyncCore(methodName, returnType, args, cancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -415,7 +415,7 @@ public partial class HubConnection : IAsyncDisposable
     {
         using (_logger.BeginScope(_logScope))
         {
-            await SendCoreAsyncCore(methodName, args, cancellationToken);
+            await SendCoreAsyncCore(methodName, args, cancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -431,7 +431,7 @@ public partial class HubConnection : IAsyncDisposable
         Log.Starting(_logger);
 
         // Start the connection
-        var connection = await _connectionFactory.ConnectAsync(_endPoint, cancellationToken);
+        var connection = await _connectionFactory.ConnectAsync(_endPoint, cancellationToken).ConfigureAwait(false);
         var startingConnectionState = new ConnectionState(connection, this);
 
         // From here on, if an error occurs we need to shut down the connection because
@@ -439,14 +439,14 @@ public partial class HubConnection : IAsyncDisposable
         try
         {
             Log.HubProtocol(_logger, _protocol.Name, _protocol.Version);
-            await HandshakeAsync(startingConnectionState, cancellationToken);
+            await HandshakeAsync(startingConnectionState, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
             Log.ErrorStartingConnection(_logger, ex);
 
             // Can't have any invocations to cancel, we're in the lock.
-            await CloseAsync(startingConnectionState.Connection);
+            await CloseAsync(startingConnectionState.Connection).ConfigureAwait(false);
             throw;
         }
 
@@ -457,7 +457,7 @@ public partial class HubConnection : IAsyncDisposable
         // StartAsyncCore is invoked and awaited by StartAsyncInner and ReconnectAsync with the connection lock still acquired.
         if (!(connection.Features.Get<IConnectionInherentKeepAliveFeature>()?.HasInherentKeepAlive ?? false))
         {
-            await SendHubMessage(startingConnectionState, PingMessage.Instance, cancellationToken);
+            await SendHubMessage(startingConnectionState, PingMessage.Instance, cancellationToken).ConfigureAwait(false);
         }
         startingConnectionState.ReceiveTask = ReceiveLoop(startingConnectionState);
 
@@ -481,7 +481,7 @@ public partial class HubConnection : IAsyncDisposable
 
         // Potentially wait for StartAsync to finish, and block a new StartAsync from
         // starting until we've finished stopping.
-        await _state.WaitConnectionLockAsync(token: default);
+        await _state.WaitConnectionLockAsync(token: default).ConfigureAwait(false);
 
         // Ensure that ReconnectingState.ReconnectTask is not accessed outside of the lock.
         var reconnectTask = _state.ReconnectTask;
@@ -493,8 +493,8 @@ public partial class HubConnection : IAsyncDisposable
             // It should never throw, even if the reconnect attempts fail.
             // The StopCts should prevent the HubConnection from restarting until it is reset.
             _state.ReleaseConnectionLock();
-            await reconnectTask;
-            await _state.WaitConnectionLockAsync(token: default);
+            await reconnectTask.ConfigureAwait(false);
+            await _state.WaitConnectionLockAsync(token: default).ConfigureAwait(false);
         }
 
         ConnectionState? connectionState;
@@ -528,7 +528,7 @@ public partial class HubConnection : IAsyncDisposable
                 _disposed = true;
                 if (_serviceProvider is IAsyncDisposable asyncDispose)
                 {
-                    await asyncDispose.DisposeAsync();
+                    await asyncDispose.DisposeAsync().ConfigureAwait(false);
                 }
                 else
                 {
@@ -544,7 +544,7 @@ public partial class HubConnection : IAsyncDisposable
         // Now stop the connection we captured
         if (connectionState != null)
         {
-            await connectionState.StopAsync();
+            await connectionState.StopAsync().ConfigureAwait(false);
         }
     }
 
@@ -568,8 +568,8 @@ public partial class HubConnection : IAsyncDisposable
 
     private async IAsyncEnumerable<T> CastIAsyncEnumerable<T>(string methodName, object?[] args, CancellationTokenSource cts)
     {
-        var reader = await StreamAsChannelCoreAsync(methodName, typeof(T), args, cts.Token);
-        while (await reader.WaitToReadAsync(cts.Token))
+        var reader = await StreamAsChannelCoreAsync(methodName, typeof(T), args, cts.Token).ConfigureAwait(false);
+        while (await reader.WaitToReadAsync(cts.Token).ConfigureAwait(false))
         {
             while (reader.TryRead(out var item))
             {
@@ -583,7 +583,7 @@ public partial class HubConnection : IAsyncDisposable
         async Task OnStreamCanceled(InvocationRequest irq)
         {
             // We need to take the connection lock in order to ensure we a) have a connection and b) are the only one accessing the write end of the pipe.
-            await _state.WaitConnectionLockAsync(token: default);
+            await _state.WaitConnectionLockAsync(token: default).ConfigureAwait(false);
             try
             {
                 if (_state.CurrentConnectionStateUnsynchronized != null)
@@ -610,7 +610,7 @@ public partial class HubConnection : IAsyncDisposable
         var readers = default(Dictionary<string, object>);
 
         CheckDisposed();
-        var connectionState = await _state.WaitForActiveConnectionAsync(nameof(StreamAsChannelCoreAsync), token: cancellationToken);
+        var connectionState = await _state.WaitForActiveConnectionAsync(nameof(StreamAsChannelCoreAsync), token: cancellationToken).ConfigureAwait(false);
 
         ChannelReader<object?> channel;
         try
@@ -622,7 +622,7 @@ public partial class HubConnection : IAsyncDisposable
 
             // I just want an excuse to use 'irq' as a variable name...
             var irq = InvocationRequest.Stream(cancellationToken, returnType, connectionState.GetNextId(), _loggerFactory, this, out channel);
-            await InvokeStreamCore(connectionState, methodName, irq, args, streamIds?.ToArray(), cancellationToken);
+            await InvokeStreamCore(connectionState, methodName, irq, args, streamIds?.ToArray(), cancellationToken).ConfigureAwait(false);
 
             if (cancellationToken.CanBeCanceled)
             {
@@ -733,11 +733,11 @@ public partial class HubConnection : IAsyncDisposable
     {
         async Task ReadChannelStream()
         {
-            while (await reader.WaitToReadAsync(tokenSource.Token))
+            while (await reader.WaitToReadAsync(tokenSource.Token).ConfigureAwait(false))
             {
                 while (!tokenSource.Token.IsCancellationRequested && reader.TryRead(out var item))
                 {
-                    await SendWithLock(connectionState, new StreamItemMessage(streamId, item), tokenSource.Token);
+                    await SendWithLock(connectionState, new StreamItemMessage(streamId, item), tokenSource.Token).ConfigureAwait(false);
                     Log.SendingStreamItem(_logger, streamId);
                 }
             }
@@ -755,7 +755,7 @@ public partial class HubConnection : IAsyncDisposable
 
             await foreach (var streamValue in streamValues)
             {
-                await SendWithLock(connectionState, new StreamItemMessage(streamId, streamValue), tokenSource.Token);
+                await SendWithLock(connectionState, new StreamItemMessage(streamId, streamValue), tokenSource.Token).ConfigureAwait(false);
                 Log.SendingStreamItem(_logger, streamId);
             }
         }
@@ -769,7 +769,7 @@ public partial class HubConnection : IAsyncDisposable
         string? responseError = null;
         try
         {
-            await createAndConsumeStream();
+            await createAndConsumeStream().ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {
@@ -786,7 +786,7 @@ public partial class HubConnection : IAsyncDisposable
 
         // Don't use cancellation token here
         // this is triggered by a cancellation token to tell the server that the client is done streaming
-        await SendWithLock(connectionState, CompletionMessage.WithError(streamId, responseError), cancellationToken: default);
+        await SendWithLock(connectionState, CompletionMessage.WithError(streamId, responseError), cancellationToken: default).ConfigureAwait(false);
     }
 
     private async Task<object?> InvokeCoreAsyncCore(string methodName, Type returnType, object?[] args, CancellationToken cancellationToken)
@@ -794,7 +794,7 @@ public partial class HubConnection : IAsyncDisposable
         var readers = default(Dictionary<string, object>);
 
         CheckDisposed();
-        var connectionState = await _state.WaitForActiveConnectionAsync(nameof(InvokeCoreAsync), token: cancellationToken);
+        var connectionState = await _state.WaitForActiveConnectionAsync(nameof(InvokeCoreAsync), token: cancellationToken).ConfigureAwait(false);
 
         Task<object?> invocationTask;
         try
@@ -804,7 +804,7 @@ public partial class HubConnection : IAsyncDisposable
             readers = PackageStreamingParams(connectionState, ref args, out var streamIds);
 
             var irq = InvocationRequest.Invoke(cancellationToken, returnType, connectionState.GetNextId(), _loggerFactory, this, out invocationTask);
-            await InvokeCore(connectionState, methodName, irq, args, streamIds?.ToArray(), cancellationToken);
+            await InvokeCore(connectionState, methodName, irq, args, streamIds?.ToArray(), cancellationToken).ConfigureAwait(false);
 
             LaunchStreams(connectionState, readers, cancellationToken);
         }
@@ -814,7 +814,7 @@ public partial class HubConnection : IAsyncDisposable
         }
 
         // Wait for this outside the lock, because it won't complete until the server responds
-        return await invocationTask;
+        return await invocationTask.ConfigureAwait(false);
     }
 
     private async Task InvokeCore(ConnectionState connectionState, string methodName, InvocationRequest irq, object?[] args, string[]? streams, CancellationToken cancellationToken)
@@ -832,7 +832,7 @@ public partial class HubConnection : IAsyncDisposable
 
         try
         {
-            await SendHubMessage(connectionState, invocationMessage, cancellationToken);
+            await SendHubMessage(connectionState, invocationMessage, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -859,7 +859,7 @@ public partial class HubConnection : IAsyncDisposable
 
         try
         {
-            await SendHubMessage(connectionState, invocationMessage, cancellationToken);
+            await SendHubMessage(connectionState, invocationMessage, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -878,7 +878,7 @@ public partial class HubConnection : IAsyncDisposable
 
 #pragma warning disable CA2016 // Forward the 'CancellationToken' parameter to methods
         // REVIEW: If a token is passed in and is canceled during FlushAsync it seems to break .Complete()...
-        await connectionState.Connection.Transport.Output.FlushAsync();
+        await connectionState.Connection.Transport.Output.FlushAsync().ConfigureAwait(false);
 #pragma warning restore CA2016 // Forward the 'CancellationToken' parameter to methods
         Log.MessageSent(_logger, hubMessage);
 
@@ -891,7 +891,7 @@ public partial class HubConnection : IAsyncDisposable
         var readers = default(Dictionary<string, object>);
 
         CheckDisposed();
-        var connectionState = await _state.WaitForActiveConnectionAsync(nameof(SendCoreAsync), token: cancellationToken);
+        var connectionState = await _state.WaitForActiveConnectionAsync(nameof(SendCoreAsync), token: cancellationToken).ConfigureAwait(false);
         try
         {
             CheckDisposed();
@@ -900,7 +900,7 @@ public partial class HubConnection : IAsyncDisposable
 
             Log.PreparingNonBlockingInvocation(_logger, methodName, args.Length);
             var invocationMessage = new InvocationMessage(null, methodName, args, streamIds?.ToArray());
-            await SendHubMessage(connectionState, invocationMessage, cancellationToken);
+            await SendHubMessage(connectionState, invocationMessage, cancellationToken).ConfigureAwait(false);
 
             LaunchStreams(connectionState, readers, cancellationToken);
         }
@@ -913,14 +913,14 @@ public partial class HubConnection : IAsyncDisposable
     private async Task SendWithLock(ConnectionState expectedConnectionState, HubMessage message, CancellationToken cancellationToken, [CallerMemberName] string callerName = "")
     {
         CheckDisposed();
-        var connectionState = await _state.WaitForActiveConnectionAsync(callerName, token: cancellationToken);
+        var connectionState = await _state.WaitForActiveConnectionAsync(callerName, token: cancellationToken).ConfigureAwait(false);
         try
         {
             CheckDisposed();
 
             SafeAssert(ReferenceEquals(expectedConnectionState, connectionState), "The connection state changed unexpectedly!");
 
-            await SendHubMessage(connectionState, message, cancellationToken);
+            await SendHubMessage(connectionState, message, cancellationToken).ConfigureAwait(false);
         }
         finally
         {
@@ -943,7 +943,7 @@ public partial class HubConnection : IAsyncDisposable
                 break;
             case InvocationMessage invocation:
                 Log.ReceivedInvocation(_logger, invocation.InvocationId, invocation.Target, invocation.Arguments);
-                await invocationMessageWriter.WriteAsync(invocation);
+                await invocationMessageWriter.WriteAsync(invocation).ConfigureAwait(false);
                 break;
             case CompletionMessage completion:
                 if (!connectionState.TryRemoveInvocation(completion.InvocationId!, out irq))
@@ -963,7 +963,7 @@ public partial class HubConnection : IAsyncDisposable
                     Log.DroppedStreamMessage(_logger, streamItem.InvocationId!);
                     break;
                 }
-                await DispatchInvocationStreamItemAsync(streamItem, irq);
+                await DispatchInvocationStreamItemAsync(streamItem, irq).ConfigureAwait(false);
                 break;
             case CloseMessage close:
                 if (string.IsNullOrEmpty(close.Error))
@@ -1001,7 +1001,7 @@ public partial class HubConnection : IAsyncDisposable
         {
             try
             {
-                await handler.InvokeAsync(invocation.Arguments);
+                await handler.InvokeAsync(invocation.Arguments).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -1018,7 +1018,7 @@ public partial class HubConnection : IAsyncDisposable
         {
             Log.CancelingStreamItem(_logger, irq.InvocationId);
         }
-        else if (!await irq.StreamItem(streamItem.Item))
+        else if (!await irq.StreamItem(streamItem.Item).ConfigureAwait(false))
         {
             Log.ReceivedStreamItemAfterClose(_logger, irq.InvocationId);
         }
@@ -1054,7 +1054,7 @@ public partial class HubConnection : IAsyncDisposable
         var handshakeRequest = new HandshakeRequestMessage(_protocol.Name, _protocol.Version);
         HandshakeProtocol.WriteRequestMessage(handshakeRequest, startingConnectionState.Connection.Transport.Output);
 
-        var sendHandshakeResult = await startingConnectionState.Connection.Transport.Output.FlushAsync(CancellationToken.None);
+        var sendHandshakeResult = await startingConnectionState.Connection.Transport.Output.FlushAsync(CancellationToken.None).ConfigureAwait(false);
 
         if (sendHandshakeResult.IsCompleted)
         {
@@ -1075,7 +1075,7 @@ public partial class HubConnection : IAsyncDisposable
             {
                 while (true)
                 {
-                    var result = await input.ReadAsync(linkedToken);
+                    var result = await input.ReadAsync(linkedToken).ConfigureAwait(false);
 
                     var buffer = result.Buffer;
                     var consumed = buffer.Start;
@@ -1172,11 +1172,11 @@ public partial class HubConnection : IAsyncDisposable
 
         async Task StartProcessingInvocationMessages(ChannelReader<InvocationMessage> invocationMessageChannelReader)
         {
-            while (await invocationMessageChannelReader.WaitToReadAsync())
+            while (await invocationMessageChannelReader.WaitToReadAsync().ConfigureAwait(false))
             {
                 while (invocationMessageChannelReader.TryRead(out var invocationMessage))
                 {
-                    await DispatchInvocationAsync(invocationMessage);
+                    await DispatchInvocationAsync(invocationMessage).ConfigureAwait(false);
                 }
             }
         }
@@ -1187,7 +1187,7 @@ public partial class HubConnection : IAsyncDisposable
         {
             while (true)
             {
-                var result = await input.ReadAsync();
+                var result = await input.ReadAsync().ConfigureAwait(false);
                 var buffer = result.Buffer;
 
                 try
@@ -1206,7 +1206,7 @@ public partial class HubConnection : IAsyncDisposable
                         while (_protocol.TryParseMessage(ref buffer, connectionState, out var message))
                         {
                             // We have data, process it
-                            closeMessage = await ProcessMessagesAsync(message, connectionState, invocationMessageChannel.Writer);
+                            closeMessage = await ProcessMessagesAsync(message, connectionState, invocationMessageChannel.Writer).ConfigureAwait(false);
 
                             if (closeMessage != null)
                             {
@@ -1260,9 +1260,9 @@ public partial class HubConnection : IAsyncDisposable
         {
             invocationMessageChannel.Writer.TryComplete();
             timer.Stop();
-            await timerTask;
+            await timerTask.ConfigureAwait(false);
             uploadStreamSource.Cancel();
-            await HandleConnectionClose(connectionState);
+            await HandleConnectionClose(connectionState).ConfigureAwait(false);
         }
     }
 
@@ -1283,7 +1283,7 @@ public partial class HubConnection : IAsyncDisposable
     private async Task HandleConnectionClose(ConnectionState connectionState)
     {
         // Clear the connectionState field
-        await _state.WaitConnectionLockAsync(token: default);
+        await _state.WaitConnectionLockAsync(token: default).ConfigureAwait(false);
         try
         {
             SafeAssert(ReferenceEquals(_state.CurrentConnectionStateUnsynchronized, connectionState),
@@ -1291,7 +1291,7 @@ public partial class HubConnection : IAsyncDisposable
             _state.CurrentConnectionStateUnsynchronized = null;
 
             // Dispose the connection
-            await CloseAsync(connectionState.Connection);
+            await CloseAsync(connectionState.Connection).ConfigureAwait(false);
 
             // Cancel any outstanding invocations within the connection lock
             connectionState.CancelOutstandingInvocations(connectionState.CloseException);
@@ -1340,7 +1340,7 @@ public partial class HubConnection : IAsyncDisposable
             try
             {
                 Log.InvokingClosedEventHandler(_logger);
-                await closed.Invoke(closeException);
+                await closed.Invoke(closeException).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -1395,13 +1395,13 @@ public partial class HubConnection : IAsyncDisposable
 
             try
             {
-                await Task.Delay(nextRetryDelay.Value, _state.StopCts.Token);
+                await Task.Delay(nextRetryDelay.Value, _state.StopCts.Token).ConfigureAwait(false);
             }
             catch (OperationCanceledException ex)
             {
                 Log.ReconnectingStoppedDuringRetryDelay(_logger);
 
-                await _state.WaitConnectionLockAsync(token: default);
+                await _state.WaitConnectionLockAsync(token: default).ConfigureAwait(false);
                 try
                 {
                     _state.ChangeState(HubConnectionState.Reconnecting, HubConnectionState.Disconnected);
@@ -1416,13 +1416,13 @@ public partial class HubConnection : IAsyncDisposable
                 return;
             }
 
-            await _state.WaitConnectionLockAsync(token: default);
+            await _state.WaitConnectionLockAsync(token: default).ConfigureAwait(false);
             try
             {
                 SafeAssert(ReferenceEquals(_state.CurrentConnectionStateUnsynchronized, null),
                     "Someone other than Reconnect set the connection state!");
 
-                await StartAsyncCore(_state.StopCts.Token);
+                await StartAsyncCore(_state.StopCts.Token).ConfigureAwait(false);
 
                 Log.Reconnected(_logger, previousReconnectAttempts, DateTime.UtcNow - reconnectStartTime);
 
@@ -1457,7 +1457,7 @@ public partial class HubConnection : IAsyncDisposable
             nextRetryDelay = GetNextRetryDelay(previousReconnectAttempts, DateTime.UtcNow - reconnectStartTime, retryReason);
         }
 
-        await _state.WaitConnectionLockAsync(token: default);
+        await _state.WaitConnectionLockAsync(token: default).ConfigureAwait(false);
         try
         {
             SafeAssert(ReferenceEquals(_state.CurrentConnectionStateUnsynchronized, null),
@@ -1517,7 +1517,7 @@ public partial class HubConnection : IAsyncDisposable
 
             try
             {
-                await reconnecting.Invoke(closeException);
+                await reconnecting.Invoke(closeException).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -1544,7 +1544,7 @@ public partial class HubConnection : IAsyncDisposable
 
             try
             {
-                await reconnected.Invoke(ConnectionId);
+                await reconnected.Invoke(ConnectionId).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -1810,7 +1810,7 @@ public partial class HubConnection : IAsyncDisposable
 
             // Wait ServerTimeout for the server or transport to shut down.
             Log.WaitingForReceiveLoopToTerminate(_logger);
-            await (ReceiveTask ?? Task.CompletedTask);
+            await ((ReceiveTask ?? Task.CompletedTask).ConfigureAwait(false));
 
             Log.Stopped(_logger);
 
@@ -1830,7 +1830,7 @@ public partial class HubConnection : IAsyncDisposable
                 // await returns True until `timer.Stop()` is called in the `finally` block of `ReceiveLoop`
                 while (await timer)
                 {
-                    await RunTimerActions();
+                    await RunTimerActions().ConfigureAwait(false);
                 }
             }
         }
@@ -1875,7 +1875,7 @@ public partial class HubConnection : IAsyncDisposable
                         SafeAssert(ReferenceEquals(_hubConnection._state.CurrentConnectionStateUnsynchronized, this),
                             "Something reset the connection state before the timer loop completed!");
 
-                        await _hubConnection.SendHubMessage(this, PingMessage.Instance);
+                        await _hubConnection.SendHubMessage(this, PingMessage.Instance).ConfigureAwait(false);
                     }
                 }
                 finally
@@ -2007,7 +2007,7 @@ public partial class HubConnection : IAsyncDisposable
         // Don't call this method in a try/finally that releases the lock since we're also potentially releasing the connection lock here.
         public async Task<ConnectionState> WaitForActiveConnectionAsync(string methodName, CancellationToken token, [CallerMemberName] string? memberName = null, [CallerFilePath] string? filePath = null, [CallerLineNumber] int lineNumber = 0)
         {
-            await WaitConnectionLockAsync(token, methodName);
+            await WaitConnectionLockAsync(token, methodName).ConfigureAwait(false);
 
             if (CurrentConnectionStateUnsynchronized == null || CurrentConnectionStateUnsynchronized.Stopping)
             {
