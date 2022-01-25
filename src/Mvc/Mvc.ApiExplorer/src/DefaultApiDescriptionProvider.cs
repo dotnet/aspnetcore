@@ -246,8 +246,8 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
             var parameter = context.Results[i];
 
             if (parameter.Source == BindingSource.Path ||
-                   parameter.Source == BindingSource.ModelBinding ||
-                   parameter.Source == BindingSource.Custom)
+               parameter.Source == BindingSource.ModelBinding ||
+               parameter.Source == BindingSource.Custom)
             {
                 if (routeParameters.TryGetValue(parameter.Name, out var routeInfo))
                 {
