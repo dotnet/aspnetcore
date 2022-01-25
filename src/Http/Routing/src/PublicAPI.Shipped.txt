@@ -423,6 +423,7 @@ Microsoft.AspNetCore.Routing.RouteValuesAddress.ExplicitValues.set -> void
 Microsoft.AspNetCore.Routing.RouteValuesAddress.RouteName.get -> string?
 Microsoft.AspNetCore.Routing.RouteValuesAddress.RouteName.set -> void
 Microsoft.AspNetCore.Routing.RouteValuesAddress.RouteValuesAddress() -> void
+Microsoft.AspNetCore.Routing.RouteValuesAddress.ToString() -> string
 Microsoft.AspNetCore.Routing.RoutingFeature
 Microsoft.AspNetCore.Routing.RoutingFeature.RouteData.get -> Microsoft.AspNetCore.Routing.RouteData?
 Microsoft.AspNetCore.Routing.RoutingFeature.RouteData.set -> void
