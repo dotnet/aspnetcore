@@ -76,7 +76,7 @@ describe('DefaultReconnectionHandler', () => {
     expect(reconnect).toHaveBeenCalledTimes(2);
   });
 
-  it('invokes update on each attempt', async () => {
+  it.skip('invokes update on each attempt', async () => {
     const testDisplay = createTestDisplay();
     const reconnect = jest.fn().mockRejectedValue(null);
     const handler = new DefaultReconnectionHandler(NullLogger.instance, testDisplay, reconnect);
