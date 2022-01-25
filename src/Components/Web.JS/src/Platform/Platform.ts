@@ -31,8 +31,8 @@ export interface HeapLock {
   release();
 }
 
-// We don't actually instantiate unknown of these at runtime. For perf it's preferable to
-// use the original 'number' instances without unknown boxing. The definitions are just
+// We don't actually instantiate any of these at runtime. For perf it's preferable to
+// use the original 'number' instances without any boxing. The definitions are just
 // for compile-time checking, since TypeScript doesn't support nominal types.
 export interface MethodHandle { MethodHandle__DO_NOT_IMPLEMENT: unknown }
 export type System_Object = MonoObject;
