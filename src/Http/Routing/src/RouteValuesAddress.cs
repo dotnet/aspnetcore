@@ -24,4 +24,10 @@ public class RouteValuesAddress
     /// Gets or sets ambient route values from the current HTTP request.
     /// </summary>
     public RouteValueDictionary? AmbientValues { get; set; }
+
+    /// <summary>
+    /// Formats the address as string "Name(ExplicitValues)" for tracing/debugging.
+    /// </summary>
+    public override string ToString () => $"{RouteName}(" + string.Join(',', from kv in ExplicitValues select $"{kv.Key}=[{kv.Value}]") + ")";
+
 }
