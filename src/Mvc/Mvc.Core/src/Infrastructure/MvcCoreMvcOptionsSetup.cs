@@ -123,6 +123,8 @@ internal class MvcCoreMvcOptionsSetup : IConfigureOptions<MvcOptions>, IPostConf
         modelMetadataDetailsProviders.Add(new DefaultBindingMetadataProvider());
         modelMetadataDetailsProviders.Add(new DefaultValidationMetadataProvider());
 
+        modelMetadataDetailsProviders.Add(new NullableEmptyBodyBindingMetadataProvider());
+
         modelMetadataDetailsProviders.Add(new BindingSourceMetadataProvider(typeof(CancellationToken), BindingSource.Special));
         modelMetadataDetailsProviders.Add(new BindingSourceMetadataProvider(typeof(IFormFile), BindingSource.FormFile));
         modelMetadataDetailsProviders.Add(new BindingSourceMetadataProvider(typeof(IFormCollection), BindingSource.FormFile));

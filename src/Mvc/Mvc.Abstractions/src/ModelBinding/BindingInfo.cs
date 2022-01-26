@@ -246,8 +246,11 @@ public class BindingInfo
             PropertyFilterProvider = modelMetadata.PropertyFilterProvider;
         }
 
-        // There isn't a ModelMetadata feature to configure AllowEmptyInputInBodyModelBinding,
-        // so nothing to infer from it.
+        if (EmptyBodyBehavior == EmptyBodyBehavior.Default && modelMetadata.IsEmptyBodyAllowed != null)
+        {
+            isBindingInfoPresent = true;
+            EmptyBodyBehavior = modelMetadata.IsEmptyBodyAllowed == true ? EmptyBodyBehavior.Allow : EmptyBodyBehavior.Disallow;
+        }
 
         return isBindingInfoPresent;
     }

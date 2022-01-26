@@ -500,6 +500,11 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
     internal virtual string? ValidationModelName { get; }
 
     /// <summary>
+    /// Gets or sets the value which decides if empty bodies are treated as valid inputs.
+    /// </summary>
+    internal virtual bool? IsEmptyBodyAllowed { get; set; }
+
+    /// <summary>
     /// Throws if the ModelMetadata is for a record type with validation on properties.
     /// </summary>
     internal void ThrowIfRecordTypeHasValidationOnProperties()
