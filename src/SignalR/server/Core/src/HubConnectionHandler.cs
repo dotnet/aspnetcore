@@ -62,6 +62,7 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
         _userIdProvider = userIdProvider;
 
         _enableDetailedErrors = false;
+        bool disableImplicitFromServiceParameters;
 
         List<IHubFilter>? hubFilters = null;
         if (_hubOptions.UserHasSetValues)
@@ -69,6 +70,7 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
             _maximumMessageSize = _hubOptions.MaximumReceiveMessageSize;
             _enableDetailedErrors = _hubOptions.EnableDetailedErrors ?? _enableDetailedErrors;
             _maxParallelInvokes = _hubOptions.MaximumParallelInvocationsPerClient;
+            disableImplicitFromServiceParameters = _hubOptions.DisableImplicitFromServiceParameters;
 
             if (_hubOptions.HubFilters != null)
             {
@@ -80,6 +82,7 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
             _maximumMessageSize = _globalHubOptions.MaximumReceiveMessageSize;
             _enableDetailedErrors = _globalHubOptions.EnableDetailedErrors ?? _enableDetailedErrors;
             _maxParallelInvokes = _globalHubOptions.MaximumParallelInvocationsPerClient;
+            disableImplicitFromServiceParameters = _globalHubOptions.DisableImplicitFromServiceParameters;
 
             if (_globalHubOptions.HubFilters != null)
             {
@@ -91,6 +94,7 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
             serviceScopeFactory,
             new HubContext<THub>(lifetimeManager),
             _enableDetailedErrors,
+            disableImplicitFromServiceParameters,
             new Logger<DefaultHubDispatcher<THub>>(loggerFactory),
             hubFilters);
     }

@@ -37,6 +37,7 @@ public class HubOptionsSetup<THub> : IConfigureOptions<HubOptions<THub>> where T
         options.MaximumReceiveMessageSize = _hubOptions.MaximumReceiveMessageSize;
         options.StreamBufferCapacity = _hubOptions.StreamBufferCapacity;
         options.MaximumParallelInvocationsPerClient = _hubOptions.MaximumParallelInvocationsPerClient;
+        options.DisableImplicitFromServiceParameters = _hubOptions.DisableImplicitFromServiceParameters;
 
         options.UserHasSetValues = true;
 
