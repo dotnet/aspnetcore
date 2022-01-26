@@ -3,7 +3,6 @@
 
 using System.Runtime.ExceptionServices;
 using System.Text;
-using System.Text.Encodings.Web;
 using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters;
@@ -30,18 +29,7 @@ public class SystemTextJsonOutputFormatter : TextOutputFormatter
 
     internal static SystemTextJsonOutputFormatter CreateFormatter(JsonOptions jsonOptions)
     {
-        var jsonSerializerOptions = jsonOptions.JsonSerializerOptions;
-
-        if (jsonSerializerOptions.Encoder is null)
-        {
-            // If the user hasn't explicitly configured the encoder, use the less strict encoder that does not encode all non-ASCII characters.
-            jsonSerializerOptions = new JsonSerializerOptions(jsonSerializerOptions)
-            {
-                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-            };
-        }
-
-        return new SystemTextJsonOutputFormatter(jsonSerializerOptions);
+        return new SystemTextJsonOutputFormatter(jsonOptions.JsonSerializerOptions);
     }
 
     /// <summary>

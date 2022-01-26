@@ -2,7 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
 using System.Text.Encodings.Web;
+using System.Text.Json;
 using FormatterWebSite.Controllers;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -16,7 +20,41 @@ public class SystemTextJsonOutputFormatterTest : JsonOutputFormatterTestBase<For
     }
 
     [Fact]
-    public override Task SerializableErrorIsReturnedInExpectedFormat() => base.SerializableErrorIsReturnedInExpectedFormat();
+    public override async Task SerializableErrorIsReturnedInExpectedFormat()
+    {
+        // Arrange
+        var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<Employee xmlns=\"http://schemas.datacontract.org/2004/07/FormatterWebSite\">" +
+            "<Id>2</Id><Name>foo</Name></Employee>";
+
+        var expectedOutput = "{\"Id\":[\"The field Id must be between 10 and 100." +
+                "\"],\"Name\":[\"The field Name must be a string or array type with" +
+                " a minimum length of \\u002715\\u0027.\"]}";
+        var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/SerializableError/CreateEmployee");
+        request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/json"));
+        request.Content = new StringContent(input, Encoding.UTF8, "application/xml");
+
+        // Act
+        var response = await Client.SendAsync(request);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+        var actualContent = await response.Content.ReadAsStringAsync();
+        Assert.Equal(expectedOutput, actualContent);
+
+        var modelStateErrors = JsonSerializer.Deserialize<Dictionary<string, string[]>>(actualContent);
+        Assert.Equal(2, modelStateErrors.Count);
+
+        var errors = Assert.Single(modelStateErrors, kvp => kvp.Key == "Id").Value;
+
+        var error = Assert.Single(errors);
+        Assert.Equal("The field Id must be between 10 and 100.", error);
+
+        errors = Assert.Single(modelStateErrors, kvp => kvp.Key == "Name").Value;
+        error = Assert.Single(errors);
+        Assert.Equal("The field Name must be a string or array type with a minimum length of '15'.", error);
+    }
 
     [Fact]
     public override async Task Formatting_StringValueWithUnicodeContent()

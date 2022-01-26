@@ -3,6 +3,7 @@
 
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Primitives;
@@ -42,6 +43,76 @@ public class SystemTextJsonOutputFormatterTest : JsonOutputFormatterTestBase
             new TestHttpResponseStreamWriterFactory().CreateWriter,
             typeof(Person),
             person)
+        {
+            ContentType = new StringSegment(mediaType.ToString()),
+        };
+
+        // Act
+        await formatter.WriteResponseBodyAsync(outputFormatterContext, Encoding.GetEncoding("utf-8"));
+
+        // Assert
+        var actualContent = encoding.GetString(body.ToArray());
+        Assert.Equal(expectedContent, actualContent);
+    }
+
+    [Fact]
+    public async Task WriteResponseBodyAsync_Encodes()
+    {
+        // Arrange
+        var formatter = GetOutputFormatter();
+
+        var expectedContent = "{\"key\":\"Hello \\n \\u003Cb\\u003EW\\u00F6rld\\u003C/b\\u003E\"}";
+        var content = new { key = "Hello \n <b>Wörld</b>" };
+
+        var mediaType = MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
+        var encoding = CreateOrGetSupportedEncoding(formatter, "utf-8", isDefaultEncoding: true);
+
+        var body = new MemoryStream();
+        var actionContext = GetActionContext(mediaType, body);
+
+        var outputFormatterContext = new OutputFormatterWriteContext(
+            actionContext.HttpContext,
+            new TestHttpResponseStreamWriterFactory().CreateWriter,
+            typeof(string),
+            content)
+        {
+            ContentType = new StringSegment(mediaType.ToString()),
+        };
+
+        // Act
+        await formatter.WriteResponseBodyAsync(outputFormatterContext, Encoding.GetEncoding("utf-8"));
+
+        // Assert
+        var actualContent = encoding.GetString(body.ToArray());
+        Assert.Equal(expectedContent, actualContent);
+    }
+
+    [Fact]
+    public async Task WriteResponseBodyAsync_WithUnsafeRelaxedEncoding_Encodes()
+    {
+        // Arrange
+        var formatter = SystemTextJsonOutputFormatter.CreateFormatter(new()
+        {
+            JsonSerializerOptions =
+            {
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+            },
+        });
+
+        var expectedContent = "{\"key\":\"Hello \\n <b>Wörld</b>\"}";
+        var content = new { key = "Hello \n <b>Wörld</b>" };
+
+        var mediaType = MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
+        var encoding = CreateOrGetSupportedEncoding(formatter, "utf-8", isDefaultEncoding: true);
+
+        var body = new MemoryStream();
+        var actionContext = GetActionContext(mediaType, body);
+
+        var outputFormatterContext = new OutputFormatterWriteContext(
+            actionContext.HttpContext,
+            new TestHttpResponseStreamWriterFactory().CreateWriter,
+            typeof(string),
+            content)
         {
             ContentType = new StringSegment(mediaType.ToString()),
         };
@@ -154,6 +225,56 @@ public class SystemTextJsonOutputFormatterTest : JsonOutputFormatterTestBase
                 yield return i;
             }
         }
+    }
+
+    public static TheoryData<string, string, bool> WriteCorrectCharacterEncoding
+    {
+        get
+        {
+            var data = new TheoryData<string, string, bool>
+            {
+                { "This is a test 激光這兩個字是甚麼意思 string written using utf-8", "utf-8", true },
+                { "This is a test 激光這兩個字是甚麼意思 string written using utf-16", "utf-16", true },
+                { "This is a test 激光這兩個字是甚麼意思 string written using utf-32", "utf-32", false },
+                { "This is a test æøå string written using iso-8859-1", "iso-8859-1", false },
+            };
+
+            return data;
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(WriteCorrectCharacterEncoding))]
+    public async Task WriteToStreamAsync_UsesCorrectCharacterEncoding(
+       string content,
+       string encodingAsString,
+       bool isDefaultEncoding)
+    {
+        // Arrange
+        var formatter = GetOutputFormatter();
+        var expectedContent = "\"" + JavaScriptEncoder.Default.Encode(content) + "\"";
+        var mediaType = MediaTypeHeaderValue.Parse($"application/json; charset={encodingAsString}");
+        var encoding = CreateOrGetSupportedEncoding(formatter, encodingAsString, isDefaultEncoding);
+
+        var body = new MemoryStream();
+        var actionContext = GetActionContext(mediaType, body);
+
+        var outputFormatterContext = new OutputFormatterWriteContext(
+            actionContext.HttpContext,
+            new TestHttpResponseStreamWriterFactory().CreateWriter,
+            typeof(string),
+            content)
+        {
+            ContentType = new StringSegment(mediaType.ToString()),
+        };
+
+        // Act
+        await formatter.WriteResponseBodyAsync(outputFormatterContext, Encoding.GetEncoding(encodingAsString));
+
+        // Assert
+        var actualContent = encoding.GetString(body.ToArray());
+        Assert.Equal(expectedContent, actualContent, StringComparer.OrdinalIgnoreCase);
+        Assert.True(body.CanWrite, "Response body should not be disposed.");
     }
 
     private class Person
