@@ -329,13 +329,19 @@ public class OpenIdConnectOptions : RemoteAuthenticationOptions
     }
 
     /// <summary>
-    /// 1 day is the default time interval that afterwards, <see cref="ConfigurationManager" /> will obtain new configuration.
+    /// Gets or sets the <see cref="TimeSpan" /> that controls how often an automatic metadata refresh should occur.
     /// </summary>
+    /// <value>
+    /// Defaults to <see cref="ConfigurationManager{OpenIdConnectConfiguration}.AutomaticRefreshInterval" />.
+    /// </value>
     public TimeSpan AutomaticRefreshInterval { get; set; } = ConfigurationManager<OpenIdConnectConfiguration>.DefaultAutomaticRefreshInterval;
 
     /// <summary>
-    /// The minimum time between <see cref="ConfigurationManager" /> retrievals, in the event that a retrieval failed, or that a refresh was explicitly requested. 30 seconds is the default.
+    /// Gets or sets the minimum time between retrievals, in the event that a retrieval failed, or that a refresh was explicitly requested.
     /// </summary>
+    /// <value>
+    /// Defaults to <see cref="ConfigurationManager{OpenIdConnectConfiguration}.DefaultRefreshInterval" />.
+    /// </value>
     public TimeSpan RefreshInterval { get; set; } = ConfigurationManager<OpenIdConnectConfiguration>.DefaultRefreshInterval;
 
     /// <summary>
