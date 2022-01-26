@@ -44,4 +44,14 @@ public class HomeController : Controller
     [HttpPost]
     public IActionResult OptionalBody([FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] DummyClass dummy)
         => ModelState.IsValid ? Ok() : ValidationProblem();
+
+    [HttpPost]
+    public IActionResult DefaultValueBody([FromBody] DummyClass dummy = null)
+        => ModelState.IsValid ? Ok() : ValidationProblem();
+
+#nullable enable
+    [HttpPost]
+    public IActionResult NullableBody([FromBody] DummyClass? dummy)
+        => ModelState.IsValid ? Ok() : ValidationProblem();
+#nullable restore
 }

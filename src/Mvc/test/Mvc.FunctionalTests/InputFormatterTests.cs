@@ -210,6 +210,26 @@ public class InputFormatterTests : IClassFixture<MvcTestFixture<FormatterWebSite
     }
 
     [Fact]
+    public async Task OptionalFromBodyWorks_WithDefaultValue()
+    {
+        // Act
+        var response = await Client.PostAsJsonAsync<object>($"Home/{nameof(HomeController.DefaultValueBody)}", value: null);
+
+        // Assert
+        await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task OptionalFromBodyWorks_WithNullable()
+    {
+        // Act
+        var response = await Client.PostAsJsonAsync<object>($"Home/{nameof(HomeController.NullableBody)}", value: null);
+
+        // Assert
+        await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+    }
+
+    [Fact]
     public async Task OptionalFromBodyWorksWithEmptyRequest()
     {
         // Arrange
@@ -219,6 +239,36 @@ public class InputFormatterTests : IClassFixture<MvcTestFixture<FormatterWebSite
 
         // Act
         var response = await Client.PostAsync($"Home/{nameof(HomeController.OptionalBody)}", content);
+
+        // Assert
+        await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task OptionalFromBodyWorksWithEmptyRequest_WithDefaultValue()
+    {
+        // Arrange
+        var content = new ByteArrayContent(Array.Empty<byte>());
+        Assert.Null(content.Headers.ContentType);
+        Assert.Equal(0, content.Headers.ContentLength);
+
+        // Act
+        var response = await Client.PostAsync($"Home/{nameof(HomeController.DefaultValueBody)}", content);
+
+        // Assert
+        await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task OptionalFromBodyWorksWithEmptyRequest_WithNullable()
+    {
+        // Arrange
+        var content = new ByteArrayContent(Array.Empty<byte>());
+        Assert.Null(content.Headers.ContentType);
+        Assert.Equal(0, content.Headers.ContentLength);
+
+        // Act
+        var response = await Client.PostAsync($"Home/{nameof(HomeController.NullableBody)}", content);
 
         // Assert
         await response.AssertStatusCodeAsync(HttpStatusCode.OK);
