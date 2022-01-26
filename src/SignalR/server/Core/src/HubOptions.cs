@@ -75,7 +75,7 @@ public class HubOptions
     }
 
     /// <summary>
-    /// Will use <see cref="IServiceProviderIsService"/> to guess if a Hub method parameter can be injected from the DI container.
+    /// When <see langword="false"/>, <see cref="IServiceProviderIsService"/> determines if a Hub method parameter will be injected from the DI container.
     /// Parameters can be explicitly marked with an attribute that implements <see cref="IFromServiceMetadata"/> with or without this option set.
     /// </summary>
     /// <remarks>
