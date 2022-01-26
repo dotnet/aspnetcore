@@ -463,4 +463,115 @@ public abstract class ScaleoutHubLifetimeManagerTests<TBackplane> : HubLifetimeM
             await AssertMessageAsync(client2);
         }
     }
+
+    /// <summary>
+    /// Specification test for SignalR HubLifetimeManager.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
+    [Fact]
+    public async Task CanProcessClientReturnResultAcrossServers()
+    {
+        var backplane = CreateBackplane();
+        var manager1 = CreateNewHubLifetimeManager(backplane);
+        var manager2 = CreateNewHubLifetimeManager(backplane);
+
+        using (var client1 = new TestClient())
+        {
+            var connection1 = HubConnectionContextUtils.Create(client1.Connection);
+
+            await manager1.OnConnectedAsync(connection1).DefaultTimeout();
+
+            // Server2 asks for a result from client1 on Server1
+            var resultTask = manager2.InvokeConnectionAsync<int>(connection1.ConnectionId, "Result", new object[] { "test" });
+            var invocation = Assert.IsType<InvocationMessage>(await client1.ReadAsync().DefaultTimeout());
+            Assert.NotNull(invocation.InvocationId);
+            Assert.Equal("test", invocation.Arguments[0]);
+
+            // Server1 gets the result from client1 and forwards to Server2
+            await manager1.SetConnectionResultAsync(connection1.ConnectionId, CompletionMessage.WithResult(invocation.InvocationId, 10)).DefaultTimeout();
+
+            var res = await resultTask.DefaultTimeout();
+            Assert.Equal(10L, res);
+        }
+    }
+
+    /// <summary>
+    /// Specification test for SignalR HubLifetimeManager.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
+    [Fact]
+    public async Task CanProcessClientReturnErrorResultAcrossServers()
+    {
+        var backplane = CreateBackplane();
+        var manager1 = CreateNewHubLifetimeManager(backplane);
+        var manager2 = CreateNewHubLifetimeManager(backplane);
+
+        using (var client1 = new TestClient())
+        {
+            var connection1 = HubConnectionContextUtils.Create(client1.Connection);
+
+            await manager1.OnConnectedAsync(connection1).DefaultTimeout();
+
+            // Server2 asks for a result from client1 on Server1
+            var resultTask = manager2.InvokeConnectionAsync<int>(connection1.ConnectionId, "Result", new object[] { "test" });
+            var invocation = Assert.IsType<InvocationMessage>(await client1.ReadAsync().DefaultTimeout());
+            Assert.NotNull(invocation.InvocationId);
+            Assert.Equal("test", invocation.Arguments[0]);
+
+            // Server1 gets the result from client1 and forwards to Server2
+            await manager1.SetConnectionResultAsync(connection1.ConnectionId, CompletionMessage.WithError(invocation.InvocationId, "Error from client")).DefaultTimeout();
+
+            var ex = await Assert.ThrowsAsync<Exception>(() => resultTask).DefaultTimeout();
+            Assert.Equal("Error from client", ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// Specification test for SignalR HubLifetimeManager.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
+    [Fact]
+    public async Task ConnectionIDNotPresentMultiServerWhenInvokingClientResult()
+    {
+        var backplane = CreateBackplane();
+        var manager1 = CreateNewHubLifetimeManager(backplane);
+        var manager2 = CreateNewHubLifetimeManager(backplane);
+
+        using (var client1 = new TestClient())
+        {
+            var connection1 = HubConnectionContextUtils.Create(client1.Connection);
+
+            await manager1.OnConnectedAsync(connection1).DefaultTimeout();
+
+            // No client on any backplanes with this ID
+            await Assert.ThrowsAsync<InvalidOperationException>(() => manager1.InvokeConnectionAsync<int>("none", "Result", new object[] { "test" })).DefaultTimeout();
+        }
+    }
+
+    /// <summary>
+    /// Specification test for SignalR HubLifetimeManager.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
+    [Fact]
+    public async Task ClientDisconnectsWithoutCompletingClientResultOnSecondServer()
+    {
+        var backplane = CreateBackplane();
+        var manager1 = CreateNewHubLifetimeManager(backplane);
+        var manager2 = CreateNewHubLifetimeManager(backplane);
+
+        using (var client1 = new TestClient())
+        {
+            var connection1 = HubConnectionContextUtils.Create(client1.Connection);
+
+            await manager2.OnConnectedAsync(connection1).DefaultTimeout();
+
+            var invoke1 = manager1.InvokeConnectionAsync<int>(connection1.ConnectionId, "Result", new object[] { "test" });
+            var invocation = Assert.IsType<InvocationMessage>(await client1.ReadAsync().DefaultTimeout());
+
+            await manager2.OnDisconnectedAsync(connection1).DefaultTimeout();
+
+            // Server should propogate connection closure so task isn't blocked
+            await Assert.ThrowsAsync<Exception>(() => invoke1).DefaultTimeout();
+        }
+    }
 }

@@ -8,3 +8,7 @@ interface ActionBase {
     // available on Android API Level 24 and above.
     void invoke(Object ... params);
 }
+
+interface FunctionBase {
+    Object invoke(Object ... params);
+}

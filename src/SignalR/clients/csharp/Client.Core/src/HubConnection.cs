@@ -312,6 +312,35 @@ public partial class HubConnection : IAsyncDisposable
         }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="methodName"></param>
+    /// <param name="parameterTypes"></param>
+    /// <param name="handler"></param>
+    /// <param name="state"></param>
+    /// <returns></returns>
+    public virtual IDisposable On(string methodName, Type[] parameterTypes, Func<object?[], object, Task<object?>> handler, object state)
+    {
+        Log.RegisteringHandler(_logger, methodName);
+
+        CheckDisposed();
+
+        // It's OK to be disposed while registering a callback, we'll just never call the callback anyway (as with all the callbacks registered before disposal).
+        var invocationHandler = new InvocationHandler(parameterTypes, handler, state);
+        var invocationList = _handlers.AddOrUpdate(methodName, _ => new InvocationHandlerList(invocationHandler),
+            (_, invocations) =>
+            {
+                lock (invocations)
+                {
+                    invocations.Add(invocationHandler);
+                }
+                return invocations;
+            });
+
+        return new Subscription(invocationHandler, invocationList);
+    }
+
     // If the registered callback blocks it can cause the client to stop receiving messages. If you need to block, get off the current thread first.
     /// <summary>
     /// Registers a handler that will be invoked when the hub method with the specified method name is invoked.
@@ -988,26 +1017,64 @@ public partial class HubConnection : IAsyncDisposable
         return null;
     }
 
-    private async Task DispatchInvocationAsync(InvocationMessage invocation)
+    private async Task DispatchInvocationAsync(InvocationMessage invocation, ConnectionState connectionState)
     {
+        var expectsResult = !string.IsNullOrEmpty(invocation.InvocationId);
         // Find the handler
         if (!_handlers.TryGetValue(invocation.Target, out var invocationHandlerList))
         {
             Log.MissingHandler(_logger, invocation.Target);
+            if (expectsResult)
+            {
+                await SendWithLock(connectionState, CompletionMessage.WithError(invocation.InvocationId!, "Client didn't provide a result."), cancellationToken: default).ConfigureAwait(false);
+            }
             return;
         }
 
         // Grabbing the current handlers
         var copiedHandlers = invocationHandlerList.GetHandlers();
+        object? result = null;
+        Exception? resultException = null;
+        var hasResult = false;
         foreach (var handler in copiedHandlers)
         {
             try
             {
-                await handler.InvokeAsync(invocation.Arguments).ConfigureAwait(false);
+                var task = handler.InvokeAsync(invocation.Arguments);
+                if (handler.HasResult && task is Task<object?> resultTask)
+                {
+                    hasResult = true;
+                    result = await resultTask.ConfigureAwait(false);
+                    // ignore previous results' exception, we prefer last .On handler for results
+                    resultException = null;
+                }
+                else
+                {
+                    await task.ConfigureAwait(false);
+                }
             }
             catch (Exception ex)
             {
                 Log.ErrorInvokingClientSideMethod(_logger, invocation.Target, ex);
+                if (handler.HasResult)
+                {
+                    resultException = ex;
+                }
+            }
+        }
+        if (expectsResult)
+        {
+            if (resultException is not null)
+            {
+                await SendWithLock(connectionState, CompletionMessage.WithError(invocation.InvocationId!, resultException.Message), cancellationToken: default).ConfigureAwait(false);
+            }
+            else if (!hasResult)
+            {
+                await SendWithLock(connectionState, CompletionMessage.WithError(invocation.InvocationId!, "Client didn't provide a result."), cancellationToken: default).ConfigureAwait(false);
+            }
+            else
+            {
+                await SendWithLock(connectionState, CompletionMessage.WithResult(invocation.InvocationId!, result), cancellationToken: default).ConfigureAwait(false);
             }
         }
     }
@@ -1178,7 +1245,7 @@ public partial class HubConnection : IAsyncDisposable
             {
                 while (invocationMessageChannelReader.TryRead(out var invocationMessage))
                 {
-                    await DispatchInvocationAsync(invocationMessage).ConfigureAwait(false);
+                    await DispatchInvocationAsync(invocationMessage, connectionState).ConfigureAwait(false);
                 }
             }
         }
@@ -1663,6 +1730,7 @@ public partial class HubConnection : IAsyncDisposable
     private readonly struct InvocationHandler
     {
         public Type[] ParameterTypes { get; }
+        public bool HasResult => _callback.Method.ReturnType == typeof(Task<object>);
         private readonly Func<object?[], object, Task> _callback;
         private readonly object _state;
 
@@ -1671,6 +1739,7 @@ public partial class HubConnection : IAsyncDisposable
             _callback = callback;
             ParameterTypes = parameterTypes;
             _state = state;
+
         }
 
         public Task InvokeAsync(object?[] parameters)

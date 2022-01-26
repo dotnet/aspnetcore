@@ -3,6 +3,7 @@
 
 using System.Reflection;
 using System.Text.Json;
+using Microsoft.AspNetCore.SignalR;
 using SignalRSamples.ConnectionHandlers;
 using SignalRSamples.Hubs;
 
@@ -18,9 +19,11 @@ public class Startup
     {
         services.AddConnections();
 
-        services.AddSignalR()
-        .AddMessagePackProtocol();
-        //.AddStackExchangeRedis();
+        services.AddSignalR(o => o.MaximumParallelInvocationsPerClient = 2)
+        .AddMessagePackProtocol()
+        .AddStackExchangeRedis();
+
+        services.AddSingleton<Game>();
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -39,11 +42,17 @@ public class Startup
 
         app.UseEndpoints(endpoints =>
         {
+            endpoints.MapGet("/start", (Game game, string connection1, string connection2) =>
+            {
+                _ = game.GameLoop(connection1, connection2);
+            });
+
             endpoints.MapHub<DynamicChat>("/dynamic");
             endpoints.MapHub<Chat>("/default");
             endpoints.MapHub<Streaming>("/streaming");
             endpoints.MapHub<UploadHub>("/uploading");
             endpoints.MapHub<HubTChat>("/hubT");
+            endpoints.MapHub<GameHub>("/game");
 
             endpoints.MapConnectionHandler<MessagesConnectionHandler>("/chat");
 
@@ -77,5 +86,57 @@ public class Startup
                 }
             });
         });
+    }
+}
+
+// Nurdle
+public class Game
+{
+    public string Player1Id { get; set; }
+    public string Player2Id { get; set; }
+
+    private readonly IHubContext<GameHub> _hubContext;
+
+    public Game(IHubContext<GameHub> hubContext)
+    {
+        _hubContext = hubContext;
+    }
+
+    public void AddPlayer(string Id)
+    {
+        if (string.IsNullOrEmpty(Player1Id))
+        {
+            Player1Id = Id;
+        }
+        else
+        {
+            Player2Id = Id;
+        }
+    }
+
+    public async Task GameLoop(string connection1, string connection2)
+    {
+        var randomAnswer = Random.Shared.Next(2, 10);
+        var res = 0;
+
+        do
+        {
+            await Task.Delay(1000);
+            var task1 = _hubContext.Clients.Single(connection1).InvokeAsync<int>("GetNumber");
+            var task2 = _hubContext.Clients.Single(connection2).InvokeAsync<int>("GetNumber");
+            res = (await task1) + (await task2);
+
+            if (res < randomAnswer)
+            {
+                await _hubContext.Clients.Clients(connection1, connection2).SendAsync("Result", $"Guessed {res} which is too low");
+            }
+            else if (res > randomAnswer)
+            {
+                await _hubContext.Clients.Clients(connection1, connection2).SendAsync("Result", $"Guessed {res} which is too high");
+            }
+        }
+        while (res != randomAnswer);
+
+        await _hubContext.Clients.Clients(connection1, connection2).SendAsync("Result", $"Guessed {res} which is correct!");
     }
 }

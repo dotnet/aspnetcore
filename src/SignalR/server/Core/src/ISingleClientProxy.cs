@@ -4,15 +4,18 @@
 namespace Microsoft.AspNetCore.SignalR;
 
 /// <summary>
-/// An abstraction that provides access to client connections.
+/// 
 /// </summary>
-public interface IHubClients : IHubClients<IClientProxy>
+public interface ISingleClientProxy : IClientProxy
 {
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="connectionId"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="method"></param>
+    /// <param name="args"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
-    new ISingleClientProxy Single(string connectionId) => throw new NotImplementedException();
+    Task<T> InvokeCoreAsync<T>(string method, object?[] args, CancellationToken cancellationToken = default);
 }

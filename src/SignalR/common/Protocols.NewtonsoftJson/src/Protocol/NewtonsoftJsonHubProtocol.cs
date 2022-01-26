@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.ExceptionServices;
+using System.Text;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Internal;
@@ -214,7 +215,16 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
                                             throw new JsonReaderException("Unexpected end when reading JSON");
                                         }
 
-                                        result = PayloadSerializer.Deserialize(reader, returnType);
+                                        if (returnType == typeof(RawResult))
+                                        {
+                                            var token = JToken.Load(reader);
+                                            var str = token.ToString(Formatting.None);
+                                            result = new RawResult(new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(str)));
+                                        }
+                                        else
+                                        {
+                                            result = PayloadSerializer.Deserialize(reader, returnType);
+                                        }
                                     }
                                     break;
                                 case ItemPropertyName:
@@ -388,7 +398,15 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
                     if (resultToken != null)
                     {
                         var returnType = binder.GetReturnType(invocationId);
-                        result = resultToken.ToObject(returnType, PayloadSerializer);
+                        if (returnType == typeof(RawResult))
+                        {
+                            var str = resultToken.ToString(Formatting.None);
+                            result = new RawResult(new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(str)));
+                        }
+                        else
+                        {
+                            result = resultToken.ToObject(returnType, PayloadSerializer);
+                        }
                     }
 
                     message = BindCompletionMessage(invocationId, error, result, hasResult);
@@ -531,7 +549,14 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
         else if (message.HasResult)
         {
             writer.WritePropertyName(ResultPropertyName);
-            PayloadSerializer.Serialize(writer, message.Result);
+            if (message.Result?.GetType() == typeof(RawResult))
+            {
+                writer.WriteRawValue(Encoding.UTF8.GetString(((RawResult)message.Result).RawSerializedData.ToArray()));
+            }
+            else
+            {
+                PayloadSerializer.Serialize(writer, message.Result);
+            }
         }
     }
 

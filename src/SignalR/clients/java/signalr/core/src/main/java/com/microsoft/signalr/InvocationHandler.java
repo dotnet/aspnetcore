@@ -9,18 +9,26 @@ import java.util.List;
 
 class InvocationHandler {
     private final List<Type> types;
-    private final ActionBase action;
+    private final Object action;
+    private final Boolean hasResult;
+
+    InvocationHandler(FunctionBase action, Type... types) {
+        this.action = action;
+        this.types = Arrays.asList(types);
+        this.hasResult = false;
+    }
 
     InvocationHandler(ActionBase action, Type... types) {
         this.action = action;
         this.types = Arrays.asList(types);
+        this.hasResult = true;
     }
 
     public List<Type> getTypes() {
         return types;
     }
 
-    public ActionBase getAction() {
-        return action;
+    public FunctionBase getAction() {
+        return (FunctionBase)action;
     }
 }

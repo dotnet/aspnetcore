@@ -113,12 +113,25 @@ internal static class TypedClientBuilder<T>
 
         var parameters = interfaceMethodInfo.GetParameters();
         var paramTypes = parameters.Select(param => param.ParameterType).ToArray();
+        var returnType = interfaceMethodInfo.ReturnType;
+        bool isInvoke = returnType != typeof(Task);
 
         var methodBuilder = type.DefineMethod(interfaceMethodInfo.Name, methodAttributes);
 
-        var invokeMethod = typeof(IClientProxy).GetMethod(
-            nameof(IClientProxy.SendCoreAsync), BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null,
-            new[] { typeof(string), typeof(object[]), typeof(CancellationToken) }, null)!;
+        MethodInfo invokeMethod;
+        if (isInvoke)
+        {
+            invokeMethod = typeof(ISingleClientProxy).GetMethod(
+                nameof(ISingleClientProxy.InvokeCoreAsync), BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null,
+                new[] { typeof(string), typeof(object[]), typeof(CancellationToken) }, null)!
+                .MakeGenericMethod(returnType.GenericTypeArguments);
+        }
+        else
+        {
+            invokeMethod = typeof(IClientProxy).GetMethod(
+                nameof(IClientProxy.SendCoreAsync), BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null,
+                new[] { typeof(string), typeof(object[]), typeof(CancellationToken) }, null)!;
+        }
 
         methodBuilder.SetReturnType(interfaceMethodInfo.ReturnType);
         methodBuilder.SetParameters(paramTypes);
@@ -152,6 +165,25 @@ internal static class TypedClientBuilder<T>
         // Get IClientProxy
         generator.Emit(OpCodes.Ldarg_0);
         generator.Emit(OpCodes.Ldfld, proxyField);
+
+        var notTypeLabel = generator.DefineLabel();
+        if (isInvoke)
+        {
+            var singleClientProxyType = typeof(ISingleClientProxy);
+            /*
+            if (_proxy is ISingleClientProxy singleClientProxy)
+            {
+                return ((ISingleClientProxy)_proxy).InvokeAsync<T>(methodName, args, cancellationToken);
+            }
+            throw new InvalidOperationException("InvokeAsync only works with Single clients.");
+             */
+            generator.Emit(OpCodes.Isinst, singleClientProxyType);
+            generator.Emit(OpCodes.Brfalse_S, notTypeLabel);
+
+            generator.Emit(OpCodes.Ldarg_0);
+            generator.Emit(OpCodes.Ldfld, proxyField);
+            generator.Emit(OpCodes.Castclass, singleClientProxyType);
+        }
 
         // The first argument to IClientProxy.SendCoreAsync is this method's name
         generator.Emit(OpCodes.Ldstr, methodName);
@@ -189,6 +221,12 @@ internal static class TypedClientBuilder<T>
         generator.Emit(OpCodes.Callvirt, invokeMethod);
 
         generator.Emit(OpCodes.Ret); // Return the Task returned by 'invokeMethod'
+
+        // Used by InvokeAsync to check if it's being called with ISingleClientProxy otherwise throws
+        generator.MarkLabel(notTypeLabel);
+        generator.Emit(OpCodes.Ldstr, "InvokeAsync only works with Single clients.");
+        generator.Emit(OpCodes.Newobj, typeof(InvalidOperationException).GetConstructor(new Type[] { typeof(string) })!);
+        generator.Emit(OpCodes.Throw);
     }
 
     private static void BuildFactoryMethod(TypeBuilder type, ConstructorInfo ctor)
@@ -232,10 +270,10 @@ internal static class TypedClientBuilder<T>
 
     private static void VerifyMethod(MethodInfo interfaceMethod)
     {
-        if (interfaceMethod.ReturnType != typeof(Task))
+        if (interfaceMethod.ReturnType != typeof(Task) && interfaceMethod.ReturnType?.BaseType != typeof(Task))
         {
             throw new InvalidOperationException(
-                $"Cannot generate proxy implementation for '{typeof(T).FullName}.{interfaceMethod.Name}'. All client proxy methods must return '{typeof(Task).FullName}'.");
+                $"Cannot generate proxy implementation for '{typeof(T).FullName}.{interfaceMethod.Name}'. All client proxy methods must return '{typeof(Task).FullName}' or '{typeof(Task).FullName}<T>'.");
         }
 
         foreach (var parameter in interfaceMethod.GetParameters())

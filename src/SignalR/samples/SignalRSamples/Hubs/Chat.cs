@@ -19,9 +19,14 @@ public class Chat : Hub
         return Clients.All.SendAsync("Send", $"{name} left the chat");
     }
 
-    public Task Send(string name, string message)
+    public async Task Send(string name, string message)
     {
-        return Clients.All.SendAsync("Send", $"{name}: {message}");
+        var c = Clients.Single(Context.ConnectionId);
+        _ = Task.Run(async () =>
+        {
+            var i = await c.InvokeAsync<int>("F");
+        });
+        await Clients.All.SendAsync("Send", $"{name}: {message}");
     }
 
     public Task SendToOthers(string name, string message)

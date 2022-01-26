@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
 using System.Security.Claims;
@@ -221,6 +222,19 @@ public class Startup
             endpoints.MapGet("/generateJwtToken", context =>
             {
                 return context.Response.WriteAsync(GenerateJwtToken());
+            });
+
+            endpoints.MapGet("/clientresult/{id}", async (IHubContext<TestHub> hubContext, string id) =>
+            {
+                try
+                {
+                    var result = await hubContext.Clients.Single(id).InvokeAsync<int>("Result");
+                    return result.ToString(CultureInfo.InvariantCulture);
+                }
+                catch (Exception ex)
+                {
+                    return ex.Message;
+                }
             });
 
             endpoints.MapGet("/deployment", context =>

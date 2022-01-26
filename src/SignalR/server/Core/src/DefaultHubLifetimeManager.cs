@@ -2,6 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
@@ -17,6 +20,8 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
     private readonly HubConnectionStore _connections = new HubConnectionStore();
     private readonly HubGroupList _groups = new HubGroupList();
     private readonly ILogger _logger;
+    private readonly ClientResultsManager _clientResultsManager = new();
+    private ulong _lastInvocationId;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DefaultHubLifetimeManager{THub}"/> class.
@@ -294,6 +299,12 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
     {
         _connections.Remove(connection);
         _groups.RemoveDisconnectedConnection(connection.ConnectionId);
+
+        List<Task>? pendingTasks = null;
+        _clientResultsManager.CleanupConnection(connection.ConnectionId, pendingTasks);
+        // Completions should be synchronous for DefaultHubLifetimeManager
+        Debug.Assert(pendingTasks is null);
+
         return Task.CompletedTask;
     }
 
@@ -313,5 +324,64 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
     public override Task SendUsersAsync(IReadOnlyList<string> userIds, string methodName, object?[] args, CancellationToken cancellationToken = default)
     {
         return SendToAllConnections(methodName, args, (connection, state) => ((IReadOnlyList<string>)state!).Contains(connection.UserIdentifier), userIds, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public override async Task<T> InvokeConnectionAsync<T>(string connectionId, string methodName, object?[] args, CancellationToken cancellationToken = default)
+    {
+        if (connectionId == null)
+        {
+            throw new ArgumentNullException(nameof(connectionId));
+        }
+
+        var connection = _connections[connectionId];
+
+        if (connection == null)
+        {
+            throw new InvalidOperationException("Connection does not exist.");
+        }
+
+        var invocationId = Interlocked.Increment(ref _lastInvocationId).ToString(NumberFormatInfo.InvariantInfo);
+        var task = _clientResultsManager.AddInvocation<T>(connectionId, invocationId, cancellationToken);
+        // Connection disconnected while adding invocation
+        // we need to try to remove it here to avoid the task hanging if the add happened after the connection cleanup
+        if (connection.ConnectionAborted.IsCancellationRequested)
+        {
+            await _clientResultsManager.TryCompleteResult(connectionId, CompletionMessage.WithError(invocationId, "Connection disconnected"));
+            return await task;
+        }
+
+        try
+        {
+            // We're sending to a single connection
+            // Write message directly to connection without caching it in memory
+            var message = new InvocationMessage(invocationId, methodName, args);
+
+            await connection.WriteAsync(message, cancellationToken).AsTask();
+        }
+        catch
+        {
+            _clientResultsManager.RemoveInvocation(invocationId);
+            throw;
+        }
+
+        return await task;
+    }
+
+    /// <inheritdoc/>
+    public override Task SetConnectionResultAsync(string connectionId, CompletionMessage result)
+    {
+        return _clientResultsManager.TryCompleteResult(connectionId, result);
+    }
+
+    /// <inheritdoc/>
+    public override bool TryGetReturnType(string invocationId, [NotNullWhen(true)] out Type? type)
+    {
+        if (_clientResultsManager.TryGetType(invocationId, out type))
+        {
+            return true;
+        }
+        type = null;
+        return false;
     }
 }

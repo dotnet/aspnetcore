@@ -332,6 +332,12 @@ public class MethodHub : TestHub
 
         await tcs.Task;
     }
+
+    public async Task<int> GetClientResult(int num)
+    {
+        var sum = await Clients.Single(Context.ConnectionId).InvokeAsync<int>("Sum", num);
+        return sum;
+    }
 }
 
 internal class SelfRef

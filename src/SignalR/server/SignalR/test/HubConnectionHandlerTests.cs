@@ -30,7 +30,7 @@ using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.AspNetCore.SignalR.Tests;
 
-public class HubConnectionHandlerTests : VerifiableLoggedTest
+public partial class HubConnectionHandlerTests : VerifiableLoggedTest
 {
     [Fact]
     [LogLevel(LogLevel.Trace)]
@@ -240,7 +240,7 @@ public class HubConnectionHandlerTests : VerifiableLoggedTest
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(null, LoggerFactory);
             var ex = Assert.Throws<InvalidOperationException>(() =>
                 serviceProvider.GetRequiredService<IHubContext<SimpleVoidReturningTypedHub, IVoidReturningTypedHubClient>>());
-            Assert.Equal($"Cannot generate proxy implementation for '{typeof(IVoidReturningTypedHubClient).FullName}.{nameof(IVoidReturningTypedHubClient.Send)}'. All client proxy methods must return '{typeof(Task).FullName}'.", ex.Message);
+            Assert.Equal($"Cannot generate proxy implementation for '{typeof(IVoidReturningTypedHubClient).FullName}.{nameof(IVoidReturningTypedHubClient.Send)}'. All client proxy methods must return '{typeof(Task).FullName}' or 'System.Threading.Tasks.Task<T>'.", ex.Message);
         }
     }
 

@@ -36,7 +36,7 @@ public class CompletionMessage : HubInvocationMessage
     public CompletionMessage(string invocationId, string? error, object? result, bool hasResult)
         : base(invocationId)
     {
-        if (error != null && result != null)
+        if (error is not null && hasResult)
         {
             throw new ArgumentException($"Expected either '{nameof(error)}' or '{nameof(result)}' to be provided, but not both");
         }

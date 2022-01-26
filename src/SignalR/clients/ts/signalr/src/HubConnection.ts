@@ -39,7 +39,7 @@ export class HubConnection {
     private _protocol: IHubProtocol;
     private _handshakeProtocol: HandshakeProtocol;
     private _callbacks: { [invocationId: string]: (invocationEvent: StreamItemMessage | CompletionMessage | null, error?: Error) => void };
-    private _methods: { [name: string]: ((...args: any[]) => void)[] };
+    private _methods: { [name: string]: (((...args: any[]) => void) | ((...args: any[]) => any))[] };
     private _invocationId: number;
 
     private _closedCallbacks: ((error?: Error) => void)[];
@@ -443,6 +443,7 @@ export class HubConnection {
      * @param {string} methodName The name of the hub method to define.
      * @param {Function} newMethod The handler that will be raised when the hub method is invoked.
      */
+    public on(methodName: string, newMethod: (...args: any[]) => any): void
     public on(methodName: string, newMethod: (...args: any[]) => void): void {
         if (!methodName || !newMethod) {
             return;
@@ -546,6 +547,7 @@ export class HubConnection {
             for (const message of messages) {
                 switch (message.type) {
                     case MessageType.Invocation:
+                        // eslint-disable-next-line @typescript-eslint/no-floating-promises
                         this._invokeClientMethod(message);
                         break;
                     case MessageType.StreamItem:
@@ -672,26 +674,47 @@ export class HubConnection {
         this.connection.stop(new Error("Server timeout elapsed without receiving a message from the server."));
     }
 
-    private _invokeClientMethod(invocationMessage: InvocationMessage) {
+    private async _invokeClientMethod(invocationMessage: InvocationMessage) {
         const methods = this._methods[invocationMessage.target.toLowerCase()];
         if (methods) {
             const methodsCopy = methods.slice();
-            try {
-                methodsCopy.forEach((m) => m.apply(this, invocationMessage.arguments));
-            } catch (e) {
-                this._logger.log(LogLevel.Error, `A callback for the method ${invocationMessage.target.toLowerCase()} threw error '${e}'.`);
-            }
 
             if (invocationMessage.invocationId) {
-                // This is not supported in v1. So we return an error to avoid blocking the server waiting for the response.
-                const message = "Server requested a response, which is not supported in this version of the client.";
-                this._logger.log(LogLevel.Error, message);
-
-                // We don't want to wait on the stop itself.
-                this._stopPromise = this._stopInternal(new Error(message));
+                let res;
+                let exception;
+                for (const m of methodsCopy) {
+                    try {
+                        if (res) {
+                            this._logger.log(LogLevel.Warning, `Result already provided for '${invocationMessage.target.toLowerCase()}' only last one will be sent.`);
+                        }
+                        res = await m.apply(this, invocationMessage.arguments);
+                        exception = undefined;
+                    } catch (e) {
+                        exception = e;
+                        this._logger.log(LogLevel.Error, `A callback for the method '${invocationMessage.target.toLowerCase()}' threw error '${e}'.`);
+                    }
+                }
+                if (exception) {
+                    await this._sendWithProtocol(this._createCompletionMessage(invocationMessage.invocationId, `${exception}`, null));
+                }
+                else if (res !== undefined) {
+                    await this._sendWithProtocol(this._createCompletionMessage(invocationMessage.invocationId, null, res));
+                } else {
+                    await this._sendWithProtocol(this._createCompletionMessage(invocationMessage.invocationId, "Client didn't provide a result.", null));
+                }
+            } else {
+                try {
+                    methodsCopy.forEach((m) => m.apply(this, invocationMessage.arguments));
+                } catch (e) {
+                    this._logger.log(LogLevel.Error, `A callback for the method '${invocationMessage.target.toLowerCase()}' threw error '${e}'.`);
+                }
             }
         } else {
-            this._logger.log(LogLevel.Warning, `No client method with the name '${invocationMessage.target}' found.`);
+            this._logger.log(LogLevel.Warning, `No client method with the name '${invocationMessage.target.toLowerCase()}' found.`);
+
+            if (invocationMessage.invocationId) {
+                await this._sendWithProtocol(this._createCompletionMessage(invocationMessage.invocationId, "Client didn't provide a result.", null));
+            }
         }
     }
 

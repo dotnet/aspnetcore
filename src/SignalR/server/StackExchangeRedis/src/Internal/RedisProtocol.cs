@@ -25,20 +25,25 @@ internal class RedisProtocol
     // * Invocations are sent to the All, Group, Connection and User channels
     // * Group Commands are sent to the GroupManagement channel
     // * Acks are sent to the Acknowledgement channel.
+    // * Completion messages (client results) are sent to the server specific Result channel
     // * See the Write[type] methods for a description of the protocol for each in-depth.
     // * The "Variable length integer" is the length-prefixing format used by BinaryReader/BinaryWriter:
     //   * https://docs.microsoft.com/dotnet/api/system.io.binarywriter.write?view=netcore-2.2
     // * The "Length prefixed string" is the string format used by BinaryReader/BinaryWriter:
     //   * A 7-bit variable length integer encodes the length in bytes, followed by the encoded string in UTF-8.
 
-    public byte[] WriteInvocation(string methodName, object?[] args) =>
-        WriteInvocation(methodName, args, excludedConnectionIds: null);
+    //public byte[] WriteInvocation(string methodName, object?[] args, string? invocationId = null) =>
+    //    WriteInvocation(methodName, args, invocationId, excludedConnectionIds: null);
 
-    public byte[] WriteInvocation(string methodName, object?[] args, IReadOnlyList<string>? excludedConnectionIds)
+    public byte[] WriteInvocation(string methodName, object?[] args, string? invocationId = null,
+        IReadOnlyList<string>? excludedConnectionIds = null, string? returnChannel = null)
     {
         // Written as a MessagePack 'arr' containing at least these items:
         // * A MessagePack 'arr' of 'str's representing the excluded ids
         // * [The output of WriteSerializedHubMessage, which is an 'arr']
+        // For invocations expecting a result
+        // * InvocationID
+        // * Redis return channel
         // Any additional items are discarded.
 
         var memoryBufferWriter = MemoryBufferWriter.Get();
@@ -46,7 +51,16 @@ internal class RedisProtocol
         {
             var writer = new MessagePackWriter(memoryBufferWriter);
 
-            writer.WriteArrayHeader(2);
+            if (!string.IsNullOrEmpty(returnChannel))
+            {
+                writer.WriteArrayHeader(4);
+                writer.Write(invocationId);
+                writer.Write(returnChannel);
+            }
+            else
+            {
+                writer.WriteArrayHeader(2);
+            }
             if (excludedConnectionIds != null && excludedConnectionIds.Count > 0)
             {
                 writer.WriteArrayHeader(excludedConnectionIds.Count);
@@ -60,7 +74,7 @@ internal class RedisProtocol
                 writer.WriteArrayHeader(0);
             }
 
-            WriteHubMessage(ref writer, new InvocationMessage(methodName, args));
+            WriteHubMessage(ref writer, new InvocationMessage(invocationId, methodName, args));
             writer.Flush();
 
             return memoryBufferWriter.ToArray();
@@ -125,11 +139,45 @@ internal class RedisProtocol
         }
     }
 
+    public static byte[] WriteCompletionMessage(ReadOnlySequence<byte> completionMessage, string protocolName)
+    {
+        // Written as a MessagePack 'arr' containing at least these items:
+        // * A 'str': The name of the HubProtocol used for the serialization of the Completion Message
+        // * [A serialized Completion Message which is a 'bin']
+        // Any additional items are discarded.
+
+        var memoryBufferWriter = MemoryBufferWriter.Get();
+        try
+        {
+            var writer = new MessagePackWriter(memoryBufferWriter);
+
+            writer.WriteArrayHeader(2);
+            writer.Write(protocolName);
+            writer.Write(completionMessage);
+
+            writer.Flush();
+
+            return memoryBufferWriter.ToArray();
+        }
+        finally
+        {
+            MemoryBufferWriter.Return(memoryBufferWriter);
+        }
+    }
+
     public static RedisInvocation ReadInvocation(ReadOnlyMemory<byte> data)
     {
         // See WriteInvocation for the format
         var reader = new MessagePackReader(data);
-        ValidateArraySize(ref reader, 2, "Invocation");
+        var length = ValidateArraySize(ref reader, 2, "Invocation");
+
+        string? returnChannel = null;
+        string? invocationId = null;
+        if (length > 3)
+        {
+            invocationId = reader.ReadString();
+            returnChannel = reader.ReadString();
+        }
 
         // Read excluded Ids
         IReadOnlyList<string>? excludedConnectionIds = null;
@@ -147,7 +195,7 @@ internal class RedisProtocol
 
         // Read payload
         var message = ReadSerializedHubMessage(ref reader);
-        return new RedisInvocation(message, excludedConnectionIds);
+        return new RedisInvocation(message, excludedConnectionIds, invocationId, returnChannel);
     }
 
     public static RedisGroupCommand ReadGroupCommand(ReadOnlyMemory<byte> data)
@@ -209,7 +257,18 @@ internal class RedisProtocol
         return new SerializedHubMessage(serializations);
     }
 
-    private static void ValidateArraySize(ref MessagePackReader reader, int expectedLength, string messageType)
+    public static RedisCompletion ReadCompletion(ReadOnlyMemory<byte> data)
+    {
+        // See WriteCompletionMessage for the format
+        var reader = new MessagePackReader(data);
+        ValidateArraySize(ref reader, 2, "CompletionMessage");
+
+        var protocolName = reader.ReadString();
+        var ros = reader.ReadBytes();
+        return new RedisCompletion(protocolName, ros ?? new ReadOnlySequence<byte>());
+    }
+
+    private static int ValidateArraySize(ref MessagePackReader reader, int expectedLength, string messageType)
     {
         var length = reader.ReadArrayHeader();
 
@@ -217,5 +276,6 @@ internal class RedisProtocol
         {
             throw new InvalidDataException($"Insufficient items in {messageType} array.");
         }
+        return length;
     }
 }

@@ -387,6 +387,67 @@ public abstract class JsonHubProtocolTestsBase
         }
     }
 
+    public static IDictionary<string, ClientResultTestData> ClientResultData => new[]
+    {
+        new ClientResultTestData("SimpleResult", "{\"type\":3,\"invocationId\":\"1\",\"result\":45}", typeof(int), 45),
+        new ClientResultTestData("SimpleResult_InvocationIdLast", "{\"type\":3,\"result\":45,\"invocationId\":\"1\"}", typeof(int), 45),
+        new ClientResultTestData("MissingResult", "{\"type\":3,\"invocationId\":\"1\"}", typeof(int), null),
+
+        new ClientResultTestData("ComplexResult", "{\"type\":3,\"invocationId\":\"1\",\"result\":{\"stringProp\":\"test\",\"doubleProp\":1.1,\"intProp\":0,\"dateTimeProp\":\"0001-01-01T00:00:00\",\"nullProp\":null,\"byteArrProp\":\"AgQG\"}}", typeof(CustomObject),
+            new CustomObject()
+            {
+                ByteArrProp = new byte[] { 2, 4, 6 },
+                IntProp = default,
+                DoubleProp = 1.1,
+                StringProp = "test",
+                DateTimeProp = default
+            }),
+        new ClientResultTestData("ComplexResult_InvocationIdLast", "{\"type\":3,\"result\":{\"stringProp\":\"test\",\"doubleProp\":1.1,\"intProp\":0,\"dateTimeProp\":\"0001-01-01T00:00:00\",\"nullProp\":null,\"byteArrProp\":\"AgQG\"},\"invocationId\":\"1\"}", typeof(CustomObject),
+            new CustomObject()
+            {
+                ByteArrProp = new byte[] { 2, 4, 6 },
+                IntProp = default,
+                DoubleProp = 1.1,
+                StringProp = "test",
+                DateTimeProp = default
+            }),
+    }.ToDictionary(t => t.Name);
+
+    public static IEnumerable<object[]> ClientResultDataNames => ClientResultData.Keys.Select(name => new object[] { name });
+
+    [Theory]
+    [MemberData(nameof(ClientResultDataNames))]
+    public void RawResultRoundTripsProperly(string testDataName)
+    {
+        var testData = ClientResultData[testDataName];
+
+        var binder = new TestBinder(null, typeof(RawResult));
+        var input = Frame(testData.Message);
+        var data = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(input));
+        Assert.True(JsonHubProtocol.TryParseMessage(ref data, binder, out var message));
+        var completion = Assert.IsType<CompletionMessage>(message);
+
+        var writer = MemoryBufferWriter.Get();
+        try
+        {
+            // WriteMessage should handle RawResult as Raw Json and write it properly
+            JsonHubProtocol.WriteMessage(completion, writer);
+
+            // Now we check if the Raw Json was written properly and can be read using the expected type
+            binder = new TestBinder(null, testData.ResultType);
+            var written = writer.ToArray();
+            data = new ReadOnlySequence<byte>(written);
+            Assert.True(JsonHubProtocol.TryParseMessage(ref data, binder, out message));
+
+            completion = Assert.IsType<CompletionMessage>(message);
+            Assert.Equal(testData.Result, completion.Result);
+        }
+        finally
+        {
+            MemoryBufferWriter.Return(writer);
+        }
+    }
+
     public static string Frame(string input)
     {
         var data = Encoding.UTF8.GetBytes(input);
@@ -432,6 +493,24 @@ public abstract class JsonHubProtocolTestsBase
             Name = name;
             Message = message;
             Size = size;
+        }
+
+        public override string ToString() => Name;
+    }
+
+    public class ClientResultTestData
+    {
+        public string Name { get; }
+        public string Message { get; }
+        public Type ResultType { get; }
+        public object Result { get; }
+
+        public ClientResultTestData(string name, string message, Type resultType, object result)
+        {
+            Name = name;
+            Message = message;
+            ResultType = resultType;
+            Result = result;
         }
 
         public override string ToString() => Name;

@@ -25,17 +25,18 @@ public class Program
                 {
                     factory.AddConfiguration(c.Configuration.GetSection("Logging"));
                     factory.AddConsole();
+                    //factory.SetMinimumLevel(LogLevel.Trace);
                 })
                 .UseKestrel(options =>
                 {
                     // Default port
-                    options.ListenLocalhost(5000);
+                    options.ListenAnyIP(0);
 
                     // Hub bound to TCP end point
-                    options.Listen(IPAddress.Any, 9001, builder =>
-                    {
-                        builder.UseHub<Chat>();
-                    });
+                    //options.Listen(IPAddress.Any, 9001, builder =>
+                    //{
+                    //    builder.UseHub<Chat>();
+                    //});
                 })
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()

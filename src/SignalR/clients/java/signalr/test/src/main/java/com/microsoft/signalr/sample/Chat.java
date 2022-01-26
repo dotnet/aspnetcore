@@ -15,6 +15,10 @@ public class Chat {
         final String input = reader.nextLine();
 
         try (HubConnection hubConnection = HubConnectionBuilder.create(input).build()) {
+            hubConnection.on("F", () -> {
+                return 2;
+            });
+
             hubConnection.on("Send", (message) -> {
                 System.out.println(message);
             }, String.class);

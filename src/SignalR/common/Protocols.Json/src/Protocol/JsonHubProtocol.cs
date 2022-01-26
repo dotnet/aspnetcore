@@ -200,8 +200,6 @@ public sealed class JsonHubProtocol : IHubProtocol
                         {
                             hasResult = true;
 
-                            reader.CheckRead();
-
                             if (string.IsNullOrEmpty(invocationId))
                             {
                                 // If we don't have an invocation id then we need to value copy the reader so we can parse it later
@@ -211,9 +209,8 @@ public sealed class JsonHubProtocol : IHubProtocol
                             }
                             else
                             {
-                                // If we have an invocation id already we can parse the end result
                                 var returnType = binder.GetReturnType(invocationId);
-                                result = BindType(ref reader, returnType);
+                                result = BindType(ref reader, input, returnType);
                             }
                         }
                         else if (reader.ValueTextEquals(ItemPropertyNameBytes.EncodedUtf8Bytes))
@@ -391,7 +388,7 @@ public sealed class JsonHubProtocol : IHubProtocol
                     if (hasResultToken)
                     {
                         var returnType = binder.GetReturnType(invocationId);
-                        result = BindType(ref resultToken, returnType);
+                        result = BindType(ref resultToken, input, returnType);
                     }
 
                     message = BindCompletionMessage(invocationId, error, result, hasResult);
@@ -537,7 +534,16 @@ public sealed class JsonHubProtocol : IHubProtocol
             }
             else
             {
-                JsonSerializer.Serialize(writer, message.Result, message.Result.GetType(), _payloadSerializerOptions);
+                var resultType = message.Result.GetType();
+                if (resultType == typeof(RawResult))
+                {
+                    Debug.Assert(((RawResult)message.Result).RawSerializedData.IsSingleSegment);
+                    writer.WriteRawValue(((RawResult)message.Result).RawSerializedData.First.Span, skipInputValidation: true);
+                }
+                else
+                {
+                    JsonSerializer.Serialize(writer, message.Result, resultType, _payloadSerializerOptions);
+                }
             }
         }
     }
@@ -722,6 +728,24 @@ public sealed class JsonHubProtocol : IHubProtocol
         Debug.Assert(arguments != null);
 
         return new InvocationMessage(invocationId, target, arguments, streamIds);
+    }
+
+    private object? BindType(ref Utf8JsonReader reader, ReadOnlySequence<byte> input, Type type)
+    {
+        if (type == typeof(RawResult))
+        {
+            var start = reader.BytesConsumed;
+            reader.Skip();
+            var end = reader.BytesConsumed;
+            var sequence = input.Slice(start, end - start);
+            // Technically we could pass the sequence without copying into a new array
+            // but in the future we could break this if we dispatched the CompletionMessage and the underlying Pipe read would be advanced
+            var arr = new byte[sequence.Length];
+            sequence.CopyTo(arr);
+            // REVIEW: We can make this type do the copying which would allow us to rent from the ArrayPool
+            return new RawResult(new ReadOnlySequence<byte>(arr));
+        }
+        return BindType(ref reader, type);
     }
 
     private object? BindType(ref Utf8JsonReader reader, Type type)

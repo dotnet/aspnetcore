@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.SignalR.Protocol;
+
 namespace Microsoft.AspNetCore.SignalR;
 
 /// <summary>
@@ -131,4 +134,43 @@ public abstract class HubLifetimeManager<THub> where THub : Hub
     /// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.</param>
     /// <returns>A <see cref="Task"/> that represents the asynchronous remove.</returns>
     public abstract Task RemoveFromGroupAsync(string connectionId, string groupName, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="connectionId"></param>
+    /// <param name="methodName"></param>
+    /// <param name="args"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    /// <exception cref="NotImplementedException"></exception>
+    public virtual Task<T> InvokeConnectionAsync<T>(string connectionId, string methodName, object?[] args, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="connectionId"></param>
+    /// <param name="result"></param>
+    /// <returns></returns>
+    /// <exception cref="NotImplementedException"></exception>
+    public virtual Task SetConnectionResultAsync(string connectionId, CompletionMessage result)
+    {
+        throw new NotImplementedException();
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="invocationId"></param>
+    /// <param name="type"></param>
+    /// <returns></returns>
+    public virtual bool TryGetReturnType(string invocationId, [NotNullWhen(true)] out Type? type)
+    {
+        type = null;
+        return false;
+    }
 }
