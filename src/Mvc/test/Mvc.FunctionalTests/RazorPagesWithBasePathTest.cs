@@ -452,8 +452,8 @@ Hello from /Pages/Shared/";
             {
                 ["__RequestVerificationToken"] = token,
                 ["Email"] = "javi@example.com",
-                ["Password"] = "Password.12$",
-                ["ConfirmPassword"] = "Password.12$",
+                ["Password"] = "[PLACEHOLDER]-1a",
+                ["ConfirmPassword"] = "[PLACEHOLDER]-1a",
             })
         };
         message.Headers.TryAddWithoutValidation("Cookie", $"{cookie.Key}={cookie.Value}");
@@ -480,8 +480,8 @@ Hello from /Pages/Shared/";
             {
                 ["__RequestVerificationToken"] = token,
                 ["Email"] = "javi@example.com",
-                ["Password"] = "Password.12$",
-                ["ConfirmPassword"] = "Password.12$",
+                ["Password"] = "[PLACEHOLDER]-1a",
+                ["ConfirmPassword"] = "[PLACEHOLDER]-1a",
             })
         };
         message.Headers.TryAddWithoutValidation("Cookie", $"{cookie.Key}={cookie.Value}");
@@ -512,7 +512,7 @@ Hello from /Pages/Shared/";
     public async Task CompareValidationAttributes_OnTopLevelProperties()
     {
         // Act
-        var response = await Client.GetStringAsync("/Validation/PageWithCompareValidation?password=test&comparePassword=different");
+        var response = await Client.GetStringAsync("/Validation/PageWithCompareValidation?password=[PlaceHolder]-1a&comparePassword=[PlaceHolder]-1b");
 
         // Assert
         Assert.Contains("User name is required", response);
