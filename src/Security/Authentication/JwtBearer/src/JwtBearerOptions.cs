@@ -138,7 +138,7 @@ public class JwtBearerOptions : AuthenticationSchemeOptions
     }
 
     /// <summary>
-    /// Gets or sets the <see cref="TimeSpan" /> that controls how often an automatic metadata refresh should occur.
+    /// Gets or sets how often an automatic metadata refresh should occur.
     /// </summary>
     /// <value>
     /// Defaults to <see cref="ConfigurationManager{OpenIdConnectConfiguration}.AutomaticRefreshInterval" />.
