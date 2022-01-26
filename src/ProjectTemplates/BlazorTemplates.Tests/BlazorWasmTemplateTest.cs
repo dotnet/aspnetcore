@@ -442,7 +442,7 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
                 page.ClickAsync("text=Register as a new user"));
 
             var userName = $"{Guid.NewGuid()}@example.com";
-            var password = $"!Test.Password1$";
+            var password = "[PLACEHOLDER]-1a";
 
             await page.TypeAsync("[name=\"Input.Email\"]", userName);
             await page.TypeAsync("[name=\"Input.Password\"]", password);
