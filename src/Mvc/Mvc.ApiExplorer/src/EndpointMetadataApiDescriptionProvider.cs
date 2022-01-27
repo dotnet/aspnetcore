@@ -68,6 +68,17 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
 
     private ApiDescription CreateApiDescription(RouteEndpoint routeEndpoint, string httpMethod, MethodInfo methodInfo)
     {
+        static bool ShouldDisableInferredBody(string method)
+        {
+            // GET, DELETE, HEAD, CONNECT, TRACE, and OPTIONS normally do not contain bodies
+            return method.Equals(HttpMethods.Get, StringComparison.Ordinal) ||
+                   method.Equals(HttpMethods.Delete, StringComparison.Ordinal) ||
+                   method.Equals(HttpMethods.Head, StringComparison.Ordinal) ||
+                   method.Equals(HttpMethods.Options, StringComparison.Ordinal) ||
+                   method.Equals(HttpMethods.Trace, StringComparison.Ordinal) ||
+                   method.Equals(HttpMethods.Connect, StringComparison.Ordinal);
+        }
+
         // Swashbuckle uses the "controller" name to group endpoints together.
         // For now, put all methods defined the same declaring type together.
         string controllerName;
@@ -99,10 +110,11 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
         };
 
         var hasBodyOrFormFileParameter = false;
+        var disableInferredBody = ShouldDisableInferredBody(httpMethod);
 
         foreach (var parameter in methodInfo.GetParameters())
         {
-            var parameterDescription = CreateApiParameterDescription(parameter, routeEndpoint.RoutePattern);
+            var parameterDescription = CreateApiParameterDescription(parameter, routeEndpoint.RoutePattern, disableInferredBody);
 
             if (parameterDescription is null)
             {
@@ -155,9 +167,9 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
         return apiDescription;
     }
 
-    private ApiParameterDescription? CreateApiParameterDescription(ParameterInfo parameter, RoutePattern pattern)
+    private ApiParameterDescription? CreateApiParameterDescription(ParameterInfo parameter, RoutePattern pattern, bool disableInferredBody)
     {
-        var (source, name, allowEmpty, paramType) = GetBindingSourceAndName(parameter, pattern);
+        var (source, name, allowEmpty, paramType) = GetBindingSourceAndName(parameter, pattern, disableInferredBody);
 
         // Services are ignored because they are not request parameters.
         if (source == BindingSource.Services)
@@ -230,7 +242,7 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
 
     // TODO: Share more of this logic with RequestDelegateFactory.CreateArgument(...) using RequestDelegateFactoryUtilities
     // which is shared source.
-    private (BindingSource, string, bool, Type) GetBindingSourceAndName(ParameterInfo parameter, RoutePattern pattern)
+    private (BindingSource, string, bool, Type) GetBindingSourceAndName(ParameterInfo parameter, RoutePattern pattern, bool disableInferredBody)
     {
         var attributes = parameter.GetCustomAttributes();
 
@@ -265,7 +277,7 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
         {
             return (BindingSource.Services, parameter.Name ?? string.Empty, false, parameter.ParameterType);
         }
-        else if (parameter.ParameterType == typeof(string) || ParameterBindingMethodCache.HasTryParseMethod(parameter))
+        else if (parameter.ParameterType == typeof(string) || ParameterBindingMethodCache.HasTryParseMethod(parameter.ParameterType))
         {
             // complex types will display as strings since they use custom parsing via TryParse on a string
             var displayType = !parameter.ParameterType.IsPrimitive && Nullable.GetUnderlyingType(parameter.ParameterType)?.IsPrimitive != true
@@ -283,6 +295,10 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
         else if (parameter.ParameterType == typeof(IFormFile) || parameter.ParameterType == typeof(IFormFileCollection))
         {
             return (BindingSource.FormFile, parameter.Name ?? string.Empty, false, parameter.ParameterType);
+        }
+        else if (disableInferredBody && parameter.ParameterType.IsArray && ParameterBindingMethodCache.HasTryParseMethod(parameter.ParameterType.GetElementType()!))
+        {
+            return (BindingSource.Query, parameter.Name ?? string.Empty, false, parameter.ParameterType);
         }
         else
         {
