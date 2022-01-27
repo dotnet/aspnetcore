@@ -1,9 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.JSInterop;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 
@@ -11,7 +13,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 /// A component that handles remote authentication operations in an application.
 /// </summary>
 /// <typeparam name="TAuthenticationState">The user state type persisted while the operation is in progress. It must be serializable.</typeparam>
-public class RemoteAuthenticatorViewCore<TAuthenticationState> : ComponentBase where TAuthenticationState : RemoteAuthenticationState
+public class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(JsonSerialized)] TAuthenticationState> : ComponentBase where TAuthenticationState : RemoteAuthenticationState
 {
     private string _message;
     private RemoteAuthenticationApplicationPathsOptions _applicationPaths;

@@ -26,7 +26,8 @@ public static class WebAssemblyAuthenticationServiceCollectionExtensions
     /// <typeparam name="TProviderOptions">The configuration options of the underlying provider being used for handling the authentication operations.</typeparam>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
     /// <returns>The <see cref="IServiceCollection"/> where the services were registered.</returns>
-    public static IRemoteAuthenticationBuilder<TRemoteAuthenticationState, TAccount> AddRemoteAuthentication<TRemoteAuthenticationState, [DynamicallyAccessedMembers(JsonSerialized)] TAccount, TProviderOptions>(
+    public static IRemoteAuthenticationBuilder<TRemoteAuthenticationState, TAccount> AddRemoteAuthentication<
+        [DynamicallyAccessedMembers(JsonSerialized)] TRemoteAuthenticationState, [DynamicallyAccessedMembers(JsonSerialized)] TAccount, [DynamicallyAccessedMembers(JsonSerialized)] TProviderOptions>(
         this IServiceCollection services)
         where TRemoteAuthenticationState : RemoteAuthenticationState
         where TAccount : RemoteUserAccount
@@ -35,10 +36,7 @@ public static class WebAssemblyAuthenticationServiceCollectionExtensions
         services.AddOptions();
         services.AddAuthorizationCore();
         services.TryAddScoped<AuthenticationStateProvider, RemoteAuthenticationService<TRemoteAuthenticationState, TAccount, TProviderOptions>>();
-        services.TryAddScoped(sp =>
-            {
-                return (IRemoteAuthenticationService<TRemoteAuthenticationState>)sp.GetRequiredService<AuthenticationStateProvider>();
-            });
+        AddAuthenticationStateProvider<TRemoteAuthenticationState>(services);
 
         services.TryAddTransient<BaseAddressAuthorizationMessageHandler>();
         services.TryAddTransient<AuthorizationMessageHandler>();
@@ -57,6 +55,12 @@ public static class WebAssemblyAuthenticationServiceCollectionExtensions
         return new RemoteAuthenticationBuilder<TRemoteAuthenticationState, TAccount>(services);
     }
 
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2091", Justification = "The calling method enforces the dynamically accessed members constraints.")]
+    private static void AddAuthenticationStateProvider<[DynamicallyAccessedMembers(JsonSerialized)] TRemoteAuthenticationState>(IServiceCollection services) where TRemoteAuthenticationState : RemoteAuthenticationState
+    {
+        services.TryAddScoped(static sp => (IRemoteAuthenticationService<TRemoteAuthenticationState>)sp.GetRequiredService<AuthenticationStateProvider>());
+    }
+
     /// <summary>
     /// Adds support for authentication for SPA applications using the given <typeparamref name="TProviderOptions"/> and
     /// <typeparamref name="TRemoteAuthenticationState"/>.
@@ -67,7 +71,8 @@ public static class WebAssemblyAuthenticationServiceCollectionExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
     /// <param name="configure">An action that will configure the <see cref="RemoteAuthenticationOptions{TProviderOptions}"/>.</param>
     /// <returns>The <see cref="IServiceCollection"/> where the services were registered.</returns>
-    public static IRemoteAuthenticationBuilder<TRemoteAuthenticationState, TAccount> AddRemoteAuthentication<TRemoteAuthenticationState, [DynamicallyAccessedMembers(JsonSerialized)] TAccount, TProviderOptions>(
+    public static IRemoteAuthenticationBuilder<TRemoteAuthenticationState, TAccount> AddRemoteAuthentication<
+        [DynamicallyAccessedMembers(JsonSerialized)] TRemoteAuthenticationState, [DynamicallyAccessedMembers(JsonSerialized)] TAccount, [DynamicallyAccessedMembers(JsonSerialized)] TProviderOptions>(
         this IServiceCollection services, Action<RemoteAuthenticationOptions<TProviderOptions>> configure)
         where TRemoteAuthenticationState : RemoteAuthenticationState
         where TAccount : RemoteUserAccount
@@ -101,7 +106,7 @@ public static class WebAssemblyAuthenticationServiceCollectionExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
     /// <param name="configure">An action that will configure the <see cref="RemoteAuthenticationOptions{TProviderOptions}"/>.</param>
     /// <returns>The <see cref="IServiceCollection"/> where the services were registered.</returns>
-    public static IRemoteAuthenticationBuilder<TRemoteAuthenticationState, RemoteUserAccount> AddOidcAuthentication<TRemoteAuthenticationState>(
+    public static IRemoteAuthenticationBuilder<TRemoteAuthenticationState, RemoteUserAccount> AddOidcAuthentication<[DynamicallyAccessedMembers(JsonSerialized)] TRemoteAuthenticationState>(
         this IServiceCollection services, Action<RemoteAuthenticationOptions<OidcProviderOptions>> configure)
         where TRemoteAuthenticationState : RemoteAuthenticationState, new()
     {
@@ -116,7 +121,8 @@ public static class WebAssemblyAuthenticationServiceCollectionExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
     /// <param name="configure">An action that will configure the <see cref="RemoteAuthenticationOptions{TProviderOptions}"/>.</param>
     /// <returns>The <see cref="IServiceCollection"/> where the services were registered.</returns>
-    public static IRemoteAuthenticationBuilder<TRemoteAuthenticationState, TAccount> AddOidcAuthentication<TRemoteAuthenticationState, [DynamicallyAccessedMembers(JsonSerialized)] TAccount>(
+    public static IRemoteAuthenticationBuilder<TRemoteAuthenticationState, TAccount> AddOidcAuthentication<
+        [DynamicallyAccessedMembers(JsonSerialized)] TRemoteAuthenticationState, [DynamicallyAccessedMembers(JsonSerialized)] TAccount>(
         this IServiceCollection services, Action<RemoteAuthenticationOptions<OidcProviderOptions>> configure)
         where TRemoteAuthenticationState : RemoteAuthenticationState, new()
         where TAccount : RemoteUserAccount
@@ -142,7 +148,7 @@ public static class WebAssemblyAuthenticationServiceCollectionExtensions
     /// <typeparam name="TRemoteAuthenticationState">The type of the remote authentication state.</typeparam>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
     /// <returns>The <see cref="IServiceCollection"/> where the services were registered.</returns>
-    public static IRemoteAuthenticationBuilder<TRemoteAuthenticationState, RemoteUserAccount> AddApiAuthorization<TRemoteAuthenticationState>(this IServiceCollection services)
+    public static IRemoteAuthenticationBuilder<TRemoteAuthenticationState, RemoteUserAccount> AddApiAuthorization<[DynamicallyAccessedMembers(JsonSerialized)] TRemoteAuthenticationState>(this IServiceCollection services)
         where TRemoteAuthenticationState : RemoteAuthenticationState, new()
     {
         return AddApiAuthorizationCore<TRemoteAuthenticationState, RemoteUserAccount>(services, configure: null, Assembly.GetCallingAssembly().GetName().Name);
@@ -155,7 +161,7 @@ public static class WebAssemblyAuthenticationServiceCollectionExtensions
     /// <typeparam name="TAccount">The account type.</typeparam>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
     /// <returns>The <see cref="IServiceCollection"/> where the services were registered.</returns>
-    public static IRemoteAuthenticationBuilder<TRemoteAuthenticationState, TAccount> AddApiAuthorization<TRemoteAuthenticationState, [DynamicallyAccessedMembers(JsonSerialized)] TAccount>(
+    public static IRemoteAuthenticationBuilder<TRemoteAuthenticationState, TAccount> AddApiAuthorization<[DynamicallyAccessedMembers(JsonSerialized)] TRemoteAuthenticationState, [DynamicallyAccessedMembers(JsonSerialized)] TAccount>(
         this IServiceCollection services)
         where TRemoteAuthenticationState : RemoteAuthenticationState, new()
         where TAccount : RemoteUserAccount
@@ -182,7 +188,7 @@ public static class WebAssemblyAuthenticationServiceCollectionExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
     /// <param name="configure">An action that will configure the <see cref="RemoteAuthenticationOptions{ApiAuthorizationProviderOptions}"/>.</param>
     /// <returns>The <see cref="IServiceCollection"/> where the services were registered.</returns>
-    public static IRemoteAuthenticationBuilder<TRemoteAuthenticationState, RemoteUserAccount> AddApiAuthorization<TRemoteAuthenticationState>(
+    public static IRemoteAuthenticationBuilder<TRemoteAuthenticationState, RemoteUserAccount> AddApiAuthorization<[DynamicallyAccessedMembers(JsonSerialized)] TRemoteAuthenticationState>(
         this IServiceCollection services, Action<RemoteAuthenticationOptions<ApiAuthorizationProviderOptions>> configure)
         where TRemoteAuthenticationState : RemoteAuthenticationState, new()
     {
@@ -197,7 +203,7 @@ public static class WebAssemblyAuthenticationServiceCollectionExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
     /// <param name="configure">An action that will configure the <see cref="RemoteAuthenticationOptions{ApiAuthorizationProviderOptions}"/>.</param>
     /// <returns>The <see cref="IServiceCollection"/> where the services were registered.</returns>
-    public static IRemoteAuthenticationBuilder<TRemoteAuthenticationState, TAccount> AddApiAuthorization<TRemoteAuthenticationState, [DynamicallyAccessedMembers(JsonSerialized)] TAccount>(
+    public static IRemoteAuthenticationBuilder<TRemoteAuthenticationState, TAccount> AddApiAuthorization<[DynamicallyAccessedMembers(JsonSerialized)] TRemoteAuthenticationState, [DynamicallyAccessedMembers(JsonSerialized)] TAccount>(
         this IServiceCollection services, Action<RemoteAuthenticationOptions<ApiAuthorizationProviderOptions>> configure)
         where TRemoteAuthenticationState : RemoteAuthenticationState, new()
         where TAccount : RemoteUserAccount
@@ -205,7 +211,7 @@ public static class WebAssemblyAuthenticationServiceCollectionExtensions
         return AddApiAuthorizationCore<TRemoteAuthenticationState, TAccount>(services, configure, Assembly.GetCallingAssembly().GetName().Name);
     }
 
-    private static IRemoteAuthenticationBuilder<TRemoteAuthenticationState, TAccount> AddApiAuthorizationCore<TRemoteAuthenticationState, [DynamicallyAccessedMembers(JsonSerialized)] TAccount>(
+    private static IRemoteAuthenticationBuilder<TRemoteAuthenticationState, TAccount> AddApiAuthorizationCore<[DynamicallyAccessedMembers(JsonSerialized)] TRemoteAuthenticationState, [DynamicallyAccessedMembers(JsonSerialized)] TAccount>(
         IServiceCollection services,
         Action<RemoteAuthenticationOptions<ApiAuthorizationProviderOptions>> configure,
         string inferredClientId)
