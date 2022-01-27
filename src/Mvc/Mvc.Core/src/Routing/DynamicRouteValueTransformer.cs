@@ -58,7 +58,7 @@ public abstract class DynamicRouteValueTransformer
     /// </summary>
     /// <param name="httpContext">The <see cref="HttpContext" /> associated with the current request.</param>
     /// <param name="values">The route values associated with the current match. Implementations should not modify <paramref name="values"/>.</param>
-    /// <returns>A task which asynchronously returns a set of route values.</returns>
+    /// <returns>Returns a set of new route values, else null to indicate there was no match.</returns>
     public abstract ValueTask<RouteValueDictionary> TransformAsync(HttpContext httpContext, RouteValueDictionary values);
 
     /// <summary>
