@@ -224,7 +224,6 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
     public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithLocalDB(BrowserKind browserKind)
         => BlazorWasmHostedTemplate_IndividualAuth_Works(browserKind, true);
 
-
     // This test depends on BlazorWasmTemplate_CreateBuildPublish_IndividualAuthNoLocalDb running first
     [Theory]
     [InlineData(BrowserKind.Chromium)]

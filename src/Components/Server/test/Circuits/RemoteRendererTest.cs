@@ -91,7 +91,6 @@ public class RemoteRendererTest
         Assert.Equal(9, renderer._unacknowledgedRenderBatches.Count);
     }
 
-
     [Fact]
     public async Task ProducesNewBatch_WhenABatchGetsAcknowledged()
     {

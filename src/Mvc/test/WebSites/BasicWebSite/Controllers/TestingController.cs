@@ -111,7 +111,6 @@ public class TestingController : Controller
         return Ok();
     }
 
-
     [HttpPost("Testing/PostRedirectGet/Post/{value}")]
     public IActionResult PostRedirectGetPost([FromRoute] int value)
     {

@@ -26,7 +26,6 @@ internal class RemoveCommand : ICommand
         });
     }
 
-
     public RemoveCommand(string keyName)
     {
         _keyName = keyName;

@@ -31,7 +31,6 @@ internal sealed class FileProviderRazorProjectFileSystem : RazorProjectFileSyste
 
     public IFileProvider FileProvider => _fileProvider.FileProvider;
 
-
     public override RazorProjectItem GetItem(string path)
     {
         return GetItem(path, fileKind: null);

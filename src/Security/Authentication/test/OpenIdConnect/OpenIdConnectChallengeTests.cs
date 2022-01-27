@@ -281,7 +281,6 @@ public class OpenIdConnectChallengeTests
             OpenIdConnectParameterNames.RedirectUri);
     }
 
-
     [Fact]
     public async Task OnRedirectToIdentityProviderEventCanReplaceValues()
     {

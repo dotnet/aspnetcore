@@ -107,7 +107,6 @@ public class ValidatableObjectAdapterTest
         }
     }
 
-
     [Theory]
     [MemberData(nameof(Validate_PassesExpectedNamesData))]
     public void Validate_PassesExpectedNames(

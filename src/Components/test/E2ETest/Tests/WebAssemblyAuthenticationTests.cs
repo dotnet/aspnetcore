@@ -125,7 +125,6 @@ public class WebAssemblyAuthenticationTests : ServerTestBase<AspNetSiteServerFix
         Browser.Exists(By.Id("admin-success"));
     }
 
-
     private void ClickAndNavigate(By link, string page)
     {
         Browser.Exists(link).Click();

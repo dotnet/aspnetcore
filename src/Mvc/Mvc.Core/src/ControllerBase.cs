@@ -1942,7 +1942,6 @@ public abstract class ControllerBase
     public virtual ActionResult ValidationProblem([ActionResultObjectValue] ModelStateDictionary modelStateDictionary)
          => ValidationProblem(detail: null, modelStateDictionary: modelStateDictionary);
 
-
     /// <summary>
     /// Creates an <see cref="ActionResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response
     /// with validation errors from <see cref="ModelState"/>.

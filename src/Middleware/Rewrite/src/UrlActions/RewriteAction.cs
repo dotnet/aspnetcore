@@ -58,7 +58,6 @@ internal class RewriteAction : UrlAction
             pattern = Uri.EscapeDataString(pattern);
         }
 
-
         // TODO PERF, substrings, object creation, etc.
         if (pattern.IndexOf(Uri.SchemeDelimiter, StringComparison.Ordinal) >= 0)
         {

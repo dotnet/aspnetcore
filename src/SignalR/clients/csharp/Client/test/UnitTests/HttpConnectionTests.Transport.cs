@@ -108,7 +108,6 @@ public partial class HttpConnectionTests
             var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
             var requestsExecuted = false;
 
-
             testHttpHandler.OnNegotiate((_, cancellationToken) =>
             {
                 return ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationContent());

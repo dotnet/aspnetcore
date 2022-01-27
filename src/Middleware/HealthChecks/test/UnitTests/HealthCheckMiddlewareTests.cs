@@ -916,7 +916,6 @@ public class HealthCheckMiddlewareTests
         Assert.Equal(StatusCodes.Status503ServiceUnavailable, options.ResultStatusCodes[HealthStatus.Unhealthy]);
     }
 
-
     [Fact]
     public void HealthCheckOptions_DoesNotThrowWhenProperlyConfiguringResultStatusCodes()
     {

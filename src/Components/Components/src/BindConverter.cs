@@ -411,7 +411,6 @@ public static class BindConverter
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
     public static string FormatValue(DateTimeOffset value, CultureInfo? culture = null) => FormatDateTimeOffsetValueCore(value, format: null, culture);
 
-
     /// <summary>
     /// Formats the provided <paramref name="value"/> as a <see cref="System.String"/>.
     /// </summary>

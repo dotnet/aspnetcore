@@ -69,7 +69,6 @@ public class KeyRingTests
         var key1 = new MyKey(expectedEncryptorInstance: expectedEncryptorInstance1, isRevoked: true);
         var key2 = new MyKey(expectedEncryptorInstance: expectedEncryptorInstance2);
 
-
         // Act
         var keyRing = new KeyRing(key2, new[] { key1, key2 });
 

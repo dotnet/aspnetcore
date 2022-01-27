@@ -200,7 +200,6 @@ public class CacheHeaderTests
         Assert.Equal(HttpStatusCode.NotModified, resp2.StatusCode);
     }
 
-
     [Theory]
     [MemberData(nameof(SupportedMethods))]
     public async Task MatchingAtLeastOneETagReturnsNotModified(HttpMethod method)
@@ -427,7 +426,6 @@ public class CacheHeaderTests
 
         Assert.Equal(HttpStatusCode.PreconditionFailed, res2.StatusCode);
     }
-
 
     public static IEnumerable<object[]> SupportedMethods => new[]
     {

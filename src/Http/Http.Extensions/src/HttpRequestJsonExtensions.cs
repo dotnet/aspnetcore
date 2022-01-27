@@ -181,7 +181,6 @@ public static class HttpRequestJsonExtensions
         return false;
     }
 
-
     private static JsonSerializerOptions ResolveSerializerOptions(HttpContext httpContext)
     {
         // Attempt to resolve options from DI then fallback to default options

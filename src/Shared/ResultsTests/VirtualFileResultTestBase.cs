@@ -51,7 +51,6 @@ public abstract class VirtualFileResultTestBase
         var httpContext = GetHttpContext(GetFileProvider(path));
         httpContext.Features.Set<IHttpResponseBodyFeature>(sendFileFeature);
 
-
         var requestHeaders = httpContext.Request.GetTypedHeaders();
         requestHeaders.Range = new RangeHeaderValue(start, end);
         requestHeaders.IfUnmodifiedSince = DateTimeOffset.MinValue.AddDays(1);
@@ -295,7 +294,6 @@ public abstract class VirtualFileResultTestBase
         var sendFileFeature = new TestSendFileFeature();
         var httpContext = GetHttpContext(GetFileProvider(path));
         httpContext.Features.Set<IHttpResponseBodyFeature>(sendFileFeature);
-
 
         var requestHeaders = httpContext.Request.GetTypedHeaders();
         requestHeaders.IfModifiedSince = DateTimeOffset.MinValue.AddDays(1);

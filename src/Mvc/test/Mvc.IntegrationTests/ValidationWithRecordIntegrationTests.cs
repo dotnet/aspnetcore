@@ -227,7 +227,6 @@ public class ValidationWithRecordIntegrationTests
 
     private record Order2([Required] Person2 Customer);
 
-
     private record Person2(string Name);
 
     [Fact]

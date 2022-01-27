@@ -532,7 +532,6 @@ public class AccountController : Controller
         }
     }
 
-
     #region Helpers
 
     private void AddErrors(IdentityResult result)

@@ -1586,7 +1586,6 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-
     [Fact]
     public async Task DoesNotEnforceRequestBodyMinimumDataRateOnUpgradedRequest()
     {

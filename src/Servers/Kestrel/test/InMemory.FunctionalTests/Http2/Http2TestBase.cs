@@ -1378,7 +1378,6 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
             _realTimeoutControl.CancelTimeout();
         }
 
-
         public virtual void InitializeHttp2(InputFlowControl connectionInputFlowControl)
         {
             _realTimeoutControl.InitializeHttp2(connectionInputFlowControl);
@@ -1408,7 +1407,6 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         {
             _realTimeoutControl.BytesRead(count);
         }
-
 
         public virtual void StartTimingWrite()
         {

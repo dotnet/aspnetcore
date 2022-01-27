@@ -44,7 +44,6 @@ public static class AuthenticationBuilderExtensions
             })
             .AddJwtBearer(IdentityServerJwtConstants.IdentityServerJwtBearerScheme, null, o => { });
 
-
         return builder;
 
         static IdentityServerJwtBearerOptionsConfiguration JwtBearerOptionsFactory(IServiceProvider sp)

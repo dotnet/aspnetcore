@@ -582,7 +582,6 @@ public class SniOptionsSelectorTests
         Assert.Equal(SslProtocols.Tls13, options.EnabledSslProtocols);
     }
 
-
     [Fact]
     public void PrefersClientCertificateModeDefinedInSniConfig()
     {

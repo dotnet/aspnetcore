@@ -154,7 +154,6 @@ public class CSharpCompilerTest
         Assert.Equal(LanguageVersion.CSharp7_1, compilationOptions.LanguageVersion);
     }
 
-
     [Fact]
     public void EmitOptions_ReadsDebugTypeFromDependencyContext()
     {

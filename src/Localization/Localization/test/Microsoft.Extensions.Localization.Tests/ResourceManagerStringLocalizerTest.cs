@@ -237,7 +237,6 @@ public class ResourceManagerStringLocalizerTest
         return result;
     }
 
-
     private TestSink Sink { get; } = new TestSink();
 
     private ILogger Logger => new TestLoggerFactory(Sink, enabled: true).CreateLogger<ResourceManagerStringLocalizer>();

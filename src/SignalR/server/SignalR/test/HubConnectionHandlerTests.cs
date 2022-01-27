@@ -4289,7 +4289,6 @@ public class HubConnectionHandlerTests : VerifiableLoggedTest
         }
     }
 
-
     [Fact]
     public async Task StreamHubMethodCanAcceptNullableParameterWithCancellationToken()
     {

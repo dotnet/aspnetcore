@@ -44,7 +44,6 @@ public class AuthenticationSchemeProviderTests
         Assert.Equal("B", (await provider.GetDefaultSignOutSchemeAsync())!.Name);
     }
 
-
     [Fact]
     public async Task DefaultSignOutFallsbackToSignIn()
     {

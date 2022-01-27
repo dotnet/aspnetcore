@@ -33,7 +33,6 @@ public class HttpMethodslTests
         }
     }
 
-
     private void CanonicalizedValueTest(string method, string expectedMethod)
     {
         string inputMethod = CreateStringAtRuntime(method);

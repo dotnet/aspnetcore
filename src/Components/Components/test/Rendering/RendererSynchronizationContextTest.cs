@@ -250,7 +250,6 @@ public class RendererSynchronizationContextTest
             Assert.Same(Thread.CurrentThread, capturedThread);
         }, null);
 
-
         // Assert
         e4.Set();
         await task2;

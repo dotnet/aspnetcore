@@ -27,7 +27,6 @@ public class ClientErrorResultFilterConvention : IActionModelConvention
             return;
         }
 
-
         action.Filters.Add(_filterFactory);
     }
 

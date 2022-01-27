@@ -776,7 +776,6 @@ public class CorsServiceTests
         Assert.Equal("foo", httpContext.Response.Headers["Access-Control-Allow-Headers"]);
     }
 
-
     [Fact]
     public void ApplyResult_NoAllowExposedHeaders_ExposedHeadersHeaderNotAdded()
     {
@@ -838,7 +837,6 @@ public class CorsServiceTests
         // Assert
         Assert.Equal("foo,bar", httpContext.Response.Headers[CorsConstants.AccessControlExposeHeaders]);
     }
-
 
     [Fact]
     public void ApplyResult_OneAllowExposedHeaders_ExposedHeadersHeaderAdded()

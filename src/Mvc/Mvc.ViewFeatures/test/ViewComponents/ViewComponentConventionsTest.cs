@@ -146,7 +146,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponentConventionsTestClasses
     {
     }
 
-
     [ViewComponent]
     public class WithAttribute
     {

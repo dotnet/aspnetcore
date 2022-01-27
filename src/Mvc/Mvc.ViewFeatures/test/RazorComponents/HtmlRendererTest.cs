@@ -75,7 +75,6 @@ public class HtmlRendererTest
         AssertHtmlContentEquals(expectedHtml, result);
     }
 
-
     [Fact]
     public void RenderComponentAsync_DoesNotEncodeMarkup()
     {

@@ -47,7 +47,6 @@ public class ChangeCookieActionTests
         Assert.Equal($"Cookie=Chocolate%20Chip", header);
     }
 
-
     [Fact]
     public void UnsetCookie()
     {

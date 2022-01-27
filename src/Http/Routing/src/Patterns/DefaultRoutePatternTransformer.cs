@@ -3,7 +3,6 @@
 
 #nullable disable
 
-
 namespace Microsoft.AspNetCore.Routing.Patterns;
 
 internal class DefaultRoutePatternTransformer : RoutePatternTransformer

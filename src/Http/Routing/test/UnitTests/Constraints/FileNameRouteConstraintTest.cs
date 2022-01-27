@@ -24,7 +24,6 @@ public class FileNameRouteConstraintTest
         }
     }
 
-
     [Theory]
     [MemberData(nameof(FileNameData))]
     public void Match_RouteValue_IsFileName(object value)

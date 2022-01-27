@@ -260,7 +260,6 @@ public class TagBuilderTest
         // Act
         var clonedTagBuilder = new TagBuilder(originalTagBuilder);
 
-
         // Assert
         Assert.Equal(originalTagBuilder.TagRenderMode, clonedTagBuilder.TagRenderMode);
     }

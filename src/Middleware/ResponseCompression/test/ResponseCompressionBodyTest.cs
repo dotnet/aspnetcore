@@ -22,7 +22,6 @@ public class ResponseCompressionBodyTest
 
         stream.Write(new byte[] { }, 0, 0);
 
-
         Assert.Equal(expectedVaryHeader, httpContext.Response.Headers.Vary);
     }
 
@@ -115,7 +114,6 @@ public class ResponseCompressionBodyTest
             return true;
         }
     }
-
 
     private class MockCompressionProvider : ICompressionProvider
     {

@@ -276,7 +276,6 @@ public class HtmlGenerationTest :
         }
     }
 
-
     [ConditionalTheory]
     [InlineData("Link", null)]
     [InlineData("Script", null)]

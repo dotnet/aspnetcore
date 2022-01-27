@@ -43,7 +43,6 @@ public class CacheableKeyRingTests
         Assert.False(CacheableKeyRing.IsValid(cacheableKeyRing, now.AddHours(1).UtcDateTime));
     }
 
-
     [Fact]
     public void KeyRing_Prop()
     {

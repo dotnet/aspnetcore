@@ -821,7 +821,6 @@ public class RequestDelegateFactoryTests : LoggedTest
         var fromRouteFactoryResult = RequestDelegateFactory.Create((HttpContext httpContext, [FromRoute] MyBindAsyncRecord myBindAsyncRecord) => { });
         var fromQueryFactoryResult = RequestDelegateFactory.Create((HttpContext httpContext, [FromQuery] MyBindAsyncRecord myBindAsyncRecord) => { });
 
-
         var httpContext = CreateHttpContext();
         httpContext.Request.RouteValues["myBindAsyncRecord"] = "foo";
         httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
@@ -2221,7 +2220,6 @@ public class RequestDelegateFactoryTests : LoggedTest
                     new object[] { (Func<Task<object>>)StaticStringAsTaskObjectTestAction },
                     new object[] { (Func<ValueTask<object>>)StaticStringAsValueTaskObjectTestAction },
 
-
                 };
         }
     }
@@ -2664,7 +2662,6 @@ public class RequestDelegateFactoryTests : LoggedTest
                 context.Items["uri"] = mySimpleBindAsyncRecord.Uri;
             }
 
-
             void requiredValueType(HttpContext context, MyNullableBindAsyncStruct myNullableBindAsyncStruct)
             {
                 context.Items["uri"] = myNullableBindAsyncStruct.Uri;
@@ -2810,7 +2807,6 @@ public class RequestDelegateFactoryTests : LoggedTest
             Assert.False(httpContext.RequestAborted.IsCancellationRequested);
         }
     }
-
 
     public static IEnumerable<object?[]> AllowEmptyData
     {

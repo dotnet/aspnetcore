@@ -1426,7 +1426,6 @@ public class RouteTest
         Assert.Empty(pathData.DataTokens);
     }
 
-
     [Fact]
     public void GetVirtualPath_OptionalParameterAfterDefault_OneValueFromAmbientValues()
     {

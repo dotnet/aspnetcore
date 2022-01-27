@@ -124,7 +124,6 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Equal("mousedown,mouseup,", () => output.Text);
     }
 
-
     [Fact]
     public void Toggle_CanTrigger()
     {

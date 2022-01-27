@@ -162,7 +162,6 @@ internal class ConfigurationReader
         return sniDictionary;
     }
 
-
     private static ClientCertificateMode? ParseClientCertificateMode(string? clientCertificateMode)
     {
         if (Enum.TryParse<ClientCertificateMode>(clientCertificateMode, ignoreCase: true, out var result))

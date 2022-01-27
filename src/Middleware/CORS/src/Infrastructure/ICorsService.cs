@@ -19,7 +19,6 @@ public interface ICorsService
     /// used by the caller to set appropriate response headers.</returns>
     CorsResult EvaluatePolicy(HttpContext context, CorsPolicy policy);
 
-
     /// <summary>
     /// Adds CORS-specific response headers to the given <paramref name="response"/>.
     /// </summary>

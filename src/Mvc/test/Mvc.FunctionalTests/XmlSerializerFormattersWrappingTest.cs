@@ -148,7 +148,6 @@ public class XmlSerializerFormattersWrappingTest : IClassFixture<MvcTestFixture<
             result);
     }
 
-
     [Theory]
     [InlineData("http://localhost/IEnumerable/WrappedTypes_NullInstance")]
     [InlineData("http://localhost/IQueryable/WrappedTypes_NullInstance")]

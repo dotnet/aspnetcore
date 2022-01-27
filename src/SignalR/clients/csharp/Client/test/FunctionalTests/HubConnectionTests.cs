@@ -1939,7 +1939,6 @@ public class HubConnectionTests : FunctionalTestBase
                     return Task.CompletedTask;
                 };
 
-
                 await connection.StartAsync().DefaultTimeout();
                 var initialConnectionId = connection.ConnectionId;
 

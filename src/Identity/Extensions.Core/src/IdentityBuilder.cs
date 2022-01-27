@@ -41,7 +41,6 @@ public class IdentityBuilder
     /// </value>
     public Type UserType { get; private set; }
 
-
     /// <summary>
     /// Gets the <see cref="Type"/> used for roles.
     /// </summary>

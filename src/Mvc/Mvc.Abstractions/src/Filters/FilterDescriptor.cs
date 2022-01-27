@@ -44,7 +44,6 @@ public class FilterDescriptor
         Filter = filter;
         Scope = filterScope;
 
-
         if (Filter is IOrderedFilter orderedFilter)
         {
             Order = orderedFilter.Order;

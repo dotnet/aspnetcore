@@ -862,7 +862,6 @@ public class Http2StreamTests : Http2TestBase
             Assert.Equal(12, total);
         });
 
-
         await StartStreamAsync(1, headers, endStream: false);
         await SendDataAsync(1, new byte[1], endStream: false);
         await SendDataAsync(1, new byte[3], endStream: false);
@@ -3492,7 +3491,6 @@ public class Http2StreamTests : Http2TestBase
         await InitializeConnectionAsync(async httpContext =>
         {
             var response = httpContext.Response;
-
 
             var memory = response.BodyWriter.GetMemory(4096);
             var fisrtPartOfResponse = Encoding.ASCII.GetBytes("hello,");

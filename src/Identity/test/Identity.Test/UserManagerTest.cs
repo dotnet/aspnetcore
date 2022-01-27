@@ -626,8 +626,6 @@ public class UserManagerTest
         store.VerifyAll();
     }
 
-
-
     [Fact]
     public async Task RemoveClaimsCallsStore()
     {

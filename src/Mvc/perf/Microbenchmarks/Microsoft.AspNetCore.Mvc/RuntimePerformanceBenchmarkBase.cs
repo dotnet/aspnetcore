@@ -68,7 +68,6 @@ public class RuntimePerformanceBenchmarkBase
         }
     }
 
-
     private class BenchmarkHostingEnvironment : IWebHostEnvironment
     {
         public BenchmarkHostingEnvironment()

@@ -80,7 +80,6 @@ public class AutobahnTests : LoggedTest
 
     private bool IsWindows8OrHigher() => OperatingSystem.IsWindowsVersionAtLeast(6, 2);
 
-
     private bool IsIISExpress10Installed()
     {
         var pf = Environment.GetEnvironmentVariable("PROGRAMFILES");

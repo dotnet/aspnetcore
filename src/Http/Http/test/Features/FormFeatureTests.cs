@@ -474,7 +474,6 @@ InvalidContentDispositionValue +
         formContent.AddRange(Encoding.UTF8.GetBytes(MultipartFormFile));
         formContent.AddRange(Encoding.UTF8.GetBytes(MultipartFormEnd));
 
-
         var context = new DefaultHttpContext();
         var responseFeature = new FakeResponseFeature();
         context.Features.Set<IHttpResponseFeature>(responseFeature);

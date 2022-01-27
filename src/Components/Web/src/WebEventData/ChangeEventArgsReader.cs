@@ -68,6 +68,3 @@ internal static class ChangeEventArgsReader
         return result;
     }
 }
-
-
-

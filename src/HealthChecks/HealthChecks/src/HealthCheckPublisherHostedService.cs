@@ -95,7 +95,6 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
         _timer?.Dispose();
         _timer = null;
 
-
         return Task.CompletedTask;
     }
 
