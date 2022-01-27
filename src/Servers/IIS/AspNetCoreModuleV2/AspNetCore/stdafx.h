@@ -13,8 +13,6 @@
 #define WINVER _WIN32_WINNT_WIN7 
 #define _WIN32_WINNT 0x0601
 
-#define _HAS_ITERATOR_DEBUGGING 0
-
 #include <Windows.h>
 #include <atlbase.h>
 #include <httpserv.h>
