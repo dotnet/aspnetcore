@@ -109,7 +109,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>kernel32.lib;user32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;ahadmin.lib;ws2_32.lib;iphlpapi.lib;version.lib</AdditionalDependencies>
       <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
-      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
     <ResourceCompile>
       <AdditionalIncludeDirectories>..\Commonlib</AdditionalIncludeDirectories>
@@ -145,7 +145,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>kernel32.lib;user32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;ahadmin.lib;ws2_32.lib;iphlpapi.lib;version.lib;C:\Github\aspnetcore\.dotnet\packs\Microsoft.NETCore.App.Host.win-x64\7.0.0-alpha.1.21612.5\runtimes\win-x64\native\libnethost.lib</AdditionalDependencies>
       <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
-      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
       <AdditionalLibraryDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Github\aspnetcore\.dotnet\packs\Microsoft.NETCore.App.Host.win-x64\7.0.0-alpha.1.21612.5\runtimes\win-x64\native</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</IgnoreAllDefaultLibraries>
     </Link>
