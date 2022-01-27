@@ -530,11 +530,11 @@ HostFxrResolver::FindHighestDotNetVersion(
     _In_ std::vector<std::wstring> & vFolders
 )
 {
-    fx_ver_t max_ver(-1, -1, -1);
+    fx_ver_asp_t max_ver(-1, -1, -1);
     for (const auto& dir : vFolders)
     {
-        fx_ver_t fx_ver(-1, -1, -1);
-        if (fx_ver_t::parse(dir, &fx_ver, false))
+        fx_ver_asp_t fx_ver(-1, -1, -1);
+        if (fx_ver_asp_t::parse(dir, &fx_ver, false))
         {
             max_ver = max(max_ver, fx_ver);
         }

@@ -22,7 +22,7 @@ public:
         RemoveFileNameFromFolderPath(std::wstring fileName);
 
     static
-        std::vector<fx_ver_t>
+        std::vector<fx_ver_asp_t>
         GetRequestHandlerVersions(PCWSTR pwzAspNetCoreFolderPath);
 
     static

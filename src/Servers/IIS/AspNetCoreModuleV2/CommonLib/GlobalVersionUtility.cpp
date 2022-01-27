@@ -44,7 +44,7 @@ GlobalVersionUtility::GetGlobalRequestHandlerPath(PCWSTR pwzAspNetCoreFolderPath
 
 // Throw filesystem_error if directory_iterator can't iterate over the directory
 // Throw invalid_argument if any argument is null
-std::vector<fx_ver_t>
+std::vector<fx_ver_asp_t>
 GlobalVersionUtility::GetRequestHandlerVersions(PCWSTR pwzAspNetCoreFolderPath)
 {
     if (pwzAspNetCoreFolderPath == NULL)
@@ -52,7 +52,7 @@ GlobalVersionUtility::GetRequestHandlerVersions(PCWSTR pwzAspNetCoreFolderPath)
         throw new std::invalid_argument("pwzAspNetCoreFolderPath is NULL");
     }
 
-    std::vector<fx_ver_t> versionsInDirectory;
+    std::vector<fx_ver_asp_t> versionsInDirectory;
     for (auto& p : fs::directory_iterator(pwzAspNetCoreFolderPath))
     {
         if (!fs::is_directory(p))
@@ -60,8 +60,8 @@ GlobalVersionUtility::GetRequestHandlerVersions(PCWSTR pwzAspNetCoreFolderPath)
             continue;
         }
 
-        fx_ver_t requested_ver(-1, -1, -1);
-        if (fx_ver_t::parse(p.path().filename(), &requested_ver, false))
+        fx_ver_asp_t requested_ver(-1, -1, -1);
+        if (fx_ver_asp_t::parse(p.path().filename(), &requested_ver, false))
         {
             versionsInDirectory.push_back(requested_ver);
         }
@@ -79,7 +79,7 @@ GlobalVersionUtility::FindHighestGlobalVersion(PCWSTR pwzAspNetCoreFolderPath)
         throw std::invalid_argument("pwzAspNetCoreFolderPath is NULL");
     }
 
-    std::vector<fx_ver_t> versionsInDirectory = GetRequestHandlerVersions(pwzAspNetCoreFolderPath);
+    std::vector<fx_ver_asp_t> versionsInDirectory = GetRequestHandlerVersions(pwzAspNetCoreFolderPath);
     if (versionsInDirectory.empty())
     {
         throw std::runtime_error("Cannot find request handler next to aspnetcorev2.dll. Verify a version of the request handler is installed in a version folder.");
