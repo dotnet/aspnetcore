@@ -41,7 +41,6 @@ public class MultiWithUnspecifiedRequiredParentTagHelper : TagHelper
 {
 }
 
-
 [RestrictChildren("p")]
 public class RestrictChildrenTagHelper
 {

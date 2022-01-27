@@ -551,7 +551,6 @@ public class UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserT
         return Task.CompletedTask;
     }
 
-
     /// <summary>
     /// Remove a new user token.
     /// </summary>

@@ -39,7 +39,6 @@ public class Http2TrailerResetTests
 
     public IISTestSiteFixture Fixture { get; }
 
-
     [ConditionalFact]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers)]
     public async Task ResponseTrailers_HTTP2_TrailersAvailable()
@@ -368,7 +367,6 @@ public class Http2TrailerResetTests
             })
             .Build().RunAsync();
     }
-
 
     [ConditionalFact]
     [RequiresNewHandler]

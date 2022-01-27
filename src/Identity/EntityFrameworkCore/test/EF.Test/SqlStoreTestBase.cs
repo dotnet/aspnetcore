@@ -215,7 +215,6 @@ public abstract class SqlStoreTestBase<TUser, TRole, TKey> : IdentitySpecificati
         Assert.Null(await userMgr.GetAuthenticationTokenAsync(user, "provider", "test"));
     }
 
-
     [ConditionalFact]
     public void CanCreateUserUsingEF()
     {

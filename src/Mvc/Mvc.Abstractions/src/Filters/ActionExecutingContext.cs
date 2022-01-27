@@ -3,7 +3,6 @@
 
 #nullable enable
 
-
 namespace Microsoft.AspNetCore.Mvc.Filters;
 
 /// <summary>

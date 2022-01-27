@@ -452,7 +452,6 @@ public class HttpParserTests : LoggedTest
         Assert.True(result);
     }
 
-
     private bool ParseRequestLine(IHttpParser<RequestHandler> parser, RequestHandler requestHandler, ReadOnlySequence<byte> readableBuffer, out SequencePosition consumed, out SequencePosition examined)
     {
         var reader = new SequenceReader<byte>(readableBuffer);

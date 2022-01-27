@@ -654,7 +654,6 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
 
             InitializeBodyControl(messageBody);
 
-
             var context = application.CreateContext(this);
 
             try

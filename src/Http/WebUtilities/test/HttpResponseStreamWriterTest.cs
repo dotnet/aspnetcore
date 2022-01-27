@@ -785,7 +785,6 @@ public class HttpResponseStreamWriterTest
         });
     }
 
-
     private class TestMemoryStream : MemoryStream
     {
         public int FlushCallCount { get; private set; }

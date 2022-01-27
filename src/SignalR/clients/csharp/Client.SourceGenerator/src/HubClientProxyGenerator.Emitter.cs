@@ -186,7 +186,6 @@ namespace {_spec.SetterNamespace}
                     lambaParams.Append("()");
                 }
 
-
                 var lambda = $"{lambaParams} => provider.{member.Name}{lambaParams}";
                 var call = $"connection.On{genericArgs}(\"{member.Name}\", {lambda})";
 

@@ -128,7 +128,6 @@ public class DefaultApiDescriptionProviderTest
         Assert.Null(description.HttpMethod);
     }
 
-
     [Fact]
     public void GetApiDescription_CreatesMultipleDescriptionsForMultipleHttpMethods()
     {

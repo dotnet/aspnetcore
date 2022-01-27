@@ -116,7 +116,6 @@ public class WebAssemblyLazyLoadTest : ServerTestBase<ToggleExecutionModeServerF
         var errorUiElem = Browser.Exists(By.Id("blazor-error-ui"), TimeSpan.FromSeconds(10));
         Assert.NotNull(errorUiElem);
 
-
         AssertLogContainsCriticalMessages("DoesNotExist.dll must be marked with 'BlazorWebAssemblyLazyLoad' item group in your project file to allow lazy-loading.");
     }
 

@@ -1105,7 +1105,6 @@ public class TreeRouterTest
         Assert.Equal("/a/b/3/d", result.VirtualPath);
     }
 
-
     [Fact]
     public void TreeRouter_GeneratesLink_ForMultipleNamedEntriesWithTheSameTemplate()
     {
@@ -2048,7 +2047,6 @@ public class TreeRouterTest
 
         return entry;
     }
-
 
     private static string CreateRouteGroup(int order, string template)
     {

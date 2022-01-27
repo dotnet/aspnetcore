@@ -95,7 +95,6 @@ public class RoleStore<TRole, TContext, TKey, TUserRole, TRoleClaim> :
 
     private bool _disposed;
 
-
     /// <summary>
     /// Gets the database context for this store.
     /// </summary>

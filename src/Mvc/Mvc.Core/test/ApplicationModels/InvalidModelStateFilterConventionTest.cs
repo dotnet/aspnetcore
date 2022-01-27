@@ -21,7 +21,6 @@ public class InvalidModelStateFilterConventionTest
         Assert.Single(action.Filters.OfType<ModelStateInvalidFilterFactory>());
     }
 
-
     private static ActionModel GetActionModel()
     {
         var action = new ActionModel(typeof(object).GetMethods()[0], new object[0]);

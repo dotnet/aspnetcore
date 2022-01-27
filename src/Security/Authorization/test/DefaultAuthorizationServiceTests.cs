@@ -1159,7 +1159,6 @@ public class DefaultAuthorizationServiceTests
         Assert.True(result.Succeeded);
     }
 
-
     public class BadContextMaker : IAuthorizationHandlerContextFactory
     {
         public AuthorizationHandlerContext CreateContext(IEnumerable<IAuthorizationRequirement> requirements, ClaimsPrincipal user, object resource)

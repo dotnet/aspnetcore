@@ -29,7 +29,6 @@ public class W3CLoggingMiddlewareTests
             null,
             new TestW3CLogger(options, new HostingEnvironment(), NullLoggerFactory.Instance)));
 
-
         Assert.Throws<ArgumentNullException>(() => new W3CLoggingMiddleware(c =>
             {
                 return Task.CompletedTask;

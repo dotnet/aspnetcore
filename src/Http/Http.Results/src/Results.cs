@@ -250,7 +250,6 @@ public static class Results
             EntityTag = entityTag,
         };
 
-
     /// <summary>
     /// Writes the specified <see cref="System.IO.Stream"/> to the response.
     /// <para>

@@ -22,7 +22,6 @@ public class CompositeBindingSourceTest
         var expected = "The provided binding source 'Test Source2' is a composite. " +
             $"'{nameof(composite1.CanAcceptDataFrom)}' requires that the source must represent a single type of input.";
 
-
         // Act & Assert
         ExceptionAssert.ThrowsArgument(
             () => composite1.CanAcceptDataFrom(composite2),

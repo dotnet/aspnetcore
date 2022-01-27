@@ -56,7 +56,6 @@ public class CngGcmAuthenticatedEncryptorDescriptorDeserializerTests
             descriptor: descriptor,
             encryptorFactories: new[] { encryptorFactory });
 
-
         return key.CreateEncryptor();
     }
 }

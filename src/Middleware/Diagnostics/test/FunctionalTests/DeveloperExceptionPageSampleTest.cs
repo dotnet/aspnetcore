@@ -15,7 +15,6 @@ public class DeveloperExceptionPageSampleTest : IClassFixture<TestFixture<Develo
 
     public HttpClient Client { get; }
 
-
     [Fact]
     public async Task DeveloperExceptionPage_ShowsError()
     {

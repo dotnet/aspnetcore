@@ -227,7 +227,6 @@ public class MaxRequestBodySizeTests : LoggedTest
         }
     }
 
-
     [ConditionalFact]
     public async Task SettingMaxRequestBodySizeAfterReadingFromRequestBodyThrows()
     {

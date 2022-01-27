@@ -188,7 +188,6 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
         _renderHandle = renderHandle;
     }
 
-
     /// <summary>
     /// Sets parameters supplied by the component's parent in the render tree.
     /// </summary>

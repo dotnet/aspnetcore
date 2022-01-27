@@ -605,7 +605,6 @@ public class NameValueHeaderValueTest
         Assert.Equal(expected, actual);
     }
 
-
     [Theory]
     [InlineData("\n")]
     [InlineData("\b")]
@@ -645,7 +644,6 @@ public class NameValueHeaderValueTest
 
         Assert.NotEqual(input, actual);
     }
-
 
     #region Helper methods
 

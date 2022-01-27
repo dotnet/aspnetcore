@@ -607,7 +607,6 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         Assert.Contains(TestSink.Writes, w => w.Message.Contains("Body: test"));
     }
 
-
     [Fact]
     public async Task StatusCodeLogs()
     {

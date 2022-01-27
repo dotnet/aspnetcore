@@ -102,7 +102,6 @@ public class HttpMethodOverrideMiddlewareTest
         Assert.True(assertsExecuted);
     }
 
-
     [Fact]
     public async Task FormFieldAvailableChangesRequestMethod()
     {
@@ -136,7 +135,6 @@ public class HttpMethodOverrideMiddlewareTest
             {
                 { "_METHOD", "DELETE" }
             });
-
 
         await server.CreateClient().SendAsync(req);
         Assert.True(assertsExecuted);
@@ -175,7 +173,6 @@ public class HttpMethodOverrideMiddlewareTest
         {
         });
 
-
         await server.CreateClient().SendAsync(req);
         Assert.True(assertsExecuted);
     }
@@ -213,7 +210,6 @@ public class HttpMethodOverrideMiddlewareTest
             {
                 { "_METHOD", "" }
             });
-
 
         await server.CreateClient().SendAsync(req);
         Assert.True(assertsExecuted);

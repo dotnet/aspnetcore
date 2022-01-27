@@ -804,7 +804,6 @@ public class ClientCertificateAuthenticationTests
                             return next(context);
                         });
 
-
                         if (wireUpHeaderMiddleware)
                         {
                             app.UseCertificateForwarding();

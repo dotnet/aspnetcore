@@ -463,7 +463,6 @@ public class Http3ConnectionTests : Http3TestBase
             return Task.CompletedTask;
         });
 
-
         for (int i = 0; i < 3; i++)
         {
             var requestStream = await Http3Api.CreateRequestStream();

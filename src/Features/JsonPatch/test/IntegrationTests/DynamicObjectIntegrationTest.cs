@@ -85,7 +85,6 @@ public class DynamicObjectIntegrationTest
         Assert.Equal("A", dynamicTestObject.NestedDynamicObject.AnotherStringProperty);
     }
 
-
     [Fact]
     public void MoveToNonExistingProperty_InDynamicObject_ShouldAddNewProperty()
     {
@@ -166,7 +165,6 @@ public class DynamicObjectIntegrationTest
         // Assert
         Assert.Equal("The target location specified by path segment 'Simpleobject' was not found.", exception.Message);
     }
-
 
     [Fact]
     public void ReplaceNestedTypedObject_InDynamicObject()

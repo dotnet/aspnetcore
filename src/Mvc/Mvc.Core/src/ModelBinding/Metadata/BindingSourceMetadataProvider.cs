@@ -3,7 +3,6 @@
 
 #nullable enable
 
-
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 
 /// <summary>
@@ -31,7 +30,6 @@ public class BindingSourceMetadataProvider : IBindingMetadataProvider
         Type = type;
         BindingSource = bindingSource;
     }
-
 
     /// <summary>
     /// The <see cref="Type"/>. The provider sets <see cref="BindingSource"/> of the given <see cref="Type"/> or

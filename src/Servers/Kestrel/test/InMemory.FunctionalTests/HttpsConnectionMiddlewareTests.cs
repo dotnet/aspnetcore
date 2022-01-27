@@ -971,7 +971,6 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
             });
         }
 
-
         await using (var server = new TestServer(context => context.Response.WriteAsync("hello world"), new TestServiceContext(LoggerFactory), ConfigureListenOptions))
         {
             // SslStream is used to ensure the certificate is actually passed to the server

@@ -52,7 +52,6 @@ public class AuthenticatedEncryptorDescriptorDeserializerTests
             descriptor,
             new[] { encryptorFactory });
 
-
         return key.CreateEncryptor();
     }
 }

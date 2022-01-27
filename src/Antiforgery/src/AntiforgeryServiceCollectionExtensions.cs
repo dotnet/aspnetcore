@@ -39,7 +39,6 @@ public static class AntiforgeryServiceCollectionExtensions
         services.TryAddSingleton<IAntiforgeryAdditionalDataProvider, DefaultAntiforgeryAdditionalDataProvider>();
         services.TryAddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
 
-
         services.TryAddSingleton<ObjectPool<AntiforgerySerializationContext>>(serviceProvider =>
         {
             var provider = serviceProvider.GetRequiredService<ObjectPoolProvider>();

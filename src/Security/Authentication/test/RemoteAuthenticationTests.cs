@@ -26,7 +26,6 @@ public abstract class RemoteAuthenticationTests<TOptions> : SharedAuthentication
             s.AddSingleton<ISystemClock>(Clock);
         }, testpath);
 
-
     protected virtual async Task<IHost> CreateHostWithServices(Action<IServiceCollection> configureServices, Func<HttpContext, Task> testpath = null)
     {
         var host = new HostBuilder()

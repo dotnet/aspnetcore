@@ -160,7 +160,6 @@ internal abstract class BaseView
             throw new ArgumentNullException(nameof(trailer));
         }
 
-
         WriteLiteralTo(writer, leader);
         foreach (var value in values)
         {

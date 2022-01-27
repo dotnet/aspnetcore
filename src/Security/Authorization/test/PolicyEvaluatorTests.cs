@@ -65,7 +65,6 @@ public class PolicyEvaluatorTests
         Assert.Equal(auth.Principal, result.Principal);
     }
 
-
     [Fact]
     public async Task AuthorizeSucceedsEvenIfAuthenticationFails()
     {

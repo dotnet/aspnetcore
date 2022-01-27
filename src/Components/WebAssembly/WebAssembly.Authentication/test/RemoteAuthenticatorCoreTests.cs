@@ -380,7 +380,6 @@ public class RemoteAuthenticatorCoreTests
             Status = RemoteAuthenticationStatus.Redirect,
         });
 
-
         await Assert.ThrowsAsync<InvalidOperationException>(
             async () => await renderer.Dispatcher.InvokeAsync<object>(async () =>
             {
@@ -559,7 +558,6 @@ public class RemoteAuthenticatorCoreTests
         // Act
         Task result = await renderer.Dispatcher.InvokeAsync<Task>(() => authenticator.SetParametersAsync(parameters));
 
-
         // Assert
         Assert.Null(result.Exception);
     }
@@ -603,7 +601,6 @@ public class RemoteAuthenticatorCoreTests
         validator.RetrieveOriginalRender(authenticator);
         validator.SetupFakeRender(authenticator);
         Task result = await renderer.Dispatcher.InvokeAsync<Task>(() => authenticator.SetParametersAsync(parameters));
-
 
         // Assert
         Assert.True(validator.WasCalled);

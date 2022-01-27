@@ -755,7 +755,6 @@ public class PageBinderFactoryTest
         Assert.Equal("Some error", error.ErrorMessage);
     }
 
-
     private static CompiledPageActionDescriptor GetActionDescriptorWithHandlerMethod(Type type, string method)
     {
         var handlerMethodInfo = type.GetMethod(method);

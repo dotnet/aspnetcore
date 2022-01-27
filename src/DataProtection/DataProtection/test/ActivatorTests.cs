@@ -52,7 +52,6 @@ public class ActivatorTests
         Assert.Null(retVal3.Services);
     }
 
-
     [Fact]
     public void CreateInstance_TypeDoesNotImplementInterface_ThrowsInvalidCast()
     {

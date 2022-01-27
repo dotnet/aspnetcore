@@ -41,7 +41,6 @@ public class LivenessProbeStartup
         // In this example, the readiness check will run all registered checks, include a check with a 
         // long initialization time (15 seconds).
 
-
         // The readiness check uses all registered checks with the 'ready' tag.
         app.UseHealthChecks("/health/ready", new HealthCheckOptions()
         {

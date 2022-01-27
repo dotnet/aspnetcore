@@ -67,7 +67,6 @@ internal partial class RuntimeViewCompiler : IViewCompiler
         _csharpCompiler = csharpCompiler;
         _logger = logger;
 
-
         _normalizedPathCache = new ConcurrentDictionary<string, string>(StringComparer.Ordinal);
 
         // This is our L0 cache, and is a durable store. Views migrate into the cache as they are requested

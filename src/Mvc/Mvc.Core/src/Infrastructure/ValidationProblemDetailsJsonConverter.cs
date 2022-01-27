@@ -16,7 +16,6 @@ internal class ValidationProblemDetailsJsonConverter : JsonConverter<ValidationP
         return problemDetails;
     }
 
-
     public override void Write(Utf8JsonWriter writer, ValidationProblemDetails value, JsonSerializerOptions options)
     {
         HttpValidationProblemDetailsJsonConverter.WriteProblemDetails(writer, value, options);

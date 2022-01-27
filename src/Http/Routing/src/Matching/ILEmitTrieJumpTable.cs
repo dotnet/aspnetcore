@@ -3,7 +3,6 @@
 
 #nullable disable
 
-
 namespace Microsoft.AspNetCore.Routing.Matching;
 
 // Uses generated IL to implement the JumpTable contract. This approach requires

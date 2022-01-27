@@ -989,7 +989,6 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         return TryValidatePath(pathSegment);
     }
 
-
     private bool TryValidateMethod()
     {
         // :method

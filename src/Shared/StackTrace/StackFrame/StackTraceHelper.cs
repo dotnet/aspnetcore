@@ -151,7 +151,6 @@ internal class StackTraceHelper
             return false;
         }
 
-
         var type = method.DeclaringType;
         if (type == null)
         {

@@ -93,7 +93,6 @@ public class InMemoryUserStore<TUser> :
         return Task.FromResult(0);
     }
 
-
     public Task<bool> GetEmailConfirmedAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
     {
         return Task.FromResult(user.EmailConfirmed);

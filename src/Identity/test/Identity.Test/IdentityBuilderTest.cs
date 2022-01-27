@@ -38,7 +38,6 @@ public class IdentityBuilderTest
         Assert.Throws<InvalidOperationException>(() => sp.GetService<RoleManager<PocoRole>>());
     }
 
-
     [Fact]
     public void CanOverrideUserStore()
     {

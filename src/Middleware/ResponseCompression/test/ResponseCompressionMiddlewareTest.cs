@@ -411,7 +411,6 @@ public class ResponseCompressionMiddlewareTest
         AssertLog(logMessages.Skip(1).First(), LogLevel.Debug, "Response compression disabled due to the Content-Range header.");
     }
 
-
     [Fact]
     public async Task Response_WithContentEncodingAlreadySet_NotReCompressed()
     {

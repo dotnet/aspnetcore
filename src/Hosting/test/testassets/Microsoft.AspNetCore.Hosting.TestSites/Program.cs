@@ -73,5 +73,3 @@ public class NoopServer : IServer
         return Task.CompletedTask;
     }
 }
-
-

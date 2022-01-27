@@ -160,7 +160,6 @@ public class DataProtectorTokenProvider<TUser> : IUserTwoFactorTokenProvider<TUs
                     return isEqualsSecurityStamp;
                 }
 
-
                 var stampIsEmpty = stamp == "";
                 if (!stampIsEmpty)
                 {

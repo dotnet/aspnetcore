@@ -213,7 +213,6 @@ public class MvcFactsTest
     }
     #endregion
 
-
     private Task<Compilation> GetIsControllerCompilation() => GetCompilation("IsControllerTests");
 
     private Task<Compilation> GetIsControllerActionCompilation() => GetCompilation("IsControllerActionTests");

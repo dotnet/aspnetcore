@@ -152,7 +152,6 @@ public class ViewComponentResultTest
         var services = CreateServices(diagnosticListener: null, context: actionContext.HttpContext);
         services.AddSingleton<IViewComponentSelector>();
 
-
         var viewComponentResult = new ViewComponentResult
         {
             ViewComponentType = typeof(TextViewComponent),

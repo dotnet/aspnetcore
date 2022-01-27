@@ -1435,7 +1435,6 @@ internal abstract partial class ResourceInvoker
 #pragma warning restore CS1998
     }
 
-
     private static void Rethrow(ResourceExecutedContextSealed context)
     {
         if (context == null)

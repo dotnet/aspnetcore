@@ -62,7 +62,6 @@ public class FilterFactoryTest
                 });
         var filterProviders = new[] { new DefaultFilterProvider() };
 
-
         // Act - 1
         var filterResult = FilterFactory.GetAllFilters(filterProviders, actionContext);
         var request1Filters = filterResult.Filters;

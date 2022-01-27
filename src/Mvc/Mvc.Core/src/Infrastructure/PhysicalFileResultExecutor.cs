@@ -132,7 +132,6 @@ public partial class PhysicalFileResultExecutor : FileResultExecutorBase, IActio
                 FileOptions.Asynchronous | FileOptions.SequentialScan);
     }
 
-
     /// <summary>
     /// Get the file metadata for a path.
     /// </summary>

@@ -80,7 +80,6 @@ public class AdaptiveCapacityDictionaryBenchmark
         _dict[_oneValue.Key] = _oneValue.Value;
     }
 
-
     [Benchmark]
     public void OneValue_SmallDict_Get()
     {
@@ -169,7 +168,6 @@ public class AdaptiveCapacityDictionaryBenchmark
             _ = _smallCapDictTen[val.Key];
         }
     }
-
 
     [Benchmark]
     public void FourValues_Dict()
@@ -304,7 +302,6 @@ public class AdaptiveCapacityDictionaryBenchmark
     {
         _ = new Dictionary<string, string>(capacity: 1);
     }
-
 
     [Benchmark]
     public void SmallDictFour()

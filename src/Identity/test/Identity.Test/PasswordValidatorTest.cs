@@ -28,7 +28,6 @@ public class PasswordValidatorTest
         await Assert.ThrowsAsync<ArgumentNullException>("manager", () => validator.ValidateAsync(null, null, "foo"));
     }
 
-
     [Theory]
     [InlineData("")]
     [InlineData("abc")]

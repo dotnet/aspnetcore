@@ -451,7 +451,6 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
             return true;
         }
 
-
         public override int GetHashCode()
         {
             return (Host?.GetHashCode() ?? 0) ^ (Port?.GetHashCode() ?? 0);

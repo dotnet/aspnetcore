@@ -970,7 +970,6 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         Assert.Equal(CoreStrings.FormatBadRequest_InvalidHostHeader_Detail("a=b"), ex.Message);
     }
 
-
     private bool TakeMessageHeaders(ReadOnlySequence<byte> readableBuffer, bool trailers, out SequencePosition consumed, out SequencePosition examined)
     {
         var reader = new SequenceReader<byte>(readableBuffer);

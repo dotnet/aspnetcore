@@ -110,7 +110,6 @@ public class DefaultViewComponentActivatorTests
         protected internal ViewComponentContext C { get; set; }
     }
 
-
     public class ActivablePropertiesViewComponent : IDisposable
     {
         [ViewComponentContext]

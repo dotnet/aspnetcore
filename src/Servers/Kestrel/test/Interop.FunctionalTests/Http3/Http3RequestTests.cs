@@ -554,7 +554,6 @@ public class Http3RequestTests : LoggedTest
         }
     }
 
-
     private static Version GetProtocol(HttpProtocols protocol)
     {
         switch (protocol)
@@ -1080,7 +1079,6 @@ public class Http3RequestTests : LoggedTest
             var request1 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
             request1.Version = HttpVersion.Version30;
             request1.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
-
 
             // TODO: There is a race between CompleteAsync and Reset.
             // https://github.com/dotnet/aspnetcore/issues/34915

@@ -147,7 +147,6 @@ public class TestDocument
                         break;
                     }
 
-
                 case RenderTreeEditType.UpdateMarkup:
                     {
                         var frame = batch.ReferenceFrames.Array[edit.ReferenceFrameIndex];

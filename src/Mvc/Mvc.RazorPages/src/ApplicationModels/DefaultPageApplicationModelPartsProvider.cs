@@ -17,7 +17,6 @@ internal class DefaultPageApplicationModelPartsProvider : IPageApplicationModelP
     private readonly Func<ActionContext, bool> _supportsAllRequests;
     private readonly Func<ActionContext, bool> _supportsNonGetRequests;
 
-
     public DefaultPageApplicationModelPartsProvider(IModelMetadataProvider modelMetadataProvider)
     {
         _modelMetadataProvider = modelMetadataProvider;

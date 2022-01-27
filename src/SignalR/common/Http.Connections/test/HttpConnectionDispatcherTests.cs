@@ -1511,7 +1511,6 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var options = new HttpConnectionDispatcherOptions();
             await dispatcher.ExecuteAsync(context, options, app);
 
-
             Assert.Equal(StatusCodes.Status404NotFound, context.Response.StatusCode);
 
             if (transportType == HttpTransportType.LongPolling)

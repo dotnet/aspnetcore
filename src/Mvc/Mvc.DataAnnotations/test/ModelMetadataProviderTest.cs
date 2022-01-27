@@ -57,7 +57,6 @@ public class ModelMetadataProviderTest
         Assert.Equal("TypePrefix", metadata.BinderModelName);
     }
 
-
     [Fact]
     public void ModelMetadataProvider_ReadsScaffoldColumnAttribute_ForShowForDisplay()
     {

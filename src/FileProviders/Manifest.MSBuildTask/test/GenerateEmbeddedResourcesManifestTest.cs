@@ -320,7 +320,6 @@ public class GenerateEmbeddedResourcesManifestTest
             AssemblyResourceName = assemblyName
         };
 
-
     public class TestGenerateEmbeddedResourcesManifest
         : GenerateEmbeddedResourcesManifest
     {

@@ -251,7 +251,6 @@ internal sealed class AcceptsMatcherPolicy : MatcherPolicy, IEndpointComparerPol
             edges.Add(string.Empty, anyEndpoints.ToList());
         }
 
-
         return edges
             .Select(kvp => new PolicyNodeEdge(kvp.Key, kvp.Value))
             .ToArray();

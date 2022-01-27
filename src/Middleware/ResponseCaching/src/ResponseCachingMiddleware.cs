@@ -256,7 +256,6 @@ public class ResponseCachingMiddleware
         return false;
     }
 
-
     /// <summary>
     /// Finalize cache headers.
     /// </summary>

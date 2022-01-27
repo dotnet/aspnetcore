@@ -762,7 +762,6 @@ public partial class Startup
             }
         }
 
-
         await ctx.Response.WriteAsync(success ? "Success" : "Failure");
     }
 

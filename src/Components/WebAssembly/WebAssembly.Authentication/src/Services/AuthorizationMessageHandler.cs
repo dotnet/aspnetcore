@@ -126,7 +126,6 @@ public class AuthorizationMessageHandler : DelegatingHandler, IDisposable
         return this;
     }
 
-
     void IDisposable.Dispose()
     {
         if (_provider is AuthenticationStateProvider authStateProvider)

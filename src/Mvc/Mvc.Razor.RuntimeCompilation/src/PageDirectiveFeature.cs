@@ -76,7 +76,6 @@ internal static partial class PageDirectiveFeature
             return Enumerable.Empty<RazorProjectItem>();
         }
 
-
         public override RazorProjectItem GetItem(string path)
         {
             return GetItem(path, fileKind: null);

@@ -826,7 +826,6 @@ this should fail";
         });
         var compilationFileProvider = new RuntimeCompilationFileProvider(options);
 
-
         referenceManager = referenceManager ?? CreateReferenceManager();
         precompiledViews = precompiledViews ?? Array.Empty<CompiledViewDescriptor>();
 

@@ -792,7 +792,6 @@ public class UserManager<TUser> : IDisposable where TUser : class
             throw new ArgumentNullException(nameof(user));
         }
 
-
         if (await VerifyPasswordAsync(passwordStore, user, currentPassword) != PasswordVerificationResult.Failed)
         {
             var result = await UpdatePasswordHash(passwordStore, user, newPassword);

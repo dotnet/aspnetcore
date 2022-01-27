@@ -70,7 +70,6 @@ public static class ConnectionEndpointRouteBuilderExtensions
         return conventionBuilder;
     }
 
-
     /// <summary>
     /// Maps incoming requests with the specified path to the provided connection pipeline.
     /// </summary>

@@ -337,7 +337,6 @@ public class KnownHeaders
                     values = AppendValue(values, valueStr);
                 }}";
 
-
     static string AppendIndexedSwitchSection(KnownHeader header)
     {
         if (header.Name == HeaderNames.ContentLength)

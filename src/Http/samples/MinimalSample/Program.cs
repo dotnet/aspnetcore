@@ -13,7 +13,6 @@ if (app.Environment.IsDevelopment())
 string Plaintext() => "Hello, World!";
 app.MapGet("/plaintext", Plaintext);
 
-
 object Json() => new { message = "Hello, World!" };
 app.MapGet("/json", Json);
 

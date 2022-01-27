@@ -22,7 +22,6 @@ public class PageHandlerResultFilterTest
             new ModelStateDictionary()));
         var model = new Mock<PageModel>();
 
-
         var modelAsFilter = model.As<IAsyncResultFilter>();
         modelAsFilter
             .Setup(f => f.OnResultExecutionAsync(It.IsAny<ResultExecutingContext>(), It.IsAny<ResultExecutionDelegate>()))

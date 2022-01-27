@@ -55,7 +55,6 @@ public class DefaultConnectionContext : ConnectionContext,
         ConnectionClosed = _connectionClosedTokenSource.Token;
     }
 
-
     /// <summary>
     /// Creates the DefaultConnectionContext with the given <paramref name="transport"/> and <paramref name="application"/> pipes.
     /// </summary>

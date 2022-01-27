@@ -231,7 +231,6 @@ public class CacheControlHeaderValueTest
         cacheControl3.PrivateHeaders.Add("PLACEHOLDER2");
         CompareHashCodes(cacheControl1, cacheControl3, false);
 
-
         cacheControl4.Extensions.Add(new NameValueHeaderValue("custom"));
         CompareHashCodes(cacheControl1, cacheControl4, false);
 

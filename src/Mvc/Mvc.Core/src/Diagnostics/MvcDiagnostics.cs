@@ -439,7 +439,6 @@ public sealed class BeforeResourceFilterOnResourceExecutedEventData : EventData
         Filter = filter;
     }
 
-
     /// <summary>
     /// The action.
     /// </summary>

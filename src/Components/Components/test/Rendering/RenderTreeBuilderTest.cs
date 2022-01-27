@@ -1660,7 +1660,6 @@ public class RenderTreeBuilderTest
             f => AssertFrame.Attribute(f, "id", "bye"));
     }
 
-
     [Fact]
     public void ProcessDuplicateAttributes_StopsAtFirstNonAttributeFrame_Capture()
     {
