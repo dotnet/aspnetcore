@@ -718,8 +718,10 @@ public class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(expectedParameterValue, httpContext.Items["tryParsable"]);
     }
 
-    [Fact]
-    public async Task RequestDelegateHandlesArraysFromQueryString()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task RequestDelegateHandlesArraysFromQueryString(bool disableInferBodyFromParameters)
     {
         var httpContext = CreateHttpContext();
         httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
@@ -730,13 +732,70 @@ public class RequestDelegateFactoryTests : LoggedTest
         var factoryResult = RequestDelegateFactory.Create((HttpContext context, int[] a) =>
         {
             context.Items["tryParsable"] = a;
-        }, new() { DisableInferBodyFromParameters = true });
+        }, new() { DisableInferBodyFromParameters = disableInferBodyFromParameters });
 
         var requestDelegate = factoryResult.RequestDelegate;
 
         await requestDelegate(httpContext);
 
-        Assert.Equal(new[] { 1, 2, 3 }, (int[])httpContext.Items["tryParsable"]!);
+        if (disableInferBodyFromParameters)
+        {
+            Assert.Equal(new[] { 1, 2, 3 }, (int[])httpContext.Items["tryParsable"]!);
+        }
+        else
+        {
+            Assert.Null(httpContext.Items["tryParsable"]);
+        }
+    }
+
+    [Fact]
+    public async Task RequestDelegateHandlesArraysFromQueryStringParesFailureWithOptionalArray()
+    {
+        var httpContext = CreateHttpContext();
+        var wasCalled = false;
+
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["a"] = new(new[] { "1", "2", "", "3" })
+        });
+
+        var factoryResult = RequestDelegateFactory.Create((HttpContext context, int[]? a) =>
+        {
+            wasCalled = true;
+            context.Items["tryParsable"] = a;
+        }, new() { DisableInferBodyFromParameters = true, });
+
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Null(httpContext.Items["tryParsable"]);
+        Assert.True(wasCalled);
+    }
+
+    [Fact]
+    public async Task RequestDelegateHandlesArraysFromQueryStringParesFailureWithOptionalValues()
+    {
+        var httpContext = CreateHttpContext();
+        var wasCalled = false;
+
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["a"] = new(new[] { "1", "2", "", "3" })
+        });
+
+        var factoryResult = RequestDelegateFactory.Create((HttpContext context, int?[] a) =>
+        {
+            wasCalled = true;
+            context.Items["tryParsable"] = a;
+        }, new() { DisableInferBodyFromParameters = true, });
+
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(new int?[] { 1, 2, null, 3 }, (int?[])httpContext.Items["tryParsable"]!);
+        Assert.True(wasCalled);
     }
 
     [Fact]

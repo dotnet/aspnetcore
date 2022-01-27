@@ -171,7 +171,7 @@ public static partial class RequestDelegateFactory
 
         var arguments = CreateArguments(methodInfo.GetParameters(), factoryContext);
 
-        var responseWritingMethodCall = factoryContext.Expressions.Count > 0 ?
+        var responseWritingMethodCall = factoryContext.ParamCheckExpressions.Count > 0 ?
             CreateParamCheckingResponseWritingMethodCall(methodInfo, targetExpression, arguments, factoryContext) :
             CreateResponseWritingMethodCall(methodInfo, targetExpression, arguments);
 
@@ -426,20 +426,20 @@ public static partial class RequestDelegateFactory
         //         };
         // }
 
-        var localVariables = new ParameterExpression[factoryContext.Locals.Count + 1];
-        var blockExpressions = new Expression[factoryContext.Expressions.Count + 1];
+        var localVariables = new ParameterExpression[factoryContext.ExtraLocals.Count + 1];
+        var blockExpressions = new Expression[factoryContext.ParamCheckExpressions.Count + 1];
 
-        for (var i = 0; i < factoryContext.Locals.Count; i++)
+        for (var i = 0; i < factoryContext.ExtraLocals.Count; i++)
         {
-            localVariables[i] = factoryContext.Locals[i];
+            localVariables[i] = factoryContext.ExtraLocals[i];
         }
 
-        for (var i = 0; i < factoryContext.Expressions.Count; i++)
+        for (var i = 0; i < factoryContext.ParamCheckExpressions.Count; i++)
         {
-            blockExpressions[i] = factoryContext.Expressions[i];
+            blockExpressions[i] = factoryContext.ParamCheckExpressions[i];
         }
 
-        localVariables[factoryContext.Locals.Count] = WasParamCheckFailureExpr;
+        localVariables[factoryContext.ExtraLocals.Count] = WasParamCheckFailureExpr;
 
         var set400StatusAndReturnCompletedTask = Expression.Block(
                 Expression.Assign(StatusCodeExpr, Expression.Constant(400)),
@@ -451,7 +451,7 @@ public static partial class RequestDelegateFactory
             set400StatusAndReturnCompletedTask,
             AddResponseWritingToMethodCall(methodCall, methodInfo.ReturnType));
 
-        blockExpressions[factoryContext.Expressions.Count] = checkWasParamCheckFailure;
+        blockExpressions[factoryContext.ParamCheckExpressions.Count] = checkWasParamCheckFailure;
 
         return Expression.Block(localVariables, blockExpressions);
     }
@@ -1058,6 +1058,7 @@ public static partial class RequestDelegateFactory
                                        // else break
                                        Expression.Break(loopExit)
                                  ),
+                                 // index++
                                  Expression.PostIncrementAssign(index)
                             )
                         , loopExit)
@@ -1083,8 +1084,8 @@ public static partial class RequestDelegateFactory
                 ifNotNullTryParse)
         };
 
-        factoryContext.Locals.Add(argument);
-        factoryContext.Expressions.Add(fullParamCheckBlock);
+        factoryContext.ExtraLocals.Add(argument);
+        factoryContext.ParamCheckExpressions.Add(fullParamCheckBlock);
 
         return argument;
     }
@@ -1126,8 +1127,8 @@ public static partial class RequestDelegateFactory
                 )
             );
 
-            factoryContext.Locals.Add(argument);
-            factoryContext.Expressions.Add(checkRequiredStringParameterBlock);
+            factoryContext.ExtraLocals.Add(argument);
+            factoryContext.ParamCheckExpressions.Add(checkRequiredStringParameterBlock);
             return argument;
         }
 
@@ -1196,7 +1197,7 @@ public static partial class RequestDelegateFactory
                     )
                 );
 
-            factoryContext.Expressions.Add(checkRequiredBodyBlock);
+            factoryContext.ParamCheckExpressions.Add(checkRequiredBodyBlock);
         }
 
         // (ParameterType)boundValues[i]
@@ -1282,7 +1283,7 @@ public static partial class RequestDelegateFactory
                 //    wasParamCheckFailure = true;
                 //    Log.ImplicitBodyNotProvided(httpContext, "todo", ThrowOnBadRequest);
                 // }
-                factoryContext.Expressions.Add(Expression.Block(
+                factoryContext.ParamCheckExpressions.Add(Expression.Block(
                     Expression.IfThen(
                         Expression.Equal(BodyValueExpr, Expression.Constant(null)),
                         Expression.Block(
@@ -1320,7 +1321,7 @@ public static partial class RequestDelegateFactory
                         )
                     )
                 );
-                factoryContext.Expressions.Add(checkRequiredBodyBlock);
+                factoryContext.ParamCheckExpressions.Add(checkRequiredBodyBlock);
             }
         }
         else if (parameter.HasDefaultValue)
@@ -1544,8 +1545,8 @@ public static partial class RequestDelegateFactory
         public bool AllowEmptyRequestBody { get; set; }
 
         public bool UsingTempSourceString { get; set; }
-        public List<ParameterExpression> Locals { get; } = new();
-        public List<Expression> Expressions { get; } = new();
+        public List<ParameterExpression> ExtraLocals { get; } = new();
+        public List<Expression> ParamCheckExpressions { get; } = new();
         public List<Func<HttpContext, ValueTask<object?>>> ParameterBinders { get; } = new();
 
         public Dictionary<string, string> TrackedParameters { get; } = new();
