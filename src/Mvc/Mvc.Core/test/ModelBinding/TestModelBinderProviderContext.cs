@@ -1,10 +1,11 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using System.Reflection;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding;
 
@@ -28,6 +29,21 @@ public class TestModelBinderProviderContext : ModelBinderProviderContext
         Metadata = CachedMetadataProvider.GetMetadataForType(modelType);
         MetadataProvider = CachedMetadataProvider;
         _bindingInfo = bindingInfo ?? new BindingInfo
+        {
+            BinderModelName = Metadata.BinderModelName,
+            BinderType = Metadata.BinderType,
+            BindingSource = Metadata.BindingSource,
+            PropertyFilterProvider = Metadata.PropertyFilterProvider,
+        };
+
+        (Services, MvcOptions) = GetServicesAndOptions();
+    }
+
+    public TestModelBinderProviderContext(ParameterInfo parameterInfo)
+    {
+        Metadata = CachedMetadataProvider.GetMetadataForParameter(parameterInfo);
+        MetadataProvider = CachedMetadataProvider;
+        _bindingInfo = new BindingInfo
         {
             BinderModelName = Metadata.BinderModelName,
             BinderType = Metadata.BinderType,

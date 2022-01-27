@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System.Reflection;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 
@@ -11,9 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 /// </summary>
 public class ServicesModelBinderProvider : IModelBinderProvider
 {
-    // ServicesModelBinder does not have any state. Re-use the same instance for binding.
-
-    private readonly ServicesModelBinder _modelBinder = new ServicesModelBinder();
+    private readonly NullabilityInfoContext _nullabilityContext = new();
 
     /// <inheritdoc />
     public IModelBinder? GetBinder(ModelBinderProviderContext context)
@@ -26,9 +25,16 @@ public class ServicesModelBinderProvider : IModelBinderProvider
         if (context.BindingInfo.BindingSource != null &&
             context.BindingInfo.BindingSource.CanAcceptDataFrom(BindingSource.Services))
         {
-            return _modelBinder;
+            return new ServicesModelBinder()
+            {
+                IsOptionalParameter = IsOptionalParameter(context.Metadata.Identity.ParameterInfo!)
+            };
         }
 
         return null;
     }
+
+    internal bool IsOptionalParameter(ParameterInfo parameterInfo) =>
+        parameterInfo.HasDefaultValue ||
+        _nullabilityContext.Create(parameterInfo).ReadState == NullabilityState.Nullable;
 }
