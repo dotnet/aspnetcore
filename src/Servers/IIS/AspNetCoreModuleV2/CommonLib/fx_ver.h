@@ -7,15 +7,15 @@
 #include <string>
 
 // Note: This is intended to implement SemVer 2.0
-struct fx_ver_t
+struct fx_ver_asp_t
 {
-    fx_ver_t();
-    fx_ver_t(int major, int minor, int patch);
+    fx_ver_asp_t();
+    fx_ver_asp_t(int major, int minor, int patch);
     // if not empty pre contains valid prerelease label with leading '-'
-    fx_ver_t(int major, int minor, int patch, const std::wstring& pre);
+    fx_ver_asp_t(int major, int minor, int patch, const std::wstring& pre);
     // if not empty pre contains valid prerelease label with leading '-'
     // if not empty build contains valid build label with leading '+'
-    fx_ver_t(int major, int minor, int patch, const std::wstring& pre, const std::wstring& build);
+    fx_ver_asp_t(int major, int minor, int patch, const std::wstring& pre, const std::wstring& build);
 
     int get_major() const { return m_major; }
     int get_minor() const { return m_minor; }
@@ -33,14 +33,14 @@ struct fx_ver_t
     std::wstring prerelease_glob() const;
     std::wstring patch_glob() const;
 
-    bool operator ==(const fx_ver_t& b) const;
-    bool operator !=(const fx_ver_t& b) const;
-    bool operator <(const fx_ver_t& b) const;
-    bool operator >(const fx_ver_t& b) const;
-    bool operator <=(const fx_ver_t& b) const;
-    bool operator >=(const fx_ver_t& b) const;
+    bool operator ==(const fx_ver_asp_t& b) const;
+    bool operator !=(const fx_ver_asp_t& b) const;
+    bool operator <(const fx_ver_asp_t& b) const;
+    bool operator >(const fx_ver_asp_t& b) const;
+    bool operator <=(const fx_ver_asp_t& b) const;
+    bool operator >=(const fx_ver_asp_t& b) const;
 
-    static bool parse(const std::wstring& ver, fx_ver_t* fx_ver, bool parse_only_production = false);
+    static bool parse(const std::wstring& ver, fx_ver_asp_t* fx_ver, bool parse_only_production = false);
 
 private:
     int m_major;
@@ -49,7 +49,7 @@ private:
     std::wstring m_pre;
     std::wstring m_build;
 
-    static int compare(const fx_ver_t& a, const fx_ver_t& b);
+    static int compare(const fx_ver_asp_t& a, const fx_ver_asp_t& b);
 };
 
 #endif // __FX_VER_H__
