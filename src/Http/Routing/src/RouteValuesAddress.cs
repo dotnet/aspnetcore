@@ -3,7 +3,7 @@
 
 #nullable enable
 
-using System.Collections.Immutable;
+using System.Linq;
 namespace Microsoft.AspNetCore.Routing;
 
 /// <summary>
@@ -29,6 +29,6 @@ public class RouteValuesAddress
     /// <summary>
     /// Formats the address as string "Name(ExplicitValues)" for tracing/debugging.
     /// </summary>
-    public override string ToString() => $"{RouteName}(" + string.Join(',', ExplicitValues.ToImmutableList().ConvertAll(kv => $"{kv.Key}=[{kv.Value}]")) + ")";
+    public override string ToString() => $"{RouteName}(" + string.Join(',', from kv in ExplicitValues select $"{kv.Key}=[{kv.Value}]") + ")";
 
 }
