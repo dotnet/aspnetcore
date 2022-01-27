@@ -2,12 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <!-- Test asset publishing not working on arm64 https://github.com/dotnet/aspnetcore/issues/11205 -->
-    <SkipHelixArm>true</SkipHelixArm>
-   </PropertyGroup>
+  </PropertyGroup>
 
   <ItemGroup>
-
     <Compile Include="..\..\Extensions.Core\src\Base32.cs" Link="Infrastructure\Base32.cs" />
     <Compile Include="..\..\Extensions.Core\src\Rfc6238AuthenticationService.cs" Link="Infrastructure\Rfc6238AuthenticationService.cs" />
     <Compile Include="..\..\UI\src\UIFramework.cs" Link="Infrastructure\UIFramework.cs" />
