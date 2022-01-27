@@ -171,7 +171,7 @@ public static partial class RequestDelegateFactory
 
         var arguments = CreateArguments(methodInfo.GetParameters(), factoryContext);
 
-        var responseWritingMethodCall = factoryContext.ParamCheckExpressions.Count > 0 ?
+        var responseWritingMethodCall = factoryContext.Expressions.Count > 0 ?
             CreateParamCheckingResponseWritingMethodCall(methodInfo, targetExpression, arguments, factoryContext) :
             CreateResponseWritingMethodCall(methodInfo, targetExpression, arguments);
 
@@ -202,6 +202,13 @@ public static partial class RequestDelegateFactory
             var errorMessage = BuildErrorMessageForInferredBodyParameter(factoryContext);
             throw new InvalidOperationException(errorMessage);
         }
+
+        if (factoryContext.HasInferredBody && factoryContext.HasInferredQueryArray)
+        {
+            var errorMessage = BuildErrorMessageForQueryAndJsonBodyParameters(factoryContext);
+            throw new InvalidOperationException(errorMessage);
+        }
+
         if (factoryContext.JsonRequestBodyParameter is not null &&
             factoryContext.FirstFormRequestBodyParameter is not null)
         {
@@ -317,7 +324,7 @@ public static partial class RequestDelegateFactory
         {
             return BindParameterFromBindAsync(parameter, factoryContext);
         }
-        else if (parameter.ParameterType == typeof(string) || ParameterBindingMethodCache.HasTryParseMethod(parameter))
+        else if (parameter.ParameterType == typeof(string) || ParameterBindingMethodCache.HasTryParseMethod(parameter.ParameterType))
         {
             // 1. We bind from route values only, if route parameters are non-null and the parameter name is in that set.
             // 2. We bind from query only, if route parameters are non-null and the parameter name is NOT in that set.
@@ -341,6 +348,17 @@ public static partial class RequestDelegateFactory
 
             factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.RouteOrQueryStringParameter);
             return BindParameterFromRouteValueOrQueryString(parameter, parameter.Name, factoryContext);
+        }
+        else if (parameter.ParameterType.IsArray && factoryContext.DisableInferredFromBody && ParameterBindingMethodCache.HasTryParseMethod(parameter.ParameterType.GetElementType()!))
+        {
+            // We only infer parameter types if you have an array of TryParsables and:
+            // - DisableInferredFromBody is true
+            // - TBD: You have explicitly declared a [FromBody] so it's no longer ambiguous
+
+            factoryContext.HasInferredQueryArray = true;
+
+            factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.QueryStringParameter);
+            return BindParameterFromProperty(parameter, QueryExpr, parameter.Name, factoryContext, "query string");
         }
         else
         {
@@ -408,20 +426,20 @@ public static partial class RequestDelegateFactory
         //         };
         // }
 
-        var localVariables = new ParameterExpression[factoryContext.ExtraLocals.Count + 1];
-        var checkParamAndCallMethod = new Expression[factoryContext.ParamCheckExpressions.Count + 1];
+        var localVariables = new ParameterExpression[factoryContext.Locals.Count + 1];
+        var blockExpressions = new Expression[factoryContext.Expressions.Count + 1];
 
-        for (var i = 0; i < factoryContext.ExtraLocals.Count; i++)
+        for (var i = 0; i < factoryContext.Locals.Count; i++)
         {
-            localVariables[i] = factoryContext.ExtraLocals[i];
+            localVariables[i] = factoryContext.Locals[i];
         }
 
-        for (var i = 0; i < factoryContext.ParamCheckExpressions.Count; i++)
+        for (var i = 0; i < factoryContext.Expressions.Count; i++)
         {
-            checkParamAndCallMethod[i] = factoryContext.ParamCheckExpressions[i];
+            blockExpressions[i] = factoryContext.Expressions[i];
         }
 
-        localVariables[factoryContext.ExtraLocals.Count] = WasParamCheckFailureExpr;
+        localVariables[factoryContext.Locals.Count] = WasParamCheckFailureExpr;
 
         var set400StatusAndReturnCompletedTask = Expression.Block(
                 Expression.Assign(StatusCodeExpr, Expression.Constant(400)),
@@ -433,9 +451,9 @@ public static partial class RequestDelegateFactory
             set400StatusAndReturnCompletedTask,
             AddResponseWritingToMethodCall(methodCall, methodInfo.ReturnType));
 
-        checkParamAndCallMethod[factoryContext.ParamCheckExpressions.Count] = checkWasParamCheckFailure;
+        blockExpressions[factoryContext.Expressions.Count] = checkWasParamCheckFailure;
 
-        return Expression.Block(localVariables, checkParamAndCallMethod);
+        return Expression.Block(localVariables, blockExpressions);
     }
 
     private static Expression AddResponseWritingToMethodCall(Expression methodCall, Type returnType)
@@ -891,15 +909,17 @@ public static partial class RequestDelegateFactory
 
         factoryContext.UsingTempSourceString = true;
 
-        var underlyingNullableType = Nullable.GetUnderlyingType(parameter.ParameterType);
+        var targetParseType = parameter.ParameterType.IsArray ? parameter.ParameterType.GetElementType()! : parameter.ParameterType;
+
+        var underlyingNullableType = Nullable.GetUnderlyingType(targetParseType);
         var isNotNullable = underlyingNullableType is null;
 
-        var nonNullableParameterType = underlyingNullableType ?? parameter.ParameterType;
+        var nonNullableParameterType = underlyingNullableType ?? targetParseType;
         var tryParseMethodCall = ParameterBindingMethodCache.FindTryParseMethod(nonNullableParameterType);
 
         if (tryParseMethodCall is null)
         {
-            var typeName = TypeNameHelper.GetTypeDisplayName(parameter.ParameterType, fullName: false);
+            var typeName = TypeNameHelper.GetTypeDisplayName(targetParseType, fullName: false);
             throw new InvalidOperationException($"No public static bool {typeName}.TryParse(string, out {typeName}) method found for {parameter.Name}.");
         }
 
@@ -940,8 +960,30 @@ public static partial class RequestDelegateFactory
         //     param2_local = 42;
         // }
 
+        // string[]? values = httpContext.Request.Query["param1"].ToArray();
+        // int[] param_local = values.Length > 0 ? new int[values.Length] : Array.Empty<int>();
+
+        // if (values != null)
+        // {
+        //     int index = 0;
+        //     while (index < values.Length)
+        //     {
+        //         tempSourceString = values[i];
+        //         if (int.TryParse(tempSourceString, out var parsedValue))
+        //         {
+        //             param_local[i] = parsedValue;
+        //         }
+        //         else
+        //         {
+        //             wasParamCheckFailure = true;
+        //             Log.ParameterBindingFailed(httpContext, "Int32[]", "param1", tempSourceString);
+        //             break;
+        //         }
+        //     }
+        // }
+
         // If the parameter is nullable, create a "parsedValue" local to TryParse into since we cannot use the parameter directly.
-        var parsedValue = isNotNullable ? argument : Expression.Variable(nonNullableParameterType, "parsedValue");
+        var parsedValue = Expression.Variable(nonNullableParameterType, "parsedValue");
 
         var failBlock = Expression.Block(
             Expression.Assign(WasParamCheckFailureExpr, Expression.Constant(true)),
@@ -970,36 +1012,79 @@ public static partial class RequestDelegateFactory
             )
         );
 
+        var index = Expression.Variable(typeof(int), "index");
+
         // If the parameter is nullable, we need to assign the "parsedValue" local to the nullable parameter on success.
-        Expression tryParseExpression = isNotNullable ?
-            Expression.IfThen(Expression.Not(tryParseCall), failBlock) :
-            Expression.Block(new[] { parsedValue },
+        var tryParseExpression = Expression.Block(new[] { parsedValue },
                 Expression.IfThenElse(tryParseCall,
-                    Expression.Assign(argument, Expression.Convert(parsedValue, parameter.ParameterType)),
+                    Expression.Assign(parameter.ParameterType.IsArray ? Expression.ArrayAccess(argument, index) : argument, Expression.Convert(parsedValue, targetParseType)),
                     failBlock));
 
-        var ifNotNullTryParse = !parameter.HasDefaultValue ?
-            Expression.IfThen(TempSourceStringNotNullExpr, tryParseExpression) :
-            Expression.IfThenElse(TempSourceStringNotNullExpr,
-                tryParseExpression,
-                Expression.Assign(argument, Expression.Constant(parameter.DefaultValue)));
+        var ifNotNullTryParse = !parameter.HasDefaultValue
+            ? Expression.IfThen(TempSourceStringNotNullExpr, tryParseExpression)
+            : Expression.IfThenElse(TempSourceStringNotNullExpr, tryParseExpression,
+                Expression.Assign(argument,
+                Expression.Constant(parameter.DefaultValue)));
 
-        var fullParamCheckBlock = !isOptional
-            ? Expression.Block(
+        var loopExit = Expression.Label();
+        // We can reuse this like we reuse temp source string
+        ParameterExpression? stringArrayExpr = parameter.ParameterType.IsArray ? Expression.Variable(typeof(string[]), "tempStringArray") : null;
+
+        var fullParamCheckBlock = (parameter.ParameterType.IsArray, isOptional) switch
+        {
+            (true, _) =>
+
+            Expression.Block(
+                new[] { index, stringArrayExpr! },
+                // values = httpContext.Request.Query["id"];
+                Expression.Assign(stringArrayExpr!, valueExpression),
+                Expression.IfThen(
+                    Expression.NotEqual(stringArrayExpr!, Expression.Constant(null)),
+                    Expression.Block(
+                        // param_local = new int[values.Length];
+                        Expression.Assign(argument, Expression.NewArrayBounds(parameter.ParameterType.GetElementType()!, Expression.ArrayLength(stringArrayExpr!))),
+                        // index = 0
+                        Expression.Assign(index, Expression.Constant(0)),
+                        // while (index < values.Length)
+                        Expression.Loop(
+                            Expression.Block(
+                                Expression.IfThenElse(
+                                    Expression.LessThan(index, Expression.ArrayLength(stringArrayExpr!)),
+                                        // tempSourceString = values[index];
+                                        Expression.Block(
+                                            Expression.Assign(TempSourceStringExpr, Expression.ArrayIndex(stringArrayExpr!, index)),
+                                            tryParseExpression
+                                        ),
+                                       // else break
+                                       Expression.Break(loopExit)
+                                 ),
+                                 Expression.PostIncrementAssign(index)
+                            )
+                        , loopExit)
+                    )
+                )
+            ),
+            (false, false) =>
+
+            Expression.Block(
                 // tempSourceString = httpContext.RequestValue["id"];
                 Expression.Assign(TempSourceStringExpr, valueExpression),
                 // if (tempSourceString == null) { ... } only produced when parameter is required
                 checkRequiredParaseableParameterBlock,
                 // if (tempSourceString != null) { ... }
-                ifNotNullTryParse)
-            : Expression.Block(
+                ifNotNullTryParse),
+
+            (false, true) =>
+
+            Expression.Block(
                 // tempSourceString = httpContext.RequestValue["id"];
                 Expression.Assign(TempSourceStringExpr, valueExpression),
                 // if (tempSourceString != null) { ... }
-                ifNotNullTryParse);
+                ifNotNullTryParse)
+        };
 
-        factoryContext.ExtraLocals.Add(argument);
-        factoryContext.ParamCheckExpressions.Add(fullParamCheckBlock);
+        factoryContext.Locals.Add(argument);
+        factoryContext.Expressions.Add(fullParamCheckBlock);
 
         return argument;
     }
@@ -1041,8 +1126,8 @@ public static partial class RequestDelegateFactory
                 )
             );
 
-            factoryContext.ExtraLocals.Add(argument);
-            factoryContext.ParamCheckExpressions.Add(checkRequiredStringParameterBlock);
+            factoryContext.Locals.Add(argument);
+            factoryContext.Expressions.Add(checkRequiredStringParameterBlock);
             return argument;
         }
 
@@ -1065,7 +1150,7 @@ public static partial class RequestDelegateFactory
     }
 
     private static Expression BindParameterFromProperty(ParameterInfo parameter, MemberExpression property, string key, FactoryContext factoryContext, string source) =>
-        BindParameterFromValue(parameter, GetValueFromProperty(property, key), factoryContext, source);
+        BindParameterFromValue(parameter, GetValueFromProperty(property, key, parameter.ParameterType.IsArray ? typeof(string[]) : null), factoryContext, source);
 
     private static Expression BindParameterFromRouteValueOrQueryString(ParameterInfo parameter, string key, FactoryContext factoryContext)
     {
@@ -1111,7 +1196,7 @@ public static partial class RequestDelegateFactory
                     )
                 );
 
-            factoryContext.ParamCheckExpressions.Add(checkRequiredBodyBlock);
+            factoryContext.Expressions.Add(checkRequiredBodyBlock);
         }
 
         // (ParameterType)boundValues[i]
@@ -1197,7 +1282,7 @@ public static partial class RequestDelegateFactory
                 //    wasParamCheckFailure = true;
                 //    Log.ImplicitBodyNotProvided(httpContext, "todo", ThrowOnBadRequest);
                 // }
-                factoryContext.ParamCheckExpressions.Add(Expression.Block(
+                factoryContext.Expressions.Add(Expression.Block(
                     Expression.IfThen(
                         Expression.Equal(BodyValueExpr, Expression.Constant(null)),
                         Expression.Block(
@@ -1235,7 +1320,7 @@ public static partial class RequestDelegateFactory
                         )
                     )
                 );
-                factoryContext.ParamCheckExpressions.Add(checkRequiredBodyBlock);
+                factoryContext.Expressions.Add(checkRequiredBodyBlock);
             }
         }
         else if (parameter.HasDefaultValue)
@@ -1459,13 +1544,14 @@ public static partial class RequestDelegateFactory
         public bool AllowEmptyRequestBody { get; set; }
 
         public bool UsingTempSourceString { get; set; }
-        public List<ParameterExpression> ExtraLocals { get; } = new();
-        public List<Expression> ParamCheckExpressions { get; } = new();
+        public List<ParameterExpression> Locals { get; } = new();
+        public List<Expression> Expressions { get; } = new();
         public List<Func<HttpContext, ValueTask<object?>>> ParameterBinders { get; } = new();
 
         public Dictionary<string, string> TrackedParameters { get; } = new();
         public bool HasMultipleBodyParameters { get; set; }
         public bool HasInferredBody { get; set; }
+        public bool HasInferredQueryArray { get; set; }
 
         public List<object> Metadata { get; } = new();
 
@@ -1696,6 +1782,20 @@ public static partial class RequestDelegateFactory
     {
         var errorMessage = new StringBuilder();
         errorMessage.AppendLine("An action cannot use both form and JSON body parameters.");
+        errorMessage.AppendLine("Below is the list of parameters that we found: ");
+        errorMessage.AppendLine();
+        errorMessage.AppendLine(FormattableString.Invariant($"{"Parameter",-20}| {"Source",-30}"));
+        errorMessage.AppendLine("---------------------------------------------------------------------------------");
+
+        FormatTrackedParameters(factoryContext, errorMessage);
+
+        return errorMessage.ToString();
+    }
+
+    private static string BuildErrorMessageForQueryAndJsonBodyParameters(FactoryContext factoryContext)
+    {
+        var errorMessage = new StringBuilder();
+        errorMessage.AppendLine("An action cannot use both inferred query and JSON body parameters. This is ambiguous");
         errorMessage.AppendLine("Below is the list of parameters that we found: ");
         errorMessage.AppendLine();
         errorMessage.AppendLine(FormattableString.Invariant($"{"Parameter",-20}| {"Source",-30}"));
