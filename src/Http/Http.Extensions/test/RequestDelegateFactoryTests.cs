@@ -730,7 +730,8 @@ public class RequestDelegateFactoryTests : LoggedTest
         var factoryResult = RequestDelegateFactory.Create((HttpContext context, int[] a) =>
         {
             context.Items["tryParsable"] = a;
-        });
+        }, new() { DisableInferBodyFromParameters = true });
+
         var requestDelegate = factoryResult.RequestDelegate;
 
         await requestDelegate(httpContext);
