@@ -197,12 +197,6 @@ public static partial class RequestDelegateFactory
             args[i] = CreateArgument(parameters[i], factoryContext);
         }
 
-        if (factoryContext.HasInferredBody && factoryContext.HasInferredQueryArray)
-        {
-            var errorMessage = BuildErrorMessageForQueryAndJsonBodyParameters(factoryContext);
-            throw new InvalidOperationException(errorMessage);
-        }
-
         if (factoryContext.HasInferredBody && factoryContext.DisableInferredFromBody)
         {
             var errorMessage = BuildErrorMessageForInferredBodyParameter(factoryContext);
@@ -355,8 +349,6 @@ public static partial class RequestDelegateFactory
                  parameter.ParameterType == typeof(StringValues)))
         {
             // We only infer parameter types if you have an array of TryParsables/string[]/StringValues, and DisableInferredFromBody is true
-
-            factoryContext.HasInferredQueryArray = true;
 
             factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.QueryStringParameter);
             return BindParameterFromProperty(parameter, QueryExpr, parameter.Name, factoryContext, "query string");
@@ -1560,7 +1552,6 @@ public static partial class RequestDelegateFactory
         public Dictionary<string, string> TrackedParameters { get; } = new();
         public bool HasMultipleBodyParameters { get; set; }
         public bool HasInferredBody { get; set; }
-        public bool HasInferredQueryArray { get; set; }
 
         public List<object> Metadata { get; } = new();
 
@@ -1791,20 +1782,6 @@ public static partial class RequestDelegateFactory
     {
         var errorMessage = new StringBuilder();
         errorMessage.AppendLine("An action cannot use both form and JSON body parameters.");
-        errorMessage.AppendLine("Below is the list of parameters that we found: ");
-        errorMessage.AppendLine();
-        errorMessage.AppendLine(FormattableString.Invariant($"{"Parameter",-20}| {"Source",-30}"));
-        errorMessage.AppendLine("---------------------------------------------------------------------------------");
-
-        FormatTrackedParameters(factoryContext, errorMessage);
-
-        return errorMessage.ToString();
-    }
-
-    private static string BuildErrorMessageForQueryAndJsonBodyParameters(FactoryContext factoryContext)
-    {
-        var errorMessage = new StringBuilder();
-        errorMessage.AppendLine("An action cannot use both inferred query and JSON body parameters. This is ambiguous");
         errorMessage.AppendLine("Below is the list of parameters that we found: ");
         errorMessage.AppendLine();
         errorMessage.AppendLine(FormattableString.Invariant($"{"Parameter",-20}| {"Source",-30}"));
