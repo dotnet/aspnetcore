@@ -26,8 +26,6 @@ public class RouteValuesAddress
     /// </summary>
     public RouteValueDictionary? AmbientValues { get; set; }
 
-    /// <summary>
-    /// Formats the address as string "Name(ExplicitValues)" for tracing/debugging.
-    /// </summary>
+    /// <inheritdoc />
     public override string? ToString() => $"{RouteName}({string.Join(',', ExplicitValues.Select(kv => $"{kv.Key}=[{kv.Value}]"))})";
 }
