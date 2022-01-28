@@ -366,7 +366,7 @@ public class ResponseSendFileTests
     [ConditionalFact]
     public async Task ResponseSendFileWriteExceptions_FirstCallWithCanceledCancellationToken_CancelsAndAborts()
     {
-        var testComplete = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var testComplete = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         using (Utilities.CreateHttpServer(out var address, httpContext =>
         {
             try
@@ -376,7 +376,7 @@ public class ResponseSendFileTests
                 // First write sends headers
                 var writeTask = httpContext.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
                 Assert.True(writeTask.IsCanceled);
-                testComplete.SetResult(0);
+                testComplete.SetResult();
             }
             catch (Exception ex)
             {
@@ -394,7 +394,7 @@ public class ResponseSendFileTests
     [ConditionalFact]
     public async Task ResponseSendFile_FirstSendWithCanceledCancellationToken_CancelsAndAborts()
     {
-        var testComplete = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var testComplete = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         using (Utilities.CreateHttpServer(out var address, httpContext =>
         {
             try
@@ -404,7 +404,7 @@ public class ResponseSendFileTests
                 // First write sends headers
                 var writeTask = httpContext.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
                 Assert.True(writeTask.IsCanceled);
-                testComplete.SetResult(0);
+                testComplete.SetResult();
             }
             catch (Exception ex)
             {
@@ -422,7 +422,7 @@ public class ResponseSendFileTests
     [ConditionalFact]
     public async Task ResponseSendFileExceptions_SecondSendWithCanceledCancellationToken_CancelsAndAborts()
     {
-        var testComplete = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var testComplete = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         using (Utilities.CreateHttpServer(out var address, async httpContext =>
         {
             try
@@ -433,7 +433,7 @@ public class ResponseSendFileTests
                 cts.Cancel();
                 var writeTask = httpContext.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
                 Assert.True(writeTask.IsCanceled);
-                testComplete.SetResult(0);
+                testComplete.SetResult();
             }
             catch (Exception ex)
             {
@@ -449,7 +449,7 @@ public class ResponseSendFileTests
     [ConditionalFact]
     public async Task ResponseSendFile_SecondSendWithCanceledCancellationToken_CancelsAndAborts()
     {
-        var testComplete = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var testComplete = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         using (Utilities.CreateHttpServer(out var address, async httpContext =>
         {
             try
@@ -460,7 +460,7 @@ public class ResponseSendFileTests
                 cts.Cancel();
                 var writeTask = httpContext.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
                 Assert.True(writeTask.IsCanceled);
-                testComplete.SetResult(0);
+                testComplete.SetResult();
             }
             catch (Exception ex)
             {
@@ -476,14 +476,14 @@ public class ResponseSendFileTests
     [ConditionalFact]
     public async Task ResponseSendFileExceptions_ClientDisconnectsBeforeFirstSend_SendThrows()
     {
-        var requestReceived = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var requestCancelled = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var cancellationReceived = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var testComplete = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var requestReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var requestCancelled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var cancellationReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var testComplete = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         using (Utilities.CreateHttpServer(out var address, async httpContext =>
         {
-            httpContext.RequestAborted.Register(() => cancellationReceived.SetResult(0));
-            requestReceived.SetResult(0);
+            httpContext.RequestAborted.Register(() => cancellationReceived.SetResult());
+            requestReceived.SetResult();
             await requestCancelled.Task;
 
             try
@@ -504,7 +504,7 @@ public class ResponseSendFileTests
                 await Assert.ThrowsAsync<ObjectDisposedException>(() =>
                     httpContext.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token));
 
-                testComplete.SetResult(0);
+                testComplete.SetResult();
             }
             catch (Exception ex)
             {
@@ -519,7 +519,7 @@ public class ResponseSendFileTests
             // First write sends headers
             cts.Cancel();
             await Assert.ThrowsAnyAsync<OperationCanceledException>(() => responseTask);
-            requestCancelled.SetResult(0);
+            requestCancelled.SetResult();
 
             await testComplete.Task.DefaultTimeout();
             await cancellationReceived.Task.DefaultTimeout();
@@ -529,14 +529,14 @@ public class ResponseSendFileTests
     [ConditionalFact]
     public async Task ResponseSendFile_ClientDisconnectsBeforeFirstSend_SendCompletesSilently()
     {
-        var requestReceived = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var requestCancelled = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var cancellationReceived = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var testComplete = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var requestReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var requestCancelled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var cancellationReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var testComplete = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         using (Utilities.CreateHttpServer(out var address, async httpContext =>
         {
-            httpContext.RequestAborted.Register(() => cancellationReceived.SetResult(0));
-            requestReceived.SetResult(0);
+            httpContext.RequestAborted.Register(() => cancellationReceived.SetResult());
+            requestReceived.SetResult();
             await requestCancelled.Task;
 
             try
@@ -547,7 +547,7 @@ public class ResponseSendFileTests
                     await httpContext.Response.SendFileAsync(AbsoluteFilePath, 0, null);
                 }
 
-                testComplete.SetResult(0);
+                testComplete.SetResult();
             }
             catch (Exception ex)
             {
@@ -562,7 +562,7 @@ public class ResponseSendFileTests
             // First write sends headers
             cts.Cancel();
             await Assert.ThrowsAnyAsync<OperationCanceledException>(() => responseTask);
-            requestCancelled.SetResult(0);
+            requestCancelled.SetResult();
 
             await testComplete.Task.DefaultTimeout();
             await cancellationReceived.Task.DefaultTimeout();
@@ -572,20 +572,20 @@ public class ResponseSendFileTests
     [ConditionalFact]
     public async Task ResponseSendFileExceptions_ClientDisconnectsBeforeSecondSend_SendThrows()
     {
-        var firstSendComplete = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var clientDisconnected = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var cancellationReceived = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var testComplete = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var firstSendComplete = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var clientDisconnected = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var cancellationReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var testComplete = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         using (Utilities.CreateHttpServer(out var address, async httpContext =>
         {
             // Note Response.SendFileAsync uses RequestAborted by default. This can cause the response to be disposed
             // before it throws an IOException, but there's a race depending on when the disconnect is noticed.
             // Passing our own token to skip that.
             using var cts = new CancellationTokenSource();
-            httpContext.RequestAborted.Register(() => cancellationReceived.SetResult(0));
+            httpContext.RequestAborted.Register(() => cancellationReceived.SetResult());
             // First write sends headers
             await httpContext.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
-            firstSendComplete.SetResult(0);
+            firstSendComplete.SetResult();
             await clientDisconnected.Task;
 
             try
@@ -599,7 +599,7 @@ public class ResponseSendFileTests
                     }
                 });
 
-                testComplete.SetResult(0);
+                testComplete.SetResult();
             }
             catch (Exception ex)
             {
@@ -619,7 +619,7 @@ public class ResponseSendFileTests
                 // Abort
                 response.Dispose();
             }
-            clientDisconnected.SetResult(0);
+            clientDisconnected.SetResult();
             await testComplete.Task.DefaultTimeout();
             await cancellationReceived.Task.DefaultTimeout();
         }
@@ -628,16 +628,16 @@ public class ResponseSendFileTests
     [ConditionalFact]
     public async Task ResponseSendFile_ClientDisconnectsBeforeSecondSend_SendCompletesSilently()
     {
-        var firstSendComplete = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var clientDisconnected = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var cancellationReceived = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var testComplete = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var firstSendComplete = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var clientDisconnected = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var cancellationReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var testComplete = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         using (Utilities.CreateHttpServer(out var address, async httpContext =>
         {
-            httpContext.RequestAborted.Register(() => cancellationReceived.SetResult(0));
+            httpContext.RequestAborted.Register(() => cancellationReceived.SetResult());
             // First write sends headers
             await httpContext.Response.SendFileAsync(AbsoluteFilePath, 0, null);
-            firstSendComplete.SetResult(0);
+            firstSendComplete.SetResult();
             await clientDisconnected.Task;
 
             try
@@ -648,7 +648,7 @@ public class ResponseSendFileTests
                     await httpContext.Response.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
                 }
 
-                testComplete.SetResult(0);
+                testComplete.SetResult();
             }
             catch (Exception ex)
             {
@@ -668,7 +668,7 @@ public class ResponseSendFileTests
                 // Abort
                 response.Dispose();
             }
-            clientDisconnected.SetResult(0);
+            clientDisconnected.SetResult();
             await testComplete.Task.DefaultTimeout();
             await cancellationReceived.Task.DefaultTimeout();
         }

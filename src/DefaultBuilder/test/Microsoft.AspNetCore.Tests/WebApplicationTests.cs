@@ -950,10 +950,10 @@ public class WebApplicationTests
 
         Assert.Contains("*", options.AllowedHosts);
 
-        var changed = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var changed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         monitor.OnChange(newOptions =>
         {
-            changed.TrySetResult(0);
+            changed.TrySetResult();
         });
 
         config["AllowedHosts"] = "NewHost";

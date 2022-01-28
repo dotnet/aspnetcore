@@ -665,7 +665,7 @@ public class TestServerTests
                               {
                                   app.Run(context =>
                                   {
-                                      TaskCompletionSource<int> tcs = new TaskCompletionSource<int>();
+                                      TaskCompletionSource tcs = new TaskCompletionSource();
                                       tcs.SetCanceled();
                                       return tcs.Task;
                                   });
