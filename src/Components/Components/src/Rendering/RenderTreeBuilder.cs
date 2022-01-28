@@ -170,7 +170,6 @@ public sealed class RenderTreeBuilder : IDisposable
             throw new InvalidOperationException($"Valueless attributes may only be added immediately after frames of type {RenderTreeFrameType.Element}");
         }
 
-
         _entries.AppendAttribute(sequence, name, BoxedTrue);
     }
 

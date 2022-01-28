@@ -1,16 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading;
 using System.Threading.Channels;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.Metadata;
 using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.AspNetCore.SignalR.Tests;
@@ -1246,4 +1242,66 @@ public class CallerService
     {
         Caller = caller;
     }
+}
+
+[AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = true)]
+public class FromService : Attribute, IFromServiceMetadata
+{ }
+public class Service1
+{ }
+public class Service2
+{ }
+public class Service3
+{ }
+
+public class ServicesHub : TestHub
+{
+    public bool SingleService([FromService] Service1 service)
+    {
+        return true;
+    }
+
+    public bool MultipleServices([FromService] Service1 service, [FromService] Service2 service2, [FromService] Service3 service3)
+    {
+        return true;
+    }
+
+    public async Task<int> ServicesAndParams(int value, [FromService] Service1 service, ChannelReader<int> channelReader, [FromService] Service2 service2, bool value2)
+    {
+        int total = 0;
+        while (await channelReader.WaitToReadAsync())
+        {
+            total += await channelReader.ReadAsync();
+        }
+        return total + value;
+    }
+
+    public int ServiceWithoutAttribute(Service1 service)
+    {
+        return 1;
+    }
+
+    public int ServiceWithAndWithoutAttribute(Service1 service, [FromService] Service2 service2)
+    {
+        return 1;
+    }
+
+    public async Task Stream(ChannelReader<int> channelReader)
+    {
+        while (await channelReader.WaitToReadAsync())
+        {
+            await channelReader.ReadAsync();
+        }
+    }
+}
+
+public class TooManyParamsHub : Hub
+{
+    public void ManyParams(int a1, string a2, bool a3, float a4, string a5, int a6, int a7, int a8, int a9, int a10, int a11,
+        int a12, int a13, int a14, int a15, int a16, int a17, int a18, int a19, int a20, int a21, int a22, int a23, int a24,
+        int a25, int a26, int a27, int a28, int a29, int a30, int a31, int a32, int a33, int a34, int a35, int a36, int a37,
+        int a38, int a39, int a40, int a41, int a42, int a43, int a44, int a45, int a46, int a47, int a48, int a49, int a50,
+        int a51, int a52, int a53, int a54, int a55, int a56, int a57, int a58, int a59, int a60, int a61, int a62, int a63,
+        int a64, [FromService] Service1 service)
+    { }
 }

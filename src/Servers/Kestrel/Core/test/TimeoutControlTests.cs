@@ -38,7 +38,6 @@ public class TimeoutControlTests
         _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
     }
 
-
     [Fact]
     public void DoesNotTimeOutWhenRequestBodyDoesNotSatisfyMinimumDataRateButDebuggerIsAttached()
     {
@@ -151,7 +150,6 @@ public class TimeoutControlTests
         // Timed out
         _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.ReadDataRate), Times.Once);
     }
-
 
     [Fact]
     public void RequestBodyDataRateNotComputedOnPausedTime()

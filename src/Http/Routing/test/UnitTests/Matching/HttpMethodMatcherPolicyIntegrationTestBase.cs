@@ -62,7 +62,6 @@ public abstract class HttpMethodMatcherPolicyIntegrationTestBase
         MatcherAssert.AssertMatch(httpContext, endpoint);
     }
 
-
     [Fact] // Nothing here supports OPTIONS, so it goes to a 405.
     public async Task NotMatch_HttpMethod_CORS_Preflight()
     {

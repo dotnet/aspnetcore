@@ -71,7 +71,6 @@ public static class NewtonsoftJsonMvcCoreBuilderExtensions
         services.TryAddEnumerable(
             ServiceDescriptor.Transient<IApiDescriptionProvider, JsonPatchOperationsArrayProvider>());
 
-
         var jsonResultExecutor = services.FirstOrDefault(f =>
            f.ServiceType == typeof(IActionResultExecutor<JsonResult>) &&
            f.ImplementationType?.Assembly == typeof(JsonResult).Assembly);

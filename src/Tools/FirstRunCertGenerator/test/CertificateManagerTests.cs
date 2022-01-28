@@ -152,7 +152,6 @@ public class CertificateManagerTests : IClassFixture<CertFixture>
         Assert.NotNull(exportedCertificate);
         Assert.True(exportedCertificate.HasPrivateKey);
 
-
         Assert.Equal(httpsCertificate.GetCertHashString(), exportedCertificate.GetCertHashString());
     }
 

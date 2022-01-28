@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -12,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 /// <summary>
 /// A <see cref="IActionResultExecutor{RedirectToRouteResult}"/> for <see cref="RedirectToRouteResult"/>.
 /// </summary>
-public class RedirectToRouteResultExecutor : IActionResultExecutor<RedirectToRouteResult>
+public partial class RedirectToRouteResultExecutor : IActionResultExecutor<RedirectToRouteResult>
 {
     private readonly ILogger _logger;
     private readonly IUrlHelperFactory _urlHelperFactory;
@@ -54,7 +53,7 @@ public class RedirectToRouteResultExecutor : IActionResultExecutor<RedirectToRou
             throw new InvalidOperationException(Resources.NoRoutesMatched);
         }
 
-        _logger.RedirectToRouteResultExecuting(destinationUrl, result.RouteName);
+        Log.RedirectToRouteResultExecuting(_logger, destinationUrl, result.RouteName);
 
         if (result.PreserveMethod)
         {
@@ -68,5 +67,11 @@ public class RedirectToRouteResultExecutor : IActionResultExecutor<RedirectToRou
         }
 
         return Task.CompletedTask;
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(1, LogLevel.Information, "Executing RedirectToRouteResult, redirecting to {Destination} from route {RouteName}.", EventName = "RedirectToRouteResultExecuting")]
+        public static partial void RedirectToRouteResultExecuting(ILogger logger, string destination, string? routeName);
     }
 }

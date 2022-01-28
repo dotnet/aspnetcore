@@ -4,6 +4,9 @@
 using System.Globalization;
 using System.Runtime.ExceptionServices;
 using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -29,7 +32,7 @@ public class HtmlRendererTest
         var result = GetResult(htmlRenderer.Dispatcher.InvokeAsync(() => htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty)));
 
         // Assert
-        Assert.Equal(expectedHtml, result);
+        AssertHtmlContentEquals(expectedHtml, result);
     }
 
     [Fact]
@@ -49,7 +52,7 @@ public class HtmlRendererTest
         var result = GetResult(htmlRenderer.Dispatcher.InvokeAsync(() => htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty)));
 
         // Assert
-        Assert.Equal(expectedHtml, result);
+        AssertHtmlContentEquals(expectedHtml, result);
     }
 
     [Fact]
@@ -69,9 +72,8 @@ public class HtmlRendererTest
         var result = GetResult(htmlRenderer.Dispatcher.InvokeAsync(() => htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty)));
 
         // Assert
-        Assert.Equal(expectedHtml, result);
+        AssertHtmlContentEquals(expectedHtml, result);
     }
-
 
     [Fact]
     public void RenderComponentAsync_DoesNotEncodeMarkup()
@@ -90,7 +92,7 @@ public class HtmlRendererTest
         var result = GetResult(htmlRenderer.Dispatcher.InvokeAsync(() => htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty)));
 
         // Assert
-        Assert.Equal(expectedHtml, result);
+        AssertHtmlContentEquals(expectedHtml, result);
     }
 
     [Fact]
@@ -112,7 +114,7 @@ public class HtmlRendererTest
         var result = GetResult(htmlRenderer.Dispatcher.InvokeAsync(() => htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty)));
 
         // Assert
-        Assert.Equal(expectedHtml, result);
+        AssertHtmlContentEquals(expectedHtml, result);
     }
 
     [Fact]
@@ -146,7 +148,7 @@ public class HtmlRendererTest
         var result = GetResult(htmlRenderer.Dispatcher.InvokeAsync(() => htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty)));
 
         // Assert
-        Assert.Equal(expectedHtml, result);
+        AssertHtmlContentEquals(expectedHtml, result);
     }
 
     [Fact]
@@ -168,7 +170,7 @@ public class HtmlRendererTest
         var result = GetResult(htmlRenderer.Dispatcher.InvokeAsync(() => htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty)));
 
         // Assert
-        Assert.Equal(expectedHtml, result);
+        AssertHtmlContentEquals(expectedHtml, result);
     }
 
     [Fact]
@@ -189,7 +191,7 @@ public class HtmlRendererTest
         var result = GetResult(htmlRenderer.Dispatcher.InvokeAsync(() => htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty)));
 
         // Assert
-        Assert.Equal(expectedHtml, result);
+        AssertHtmlContentEquals(expectedHtml, result);
     }
 
     [Fact]
@@ -210,7 +212,7 @@ public class HtmlRendererTest
         var result = GetResult(htmlRenderer.Dispatcher.InvokeAsync(() => htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty)));
 
         // Assert
-        Assert.Equal(expectedHtml, result);
+        AssertHtmlContentEquals(expectedHtml, result);
     }
 
     [Fact]
@@ -233,7 +235,7 @@ public class HtmlRendererTest
         var result = GetResult(htmlRenderer.Dispatcher.InvokeAsync(() => htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty)));
 
         // Assert
-        Assert.Equal(expectedHtml, result);
+        AssertHtmlContentEquals(expectedHtml, result);
     }
 
     [Fact]
@@ -263,7 +265,7 @@ public class HtmlRendererTest
         var result = GetResult(htmlRenderer.Dispatcher.InvokeAsync(() => htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty)));
 
         // Assert
-        Assert.Equal(expectedHtml, result);
+        AssertHtmlContentEquals(expectedHtml, result);
     }
 
     [Fact]
@@ -311,7 +313,7 @@ public class HtmlRendererTest
         var result = GetResult(htmlRenderer.Dispatcher.InvokeAsync(() => htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty)));
 
         // Assert
-        Assert.Equal(expectedHtml, string.Concat(result));
+        AssertHtmlContentEquals(expectedHtml, result);
     }
 
     [Fact]
@@ -348,7 +350,7 @@ public class HtmlRendererTest
         var result = GetResult(htmlRenderer.Dispatcher.InvokeAsync(() => htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty)));
 
         // Assert
-        Assert.Equal(expectedHtml, string.Concat(result));
+        AssertHtmlContentEquals(expectedHtml, result);
     }
 
     [Fact]
@@ -377,7 +379,7 @@ public class HtmlRendererTest
         var result = GetResult(htmlRenderer.Dispatcher.InvokeAsync(() => htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty)));
 
         // Assert
-        Assert.Equal(expectedHtml, result);
+        AssertHtmlContentEquals(expectedHtml, result);
     }
 
     [Fact]
@@ -407,7 +409,7 @@ public class HtmlRendererTest
         var result = GetResult(htmlRenderer.Dispatcher.InvokeAsync(() => htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty)));
 
         // Assert
-        Assert.Equal(expectedHtml, result);
+        AssertHtmlContentEquals(expectedHtml, result);
     }
 
     [Fact]
@@ -443,7 +445,7 @@ public class HtmlRendererTest
             }))));
 
         // Assert
-        Assert.Equal(expectedHtml, result);
+        AssertHtmlContentEquals(expectedHtml, result);
     }
 
     [Fact]
@@ -469,15 +471,17 @@ public class HtmlRendererTest
         var result = GetResult(htmlRenderer.Dispatcher.InvokeAsync(() => htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty)));
 
         // Assert
-        Assert.Equal(expectedHtml, result);
+        AssertHtmlContentEquals(expectedHtml, result);
     }
 
     [Fact]
     public void RenderComponentAsync_ElementRefsNoops()
     {
         // Arrange
-        var expectedHtml = new[] {
-                "<", "p", ">", "<", "span", ">", "Hello world!", "</", "span", ">", "</", "p", ">" };
+        var expectedHtml = new[]
+        {
+            "<", "p", ">", "<", "span", ">", "Hello world!", "</", "span", ">", "</", "p", ">"
+        };
         var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
         {
             rtb.OpenElement(0, "p");
@@ -496,21 +500,32 @@ public class HtmlRendererTest
         var result = GetResult(htmlRenderer.Dispatcher.InvokeAsync(() => htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty)));
 
         // Assert
-        Assert.Equal(expectedHtml, result);
+        AssertHtmlContentEquals(expectedHtml, result);
     }
 
-    private IEnumerable<string> GetResult(Task<ComponentRenderedText> task)
+    private IHtmlContent GetResult(Task<ComponentRenderedText> task)
     {
         Assert.True(task.IsCompleted);
         if (task.IsCompletedSuccessfully)
         {
-            return task.Result.Tokens;
+            return task.Result.HtmlContent;
         }
         else
         {
             ExceptionDispatchInfo.Capture(task.Exception).Throw();
             throw new InvalidOperationException("We will never hit this line");
         }
+    }
+
+    private void AssertHtmlContentEquals(IEnumerable<string> expected, IHtmlContent actual)
+    {
+        var expectedString = string.Concat(expected);
+        AssertHtmlContentEquals(expectedString, actual);
+    }
+
+    private void AssertHtmlContentEquals(string expected, IHtmlContent actual)
+    {
+        Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(actual, _encoder));
     }
 
     private class ComponentWithParameters : IComponent
@@ -549,7 +564,7 @@ public class HtmlRendererTest
         })));
 
         // Assert
-        Assert.Equal(expectedHtml, result.Tokens);
+        AssertHtmlContentEquals(expectedHtml, result.HtmlContent);
     }
 
     [Fact]
@@ -574,7 +589,7 @@ public class HtmlRendererTest
         })));
 
         // Assert
-        Assert.Equal(expectedHtml, result.Tokens);
+        AssertHtmlContentEquals(expectedHtml, result.HtmlContent);
     }
 
     [Fact]
@@ -600,7 +615,7 @@ public class HtmlRendererTest
 
     private HtmlRenderer GetHtmlRenderer(IServiceProvider serviceProvider)
     {
-        return new HtmlRenderer(serviceProvider, NullLoggerFactory.Instance, _encoder);
+        return new HtmlRenderer(serviceProvider, NullLoggerFactory.Instance, new TestViewBufferScope());
     }
 
     private class NestedAsyncComponent : ComponentBase

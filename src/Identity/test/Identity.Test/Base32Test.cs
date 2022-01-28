@@ -26,7 +26,6 @@ public class Base32Test
         Assert.Equal<byte>(data, Base32.FromBase32(Base32.ToBase32(data)));
     }
 
-
     private static readonly RandomNumberGenerator _rng = RandomNumberGenerator.Create();
 
     private static byte[] GetRandomByteArray(int length)

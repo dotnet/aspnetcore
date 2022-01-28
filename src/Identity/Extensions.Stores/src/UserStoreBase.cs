@@ -1117,7 +1117,6 @@ public abstract class UserStoreBase<TUser, TRole, TKey, TUserClaim, TUserRole, T
         };
     }
 
-
     /// <summary>
     /// Retrieves all users in the specified role.
     /// </summary>

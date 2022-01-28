@@ -69,7 +69,6 @@ public class FilterContextTest
         Assert.False(result);
     }
 
-
     [Fact]
     public void FindEffectivePolicy_FindsLastFilter_ReturnsIt()
     {

@@ -29,6 +29,7 @@ public class ServerStartup
                 javaScriptInitializer: "myJsRootComponentInitializers.testInitializer");
         });
         services.AddSingleton<ResourceRequestLog>();
+        services.AddTransient<BasicTestApp.FormsTest.ValidationComponentDI.SaladChef>();
 
         // Since tests run in parallel, we use an ephemeral key provider to avoid filesystem
         // contention issues.

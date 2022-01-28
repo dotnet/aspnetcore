@@ -4,10 +4,11 @@
 using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http.Result;
 
-internal sealed partial class FileContentResult : FileResult, IResult
+internal sealed partial class FileContentResult : FileResult
 {
     /// <summary>
     /// Creates a new <see cref="FileContentResult"/> instance with
@@ -16,56 +17,25 @@ internal sealed partial class FileContentResult : FileResult, IResult
     /// </summary>
     /// <param name="fileContents">The bytes that represent the file contents.</param>
     /// <param name="contentType">The Content-Type header of the response.</param>
-    public FileContentResult(byte[] fileContents, string? contentType)
+    public FileContentResult(ReadOnlyMemory<byte> fileContents, string? contentType)
         : base(contentType)
     {
         FileContents = fileContents;
+        FileLength = fileContents.Length;
     }
 
     /// <summary>
     /// Gets or sets the file contents.
     /// </summary>
-    public byte[] FileContents { get; init; }
+    public ReadOnlyMemory<byte> FileContents { get; init; }
 
-    public Task ExecuteAsync(HttpContext httpContext)
+    protected override ILogger GetLogger(HttpContext httpContext)
     {
-        var logger = httpContext.RequestServices.GetRequiredService<ILogger<FileContentResult>>();
-        Log.ExecutingFileResult(logger, this);
+        return httpContext.RequestServices.GetRequiredService<ILogger<FileContentResult>>();
+    }
 
-        var fileResultInfo = new FileResultInfo
-        {
-            ContentType = ContentType,
-            EnableRangeProcessing = EnableRangeProcessing,
-            EntityTag = EntityTag,
-            FileDownloadName = FileDownloadName,
-            LastModified = LastModified,
-        };
-
-        var (range, rangeLength, serveBody) = FileResultHelper.SetHeadersAndLog(
-            httpContext,
-            fileResultInfo,
-            FileContents.Length,
-            EnableRangeProcessing,
-            LastModified,
-            EntityTag,
-            logger);
-
-        if (!serveBody)
-        {
-            return Task.CompletedTask;
-        }
-
-        if (range != null && rangeLength == 0)
-        {
-            return Task.CompletedTask;
-        }
-
-        if (range != null)
-        {
-            FileResultHelper.Log.WritingRangeToBody(logger);
-        }
-
-        var fileContentStream = new MemoryStream(FileContents);
-        return FileResultHelper.WriteFileAsync(httpContext, fileContentStream, range, rangeLength);
+    protected override Task ExecuteCoreAsync(HttpContext httpContext, RangeItemHeaderValue? range, long rangeLength)
+    {
+        return FileResultHelper.WriteFileAsync(httpContext, FileContents, range, rangeLength);
     }
 }

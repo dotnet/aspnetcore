@@ -251,7 +251,6 @@ public class ShadowCopyTests : IISFunctionalTestBase
         Assert.False(Directory.Exists(Path.Combine(directory.DirectoryPath, "3")), "Expected 3 shadow copy directory to be deleted");
     }
 
-
     [ConditionalFact]
     public async Task ShadowCopyIgnoresItsOwnDirectoryWithRelativePathSegmentWhenCopying()
     {

@@ -105,7 +105,6 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupFactsTest
         [nameof(NotAStartupClass)] = NotAStartupClass,
     };
 
-
     [Theory]
     [InlineData(nameof(BasicStartup), "ConfigureServices")]
     [InlineData(nameof(EnvironmentStartup), "ConfigureDevelopmentServices")]

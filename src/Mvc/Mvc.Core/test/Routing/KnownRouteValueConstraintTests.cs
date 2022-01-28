@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace Microsoft.AspNetCore.Mvc.Routing;
@@ -285,7 +286,8 @@ public class KnownRouteValueConstraintTests
 
         var descriptorCollectionProvider = new DefaultActionDescriptorCollectionProvider(
             new[] { actionProvider.Object },
-            Enumerable.Empty<IActionDescriptorChangeProvider>());
+            Enumerable.Empty<IActionDescriptorChangeProvider>(),
+            NullLogger<DefaultActionDescriptorCollectionProvider>.Instance);
         return descriptorCollectionProvider;
     }
 

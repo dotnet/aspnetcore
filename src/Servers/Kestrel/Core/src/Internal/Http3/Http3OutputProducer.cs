@@ -196,7 +196,6 @@ internal class Http3OutputProducer : IHttpOutputProducer, IHttpOutputAborter
         }
     }
 
-
     public Span<byte> GetSpan(int sizeHint = 0)
     {
         lock (_dataWriterLock)

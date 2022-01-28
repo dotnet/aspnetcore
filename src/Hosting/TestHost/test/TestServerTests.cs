@@ -269,7 +269,6 @@ public class TestServerTests
                 Assert.Contains(serverAddressesFeature.Addresses, s => string.Equals(s, url, StringComparison.Ordinal));
             });
 
-
         var featureCollection = new FeatureCollection();
         featureCollection.Set<IServerAddressesFeature>(new ServerAddressesFeature());
 

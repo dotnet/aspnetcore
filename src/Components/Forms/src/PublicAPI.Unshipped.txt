@@ -1,1 +1,2 @@
 #nullable enable
+static Microsoft.AspNetCore.Components.Forms.EditContextDataAnnotationsExtensions.EnableDataAnnotationsValidation(this Microsoft.AspNetCore.Components.Forms.EditContext! editContext, System.IServiceProvider! serviceProvider) -> System.IDisposable!

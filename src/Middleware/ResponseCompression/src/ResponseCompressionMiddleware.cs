@@ -13,9 +13,7 @@ namespace Microsoft.AspNetCore.ResponseCompression;
 public class ResponseCompressionMiddleware
 {
     private readonly RequestDelegate _next;
-
     private readonly IResponseCompressionProvider _provider;
-
 
     /// <summary>
     /// Initialize the Response Compression middleware.

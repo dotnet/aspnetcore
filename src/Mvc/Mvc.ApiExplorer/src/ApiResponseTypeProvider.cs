@@ -255,8 +255,6 @@ internal class ApiResponseTypeProvider
                 }
             }
 
-
-
             if (!isSupportedContentType && contentType != null)
             {
                 // No output formatter was found that supports this content type. Add the user specified content type as-is to the result.

@@ -34,7 +34,6 @@ public partial class HubConnectionTests
 
         public static IEnumerable<object[]> MethodsNamesThatRequireActiveConnection => MethodsThatRequireActiveConnection.Keys.Select(k => new object[] { k });
 
-
         [Fact]
         public async Task StartAsyncStartsTheUnderlyingConnection()
         {

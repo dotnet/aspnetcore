@@ -419,7 +419,6 @@ public class Startup
             });
         });
 
-
         app.Run(async context =>
         {
             // Setting DefaultAuthenticateScheme causes User to be set

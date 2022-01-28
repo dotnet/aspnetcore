@@ -687,7 +687,6 @@ public class ReadOnlyTagHelperAttributeListTest
         Assert.Equal(attributes, expectedAttributes, CaseSensitiveTagHelperAttributeComparer.Default);
     }
 
-
     [Theory]
     [MemberData(nameof(IntIndexerData))]
     public void ModifyingUnderlyingAttributes_IntIndexer_ReturnsExpectedResult(

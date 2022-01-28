@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor;
 /// by default. For the controllers in an area, views should exist in
 /// <see cref="RazorViewEngineOptions.AreaViewLocationFormats"/>.
 /// </remarks>
-public class RazorViewEngine : IRazorViewEngine
+public partial class RazorViewEngine : IRazorViewEngine
 {
     /// <summary>
     /// The view extension
@@ -280,12 +280,12 @@ public class RazorViewEngine : IRazorViewEngine
 
         if (!ViewLookupCache.TryGetValue(cacheKey, out ViewLocationCacheResult cacheResult))
         {
-            _logger.ViewLookupCacheMiss(cacheKey.ViewName, cacheKey.ControllerName);
+            Log.ViewLookupCacheMiss(_logger, cacheKey.ViewName, cacheKey.ControllerName);
             cacheResult = OnCacheMiss(expanderContext, cacheKey);
         }
         else
         {
-            _logger.ViewLookupCacheHit(cacheKey.ViewName, cacheKey.ControllerName);
+            Log.ViewLookupCacheHit(_logger, cacheKey.ViewName, cacheKey.ControllerName);
         }
 
         return cacheResult;
@@ -507,5 +507,14 @@ public class RazorViewEngine : IRazorViewEngine
 
         // Though ./ViewName looks like a relative path, framework searches for that view using view locations.
         return name.EndsWith(ViewExtension, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(1, LogLevel.Debug, "View lookup cache miss for view '{ViewName}' in controller '{ControllerName}'.", EventName = "ViewLookupCacheMiss")]
+        public static partial void ViewLookupCacheMiss(ILogger logger, string viewName, string? controllerName);
+
+        [LoggerMessage(2, LogLevel.Debug, "View lookup cache hit for view '{ViewName}' in controller '{ControllerName}'.", EventName = "ViewLookupCacheHit")]
+        public static partial void ViewLookupCacheHit(ILogger logger, string viewName, string? controllerName);
     }
 }

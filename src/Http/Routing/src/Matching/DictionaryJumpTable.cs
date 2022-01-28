@@ -59,7 +59,6 @@ internal class DictionaryJumpTable : JumpTable
 
         builder.Append(" }");
 
-
         return builder.ToString();
     }
 }

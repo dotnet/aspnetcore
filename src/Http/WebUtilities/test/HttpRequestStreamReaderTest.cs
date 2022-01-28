@@ -5,38 +5,37 @@ using System.Buffers;
 using System.Text;
 using Moq;
 
-
 namespace Microsoft.AspNetCore.WebUtilities;
 
 public class HttpRequestStreamReaderTest
 {
     private static readonly char[] CharData = new char[]
     {
-            char.MinValue,
-            char.MaxValue,
-            '\t',
-            ' ',
-            '$',
-            '@',
-            '#',
-            '\0',
-            '\v',
-            '\'',
-            '\u3190',
-            '\uC3A0',
-            'A',
-            '5',
-            '\r',
-            '\uFE70',
-            '-',
-            ';',
-            '\r',
-            '\n',
-            'T',
-            '3',
-            '\n',
-            'K',
-            '\u00E6',
+        char.MinValue,
+        char.MaxValue,
+        '\t',
+        ' ',
+        '$',
+        '@',
+        '#',
+        '\0',
+        '\v',
+        '\'',
+        '\u3190',
+        '\uC3A0',
+        'A',
+        '5',
+        '\r',
+        '\uFE70',
+        '-',
+        ';',
+        '\r',
+        '\n',
+        'T',
+        '3',
+        '\n',
+        'K',
+        '\u00E6',
     };
 
     [Fact]

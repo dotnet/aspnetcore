@@ -812,7 +812,6 @@ internal abstract class CertificateManager
         [Event(9, Level = EventLevel.Verbose, Message = "Excluded certificates: {0}")]
         public void ExcludedCertificates(string excludedCertificates) => WriteEvent(9, excludedCertificates);
 
-
         [Event(14, Level = EventLevel.Verbose, Message = "Valid certificates: {0}")]
         public void ValidCertificatesFound(string certificates) => WriteEvent(14, certificates);
 
@@ -821,7 +820,6 @@ internal abstract class CertificateManager
 
         [Event(16, Level = EventLevel.Verbose, Message = "No valid certificates found.")]
         public void NoValidCertificatesFound() => WriteEvent(16);
-
 
         [Event(17, Level = EventLevel.Verbose, Message = "Generating HTTPS development certificate.")]
         public void CreateDevelopmentCertificateStart() => WriteEvent(17);
@@ -889,7 +887,6 @@ internal abstract class CertificateManager
         [Event(38, Level = EventLevel.Verbose, Message = "The certificate is not trusted: {0}.")]
         public void MacOSCertificateUntrusted(string certificate) => WriteEvent(38, certificate);
 
-
         [Event(39, Level = EventLevel.Verbose, Message = "Removing the certificate from the keychain {0} {1}.")]
         public void MacOSRemoveCertificateFromKeyChainStart(string keyChain, string certificate) => WriteEvent(39, keyChain, certificate);
 
@@ -899,7 +896,6 @@ internal abstract class CertificateManager
         [Event(41, Level = EventLevel.Warning, Message = "An error has occurred while running the remove trust command: {0}.")]
         public void MacOSRemoveCertificateFromKeyChainError(int exitCode) => WriteEvent(41, exitCode);
 
-
         [Event(42, Level = EventLevel.Verbose, Message = "Removing the certificate from the user store {0}.")]
         public void RemoveCertificateFromUserStoreStart(string certificate) => WriteEvent(42, certificate);
 
@@ -908,7 +904,6 @@ internal abstract class CertificateManager
 
         [Event(44, Level = EventLevel.Error, Message = "An error has occurred while removing the certificate from the user store: {0}.")]
         public void RemoveCertificateFromUserStoreError(string error) => WriteEvent(44, error);
-
 
         [Event(45, Level = EventLevel.Verbose, Message = "Adding certificate to the trusted root certification authority store.")]
         public void WindowsAddCertificateToRootStore() => WriteEvent(45);
@@ -945,7 +940,6 @@ internal abstract class CertificateManager
 
         [Event(56, Level = EventLevel.Error, Message = "An error has occurred while importing the certificate to the keychain: {0}.")]
         internal void MacOSAddCertificateToKeyChainError(int exitCode) => WriteEvent(56, exitCode);
-
 
         [Event(57, Level = EventLevel.Verbose, Message = "Writing the certificate to: {0}.")]
         public void WritePemKeyToDisk(string path) => WriteEvent(57, path);

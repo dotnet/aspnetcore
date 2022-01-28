@@ -224,7 +224,6 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
     public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithLocalDB(BrowserKind browserKind)
         => BlazorWasmHostedTemplate_IndividualAuth_Works(browserKind, true);
 
-
     // This test depends on BlazorWasmTemplate_CreateBuildPublish_IndividualAuthNoLocalDb running first
     [Theory]
     [InlineData(BrowserKind.Chromium)]
@@ -442,7 +441,7 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
                 page.ClickAsync("text=Register as a new user"));
 
             var userName = $"{Guid.NewGuid()}@example.com";
-            var password = $"!Test.Password1$";
+            var password = "[PLACEHOLDER]-1a";
 
             await page.TypeAsync("[name=\"Input.Email\"]", userName);
             await page.TypeAsync("[name=\"Input.Password\"]", password);

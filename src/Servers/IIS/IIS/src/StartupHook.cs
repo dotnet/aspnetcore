@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Hosting.Views;
 using Microsoft.AspNetCore.Server.IIS;
 using Microsoft.Extensions.FileProviders;
 
-
 /// <summary>
 /// Startup hooks are pieces of code that will run before a users program main executes
 /// See: https://github.com/dotnet/core-setup/blob/master/Documentation/design-docs/host-startup-hook.md

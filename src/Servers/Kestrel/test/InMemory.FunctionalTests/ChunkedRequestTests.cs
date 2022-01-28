@@ -746,7 +746,6 @@ public class ChunkedRequestTests : LoggedTest
         }
     }
 
-
     [Fact]
     public async Task ChunkedNotFinalTransferCodingResultsIn400()
     {

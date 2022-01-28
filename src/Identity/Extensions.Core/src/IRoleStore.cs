@@ -79,7 +79,6 @@ public interface IRoleStore<TRole> : IDisposable where TRole : class
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
     Task SetNormalizedRoleNameAsync(TRole role, string normalizedName, CancellationToken cancellationToken);
 
-
     /// <summary>
     /// Finds the role who has the specified ID as an asynchronous operation.
     /// </summary>

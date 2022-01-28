@@ -17,7 +17,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Infrastructure;
 internal class DefaultFileVersionProvider : IFileVersionProvider
 {
     private const string VersionKey = "v";
-    private static readonly char[] QueryStringAndFragmentTokens = new[] { '?', '#' };
 
     public DefaultFileVersionProvider(
         IWebHostEnvironment hostingEnvironment,
@@ -50,7 +49,7 @@ internal class DefaultFileVersionProvider : IFileVersionProvider
 
         var resolvedPath = path;
 
-        var queryStringOrFragmentStartIndex = path.IndexOfAny(QueryStringAndFragmentTokens);
+        var queryStringOrFragmentStartIndex = path.AsSpan().IndexOfAny('?', '#');
         if (queryStringOrFragmentStartIndex != -1)
         {
             resolvedPath = path.Substring(0, queryStringOrFragmentStartIndex);
@@ -97,13 +96,10 @@ internal class DefaultFileVersionProvider : IFileVersionProvider
 
     private static string GetHashForFile(IFileInfo fileInfo)
     {
-        using (var sha256 = SHA256.Create())
+        using (var readStream = fileInfo.CreateReadStream())
         {
-            using (var readStream = fileInfo.CreateReadStream())
-            {
-                var hash = sha256.ComputeHash(readStream);
-                return WebEncoders.Base64UrlEncode(hash);
-            }
+            var hash = SHA256.HashData(readStream);
+            return WebEncoders.Base64UrlEncode(hash);
         }
     }
 }

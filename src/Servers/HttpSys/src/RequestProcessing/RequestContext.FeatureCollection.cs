@@ -125,7 +125,6 @@ internal partial class RequestContext :
         _responseHeaders = Response.Headers;
     }
 
-
     private bool IsNotInitialized(Fields field)
     {
         return (_initializedFields & field) != field;

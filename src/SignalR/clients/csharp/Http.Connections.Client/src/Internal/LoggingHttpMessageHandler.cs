@@ -28,7 +28,7 @@ internal class LoggingHttpMessageHandler : DelegatingHandler
     {
         Log.SendingHttpRequest(_logger, request.Method, request.RequestUri!);
 
-        var response = await base.SendAsync(request, cancellationToken);
+        var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
         if (!response.IsSuccessStatusCode)
         {

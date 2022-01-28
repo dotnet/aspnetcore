@@ -48,6 +48,12 @@ public abstract class WriteOnlyStream : Stream
     }
 
     ///<inheritdoc/>
+    public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken)
+    {
+        throw new NotSupportedException();
+    }
+
+    ///<inheritdoc/>
     public override long Seek(long offset, SeekOrigin origin)
     {
         throw new NotSupportedException();

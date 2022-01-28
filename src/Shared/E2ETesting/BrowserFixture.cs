@@ -132,7 +132,6 @@ public class BrowserFixture : IAsyncLifetime
             createBrowserFunc = CreateBrowserAsync;
         }
 
-
         return _browsers.GetOrAdd(isolationContext, createBrowserFunc, output);
     }
 

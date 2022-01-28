@@ -116,7 +116,6 @@ public class ServerComponentDeserializerTest
         Assert.Contains("First", firstParameters.Keys);
         Assert.Equal("Value", firstParameters["First"]);
 
-
         var secondDescriptor = descriptors[1];
         Assert.Equal(typeof(TestComponent).FullName, secondDescriptor.ComponentType.FullName);
         Assert.Equal(1, secondDescriptor.Sequence);
@@ -146,7 +145,6 @@ public class ServerComponentDeserializerTest
         Assert.Single(firstParameters);
         Assert.Contains("First", firstParameters.Keys);
         Assert.Equal("Value", firstParameters["First"]);
-
 
         var secondDescriptor = descriptors[1];
         Assert.Equal(typeof(TestComponent).FullName, secondDescriptor.ComponentType.FullName);

@@ -41,7 +41,6 @@ public class PathSchemeSelectionTests : IClassFixture<WebApplicationFactory<Path
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
-
     [Fact]
     public async Task MyClaimsRedirectsToLoginPageWhenNotLoggedIn()
     {

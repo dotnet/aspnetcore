@@ -184,5 +184,3 @@ internal static partial class QuicLog
         Bidirectional
     }
 }
-
-

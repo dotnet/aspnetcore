@@ -79,7 +79,6 @@ public class SegmentWriteStreamTests
         var segmentSize = 5;
         var stream = new SegmentWriteStream(segmentSize);
 
-
         for (var i = 0; i < WriteData.Length; i += writeSize)
         {
             stream.Write(WriteData, i, Math.Min(writeSize, WriteData.Length - i));

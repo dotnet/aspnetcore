@@ -57,7 +57,6 @@ internal class HostingApplicationDiagnostics
         var diagnosticListenerActivityCreationEnabled = (diagnosticListenerEnabled && _diagnosticListener.IsEnabled(ActivityName, httpContext));
         var loggingEnabled = _logger.IsEnabled(LogLevel.Critical);
 
-
         if (loggingEnabled || diagnosticListenerActivityCreationEnabled || _activitySource.HasListeners())
         {
             context.Activity = StartActivity(httpContext, loggingEnabled, diagnosticListenerActivityCreationEnabled, out var hasDiagnosticListener);
@@ -305,7 +304,7 @@ internal class HostingApplicationDiagnostics
             });
 
             // AddBaggage adds items at the beginning  of the list, so we need to add them in reverse to keep the same order as the client
-            // By contract, the propagator has already reversed the order of items so we need not reverse it again 
+            // By contract, the propagator has already reversed the order of items so we need not reverse it again
             // Order could be important if baggage has two items with the same key (that is allowed by the contract)
             if (baggage is not null)
             {

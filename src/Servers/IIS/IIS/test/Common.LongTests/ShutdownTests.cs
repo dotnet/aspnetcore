@@ -81,7 +81,6 @@ public class ShutdownTests : IISFunctionalTestBase
         deploymentResult.AssertWorkerProcessStop();
     }
 
-
     [ConditionalFact]
     public async Task AppOfflineDroppedWhileSiteIsDown_SiteReturns503_InProcess()
     {

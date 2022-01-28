@@ -160,7 +160,6 @@ public class SignInManagerTest
         auth.Verify();
     }
 
-
     [Fact]
     public async Task PasswordSignInWorksWithNonTwoFactorStore()
     {
@@ -644,7 +643,6 @@ public class SignInManagerTest
             It.Is<ClaimsPrincipal>(i => i.FindFirstValue(ClaimTypes.Name) == user.Id
                 && i.Identities.First().AuthenticationType == IdentityConstants.TwoFactorRememberMeScheme),
             It.Is<AuthenticationProperties>(v => v.IsPersistent == true))).Returns(Task.FromResult(0)).Verifiable();
-
 
         // Act
         await helper.RememberTwoFactorClientAsync(user);

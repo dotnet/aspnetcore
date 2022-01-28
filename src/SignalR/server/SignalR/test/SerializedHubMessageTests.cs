@@ -39,7 +39,6 @@ public class SerializedHubMessageTests
         // Get it again
         var serialized = message.GetSerializedMessage(protocol);
 
-
         Assert.Equal(DummyHubProtocol.DummySerialization, serialized.ToArray());
 
         // We should still only have written one message

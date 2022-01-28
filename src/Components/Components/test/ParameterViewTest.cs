@@ -14,8 +14,8 @@ public partial class ParameterViewTest
         // Arrange
         var frames = new[]
         {
-                RenderTreeFrame.ChildComponent(0, typeof(FakeComponent)).WithComponentSubtreeLength(1)
-            };
+            RenderTreeFrame.ChildComponent(0, typeof(FakeComponent)).WithComponentSubtreeLength(1)
+        };
         var parameters = new ParameterView(ParameterViewLifetime.Unbound, frames, 0);
 
         // Assert
@@ -28,8 +28,8 @@ public partial class ParameterViewTest
         // Arrange
         var frames = new[]
         {
-                RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(1)
-            };
+            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(1)
+        };
         var parameters = new ParameterView(ParameterViewLifetime.Unbound, frames, 0);
 
         // Assert
@@ -44,14 +44,14 @@ public partial class ParameterViewTest
         var attribute2Value = new object();
         var frames = new[]
         {
-                RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(3),
-                RenderTreeFrame.Attribute(1, "attribute 1", attribute1Value),
-                RenderTreeFrame.Attribute(2, "attribute 2", attribute2Value),
-                // Although RenderTreeBuilder doesn't let you add orphaned attributes like this,
-                // still want to verify that parameters doesn't attempt to read past the
-                // end of the owner's descendants
-                RenderTreeFrame.Attribute(3, "orphaned attribute", "value")
-            };
+            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(3),
+            RenderTreeFrame.Attribute(1, "attribute 1", attribute1Value),
+            RenderTreeFrame.Attribute(2, "attribute 2", attribute2Value),
+            // Although RenderTreeBuilder doesn't let you add orphaned attributes like this,
+            // still want to verify that parameters doesn't attempt to read past the
+            // end of the owner's descendants
+            RenderTreeFrame.Attribute(3, "orphaned attribute", "value")
+        };
         var parameters = new ParameterView(ParameterViewLifetime.Unbound, frames, 0);
 
         // Assert
@@ -68,12 +68,12 @@ public partial class ParameterViewTest
         var attribute2Value = new object();
         var frames = new[]
         {
-                RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(3),
-                RenderTreeFrame.Attribute(1, "attribute 1", attribute1Value),
-                RenderTreeFrame.Attribute(2, "attribute 2", attribute2Value),
-                RenderTreeFrame.Element(3, "child element").WithElementSubtreeLength(2),
-                RenderTreeFrame.Attribute(4, "child attribute", "some value")
-            };
+            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(3),
+            RenderTreeFrame.Attribute(1, "attribute 1", attribute1Value),
+            RenderTreeFrame.Attribute(2, "attribute 2", attribute2Value),
+            RenderTreeFrame.Element(3, "child element").WithElementSubtreeLength(2),
+            RenderTreeFrame.Attribute(4, "child attribute", "some value")
+        };
         var parameters = new ParameterView(ParameterViewLifetime.Unbound, frames, 0);
 
         // Assert
@@ -91,13 +91,13 @@ public partial class ParameterViewTest
         var attribute3Value = new object();
         var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
         {
-                RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
-                RenderTreeFrame.Attribute(1, "attribute 1", attribute1Value)
-            }, 0).WithCascadingParameters(new List<CascadingParameterState>
-            {
-                new CascadingParameterState("attribute 2", new TestCascadingValue(attribute2Value)),
-                new CascadingParameterState("attribute 3", new TestCascadingValue(attribute3Value)),
-            });
+            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
+            RenderTreeFrame.Attribute(1, "attribute 1", attribute1Value)
+        }, 0).WithCascadingParameters(new List<CascadingParameterState>
+        {
+            new CascadingParameterState("attribute 2", new TestCascadingValue(attribute2Value)),
+            new CascadingParameterState("attribute 3", new TestCascadingValue(attribute3Value)),
+        });
 
         // Assert
         Assert.Collection(ToEnumerable(parameters),
@@ -112,9 +112,9 @@ public partial class ParameterViewTest
         // Arrange
         var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
         {
-                RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
-                RenderTreeFrame.Attribute(1, "some other entry", new object())
-            }, 0);
+            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
+            RenderTreeFrame.Attribute(1, "some other entry", new object())
+        }, 0);
 
         // Act
         var didFind = parameters.TryGetValue<string>("nonexisting entry", out var value);
@@ -130,9 +130,9 @@ public partial class ParameterViewTest
         // Arrange
         var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
         {
-                RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
-                RenderTreeFrame.Attribute(1, "my entry", "hello")
-            }, 0);
+            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
+            RenderTreeFrame.Attribute(1, "my entry", "hello")
+        }, 0);
 
         // Act
         var didFind = parameters.TryGetValue<string>("my entry", out var value);
@@ -149,10 +149,10 @@ public partial class ParameterViewTest
         var myEntryValue = new object();
         var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
         {
-                RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
-                RenderTreeFrame.Attribute(1, "my entry", myEntryValue),
-                RenderTreeFrame.Attribute(1, "my other entry", new object())
-            }, 0);
+            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
+            RenderTreeFrame.Attribute(1, "my entry", myEntryValue),
+            RenderTreeFrame.Attribute(1, "my other entry", new object())
+        }, 0);
 
         // Act
         var result = parameters.GetValueOrDefault<object>("my entry");
@@ -168,10 +168,10 @@ public partial class ParameterViewTest
         var myEntryValue = new object();
         var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
         {
-                RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(3),
-                RenderTreeFrame.Attribute(1, "my entry", myEntryValue),
-                RenderTreeFrame.Attribute(1, "my entry", new object()),
-            }, 0);
+            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(3),
+            RenderTreeFrame.Attribute(1, "my entry", myEntryValue),
+            RenderTreeFrame.Attribute(1, "my entry", new object()),
+        }, 0);
 
         // Act
         var result = parameters.GetValueOrDefault<object>("my entry");
@@ -186,12 +186,12 @@ public partial class ParameterViewTest
         // Arrange
         var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
         {
-                RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
-                RenderTreeFrame.Attribute(1, "some other entry", new object())
-            }, 0).WithCascadingParameters(new List<CascadingParameterState>
-            {
-                new CascadingParameterState("another entry", new TestCascadingValue(null))
-            });
+            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
+            RenderTreeFrame.Attribute(1, "some other entry", new object())
+        }, 0).WithCascadingParameters(new List<CascadingParameterState>
+        {
+            new CascadingParameterState("another entry", new TestCascadingValue(null))
+        });
 
         // Act
         var result = parameters.GetValueOrDefault<DateTime>("nonexisting entry");
@@ -207,9 +207,9 @@ public partial class ParameterViewTest
         var explicitDefaultValue = new DateTime(2018, 3, 20);
         var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
         {
-                RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
-                RenderTreeFrame.Attribute(1, "some other entry", new object())
-            }, 0);
+            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
+            RenderTreeFrame.Attribute(1, "some other entry", new object())
+        }, 0);
 
         // Act
         var result = parameters.GetValueOrDefault("nonexisting entry", explicitDefaultValue);
@@ -224,9 +224,9 @@ public partial class ParameterViewTest
         // Arrange
         var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
         {
-                RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
-                RenderTreeFrame.Attribute(1, "my entry", "hello")
-            }, 0);
+            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
+            RenderTreeFrame.Attribute(1, "my entry", "hello")
+        }, 0);
 
         // Act/Assert
         Assert.Throws<InvalidCastException>(() =>
@@ -265,7 +265,6 @@ public partial class ParameterViewTest
         Assert.Equal(dictionary, collection.ToDictionary());
     }
 
-
     [Fact]
     public void CanConvertToReadOnlyDictionary()
     {
@@ -273,10 +272,10 @@ public partial class ParameterViewTest
         var entry2Value = new object();
         var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
         {
-                RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(3),
-                RenderTreeFrame.Attribute(0, "entry 1", "value 1"),
-                RenderTreeFrame.Attribute(0, "entry 2", entry2Value),
-            }, 0);
+            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(3),
+            RenderTreeFrame.Attribute(0, "entry 1", "value 1"),
+            RenderTreeFrame.Attribute(0, "entry 2", entry2Value),
+        }, 0);
 
         // Act
         IReadOnlyDictionary<string, object> dict = parameters.ToDictionary();
@@ -302,14 +301,14 @@ public partial class ParameterViewTest
         var myEntryValue = new object();
         var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
         {
-                RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
-                RenderTreeFrame.Attribute(1, "unrelated value", new object())
-            }, 0).WithCascadingParameters(new List<CascadingParameterState>
-            {
-                new CascadingParameterState("unrelated value 2", new TestCascadingValue(null)),
-                new CascadingParameterState("my entry", new TestCascadingValue(myEntryValue)),
-                new CascadingParameterState("unrelated value 3", new TestCascadingValue(null)),
-            });
+            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
+            RenderTreeFrame.Attribute(1, "unrelated value", new object())
+        }, 0).WithCascadingParameters(new List<CascadingParameterState>
+        {
+            new CascadingParameterState("unrelated value 2", new TestCascadingValue(null)),
+            new CascadingParameterState("my entry", new TestCascadingValue(myEntryValue)),
+            new CascadingParameterState("unrelated value 3", new TestCascadingValue(null)),
+        });
 
         // Act
         var result = parameters.GetValueOrDefault<object>("my entry");
@@ -326,8 +325,8 @@ public partial class ParameterViewTest
         var lifetime = new ParameterViewLifetime(builder);
         var frames = new[]
         {
-                RenderTreeFrame.ChildComponent(0, typeof(FakeComponent)).WithComponentSubtreeLength(1)
-            };
+            RenderTreeFrame.ChildComponent(0, typeof(FakeComponent)).WithComponentSubtreeLength(1)
+        };
         var parameterView = new ParameterView(lifetime, frames, 0);
 
         // Act
@@ -364,10 +363,9 @@ public partial class ParameterViewTest
         var attribute1Value = new object();
         var initial = new ParameterView(ParameterViewLifetime.Unbound, new[]
         {
-                 RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
-                 RenderTreeFrame.Attribute(1, "attribute 1", attribute1Value),
-            }, 0);
-
+            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
+            RenderTreeFrame.Attribute(1, "attribute 1", attribute1Value),
+        }, 0);
 
         // Act
         var cloned = initial.Clone();
@@ -387,12 +385,11 @@ public partial class ParameterViewTest
         var attribute3Value = new object();
         var initial = new ParameterView(ParameterViewLifetime.Unbound, new[]
         {
-                 RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(4),
-                 RenderTreeFrame.Attribute(1, "attribute 1", attribute1Value),
-                 RenderTreeFrame.Attribute(1, "attribute 2", attribute2Value),
-                 RenderTreeFrame.Attribute(1, "attribute 3", attribute3Value),
-            }, 0);
-
+            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(4),
+            RenderTreeFrame.Attribute(1, "attribute 1", attribute1Value),
+            RenderTreeFrame.Attribute(1, "attribute 2", attribute2Value),
+            RenderTreeFrame.Attribute(1, "attribute 3", attribute3Value),
+        }, 0);
 
         // Act
         var cloned = initial.Clone();

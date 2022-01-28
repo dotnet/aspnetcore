@@ -1484,7 +1484,6 @@ public class RouteValueDictionaryTests
         Assert.IsType<KeyValuePair<string, object?>[]>(dict._arrayStorage);
     }
 
-
     [Fact]
     public void Remove_KeyAndOutValue_EmptyStorage()
     {

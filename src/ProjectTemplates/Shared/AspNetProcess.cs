@@ -112,7 +112,6 @@ public class AspNetProcess : IDisposable
         await page.GotoAsync(ListeningUri.AbsoluteUri);
     }
 
-
     public async Task AssertPagesOk(IEnumerable<Page> pages)
     {
         foreach (var page in pages)

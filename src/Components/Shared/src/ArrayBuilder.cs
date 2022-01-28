@@ -76,10 +76,13 @@ internal class ArrayBuilder<T> : IDisposable
     }
 
     internal int Append(T[] source, int startIndex, int length)
+        => Append(source.AsSpan(startIndex, length));
+
+    internal int Append(ReadOnlySpan<T> source)
     {
         // Expand storage if needed. Using same doubling approach as would
         // be used if you inserted the items one-by-one.
-        var requiredCapacity = _itemsInUse + length;
+        var requiredCapacity = _itemsInUse + source.Length;
         if (_items.Length < requiredCapacity)
         {
             var candidateCapacity = Math.Max(_items.Length * 2, _minCapacity);
@@ -91,9 +94,9 @@ internal class ArrayBuilder<T> : IDisposable
             GrowBuffer(candidateCapacity);
         }
 
-        Array.Copy(source, startIndex, _items, _itemsInUse, length);
+        source.CopyTo(_items.AsSpan(_itemsInUse));
         var startIndexOfAppendedItems = _itemsInUse;
-        _itemsInUse += length;
+        _itemsInUse += source.Length;
         return startIndexOfAppendedItems;
     }
 

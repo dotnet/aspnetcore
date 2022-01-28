@@ -13,6 +13,8 @@ public class DataAnnotationsValidator : ComponentBase, IDisposable
 
     [CascadingParameter] EditContext? CurrentEditContext { get; set; }
 
+    [Inject] private IServiceProvider ServiceProvider { get; set; } = default!;
+
     /// <inheritdoc />
     protected override void OnInitialized()
     {
@@ -23,7 +25,7 @@ public class DataAnnotationsValidator : ComponentBase, IDisposable
                 $"inside an EditForm.");
         }
 
-        _subscriptions = CurrentEditContext.EnableDataAnnotationsValidation();
+        _subscriptions = CurrentEditContext.EnableDataAnnotationsValidation(ServiceProvider);
         _originalEditContext = CurrentEditContext;
     }
 

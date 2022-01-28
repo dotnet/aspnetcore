@@ -30,7 +30,6 @@ public class AzureADB2COptions
     /// </summary>
     public string JwtBearerSchemeName { get; internal set; }
 
-
     /// <summary>
     /// Gets or sets the client Id.
     /// </summary>

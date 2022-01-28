@@ -76,7 +76,7 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
         if (!successful) {
           this.rejected();
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         // We got an exception, server is currently unavailable
         this.logger.log(LogLevel.Error, err as Error);
         this.failed();

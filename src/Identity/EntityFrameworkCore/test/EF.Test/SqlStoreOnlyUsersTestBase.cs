@@ -116,7 +116,6 @@ public abstract class SqlStoreOnlyUsersTestBase<TUser, TKey> : UserManagerSpecif
         Assert.Null(await userMgr.GetAuthenticationTokenAsync(user, "provider", "test"));
     }
 
-
     [ConditionalFact]
     public void CanCreateUserUsingEF()
     {

@@ -470,7 +470,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         _timeoutControl.Initialize(_serviceContext.SystemClock.UtcNow.Ticks);
     }
 
-    protected async Task InitializeConnectionWithoutPrefaceAsync(RequestDelegate application)
+    protected void InitializeConnectionWithoutPreface(RequestDelegate application)
     {
         if (_connection == null)
         {
@@ -493,14 +493,15 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         }
 
         _connectionTask = CompletePipeOnTaskCompletion();
-
-        // Lose xUnit's AsyncTestSyncContext so middleware always runs inline for better determinism.
-        await ThreadPoolAwaitable.Instance;
     }
 
     protected async Task InitializeConnectionAsync(RequestDelegate application, int expectedSettingsCount = 3, bool expectedWindowUpdate = true)
     {
-        await InitializeConnectionWithoutPrefaceAsync(application);
+        InitializeConnectionWithoutPreface(application);
+
+        // Lose xUnit's AsyncTestSyncContext so middleware always runs inline for better determinism.
+        await ThreadPoolAwaitable.Instance;
+
         await SendPreambleAsync();
         await SendSettingsAsync();
 
@@ -1377,7 +1378,6 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
             _realTimeoutControl.CancelTimeout();
         }
 
-
         public virtual void InitializeHttp2(InputFlowControl connectionInputFlowControl)
         {
             _realTimeoutControl.InitializeHttp2(connectionInputFlowControl);
@@ -1407,7 +1407,6 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         {
             _realTimeoutControl.BytesRead(count);
         }
-
 
         public virtual void StartTimingWrite()
         {

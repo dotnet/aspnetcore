@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Globalization;
+using System.IO.Pipelines;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -61,6 +62,8 @@ public static partial class RequestDelegateFactory
     private static readonly MemberExpression QueryExpr = Expression.Property(HttpRequestExpr, typeof(HttpRequest).GetProperty(nameof(HttpRequest.Query))!);
     private static readonly MemberExpression HeadersExpr = Expression.Property(HttpRequestExpr, typeof(HttpRequest).GetProperty(nameof(HttpRequest.Headers))!);
     private static readonly MemberExpression FormExpr = Expression.Property(HttpRequestExpr, typeof(HttpRequest).GetProperty(nameof(HttpRequest.Form))!);
+    private static readonly MemberExpression RequestStreamExpr = Expression.Property(HttpRequestExpr, typeof(HttpRequest).GetProperty(nameof(HttpRequest.Body))!);
+    private static readonly MemberExpression RequestPipeReaderExpr = Expression.Property(HttpRequestExpr, typeof(HttpRequest).GetProperty(nameof(HttpRequest.BodyReader))!);
     private static readonly MemberExpression FormFilesExpr = Expression.Property(FormExpr, typeof(IFormCollection).GetProperty(nameof(IFormCollection.Files))!);
     private static readonly MemberExpression StatusCodeExpr = Expression.Property(HttpResponseExpr, typeof(HttpResponse).GetProperty(nameof(HttpResponse.StatusCode))!);
     private static readonly MemberExpression CompletedTaskExpr = Expression.Property(null, (PropertyInfo)GetMemberInfo<Func<Task>>(() => Task.CompletedTask));
@@ -301,6 +304,14 @@ public static partial class RequestDelegateFactory
         else if (parameter.ParameterType == typeof(IFormFile))
         {
             return BindParameterFromFormFile(parameter, parameter.Name, factoryContext, RequestDelegateFactoryConstants.FormFileParameter);
+        }
+        else if (parameter.ParameterType == typeof(Stream))
+        {
+            return RequestStreamExpr;
+        }
+        else if (parameter.ParameterType == typeof(PipeReader))
+        {
+            return RequestPipeReaderExpr;
         }
         else if (ParameterBindingMethodCache.HasBindAsyncMethod(parameter))
         {

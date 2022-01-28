@@ -2,77 +2,68 @@ parameters:
   BARBuildId: ''
   PromoteToChannelIds: ''
 
-jobs:
-- job: setupMaestroVars
-  displayName: Setup Maestro Vars
-  variables:
-    - template: common-variables.yml
-  pool:
-    vmImage: 'windows-2019'
-  steps:
-    - checkout: none
-
-    - ${{ if eq(coalesce(parameters.PromoteToChannelIds, 0), 0) }}:
-      - task: DownloadBuildArtifacts@0
-        displayName: Download Release Configs
-        inputs:
-          buildType: current
-          artifactName: ReleaseConfigs
-          checkDownloadedFiles: true
-
-    - task: PowerShell@2
-      name: setReleaseVars
-      displayName: Set Release Configs Vars
+steps:
+  - ${{ if eq(coalesce(parameters.PromoteToChannelIds, 0), 0) }}:
+    - task: DownloadBuildArtifacts@0
+      displayName: Download Release Configs
       inputs:
-        targetType: inline
-        script: |
-          try {
-            if (!$Env:PromoteToMaestroChannels -or $Env:PromoteToMaestroChannels.Trim() -eq '') {
-              $Content = Get-Content $(Build.StagingDirectory)/ReleaseConfigs/ReleaseConfigs.txt
+        buildType: current
+        artifactName: ReleaseConfigs
+        checkDownloadedFiles: true
 
-              $BarId = $Content | Select -Index 0
-              $Channels = $Content | Select -Index 1             
-              $IsStableBuild = $Content | Select -Index 2
+  - task: PowerShell@2
+    name: setReleaseVars
+    displayName: Set Release Configs Vars
+    inputs:
+      targetType: inline
+      script: |
+        try {
+          if (!$Env:PromoteToMaestroChannels -or $Env:PromoteToMaestroChannels.Trim() -eq '') {
+            $Content = Get-Content $(Build.StagingDirectory)/ReleaseConfigs/ReleaseConfigs.txt
 
-              $AzureDevOpsProject = $Env:System_TeamProject
-              $AzureDevOpsBuildDefinitionId = $Env:System_DefinitionId
-              $AzureDevOpsBuildId = $Env:Build_BuildId
-            }
-            else {
-              $buildApiEndpoint = "${Env:MaestroApiEndPoint}/api/builds/${Env:BARBuildId}?api-version=${Env:MaestroApiVersion}"
+            $BarId = $Content | Select -Index 0
+            $Channels = $Content | Select -Index 1             
+            $IsStableBuild = $Content | Select -Index 2
 
-              $apiHeaders = New-Object 'System.Collections.Generic.Dictionary[[String],[String]]'
-              $apiHeaders.Add('Accept', 'application/json')
-              $apiHeaders.Add('Authorization',"Bearer ${Env:MAESTRO_API_TOKEN}")
-
-              $buildInfo = try { Invoke-WebRequest -Method Get -Uri $buildApiEndpoint -Headers $apiHeaders | ConvertFrom-Json } catch { Write-Host "Error: $_" }
-             
-              $BarId = $Env:BARBuildId
-              $Channels = $Env:PromoteToMaestroChannels -split ","
-              $Channels = $Channels -join "]["
-              $Channels = "[$Channels]"
-
-              $IsStableBuild = $buildInfo.stable
-              $AzureDevOpsProject = $buildInfo.azureDevOpsProject
-              $AzureDevOpsBuildDefinitionId = $buildInfo.azureDevOpsBuildDefinitionId
-              $AzureDevOpsBuildId = $buildInfo.azureDevOpsBuildId
-            }
-
-            Write-Host "##vso[task.setvariable variable=BARBuildId;isOutput=true]$BarId"
-            Write-Host "##vso[task.setvariable variable=TargetChannels;isOutput=true]$Channels"
-            Write-Host "##vso[task.setvariable variable=IsStableBuild;isOutput=true]$IsStableBuild"
-
-            Write-Host "##vso[task.setvariable variable=AzDOProjectName;isOutput=true]$AzureDevOpsProject"
-            Write-Host "##vso[task.setvariable variable=AzDOPipelineId;isOutput=true]$AzureDevOpsBuildDefinitionId"
-            Write-Host "##vso[task.setvariable variable=AzDOBuildId;isOutput=true]$AzureDevOpsBuildId"
+            $AzureDevOpsProject = $Env:System_TeamProject
+            $AzureDevOpsBuildDefinitionId = $Env:System_DefinitionId
+            $AzureDevOpsBuildId = $Env:Build_BuildId
           }
-          catch {
-            Write-Host $_
-            Write-Host $_.Exception
-            Write-Host $_.ScriptStackTrace
-            exit 1
+          else {
+            $buildApiEndpoint = "${Env:MaestroApiEndPoint}/api/builds/${Env:BARBuildId}?api-version=${Env:MaestroApiVersion}"
+
+            $apiHeaders = New-Object 'System.Collections.Generic.Dictionary[[String],[String]]'
+            $apiHeaders.Add('Accept', 'application/json')
+            $apiHeaders.Add('Authorization',"Bearer ${Env:MAESTRO_API_TOKEN}")
+
+            $buildInfo = try { Invoke-WebRequest -Method Get -Uri $buildApiEndpoint -Headers $apiHeaders | ConvertFrom-Json } catch { Write-Host "Error: $_" }
+            
+            $BarId = $Env:BARBuildId
+            $Channels = $Env:PromoteToMaestroChannels -split ","
+            $Channels = $Channels -join "]["
+            $Channels = "[$Channels]"
+
+            $IsStableBuild = $buildInfo.stable
+            $AzureDevOpsProject = $buildInfo.azureDevOpsProject
+            $AzureDevOpsBuildDefinitionId = $buildInfo.azureDevOpsBuildDefinitionId
+            $AzureDevOpsBuildId = $buildInfo.azureDevOpsBuildId
           }
-      env:
-        MAESTRO_API_TOKEN: $(MaestroApiAccessToken)
-        BARBuildId: ${{ parameters.BARBuildId }}
-        PromoteToMaestroChannels: ${{ parameters.PromoteToChannelIds }}
+
+          Write-Host "##vso[task.setvariable variable=BARBuildId]$BarId"
+          Write-Host "##vso[task.setvariable variable=TargetChannels]$Channels"
+          Write-Host "##vso[task.setvariable variable=IsStableBuild]$IsStableBuild"
+
+          Write-Host "##vso[task.setvariable variable=AzDOProjectName]$AzureDevOpsProject"
+          Write-Host "##vso[task.setvariable variable=AzDOPipelineId]$AzureDevOpsBuildDefinitionId"
+          Write-Host "##vso[task.setvariable variable=AzDOBuildId]$AzureDevOpsBuildId"
+        }
+        catch {
+          Write-Host $_
+          Write-Host $_.Exception
+          Write-Host $_.ScriptStackTrace
+          exit 1
+        }
+    env:
+      MAESTRO_API_TOKEN: $(MaestroApiAccessToken)
+      BARBuildId: ${{ parameters.BARBuildId }}
+      PromoteToMaestroChannels: ${{ parameters.PromoteToChannelIds }}

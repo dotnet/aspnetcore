@@ -25,7 +25,6 @@ public class DuplexStream : Stream
         return new DuplexStream(WriteStream, ReadStream);
     }
 
-
     #region Properties
 
     public override bool CanRead

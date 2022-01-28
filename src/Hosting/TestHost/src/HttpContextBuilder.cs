@@ -228,7 +228,7 @@ internal class HttpContextBuilder : IHttpBodyControlFeature, IHttpResetFeature
             {
                 newFeatures[pair.Key] = pair.Value;
             }
-            var serverResponseFeature = _httpContext.Features.Get<IHttpResponseFeature>()!;
+            var serverResponseFeature = _httpContext.Features.GetRequiredFeature<IHttpResponseFeature>();
             // The client gets a deep copy of this so they can interact with the body stream independently of the server.
             var clientResponseFeature = new HttpResponseFeature()
             {

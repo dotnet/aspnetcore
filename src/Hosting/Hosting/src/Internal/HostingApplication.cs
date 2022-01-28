@@ -116,7 +116,6 @@ internal class HostingApplication : IHttpApplication<HostingApplication.Context>
         context.Reset();
     }
 
-
     internal class Context
     {
         public HttpContext? HttpContext { get; set; }

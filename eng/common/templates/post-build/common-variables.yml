@@ -4,54 +4,6 @@ variables:
   - group: DotNet-DotNetCli-Storage
   - group: DotNet-MSRC-Storage
   - group: Publish-Build-Assets
-    
-  # .NET Core 3.1 Dev
-  - name: PublicDevRelease_31_Channel_Id
-    value: 128
-
-  # .NET 5 Dev
-  - name: Net_5_Dev_Channel_Id
-    value: 131
-
-  # .NET Eng - Validation
-  - name: Net_Eng_Validation_Channel_Id
-    value: 9
-
-  # .NET Eng - Latest
-  - name: Net_Eng_Latest_Channel_Id
-    value: 2
-
-  # .NET 3 Eng - Validation
-  - name: NET_3_Eng_Validation_Channel_Id
-    value: 390
-
-  # .NET 3 Eng
-  - name: NetCore_3_Tools_Channel_Id
-    value: 344
-
-  # .NET Core 3.0 Internal Servicing
-  - name: InternalServicing_30_Channel_Id
-    value: 184
-
-  # .NET Core 3.0 Release
-  - name: PublicRelease_30_Channel_Id
-    value: 19
-
-  # .NET Core 3.1 Release
-  - name: PublicRelease_31_Channel_Id
-    value: 129
-
-  # General Testing
-  - name: GeneralTesting_Channel_Id
-    value: 529
-
-  # .NET Core 3.1 Blazor Features
-  - name: NetCore_31_Blazor_Features_Channel_Id
-    value: 531
-
-  # .NET Core Experimental
-  - name: NetCore_Experimental_Channel_Id
-    value: 562
 
   # Whether the build is internal or not
   - name: IsInternalBuild
@@ -69,27 +21,6 @@ variables:
     value: 3.0.0
   - name: SymbolToolVersion
     value: 1.0.1
-
-  # Feed Configurations
-  # These should include the suffix "/index.json"
-
-  # Default locations for Installers and checksums
-  # Public Locations
-  - name: ChecksumsBlobFeedUrl
-    value: https://dotnetclichecksums.blob.core.windows.net/dotnet/index.json
-  - name: InstallersBlobFeedUrl
-    value: https://dotnetcli.blob.core.windows.net/dotnet/index.json
-
-  # Private Locations
-  - name: InternalChecksumsBlobFeedUrl
-    value: https://dotnetclichecksumsmsrc.blob.core.windows.net/dotnet/index.json
-  - name: InternalChecksumsBlobFeedKey
-    value: $(dotnetclichecksumsmsrc-storage-key)
-
-  - name: InternalInstallersBlobFeedUrl
-    value: https://dotnetclimsrc.blob.core.windows.net/dotnet/index.json
-  - name: InternalInstallersBlobFeedKey
-    value: $(dotnetclimsrc-access-key)
 
   # Skip component governance and codesign validation for SDL. These jobs
   # create no content.

@@ -37,7 +37,6 @@ public class DefaultPageActivatorProviderTest
             PageTypeInfo = type.GetTypeInfo(),
         };
 
-
         var activator = new DefaultPageActivatorProvider();
 
         // Act

@@ -69,7 +69,6 @@ public class PrefixContainerTest
         Assert.False(result);
     }
 
-
     [Theory]
     [InlineData("a")]
     [InlineData("b")]

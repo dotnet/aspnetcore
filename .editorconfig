@@ -166,6 +166,9 @@ dotnet_diagnostic.CA1842.severity = warning
 # CA1843: Do not use 'WaitAll' with a single task
 dotnet_diagnostic.CA1843.severity = warning
 
+# CA1844: Provide memory-based overrides of async methods when subclassing 'Stream'
+dotnet_diagnostic.CA1844.severity = warning
+
 # CA1845: Use span-based 'string.Concat'
 dotnet_diagnostic.CA1845.severity = warning
 
@@ -242,6 +245,10 @@ file_header_template = Licensed to the .NET Foundation under one or more agreeme
 
 # IDE0161: Convert to file-scoped namespace
 dotnet_diagnostic.IDE0161.severity = warning
+
+# IDE2000: Disallow multiple blank lines
+dotnet_style_allow_multiple_blank_lines_experimental = false
+dotnet_diagnostic.IDE2000.severity = warning
 
 [**/{test,samples,perf}/**.{cs,vb}]
 # CA1018: Mark attributes with AttributeUsageAttribute

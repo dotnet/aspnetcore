@@ -207,7 +207,6 @@ public class AuthenticatedEncryptorDescriptorTests
             descriptor,
             new[] { encryptorFactory });
 
-
         return key.CreateEncryptor();
     }
 }

@@ -60,7 +60,6 @@ internal abstract class BaseView
     /// </summary>
     protected JavaScriptEncoder JavaScriptEncoder { get; set; } = JavaScriptEncoder.Default;
 
-
     /// <summary>
     /// Execute an individual request
     /// </summary>

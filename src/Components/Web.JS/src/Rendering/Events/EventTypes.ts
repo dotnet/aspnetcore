@@ -3,7 +3,7 @@
 
 export interface EventTypeOptions {
   browserEventName?: string;
-  createEventArgs?: (event: Event) => any;
+  createEventArgs?: (event: Event) => unknown;
 }
 
 const eventTypeRegistry: Map<string, EventTypeOptions> = new Map();

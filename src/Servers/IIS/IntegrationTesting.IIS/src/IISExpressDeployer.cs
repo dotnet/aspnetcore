@@ -90,7 +90,6 @@ public class IISExpressDeployer : IISDeployerBase
 
             RunWebConfigActions(contentRoot);
 
-
             // Launch the host process.
             var (actualUri, hostExitToken) = await StartIISExpressAsync(contentRoot);
 

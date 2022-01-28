@@ -44,7 +44,6 @@ public class HttpUtilitiesTest
             toString = HttpUtilities.MethodToString(knownMethod);
         }
 
-
         // Assert
         Assert.Equal(expectedResult, result);
         Assert.Equal(expectedMethod, knownMethod);

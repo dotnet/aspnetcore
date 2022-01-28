@@ -60,7 +60,6 @@ public class HandshakeTests : LoggedTest
         Assert.Equal("HTTP/2 over TLS is not supported on macOS due to missing ALPN support.", ex.Message);
     }
 
-
     [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
     [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win7)]

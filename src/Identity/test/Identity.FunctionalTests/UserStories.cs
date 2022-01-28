@@ -35,7 +35,6 @@ public class UserStories
         return await register.SubmitRegisterFormWithConfirmation(userName, password, hasRealEmailSender);
     }
 
-
     internal static async Task<Index> LoginExistingUserAsync(HttpClient client, string userName, string password)
     {
         var index = await Index.CreateAsync(client);

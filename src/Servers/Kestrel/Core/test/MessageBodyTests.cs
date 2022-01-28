@@ -484,7 +484,6 @@ public class MessageBodyTests : LoggedTest
             var buffer = new byte[1024];
             Assert.Equal(0, stream.Read(buffer, 0, buffer.Length));
 
-
             await body.StopAsync();
         }
     }
@@ -506,7 +505,6 @@ public class MessageBodyTests : LoggedTest
 
             var buffer = new byte[1024];
             Assert.Equal(0, await stream.ReadAsync(buffer, 0, buffer.Length));
-
 
             await body.StopAsync();
         }
@@ -536,7 +534,6 @@ public class MessageBodyTests : LoggedTest
             var requestArray = ms.ToArray();
             Assert.Equal(8197, requestArray.Length);
             AssertASCII(largeInput + "Hello", new ArraySegment<byte>(requestArray, 0, requestArray.Length));
-
 
             await body.StopAsync();
         }

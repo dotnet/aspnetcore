@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Matching;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace Microsoft.AspNetCore.Mvc.Routing;
@@ -449,7 +450,8 @@ public class ActionConstraintMatcherPolicyTest
 
         var actionDescriptorCollectionProvider = new DefaultActionDescriptorCollectionProvider(
             new IActionDescriptorProvider[] { actionDescriptorProvider.Object, },
-            Enumerable.Empty<IActionDescriptorChangeProvider>());
+            Enumerable.Empty<IActionDescriptorChangeProvider>(),
+            NullLogger<DefaultActionDescriptorCollectionProvider>.Instance);
 
         var cache = new ActionConstraintCache(actionDescriptorCollectionProvider, new[]
         {

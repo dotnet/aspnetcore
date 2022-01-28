@@ -559,7 +559,6 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
                     "",
                     "");
 
-
                 var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => responseWriteTcs.Task).DefaultTimeout();
                 Assert.Equal(CoreStrings.FormatWritingToResponseBodyNotSupported(statusCode), ex.Message);
 
@@ -601,7 +600,6 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
                     "Host:",
                     "",
                     "");
-
 
                 var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => responseWriteTcs.Task).DefaultTimeout();
                 Assert.Equal(CoreStrings.FormatWritingToResponseBodyNotSupported(205), ex.Message);
@@ -2198,7 +2196,6 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         Assert.Equal(2, LogMessages.Where(message => message.LogLevel == LogLevel.Error).Count());
     }
 
-
     [Fact]
     public async Task ThrowingInOnStartingResultsInFailedWritesAnd500Response()
     {
@@ -2478,7 +2475,6 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         Assert.True(onStartingCalled);
         Assert.Single(LogMessages, message => message.LogLevel == LogLevel.Error);
     }
-
 
     [Fact]
     public async Task NoErrorsLoggedWhenServerEndsConnectionBeforeClient()

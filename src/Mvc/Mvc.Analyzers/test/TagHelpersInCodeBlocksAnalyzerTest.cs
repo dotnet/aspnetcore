@@ -111,7 +111,6 @@ namespace AspNetCore
         return VerifyAnalyzerAsync(source, diagnosticResult, CS4034Result.WithLocation(1), CS4034Result.WithLocation(2));
     }
 
-
     [Fact]
     public Task DiagnosticsAreReturned_ForUseOfTagHelpersInNonAsyncFunc()
     {
@@ -886,7 +885,6 @@ namespace AspNetCore
 ";
         var diagnosticResult = new DiagnosticResult(DiagnosticDescriptor)
             .WithLocation(0);
-
 
         return VerifyAnalyzerAsync(source,
             diagnosticResult,

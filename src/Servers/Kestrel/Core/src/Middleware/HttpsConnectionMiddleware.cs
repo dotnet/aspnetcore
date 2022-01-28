@@ -192,7 +192,6 @@ internal class HttpsConnectionMiddleware
             return;
         }
 
-
         KestrelEventSource.Log.TlsHandshakeStop(context, feature);
 
         _logger.HttpsConnectionEstablished(context.ConnectionId, sslStream.SslProtocol);

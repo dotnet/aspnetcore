@@ -45,22 +45,22 @@ internal static class WebSocketExtensions
         while (buffer.TryGet(ref position, out var segment))
         {
 #if NETCOREAPP
-            await webSocket.SendAsync(prevSegment, webSocketMessageType, endOfMessage: false, cancellationToken);
+            await webSocket.SendAsync(prevSegment, webSocketMessageType, endOfMessage: false, cancellationToken).ConfigureAwait(false);
 #else
             var isArray = MemoryMarshal.TryGetArray(prevSegment, out var arraySegment);
             Debug.Assert(isArray);
-            await webSocket.SendAsync(arraySegment, webSocketMessageType, endOfMessage: false, cancellationToken);
+            await webSocket.SendAsync(arraySegment, webSocketMessageType, endOfMessage: false, cancellationToken).ConfigureAwait(false);
 #endif
             prevSegment = segment;
         }
 
         // End of message frame
 #if NETCOREAPP
-        await webSocket.SendAsync(prevSegment, webSocketMessageType, endOfMessage: true, cancellationToken);
+        await webSocket.SendAsync(prevSegment, webSocketMessageType, endOfMessage: true, cancellationToken).ConfigureAwait(false);
 #else
         var isArrayEnd = MemoryMarshal.TryGetArray(prevSegment, out var arraySegmentEnd);
         Debug.Assert(isArrayEnd);
-        await webSocket.SendAsync(arraySegmentEnd, webSocketMessageType, endOfMessage: true, cancellationToken);
+        await webSocket.SendAsync(arraySegmentEnd, webSocketMessageType, endOfMessage: true, cancellationToken).ConfigureAwait(false);
 #endif
     }
 }

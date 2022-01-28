@@ -47,7 +47,6 @@ public abstract class RemoteAuthenticationHandler<TOptions> : AuthenticationHand
     protected RemoteAuthenticationHandler(IOptionsMonitor<TOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
         : base(options, logger, encoder, clock) { }
 
-
     /// <inheritdoc />
     protected override Task<object> CreateEventsAsync()
         => Task.FromResult<object>(new RemoteAuthenticationEvents());

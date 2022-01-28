@@ -3,6 +3,9 @@
   "strings": {
     "name": "Веб-API ASP.NET Core",
     "description": "Шаблон проекта для создания приложения ASP.NET Core с образцом контроллера для службы HTTP RESTful. Этот шаблон можно также использовать для представлений MVC и контроллеров ASP.NET Core.",
-    "parameter.DisableOpenAPI.name": "Включить поддержку _OpenAPI"
+    "parameter.DisableOpenAPI.name": "Включить поддержку _OpenAPI",
+    "parameter.DisableOpenAPI.description": "Включает поддержку OpenAPI (Swagger)",
+    "parameter.UseMinimalAPIs.name": "Использовать контроллеры (снимите флажок, чтобы использовать минимальные API)",
+    "parameter.UseMinimalAPIs.description": "Использование минимальных API вместо контроллеров."
   }
 }

@@ -3560,7 +3560,6 @@ public class DfaMatcherBuilderTest
 
         public Action<IReadOnlyList<Endpoint>> OnGetEdges { get; set; }
 
-
         public bool AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
         {
             return endpoints.Any(e => e.Metadata.GetMetadata<TestMetadata2>() != null);

@@ -194,7 +194,6 @@ public class RequestBodyTests
         }
     }
 
-
     [ConditionalFact]
     public async Task RequestBody_RemoveHeaderOnEmptyValueSet_Success()
     {

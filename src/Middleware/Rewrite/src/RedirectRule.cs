@@ -47,7 +47,6 @@ internal class RedirectRule : IRule
             initMatchResults = InitialMatch.Match(path.ToString().Substring(1));
         }
 
-
         if (initMatchResults.Success)
         {
             var newPath = initMatchResults.Result(Replacement);

@@ -1320,7 +1320,6 @@ public class DefaultApplicationModelProviderTest
         Assert.Same(BindingSource.Path, property.BindingInfo.BindingSource);
     }
 
-
     public class DerivedFromBindPropertyController : BindPropertyController
     {
         public string DerivedProperty { get; set; }

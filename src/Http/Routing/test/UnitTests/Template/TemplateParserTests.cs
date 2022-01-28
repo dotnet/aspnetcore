@@ -308,7 +308,6 @@ public class TemplateRouteParserTests
                                                                     defaultValue: null,
                                                                     inlineConstraints: null));
 
-
         expected.Parameters.Add(expected.Segments[0].Parts[0]);
         expected.Parameters.Add(expected.Segments[0].Parts[2]);
         expected.Parameters.Add(expected.Segments[0].Parts[4]);
@@ -346,7 +345,6 @@ public class TemplateRouteParserTests
                                                                     false,
                                                                     defaultValue: null,
                                                                     inlineConstraints: null));
-
 
         expected.Parameters.Add(expected.Segments[0].Parts[0]);
         expected.Parameters.Add(expected.Segments[0].Parts[2]);

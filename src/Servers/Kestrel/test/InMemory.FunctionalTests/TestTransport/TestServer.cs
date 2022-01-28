@@ -120,7 +120,6 @@ internal class TestServer : IAsyncDisposable, IStartup
         return _host.StopAsync(cancellationToken);
     }
 
-
     void IStartup.Configure(IApplicationBuilder app)
     {
         app.Run(_app);

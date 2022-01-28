@@ -46,7 +46,6 @@ public class CompositeViewEngineTest
         Assert.Equal(expected, exception.Message);
     }
 
-
     [Fact]
     public void FindView_IsMainPage_ReturnsNotFoundResult_WhenExactlyOneViewEngineIsRegisteredWhichReturnsNotFoundResult()
     {
@@ -174,7 +173,6 @@ public class CompositeViewEngineTest
             () => compositeViewEngine.GetView("~/Index.html", viewName, isMainPage));
         Assert.Equal(expected, exception.Message);
     }
-
 
     [Theory]
     [InlineData(false)]

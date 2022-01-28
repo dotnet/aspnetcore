@@ -186,7 +186,6 @@ public class ClaimEqualityComparer : IEqualityComparer<Claim>
     }
 }
 
-
 #region Generic Type defintions
 
 public class IdentityUserWithGenerics : IdentityUser<string>

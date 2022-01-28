@@ -481,8 +481,6 @@ app.Run();";
         return test.RunAsync();
     }
 
-
-
     [Fact]
     public async Task StartupAnalyzer_AuthNoRouting()
     {

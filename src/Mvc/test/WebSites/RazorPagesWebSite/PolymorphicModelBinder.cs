@@ -17,7 +17,6 @@ public class PolymorphicModelBinder : IModelBinder
             age = int.Parse(ageValue.FirstValue, CultureInfo.InvariantCulture);
         }
 
-
         var model = new UserModel
         {
             Name = bindingContext.ValueProvider.GetValue(nameof(UserModel.Name)).FirstValue,

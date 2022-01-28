@@ -73,7 +73,6 @@ internal struct PathTokenizer : IReadOnlyList<StringSegment>
                 throw new IndexOutOfRangeException();
             }
 
-
             var currentSegmentIndex = 0;
             var currentSegmentStart = 1;
 

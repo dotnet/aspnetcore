@@ -45,7 +45,6 @@ public class AttributeRouteTest
                 },
             };
 
-
         Func<ActionDescriptor[], IRouter> handlerFactory = (_) =>
         {
             var handler = new Mock<IRouter>();
@@ -649,7 +648,6 @@ public class AttributeRouteTest
                 Assert.Equal("blog/", e.RouteTemplate.TemplateText);
             });
     }
-
 
     [Fact]
     public void GetEntries_DoesNotCreateInboundEntriesForAttributesWithSuppressForPathMatchingSetToTrue()

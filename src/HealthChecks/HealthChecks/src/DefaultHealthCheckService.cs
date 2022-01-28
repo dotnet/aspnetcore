@@ -58,7 +58,6 @@ internal partial class DefaultHealthCheckService : HealthCheckService
 
         await Task.WhenAll(tasks).ConfigureAwait(false);
 
-
         index = 0;
         var entries = new Dictionary<string, HealthReportEntry>(StringComparer.OrdinalIgnoreCase);
         foreach (var registration in registrations)

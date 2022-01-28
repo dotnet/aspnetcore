@@ -61,8 +61,7 @@ public sealed class WebApplication : IHost, IApplicationBuilder, IEndpointRouteB
     /// <summary>
     /// The list of URLs that the HTTP server is bound to.
     /// </summary>
-    public ICollection<string> Urls => ServerFeatures.Get<IServerAddressesFeature>()?.Addresses ??
-        throw new InvalidOperationException($"{nameof(IServerAddressesFeature)} could not be found.");
+    public ICollection<string> Urls => ServerFeatures.GetRequiredFeature<IServerAddressesFeature>().Addresses;
 
     IServiceProvider IApplicationBuilder.ApplicationServices
     {

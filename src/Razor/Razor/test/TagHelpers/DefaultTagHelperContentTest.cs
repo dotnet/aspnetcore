@@ -313,7 +313,6 @@ public class DefaultTagHelperContentTest
         Assert.True(tagHelperContent.IsModified);
     }
 
-
     [Fact]
     public void IsModified_TrueAfterAppend()
     {

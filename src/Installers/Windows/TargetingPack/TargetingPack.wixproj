@@ -10,7 +10,6 @@
     <OutputType>Package</OutputType>
     <Cabinet>targeting_pack_$(Platform).cab</Cabinet>
     <IsShipping>true</IsShipping>
-    <SkipCopyToArtifactsDirectory Condition="'$(IsTargetingPackBuilding)' == 'false'">true</SkipCopyToArtifactsDirectory>
     <ProjectGuid>0AC34F1B-8056-4FFB-A398-E6BB7D67B48D</ProjectGuid>
     <HarvestDirectoryAutoGenerateGuids>true</HarvestDirectoryAutoGenerateGuids>
     <HarvestDirectorySuppressSpecificWarnings>5150;5151</HarvestDirectorySuppressSpecificWarnings>
@@ -79,13 +78,9 @@
     <ProductName>Microsoft ASP.NET Core $(PackageBrandingVersion) Targeting Pack ($(Platform))</ProductName>
     <PackageFileName>$(OutputName)$(TargetExt)</PackageFileName>
     <DefineConstants>$(DefineConstants);ProductName=$(ProductName)</DefineConstants>
-
-    <!-- Suppresses building this project completely during servicing builds. -->
-    <BuildDependsOn Condition="'$(IsTargetingPackBuilding)' == 'false'" />
   </PropertyGroup>
 
-   <Target Name="CreateTargetingPackNugetPackage" AfterTargets="CopyToArtifactsDirectory;Build"
-      Condition="'$(IsTargetingPackBuilding)' != 'false'">
+   <Target Name="CreateTargetingPackNugetPackage" AfterTargets="CopyToArtifactsDirectory;Build">
     <PropertyGroup>
       <MsiFullPath>$(InstallersOutputPath)$(PackageFileName)</MsiFullPath>
     </PropertyGroup>
