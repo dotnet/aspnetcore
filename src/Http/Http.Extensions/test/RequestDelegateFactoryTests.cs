@@ -771,6 +771,28 @@ public class RequestDelegateFactoryTests : LoggedTest
     }
 
     [Fact]
+    public async Task RequestDelegateHandlesStringValuesFromQueryString()
+    {
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["a"] = new(new[] { "1", "2", "3" })
+        });
+
+        var factoryResult = RequestDelegateFactory.Create((HttpContext context, StringValues a) =>
+        {
+            context.Items["tryParsable"] = a.ToArray();
+        },
+        new() { DisableInferBodyFromParameters = true });
+
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(new[] { "1", "2", "3" }, (string[])httpContext.Items["tryParsable"]!);
+    }
+
+    [Fact]
     public async Task RequestDelegateHandlesArraysFromQueryStringParesFailureWithOptionalArray()
     {
         var httpContext = CreateHttpContext();

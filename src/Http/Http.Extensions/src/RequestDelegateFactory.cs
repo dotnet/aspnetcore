@@ -349,8 +349,10 @@ public static partial class RequestDelegateFactory
             factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.RouteOrQueryStringParameter);
             return BindParameterFromRouteValueOrQueryString(parameter, parameter.Name, factoryContext);
         }
-        else if ((parameter.ParameterType.IsArray && factoryContext.DisableInferredFromBody) &&
-                 (parameter.ParameterType == typeof(string[]) || ParameterBindingMethodCache.HasTryParseMethod(parameter.ParameterType.GetElementType()!)))
+        else if (factoryContext.DisableInferredFromBody &&
+                 (parameter.ParameterType.IsArray && ParameterBindingMethodCache.HasTryParseMethod(parameter.ParameterType.GetElementType()!)) ||
+                 parameter.ParameterType == typeof(string[]) ||
+                 parameter.ParameterType == typeof(StringValues))
         {
             // We only infer parameter types if you have an array of TryParsables/string[]/StringValues, and DisableInferredFromBody is true
 
@@ -901,7 +903,7 @@ public static partial class RequestDelegateFactory
         var parameterNameConstant = Expression.Constant(parameter.Name);
         var sourceConstant = Expression.Constant(source);
 
-        if (parameter.ParameterType == typeof(string) || parameter.ParameterType == typeof(string[]))
+        if (parameter.ParameterType == typeof(string) || parameter.ParameterType == typeof(string[]) || parameter.ParameterType == typeof(StringValues))
         {
             return BindParameterFromExpression(parameter, valueExpression, factoryContext, source);
         }
