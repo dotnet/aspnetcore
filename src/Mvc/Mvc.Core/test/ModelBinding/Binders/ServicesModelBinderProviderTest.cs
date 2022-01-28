@@ -67,7 +67,7 @@ public class ServicesModelBinderProviderTest
 
         // Assert
         var binder = Assert.IsType<ServicesModelBinder>(result);
-        Assert.Equal(isOptional, binder.IsOptionalParameter);
+        Assert.Equal(isOptional, binder.IsOptional);
     }
 
     private class IPersonService
@@ -80,25 +80,34 @@ public class ServicesModelBinderProviderTest
             {
                 { ParameterInfos.NullableParameterInfo, true },
                 { ParameterInfos.DefaultValueParameterInfo, true },
+                { ParameterInfos.NonNullabilityContextParameterInfo, false },
                 { ParameterInfos.NonNullableParameterInfo, false },
             };
     }
 
     private class ParameterInfos
     {
+#nullable disable
         public void TestMethod([FromServices] IPersonService param1, [FromServices] IPersonService param2 = null)
-        { }
-
-#nullable enable
-        public void TestMethod2([FromServices] IPersonService? param2)
         { }
 #nullable restore
 
-        public static ParameterInfo NullableParameterInfo
+#nullable enable
+        public void TestMethod2([FromServices] IPersonService param1, [FromServices] IPersonService? param2)
+        { }
+#nullable restore
+
+        public static ParameterInfo NonNullableParameterInfo
             = typeof(ParameterInfos)
                 .GetMethod(nameof(ParameterInfos.TestMethod2))
                 .GetParameters()[0];
-        public static ParameterInfo NonNullableParameterInfo
+        public static ParameterInfo NullableParameterInfo
+            = typeof(ParameterInfos)
+                .GetMethod(nameof(ParameterInfos.TestMethod2))
+                .GetParameters()[1];
+
+
+        public static ParameterInfo NonNullabilityContextParameterInfo
             = typeof(ParameterInfos)
                 .GetMethod(nameof(ParameterInfos.TestMethod))
                 .GetParameters()[0];

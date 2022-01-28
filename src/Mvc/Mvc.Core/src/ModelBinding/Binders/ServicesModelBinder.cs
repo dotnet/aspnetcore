@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 /// </summary>
 public class ServicesModelBinder : IModelBinder
 {
-    internal bool IsOptionalParameter { get; set; }
+    internal bool IsOptional { get; set; }
 
     /// <inheritdoc />
     public Task BindModelAsync(ModelBindingContext bindingContext)
@@ -25,7 +25,7 @@ public class ServicesModelBinder : IModelBinder
         }
 
         var requestServices = bindingContext.HttpContext.RequestServices;
-        var model = IsOptionalParameter ?
+        var model = IsOptional ?
             requestServices.GetService(bindingContext.ModelType) :
             requestServices.GetRequiredService(bindingContext.ModelType);
 

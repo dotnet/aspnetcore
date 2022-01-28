@@ -12,7 +12,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 /// </summary>
 public class ServicesModelBinderProvider : IModelBinderProvider
 {
-    private readonly NullabilityInfoContext _nullabilityContext = new();
+    private readonly ServicesModelBinder _optionalServicesBinder = new() { IsOptional = true };
+    private readonly ServicesModelBinder _servicesBinder = new();
 
     /// <inheritdoc />
     public IModelBinder? GetBinder(ModelBinderProviderContext context)
@@ -25,16 +26,17 @@ public class ServicesModelBinderProvider : IModelBinderProvider
         if (context.BindingInfo.BindingSource != null &&
             context.BindingInfo.BindingSource.CanAcceptDataFrom(BindingSource.Services))
         {
-            return new ServicesModelBinder()
-            {
-                IsOptionalParameter = IsOptionalParameter(context.Metadata.Identity.ParameterInfo!)
-            };
+            // IsRequired will be false when a Reference Type
+            // without a default value in a oblivious nullability context
+            // however, for services we shoud treat them as required
+            var isRequired = context.Metadata.IsRequired ||
+                    (context.Metadata.Identity.ParameterInfo?.HasDefaultValue != true &&
+                        !context.Metadata.ModelType.IsValueType &&
+                        context.Metadata.NullabilityState == NullabilityState.Unknown);
+
+            return isRequired ? _servicesBinder : _optionalServicesBinder;
         }
 
         return null;
     }
-
-    internal bool IsOptionalParameter(ParameterInfo parameterInfo) =>
-        parameterInfo.HasDefaultValue ||
-        _nullabilityContext.Create(parameterInfo).ReadState == NullabilityState.Nullable;
 }
