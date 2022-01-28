@@ -2,5 +2,6 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
   <PropertyGroup>
     <KestrelSharedSourceRoot>$(MSBuildThisFileDirectory)..\Kestrel\shared\</KestrelSharedSourceRoot>
+    <LibNetHostPath>$(NetCoreTargetingPackRoot)\Microsoft.NETCore.App.Host.win-$(Platform)\7.0.0-alpha.1.22066.4\runtimes\win-$(Platform)\native</LibNetHostPath>
   </PropertyGroup>
 </Project>
