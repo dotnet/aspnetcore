@@ -1025,8 +1025,13 @@ public static partial class RequestDelegateFactory
                 Expression.Constant(parameter.DefaultValue)));
 
         var loopExit = Expression.Label();
-        // We can reuse this like we reuse temp source string
-        ParameterExpression? stringArrayExpr = parameter.ParameterType.IsArray ? Expression.Variable(typeof(string[]), "tempStringArray") : null;
+
+        // TODO: We can reuse this like we reuse temp source string
+        var stringArrayExpr = parameter.ParameterType.IsArray ? Expression.Variable(typeof(string[]), "tempStringArray") : null;
+        var elementTypeNullabilityInfo = parameter.ParameterType.IsArray ? factoryContext.NullabilityContext.Create(parameter)?.ElementType : null;
+
+        // Determine optionality of the element type of the array
+        var elementTypeOptional = !isNotNullable || (elementTypeNullabilityInfo?.ReadState != NullabilityState.NotNull);
 
         var fullParamCheckBlock = (parameter.ParameterType.IsArray, isOptional) switch
         {
@@ -1052,7 +1057,8 @@ public static partial class RequestDelegateFactory
                                         // tempSourceString = values[index];
                                         Expression.Block(
                                             Expression.Assign(TempSourceStringExpr, Expression.ArrayIndex(stringArrayExpr!, index)),
-                                            isNotNullable ? tryParseExpression : Expression.IfThen(TempSourceStringIsNotNullOrEmptyExpr, tryParseExpression)
+                                            elementTypeOptional ? Expression.IfThen(TempSourceStringIsNotNullOrEmptyExpr, tryParseExpression)
+                                                                : tryParseExpression
                                         ),
                                        // else break
                                        Expression.Break(loopExit)
@@ -1170,7 +1176,6 @@ public static partial class RequestDelegateFactory
     private static Expression BindParameterFromBindAsync(ParameterInfo parameter, FactoryContext factoryContext)
     {
         // We reference the boundValues array by parameter index here
-        var nullability = factoryContext.NullabilityContext.Create(parameter);
         var isOptional = IsOptionalParameter(parameter, factoryContext);
 
         // Get the BindAsync method for the type.

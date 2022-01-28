@@ -498,6 +498,7 @@ public class RequestDelegateFactoryTests : LoggedTest
                     new object?[] { (Action<HttpContext, int[]>)Store, new string[] {}, Array.Empty<int>() },
                     new object?[] { (Action<HttpContext, int?[]>)Store, new string?[] { "1", "2", null, "4" }, new int?[] { 1,2, null, 4 } },
                     new object?[] { (Action<HttpContext, int?[]>)Store, new string[] { "1", "2", "", "4" }, new int?[] { 1,2, null, 4 } },
+                    new object[] { (Action<HttpContext, MyTryParseRecord?[]?>)Store, new[] { "" }, new MyTryParseRecord?[] { null } },
                 };
         }
     }
