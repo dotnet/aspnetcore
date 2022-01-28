@@ -1422,7 +1422,7 @@ public partial class Startup
                 _onCompletedHttpContext.TrySetResult(ex);
             }
 
-            _onCompletedHttpContext.TrySetResult();
+            _onCompletedHttpContext.TrySetResult(null);
         });
 
         await context.Response.WriteAsync("SlowOnCompleted");
