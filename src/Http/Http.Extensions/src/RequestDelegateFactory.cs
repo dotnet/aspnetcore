@@ -428,7 +428,7 @@ public static partial class RequestDelegateFactory
         // }
 
         var localVariables = new ParameterExpression[factoryContext.ExtraLocals.Count + 1];
-        var blockExpressions = new Expression[factoryContext.ParamCheckExpressions.Count + 1];
+        var checkParamAndCallMethod = new Expression[factoryContext.ParamCheckExpressions.Count + 1];
 
         for (var i = 0; i < factoryContext.ExtraLocals.Count; i++)
         {
@@ -437,7 +437,7 @@ public static partial class RequestDelegateFactory
 
         for (var i = 0; i < factoryContext.ParamCheckExpressions.Count; i++)
         {
-            blockExpressions[i] = factoryContext.ParamCheckExpressions[i];
+            checkParamAndCallMethod[i] = factoryContext.ParamCheckExpressions[i];
         }
 
         localVariables[factoryContext.ExtraLocals.Count] = WasParamCheckFailureExpr;
@@ -452,9 +452,9 @@ public static partial class RequestDelegateFactory
             set400StatusAndReturnCompletedTask,
             AddResponseWritingToMethodCall(methodCall, methodInfo.ReturnType));
 
-        blockExpressions[factoryContext.ParamCheckExpressions.Count] = checkWasParamCheckFailure;
+        checkParamAndCallMethod[factoryContext.ParamCheckExpressions.Count] = checkWasParamCheckFailure;
 
-        return Expression.Block(localVariables, blockExpressions);
+        return Expression.Block(localVariables, checkParamAndCallMethod);
     }
 
     private static Expression AddResponseWritingToMethodCall(Expression methodCall, Type returnType)
