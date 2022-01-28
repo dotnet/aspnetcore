@@ -35,7 +35,8 @@ public static class MsalWebAssemblyServiceCollectionExtensions
     /// <param name="services">The <see cref="IServiceCollection"/>.</param>
     /// <param name="configure">A callback to configure the <see cref="RemoteAuthenticationOptions{MsalProviderOptions}"/>.</param>
     /// <returns>The <see cref="IServiceCollection"/>.</returns>
-    public static IRemoteAuthenticationBuilder<TRemoteAuthenticationState, RemoteUserAccount> AddMsalAuthentication<[DynamicallyAccessedMembers(JsonSerialized)] TRemoteAuthenticationState>(
+    public static IRemoteAuthenticationBuilder<TRemoteAuthenticationState, RemoteUserAccount> AddMsalAuthentication<
+    [DynamicallyAccessedMembers(JsonSerialized)] TRemoteAuthenticationState>(
         this IServiceCollection services, Action<RemoteAuthenticationOptions<MsalProviderOptions>> configure)
         where TRemoteAuthenticationState : RemoteAuthenticationState, new()
     {
