@@ -1,7 +1,10 @@
 <Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
+  <!--Import Project="$(LocalDotNetRoot)\sdk\7.0.100-alpha.1.22071.3\Microsoft.NETCoreSdk.BundledVersions.props" Condition=" '$(BundledNETCoreAppPackageVersion)' == '' " /-->
+  
   <PropertyGroup>
+    <BundledNETCoreAppPackageVersion>7.0.0-alpha.1.22066.4</BundledNETCoreAppPackageVersion>
     <KestrelSharedSourceRoot>$(MSBuildThisFileDirectory)..\Kestrel\shared\</KestrelSharedSourceRoot>
-    <LibNetHostPath>$(NetCoreTargetingPackRoot)\Microsoft.NETCore.App.Host.win-$(Platform)\7.0.0-alpha.1.22066.4\runtimes\win-$(Platform)\native</LibNetHostPath>
+    <LibNetHostPath>$(NetCoreTargetingPackRoot)\Microsoft.NETCore.App.Host.win-$(Platform)\$(BundledNETCoreAppPackageVersion)\runtimes\win-$(Platform)\native</LibNetHostPath>
   </PropertyGroup>
 </Project>
