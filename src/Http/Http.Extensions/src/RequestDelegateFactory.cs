@@ -39,6 +39,7 @@ public static partial class RequestDelegateFactory
     private static readonly MethodInfo ResultWriteResponseAsyncMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteResultWriteResponse), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo StringResultWriteResponseAsyncMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteWriteStringResponseAsync), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo JsonResultWriteResponseAsyncMethod = GetMethodInfo<Func<HttpResponse, object, Task>>((response, value) => HttpResponseJsonExtensions.WriteAsJsonAsync(response, value, default));
+    private static readonly MethodInfo StringIsNullOrEmptyMethod = typeof(string).GetMethod(nameof(string.IsNullOrEmpty), BindingFlags.Static | BindingFlags.Public)!;
 
     private static readonly MethodInfo LogParameterBindingFailedMethod = GetMethodInfo<Action<HttpContext, string, string, string, bool>>((httpContext, parameterType, parameterName, sourceValue, shouldThrow) =>
         Log.ParameterBindingFailed(httpContext, parameterType, parameterName, sourceValue, shouldThrow));
@@ -71,6 +72,8 @@ public static partial class RequestDelegateFactory
     private static readonly ParameterExpression TempSourceStringExpr = ParameterBindingMethodCache.TempSourceStringExpr;
     private static readonly BinaryExpression TempSourceStringNotNullExpr = Expression.NotEqual(TempSourceStringExpr, Expression.Constant(null));
     private static readonly BinaryExpression TempSourceStringNullExpr = Expression.Equal(TempSourceStringExpr, Expression.Constant(null));
+    private static readonly UnaryExpression TempSourceStringIsNotNullOrEmptyExpr = Expression.Not(Expression.Call(StringIsNullOrEmptyMethod, TempSourceStringExpr));
+
     private static readonly string[] DefaultAcceptsContentType = new[] { "application/json" };
     private static readonly string[] FormFileContentType = new[] { "multipart/form-data" };
 
@@ -1027,6 +1030,7 @@ public static partial class RequestDelegateFactory
 
         var fullParamCheckBlock = (parameter.ParameterType.IsArray, isOptional) switch
         {
+            // (isArray: false, optional: true | false)
             (true, _) =>
 
             Expression.Block(
@@ -1048,7 +1052,7 @@ public static partial class RequestDelegateFactory
                                         // tempSourceString = values[index];
                                         Expression.Block(
                                             Expression.Assign(TempSourceStringExpr, Expression.ArrayIndex(stringArrayExpr!, index)),
-                                            tryParseExpression
+                                            isNotNullable ? tryParseExpression : Expression.IfThen(TempSourceStringIsNotNullOrEmptyExpr, tryParseExpression)
                                         ),
                                        // else break
                                        Expression.Break(loopExit)
@@ -1060,6 +1064,8 @@ public static partial class RequestDelegateFactory
                     )
                 )
             ),
+
+            // (isArray: false, optional: false)
             (false, false) =>
 
             Expression.Block(
@@ -1070,6 +1076,7 @@ public static partial class RequestDelegateFactory
                 // if (tempSourceString != null) { ... }
                 ifNotNullTryParse),
 
+            // (isArray: false, optional: true)
             (false, true) =>
 
             Expression.Block(
