@@ -1061,7 +1061,7 @@ public static partial class RequestDelegateFactory
 
         var fullParamCheckBlock = (parameter.ParameterType.IsArray, isOptional) switch
         {
-            // (isArray: false, optional: true)
+            // (isArray: true, optional: true)
             (true, true) =>
 
             Expression.Block(
@@ -1074,7 +1074,7 @@ public static partial class RequestDelegateFactory
                 )
             ),
 
-            // (isArray: false, optional: false)
+            // (isArray: true, optional: false)
             (true, false) =>
 
             Expression.Block(
