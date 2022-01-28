@@ -197,15 +197,15 @@ public static partial class RequestDelegateFactory
             args[i] = CreateArgument(parameters[i], factoryContext);
         }
 
-        if (factoryContext.HasInferredBody && factoryContext.DisableInferredFromBody)
-        {
-            var errorMessage = BuildErrorMessageForInferredBodyParameter(factoryContext);
-            throw new InvalidOperationException(errorMessage);
-        }
-
         if (factoryContext.HasInferredBody && factoryContext.HasInferredQueryArray)
         {
             var errorMessage = BuildErrorMessageForQueryAndJsonBodyParameters(factoryContext);
+            throw new InvalidOperationException(errorMessage);
+        }
+
+        if (factoryContext.HasInferredBody && factoryContext.DisableInferredFromBody)
+        {
+            var errorMessage = BuildErrorMessageForInferredBodyParameter(factoryContext);
             throw new InvalidOperationException(errorMessage);
         }
 
@@ -349,10 +349,10 @@ public static partial class RequestDelegateFactory
             factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.RouteOrQueryStringParameter);
             return BindParameterFromRouteValueOrQueryString(parameter, parameter.Name, factoryContext);
         }
-        else if (factoryContext.DisableInferredFromBody &&
+        else if (factoryContext.DisableInferredFromBody && (
                  (parameter.ParameterType.IsArray && ParameterBindingMethodCache.HasTryParseMethod(parameter.ParameterType.GetElementType()!)) ||
                  parameter.ParameterType == typeof(string[]) ||
-                 parameter.ParameterType == typeof(StringValues))
+                 parameter.ParameterType == typeof(StringValues)))
         {
             // We only infer parameter types if you have an array of TryParsables/string[]/StringValues, and DisableInferredFromBody is true
 
