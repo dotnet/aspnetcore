@@ -349,11 +349,10 @@ public static partial class RequestDelegateFactory
             factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.RouteOrQueryStringParameter);
             return BindParameterFromRouteValueOrQueryString(parameter, parameter.Name, factoryContext);
         }
-        else if (parameter.ParameterType.IsArray && factoryContext.DisableInferredFromBody && ParameterBindingMethodCache.HasTryParseMethod(parameter.ParameterType.GetElementType()!))
+        else if ((parameter.ParameterType.IsArray && factoryContext.DisableInferredFromBody) &&
+                 (parameter.ParameterType == typeof(string[]) || ParameterBindingMethodCache.HasTryParseMethod(parameter.ParameterType.GetElementType()!)))
         {
-            // We only infer parameter types if you have an array of TryParsables and:
-            // - DisableInferredFromBody is true
-            // - TBD: You have explicitly declared a [FromBody] so it's no longer ambiguous
+            // We only infer parameter types if you have an array of TryParsables/string[]/StringValues, and DisableInferredFromBody is true
 
             factoryContext.HasInferredQueryArray = true;
 
@@ -902,7 +901,7 @@ public static partial class RequestDelegateFactory
         var parameterNameConstant = Expression.Constant(parameter.Name);
         var sourceConstant = Expression.Constant(source);
 
-        if (parameter.ParameterType == typeof(string))
+        if (parameter.ParameterType == typeof(string) || parameter.ParameterType == typeof(string[]))
         {
             return BindParameterFromExpression(parameter, valueExpression, factoryContext, source);
         }
@@ -979,6 +978,8 @@ public static partial class RequestDelegateFactory
         //             Log.ParameterBindingFailed(httpContext, "Int32[]", "param1", tempSourceString);
         //             break;
         //         }
+        //
+        //         index++
         //     }
         // }
 
@@ -1151,7 +1152,12 @@ public static partial class RequestDelegateFactory
     }
 
     private static Expression BindParameterFromProperty(ParameterInfo parameter, MemberExpression property, string key, FactoryContext factoryContext, string source) =>
-        BindParameterFromValue(parameter, GetValueFromProperty(property, key, parameter.ParameterType.IsArray ? typeof(string[]) : null), factoryContext, source);
+        BindParameterFromValue(parameter, GetValueFromProperty(property, key, GetExpressionType(parameter.ParameterType)), factoryContext, source);
+
+    private static Type? GetExpressionType(Type type) =>
+        type.IsArray ? typeof(string[]) :
+        type == typeof(StringValues) ? typeof(StringValues) :
+        null;
 
     private static Expression BindParameterFromRouteValueOrQueryString(ParameterInfo parameter, string key, FactoryContext factoryContext)
     {
