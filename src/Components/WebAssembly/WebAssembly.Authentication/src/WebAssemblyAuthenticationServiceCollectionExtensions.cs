@@ -27,7 +27,9 @@ public static class WebAssemblyAuthenticationServiceCollectionExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
     /// <returns>The <see cref="IServiceCollection"/> where the services were registered.</returns>
     public static IRemoteAuthenticationBuilder<TRemoteAuthenticationState, TAccount> AddRemoteAuthentication<
-        [DynamicallyAccessedMembers(JsonSerialized)] TRemoteAuthenticationState, [DynamicallyAccessedMembers(JsonSerialized)] TAccount, [DynamicallyAccessedMembers(JsonSerialized)] TProviderOptions>(
+        [DynamicallyAccessedMembers(JsonSerialized)] TRemoteAuthenticationState,
+        [DynamicallyAccessedMembers(JsonSerialized)] TAccount,
+        [DynamicallyAccessedMembers(JsonSerialized)] TProviderOptions>(
         this IServiceCollection services)
         where TRemoteAuthenticationState : RemoteAuthenticationState
         where TAccount : RemoteUserAccount

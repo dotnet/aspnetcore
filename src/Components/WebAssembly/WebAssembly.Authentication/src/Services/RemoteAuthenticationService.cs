@@ -16,7 +16,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 /// <typeparam name="TRemoteAuthenticationState">The state to preserve across authentication operations.</typeparam>
 /// <typeparam name="TAccount">The type of the <see cref="RemoteUserAccount" />.</typeparam>
 /// <typeparam name="TProviderOptions">The options to be passed down to the underlying JavaScript library handling the authentication operations.</typeparam>
-public class RemoteAuthenticationService<[DynamicallyAccessedMembers(JsonSerialized)] TRemoteAuthenticationState, [DynamicallyAccessedMembers(JsonSerialized)] TAccount, [DynamicallyAccessedMembers(JsonSerialized)] TProviderOptions> :
+public class RemoteAuthenticationService<
+[DynamicallyAccessedMembers(JsonSerialized)] TRemoteAuthenticationState,
+[DynamicallyAccessedMembers(JsonSerialized)] TAccount,
+[DynamicallyAccessedMembers(JsonSerialized)] TProviderOptions> :
     AuthenticationStateProvider,
     IRemoteAuthenticationService<TRemoteAuthenticationState>,
     IAccessTokenProvider
