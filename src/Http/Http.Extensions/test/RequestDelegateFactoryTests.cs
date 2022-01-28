@@ -494,7 +494,6 @@ public class RequestDelegateFactoryTests : LoggedTest
                     new object[] { (Action<HttpContext, int?[]>)Store, new[] { "42" }, new int?[] { 42 } },
                     new object[] { (Action<HttpContext, MyEnum[]>)Store, new[] { "ValueB" },new[] { MyEnum.ValueB } },
                     new object[] { (Action<HttpContext, MyTryParseRecord[]>)Store, new[] { "https://example.org" },new[] { new MyTryParseRecord(new Uri("https://example.org")) } },
-                    new object?[] { (Action<HttpContext, int?[]>)Store, null, null },
                     new object?[] { (Action<HttpContext, int[]>)Store, new string[] {}, Array.Empty<int>() },
                     new object?[] { (Action<HttpContext, int?[]>)Store, new string?[] { "1", "2", null, "4" }, new int?[] { 1,2, null, 4 } },
                     new object?[] { (Action<HttpContext, int?[]>)Store, new string[] { "1", "2", "", "4" }, new int?[] { 1,2, null, 4 } },
@@ -767,6 +766,7 @@ public class RequestDelegateFactoryTests : LoggedTest
 
         await requestDelegate(httpContext);
 
+        Assert.NotEmpty(httpContext.Items);
         Assert.Equal(expectedParameterValue, httpContext.Items["tryParsable"]);
     }
 
@@ -786,6 +786,7 @@ public class RequestDelegateFactoryTests : LoggedTest
 
         await requestDelegate(httpContext);
 
+        Assert.NotEmpty(httpContext.Items);
         Assert.Equal(expectedParameterValue, httpContext.Items["tryParsable"]);
     }
 
@@ -805,10 +806,35 @@ public class RequestDelegateFactoryTests : LoggedTest
 
         await requestDelegate(httpContext);
 
+        // Assert.NotEmpty(httpContext.Items);
         Assert.Null(httpContext.Items["tryParsable"]);
 
         // Ignore this parameter but we want to reuse the dataset
         GC.KeepAlive(expectedParameterValue);
+    }
+
+    [Fact]
+    public async Task RequestDelegateHandlesOptionalArraysFromNullQueryString()
+    {
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["tryParsable"] = (string?)null
+        });
+
+        static void StoreNullableIntArray(HttpContext httpContext, int?[]? tryParsable)
+        {
+            httpContext.Items["tryParsable"] = tryParsable;
+        }
+
+        var factoryResult = RequestDelegateFactory.Create(StoreNullableIntArray, new() { DisableInferBodyFromParameters = true });
+
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.NotEmpty(httpContext.Items);
+        Assert.Null(httpContext.Items["tryParsable"]);
     }
 
     [Fact]
@@ -1116,7 +1142,7 @@ public class RequestDelegateFactoryTests : LoggedTest
             ["values"] = new(new[] { "1", "NAN", "3" })
         });
 
-        var factoryResult = RequestDelegateFactory.Create(TestAction, new() { ThrowOnBadRequest = true });
+        var factoryResult = RequestDelegateFactory.Create(TestAction, new() { ThrowOnBadRequest = true, DisableInferBodyFromParameters = true });
         var requestDelegate = factoryResult.RequestDelegate;
 
         var badHttpRequestException = await Assert.ThrowsAsync<BadHttpRequestException>(() => requestDelegate(httpContext));
@@ -1132,6 +1158,41 @@ public class RequestDelegateFactoryTests : LoggedTest
         Assert.Empty(TestSink.Writes);
 
         Assert.Equal(@"Failed to bind parameter ""int[] values"" from ""NAN"".", badHttpRequestException.Message);
+        Assert.Equal(400, badHttpRequestException.StatusCode);
+    }
+
+    [Fact]
+    public async Task RequestDelegateThrowsForTryParsableFailuresIfThrowOnBadRequestWithNonOptionalArrays()
+    {
+        var invoked = false;
+
+        static void StoreNullableIntArray(HttpContext httpContext, int?[] values)
+        {
+            httpContext.Items["values"] = values;
+        }
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>()
+        {
+            ["values"] = (string?)null
+        });
+
+        var factoryResult = RequestDelegateFactory.Create(StoreNullableIntArray, new() { ThrowOnBadRequest = true, DisableInferBodyFromParameters = true });
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        var badHttpRequestException = await Assert.ThrowsAsync<BadHttpRequestException>(() => requestDelegate(httpContext));
+
+        Assert.False(invoked);
+
+        // The httpContext should be untouched.
+        Assert.False(httpContext.RequestAborted.IsCancellationRequested);
+        Assert.Equal(200, httpContext.Response.StatusCode);
+        Assert.False(httpContext.Response.HasStarted);
+
+        // We don't log bad requests when we throw.
+        Assert.Empty(TestSink.Writes);
+
+        Assert.Equal(@"Failed to bind parameter ""Nullable<int>[] values"" from """".", badHttpRequestException.Message);
         Assert.Equal(400, badHttpRequestException.StatusCode);
     }
 

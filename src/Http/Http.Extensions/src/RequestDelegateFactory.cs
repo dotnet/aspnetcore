@@ -1026,25 +1026,15 @@ public static partial class RequestDelegateFactory
 
         var loopExit = Expression.Label();
 
-        // TODO: We can reuse this like we reuse temp source string
+        // REVIEW: We can reuse this like we reuse temp source string
         var stringArrayExpr = parameter.ParameterType.IsArray ? Expression.Variable(typeof(string[]), "tempStringArray") : null;
         var elementTypeNullabilityInfo = parameter.ParameterType.IsArray ? factoryContext.NullabilityContext.Create(parameter)?.ElementType : null;
 
         // Determine optionality of the element type of the array
         var elementTypeOptional = !isNotNullable || (elementTypeNullabilityInfo?.ReadState != NullabilityState.NotNull);
 
-        var fullParamCheckBlock = (parameter.ParameterType.IsArray, isOptional) switch
-        {
-            // (isArray: false, optional: true | false)
-            (true, _) =>
-
-            Expression.Block(
-                new[] { index, stringArrayExpr! },
-                // values = httpContext.Request.Query["id"];
-                Expression.Assign(stringArrayExpr!, valueExpression),
-                Expression.IfThen(
-                    Expression.NotEqual(stringArrayExpr!, Expression.Constant(null)),
-                    Expression.Block(
+        // The loop that populates the resulting array values
+        var arrayLoop = parameter.ParameterType.IsArray ? Expression.Block(
                         // param_local = new int[values.Length];
                         Expression.Assign(argument, Expression.NewArrayBounds(parameter.ParameterType.GetElementType()!, Expression.ArrayLength(stringArrayExpr!))),
                         // index = 0
@@ -1067,7 +1057,34 @@ public static partial class RequestDelegateFactory
                                  Expression.PostIncrementAssign(index)
                             )
                         , loopExit)
-                    )
+                    ) : null;
+
+        var fullParamCheckBlock = (parameter.ParameterType.IsArray, isOptional) switch
+        {
+            // (isArray: false, optional: true)
+            (true, true) =>
+
+            Expression.Block(
+                new[] { index, stringArrayExpr! },
+                // values = httpContext.Request.Query["id"];
+                Expression.Assign(stringArrayExpr!, valueExpression),
+                Expression.IfThen(
+                    Expression.NotEqual(stringArrayExpr!, Expression.Constant(null)),
+                    arrayLoop!
+                )
+            ),
+
+            // (isArray: false, optional: false)
+            (true, false) =>
+
+            Expression.Block(
+                new[] { index, stringArrayExpr! },
+                // values = httpContext.Request.Query["id"];
+                Expression.Assign(stringArrayExpr!, valueExpression),
+                Expression.IfThenElse(
+                    Expression.NotEqual(stringArrayExpr!, Expression.Constant(null)),
+                    arrayLoop!,
+                    failBlock
                 )
             ),
 
