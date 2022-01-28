@@ -297,10 +297,10 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
         {
             return (BindingSource.FormFile, parameter.Name ?? string.Empty, false, parameter.ParameterType);
         }
-        else if (disableInferredBody &&
+        else if (disableInferredBody && (
                  (parameter.ParameterType.IsArray && ParameterBindingMethodCache.HasTryParseMethod(parameter.ParameterType.GetElementType()!)) ||
                  parameter.ParameterType == typeof(string[]) ||
-                 parameter.ParameterType == typeof(StringValues))
+                 parameter.ParameterType == typeof(StringValues)))
         {
             return (BindingSource.Query, parameter.Name ?? string.Empty, false, parameter.ParameterType);
         }
