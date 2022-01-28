@@ -3,3 +3,4 @@ Microsoft.AspNetCore.Routing.RouteOptions.SetParameterPolicy(string! token, Syst
 Microsoft.AspNetCore.Routing.RouteOptions.SetParameterPolicy<T>(string! token) -> void
 static Microsoft.AspNetCore.Builder.EndpointRouteBuilderExtensions.MapPatch(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! pattern, System.Delegate! handler) -> Microsoft.AspNetCore.Builder.RouteHandlerBuilder!
 static Microsoft.AspNetCore.Builder.EndpointRouteBuilderExtensions.MapPatch(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! pattern, Microsoft.AspNetCore.Http.RequestDelegate! requestDelegate) -> Microsoft.AspNetCore.Builder.IEndpointConventionBuilder!
+Microsoft.AspNetCore.Routing.RouteValuesAddress.ToString() -> string!
