@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing.Template;
 using Resources = Microsoft.AspNetCore.Mvc.Core.Resources;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 
@@ -23,15 +24,19 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 public class InferParameterBindingInfoConvention : IActionModelConvention
 {
     private readonly IModelMetadataProvider _modelMetadataProvider;
+    private readonly IServiceProviderIsService? _serviceProviderIsService;
 
     /// <summary>
     /// Initializes a new instance of <see cref="InferParameterBindingInfoConvention"/>.
     /// </summary>
     /// <param name="modelMetadataProvider">The model metadata provider.</param>
+    /// <param name="serviceProviderIsService">The service to determine if the a type is available from the <see cref="IServiceProvider"/>.</param>
     public InferParameterBindingInfoConvention(
-        IModelMetadataProvider modelMetadataProvider)
+        IModelMetadataProvider modelMetadataProvider,
+        IServiceProviderIsService? serviceProviderIsService = null)
     {
         _modelMetadataProvider = modelMetadataProvider ?? throw new ArgumentNullException(nameof(modelMetadataProvider));
+        _serviceProviderIsService = serviceProviderIsService;
     }
 
     /// <summary>
@@ -95,6 +100,11 @@ public class InferParameterBindingInfoConvention : IActionModelConvention
     {
         if (IsComplexTypeParameter(parameter))
         {
+            if (_serviceProviderIsService?.IsService(parameter.ParameterType) == true)
+            {
+                return BindingSource.Services;
+            }
+
             return BindingSource.Body;
         }
 

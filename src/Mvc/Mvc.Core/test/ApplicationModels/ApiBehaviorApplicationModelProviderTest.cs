@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
@@ -163,7 +163,8 @@ public class ApiBehaviorApplicationModelProviderTest
             optionsAccessor,
             new EmptyModelMetadataProvider(),
             Mock.Of<IClientErrorFactory>(),
-            loggerFactory);
+            loggerFactory,
+            Mock.Of<IServiceProvider>());
     }
 
     private class TestApiController : ControllerBase

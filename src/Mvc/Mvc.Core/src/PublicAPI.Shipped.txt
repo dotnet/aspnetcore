@@ -301,7 +301,6 @@ Microsoft.AspNetCore.Mvc.ApplicationModels.IFilterModel
 Microsoft.AspNetCore.Mvc.ApplicationModels.IFilterModel.Filters.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata!>!
 Microsoft.AspNetCore.Mvc.ApplicationModels.InferParameterBindingInfoConvention
 Microsoft.AspNetCore.Mvc.ApplicationModels.InferParameterBindingInfoConvention.Apply(Microsoft.AspNetCore.Mvc.ApplicationModels.ActionModel! action) -> void
-Microsoft.AspNetCore.Mvc.ApplicationModels.InferParameterBindingInfoConvention.InferParameterBindingInfoConvention(Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider! modelMetadataProvider) -> void
 Microsoft.AspNetCore.Mvc.ApplicationModels.InvalidModelStateFilterConvention
 Microsoft.AspNetCore.Mvc.ApplicationModels.InvalidModelStateFilterConvention.Apply(Microsoft.AspNetCore.Mvc.ApplicationModels.ActionModel! action) -> void
 Microsoft.AspNetCore.Mvc.ApplicationModels.InvalidModelStateFilterConvention.InvalidModelStateFilterConvention() -> void
