@@ -46,10 +46,10 @@ HostFxrResolver::GetHostFxrParameters(
         // The only executable extension inprocess supports
         expandedProcessPath.replace_extension(".exe");
     }
-    //else if (!ends_with(expandedProcessPath, L".exe", true))
-    //{
-    //    throw InvalidOperationException(format(L"Process path '%s' doesn't have '.exe' extension.", expandedProcessPath.c_str()));
-    //}
+    else if (!ends_with(expandedProcessPath, L".exe", true))
+    {
+        throw InvalidOperationException(format(L"Process path '%s' doesn't have '.exe' extension.", expandedProcessPath.c_str()));
+    }
 
     // Check if the absolute path is to dotnet or not.
     if (IsDotnetExecutable(expandedProcessPath))
@@ -224,19 +224,19 @@ HostFxrResolver::AppendArguments(
         std::wstring argument = pwzArgs[intArgsProcessed];
 
         // Try expanding arguments ending in .dll to a full paths
-        //if (expandDllPaths && ends_with(argument, L".dll", true))
-        //{
-        //    fs::path argumentAsPath = argument;
-        //    if (argumentAsPath.is_relative())
-        //    {
-        //        argumentAsPath = applicationPhysicalPath / argumentAsPath;
-        //        if (is_regular_file(argumentAsPath, ec))
-        //        {
-        //            LOG_INFOF(L"Converted argument '%ls' to '%ls'", argument.c_str(), argumentAsPath.c_str());
-        //            argument = argumentAsPath;
-        //        }
-        //    }
-        //}
+        if (expandDllPaths && ends_with(argument, L".dll", true))
+        {
+            fs::path argumentAsPath = argument;
+            if (argumentAsPath.is_relative())
+            {
+                argumentAsPath = applicationPhysicalPath / argumentAsPath;
+                if (is_regular_file(argumentAsPath, ec))
+                {
+                    LOG_INFOF(L"Converted argument '%ls' to '%ls'", argument.c_str(), argumentAsPath.c_str());
+                    argument = argumentAsPath;
+                }
+            }
+        }
 
         arguments.push_back(argument);
     }
