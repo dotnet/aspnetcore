@@ -106,7 +106,6 @@ public class ServicesModelBinderProviderTest
                 .GetMethod(nameof(ParameterInfos.TestMethod2))
                 .GetParameters()[1];
 
-
         public static ParameterInfo NonNullabilityContextParameterInfo
             = typeof(ParameterInfos)
                 .GetMethod(nameof(ParameterInfos.TestMethod))
