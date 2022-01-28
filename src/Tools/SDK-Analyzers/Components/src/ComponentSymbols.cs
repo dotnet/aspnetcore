@@ -68,8 +68,6 @@ internal class ComponentSymbols
     }
 
     public INamedTypeSymbol ParameterAttribute { get; }
-
-    // Dictionary<string, object>
     public INamedTypeSymbol ParameterCaptureUnmatchedValuesRuntimeType { get; }
 
     public INamedTypeSymbol CascadingParameterAttribute { get; }
