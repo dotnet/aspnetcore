@@ -1387,7 +1387,7 @@ public partial class Startup
         await _resetDuringRequestBodyResetsCts.Task;
     }
 
-    private TaskCompletionSource _onCompletedHttpContext = new TaskCompletionSource();
+    private TaskCompletionSource<object> _onCompletedHttpContext = new TaskCompletionSource<object>();
     public async Task OnCompletedHttpContext(HttpContext context)
     {
         // This shouldn't block the response or the server from shutting down.
