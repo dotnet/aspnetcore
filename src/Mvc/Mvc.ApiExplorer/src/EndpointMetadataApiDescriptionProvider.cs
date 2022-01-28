@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.ApiExplorer;
 
@@ -296,7 +297,10 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
         {
             return (BindingSource.FormFile, parameter.Name ?? string.Empty, false, parameter.ParameterType);
         }
-        else if (disableInferredBody && parameter.ParameterType.IsArray && ParameterBindingMethodCache.HasTryParseMethod(parameter.ParameterType.GetElementType()!))
+        else if (disableInferredBody &&
+                 (parameter.ParameterType.IsArray && ParameterBindingMethodCache.HasTryParseMethod(parameter.ParameterType.GetElementType()!)) ||
+                 parameter.ParameterType == typeof(string[]) ||
+                 parameter.ParameterType == typeof(StringValues))
         {
             return (BindingSource.Query, parameter.Name ?? string.Empty, false, parameter.ParameterType);
         }
