@@ -1205,7 +1205,7 @@ public partial class Startup
         return httpContext.Response.WriteAsync("Hello World");
     }
 
-    private TaskCompletionSource<object> _resetBeforeResponseResetsCts = new TaskCompletionSource<object>();
+    private TaskCompletionSource _resetBeforeResponseResetsCts = new TaskCompletionSource();
     public Task Reset_BeforeResponse_Resets(HttpContext httpContext)
     {
         try
@@ -1214,7 +1214,7 @@ public partial class Startup
             var feature = httpContext.Features.Get<IHttpResetFeature>();
             Assert.NotNull(feature);
             feature.Reset(1111); // Custom
-            _resetBeforeResponseResetsCts.SetResult(0);
+            _resetBeforeResponseResetsCts.SetResult();
         }
         catch (Exception ex)
         {
@@ -1228,7 +1228,7 @@ public partial class Startup
         await _resetBeforeResponseResetsCts.Task;
     }
 
-    private TaskCompletionSource<object> _resetBeforeResponseZeroResetsCts = new TaskCompletionSource<object>();
+    private TaskCompletionSource _resetBeforeResponseZeroResetsCts = new TaskCompletionSource();
     public Task Reset_BeforeResponse_Zero_Resets(HttpContext httpContext)
     {
         try
@@ -1237,7 +1237,7 @@ public partial class Startup
             var feature = httpContext.Features.Get<IHttpResetFeature>();
             Assert.NotNull(feature);
             feature.Reset(0); // Zero should be an allowed errorCode
-            _resetBeforeResponseZeroResetsCts.SetResult(0);
+            _resetBeforeResponseZeroResetsCts.SetResult();
         }
         catch (Exception ex)
         {
@@ -1251,7 +1251,7 @@ public partial class Startup
         await _resetBeforeResponseZeroResetsCts.Task;
     }
 
-    private TaskCompletionSource<object> _resetAfterResponseHeadersResetsCts = new TaskCompletionSource<object>();
+    private TaskCompletionSource _resetAfterResponseHeadersResetsCts = new TaskCompletionSource();
 
     public async Task Reset_AfterResponseHeaders_Resets(HttpContext httpContext)
     {
@@ -1262,7 +1262,7 @@ public partial class Startup
             Assert.NotNull(feature);
             await httpContext.Response.Body.FlushAsync();
             feature.Reset(1111); // Custom
-            _resetAfterResponseHeadersResetsCts.SetResult(0);
+            _resetAfterResponseHeadersResetsCts.SetResult();
         }
         catch (Exception ex)
         {
@@ -1274,7 +1274,7 @@ public partial class Startup
         await _resetAfterResponseHeadersResetsCts.Task;
     }
 
-    private TaskCompletionSource<object> _resetDuringResponseBodyResetsCts = new TaskCompletionSource<object>();
+    private TaskCompletionSource _resetDuringResponseBodyResetsCts = new TaskCompletionSource();
 
     public async Task Reset_DuringResponseBody_Resets(HttpContext httpContext)
     {
@@ -1286,7 +1286,7 @@ public partial class Startup
             await httpContext.Response.WriteAsync("Hello World");
             await httpContext.Response.Body.FlushAsync();
             feature.Reset(1111); // Custom
-            _resetDuringResponseBodyResetsCts.SetResult(0);
+            _resetDuringResponseBodyResetsCts.SetResult();
         }
         catch (Exception ex)
         {
@@ -1299,7 +1299,7 @@ public partial class Startup
         await _resetDuringResponseBodyResetsCts.Task;
     }
 
-    private TaskCompletionSource<object> _resetBeforeRequestBodyResetsCts = new TaskCompletionSource<object>();
+    private TaskCompletionSource _resetBeforeRequestBodyResetsCts = new TaskCompletionSource();
 
     public async Task Reset_BeforeRequestBody_Resets(HttpContext httpContext)
     {
@@ -1314,7 +1314,7 @@ public partial class Startup
 
             await Assert.ThrowsAsync<IOException>(() => readTask);
 
-            _resetBeforeRequestBodyResetsCts.SetResult(0);
+            _resetBeforeRequestBodyResetsCts.SetResult();
         }
         catch (Exception ex)
         {
@@ -1327,7 +1327,7 @@ public partial class Startup
         await _resetBeforeRequestBodyResetsCts.Task;
     }
 
-    private TaskCompletionSource<object> _resetDuringRequestBodyResetsCts = new TaskCompletionSource<object>();
+    private TaskCompletionSource _resetDuringRequestBodyResetsCts = new TaskCompletionSource();
 
     public async Task Reset_DuringRequestBody_Resets(HttpContext httpContext)
     {
@@ -1348,7 +1348,7 @@ public partial class Startup
             feature.Reset(1111);
             await Assert.ThrowsAsync<IOException>(() => readTask);
 
-            _resetDuringRequestBodyResetsCts.SetResult(0);
+            _resetDuringRequestBodyResetsCts.SetResult();
         }
         catch (Exception ex)
         {
@@ -1433,7 +1433,7 @@ public partial class Startup
         await _onCompletedHttpContext.Task;
     }
 
-    private TaskCompletionSource<object> _responseTrailers_CompleteAsyncNoBody_TrailersSent = new TaskCompletionSource<object>();
+    private TaskCompletionSource _responseTrailers_CompleteAsyncNoBody_TrailersSent = new TaskCompletionSource();
     public async Task ResponseTrailers_CompleteAsyncNoBody_TrailersSent(HttpContext httpContext)
     {
         httpContext.Response.AppendTrailer("trailername", "TrailerValue");
@@ -1443,11 +1443,11 @@ public partial class Startup
 
     public Task ResponseTrailers_CompleteAsyncNoBody_TrailersSent_Completed(HttpContext httpContext)
     {
-        _responseTrailers_CompleteAsyncNoBody_TrailersSent.TrySetResult(null);
+        _responseTrailers_CompleteAsyncNoBody_TrailersSent.TrySetResult();
         return Task.CompletedTask;
     }
 
-    private TaskCompletionSource<object> _responseTrailers_CompleteAsyncWithBody_TrailersSent = new TaskCompletionSource<object>();
+    private TaskCompletionSource _responseTrailers_CompleteAsyncWithBody_TrailersSent = new TaskCompletionSource();
     public async Task ResponseTrailers_CompleteAsyncWithBody_TrailersSent(HttpContext httpContext)
     {
         await httpContext.Response.WriteAsync("Hello World");
@@ -1458,7 +1458,7 @@ public partial class Startup
 
     public Task ResponseTrailers_CompleteAsyncWithBody_TrailersSent_Completed(HttpContext httpContext)
     {
-        _responseTrailers_CompleteAsyncWithBody_TrailersSent.TrySetResult(null);
+        _responseTrailers_CompleteAsyncWithBody_TrailersSent.TrySetResult();
         return Task.CompletedTask;
     }
 

@@ -619,7 +619,7 @@ public class ResponseCompressionMiddlewareTest
     [MemberData(nameof(SupportedEncodingsWithBodyLength))]
     public async Task FlushHeaders_SendsHeaders_Compresses(string encoding, int expectedBodyLength)
     {
-        var responseReceived = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var responseReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         using var host = new HostBuilder()
             .ConfigureWebHost(webHostBuilder =>
@@ -654,7 +654,7 @@ public class ResponseCompressionMiddlewareTest
         request.Headers.AcceptEncoding.ParseAdd(encoding);
 
         var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
-        responseReceived.SetResult(0);
+        responseReceived.SetResult();
 
         await response.Content.LoadIntoBufferAsync();
 
@@ -665,7 +665,7 @@ public class ResponseCompressionMiddlewareTest
     [MemberData(nameof(SupportedEncodingsWithBodyLength))]
     public async Task FlushAsyncHeaders_SendsHeaders_Compresses(string encoding, int expectedBodyLength)
     {
-        var responseReceived = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var responseReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         using var host = new HostBuilder()
             .ConfigureWebHost(webHostBuilder =>
@@ -699,7 +699,7 @@ public class ResponseCompressionMiddlewareTest
         request.Headers.AcceptEncoding.ParseAdd(encoding);
 
         var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
-        responseReceived.SetResult(0);
+        responseReceived.SetResult();
 
         await response.Content.LoadIntoBufferAsync();
 
@@ -710,7 +710,7 @@ public class ResponseCompressionMiddlewareTest
     [MemberData(nameof(SupportedEncodings))]
     public async Task FlushBody_CompressesAndFlushes(string encoding)
     {
-        var responseReceived = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var responseReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         using var host = new HostBuilder()
             .ConfigureWebHost(webHostBuilder =>
@@ -759,7 +759,7 @@ public class ResponseCompressionMiddlewareTest
         var read = await body.ReadAsync(new byte[100], 0, 100);
         Assert.True(read > 0);
 
-        responseReceived.SetResult(0);
+        responseReceived.SetResult();
 
         read = await body.ReadAsync(new byte[100], 0, 100);
         Assert.True(read > 0);
@@ -769,7 +769,7 @@ public class ResponseCompressionMiddlewareTest
     [MemberData(nameof(SupportedEncodings))]
     public async Task FlushAsyncBody_CompressesAndFlushes(string encoding)
     {
-        var responseReceived = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var responseReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         using var host = new HostBuilder()
             .ConfigureWebHost(webHostBuilder =>
@@ -812,7 +812,7 @@ public class ResponseCompressionMiddlewareTest
         var read = await body.ReadAsync(new byte[100], 0, 100);
         Assert.True(read > 0);
 
-        responseReceived.SetResult(0);
+        responseReceived.SetResult();
 
         read = await body.ReadAsync(new byte[100], 0, 100);
         Assert.True(read > 0);
@@ -824,11 +824,11 @@ public class ResponseCompressionMiddlewareTest
     {
         var responseReceived = new[]
         {
-                new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously),
-                new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously),
-                new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously),
-                new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously),
-                new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously),
+                new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously),
+                new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously),
+                new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously),
+                new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously),
+                new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously),
             };
 
         using var host = new HostBuilder()
@@ -884,7 +884,7 @@ public class ResponseCompressionMiddlewareTest
             var read = await body.ReadAsync(new byte[100], 0, 100);
             Assert.True(read > 0);
 
-            signal.SetResult(0);
+            signal.SetResult();
         }
     }
 
@@ -894,11 +894,11 @@ public class ResponseCompressionMiddlewareTest
     {
         var responseReceived = new[]
         {
-                new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously),
-                new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously),
-                new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously),
-                new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously),
-                new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously),
+                new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously),
+                new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously),
+                new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously),
+                new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously),
+                new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously),
             };
 
         using var host = new HostBuilder()
@@ -948,7 +948,7 @@ public class ResponseCompressionMiddlewareTest
             var read = await body.ReadAsync(new byte[100], 0, 100);
             Assert.True(read > 0);
 
-            signal.SetResult(0);
+            signal.SetResult();
         }
     }
 
@@ -958,11 +958,11 @@ public class ResponseCompressionMiddlewareTest
     {
         var responseReceived = new[]
         {
-                new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously),
-                new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously),
-                new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously),
-                new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously),
-                new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously),
+                new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously),
+                new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously),
+                new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously),
+                new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously),
+                new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously),
             };
 
         using var host = new HostBuilder()
@@ -1015,7 +1015,7 @@ public class ResponseCompressionMiddlewareTest
             Assert.Equal(1, read);
             Assert.Equal('a', (char)data[0]);
 
-            signal.SetResult(0);
+            signal.SetResult();
         }
     }
 
@@ -1173,7 +1173,7 @@ public class ResponseCompressionMiddlewareTest
     [MemberData(nameof(SupportedEncodings))]
     public async Task Dispose_SyncWriteOrFlushNotCalled(string encoding)
     {
-        var responseReceived = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var responseReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         using var host = new HostBuilder()
             .ConfigureWebHost(webHostBuilder =>
@@ -1221,7 +1221,7 @@ public class ResponseCompressionMiddlewareTest
         var read = await body.ReadAsync(new byte[100], 0, 100);
         Assert.True(read > 0);
 
-        responseReceived.SetResult(0);
+        responseReceived.SetResult();
 
         read = await body.ReadAsync(new byte[100], 0, 100);
         Assert.True(read > 0);

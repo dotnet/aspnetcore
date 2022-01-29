@@ -652,8 +652,8 @@ public class Program
         {
             await stream.WriteAsync(new byte[] { 1, 2, 3 });
 
-            var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-            using (_cancellationToken.Register(() => tcs.SetResult(true)))
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            using (_cancellationToken.Register(() => tcs.SetResult()))
             {
                 await tcs.Task.ConfigureAwait(false);
             }

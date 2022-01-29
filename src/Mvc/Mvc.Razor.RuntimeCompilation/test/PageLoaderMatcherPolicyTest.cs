@@ -64,7 +64,7 @@ public class PageLoaderMatcherPolicyTest
         var compiled = new CompiledPageActionDescriptor();
         compiled.Endpoint = CreateEndpoint(new PageActionDescriptor());
 
-        var tcs = new TaskCompletionSource<int>();
+        var tcs = new TaskCompletionSource();
         var candidateSet = CreateCandidateSet(compiled);
 
         var loadTask = Task.Run(async () =>
@@ -77,7 +77,7 @@ public class PageLoaderMatcherPolicyTest
 
         // Act
         var applyTask = policy.ApplyAsync(new DefaultHttpContext(), candidateSet);
-        tcs.SetResult(0);
+        tcs.SetResult();
         await applyTask;
 
         // Assert

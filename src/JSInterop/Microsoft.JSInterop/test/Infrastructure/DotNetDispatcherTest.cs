@@ -936,7 +936,7 @@ public class DotNetDispatcherTest
 
     public class TestJSRuntime : JSInProcessRuntime
     {
-        private TaskCompletionSource<object> _nextInvocationTcs = new TaskCompletionSource<object>();
+        private TaskCompletionSource _nextInvocationTcs = new TaskCompletionSource();
         public Task NextInvocationTask => _nextInvocationTcs.Task;
         public long LastInvocationAsyncHandle { get; private set; }
         public string LastInvocationIdentifier { get; private set; }
@@ -950,8 +950,8 @@ public class DotNetDispatcherTest
             LastInvocationAsyncHandle = asyncHandle;
             LastInvocationIdentifier = identifier;
             LastInvocationArgsJson = argsJson;
-            _nextInvocationTcs.SetResult(null);
-            _nextInvocationTcs = new TaskCompletionSource<object>();
+            _nextInvocationTcs.SetResult();
+            _nextInvocationTcs = new TaskCompletionSource();
         }
 
         protected override string InvokeJS(string identifier, string argsJson, JSCallResultType resultType, long targetInstanceId)
@@ -959,8 +959,8 @@ public class DotNetDispatcherTest
             LastInvocationAsyncHandle = default;
             LastInvocationIdentifier = identifier;
             LastInvocationArgsJson = argsJson;
-            _nextInvocationTcs.SetResult(null);
-            _nextInvocationTcs = new TaskCompletionSource<object>();
+            _nextInvocationTcs.SetResult();
+            _nextInvocationTcs = new TaskCompletionSource();
             return null;
         }
 
@@ -968,8 +968,8 @@ public class DotNetDispatcherTest
         {
             LastCompletionCallId = invocationInfo.CallId;
             LastCompletionResult = invocationResult;
-            _nextInvocationTcs.SetResult(null);
-            _nextInvocationTcs = new TaskCompletionSource<object>();
+            _nextInvocationTcs.SetResult();
+            _nextInvocationTcs = new TaskCompletionSource();
         }
     }
 }

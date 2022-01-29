@@ -167,7 +167,7 @@ public class AuthenticationTests
     [ConditionalFact]
     public async Task AuthTypes_AccessUserInOnCompleted_Success()
     {
-        var completed = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var completed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         string userName = null;
         var authTypes = AuthenticationSchemes.Negotiate | AuthenticationSchemes.NTLM;
         using (var server = Utilities.CreateDynamicHost(authTypes, DenyAnoymous, out var address, httpContext =>
@@ -178,8 +178,8 @@ public class AuthenticationTests
             httpContext.Response.OnCompleted(() =>
             {
                 userName = httpContext.User.Identity.Name;
-                completed.SetResult(0);
-                return Task.FromResult(0);
+                completed.SetResult();
+                return Task.CompletedTask;
             });
             return Task.FromResult(0);
         }))

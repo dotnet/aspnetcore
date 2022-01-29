@@ -66,10 +66,10 @@ public class ResponseResetTests
     [Fact]
     public async Task ResetFeature_Reset_TriggersRequestAbortedToken()
     {
-        var requestAborted = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var requestAborted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         using var host = await CreateHost(async httpContext =>
         {
-            httpContext.RequestAborted.Register(() => requestAborted.SetResult(0));
+            httpContext.RequestAborted.Register(() => requestAborted.SetResult());
 
             var feature = httpContext.Features.Get<IHttpResetFeature>();
             feature.Reset(12345);
@@ -87,7 +87,7 @@ public class ResponseResetTests
     [Fact]
     public async Task ResetFeature_ResetBeforeHeadersSent_ClientThrows()
     {
-        var resetReceived = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var resetReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         using var host = await CreateHost(async httpContext =>
         {
             var feature = httpContext.Features.Get<IHttpResetFeature>();
@@ -100,14 +100,14 @@ public class ResponseResetTests
         var rex = await Assert.ThrowsAsync<HttpResetTestException>(() => client.GetAsync("/", HttpCompletionOption.ResponseHeadersRead));
         Assert.Equal("The application reset the request with error code 12345.", rex.Message);
         Assert.Equal(12345, rex.ErrorCode);
-        resetReceived.SetResult(0);
+        resetReceived.SetResult();
     }
 
     [Fact]
     public async Task ResetFeature_ResetAfterHeadersSent_ClientBodyThrows()
     {
-        var responseReceived = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var resetReceived = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var responseReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var resetReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         using var host = await CreateHost(async httpContext =>
         {
             await httpContext.Response.Body.FlushAsync();
@@ -120,20 +120,20 @@ public class ResponseResetTests
         var client = host.GetTestServer().CreateClient();
         client.DefaultRequestVersion = HttpVersion.Version20;
         var response = await client.GetAsync("/", HttpCompletionOption.ResponseHeadersRead);
-        responseReceived.SetResult(0);
+        responseReceived.SetResult();
         response.EnsureSuccessStatusCode();
         var ex = await Assert.ThrowsAsync<HttpRequestException>(() => response.Content.ReadAsByteArrayAsync());
         var rex = Assert.IsAssignableFrom<HttpResetTestException>(ex.GetBaseException());
         Assert.Equal("The application reset the request with error code 12345.", rex.Message);
         Assert.Equal(12345, rex.ErrorCode);
-        resetReceived.SetResult(0);
+        resetReceived.SetResult();
     }
 
     [Fact]
     public async Task ResetFeature_ResetAfterSomeDataSent_ClientBodyThrows()
     {
-        var responseReceived = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var resetReceived = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var responseReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var resetReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         using var host = await CreateHost(async httpContext =>
         {
             await httpContext.Response.WriteAsync("Hello World");
@@ -146,13 +146,13 @@ public class ResponseResetTests
         var client = host.GetTestServer().CreateClient();
         client.DefaultRequestVersion = HttpVersion.Version20;
         var response = await client.GetAsync("/", HttpCompletionOption.ResponseHeadersRead);
-        responseReceived.SetResult(0);
+        responseReceived.SetResult();
         response.EnsureSuccessStatusCode();
         var ex = await Assert.ThrowsAsync<HttpRequestException>(() => response.Content.ReadAsByteArrayAsync());
         var rex = Assert.IsAssignableFrom<HttpResetTestException>(ex.GetBaseException());
         Assert.Equal("The application reset the request with error code 12345.", rex.Message);
         Assert.Equal(12345, rex.ErrorCode);
-        resetReceived.SetResult(0);
+        resetReceived.SetResult();
     }
 
     // TODO: Reset after CompleteAsync - Not sure how to surface this. CompleteAsync hasn't been implemented yet anyways.

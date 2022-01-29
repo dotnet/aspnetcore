@@ -327,8 +327,8 @@ public class MethodHub : TestHub
 
     public async Task BlockingMethod()
     {
-        var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-        Context.ConnectionAborted.Register(state => ((TaskCompletionSource<object>)state).SetResult(null), tcs);
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        Context.ConnectionAborted.Register(state => ((TaskCompletionSource)state).SetResult(), tcs);
 
         await tcs.Task;
     }
@@ -348,8 +348,8 @@ public abstract class TestHub : Hub
 {
     public override Task OnConnectedAsync()
     {
-        var tcs = (TaskCompletionSource<bool>)Context.Items["ConnectedTask"];
-        tcs?.TrySetResult(true);
+        var tcs = (TaskCompletionSource)Context.Items["ConnectedTask"];
+        tcs?.TrySetResult();
         return base.OnConnectedAsync();
     }
 }
@@ -358,8 +358,8 @@ public class DynamicTestHub : DynamicHub
 {
     public override Task OnConnectedAsync()
     {
-        var tcs = (TaskCompletionSource<bool>)Context.Items["ConnectedTask"];
-        tcs?.TrySetResult(true);
+        var tcs = (TaskCompletionSource)Context.Items["ConnectedTask"];
+        tcs?.TrySetResult();
         return base.OnConnectedAsync();
     }
 
@@ -438,8 +438,8 @@ public class HubT : Hub<Test>
 {
     public override Task OnConnectedAsync()
     {
-        var tcs = (TaskCompletionSource<bool>)Context.Items["ConnectedTask"];
-        tcs?.TrySetResult(true);
+        var tcs = (TaskCompletionSource)Context.Items["ConnectedTask"];
+        tcs?.TrySetResult();
         return base.OnConnectedAsync();
     }
 
@@ -1228,8 +1228,8 @@ public class CallerServiceHub : Hub
     public override Task OnConnectedAsync()
     {
         _service.SetCaller(Clients.Caller);
-        var tcs = (TaskCompletionSource<bool>)Context.Items["ConnectedTask"];
-        tcs?.TrySetResult(true);
+        var tcs = (TaskCompletionSource)Context.Items["ConnectedTask"];
+        tcs?.TrySetResult();
         return base.OnConnectedAsync();
     }
 }
