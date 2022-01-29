@@ -29,6 +29,7 @@
     "omnisharp.enableRoslynAnalyzers": true,
     "omnisharp.enableEditorConfigSupport": true,
     "omnisharp.enableImportCompletion": true,
+    "omnisharp.path": "latest"
   },
   // Use 'postCreateCommand' to run commands after the container is created.
   "onCreateCommand": "bash -i ${containerWorkspaceFolder}/.devcontainer/scripts/container-creation.sh",
