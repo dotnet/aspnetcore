@@ -16,6 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.ApiExplorer;
 
@@ -329,16 +330,39 @@ public class EndpointMetadataApiDescriptionProviderTest
     [Fact]
     public void AddsFromQueryParameterAsQuery()
     {
-        static void AssertQueryParameter(ApiDescription apiDescription)
+        static void AssertQueryParameter<T>(ApiDescription apiDescription)
         {
             var param = Assert.Single(apiDescription.ParameterDescriptions);
-            Assert.Equal(typeof(int), param.Type);
-            Assert.Equal(typeof(int), param.ModelMetadata.ModelType);
+            Assert.Equal(typeof(T), param.Type);
+            Assert.Equal(typeof(T), param.ModelMetadata.ModelType);
             Assert.Equal(BindingSource.Query, param.Source);
         }
 
-        AssertQueryParameter(GetApiDescription((int foo) => { }, "/"));
-        AssertQueryParameter(GetApiDescription(([FromQuery] int foo) => { }));
+        AssertQueryParameter<int>(GetApiDescription((int foo) => { }, "/"));
+        AssertQueryParameter<int>(GetApiDescription(([FromQuery] int foo) => { }));
+        AssertQueryParameter<TryParseStringRecordStruct>(GetApiDescription(([FromQuery] TryParseStringRecordStruct foo) => { }));
+        AssertQueryParameter<int[]>(GetApiDescription((int[] foo) => { }, "/"));
+        AssertQueryParameter<string[]>(GetApiDescription((string[] foo) => { }, "/"));
+        AssertQueryParameter<StringValues>(GetApiDescription((StringValues foo) => { }, "/"));
+        AssertQueryParameter<TryParseStringRecordStruct[]>(GetApiDescription((TryParseStringRecordStruct[] foo) => { }, "/"));
+    }
+
+    [Theory]
+    [InlineData("Put")]
+    [InlineData("Post")]
+    public void BodyIsInferredForArraysInsteadOfQuerySomeHttpMethods(string httpMethod)
+    {
+        static void AssertBody<T>(ApiDescription apiDescription)
+        {
+            var param = Assert.Single(apiDescription.ParameterDescriptions);
+            Assert.Equal(typeof(T), param.Type);
+            Assert.Equal(typeof(T), param.ModelMetadata.ModelType);
+            Assert.Equal(BindingSource.Body, param.Source);
+        }
+
+        AssertBody<int[]>(GetApiDescription((int[] foo) => { }, "/", httpMethods: new[] { httpMethod }));
+        AssertBody<string[]>(GetApiDescription((string[] foo) => { }, "/", httpMethods: new[] { httpMethod }));
+        AssertBody<TryParseStringRecordStruct[]>(GetApiDescription((TryParseStringRecordStruct[] foo) => { }, "/", httpMethods: new[] { httpMethod }));
     }
 
     [Fact]
@@ -1163,8 +1187,8 @@ public class EndpointMetadataApiDescriptionProviderTest
     private static TestEndpointRouteBuilder CreateBuilder() =>
         new TestEndpointRouteBuilder(new ApplicationBuilder(new TestServiceProvider()));
 
-    private static ApiDescription GetApiDescription(Delegate action, string pattern = null, string displayName = null) =>
-        Assert.Single(GetApiDescriptions(action, pattern, displayName: displayName));
+    private static ApiDescription GetApiDescription(Delegate action, string pattern = null, string displayName = null, IEnumerable<string> httpMethods = null) =>
+        Assert.Single(GetApiDescriptions(action, pattern, displayName: displayName, httpMethods: httpMethods));
 
     private static void TestAction()
     {

@@ -144,7 +144,7 @@ public class ParameterBindingMethodCacheTests
     [MemberData(nameof(TryParseStringParameterInfoData))]
     public void HasTryParseStringMethod_ReturnsTrueWhenMethodExists(ParameterInfo parameterInfo)
     {
-        Assert.True(new ParameterBindingMethodCache().HasTryParseMethod(parameterInfo));
+        Assert.True(new ParameterBindingMethodCache().HasTryParseMethod(parameterInfo.ParameterType));
     }
 
     [Fact]

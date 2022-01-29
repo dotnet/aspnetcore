@@ -39,6 +39,7 @@ public static partial class RequestDelegateFactory
     private static readonly MethodInfo ResultWriteResponseAsyncMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteResultWriteResponse), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo StringResultWriteResponseAsyncMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteWriteStringResponseAsync), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo JsonResultWriteResponseAsyncMethod = GetMethodInfo<Func<HttpResponse, object, Task>>((response, value) => HttpResponseJsonExtensions.WriteAsJsonAsync(response, value, default));
+    private static readonly MethodInfo StringIsNullOrEmptyMethod = typeof(string).GetMethod(nameof(string.IsNullOrEmpty), BindingFlags.Static | BindingFlags.Public)!;
 
     private static readonly MethodInfo LogParameterBindingFailedMethod = GetMethodInfo<Action<HttpContext, string, string, string, bool>>((httpContext, parameterType, parameterName, sourceValue, shouldThrow) =>
         Log.ParameterBindingFailed(httpContext, parameterType, parameterName, sourceValue, shouldThrow));
@@ -71,6 +72,8 @@ public static partial class RequestDelegateFactory
     private static readonly ParameterExpression TempSourceStringExpr = ParameterBindingMethodCache.TempSourceStringExpr;
     private static readonly BinaryExpression TempSourceStringNotNullExpr = Expression.NotEqual(TempSourceStringExpr, Expression.Constant(null));
     private static readonly BinaryExpression TempSourceStringNullExpr = Expression.Equal(TempSourceStringExpr, Expression.Constant(null));
+    private static readonly UnaryExpression TempSourceStringIsNotNullOrEmptyExpr = Expression.Not(Expression.Call(StringIsNullOrEmptyMethod, TempSourceStringExpr));
+
     private static readonly string[] DefaultAcceptsContentType = new[] { "application/json" };
     private static readonly string[] FormFileContentType = new[] { "multipart/form-data" };
 
@@ -202,6 +205,7 @@ public static partial class RequestDelegateFactory
             var errorMessage = BuildErrorMessageForInferredBodyParameter(factoryContext);
             throw new InvalidOperationException(errorMessage);
         }
+
         if (factoryContext.JsonRequestBodyParameter is not null &&
             factoryContext.FirstFormRequestBodyParameter is not null)
         {
@@ -317,7 +321,7 @@ public static partial class RequestDelegateFactory
         {
             return BindParameterFromBindAsync(parameter, factoryContext);
         }
-        else if (parameter.ParameterType == typeof(string) || ParameterBindingMethodCache.HasTryParseMethod(parameter))
+        else if (parameter.ParameterType == typeof(string) || ParameterBindingMethodCache.HasTryParseMethod(parameter.ParameterType))
         {
             // 1. We bind from route values only, if route parameters are non-null and the parameter name is in that set.
             // 2. We bind from query only, if route parameters are non-null and the parameter name is NOT in that set.
@@ -341,6 +345,16 @@ public static partial class RequestDelegateFactory
 
             factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.RouteOrQueryStringParameter);
             return BindParameterFromRouteValueOrQueryString(parameter, parameter.Name, factoryContext);
+        }
+        else if (factoryContext.DisableInferredFromBody && (
+                 (parameter.ParameterType.IsArray && ParameterBindingMethodCache.HasTryParseMethod(parameter.ParameterType.GetElementType()!)) ||
+                 parameter.ParameterType == typeof(string[]) ||
+                 parameter.ParameterType == typeof(StringValues)))
+        {
+            // We only infer parameter types if you have an array of TryParsables/string[]/StringValues, and DisableInferredFromBody is true
+
+            factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.QueryStringParameter);
+            return BindParameterFromProperty(parameter, QueryExpr, parameter.Name, factoryContext, "query string");
         }
         else
         {
@@ -884,22 +898,24 @@ public static partial class RequestDelegateFactory
         var parameterNameConstant = Expression.Constant(parameter.Name);
         var sourceConstant = Expression.Constant(source);
 
-        if (parameter.ParameterType == typeof(string))
+        if (parameter.ParameterType == typeof(string) || parameter.ParameterType == typeof(string[]) || parameter.ParameterType == typeof(StringValues))
         {
             return BindParameterFromExpression(parameter, valueExpression, factoryContext, source);
         }
 
         factoryContext.UsingTempSourceString = true;
 
-        var underlyingNullableType = Nullable.GetUnderlyingType(parameter.ParameterType);
+        var targetParseType = parameter.ParameterType.IsArray ? parameter.ParameterType.GetElementType()! : parameter.ParameterType;
+
+        var underlyingNullableType = Nullable.GetUnderlyingType(targetParseType);
         var isNotNullable = underlyingNullableType is null;
 
-        var nonNullableParameterType = underlyingNullableType ?? parameter.ParameterType;
+        var nonNullableParameterType = underlyingNullableType ?? targetParseType;
         var tryParseMethodCall = ParameterBindingMethodCache.FindTryParseMethod(nonNullableParameterType);
 
         if (tryParseMethodCall is null)
         {
-            var typeName = TypeNameHelper.GetTypeDisplayName(parameter.ParameterType, fullName: false);
+            var typeName = TypeNameHelper.GetTypeDisplayName(targetParseType, fullName: false);
             throw new InvalidOperationException($"No public static bool {typeName}.TryParse(string, out {typeName}) method found for {parameter.Name}.");
         }
 
@@ -940,8 +956,32 @@ public static partial class RequestDelegateFactory
         //     param2_local = 42;
         // }
 
+        // string[]? values = httpContext.Request.Query["param1"].ToArray();
+        // int[] param_local = values.Length > 0 ? new int[values.Length] : Array.Empty<int>();
+
+        // if (values != null)
+        // {
+        //     int index = 0;
+        //     while (index < values.Length)
+        //     {
+        //         tempSourceString = values[i];
+        //         if (int.TryParse(tempSourceString, out var parsedValue))
+        //         {
+        //             param_local[i] = parsedValue;
+        //         }
+        //         else
+        //         {
+        //             wasParamCheckFailure = true;
+        //             Log.ParameterBindingFailed(httpContext, "Int32[]", "param1", tempSourceString);
+        //             break;
+        //         }
+        //
+        //         index++
+        //     }
+        // }
+
         // If the parameter is nullable, create a "parsedValue" local to TryParse into since we cannot use the parameter directly.
-        var parsedValue = isNotNullable ? argument : Expression.Variable(nonNullableParameterType, "parsedValue");
+        var parsedValue = Expression.Variable(nonNullableParameterType, "parsedValue");
 
         var failBlock = Expression.Block(
             Expression.Assign(WasParamCheckFailureExpr, Expression.Constant(true)),
@@ -970,33 +1010,104 @@ public static partial class RequestDelegateFactory
             )
         );
 
+        var index = Expression.Variable(typeof(int), "index");
+
         // If the parameter is nullable, we need to assign the "parsedValue" local to the nullable parameter on success.
-        Expression tryParseExpression = isNotNullable ?
-            Expression.IfThen(Expression.Not(tryParseCall), failBlock) :
-            Expression.Block(new[] { parsedValue },
+        var tryParseExpression = Expression.Block(new[] { parsedValue },
                 Expression.IfThenElse(tryParseCall,
-                    Expression.Assign(argument, Expression.Convert(parsedValue, parameter.ParameterType)),
+                    Expression.Assign(parameter.ParameterType.IsArray ? Expression.ArrayAccess(argument, index) : argument, Expression.Convert(parsedValue, targetParseType)),
                     failBlock));
 
-        var ifNotNullTryParse = !parameter.HasDefaultValue ?
-            Expression.IfThen(TempSourceStringNotNullExpr, tryParseExpression) :
-            Expression.IfThenElse(TempSourceStringNotNullExpr,
-                tryParseExpression,
-                Expression.Assign(argument, Expression.Constant(parameter.DefaultValue)));
+        var ifNotNullTryParse = !parameter.HasDefaultValue
+            ? Expression.IfThen(TempSourceStringNotNullExpr, tryParseExpression)
+            : Expression.IfThenElse(TempSourceStringNotNullExpr, tryParseExpression,
+                Expression.Assign(argument,
+                Expression.Constant(parameter.DefaultValue)));
 
-        var fullParamCheckBlock = !isOptional
-            ? Expression.Block(
+        var loopExit = Expression.Label();
+
+        // REVIEW: We can reuse this like we reuse temp source string
+        var stringArrayExpr = parameter.ParameterType.IsArray ? Expression.Variable(typeof(string[]), "tempStringArray") : null;
+        var elementTypeNullabilityInfo = parameter.ParameterType.IsArray ? factoryContext.NullabilityContext.Create(parameter)?.ElementType : null;
+
+        // Determine optionality of the element type of the array
+        var elementTypeOptional = !isNotNullable || (elementTypeNullabilityInfo?.ReadState != NullabilityState.NotNull);
+
+        // The loop that populates the resulting array values
+        var arrayLoop = parameter.ParameterType.IsArray ? Expression.Block(
+                        // param_local = new int[values.Length];
+                        Expression.Assign(argument, Expression.NewArrayBounds(parameter.ParameterType.GetElementType()!, Expression.ArrayLength(stringArrayExpr!))),
+                        // index = 0
+                        Expression.Assign(index, Expression.Constant(0)),
+                        // while (index < values.Length)
+                        Expression.Loop(
+                            Expression.Block(
+                                Expression.IfThenElse(
+                                    Expression.LessThan(index, Expression.ArrayLength(stringArrayExpr!)),
+                                        // tempSourceString = values[index];
+                                        Expression.Block(
+                                            Expression.Assign(TempSourceStringExpr, Expression.ArrayIndex(stringArrayExpr!, index)),
+                                            elementTypeOptional ? Expression.IfThen(TempSourceStringIsNotNullOrEmptyExpr, tryParseExpression)
+                                                                : tryParseExpression
+                                        ),
+                                       // else break
+                                       Expression.Break(loopExit)
+                                 ),
+                                 // index++
+                                 Expression.PostIncrementAssign(index)
+                            )
+                        , loopExit)
+                    ) : null;
+
+        var fullParamCheckBlock = (parameter.ParameterType.IsArray, isOptional) switch
+        {
+            // (isArray: true, optional: true)
+            (true, true) =>
+
+            Expression.Block(
+                new[] { index, stringArrayExpr! },
+                // values = httpContext.Request.Query["id"];
+                Expression.Assign(stringArrayExpr!, valueExpression),
+                Expression.IfThen(
+                    Expression.NotEqual(stringArrayExpr!, Expression.Constant(null)),
+                    arrayLoop!
+                )
+            ),
+
+            // (isArray: true, optional: false)
+            (true, false) =>
+
+            Expression.Block(
+                new[] { index, stringArrayExpr! },
+                // values = httpContext.Request.Query["id"];
+                Expression.Assign(stringArrayExpr!, valueExpression),
+                Expression.IfThenElse(
+                    Expression.NotEqual(stringArrayExpr!, Expression.Constant(null)),
+                    arrayLoop!,
+                    failBlock
+                )
+            ),
+
+            // (isArray: false, optional: false)
+            (false, false) =>
+
+            Expression.Block(
                 // tempSourceString = httpContext.RequestValue["id"];
                 Expression.Assign(TempSourceStringExpr, valueExpression),
                 // if (tempSourceString == null) { ... } only produced when parameter is required
                 checkRequiredParaseableParameterBlock,
                 // if (tempSourceString != null) { ... }
-                ifNotNullTryParse)
-            : Expression.Block(
+                ifNotNullTryParse),
+
+            // (isArray: false, optional: true)
+            (false, true) =>
+
+            Expression.Block(
                 // tempSourceString = httpContext.RequestValue["id"];
                 Expression.Assign(TempSourceStringExpr, valueExpression),
                 // if (tempSourceString != null) { ... }
-                ifNotNullTryParse);
+                ifNotNullTryParse)
+        };
 
         factoryContext.ExtraLocals.Add(argument);
         factoryContext.ParamCheckExpressions.Add(fullParamCheckBlock);
@@ -1065,7 +1176,12 @@ public static partial class RequestDelegateFactory
     }
 
     private static Expression BindParameterFromProperty(ParameterInfo parameter, MemberExpression property, string key, FactoryContext factoryContext, string source) =>
-        BindParameterFromValue(parameter, GetValueFromProperty(property, key), factoryContext, source);
+        BindParameterFromValue(parameter, GetValueFromProperty(property, key, GetExpressionType(parameter.ParameterType)), factoryContext, source);
+
+    private static Type? GetExpressionType(Type type) =>
+        type.IsArray ? typeof(string[]) :
+        type == typeof(StringValues) ? typeof(StringValues) :
+        null;
 
     private static Expression BindParameterFromRouteValueOrQueryString(ParameterInfo parameter, string key, FactoryContext factoryContext)
     {
@@ -1077,7 +1193,6 @@ public static partial class RequestDelegateFactory
     private static Expression BindParameterFromBindAsync(ParameterInfo parameter, FactoryContext factoryContext)
     {
         // We reference the boundValues array by parameter index here
-        var nullability = factoryContext.NullabilityContext.Create(parameter);
         var isOptional = IsOptionalParameter(parameter, factoryContext);
 
         // Get the BindAsync method for the type.
