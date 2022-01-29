@@ -27,5 +27,8 @@ public class RouteValuesAddress
     public RouteValueDictionary? AmbientValues { get; set; }
 
     /// <inheritdoc />
-    public override string? ToString() => $"{RouteName}({string.Join(',', ExplicitValues.Select(kv => $"{kv.Key}=[{kv.Value}]"))})";
+    public override string? ToString() => asString.Value;
+    
+    readonly Lazy <string> asString
+        = new Lazy <string> (() => $"{RouteName}({string.Join(',', ExplicitValues.Select(kv => $"{kv.Key}=[{kv.Value}]"))})");
 }
