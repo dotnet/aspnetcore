@@ -2309,13 +2309,71 @@ public class RequestDelegateFactoryTests : LoggedTest
 
         var deserializedResponseBody = JsonSerializer.Deserialize<Todo>(responseBodyStream.ToArray(), new JsonSerializerOptions
         {
-            // TODO: the output is "{\"id\":0,\"name\":\"Write even more tests!\",\"isComplete\":false}"
-            // Verify that the camelCased property names are consistent with MVC and if so whether we should keep the behavior.
             PropertyNameCaseInsensitive = true
         });
 
         Assert.NotNull(deserializedResponseBody);
         Assert.Equal("Write even more tests!", deserializedResponseBody!.Name);
+    }
+
+    public static IEnumerable<object[]> ChildResult
+    {
+        get
+        {
+            TodoChild originalTodo = new()
+            {
+                Name = "Write even more tests!",
+                Child = "With type hierarchies!",
+            };
+
+            Todo TestAction() => originalTodo;
+
+            Task<Todo> TaskTestAction() => Task.FromResult<Todo>(originalTodo);
+            async Task<Todo> TaskTestActionAwaited()
+            {
+                await Task.Yield();
+                return originalTodo;
+            }
+
+            ValueTask<Todo> ValueTaskTestAction() => ValueTask.FromResult<Todo>(originalTodo);
+            async ValueTask<Todo> ValueTaskTestActionAwaited()
+            {
+                await Task.Yield();
+                return originalTodo;
+            }
+
+            return new List<object[]>
+                {
+                    new object[] { (Func<Todo>)TestAction },
+                    new object[] { (Func<Task<Todo>>)TaskTestAction},
+                    new object[] { (Func<Task<Todo>>)TaskTestActionAwaited},
+                    new object[] { (Func<ValueTask<Todo>>)ValueTaskTestAction},
+                    new object[] { (Func<ValueTask<Todo>>)ValueTaskTestActionAwaited},
+                };
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(ChildResult))]
+    public async Task RequestDelegateWritesMembersFromChildTypesToJsonResponseBody(Delegate @delegate)
+    {
+        var httpContext = CreateHttpContext();
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
+
+        var factoryResult = RequestDelegateFactory.Create(@delegate);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        var deserializedResponseBody = JsonSerializer.Deserialize<TodoChild>(responseBodyStream.ToArray(), new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+
+        Assert.NotNull(deserializedResponseBody);
+        Assert.Equal("Write even more tests!", deserializedResponseBody!.Name);
+        Assert.Equal("With type hierarchies!", deserializedResponseBody!.Child);
     }
 
     public static IEnumerable<object[]> CustomResults
@@ -4163,6 +4221,11 @@ public class RequestDelegateFactoryTests : LoggedTest
         public int Id { get; set; }
         public string? Name { get; set; } = "Todo";
         public bool IsComplete { get; set; }
+    }
+
+    private class TodoChild : Todo
+    {
+        public string? Child { get; set; }
     }
 
     private class CustomTodo : Todo
