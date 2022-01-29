@@ -347,6 +347,24 @@ public class EndpointMetadataApiDescriptionProviderTest
         AssertQueryParameter<TryParseStringRecordStruct[]>(GetApiDescription((TryParseStringRecordStruct[] foo) => { }, "/"));
     }
 
+    [Theory]
+    [InlineData("Put")]
+    [InlineData("Post")]
+    public void BodyIsInferredForArraysInsteadOfQuerySomeHttpMethods(string httpMethod)
+    {
+        static void AssertBody<T>(ApiDescription apiDescription)
+        {
+            var param = Assert.Single(apiDescription.ParameterDescriptions);
+            Assert.Equal(typeof(T), param.Type);
+            Assert.Equal(typeof(T), param.ModelMetadata.ModelType);
+            Assert.Equal(BindingSource.Body, param.Source);
+        }
+
+        AssertBody<int[]>(GetApiDescription((int[] foo) => { }, "/", httpMethods: new[] { httpMethod }));
+        AssertBody<string[]>(GetApiDescription((string[] foo) => { }, "/", httpMethods: new[] { httpMethod }));
+        AssertBody<TryParseStringRecordStruct[]>(GetApiDescription((TryParseStringRecordStruct[] foo) => { }, "/", httpMethods: new[] { httpMethod }));
+    }
+
     [Fact]
     public void AddsFromHeaderParameterAsHeader()
     {
@@ -1169,8 +1187,8 @@ public class EndpointMetadataApiDescriptionProviderTest
     private static TestEndpointRouteBuilder CreateBuilder() =>
         new TestEndpointRouteBuilder(new ApplicationBuilder(new TestServiceProvider()));
 
-    private static ApiDescription GetApiDescription(Delegate action, string pattern = null, string displayName = null) =>
-        Assert.Single(GetApiDescriptions(action, pattern, displayName: displayName));
+    private static ApiDescription GetApiDescription(Delegate action, string pattern = null, string displayName = null, IEnumerable<string> httpMethods = null) =>
+        Assert.Single(GetApiDescriptions(action, pattern, displayName: displayName, httpMethods: httpMethods));
 
     private static void TestAction()
     {

@@ -1166,9 +1166,9 @@ public class RequestDelegateFactoryTests : LoggedTest
     {
         var invoked = false;
 
-        static void StoreNullableIntArray(HttpContext httpContext, int?[] values)
+        void StoreNullableIntArray(HttpContext httpContext, int?[] values)
         {
-            httpContext.Items["values"] = values;
+            invoked = true;
         }
 
         var httpContext = CreateHttpContext();

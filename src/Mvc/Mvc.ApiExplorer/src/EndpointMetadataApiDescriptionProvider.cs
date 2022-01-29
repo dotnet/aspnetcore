@@ -45,30 +45,7 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
 
     public void OnProvidersExecuting(ApiDescriptionProviderContext context)
     {
-        foreach (var endpoint in _endpointDataSource.Endpoints)
-        {
-            if (endpoint is RouteEndpoint routeEndpoint &&
-                routeEndpoint.Metadata.GetMetadata<MethodInfo>() is { } methodInfo &&
-                routeEndpoint.Metadata.GetMetadata<IHttpMethodMetadata>() is { } httpMethodMetadata &&
-                routeEndpoint.Metadata.GetMetadata<IExcludeFromDescriptionMetadata>() is null or { ExcludeFromDescription: false })
-            {
-                // REVIEW: Should we add an ApiDescription for endpoints without IHttpMethodMetadata? Swagger doesn't handle
-                // a null HttpMethod even though it's nullable on ApiDescription, so we'd need to define "default" HTTP methods.
-                // In practice, the Delegate will be called for any HTTP method if there is no IHttpMethodMetadata.
-                foreach (var httpMethod in httpMethodMetadata.HttpMethods)
-                {
-                    context.Results.Add(CreateApiDescription(routeEndpoint, httpMethod, methodInfo));
-                }
-            }
-        }
-    }
-
-    public void OnProvidersExecuted(ApiDescriptionProviderContext context)
-    {
-    }
-
-    private ApiDescription CreateApiDescription(RouteEndpoint routeEndpoint, string httpMethod, MethodInfo methodInfo)
-    {
+        // Keep in sync with EndpointRouteBuilderExtensions.cs
         static bool ShouldDisableInferredBody(string method)
         {
             // GET, DELETE, HEAD, CONNECT, TRACE, and OPTIONS normally do not contain bodies
@@ -80,6 +57,33 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
                    method.Equals(HttpMethods.Connect, StringComparison.Ordinal);
         }
 
+        foreach (var endpoint in _endpointDataSource.Endpoints)
+        {
+            if (endpoint is RouteEndpoint routeEndpoint &&
+                routeEndpoint.Metadata.GetMetadata<MethodInfo>() is { } methodInfo &&
+                routeEndpoint.Metadata.GetMetadata<IHttpMethodMetadata>() is { } httpMethodMetadata &&
+                routeEndpoint.Metadata.GetMetadata<IExcludeFromDescriptionMetadata>() is null or { ExcludeFromDescription: false })
+            {
+                // We need to detect if any of the methods allow inferred body
+                var disableInferredBody = httpMethodMetadata.HttpMethods.Any(ShouldDisableInferredBody);
+
+                // REVIEW: Should we add an ApiDescription for endpoints without IHttpMethodMetadata? Swagger doesn't handle
+                // a null HttpMethod even though it's nullable on ApiDescription, so we'd need to define "default" HTTP methods.
+                // In practice, the Delegate will be called for any HTTP method if there is no IHttpMethodMetadata.
+                foreach (var httpMethod in httpMethodMetadata.HttpMethods)
+                {
+                    context.Results.Add(CreateApiDescription(routeEndpoint, httpMethod, methodInfo, disableInferredBody));
+                }
+            }
+        }
+    }
+
+    public void OnProvidersExecuted(ApiDescriptionProviderContext context)
+    {
+    }
+
+    private ApiDescription CreateApiDescription(RouteEndpoint routeEndpoint, string httpMethod, MethodInfo methodInfo, bool disableInferredBody)
+    {
         // Swashbuckle uses the "controller" name to group endpoints together.
         // For now, put all methods defined the same declaring type together.
         string controllerName;
@@ -111,7 +115,6 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
         };
 
         var hasBodyOrFormFileParameter = false;
-        var disableInferredBody = ShouldDisableInferredBody(httpMethod);
 
         foreach (var parameter in methodInfo.GetParameters())
         {
