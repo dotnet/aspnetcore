@@ -28,9 +28,12 @@ public class RouteValuesAddress
 
     /// <inheritdoc />
     public override string? ToString() => asString.Value;
-    
+
     readonly Lazy<string> asString;
-    
+
+    /// <summary>
+    /// The constructor prepares the internal state of the object.
+    /// </summary>
     public RouteValuesAddress() {
         asString = new Lazy<string>(() => $"{RouteName}({string.Join(',', ExplicitValues.Select(kv => $"{kv.Key}=[{kv.Value}]"))})");
     }
