@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Configuration;
 
 internal class ConfigureClientScopes : IPostConfigureOptions<ApiAuthorizationOptions>
 {
-    private static readonly char[] DefaultClientListSeparator = new char[] { ' ' };
+    private const char DefaultClientListSeparator = ' ';
     private readonly ILogger<ConfigureClientScopes> _logger;
 
     public ConfigureClientScopes(ILogger<ConfigureClientScopes> logger)

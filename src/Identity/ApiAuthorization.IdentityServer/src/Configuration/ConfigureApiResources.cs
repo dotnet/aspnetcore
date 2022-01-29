@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 internal class ConfigureApiResources : IConfigureOptions<ApiAuthorizationOptions>
 {
-    private static readonly char[] ScopesSeparator = new char[] { ' ' };
+    private const char ScopesSeparator = ' ';
 
     private readonly IConfiguration _configuration;
     private readonly ILogger<ConfigureApiResources> _logger;

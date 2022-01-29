@@ -154,9 +154,8 @@ public static class IdentityServerBuilderConfigurationExtensions
         builder.Services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IConfigureOptions<ApiAuthorizationOptions>, ConfigureIdentityResources>(sp =>
             {
-                var logger = sp.GetRequiredService<ILogger<ConfigureIdentityResources>>();
                 var effectiveConfig = configuration ?? sp.GetRequiredService<IConfiguration>().GetSection("IdentityServer:Identity");
-                return new ConfigureIdentityResources(effectiveConfig, logger);
+                return new ConfigureIdentityResources(effectiveConfig);
             }));
 
         // We take over the setup for the identity resources as Identity Server registers the enumerable as a singleton

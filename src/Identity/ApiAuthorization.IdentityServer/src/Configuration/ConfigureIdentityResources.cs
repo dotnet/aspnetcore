@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
@@ -10,13 +9,11 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
 internal class ConfigureIdentityResources : IConfigureOptions<ApiAuthorizationOptions>
 {
     private readonly IConfiguration _configuration;
-    private readonly ILogger<ConfigureIdentityResources> _logger;
-    private static readonly char[] ScopesSeparator = new char[] { ' ' };
+    private const char ScopesSeparator = ' ';
 
-    public ConfigureIdentityResources(IConfiguration configuration, ILogger<ConfigureIdentityResources> logger)
+    public ConfigureIdentityResources(IConfiguration configuration)
     {
         _configuration = configuration;
-        _logger = logger;
     }
 
     public void Configure(ApiAuthorizationOptions options)
