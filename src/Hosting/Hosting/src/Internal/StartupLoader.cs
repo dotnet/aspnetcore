@@ -290,7 +290,7 @@ internal class StartupLoader
 
     internal static bool HasConfigureServicesIServiceProviderDelegate([DynamicallyAccessedMembers(StartupLinkerOptions.Accessibility)] Type startupType, string environmentName)
     {
-        return null != FindMethod(startupType, "Configure{0}Services", environmentName, typeof(IServiceProvider), required: false);
+        return FindMethod(startupType, "Configure{0}Services", environmentName, typeof(IServiceProvider), required: false) != null;
     }
 
     internal static ConfigureServicesBuilder FindConfigureServicesDelegate([DynamicallyAccessedMembers(StartupLinkerOptions.Accessibility)] Type startupType, string environmentName)

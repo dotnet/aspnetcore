@@ -44,7 +44,7 @@ namespace System.Net.Http.HPack
             {
                 destination[0] |= (byte)((1 << numBits) - 1);
 
-                if (1 == destination.Length)
+                if (destination.Length == 1)
                 {
                     bytesWritten = 0;
                     return false;

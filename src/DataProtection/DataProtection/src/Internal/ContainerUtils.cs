@@ -46,7 +46,7 @@ internal static class ContainerUtils
         // Expected file format: http://man7.org/linux/man-pages/man5/fstab.5.html
         foreach (var line in fstab)
         {
-            if (line == null || line.Length == 0 || line[0] == '#')
+            if (string.IsNullOrEmpty(line) || line[0] == '#')
             {
                 // skip empty and commented-out lines
                 continue;
