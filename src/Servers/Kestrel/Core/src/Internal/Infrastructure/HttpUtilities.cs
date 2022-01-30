@@ -202,8 +202,8 @@ internal static partial class HttpUtilities
             {
                 var value = BinaryPrimitives.ReadUInt64LittleEndian(span);
                 var index = GetKnownMethodIndex(value);
-                var knownMehods = _knownMethods;
-                if ((uint)index < (uint)knownMehods.Length)
+                var knownMethods = _knownMethods;
+                if ((uint)index < (uint)knownMethods.Length)
                 {
                     var knownMethod = _knownMethods[index];
 
