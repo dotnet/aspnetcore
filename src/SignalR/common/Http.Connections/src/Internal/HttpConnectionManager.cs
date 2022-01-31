@@ -27,6 +27,7 @@ internal partial class HttpConnectionManager : IBeforeShutdown
     private readonly ILogger<HttpConnectionContext> _connectionLogger;
     private readonly long _disconnectTimeoutTicks;
     private readonly List<Func<Task>> _shutdownCallbacks = new();
+    private readonly IOptions<ConnectionOptions> _options;
 
     public HttpConnectionManager(ILoggerFactory loggerFactory, IHostApplicationLifetime appLifetime, IOptions<ConnectionOptions> connectionOptions)
     {
@@ -34,6 +35,7 @@ internal partial class HttpConnectionManager : IBeforeShutdown
         _connectionLogger = loggerFactory.CreateLogger<HttpConnectionContext>();
         _nextHeartbeat = new PeriodicTimer(_heartbeatTickRate);
         _disconnectTimeoutTicks = (long)(connectionOptions.Value.DisconnectTimeout ?? ConnectionOptionsSetup.DefaultDisconectTimeout).TotalMilliseconds;
+        _options = connectionOptions;
 
         // Register these last as the callbacks could run immediately
         appLifetime.ApplicationStarted.Register(() => Start());
@@ -182,8 +184,14 @@ internal partial class HttpConnectionManager : IBeforeShutdown
         Func<Task>[] callbacks;
         lock (_shutdownCallbacks)
         {
-            callbacks = _shutdownCallbacks.ToArray();
-            _shutdownCallbacks.Clear();
+            lock (_options.Value.ShutdownCallbacks)
+            {
+                callbacks = new Func<Task>[_shutdownCallbacks.Count + _options.Value.ShutdownCallbacks.Count];
+                _shutdownCallbacks.CopyTo(callbacks, 0);
+                _options.Value.ShutdownCallbacks.CopyTo(callbacks, _shutdownCallbacks.Count);
+                _shutdownCallbacks.Clear();
+                _options.Value.ShutdownCallbacks.Clear();
+            }
         }
 
         List<Exception>? exceptions = null;

@@ -12,4 +12,32 @@ public class ConnectionOptions
     /// Gets or sets the interval used by the server to timeout idle connections.
     /// </summary>
     public TimeSpan? DisconnectTimeout { get; set; }
+
+    internal List<Func<Task>> ShutdownCallbacks = new();
+
+    public IDisposable RegisterBeforeShutdown(Func<Task> callback)
+    {
+        ShutdownCallbacks.Add(callback);
+        return new CallbackDisposable(ShutdownCallbacks, callback);
+    }
+
+    private class CallbackDisposable : IDisposable
+    {
+        private readonly List<Func<Task>> _list;
+        private readonly Func<Task> _func;
+
+        public CallbackDisposable(List<Func<Task>> list, Func<Task> func)
+        {
+            _list = list;
+            _func = func;
+        }
+
+        public void Dispose()
+        {
+            lock (_list)
+            {
+                _list.Remove(_func);
+            }
+        }
+    }
 }

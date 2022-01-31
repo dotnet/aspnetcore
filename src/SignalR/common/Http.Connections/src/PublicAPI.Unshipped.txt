@@ -1,3 +1,4 @@
 #nullable enable
+Microsoft.AspNetCore.Http.Connections.ConnectionOptions.RegisterBeforeShutdown(System.Func<System.Threading.Tasks.Task!>! callback) -> System.IDisposable!
 Microsoft.AspNetCore.Http.Connections.Features.IBeforeShutdown
 Microsoft.AspNetCore.Http.Connections.Features.IBeforeShutdown.Register(System.Func<System.Threading.Tasks.Task!>! callback) -> System.IDisposable!
