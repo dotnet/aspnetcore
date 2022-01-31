@@ -19,6 +19,7 @@
         MicrosoftAspNetCoreAppRuntimeVersion=$(SharedFxVersion);
         MicrosoftNETCoreAppRefVersion=$(MicrosoftNETCoreAppRefVersion);
         MicrosoftNETCoreAppRuntimeVersion=$(MicrosoftNETCoreAppRuntimeVersion);
+        AppHostPackVersion=$(BundledNETCoreAppPackageVersion);
         SupportedRuntimeIdentifiers=$(SupportedRuntimeIdentifiers.Trim())
       </_TemplateProperties>
     </PropertyGroup>

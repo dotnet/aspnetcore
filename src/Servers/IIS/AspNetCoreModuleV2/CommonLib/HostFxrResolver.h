@@ -64,6 +64,12 @@ private:
 
     static
     std::filesystem::path
+    GetAbsolutePathToDotnetFromHostfxr(
+        const std::filesystem::path& hostfxrPath
+    );
+
+    static
+    std::filesystem::path
     GetAbsolutePathToHostFxr(
         const std::filesystem::path & dotnetPath
     );

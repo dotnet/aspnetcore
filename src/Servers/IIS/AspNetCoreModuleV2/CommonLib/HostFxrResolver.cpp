@@ -66,7 +66,6 @@ HostFxrResolver::GetHostFxrParameters(
             dotnetExePath = GetAbsolutePathToDotnet(applicationPhysicalPath, expandedProcessPath);
         }
 
-
         // REVIEW TODO: do we need to throw if we aren't in shim?
 
         std::wstring hostfxrPath;
@@ -74,16 +73,27 @@ HostFxrResolver::GetHostFxrParameters(
         hostfxrPath.resize(size);
 
         get_hostfxr_parameters params;
-        params.assembly_path = applicationPhysicalPath.c_str();
+        //params.assembly_path = applicationPhysicalPath.c_str();
+        params.dotnet_root = L"C:\\Github\\AspnetCore\\.dotnet\\";//expandedProcessPath.parent_path().c_str();
         //// REVIEW: when do we set dotnet_root path?
 
-        int result = get_hostfxr_path(hostfxrPath.data(), &size, &params);
+        LOG_INFOF(L"hostfxr.dotnet_root: '%ls'", params.dotnet_root);
+        //LOG_INFOF(L"hostfxr.assembly_path: '%ls'", applicationPhysicalPath.c_str());
+
+        int result = get_hostfxr_path(hostfxrPath.data(), &size, NULL);
+
+        // If this fails, path probe
         if (result != 0)
         {
             throw InvalidOperationException(L"Failed to find host fxr.");
         }
 
-        hostFxrDllPath = GetAbsolutePathToHostFxr(dotnetExePath);
+        hostfxrPath.resize(size);
+        hostFxrDllPath = hostfxrPath;
+
+        LOG_INFOF(L"get_hostfxr_path '%ls'", hostfxrPath.c_str());
+
+        //hostFxrDllPath = GetAbsolutePathToHostFxr(dotnetExePath);
 
         arguments.push_back(dotnetExePath);
         AppendArguments(
@@ -142,6 +152,9 @@ HostFxrResolver::GetHostFxrParameters(
                 if (dotnetExePath.empty())
                 {
                     dotnetExePath = GetAbsolutePathToDotnet(applicationPhysicalPath, L"dotnet");
+
+                    // USE HOSTFXR CODE HERE
+
                 }
                 hostFxrDllPath = GetAbsolutePathToHostFxr(dotnetExePath);
 
@@ -332,6 +345,12 @@ HostFxrResolver::GetAbsolutePathToDotnet(
         L"Could not find dotnet.exe at '%s' or using the system PATH environment variable."
         " Check that a valid path to dotnet is on the PATH and the bitness of dotnet matches the bitness of the IIS worker process.",
         processPath.c_str()));
+}
+
+fs::path
+HostFxrResolver::GetAbsolutePathToDotnetFromHostfxr(const fs::path& hostfxrPath)
+{
+    return hostfxrPath.parent_path().parent_path().parent_path().parent_path() / "dotnet.exe";
 }
 
 fs::path
