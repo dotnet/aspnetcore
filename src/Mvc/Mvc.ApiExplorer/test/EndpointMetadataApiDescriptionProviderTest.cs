@@ -476,7 +476,7 @@ public class EndpointMetadataApiDescriptionProviderTest
     [Fact]
     public void AddsMetadataFromRouteEndpoint()
     {
-        var apiDescription = GetApiDescription([ApiExplorerSettings(IgnoreApi = true)]() => { });
+        var apiDescription = GetApiDescription([ApiExplorerSettings(IgnoreApi = true)] () => { });
 
         Assert.NotEmpty(apiDescription.ActionDescriptor.EndpointMetadata);
 
