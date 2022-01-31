@@ -224,7 +224,7 @@ internal partial class FileLoggerProcessor : IAsyncDisposable
                     await OnFirstWrite(streamWriter, cancellationToken);
                 }
 
-                await WriteMessageAsync(message, streamWriter, cancellationToken);
+                await WriteMessageLineAsync(message, streamWriter, cancellationToken);
             }
         }
         finally
@@ -254,7 +254,7 @@ internal partial class FileLoggerProcessor : IAsyncDisposable
     }
 
     // Virtual for testing
-    internal virtual async Task WriteMessageAsync(string message, StreamWriter streamWriter, CancellationToken cancellationToken)
+    internal virtual async Task WriteMessageLineAsync(string message, StreamWriter streamWriter, CancellationToken cancellationToken)
     {
         if (cancellationToken.IsCancellationRequested)
         {
@@ -262,6 +262,16 @@ internal partial class FileLoggerProcessor : IAsyncDisposable
         }
         await streamWriter.WriteLineAsync(message.AsMemory(), cancellationToken);
         await streamWriter.FlushAsync();
+    }
+
+    internal virtual async Task WriteMessageAsync(string message, StreamWriter streamWriter, CancellationToken cancellationToken)
+    {
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
+
+        await streamWriter.WriteAsync(message.AsMemory(), cancellationToken);
     }
 
     // Virtual for testing

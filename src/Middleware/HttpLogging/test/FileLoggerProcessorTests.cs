@@ -43,7 +43,7 @@ public class FileLoggerProcessorTests
             {
                 logger.SystemDateTime = mockSystemDateTime;
                 logger.EnqueueMessage(_messageOne);
-                fileName = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{_today.Year:0000}{_today.Month:00}{_today.Day:00}.0000.txt"));
+                fileName = SetFileName(path, _today, options, "0000");
                 // Pause for a bit before disposing so logger can finish logging
                 await WaitForFile(fileName, _messageOne.Length).DefaultTimeout();
             }
@@ -82,14 +82,14 @@ public class FileLoggerProcessorTests
                 logger.SystemDateTime = mockSystemDateTime;
                 logger.EnqueueMessage(_messageOne);
 
-                fileNameToday = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{_today.Year:0000}{_today.Month:00}{_today.Day:00}.0000.txt"));
+                fileNameToday = SetFileName(path, _today, options, "0000");
 
                 await WaitForFile(fileNameToday, _messageOne.Length).DefaultTimeout();
 
                 mockSystemDateTime.Now = tomorrow;
                 logger.EnqueueMessage(_messageTwo);
 
-                fileNameTomorrow = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{tomorrow.Year:0000}{tomorrow.Month:00}{tomorrow.Day:00}.0000.txt"));
+                fileNameTomorrow = SetFileName(path, tomorrow, options, "0000");
 
                 await WaitForFile(fileNameTomorrow, _messageTwo.Length).DefaultTimeout();
             }
@@ -128,8 +128,8 @@ public class FileLoggerProcessorTests
                 logger.SystemDateTime = mockSystemDateTime;
                 logger.EnqueueMessage(_messageOne);
                 logger.EnqueueMessage(_messageTwo);
-                fileName1 = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{_today.Year:0000}{_today.Month:00}{_today.Day:00}.0000.txt"));
-                fileName2 = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{_today.Year:0000}{_today.Month:00}{_today.Day:00}.0001.txt"));
+                fileName1 = SetFileName(path, _today, options, "0000");
+                fileName2 = SetFileName(path, _today, options, "0001");
                 // Pause for a bit before disposing so logger can finish logging
                 await WaitForFile(fileName2, _messageTwo.Length).DefaultTimeout();
             }
@@ -172,7 +172,7 @@ public class FileLoggerProcessorTests
                 {
                     logger.EnqueueMessage(_messageOne);
                 }
-                lastFileName = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{_today.Year:0000}{_today.Month:00}{_today.Day:00}.0009.txt"));
+                lastFileName = SetFileName(path, _today, options, "0009");
                 // Pause for a bit before disposing so logger can finish logging
                 await WaitForFile(lastFileName, _messageOne.Length).DefaultTimeout();
                 for (int i = 0; i < 6; i++)
@@ -226,7 +226,7 @@ public class FileLoggerProcessorTests
                 {
                     logger.EnqueueMessage(_messageOne);
                 }
-                var filePath = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{_today.Year:0000}{_today.Month:00}{_today.Day:00}.0002.txt"));
+                var filePath = SetFileName(path, _today, options, "0002");
                 // Pause for a bit before disposing so logger can finish logging
                 await WaitForFile(filePath, _messageOne.Length).DefaultTimeout();
             }
@@ -239,7 +239,7 @@ public class FileLoggerProcessorTests
                 {
                     logger.EnqueueMessage(_messageOne);
                 }
-                var filePath = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{_today.Year:0000}{_today.Month:00}{_today.Day:00}.0005.txt"));
+                var filePath = SetFileName(path, _today, options, "0005");
                 // Pause for a bit before disposing so logger can finish logging
                 await WaitForFile(filePath, _messageOne.Length).DefaultTimeout();
             }
@@ -263,9 +263,9 @@ public class FileLoggerProcessorTests
                 logger.SystemDateTime = mockSystemDateTime;
                 logger.EnqueueMessage(_messageOne);
                 // Pause for a bit before disposing so logger can finish logging
-                await WaitForFile(Path.Combine(path, FormattableString.Invariant($"{options.FileName}{_today.Year:0000}{_today.Month:00}{_today.Day:00}.0006.txt")), _messageOne.Length).DefaultTimeout();
-                await WaitForRoll(Path.Combine(path, FormattableString.Invariant($"{options.FileName}{_today.Year:0000}{_today.Month:00}{_today.Day:00}.0000.txt"))).DefaultTimeout();
-                await WaitForRoll(Path.Combine(path, FormattableString.Invariant($"{options.FileName}{_today.Year:0000}{_today.Month:00}{_today.Day:00}.0001.txt"))).DefaultTimeout();
+                await WaitForFile(SetFileName(path, _today, options, "0006"), _messageOne.Length).DefaultTimeout();
+                await WaitForRoll(SetFileName(path, _today, options, "0000")).DefaultTimeout();
+                await WaitForRoll(SetFileName(path, _today, options, "0001")).DefaultTimeout();
             }
 
             var actualFiles2 = new DirectoryInfo(path)
@@ -304,9 +304,9 @@ public class FileLoggerProcessorTests
                 LogDirectory = path,
                 FileSizeLimit = 5
             };
-            var fileName1 = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{_today.Year:0000}{_today.Month:00}{_today.Day:00}.0000.txt"));
-            var fileName2 = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{_today.Year:0000}{_today.Month:00}{_today.Day:00}.0001.txt"));
-            var fileName3 = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{_today.Year:0000}{_today.Month:00}{_today.Day:00}.0002.txt"));
+            var fileName1 = SetFileName(path, _today, options, "0000");
+            var fileName2 = SetFileName(path, _today, options, "0001");
+            var fileName3 = SetFileName(path, _today, options, "0002");
 
             await using (var logger = new FileLoggerProcessor(new OptionsWrapperMonitor<W3CLoggerOptions>(options), new HostingEnvironment(), NullLoggerFactory.Instance))
             {
@@ -369,8 +369,8 @@ public class FileLoggerProcessorTests
                 LoggingFields = W3CLoggingFields.Time,
                 FileSizeLimit = 10000
             };
-            var fileName1 = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{_today.Year:0000}{_today.Month:00}{_today.Day:00}.0000.txt"));
-            var fileName2 = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{_today.Year:0000}{_today.Month:00}{_today.Day:00}.0001.txt"));
+            var fileName1 = SetFileName(path, _today, options, "0000");
+            var fileName2 = SetFileName(path, _today, options, "0001");
             var monitor = new OptionsWrapperMonitor<W3CLoggerOptions>(options);
 
             await using (var logger = new FileLoggerProcessor(monitor, new HostingEnvironment(), NullLoggerFactory.Instance))
@@ -435,4 +435,7 @@ public class FileLoggerProcessorTests
             await Task.Delay(100);
         }
     }
+
+    private string SetFileName(string path, DateTimeOffset date, W3CLoggerOptions options, string suffix)
+            => Path.Combine(path, FormattableString.Invariant($"{options.FileName}{date.Year:0000}{date.Month:00}{date.Day:00}.{suffix}.txt"));
 }

@@ -14,6 +14,7 @@ internal sealed class TestW3CLoggerProcessor : W3CLoggerProcessor
     private TaskCompletionSource _tcs;
     private bool _hasWritten;
     private readonly object _writeCountLock = new object();
+    private string _messageLine = string.Empty;
 
     public TestW3CLoggerProcessor(IOptionsMonitor<W3CLoggerOptions> options, IHostEnvironment environment, ILoggerFactory factory) : base(options, environment, factory)
     {
@@ -27,7 +28,7 @@ internal sealed class TestW3CLoggerProcessor : W3CLoggerProcessor
         return StreamWriter.Null;
     }
 
-    internal override void OnWrite(string message)
+    internal override void OnWriteLine(string message)
     {
         Lines.Add(message);
         lock (_writeCountLock)
@@ -37,6 +38,16 @@ internal sealed class TestW3CLoggerProcessor : W3CLoggerProcessor
             {
                 _tcs.SetResult();
             }
+        }
+    }
+
+    internal override void OnWrite(string message, bool endLine = false)
+    {
+        _messageLine = $"{_messageLine}{message}";
+        if (endLine == true)
+        {
+            OnWriteLine(_messageLine);
+            _messageLine = string.Empty;
         }
     }
 

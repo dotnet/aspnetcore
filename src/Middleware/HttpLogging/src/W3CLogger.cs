@@ -35,10 +35,10 @@ internal class W3CLogger : IAsyncDisposable
 
     public void Log(string[] elements)
     {
-        _messageQueue.EnqueueMessage(Format(elements));
+        _messageQueue.EnqueueMessage(Format(elements.AsSpan()));
     }
 
-    private string Format(string[] elements)
+    private string Format(Span<string> elements)
     {
         // 200 is around the length of an average cookie-less entry
         var sb = new ValueStringBuilder(200);

@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
-using System.Text;
+//using System.Text;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -20,97 +20,117 @@ internal class W3CLoggerProcessor : FileLoggerProcessor
 
     public override async Task OnFirstWrite(StreamWriter streamWriter, CancellationToken cancellationToken)
     {
-        await WriteMessageAsync("#Version: 1.0", streamWriter, cancellationToken);
+        await WriteMessageLineAsync("#Version: 1.0", streamWriter, cancellationToken);
 
-        await WriteMessageAsync("#Start-Date: " + DateTimeOffset.UtcNow.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture), streamWriter, cancellationToken);
+        await WriteMessageLineAsync("#Start-Date: " + DateTimeOffset.UtcNow.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture), streamWriter, cancellationToken);
 
-        await WriteMessageAsync(GetFieldsDirective(), streamWriter, cancellationToken);
+        // await WriteMessageLineAsync(GetFieldsDirective(), streamWriter, cancellationToken);
+        await WriteFieldsDirective(streamWriter, cancellationToken);
     }
 
-    private string GetFieldsDirective()
+    private async Task WriteFieldsDirective(StreamWriter streamWriter, CancellationToken cancellationToken)
     {
-        // 152 is the length of the default fields directive
-        var sb = new ValueStringBuilder(152);
-        sb.Append("#Fields:");
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
+
+        await WriteMessageAsync("#Fields:", streamWriter, cancellationToken);
+
         if (_loggingFields.HasFlag(W3CLoggingFields.Date))
         {
-            sb.Append(" date");
+            await WriteMessageAsync(" date", streamWriter, cancellationToken);
         }
         if (_loggingFields.HasFlag(W3CLoggingFields.Time))
         {
-            sb.Append(" time");
+            await WriteMessageAsync(" time", streamWriter, cancellationToken);
         }
         if (_loggingFields.HasFlag(W3CLoggingFields.ClientIpAddress))
         {
-            sb.Append(" c-ip");
+            await WriteMessageAsync(" c-ip", streamWriter, cancellationToken);
         }
         if (_loggingFields.HasFlag(W3CLoggingFields.UserName))
         {
-            sb.Append(" cs-username");
+            await WriteMessageAsync(" cs-username", streamWriter, cancellationToken);
         }
         if (_loggingFields.HasFlag(W3CLoggingFields.ServerName))
         {
-            sb.Append(" s-computername");
+            await WriteMessageAsync(" s-computername", streamWriter, cancellationToken);
         }
         if (_loggingFields.HasFlag(W3CLoggingFields.ServerIpAddress))
         {
-            sb.Append(" s-ip");
+            await WriteMessageAsync(" s-ip", streamWriter, cancellationToken);
         }
         if (_loggingFields.HasFlag(W3CLoggingFields.ServerPort))
         {
-            sb.Append(" s-port");
+            await WriteMessageAsync(" s-port", streamWriter, cancellationToken);
         }
         if (_loggingFields.HasFlag(W3CLoggingFields.Method))
         {
-            sb.Append(" cs-method");
+            await WriteMessageAsync(" cs-method", streamWriter, cancellationToken);
         }
         if (_loggingFields.HasFlag(W3CLoggingFields.UriStem))
         {
-            sb.Append(" cs-uri-stem");
+            await WriteMessageAsync(" cs-uri-stem", streamWriter, cancellationToken);
         }
         if (_loggingFields.HasFlag(W3CLoggingFields.UriQuery))
         {
-            sb.Append(" cs-uri-query");
+            await WriteMessageAsync(" cs-uri-query", streamWriter, cancellationToken);
         }
         if (_loggingFields.HasFlag(W3CLoggingFields.ProtocolStatus))
         {
-            sb.Append(" sc-status");
+            await WriteMessageAsync(" sc-status", streamWriter, cancellationToken);
         }
         if (_loggingFields.HasFlag(W3CLoggingFields.TimeTaken))
         {
-            sb.Append(" time-taken");
+            await WriteMessageAsync(" time-taken", streamWriter, cancellationToken);
         }
         if (_loggingFields.HasFlag(W3CLoggingFields.ProtocolVersion))
         {
-            sb.Append(" cs-version");
+            await WriteMessageAsync(" cs-version", streamWriter, cancellationToken);
         }
         if (_loggingFields.HasFlag(W3CLoggingFields.Host))
         {
-            sb.Append(" cs-host");
+            await WriteMessageAsync(" cs-host", streamWriter, cancellationToken);
         }
         if (_loggingFields.HasFlag(W3CLoggingFields.UserAgent))
         {
-            sb.Append(" cs(User-Agent)");
+            await WriteMessageAsync(" cs(User-Agent)", streamWriter, cancellationToken);
         }
         if (_loggingFields.HasFlag(W3CLoggingFields.Cookie))
         {
-            sb.Append(" cs(Cookie)");
+            await WriteMessageAsync(" cs(Cookie)", streamWriter, cancellationToken);
         }
         if (_loggingFields.HasFlag(W3CLoggingFields.Referer))
         {
-            sb.Append(" cs(Referer)");
+            await WriteMessageAsync(" cs(Referer)", streamWriter, cancellationToken);
         }
 
-        return sb.ToString();
+        // Send of line (only for test)
+        await WriteMessageAsync(string.Empty, streamWriter, cancellationToken, true);
+        await streamWriter.FlushAsync();
+    }
+
+    internal override Task WriteMessageLineAsync(string message, StreamWriter streamWriter, CancellationToken cancellationToken)
+    {
+        OnWriteLine(message);
+        return base.WriteMessageLineAsync(message, streamWriter, cancellationToken);
     }
 
     // For testing
-    internal override Task WriteMessageAsync(string message, StreamWriter streamWriter, CancellationToken cancellationToken)
+    internal Task WriteMessageAsync(string message, StreamWriter streamWriter, CancellationToken cancellationToken, bool endLine = false)
     {
-        OnWrite(message);
-        return base.WriteMessageAsync(message, streamWriter, cancellationToken);
+        OnWrite(message, endLine);
+        if (message != string.Empty)
+        {
+            return base.WriteMessageAsync(message, streamWriter, cancellationToken);
+        }
+
+        return Task.CompletedTask;
     }
 
     // Extensibility point for tests
-    internal virtual void OnWrite(string message) { }
+    internal virtual void OnWriteLine(string message) { }
+
+    internal virtual void OnWrite(string message, bool endLine = false) { }
 }
