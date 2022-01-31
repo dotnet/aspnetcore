@@ -27,10 +27,5 @@ namespace System.Net.Http.HPack
         {
             base.GetObjectData(serializationInfo, streamingContext);
         }
-
-        public override void GetObjectData(SerializationInfo serializationInfo, StreamingContext streamingContext)
-        {
-            base.GetObjectData(serializationInfo, streamingContext);
-        }
     }
 }

@@ -93,9 +93,4 @@ internal class GroupConnectionList : ConcurrentDictionary<string, HubConnectionC
 
         return false;
     }
-
-    public override int GetHashCode()
-    {
-        return base.GetHashCode();
-    }
 }

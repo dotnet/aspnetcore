@@ -1536,10 +1536,6 @@ public class DefaultApplicationModelProviderTest
     }
     private class DerivedOverriddenDisposeController : BaseClass
     {
-        public override void Dispose()
-        {
-            base.Dispose();
-        }
     }
 
     private class DerivedNewDisposeController : BaseClass

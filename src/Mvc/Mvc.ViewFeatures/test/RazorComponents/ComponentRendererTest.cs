@@ -994,11 +994,6 @@ public class ComponentRendererTest
     {
         [Parameter] public string Name { get; set; }
 
-        protected override void OnParametersSet()
-        {
-            base.OnParametersSet();
-        }
-
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
             var s = 0;
