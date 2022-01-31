@@ -192,6 +192,6 @@
   <Import Project="eng\targets\Npm.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.npmproj'" />
   <Import Project="eng\targets\Java.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.javaproj'" />
   <Import Project="eng\targets\Helix.targets" Condition=" $(IsTestProject) " />
-  <Import Project="eng\targets\FunctionalTestAsset.targets" Condition="'$(IsTestAssetProject)' == 'true'" />
-  <Import Project="eng\targets\FunctionalTestWithAssets.targets" Condition="'$(ContainsFunctionalTestAssets)' == 'true'" />
+  <Import Project="eng\targets\FunctionalTestWithAssets.targets"
+      Condition=" $(IsTestProject) AND $(ContainsFunctionalTestAssets) " />
 </Project>
