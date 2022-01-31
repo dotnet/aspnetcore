@@ -74,7 +74,7 @@ HostFxrResolver::GetHostFxrParameters(
 
         get_hostfxr_parameters params;
         //params.assembly_path = applicationPhysicalPath.c_str();
-        params.dotnet_root = L"C:\\Github\\AspnetCore\\.dotnet\\";//expandedProcessPath.parent_path().c_str();
+        params.dotnet_root = expandedProcessPath.parent_path().c_str();
         //// REVIEW: when do we set dotnet_root path?
 
         LOG_INFOF(L"hostfxr.dotnet_root: '%ls'", params.dotnet_root);
@@ -93,7 +93,7 @@ HostFxrResolver::GetHostFxrParameters(
 
         LOG_INFOF(L"get_hostfxr_path '%ls'", hostfxrPath.c_str());
 
-        //hostFxrDllPath = GetAbsolutePathToHostFxr(dotnetExePath);
+        hostFxrDllPath = GetAbsolutePathToHostFxr(dotnetExePath);
 
         arguments.push_back(dotnetExePath);
         AppendArguments(
