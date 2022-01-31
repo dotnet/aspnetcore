@@ -38,8 +38,11 @@ public static partial class RequestDelegateFactory
     private static readonly MethodInfo GetServiceMethod = typeof(ServiceProviderServiceExtensions).GetMethod(nameof(ServiceProviderServiceExtensions.GetService), BindingFlags.Public | BindingFlags.Static, new Type[] { typeof(IServiceProvider) })!;
     private static readonly MethodInfo ResultWriteResponseAsyncMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteResultWriteResponse), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo StringResultWriteResponseAsyncMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteWriteStringResponseAsync), BindingFlags.NonPublic | BindingFlags.Static)!;
-    private static readonly MethodInfo JsonResultWriteResponseAsyncMethod = GetMethodInfo<Func<HttpResponse, object, Task>>((response, value) => HttpResponseJsonExtensions.WriteAsJsonAsync(response, value, default));
     private static readonly MethodInfo StringIsNullOrEmptyMethod = typeof(string).GetMethod(nameof(string.IsNullOrEmpty), BindingFlags.Static | BindingFlags.Public)!;
+
+    // Call WriteAsJsonAsync<object?>() to serialize the runtime return type rather than the declared return type.
+    // https://docs.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-polymorphism
+    private static readonly MethodInfo JsonResultWriteResponseAsyncMethod = GetMethodInfo<Func<HttpResponse, object?, Task>>((response, value) => HttpResponseJsonExtensions.WriteAsJsonAsync<object?>(response, value, default));
 
     private static readonly MethodInfo LogParameterBindingFailedMethod = GetMethodInfo<Action<HttpContext, string, string, string, bool>>((httpContext, parameterType, parameterName, sourceValue, shouldThrow) =>
         Log.ParameterBindingFailed(httpContext, parameterType, parameterName, sourceValue, shouldThrow));
@@ -1442,7 +1445,8 @@ public static partial class RequestDelegateFactory
         else
         {
             // Otherwise, we JSON serialize when we reach the terminal state
-            await httpContext.Response.WriteAsJsonAsync(obj);
+            // Call WriteAsJsonAsync<object?>() to serialize the runtime return type rather than the declared return type.
+            await httpContext.Response.WriteAsJsonAsync<object?>(obj);
         }
     }
 
@@ -1452,11 +1456,13 @@ public static partial class RequestDelegateFactory
 
         static async Task ExecuteAwaited(Task<T> task, HttpContext httpContext)
         {
+            // Call WriteAsJsonAsync<object?>() to serialize the runtime return type rather than the declared return type.
             await httpContext.Response.WriteAsJsonAsync<object?>(await task);
         }
 
         if (task.IsCompletedSuccessfully)
         {
+            // Call WriteAsJsonAsync<object?>() to serialize the runtime return type rather than the declared return type.
             return httpContext.Response.WriteAsJsonAsync<object?>(task.GetAwaiter().GetResult());
         }
 
@@ -1506,11 +1512,13 @@ public static partial class RequestDelegateFactory
     {
         static async Task ExecuteAwaited(ValueTask<T> task, HttpContext httpContext)
         {
+            // Call WriteAsJsonAsync<object?>() to serialize the runtime return type rather than the declared return type.
             await httpContext.Response.WriteAsJsonAsync<object?>(await task);
         }
 
         if (task.IsCompletedSuccessfully)
         {
+            // Call WriteAsJsonAsync<object?>() to serialize the runtime return type rather than the declared return type.
             return httpContext.Response.WriteAsJsonAsync<object?>(task.GetAwaiter().GetResult());
         }
 
