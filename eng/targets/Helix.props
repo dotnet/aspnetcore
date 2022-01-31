@@ -14,8 +14,12 @@
     <LoggingTestingDisableFileLogging Condition="'$(IsHelixJob)' == 'true'">false</LoggingTestingDisableFileLogging>
     <NodeVersion>16.11.0</NodeVersion>
 
-    <!-- Have all tests depend on the latest runtimes until we get a net7.0 SDK -->
-    <TestDependsOnAspNetPackages>true</TestDependsOnAspNetPackages>
+    <!--
+      Many tests depend on the .dotnet/ layouts but only a few (those that restore or test packages) require
+      packages. This should be sufficient for most test projects even as we switch to new major versions or TFMs.
+    -->
+    <TestDependsOnAspNetPackages>false</TestDependsOnAspNetPackages>
+    <TestDependsOnAspNetAppPackages>false</TestDependsOnAspNetAppPackages>
     <TestDependsOnAspNetRuntime>true</TestDependsOnAspNetRuntime>
   </PropertyGroup>
 
