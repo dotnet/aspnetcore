@@ -11,6 +11,8 @@ namespace Microsoft.AspNetCore.Routing;
 /// </summary>
 public class RouteValuesAddress
 {
+    private string? _toString;
+    
     /// <summary>
     /// Gets or sets the route name.
     /// </summary>
@@ -27,15 +29,9 @@ public class RouteValuesAddress
     public RouteValueDictionary? AmbientValues { get; set; }
 
     /// <inheritdoc />
-    public override string? ToString() => asString.Value;
-
-    readonly Lazy<string> asString;
-
-    /// <summary>
-    /// The constructor prepares the internal state of the object.
-    /// </summary>
-    public RouteValuesAddress()
+    public override string? ToString()
     {
-        asString = new Lazy<string>(() => $"{RouteName}({string.Join(',', ExplicitValues.Select(kv => $"{kv.Key}=[{kv.Value}]"))})", false);
+        _toString ??= $"{RouteName}({string.Join(',', ExplicitValues.Select(kv => $"{kv.Key}=[{kv.Value}]"))})";
+        return _toString;
     }
 }
