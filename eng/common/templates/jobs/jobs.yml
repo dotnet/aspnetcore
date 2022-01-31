@@ -8,6 +8,10 @@ parameters:
   # Optional: Enable publishing using release pipelines
   enablePublishUsingPipelines: false
 
+  # Optional: Disable component governance detection. In general, component governance
+  # should be on for all jobs. Use only in the event of issues.
+  disableComponentGovernance: false
+
   # Optional: Enable running the source-build jobs to build repo from source
   enableSourceBuild: false
 
@@ -83,8 +87,14 @@ jobs:
         - ${{ if eq(parameters.enableSourceBuild, true) }}:
           - Source_Build_Complete
         pool:
-          name: NetCore1ESPool-Internal
-          demands: ImageOverride -equals Build.Server.Amd64.VS2019
+          # We don't use the collection uri here because it might vary (.visualstudio.com vs. dev.azure.com)
+          ${{ if eq(variables['System.TeamProject'], 'DevDiv') }}:
+            name: VSEngSS-MicroBuild2022-1ES
+            demands: Cmd
+          # If it's not devdiv, it's dnceng
+          ${{ if ne(variables['System.TeamProject'], 'DevDiv') }}:
+            name: NetCore1ESPool-Internal
+            demands: ImageOverride -equals Build.Server.Amd64.VS2019
 
         runAsPublic: ${{ parameters.runAsPublic }}
         publishUsingPipelines: ${{ parameters.enablePublishUsingPipelines }}

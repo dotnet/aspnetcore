@@ -94,8 +94,14 @@ stages:
       displayName: NuGet Validation
       condition: eq( ${{ parameters.enableNugetValidation }}, 'true')
       pool:
-        name: NetCore1ESPool-Internal
-        demands: ImageOverride -equals Build.Server.Amd64.VS2019
+        # We don't use the collection uri here because it might vary (.visualstudio.com vs. dev.azure.com)
+        ${{ if eq(variables['System.TeamProject'], 'DevDiv') }}:
+          name: VSEngSS-MicroBuild2022-1ES
+          demands: Cmd
+        # If it's not devdiv, it's dnceng
+        ${{ if ne(variables['System.TeamProject'], 'DevDiv') }}:
+          name: NetCore1ESPool-Internal
+          demands: ImageOverride -equals Build.Server.Amd64.VS2019
 
       steps:
         - template: setup-maestro-vars.yml
@@ -125,8 +131,14 @@ stages:
       displayName: Signing Validation
       condition: and( eq( ${{ parameters.enableSigningValidation }}, 'true'), ne( variables['PostBuildSign'], 'true'))
       pool:
-        name: NetCore1ESPool-Internal
-        demands: ImageOverride -equals Build.Server.Amd64.VS2019
+        # We don't use the collection uri here because it might vary (.visualstudio.com vs. dev.azure.com)
+        ${{ if eq(variables['System.TeamProject'], 'DevDiv') }}:
+          name: VSEngSS-MicroBuild2022-1ES
+          demands: Cmd
+        # If it's not devdiv, it's dnceng
+        ${{ if ne(variables['System.TeamProject'], 'DevDiv') }}:
+          name: NetCore1ESPool-Internal
+          demands: ImageOverride -equals Build.Server.Amd64.VS2019
       steps:
         - template: setup-maestro-vars.yml
           parameters:
@@ -179,8 +191,14 @@ stages:
       displayName: SourceLink Validation
       condition: eq( ${{ parameters.enableSourceLinkValidation }}, 'true')
       pool:
-        name: NetCore1ESPool-Internal
-        demands: ImageOverride -equals Build.Server.Amd64.VS2019
+        # We don't use the collection uri here because it might vary (.visualstudio.com vs. dev.azure.com)
+        ${{ if eq(variables['System.TeamProject'], 'DevDiv') }}:
+          name: VSEngSS-MicroBuild2022-1ES
+          demands: Cmd
+        # If it's not devdiv, it's dnceng
+        ${{ if ne(variables['System.TeamProject'], 'DevDiv') }}:
+          name: NetCore1ESPool-Internal
+          demands: ImageOverride -equals Build.Server.Amd64.VS2019
       steps:
         - template: setup-maestro-vars.yml
           parameters:
@@ -230,13 +248,21 @@ stages:
     displayName: Publish Using Darc
     timeoutInMinutes: 120
     pool:
-      name: NetCore1ESPool-Internal
-      demands: ImageOverride -equals Build.Server.Amd64.VS2019
+      # We don't use the collection uri here because it might vary (.visualstudio.com vs. dev.azure.com)
+        ${{ if eq(variables['System.TeamProject'], 'DevDiv') }}:
+          name: VSEngSS-MicroBuild2022-1ES
+          demands: Cmd
+        # If it's not devdiv, it's dnceng
+        ${{ if ne(variables['System.TeamProject'], 'DevDiv') }}:
+          name: NetCore1ESPool-Internal
+          demands: ImageOverride -equals Build.Server.Amd64.VS2019
     steps:
       - template: setup-maestro-vars.yml
         parameters:
           BARBuildId: ${{ parameters.BARBuildId }}
           PromoteToChannelIds: ${{ parameters.PromoteToChannelIds }}
+
+      - task: NuGetAuthenticate@0
 
       - task: PowerShell@2
         displayName: Publish Using Darc
