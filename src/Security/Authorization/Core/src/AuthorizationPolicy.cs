@@ -104,6 +104,21 @@ public class AuthorizationPolicy
     /// </summary>
     /// <param name="policyProvider">A <see cref="IAuthorizationPolicyProvider"/> which provides the policies to combine.</param>
     /// <param name="authorizeData">A collection of authorization data used to apply authorization to a resource.</param>
+    /// <returns>
+    /// A new <see cref="AuthorizationPolicy"/> which represents the combination of the
+    /// authorization policies provided by the specified <paramref name="policyProvider"/>.
+    /// </returns>
+    public static Task<AuthorizationPolicy?> CombineAsync(IAuthorizationPolicyProvider policyProvider,
+        IEnumerable<IAuthorizeData> authorizeData) => CombineAsync(policyProvider, authorizeData,
+            Enumerable.Empty<AuthorizationPolicy>(),
+            Enumerable.Empty<IAuthorizationRequirement>());
+
+    /// <summary>
+    /// Combines the <see cref="AuthorizationPolicy"/> provided by the specified
+    /// <paramref name="policyProvider"/>.
+    /// </summary>
+    /// <param name="policyProvider">A <see cref="IAuthorizationPolicyProvider"/> which provides the policies to combine.</param>
+    /// <param name="authorizeData">A collection of authorization data used to apply authorization to a resource.</param>
     /// <param name="policies">A collection of <see cref="AuthorizationPolicy"/> policies to combine.</param>
     /// <param name="requirements">A collection of <see cref="IAuthorizationRequirement"/>s to add to the auth policy.</param>
     /// <returns>
@@ -112,8 +127,8 @@ public class AuthorizationPolicy
     /// </returns>
     public static async Task<AuthorizationPolicy?> CombineAsync(IAuthorizationPolicyProvider policyProvider,
         IEnumerable<IAuthorizeData> authorizeData,
-        IEnumerable<AuthorizationPolicy>? policies = null,
-        IEnumerable<IAuthorizationRequirement>? requirements = null)
+        IEnumerable<AuthorizationPolicy> policies,
+        IEnumerable<IAuthorizationRequirement> requirements)
     {
         if (policyProvider == null)
         {
@@ -125,8 +140,8 @@ public class AuthorizationPolicy
             throw new ArgumentNullException(nameof(authorizeData));
         }
 
-        var anyPolicies = policies is not null && policies.Any();
-        var anyRequirements = requirements is not null && requirements.Any();
+        var anyPolicies = policies.Any();
+        var anyRequirements = requirements.Any();
 
         // Avoid allocating enumerator if the data is known to be empty
         var skipEnumeratingData = false;

@@ -59,7 +59,7 @@ public class AuthorizationPolicyFacts
         var provider = new DefaultAuthorizationPolicyProvider(Options.Create(options));
 
         // Act
-        var combined = await AuthorizationPolicy.CombineAsync(provider, attributes, policies);
+        var combined = await AuthorizationPolicy.CombineAsync(provider, attributes, policies, Enumerable.Empty<IAuthorizationRequirement>());
 
         // Assert
         Assert.Equal(1, combined.Requirements.Count);
