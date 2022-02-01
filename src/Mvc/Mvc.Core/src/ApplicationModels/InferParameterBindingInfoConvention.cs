@@ -39,6 +39,8 @@ public class InferParameterBindingInfoConvention : IActionModelConvention
         _serviceProviderIsService = serviceProviderIsService;
     }
 
+    internal bool IsInferForServiceParametersEnabled => _serviceProviderIsService != null;
+
     /// <summary>
     /// Called to determine whether the action should apply.
     /// </summary>

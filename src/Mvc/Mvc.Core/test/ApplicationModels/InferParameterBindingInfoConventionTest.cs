@@ -480,6 +480,24 @@ Environment.NewLine + "int b";
     }
 
     [Fact]
+    public void InferBindingSourceForParameter_ReturnsServicesForComplexTypesRegisteredInDI()
+    {
+        // Arrange
+        var actionName = nameof(ParameterBindingController.ServiceParameter);
+        var parameter = GetParameterModel(typeof(ParameterBindingController), actionName);
+        // Using any built-in type defined in the Test action
+        var serviceProvider = Mock.Of<IServiceProviderIsService>(s => s.IsService(typeof(IApplicationModelProvider)) == true);
+        var convention = GetConvention(serviceProviderIsService: serviceProvider);
+
+        // Act
+        var result = convention.InferBindingSourceForParameter(parameter);
+
+        // Assert
+        Assert.True(convention.IsInferForServiceParametersEnabled);
+        Assert.Same(BindingSource.Services, result);
+    }
+
+    [Fact]
     public void PreservesBindingSourceInference_ForFromQueryParameter_WithDefaultName()
     {
         // Arrange
@@ -808,7 +826,7 @@ Environment.NewLine + "int b";
         public IActionResult ComplexTypeModel(TestModel model) => null;
 
         [HttpPut("put-action/{id}")]
-        public IActionResult SimpleTypeModel(ConvertibleFromString model) => null
+        public IActionResult SimpleTypeModel(ConvertibleFromString model) => null;
 
         [HttpPost("form-file")]
         public IActionResult FormFileParameter(IFormFile formFile) => null;
@@ -875,6 +893,8 @@ Environment.NewLine + "int b";
         public IActionResult CollectionOfSimpleTypes(IList<int> parameter) => null;
 
         public IActionResult CollectionOfComplexTypes(IList<TestModel> parameter) => null;
+
+        public IActionResult ServiceParameter(IApplicationModelProvider parameter) => null;
     }
 
     [ApiController]
