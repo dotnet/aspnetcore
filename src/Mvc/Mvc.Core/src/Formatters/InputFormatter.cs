@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Core;
 
@@ -98,8 +99,11 @@ public abstract class InputFormatter : IInputFormatter, IApiRequestFormatMetadat
             throw new ArgumentNullException(nameof(context));
         }
 
-        var request = context.HttpContext.Request;
-        if (request.ContentLength == 0)
+        var hasBody = context.HttpContext.Features.Get<IHttpRequestBodyDetectionFeature>()?.CanHaveBody;
+        // In case the feature is not registered
+        hasBody ??= context.HttpContext.Request.ContentLength is not null && context.HttpContext.Request.ContentLength != 0;
+
+        if (hasBody == false)
         {
             if (context.TreatEmptyInputAsDefaultValue)
             {
