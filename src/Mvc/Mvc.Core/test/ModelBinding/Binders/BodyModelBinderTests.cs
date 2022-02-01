@@ -252,6 +252,7 @@ public class BodyModelBinderTests
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes("Bad data!"));
         httpContext.Request.ContentType = "text/xyz";
+        httpContext.Request.ContentLength = httpContext.Request.Body.Length;
 
         var metadataProvider = new TestModelMetadataProvider();
         metadataProvider.ForType<Person>().BindingDetails(d => d.BindingSource = BindingSource.Body);
@@ -300,6 +301,7 @@ public class BodyModelBinderTests
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes("Bad data!"));
         httpContext.Request.ContentType = "application/xml";
+        httpContext.Request.ContentLength = httpContext.Request.Body.Length;
 
         var metadataProvider = new TestModelMetadataProvider();
         metadataProvider.ForType<Person>().BindingDetails(d => d.BindingSource = BindingSource.Body);
@@ -329,6 +331,7 @@ public class BodyModelBinderTests
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes("Bad data!"));
         httpContext.Request.ContentType = "application/json";
+        httpContext.Request.ContentLength = httpContext.Request.Body.Length;
 
         var metadataProvider = new TestModelMetadataProvider();
         metadataProvider.ForType<Person>().BindingDetails(d => d.BindingSource = BindingSource.Body);
@@ -371,6 +374,7 @@ public class BodyModelBinderTests
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes("Bad data!"));
         httpContext.Request.ContentType = "application/xml";
+        httpContext.Request.ContentLength = httpContext.Request.Body.Length;
 
         var metadataProvider = new TestModelMetadataProvider();
         metadataProvider.ForType<Person>().BindingDetails(d => d.BindingSource = BindingSource.Body);
@@ -400,6 +404,7 @@ public class BodyModelBinderTests
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes("Bad data!"));
         httpContext.Request.ContentType = "application/json";
+        httpContext.Request.ContentLength = httpContext.Request.Body.Length;
 
         var metadataProvider = new TestModelMetadataProvider();
         metadataProvider.ForType<Person>().BindingDetails(d => d.BindingSource = BindingSource.Body);
@@ -447,6 +452,7 @@ public class BodyModelBinderTests
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes("valid data!"));
         httpContext.Request.ContentType = contentType;
+        httpContext.Request.ContentLength = httpContext.Request.Body.Length;
 
         var metadataProvider = new TestModelMetadataProvider();
         metadataProvider.ForType<Person>().BindingDetails(d => d.BindingSource = BindingSource.Body);
@@ -482,6 +488,7 @@ public class BodyModelBinderTests
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes("valid data!"));
         httpContext.Request.ContentType = contentType;
+        httpContext.Request.ContentLength = httpContext.Request.Body.Length;
 
         var metadataProvider = new TestModelMetadataProvider();
         metadataProvider.ForType<Person>().BindingDetails(d => d.BindingSource = BindingSource.Body);
@@ -511,6 +518,7 @@ public class BodyModelBinderTests
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes("valid data"));
         httpContext.Request.ContentType = "text/xyz";
+        httpContext.Request.ContentLength = httpContext.Request.Body.Length;
 
         var metadataProvider = new TestModelMetadataProvider();
         metadataProvider.ForType<Person>().BindingDetails(d => d.BindingSource = BindingSource.Body);

@@ -168,10 +168,20 @@ public class InputFormatterTests : IClassFixture<MvcTestFixture<FormatterWebSite
     }
 
     [Fact]
-    public async Task BodyIsRequiredByDefault()
+    public async Task BodyIsOptionalByDefault()
     {
         // Act
         var response = await Client.PostAsJsonAsync<object>($"Home/{nameof(HomeController.DefaultBody)}", value: null);
+
+        // Assert
+        await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task BodyIsRequiredByDefault_WhenNullableContextEnabled()
+    {
+        // Act
+        var response = await Client.PostAsJsonAsync<object>($"Home/{nameof(HomeController.NonNullableBody)}", value: null);
 
         // Assert
         await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
@@ -182,6 +192,34 @@ public class InputFormatterTests : IClassFixture<MvcTestFixture<FormatterWebSite
             {
                 Assert.Empty(kvp.Key);
                 Assert.Equal("A non-empty request body is required.", Assert.Single(kvp.Value));
+            },
+            kvp =>
+            {
+                Assert.NotEmpty(kvp.Key);
+                Assert.Equal("The dummy field is required.", Assert.Single(kvp.Value));
+            });
+    }
+
+    [Fact]
+    public async Task BodyIsRequiredWhenRequiredAttributeIncluded()
+    {
+        // Act
+        var response = await Client.PostAsJsonAsync<object>($"Home/{nameof(HomeController.RequiredBody)}", value: null);
+
+        // Assert
+        await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
+        var problemDetails = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
+        Assert.Collection(
+            problemDetails.Errors,
+            kvp =>
+            {
+                Assert.Empty(kvp.Key);
+                Assert.Equal("A non-empty request body is required.", Assert.Single(kvp.Value));
+            },
+            kvp =>
+            {
+                Assert.NotEmpty(kvp.Key);
+                Assert.Equal("The dummy field is required.", Assert.Single(kvp.Value));
             });
     }
 
@@ -193,7 +231,7 @@ public class InputFormatterTests : IClassFixture<MvcTestFixture<FormatterWebSite
         Assert.Equal(0, content.Headers.ContentLength);
 
         // Act
-        var response = await Client.PostAsync($"Home/{nameof(HomeController.DefaultBody)}", content);
+        var response = await Client.PostAsync($"Home/{nameof(HomeController.NonNullableBody)}", content);
 
         // Assert
         await response.AssertStatusCodeAsync(HttpStatusCode.UnsupportedMediaType);

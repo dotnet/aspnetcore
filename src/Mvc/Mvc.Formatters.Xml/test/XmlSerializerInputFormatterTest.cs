@@ -53,6 +53,7 @@ public class XmlSerializerInputFormatterTest
         httpContext.Features.Set<IHttpResponseFeature>(new TestResponseFeature());
         httpContext.Request.Body = new NonSeekableReadStream(contentBytes, allowSyncReads: true);
         httpContext.Request.ContentType = "application/json";
+        httpContext.Request.ContentLength = contentBytes.Length;
         var context = GetInputFormatterContext(httpContext, typeof(TestLevelOne));
 
         // Act
@@ -90,6 +91,7 @@ public class XmlSerializerInputFormatterTest
         httpContext.Features.Set<IHttpResponseFeature>(new TestResponseFeature());
         httpContext.Request.Body = new NonSeekableReadStream(contentBytes);
         httpContext.Request.ContentType = "application/xml";
+        httpContext.Request.ContentLength = contentBytes.Length;
         var context = GetInputFormatterContext(httpContext, typeof(TestLevelOne));
 
         // Act
@@ -126,6 +128,7 @@ public class XmlSerializerInputFormatterTest
         httpContext.Features.Set<IHttpResponseFeature>(new TestResponseFeature());
         httpContext.Request.Body = new NonSeekableReadStream(contentBytes, allowSyncReads: false);
         httpContext.Request.ContentType = "application/json";
+        httpContext.Request.ContentLength = contentBytes.Length;
         var context = GetInputFormatterContext(httpContext, typeof(TestLevelOne));
 
         // Act
@@ -162,6 +165,7 @@ public class XmlSerializerInputFormatterTest
         httpContext.Features.Set<IHttpResponseFeature>(new TestResponseFeature());
         httpContext.Request.Body = new NonSeekableReadStream(contentBytes);
         httpContext.Request.ContentType = "application/xml";
+        httpContext.Request.ContentLength = contentBytes.Length;
         var context = GetInputFormatterContext(httpContext, typeof(TestLevelOne));
 
         // Act
@@ -204,6 +208,7 @@ public class XmlSerializerInputFormatterTest
         httpContext.Features.Set<IHttpResponseFeature>(new TestResponseFeature());
         httpContext.Request.Body = new NonSeekableReadStream(contentBytes);
         httpContext.Request.ContentType = "application/xml";
+        httpContext.Request.ContentLength = contentBytes.Length;
         var context = GetInputFormatterContext(httpContext, typeof(TestLevelOne));
 
         // Act
@@ -634,6 +639,7 @@ public class XmlSerializerInputFormatterTest
         var httpContext = new DefaultHttpContext();
         var testBufferedReadStream = new VerifyDisposeFileBufferingReadStream(new MemoryStream(contentBytes), 1024);
         httpContext.Request.Body = testBufferedReadStream;
+        httpContext.Request.ContentLength = contentBytes.Length;
         var context = GetInputFormatterContext(httpContext, typeof(TestLevelOne));
 
         // Act
@@ -676,10 +682,12 @@ public class XmlSerializerInputFormatterTest
         request.SetupGet(r => r.Headers).Returns(headers.Object);
         request.SetupGet(f => f.Body).Returns(new MemoryStream(contentBytes));
         request.SetupGet(f => f.ContentType).Returns(contentType);
+        request.SetupGet(f => f.ContentLength).Returns(contentBytes.Length);
 
         var httpContext = new Mock<HttpContext>();
+        var features = new Mock<IFeatureCollection>();
         httpContext.SetupGet(c => c.Request).Returns(request.Object);
-        httpContext.SetupGet(c => c.Request).Returns(request.Object);
+        httpContext.SetupGet(c => c.Features).Returns(features.Object);
         return httpContext.Object;
     }
 

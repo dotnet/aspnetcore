@@ -405,9 +405,11 @@ public class InputFormatterTest
     }
 
     [Theory]
-    [InlineData(true, true)]
-    [InlineData(false, false)]
-    public async Task ReadAsync_WithEmptyRequest_ReturnsNoValueResultWhenExpected(bool allowEmptyInputValue, bool expectedIsModelSet)
+    [InlineData(true, true, true)]
+    [InlineData(true, true, false)]
+    [InlineData(false, false, true)]
+    [InlineData(false, false, false)]
+    public async Task ReadAsync_WithEmptyRequest_ReturnsNoValueResultWhenExpected(bool allowEmptyInputValue, bool expectedIsModelSet, bool isContentLengthSet)
     {
         // Arrange
         var formatter = new TestFormatter();
@@ -418,7 +420,11 @@ public class InputFormatterTest
             new EmptyModelMetadataProvider().GetMetadataForType(typeof(object)),
             (s, e) => new StreamReader(s, e),
             allowEmptyInputValue);
-        context.HttpContext.Request.ContentLength = 0;
+
+        if (isContentLengthSet)
+        {
+            context.HttpContext.Request.ContentLength = 0;
+        }
 
         // Act
         var result = await formatter.ReadAsync(context);

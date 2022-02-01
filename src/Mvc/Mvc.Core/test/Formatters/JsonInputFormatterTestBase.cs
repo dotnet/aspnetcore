@@ -640,6 +640,7 @@ public abstract class JsonInputFormatterTestBase : LoggedTest
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Body = requestStream;
         httpContext.Request.ContentType = contentType;
+        httpContext.Request.ContentLength = requestStream.Length;
 
         return httpContext;
     }

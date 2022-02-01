@@ -40,6 +40,7 @@ public class NewtonsoftJsonInputFormatterTest : JsonInputFormatterTestBase
         httpContext.Features.Set<IHttpResponseFeature>(new TestResponseFeature());
         httpContext.Request.Body = new NonSeekableReadStream(contentBytes, allowSyncReads: false);
         httpContext.Request.ContentType = "application/json";
+        httpContext.Request.ContentLength = contentBytes.Length;
 
         var formatterContext = CreateInputFormatterContext(typeof(User), httpContext);
 
@@ -76,6 +77,7 @@ public class NewtonsoftJsonInputFormatterTest : JsonInputFormatterTestBase
         httpContext.Features.Set<IHttpResponseFeature>(new TestResponseFeature());
         httpContext.Request.Body = new NonSeekableReadStream(contentBytes);
         httpContext.Request.ContentType = "application/json";
+        httpContext.Request.ContentLength = contentBytes.Length;
 
         var formatterContext = CreateInputFormatterContext(typeof(User), httpContext);
 
@@ -112,6 +114,7 @@ public class NewtonsoftJsonInputFormatterTest : JsonInputFormatterTestBase
         httpContext.Features.Set<IHttpResponseFeature>(new TestResponseFeature());
         httpContext.Request.Body = new NonSeekableReadStream(contentBytes);
         httpContext.Request.ContentType = "application/json";
+        httpContext.Request.ContentLength = contentBytes.Length;
 
         var formatterContext = CreateInputFormatterContext(typeof(User), httpContext);
 
@@ -414,11 +417,14 @@ public class NewtonsoftJsonInputFormatterTest : JsonInputFormatterTestBase
             new MvcOptions(),
             new MvcNewtonsoftJsonOptions());
         var httpContext = new Mock<HttpContext>();
+        var features = new Mock<IFeatureCollection>();
+        httpContext.SetupGet(c => c.Features).Returns(features.Object);
         IDisposable registerForDispose = null;
 
         var content = Encoding.UTF8.GetBytes("\"Hello world\"");
         httpContext.Setup(h => h.Request.Body).Returns(new NonSeekableReadStream(content, allowSyncReads: false));
         httpContext.Setup(h => h.Request.ContentType).Returns("application/json");
+        httpContext.Setup(h => h.Request.ContentLength).Returns(content.Length);
         httpContext.Setup(h => h.Response.RegisterForDispose(It.IsAny<IDisposable>()))
             .Callback((IDisposable disposable) => registerForDispose = disposable)
             .Verifiable();
@@ -470,6 +476,7 @@ public class NewtonsoftJsonInputFormatterTest : JsonInputFormatterTestBase
             httpContext.Features.Set<IHttpResponseFeature>(new TestResponseFeature());
             httpContext.Request.Body = new NonSeekableReadStream(contentBytes, allowSyncReads: false);
             httpContext.Request.ContentType = "application/json";
+            httpContext.Request.ContentLength = contentBytes.Length;
 
             var formatterContext = CreateInputFormatterContext(typeof(TypeWithPrimitives), httpContext);
 
@@ -513,6 +520,7 @@ public class NewtonsoftJsonInputFormatterTest : JsonInputFormatterTestBase
         httpContext.Features.Set<IHttpResponseFeature>(new TestResponseFeature());
         httpContext.Request.Body = new NonSeekableReadStream(contentBytes, allowSyncReads: false);
         httpContext.Request.ContentType = "application/json";
+        httpContext.Request.ContentLength = contentBytes.Length;
 
         var formatterContext = CreateInputFormatterContext(typeof(Location), httpContext);
 

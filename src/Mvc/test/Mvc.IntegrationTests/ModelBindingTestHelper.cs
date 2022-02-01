@@ -151,6 +151,7 @@ public static class ModelBindingTestHelper
     {
         var httpContext = new DefaultHttpContext();
         httpContext.Features.Set<IHttpRequestLifetimeFeature>(new CancellableRequestLifetimeFeature());
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new NonZeroContentLengthRequestBodyDetectionFeature(httpContext));
 
         updateRequest?.Invoke(httpContext.Request);
 
@@ -214,5 +215,17 @@ public static class ModelBindingTestHelper
         {
             _cts.Cancel();
         }
+    }
+
+    private class NonZeroContentLengthRequestBodyDetectionFeature : IHttpRequestBodyDetectionFeature
+    {
+        private readonly HttpContext _context;
+
+        public NonZeroContentLengthRequestBodyDetectionFeature(HttpContext context)
+        {
+            _context = context;
+        }
+
+        public bool CanHaveBody => _context.Request.ContentLength != 0;
     }
 }
