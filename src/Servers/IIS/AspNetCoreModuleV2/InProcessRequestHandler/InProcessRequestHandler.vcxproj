@@ -169,7 +169,7 @@
       <AdditionalIncludeDirectories>..\IISLib;..\CommonLib;.\Inc;..\RequestHandlerLib</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
       <SDLCheck>true</SDLCheck>
-      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
       <PreprocessKeepComments>false</PreprocessKeepComments>
       <ExceptionHandling>SyncCThrow</ExceptionHandling>
       <StructMemberAlignment>8Bytes</StructMemberAlignment>

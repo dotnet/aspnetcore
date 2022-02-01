@@ -65,7 +65,7 @@ template<typename T> inline T min(T a, T b)
 #endif
 
 
-inline bool IsSpace(char ch) noexcept
+inline bool IsSpace(char ch)
 {
     switch (ch)
     {
