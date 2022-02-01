@@ -291,7 +291,6 @@ public abstract class VersioningTestsBase<TStartup> : IClassFixture<MvcTestFixtu
         Assert.Equal("Get", result.Action);
     }
 
-
     [Theory]
     [InlineData("GET", "Get")]
     [InlineData("POST", "Post")]

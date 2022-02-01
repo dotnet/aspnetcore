@@ -71,7 +71,7 @@ export class BrowserRenderer {
     }
   }
 
-  public disposeComponent(componentId: number) {
+  public disposeComponent(componentId: number): void {
     if (this.rootComponentIds.delete(componentId)) {
       // When disposing a root component, the container element won't be removed from the DOM (because there's
       // no parent to remove that child), so we empty it to restore it to the state it was in before the root
@@ -82,7 +82,7 @@ export class BrowserRenderer {
     delete this.childComponentLocations[componentId];
   }
 
-  public disposeEventHandler(eventHandlerId: number) {
+  public disposeEventHandler(eventHandlerId: number): void {
     this.eventDelegator.removeListener(eventHandlerId);
   }
 
@@ -229,9 +229,10 @@ export class BrowserRenderer {
       case FrameType.markup:
         this.insertMarkup(batch, parent, childIndex, frame);
         return 1;
-      default:
+      default: {
         const unknownType: never = frameType; // Compile-time verification that the switch was exhaustive
         throw new Error(`Unknown frame type: ${unknownType}`);
+      }
     }
   }
 
@@ -536,7 +537,7 @@ function countDescendantFrames(batch: RenderBatch, frame: RenderTreeFrame): numb
 
 function clearElement(element: Element) {
   let childNode: Node | null;
-  while (childNode = element.firstChild) {
+  while ((childNode = element.firstChild)) {
     element.removeChild(childNode);
   }
 }

@@ -65,7 +65,6 @@ public class HostingApplicationDiagnosticsTests
             return false;
         });
 
-
         // Act
         var context = hostingApplication.CreateContext(features);
 
@@ -357,7 +356,6 @@ public class HostingApplicationDiagnosticsTests
         Assert.Contains(Activity.Current.Baggage, pair => pair.Key == "Key2" && pair.Value == "value4");
     }
 
-
     [Fact]
     public void ActivityBaggagePreservesItemsOrder()
     {
@@ -519,7 +517,6 @@ public class HostingApplicationDiagnosticsTests
         hostingApplication.CreateContext(features);
         Assert.Equal("0123456789abcdef", parentSpanId);
     }
-
 
     private static void AssertProperty<T>(object o, string name)
     {

@@ -631,16 +631,18 @@ internal partial class HttpConnectionDispatcher
         // The reason we're copying the base features instead of the HttpContext properties is
         // so that we can get all of the logic built into DefaultHttpContext to extract higher level
         // structure from the low level properties
-        var existingRequestFeature = context.Features.Get<IHttpRequestFeature>()!;
+        var existingRequestFeature = context.Features.GetRequiredFeature<IHttpRequestFeature>();
 
-        var requestFeature = new HttpRequestFeature();
-        requestFeature.Protocol = existingRequestFeature.Protocol;
-        requestFeature.Method = existingRequestFeature.Method;
-        requestFeature.Scheme = existingRequestFeature.Scheme;
-        requestFeature.Path = existingRequestFeature.Path;
-        requestFeature.PathBase = existingRequestFeature.PathBase;
-        requestFeature.QueryString = existingRequestFeature.QueryString;
-        requestFeature.RawTarget = existingRequestFeature.RawTarget;
+        var requestFeature = new HttpRequestFeature
+        {
+            Protocol = existingRequestFeature.Protocol,
+            Method = existingRequestFeature.Method,
+            Scheme = existingRequestFeature.Scheme,
+            Path = existingRequestFeature.Path,
+            PathBase = existingRequestFeature.PathBase,
+            QueryString = existingRequestFeature.QueryString,
+            RawTarget = existingRequestFeature.RawTarget
+        };
         var requestHeaders = new Dictionary<string, StringValues>(existingRequestFeature.Headers.Count, StringComparer.OrdinalIgnoreCase);
         foreach (var header in existingRequestFeature.Headers)
         {

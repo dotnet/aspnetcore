@@ -19,11 +19,11 @@ public class HostingTests
     [Fact]
     public async Task WebhostLoadsKeyRingBeforeServerStarts()
     {
-        var tcs = new TaskCompletionSource<object>();
+        var tcs = new TaskCompletionSource();
         var mockKeyRing = new Mock<IKeyRingProvider>();
         mockKeyRing.Setup(m => m.GetCurrentKeyRing())
             .Returns(Mock.Of<IKeyRing>())
-            .Callback(() => tcs.TrySetResult(null));
+            .Callback(() => tcs.TrySetResult());
 
         var builder = new WebHostBuilder()
             .UseStartup<TestStartup>()
@@ -46,11 +46,11 @@ public class HostingTests
     [Fact]
     public async Task GenericHostLoadsKeyRingBeforeServerStarts()
     {
-        var tcs = new TaskCompletionSource<object>();
+        var tcs = new TaskCompletionSource();
         var mockKeyRing = new Mock<IKeyRingProvider>();
         mockKeyRing.Setup(m => m.GetCurrentKeyRing())
             .Returns(Mock.Of<IKeyRing>())
-            .Callback(() => tcs.TrySetResult(null));
+            .Callback(() => tcs.TrySetResult());
 
         var builder = new HostBuilder()
             .ConfigureServices(s =>

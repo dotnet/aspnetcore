@@ -348,7 +348,6 @@ public class CookieTempDataProviderTest
     {
         var responseCookies = httpContext.Response.GetTypedHeaders().SetCookie;
 
-
         if (responseCookies.Count > 0)
         {
             var stringBuilder = new StringBuilder();

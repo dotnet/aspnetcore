@@ -14,7 +14,6 @@ internal static class WheelEventArgsReader
     private static readonly JsonEncodedText DeltaZ = JsonEncodedText.Encode("deltaZ");
     private static readonly JsonEncodedText DeltaMode = JsonEncodedText.Encode("deltaMode");
 
-
     internal static WheelEventArgs Read(JsonElement jsonElement)
     {
         var eventArgs = new WheelEventArgs();

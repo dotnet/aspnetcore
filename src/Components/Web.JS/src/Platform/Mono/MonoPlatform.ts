@@ -95,23 +95,23 @@ export const monoPlatform: Platform = {
   },
 
   readInt32Field: function readHeapInt32(baseAddress: Pointer, fieldOffset?: number): number {
-    return getValueI32((baseAddress as any as number) + (fieldOffset || 0));
+    return getValueI32((baseAddress as unknown as number) + (fieldOffset || 0));
   },
 
   readUint64Field: function readHeapUint64(baseAddress: Pointer, fieldOffset?: number): number {
-    return getValueU64((baseAddress as any as number) + (fieldOffset || 0));
+    return getValueU64((baseAddress as unknown as number) + (fieldOffset || 0));
   },
 
   readFloatField: function readHeapFloat(baseAddress: Pointer, fieldOffset?: number): number {
-    return getValueFloat((baseAddress as any as number) + (fieldOffset || 0));
+    return getValueFloat((baseAddress as unknown as number) + (fieldOffset || 0));
   },
 
   readObjectField: function readHeapObject<T extends System_Object>(baseAddress: Pointer, fieldOffset?: number): T {
-    return getValueI32((baseAddress as any as number) + (fieldOffset || 0)) as any as T;
+    return getValueI32((baseAddress as unknown as number) + (fieldOffset || 0)) as any as T;
   },
 
   readStringField: function readHeapObject(baseAddress: Pointer, fieldOffset?: number, readBoolValueAsString?: boolean): string | null {
-    const fieldValue = getValueI32((baseAddress as any as number) + (fieldOffset || 0));
+    const fieldValue = getValueI32((baseAddress as unknown as number) + (fieldOffset || 0));
     if (fieldValue === 0) {
       return null;
     }
@@ -667,9 +667,11 @@ class MonoHeapLock implements HeapLock {
   // Within a given heap lock, it's safe to cache decoded strings since the memory can't change
   stringCache = new Map<number, string | null>();
 
+  // eslint-disable-next-line @typescript-eslint/ban-types
   private postReleaseActions?: Function[];
 
-  enqueuePostReleaseAction(callback: Function) {
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  enqueuePostReleaseAction(callback: Function): void {
     if (!this.postReleaseActions) {
       this.postReleaseActions = [];
     }

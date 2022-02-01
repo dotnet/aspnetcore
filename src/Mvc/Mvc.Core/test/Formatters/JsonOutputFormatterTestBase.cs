@@ -85,7 +85,6 @@ public abstract class JsonOutputFormatterTestBase
         var mediaType = MediaTypeHeaderValue.Parse(string.Format(CultureInfo.InvariantCulture, "application/json; charset={0}", encodingAsString));
         var encoding = CreateOrGetSupportedEncoding(formatter, encodingAsString, isDefaultEncoding);
 
-
         var body = new MemoryStream();
         var actionContext = GetActionContext(mediaType, body);
 
@@ -167,7 +166,6 @@ public abstract class JsonOutputFormatterTestBase
         var httpContext = new DefaultHttpContext();
         httpContext.Request.ContentType = contentType.ToString();
         httpContext.Request.Headers.AcceptCharset = contentType.Charset.ToString();
-
 
         httpContext.Response.Body = responseStream ?? new MemoryStream();
         return new ActionContext(httpContext, new RouteData(), new ActionDescriptor());

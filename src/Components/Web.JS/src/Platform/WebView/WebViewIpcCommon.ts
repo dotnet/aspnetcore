@@ -20,7 +20,7 @@ export function tryDeserializeMessage(message: string): IpcMessage | null {
   return { messageType, args };
 }
 
-export function setApplicationIsTerminated() {
+export function setApplicationIsTerminated(): void {
   // If there's an unhandled exception, we'll prevent the webview from doing anything else until
   // it reloads the page. This is equivalent to what happens in Blazor Server, and avoids anyone
   // taking a dependency on being able to continue interacting after a fatal error.
@@ -29,5 +29,5 @@ export function setApplicationIsTerminated() {
 
 interface IpcMessage {
   messageType: string;
-  args: any[];
+  args: unknown[];
 }

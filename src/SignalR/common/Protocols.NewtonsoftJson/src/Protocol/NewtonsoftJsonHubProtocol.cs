@@ -222,7 +222,6 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
 
                                     hasItem = true;
 
-
                                     string? id = null;
                                     if (!string.IsNullOrEmpty(invocationId))
                                     {

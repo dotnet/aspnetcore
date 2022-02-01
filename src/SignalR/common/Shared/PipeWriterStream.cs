@@ -58,7 +58,7 @@ internal class PipeWriterStream : Stream
         return WriteCoreAsync(buffer.AsMemory(offset, count), cancellationToken).AsTask();
     }
 
-#if NETCOREAPP
+#if NETCOREAPP || NETSTANDARD2_1_OR_GREATER
     public override ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
     {
         return WriteCoreAsync(source, cancellationToken);
@@ -91,7 +91,7 @@ internal class PipeWriterStream : Stream
 
         static async ValueTask WriteSlowAsync(ValueTask<FlushResult> flushTask)
         {
-            var flushResult = await flushTask;
+            var flushResult = await flushTask.ConfigureAwait(false);
 
             // Cancellation can be triggered by PipeWriter.CancelPendingFlush
             if (flushResult.IsCanceled)

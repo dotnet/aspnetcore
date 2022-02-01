@@ -855,7 +855,6 @@ public class KestrelConfigurationLoaderTests
         Assert.True(ran2);
     }
 
-
     [Fact]
     public void EndpointConfigureSection_CanConfigureSni()
     {

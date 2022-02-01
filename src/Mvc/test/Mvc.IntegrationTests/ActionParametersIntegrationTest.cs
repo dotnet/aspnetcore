@@ -473,11 +473,8 @@ public class ActionParameterIntegrationTest
             string.Format(
                 CultureInfo.CurrentCulture,
                 "Could not create an instance of type '{0}'. Model bound complex types must not be abstract or " +
-                "value types and must have a parameterless constructor. Alternatively, set the '{1}' property to" +
-                " a non-null value in the '{2}' constructor.",
-                typeof(ClassWithNoDefaultConstructor).FullName,
-                nameof(Class1.Property1),
-                typeof(Class1).FullName),
+                "value types and must have a parameterless constructor.",
+                typeof(ClassWithNoDefaultConstructor).FullName),
             exception.Message);
     }
 

@@ -31,7 +31,6 @@ internal class EncoderStreamReader
     private const byte DynamicTableCapacityPrefixMask = 0x1F;
     private const int DynamicTableCapacityPrefix = 5;
 
-
     //0   1   2   3   4   5   6   7
     //+---+---+---+---+---+---+---+---+
     //| 1 | S |    Name Index(6+)    |
@@ -239,7 +238,6 @@ internal class EncoderStreamReader
                 break;
         }
     }
-
 
     private void OnStringLength(int length, State nextState)
     {

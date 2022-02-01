@@ -403,7 +403,6 @@ public class RoutingEndpointRoutingTest : RoutingTestsBase<RoutingWebSite.Startu
         Assert.Equal("/EndpointName/LinkToConventionalRouted", body);
     }
 
-
     [Fact]
     public async Task LinkGenerator_EndpointName_LinkToAttributeRoutedAction()
     {

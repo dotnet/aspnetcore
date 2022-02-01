@@ -402,7 +402,6 @@ public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.Sta
         var formToken = AntiforgeryTestHelper.RetrieveAntiforgeryToken(getResponseBody, "/HelloWorlWithPageModelHandler");
         var cookie = AntiforgeryTestHelper.RetrieveAntiforgeryCookie(getResponse);
 
-
         var postRequest = new HttpRequestMessage(HttpMethod.Post, "http://localhost/HelloWorldWithPageModelHandler");
         postRequest.Headers.Add("Cookie", cookie.Key + "=" + cookie.Value);
         postRequest.Headers.Add("RequestVerificationToken", formToken);

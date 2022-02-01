@@ -532,7 +532,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
     [InlineData(StatusCodes.Status304NotModified)]
     public async Task AttemptingToWriteFailsForNonBodyResponse(int statusCode)
     {
-        var responseWriteTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var responseWriteTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         await using (var server = new TestServer(async httpContext =>
         {
@@ -548,7 +548,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
                 throw;
             }
 
-            responseWriteTcs.TrySetResult("This should not be reached.");
+            responseWriteTcs.TrySetResult();
         }, new TestServiceContext(LoggerFactory)))
         {
             using (var connection = server.CreateConnection())
@@ -558,7 +558,6 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
                     "Host:",
                     "",
                     "");
-
 
                 var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => responseWriteTcs.Task).DefaultTimeout();
                 Assert.Equal(CoreStrings.FormatWritingToResponseBodyNotSupported(statusCode), ex.Message);
@@ -575,7 +574,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
     [Fact]
     public async Task AttemptingToWriteFailsFor205Response()
     {
-        var responseWriteTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var responseWriteTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         await using (var server = new TestServer(async httpContext =>
         {
@@ -591,7 +590,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
                 throw;
             }
 
-            responseWriteTcs.TrySetResult("This should not be reached.");
+            responseWriteTcs.TrySetResult();
         }, new TestServiceContext(LoggerFactory)))
         {
             using (var connection = server.CreateConnection())
@@ -601,7 +600,6 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
                     "Host:",
                     "",
                     "");
-
 
                 var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => responseWriteTcs.Task).DefaultTimeout();
                 Assert.Equal(CoreStrings.FormatWritingToResponseBodyNotSupported(205), ex.Message);
@@ -2198,7 +2196,6 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         Assert.Equal(2, LogMessages.Where(message => message.LogLevel == LogLevel.Error).Count());
     }
 
-
     [Fact]
     public async Task ThrowingInOnStartingResultsInFailedWritesAnd500Response()
     {
@@ -2478,7 +2475,6 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         Assert.True(onStartingCalled);
         Assert.Single(LogMessages, message => message.LogLevel == LogLevel.Error);
     }
-
 
     [Fact]
     public async Task NoErrorsLoggedWhenServerEndsConnectionBeforeClient()

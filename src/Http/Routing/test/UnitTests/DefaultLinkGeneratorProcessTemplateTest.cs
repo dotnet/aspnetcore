@@ -496,7 +496,6 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
             },
             result: out var result);
 
-
         // Assert
         Assert.True(success);
         Assert.Equal("/HoMe/InDex", result.path.ToUriComponent());
@@ -780,7 +779,6 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
 
         target.VerifyAll();
     }
-
 
     // Any ambient values from the current request should be visible to constraint, even
     // if they have nothing to do with the route generating a link
@@ -1285,7 +1283,6 @@ public class DefaultLinkGeneratorProcessTemplateTest : LinkGeneratorTestBase
             ambientValues: DefaultLinkGenerator.GetAmbientValues(httpContext),
             options: null,
             result: out var result);
-
 
         Assert.True(success);
         Assert.Equal("/Home/Index/", result.path.ToUriComponent());

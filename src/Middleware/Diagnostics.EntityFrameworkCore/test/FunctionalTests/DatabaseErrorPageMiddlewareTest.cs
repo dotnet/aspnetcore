@@ -393,7 +393,6 @@ public class DatabaseErrorPageMiddlewareTest
 
         await host.StartAsync();
 
-
         try
         {
             using var server = host.GetTestServer();

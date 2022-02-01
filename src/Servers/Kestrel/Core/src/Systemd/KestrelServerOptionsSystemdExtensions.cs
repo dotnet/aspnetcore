@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 namespace Microsoft.AspNetCore.Hosting;
 
 /// <summary>
-/// Extensions for integrating with System MD
+/// Extensions for integrating with systemd
 /// </summary>
 public static class KestrelServerOptionsSystemdExtensions
 {

@@ -917,7 +917,6 @@ public class ApiExplorerTest : IClassFixture<MvcTestFixture<ApiExplorerWebSite.S
         var description = Assert.Single(result);
         var responseType = Assert.Single(description.SupportedResponseTypes);
 
-
         Assert.Equal(typeof(Product).FullName, responseType.ResponseType);
         Assert.Equal(200, responseType.StatusCode);
         Assert.Equal(expectedMediaTypes, GetSortedMediaTypes(responseType));

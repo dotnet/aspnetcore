@@ -1,14 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.IO.Pipelines;
+using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Testing;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
@@ -18,7 +17,11 @@ public class Http3HttpProtocolFeatureCollectionTests
 
     public Http3HttpProtocolFeatureCollectionTests()
     {
-        var streamContext = TestContextFactory.CreateHttp3StreamContext(transport: DuplexPipe.CreateConnectionPair(new PipeOptions(), new PipeOptions()).Application);
+        var connectionFeatures = new TestConnectionFeatures().FeatureCollection;
+
+        var streamContext = TestContextFactory.CreateHttp3StreamContext(
+            transport: DuplexPipe.CreateConnectionPair(new PipeOptions(), new PipeOptions()).Application,
+            connectionFeatures: connectionFeatures);
 
         var http3Stream = new TestHttp3Stream();
         http3Stream.Initialize(streamContext);
@@ -61,6 +64,33 @@ public class Http3HttpProtocolFeatureCollectionTests
     {
         public override void Execute()
         {
+        }
+    }
+
+    private class TestConnectionFeatures : IProtocolErrorCodeFeature, IStreamIdFeature, IStreamAbortFeature
+    {
+        public TestConnectionFeatures()
+        {
+            var featureCollection = new FeatureCollection();
+            featureCollection.Set<IProtocolErrorCodeFeature>(this);
+            featureCollection.Set<IStreamIdFeature>(this);
+            featureCollection.Set<IStreamAbortFeature>(this);
+
+            FeatureCollection = featureCollection;
+        }
+
+        public IFeatureCollection FeatureCollection { get; }
+        long IProtocolErrorCodeFeature.Error { get; set; }
+        long IStreamIdFeature.StreamId { get; }
+
+        void IStreamAbortFeature.AbortRead(long errorCode, ConnectionAbortedException abortReason)
+        {
+            throw new NotImplementedException();
+        }
+
+        void IStreamAbortFeature.AbortWrite(long errorCode, ConnectionAbortedException abortReason)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -198,9 +198,9 @@ internal sealed class MemoryBufferWriter : Stream, IBufferWriter<byte>
             {
                 var segment = _completedSegments[i];
 #if NETCOREAPP
-                await destination.WriteAsync(segment.Buffer.AsMemory(0, segment.Length), cancellationToken);
+                await destination.WriteAsync(segment.Buffer.AsMemory(0, segment.Length), cancellationToken).ConfigureAwait(false);
 #else
-                await destination.WriteAsync(segment.Buffer, 0, segment.Length, cancellationToken);
+                await destination.WriteAsync(segment.Buffer, 0, segment.Length, cancellationToken).ConfigureAwait(false);
 #endif
             }
         }
@@ -208,9 +208,9 @@ internal sealed class MemoryBufferWriter : Stream, IBufferWriter<byte>
         if (_currentSegment is not null)
         {
 #if NETCOREAPP
-            await destination.WriteAsync(_currentSegment.AsMemory(0, _position), cancellationToken);
+            await destination.WriteAsync(_currentSegment.AsMemory(0, _position), cancellationToken).ConfigureAwait(false);
 #else
-            await destination.WriteAsync(_currentSegment, 0, _position, cancellationToken);
+            await destination.WriteAsync(_currentSegment, 0, _position, cancellationToken).ConfigureAwait(false);
 #endif
         }
     }

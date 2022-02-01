@@ -3,7 +3,6 @@
 
 #nullable enable
 
-
 namespace Microsoft.AspNetCore.Hosting.Server.Features;
 
 /// <summary>

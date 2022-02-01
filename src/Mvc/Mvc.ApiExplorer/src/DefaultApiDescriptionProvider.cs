@@ -2,12 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.Options;
@@ -239,11 +241,13 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
             routeParameters.Add(routeParameter.Name!, CreateRouteInfo(routeParameter));
         }
 
-        foreach (var parameter in context.Results)
+        for (var i = context.Results.Count - 1; i >= 0; i--)
         {
+            var parameter = context.Results[i];
+
             if (parameter.Source == BindingSource.Path ||
-                parameter.Source == BindingSource.ModelBinding ||
-                parameter.Source == BindingSource.Custom)
+               parameter.Source == BindingSource.ModelBinding ||
+               parameter.Source == BindingSource.Custom)
             {
                 if (routeParameters.TryGetValue(parameter.Name, out var routeInfo))
                 {
@@ -256,6 +260,20 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
                         // If we didn't see any information about the parameter, but we have
                         // a route parameter that matches, let's switch it to path.
                         parameter.Source = BindingSource.Path;
+                    }
+                }
+                else
+                {
+                    if (parameter.Source == BindingSource.Path &&
+                        parameter.ModelMetadata is DefaultModelMetadata defaultModelMetadata &&
+                        !defaultModelMetadata.Attributes.Attributes.OfType<IFromRouteMetadata>().Any())
+                    {
+                        // If we didn't see the parameter in the route and no FromRoute metadata is set, it probably means
+                        // the parameter binding source was inferred (InferParameterBindingInfoConvention)  
+                        // probably because another route to this action contains it as route parameter and
+                        // will be removed from the API description
+                        // https://github.com/dotnet/aspnetcore/issues/26234
+                        context.Results.RemoveAt(i);
                     }
                 }
             }

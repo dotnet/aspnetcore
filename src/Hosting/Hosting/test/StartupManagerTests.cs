@@ -275,7 +275,6 @@ public class StartupManagerTests
         }
     }
 
-
     public class ServiceBefore
     {
         public string Message { get; set; }

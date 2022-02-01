@@ -269,7 +269,6 @@ public class TestServerTests
                 Assert.Contains(serverAddressesFeature.Addresses, s => string.Equals(s, url, StringComparison.Ordinal));
             });
 
-
         var featureCollection = new FeatureCollection();
         featureCollection.Set<IServerAddressesFeature>(new ServerAddressesFeature());
 
@@ -666,7 +665,7 @@ public class TestServerTests
                               {
                                   app.Run(context =>
                                   {
-                                      TaskCompletionSource<int> tcs = new TaskCompletionSource<int>();
+                                      TaskCompletionSource tcs = new TaskCompletionSource();
                                       tcs.SetCanceled();
                                       return tcs.Task;
                                   });

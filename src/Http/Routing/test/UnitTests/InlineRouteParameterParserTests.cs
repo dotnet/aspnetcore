@@ -941,7 +941,6 @@ public class InlineRouteParameterParserTests
         Assert.Null(templatePart.DefaultValue);
     }
 
-
     private TemplatePart ParseParameter(string routeParameter)
     {
         var _constraintResolver = GetConstraintResolver();

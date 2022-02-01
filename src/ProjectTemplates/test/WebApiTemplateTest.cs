@@ -121,7 +121,6 @@ public class WebApiTemplateTest : LoggedTest
                 aspNetProcess.Process.HasExited,
                 ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", project, aspNetProcess.Process));
 
-
             await aspNetProcess.AssertOk("weatherforecast");
             // Swagger is only available in Development
             await aspNetProcess.AssertNotFound("swagger");

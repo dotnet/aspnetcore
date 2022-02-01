@@ -59,7 +59,6 @@ public class CngCbcAuthenticatedEncryptorDescriptorDeserializerTests
             descriptor,
             new[] { encryptorFactory });
 
-
         return key.CreateEncryptor();
     }
 }

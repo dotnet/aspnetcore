@@ -16,7 +16,6 @@ namespace Microsoft.AspNetCore.Components.Routing;
 /// </summary>
 public partial class Router : IComponent, IHandleAfterRender, IDisposable
 {
-    static readonly char[] _queryOrHashStartChar = new[] { '?', '#' };
     // Dictionary is intentionally used instead of ReadOnlyDictionary to reduce Blazor size
     static readonly IReadOnlyDictionary<string, object> _emptyParametersDictionary
         = new Dictionary<string, object>();
@@ -146,9 +145,9 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         }
     }
 
-    private static string StringUntilAny(string str, char[] chars)
+    private static string TrimQueryOrHash(string str)
     {
-        var firstIndex = str.IndexOfAny(chars);
+        var firstIndex = str.AsSpan().IndexOfAny('?', '#');
         return firstIndex < 0
             ? str
             : str.Substring(0, firstIndex);
@@ -160,8 +159,8 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
         if (!routeKey.Equals(_routeTableLastBuiltForRouteKey))
         {
-            _routeTableLastBuiltForRouteKey = routeKey;
             Routes = RouteTableFactory.Create(routeKey);
+            _routeTableLastBuiltForRouteKey = routeKey;
         }
     }
 
@@ -189,7 +188,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         RefreshRouteTable();
 
         var locationPath = NavigationManager.ToBaseRelativePath(_locationAbsolute);
-        locationPath = StringUntilAny(locationPath, _queryOrHashStartChar);
+        locationPath = TrimQueryOrHash(locationPath);
         var context = new RouteContext(locationPath);
         Routes.Route(context);
 

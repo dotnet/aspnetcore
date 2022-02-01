@@ -46,6 +46,11 @@ internal abstract class WriteOnlyStreamInternal : Stream
         throw new NotSupportedException();
     }
 
+    public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken)
+    {
+        throw new NotSupportedException();
+    }
+
     ///<inheritdoc/>
     public override long Seek(long offset, SeekOrigin origin)
     {

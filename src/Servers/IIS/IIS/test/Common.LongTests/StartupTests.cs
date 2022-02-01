@@ -649,7 +649,6 @@ public class StartupTests : IISFunctionalTestBase
         return dictionary;
     }
 
-
     private static Dictionary<string, Func<IISDeploymentParameters, string>> StandaloneConfigTransformations = InitStandaloneConfigTransformations();
 
     public static IEnumerable<object[]> StandaloneConfigTransformationsScenarios => StandaloneConfigTransformations.ToTheoryData();
@@ -865,7 +864,6 @@ public class StartupTests : IISFunctionalTestBase
         VerifyDotnetRuntimeEventLog(deploymentResult);
     }
 
-
     [ConditionalFact]
     [RequiresNewHandler]
     public async Task CanAddCustomStartupHook()
@@ -974,7 +972,6 @@ public class StartupTests : IISFunctionalTestBase
             Assert.Contains(TestSink.Writes, context => context.Message.Contains("An unhandled exception was thrown by the application."));
         }
     }
-
 
     [ConditionalTheory]
     [InlineData("CheckLargeStdErrWrites")]
@@ -1140,7 +1137,6 @@ public class StartupTests : IISFunctionalTestBase
         await AssertLink(response);
     }
 
-
     [ConditionalFact]
     public async Task GetLongEnvironmentVariable_InProcess()
     {
@@ -1150,7 +1146,6 @@ public class StartupTests : IISFunctionalTestBase
                             "AReallyLongValueThatIsGreaterThan300CharactersToForceResizeInNative" +
                             "AReallyLongValueThatIsGreaterThan300CharactersToForceResizeInNative" +
                             "AReallyLongValueThatIsGreaterThan300CharactersToForceResizeInNative";
-
 
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.InProcess);
         deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_INPROCESS_TESTING_LONG_VALUE"] = expectedValue;
@@ -1170,7 +1165,6 @@ public class StartupTests : IISFunctionalTestBase
                             "AReallyLongValueThatIsGreaterThan300CharactersToForceResizeInNative" +
                             "AReallyLongValueThatIsGreaterThan300CharactersToForceResizeInNative" +
                             "AReallyLongValueThatIsGreaterThan300CharactersToForceResizeInNative";
-
 
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
         deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_INPROCESS_TESTING_LONG_VALUE"] = expectedValue;

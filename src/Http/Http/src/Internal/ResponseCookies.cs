@@ -26,7 +26,7 @@ internal partial class ResponseCookies : IResponseCookies
     internal ResponseCookies(IFeatureCollection features)
     {
         _features = features;
-        Headers = _features.Get<IHttpResponseFeature>()!.Headers;
+        Headers = _features.GetRequiredFeature<IHttpResponseFeature>().Headers;
     }
 
     private IHeaderDictionary Headers { get; set; }
@@ -58,7 +58,7 @@ internal partial class ResponseCookies : IResponseCookies
         {
             if (_logger == null)
             {
-                var services = _features.Get<Features.IServiceProvidersFeature>()?.RequestServices;
+                var services = _features.Get<IServiceProvidersFeature>()?.RequestServices;
                 _logger = services?.GetService<ILogger<ResponseCookies>>();
             }
 

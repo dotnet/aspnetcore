@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters;
 /// <summary>
 /// A <see cref="TextOutputFormatter"/> for JSON content.
 /// </summary>
-public class NewtonsoftJsonOutputFormatter : TextOutputFormatter
+public partial class NewtonsoftJsonOutputFormatter : TextOutputFormatter
 {
     private readonly IArrayPool<char> _charPool;
     private readonly MvcOptions _mvcOptions;
@@ -245,21 +245,16 @@ public class NewtonsoftJsonOutputFormatter : TextOutputFormatter
         return copiedSettings;
     }
 
-    private static class Log
+    private static partial class Log
     {
-        private static readonly LogDefineOptions SkipEnabledCheckLogOptions = new() { SkipEnabledCheck = true };
-
-        private static readonly Action<ILogger, string?, Exception?> _bufferingAsyncEnumerable = LoggerMessage.Define<string?>(
-            LogLevel.Debug,
-            new EventId(1, "BufferingAsyncEnumerable"),
-            "Buffering IAsyncEnumerable instance of type '{Type}'.",
-            SkipEnabledCheckLogOptions);
+        [LoggerMessage(1, LogLevel.Debug, "Buffering IAsyncEnumerable instance of type '{Type}'.", EventName = "BufferingAsyncEnumerable", SkipEnabledCheck = true)]
+        private static partial void BufferingAsyncEnumerable(ILogger logger, string? type);
 
         public static void BufferingAsyncEnumerable(ILogger logger, object asyncEnumerable)
         {
             if (logger.IsEnabled(LogLevel.Debug))
             {
-                _bufferingAsyncEnumerable(logger, asyncEnumerable.GetType().FullName, null);
+                BufferingAsyncEnumerable(logger, asyncEnumerable.GetType().FullName);
             }
         }
     }

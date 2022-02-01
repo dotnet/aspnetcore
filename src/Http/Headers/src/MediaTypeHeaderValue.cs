@@ -314,7 +314,6 @@ public class MediaTypeHeaderValue
         }
     }
 
-
     /// <summary>
     /// Get a <see cref="IList{T}"/> of facets of the <see cref="MediaTypeHeaderValue"/>. Facets are a
     /// period separated list of StringSegments in the <see cref="SubTypeWithoutSuffix"/>.

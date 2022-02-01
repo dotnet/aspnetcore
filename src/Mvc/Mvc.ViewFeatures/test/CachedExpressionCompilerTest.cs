@@ -850,7 +850,6 @@ public class CachedExpressionCompilerTest
         Assert.Same(differentModel, result);
     }
 
-
     [Fact]
     public void Process_MemberAccess_OnCapturedVariable_ReturnsNull()
     {

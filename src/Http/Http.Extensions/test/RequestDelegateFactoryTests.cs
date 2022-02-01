@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System.Buffers;
 using System.Globalization;
 using System.IO.Pipelines;
 using System.Linq.Expressions;
@@ -450,6 +451,57 @@ public class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(400, httpContext.Response.StatusCode);
     }
 
+    public static object?[][] TryParsableArrayParameters
+    {
+        get
+        {
+            static void Store<T>(HttpContext httpContext, T tryParsable)
+            {
+                httpContext.Items["tryParsable"] = tryParsable;
+            }
+
+            var now = DateTime.Now;
+
+            return new[]
+            {
+                    // string is not technically "TryParsable", but it's the special case.
+                    new object[] { (Action<HttpContext, string[]>)Store, new[] { "plain string" }, new[] { "plain string" } },
+                    new object[] { (Action<HttpContext, StringValues>)Store, new[] { "1", "2", "3" }, new StringValues(new[] { "1", "2", "3" }) },
+                    new object[] { (Action<HttpContext, int[]>)Store, new[] { "-1", "2", "3" }, new[] { -1,2,3 } },
+                    new object[] { (Action<HttpContext, uint[]>)Store, new[] { "1","42","32"}, new[] { 1U, 42U, 32U } },
+                    new object[] { (Action<HttpContext, bool[]>)Store, new[] { "true", "false" }, new[] { true, false } },
+                    new object[] { (Action<HttpContext, short[]>)Store, new[] { "-42" }, new[] { (short)-42 } },
+                    new object[] { (Action<HttpContext, ushort[]>)Store, new[] { "42" }, new[] { (ushort)42 } },
+                    new object[] { (Action<HttpContext, long[]>)Store, new[] { "-42" }, new[] { -42L } },
+                    new object[] { (Action<HttpContext, ulong[]>)Store, new[] { "42" }, new[] { 42UL } },
+                    new object[] { (Action<HttpContext, IntPtr[]>)Store, new[] { "-42" },new[] { new IntPtr(-42) } },
+                    new object[] { (Action<HttpContext, char[]>)Store, new[] { "A" }, new[] { 'A' } },
+                    new object[] { (Action<HttpContext, double[]>)Store, new[] { "0.5" },new[] { 0.5 } },
+                    new object[] { (Action<HttpContext, float[]>)Store, new[] { "0.5" },new[] { 0.5f } },
+                    new object[] { (Action<HttpContext, Half[]>)Store, new[] { "0.5" }, new[] { (Half)0.5f } },
+                    new object[] { (Action<HttpContext, decimal[]>)Store, new[] { "0.5" },new[] { 0.5m } },
+                    new object[] { (Action<HttpContext, DateTime[]>)Store, new[] { now.ToString("o") },new[] { now.ToUniversalTime() } },
+                    new object[] { (Action<HttpContext, DateTimeOffset[]>)Store, new[] { "1970-01-01T00:00:00.0000000+00:00" },new[] { DateTimeOffset.UnixEpoch } },
+                    new object[] { (Action<HttpContext, TimeSpan[]>)Store, new[] { "00:00:42" },new[] { TimeSpan.FromSeconds(42) } },
+                    new object[] { (Action<HttpContext, Guid[]>)Store, new[] { "00000000-0000-0000-0000-000000000000" },new[] { Guid.Empty } },
+                    new object[] { (Action<HttpContext, Version[]>)Store, new[] { "6.0.0.42" }, new[] { new Version("6.0.0.42") } },
+                    new object[] { (Action<HttpContext, BigInteger[]>)Store, new[] { "-42" },new[]{ new BigInteger(-42) } },
+                    new object[] { (Action<HttpContext, IPAddress[]>)Store, new[] { "127.0.0.1" }, new[] { IPAddress.Loopback } },
+                    new object[] { (Action<HttpContext, IPEndPoint[]>)Store, new[] { "127.0.0.1:80" },new[] { new IPEndPoint(IPAddress.Loopback, 80) } },
+                    new object[] { (Action<HttpContext, AddressFamily[]>)Store, new[] { "Unix" },new[] { AddressFamily.Unix } },
+                    new object[] { (Action<HttpContext, ILOpCode[]>)Store, new[] { "Nop" }, new[] { ILOpCode.Nop } },
+                    new object[] { (Action<HttpContext, AssemblyFlags[]>)Store, new[] { "PublicKey,Retargetable" },new[] { AssemblyFlags.PublicKey | AssemblyFlags.Retargetable } },
+                    new object[] { (Action<HttpContext, int?[]>)Store, new[] { "42" }, new int?[] { 42 } },
+                    new object[] { (Action<HttpContext, MyEnum[]>)Store, new[] { "ValueB" },new[] { MyEnum.ValueB } },
+                    new object[] { (Action<HttpContext, MyTryParseRecord[]>)Store, new[] { "https://example.org" },new[] { new MyTryParseRecord(new Uri("https://example.org")) } },
+                    new object?[] { (Action<HttpContext, int[]>)Store, new string[] {}, Array.Empty<int>() },
+                    new object?[] { (Action<HttpContext, int?[]>)Store, new string?[] { "1", "2", null, "4" }, new int?[] { 1,2, null, 4 } },
+                    new object?[] { (Action<HttpContext, int?[]>)Store, new string[] { "1", "2", "", "4" }, new int?[] { 1,2, null, 4 } },
+                    new object[] { (Action<HttpContext, MyTryParseRecord?[]?>)Store, new[] { "" }, new MyTryParseRecord?[] { null } },
+                };
+        }
+    }
+
     public static object?[][] TryParsableParameters
     {
         get
@@ -701,12 +753,12 @@ public class RequestDelegateFactoryTests : LoggedTest
 
     [Theory]
     [MemberData(nameof(TryParsableParameters))]
-    public async Task RequestDelegatePopulatesUnattributedTryParsableParametersFromQueryString(Delegate action, string? routeValue, object? expectedParameterValue)
+    public async Task RequestDelegatePopulatesUnattributedTryParsableParametersFromQueryString(Delegate action, string? queryValue, object? expectedParameterValue)
     {
         var httpContext = CreateHttpContext();
         httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
         {
-            ["tryParsable"] = routeValue
+            ["tryParsable"] = queryValue
         });
 
         var factoryResult = RequestDelegateFactory.Create(action);
@@ -714,7 +766,102 @@ public class RequestDelegateFactoryTests : LoggedTest
 
         await requestDelegate(httpContext);
 
+        Assert.NotEmpty(httpContext.Items);
         Assert.Equal(expectedParameterValue, httpContext.Items["tryParsable"]);
+    }
+
+    [Theory]
+    [MemberData(nameof(TryParsableArrayParameters))]
+    public async Task RequestDelegateHandlesArraysFromQueryString(Delegate action, string[]? queryValues, object? expectedParameterValue)
+    {
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["tryParsable"] = queryValues
+        });
+
+        var factoryResult = RequestDelegateFactory.Create(action, new() { DisableInferBodyFromParameters = true });
+
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.NotEmpty(httpContext.Items);
+        Assert.Equal(expectedParameterValue, httpContext.Items["tryParsable"]);
+    }
+
+    [Theory]
+    [MemberData(nameof(TryParsableArrayParameters))]
+    public async Task RequestDelegateHandlesDoesNotHandleArraysFromQueryStringWhenBodyIsInferred(Delegate action, string[]? queryValues, object? expectedParameterValue)
+    {
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["tryParsable"] = queryValues
+        });
+
+        var factoryResult = RequestDelegateFactory.Create(action);
+
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        // Assert.NotEmpty(httpContext.Items);
+        Assert.Null(httpContext.Items["tryParsable"]);
+
+        // Ignore this parameter but we want to reuse the dataset
+        GC.KeepAlive(expectedParameterValue);
+    }
+
+    [Fact]
+    public async Task RequestDelegateHandlesOptionalArraysFromNullQueryString()
+    {
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["tryParsable"] = (string?)null
+        });
+
+        static void StoreNullableIntArray(HttpContext httpContext, int?[]? tryParsable)
+        {
+            httpContext.Items["tryParsable"] = tryParsable;
+        }
+
+        var factoryResult = RequestDelegateFactory.Create(StoreNullableIntArray, new() { DisableInferBodyFromParameters = true });
+
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.NotEmpty(httpContext.Items);
+        Assert.Null(httpContext.Items["tryParsable"]);
+    }
+
+    [Fact]
+    public async Task RequestDelegateHandlesArraysFromExplicitQueryStringSource()
+    {
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["a"] = new(new[] { "1", "2", "3" })
+        });
+
+        httpContext.Request.Headers["Custom"] = new(new[] { "4", "5", "6" });
+
+        var factoryResult = RequestDelegateFactory.Create((HttpContext context,
+            [FromHeader(Name = "Custom")] int[] headerValues,
+            [FromQuery(Name = "a")] int[] queryValues) =>
+        {
+            context.Items["headers"] = headerValues;
+            context.Items["query"] = queryValues;
+        });
+
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(new[] { 1, 2, 3 }, (int[])httpContext.Items["query"]!);
+        Assert.Equal(new[] { 4, 5, 6 }, (int[])httpContext.Items["headers"]!);
     }
 
     [Fact]
@@ -819,7 +966,6 @@ public class RequestDelegateFactoryTests : LoggedTest
     {
         var fromRouteFactoryResult = RequestDelegateFactory.Create((HttpContext httpContext, [FromRoute] MyBindAsyncRecord myBindAsyncRecord) => { });
         var fromQueryFactoryResult = RequestDelegateFactory.Create((HttpContext httpContext, [FromQuery] MyBindAsyncRecord myBindAsyncRecord) => { });
-
 
         var httpContext = CreateHttpContext();
         httpContext.Request.RouteValues["myBindAsyncRecord"] = "foo";
@@ -976,6 +1122,76 @@ public class RequestDelegateFactoryTests : LoggedTest
         Assert.Empty(TestSink.Writes);
 
         Assert.Equal(@"Failed to bind parameter ""int tryParsable"" from ""invalid!"".", badHttpRequestException.Message);
+        Assert.Equal(400, badHttpRequestException.StatusCode);
+    }
+
+    [Fact]
+    public async Task RequestDelegateThrowsForTryParsableFailuresIfThrowOnBadRequestWithArrays()
+    {
+        var invoked = false;
+
+        void TestAction([FromQuery] int[] values)
+        {
+            invoked = true;
+        }
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>()
+        {
+            ["values"] = new(new[] { "1", "NAN", "3" })
+        });
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction, new() { ThrowOnBadRequest = true, DisableInferBodyFromParameters = true });
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        var badHttpRequestException = await Assert.ThrowsAsync<BadHttpRequestException>(() => requestDelegate(httpContext));
+
+        Assert.False(invoked);
+
+        // The httpContext should be untouched.
+        Assert.False(httpContext.RequestAborted.IsCancellationRequested);
+        Assert.Equal(200, httpContext.Response.StatusCode);
+        Assert.False(httpContext.Response.HasStarted);
+
+        // We don't log bad requests when we throw.
+        Assert.Empty(TestSink.Writes);
+
+        Assert.Equal(@"Failed to bind parameter ""int[] values"" from ""NAN"".", badHttpRequestException.Message);
+        Assert.Equal(400, badHttpRequestException.StatusCode);
+    }
+
+    [Fact]
+    public async Task RequestDelegateThrowsForTryParsableFailuresIfThrowOnBadRequestWithNonOptionalArrays()
+    {
+        var invoked = false;
+
+        void StoreNullableIntArray(HttpContext httpContext, int?[] values)
+        {
+            invoked = true;
+        }
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>()
+        {
+            ["values"] = (string?)null
+        });
+
+        var factoryResult = RequestDelegateFactory.Create(StoreNullableIntArray, new() { ThrowOnBadRequest = true, DisableInferBodyFromParameters = true });
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        var badHttpRequestException = await Assert.ThrowsAsync<BadHttpRequestException>(() => requestDelegate(httpContext));
+
+        Assert.False(invoked);
+
+        // The httpContext should be untouched.
+        Assert.False(httpContext.RequestAborted.IsCancellationRequested);
+        Assert.Equal(200, httpContext.Response.StatusCode);
+        Assert.False(httpContext.Response.HasStarted);
+
+        // We don't log bad requests when we throw.
+        Assert.Empty(TestSink.Writes);
+
+        Assert.Equal(@"Failed to bind parameter ""Nullable<int>[] values"" from """".", badHttpRequestException.Message);
         Assert.Equal(400, badHttpRequestException.StatusCode);
     }
 
@@ -1374,6 +1590,132 @@ public class RequestDelegateFactoryTests : LoggedTest
         var deserializedRequestBody = httpContext.Items["body"];
         Assert.NotNull(deserializedRequestBody);
         Assert.Equal(originalTodo.Name, ((ITodo)deserializedRequestBody!).Name);
+    }
+
+    public static object[][] RawFromBodyActions
+    {
+        get
+        {
+            void TestStream(HttpContext httpContext, Stream stream)
+            {
+                var ms = new MemoryStream();
+                stream.CopyTo(ms);
+                httpContext.Items.Add("body", ms.ToArray());
+            }
+
+            async Task TestPipeReader(HttpContext httpContext, PipeReader reader)
+            {
+                var ms = new MemoryStream();
+                await reader.CopyToAsync(ms);
+                httpContext.Items.Add("body", ms.ToArray());
+            }
+
+            return new[]
+            {
+                new object[] { (Action<HttpContext, Stream>)TestStream },
+                new object[] { (Func<HttpContext, PipeReader, Task>)TestPipeReader }
+            };
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(RawFromBodyActions))]
+    public async Task RequestDelegatePopulatesFromRawBodyParameter(Delegate action)
+    {
+        var httpContext = CreateHttpContext();
+
+        var requestBodyBytes = JsonSerializer.SerializeToUtf8Bytes(new
+        {
+            Name = "Write more tests!"
+        });
+
+        var stream = new MemoryStream(requestBodyBytes);
+        httpContext.Request.Body = stream;
+
+        httpContext.Request.Headers["Content-Length"] = stream.Length.ToString(CultureInfo.InvariantCulture);
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        var mock = new Mock<IServiceProvider>();
+        httpContext.RequestServices = mock.Object;
+
+        var factoryResult = RequestDelegateFactory.Create(action);
+
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Same(httpContext.Request.Body, stream);
+
+        // Assert that we can read the body from both the pipe reader and Stream after executing
+        httpContext.Request.Body.Position = 0;
+        byte[] data = new byte[requestBodyBytes.Length];
+        int read = await httpContext.Request.Body.ReadAsync(data.AsMemory());
+        Assert.Equal(read, data.Length);
+        Assert.Equal(requestBodyBytes, data);
+
+        httpContext.Request.Body.Position = 0;
+        var result = await httpContext.Request.BodyReader.ReadAsync();
+        Assert.Equal(requestBodyBytes.Length, result.Buffer.Length);
+        Assert.Equal(requestBodyBytes, result.Buffer.ToArray());
+        httpContext.Request.BodyReader.AdvanceTo(result.Buffer.End);
+
+        var rawRequestBody = httpContext.Items["body"];
+        Assert.NotNull(rawRequestBody);
+        Assert.Equal(requestBodyBytes, (byte[])rawRequestBody!);
+    }
+
+    [Theory]
+    [MemberData(nameof(RawFromBodyActions))]
+    public async Task RequestDelegatePopulatesFromRawBodyParameterPipeReader(Delegate action)
+    {
+        var httpContext = CreateHttpContext();
+
+        var requestBodyBytes = JsonSerializer.SerializeToUtf8Bytes(new
+        {
+            Name = "Write more tests!"
+        });
+
+        var pipeReader = PipeReader.Create(new MemoryStream(requestBodyBytes));
+        var stream = pipeReader.AsStream();
+        httpContext.Features.Set<IRequestBodyPipeFeature>(new PipeRequestBodyFeature(pipeReader));
+        httpContext.Request.Body = stream;
+
+        httpContext.Request.Headers["Content-Length"] = requestBodyBytes.Length.ToString(CultureInfo.InvariantCulture);
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        var mock = new Mock<IServiceProvider>();
+        httpContext.RequestServices = mock.Object;
+
+        var factoryResult = RequestDelegateFactory.Create(action);
+
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Same(httpContext.Request.Body, stream);
+        Assert.Same(httpContext.Request.BodyReader, pipeReader);
+
+        // Assert that we can read the body from both the pipe reader and Stream after executing and verify that they are empty (the pipe reader isn't seekable here)
+        int read = await httpContext.Request.Body.ReadAsync(new byte[requestBodyBytes.Length].AsMemory());
+        Assert.Equal(0, read);
+
+        var result = await httpContext.Request.BodyReader.ReadAsync();
+        Assert.Equal(0, result.Buffer.Length);
+        Assert.True(result.IsCompleted);
+        httpContext.Request.BodyReader.AdvanceTo(result.Buffer.End);
+
+        var rawRequestBody = httpContext.Items["body"];
+        Assert.NotNull(rawRequestBody);
+        Assert.Equal(requestBodyBytes, (byte[])rawRequestBody!);
+    }
+
+    class PipeRequestBodyFeature : IRequestBodyPipeFeature
+    {
+        public PipeRequestBodyFeature(PipeReader pipeReader)
+        {
+            Reader = pipeReader;
+        }
+        public PipeReader Reader { get; set; }
     }
 
     [Theory]
@@ -1967,13 +2309,71 @@ public class RequestDelegateFactoryTests : LoggedTest
 
         var deserializedResponseBody = JsonSerializer.Deserialize<Todo>(responseBodyStream.ToArray(), new JsonSerializerOptions
         {
-            // TODO: the output is "{\"id\":0,\"name\":\"Write even more tests!\",\"isComplete\":false}"
-            // Verify that the camelCased property names are consistent with MVC and if so whether we should keep the behavior.
             PropertyNameCaseInsensitive = true
         });
 
         Assert.NotNull(deserializedResponseBody);
         Assert.Equal("Write even more tests!", deserializedResponseBody!.Name);
+    }
+
+    public static IEnumerable<object[]> ChildResult
+    {
+        get
+        {
+            TodoChild originalTodo = new()
+            {
+                Name = "Write even more tests!",
+                Child = "With type hierarchies!",
+            };
+
+            Todo TestAction() => originalTodo;
+
+            Task<Todo> TaskTestAction() => Task.FromResult<Todo>(originalTodo);
+            async Task<Todo> TaskTestActionAwaited()
+            {
+                await Task.Yield();
+                return originalTodo;
+            }
+
+            ValueTask<Todo> ValueTaskTestAction() => ValueTask.FromResult<Todo>(originalTodo);
+            async ValueTask<Todo> ValueTaskTestActionAwaited()
+            {
+                await Task.Yield();
+                return originalTodo;
+            }
+
+            return new List<object[]>
+                {
+                    new object[] { (Func<Todo>)TestAction },
+                    new object[] { (Func<Task<Todo>>)TaskTestAction},
+                    new object[] { (Func<Task<Todo>>)TaskTestActionAwaited},
+                    new object[] { (Func<ValueTask<Todo>>)ValueTaskTestAction},
+                    new object[] { (Func<ValueTask<Todo>>)ValueTaskTestActionAwaited},
+                };
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(ChildResult))]
+    public async Task RequestDelegateWritesMembersFromChildTypesToJsonResponseBody(Delegate @delegate)
+    {
+        var httpContext = CreateHttpContext();
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
+
+        var factoryResult = RequestDelegateFactory.Create(@delegate);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        var deserializedResponseBody = JsonSerializer.Deserialize<TodoChild>(responseBodyStream.ToArray(), new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+
+        Assert.NotNull(deserializedResponseBody);
+        Assert.Equal("Write even more tests!", deserializedResponseBody!.Name);
+        Assert.Equal("With type hierarchies!", deserializedResponseBody!.Child);
     }
 
     public static IEnumerable<object[]> CustomResults
@@ -2093,7 +2493,6 @@ public class RequestDelegateFactoryTests : LoggedTest
 
                     new object[] { (Func<Task<object>>)StaticStringAsTaskObjectTestAction },
                     new object[] { (Func<ValueTask<object>>)StaticStringAsValueTaskObjectTestAction },
-
 
                 };
         }
@@ -2537,7 +2936,6 @@ public class RequestDelegateFactoryTests : LoggedTest
                 context.Items["uri"] = mySimpleBindAsyncRecord.Uri;
             }
 
-
             void requiredValueType(HttpContext context, MyNullableBindAsyncStruct myNullableBindAsyncStruct)
             {
                 context.Items["uri"] = myNullableBindAsyncStruct.Uri;
@@ -2683,7 +3081,6 @@ public class RequestDelegateFactoryTests : LoggedTest
             Assert.False(httpContext.RequestAborted.IsCancellationRequested);
         }
     }
-
 
     public static IEnumerable<object?[]> AllowEmptyData
     {
@@ -3824,6 +4221,11 @@ public class RequestDelegateFactoryTests : LoggedTest
         public int Id { get; set; }
         public string? Name { get; set; } = "Todo";
         public bool IsComplete { get; set; }
+    }
+
+    private class TodoChild : Todo
+    {
+        public string? Child { get; set; }
     }
 
     private class CustomTodo : Todo

@@ -128,7 +128,6 @@ public class DefaultApiDescriptionProviderTest
         Assert.Null(description.HttpMethod);
     }
 
-
     [Fact]
     public void GetApiDescription_CreatesMultipleDescriptionsForMultipleHttpMethods()
     {
@@ -241,6 +240,57 @@ public class DefaultApiDescriptionProviderTest
         {
             Assert.Null(parameter.RouteInfo.DefaultValue);
         }
+    }
+
+    [Fact]
+    public void GetApiDescription_WithInferredBindingSource_ExcludesPathParametersWhenNotPresentInRoute()
+    {
+        // Arrange
+        var action = CreateActionDescriptor(nameof(FromModelBinding));
+        action.AttributeRouteInfo = new AttributeRouteInfo { Template = "api/products" };
+
+        action.Parameters[0].BindingInfo = new BindingInfo()
+        {
+            BindingSource = BindingSource.Path
+        };
+
+        // Act
+        var descriptions = GetApiDescriptions(action);
+
+        // Assert
+        var description = Assert.Single(descriptions);
+        Assert.Empty(description.ParameterDescriptions);
+    }
+
+    [Theory]
+    [InlineData("api/products/{id}")]
+    [InlineData("api/products/{id?}")]
+    [InlineData("api/products/{id=5}")]
+    [InlineData("api/products/{id:int}")]
+    [InlineData("api/products/{id:int?}")]
+    [InlineData("api/products/{id:int=5}")]
+    [InlineData("api/products/{*id}")]
+    [InlineData("api/products/{*id:int}")]
+    [InlineData("api/products/{*id:int=5}")]
+    public void GetApiDescription_WithInferredBindingSource_IncludesPathParametersWhenPresentInRoute(string template)
+    {
+        // Arrange
+        var action = CreateActionDescriptor(nameof(FromModelBinding));
+        action.AttributeRouteInfo = new AttributeRouteInfo { Template = template };
+
+        action.Parameters[0].BindingInfo = new BindingInfo()
+        {
+            BindingSource = BindingSource.Path
+        };
+
+        // Act
+        var descriptions = GetApiDescriptions(action);
+
+        // Assert
+        var description = Assert.Single(descriptions);
+        var parameter = Assert.Single(description.ParameterDescriptions);
+        Assert.Equal(BindingSource.Path, parameter.Source);
+        Assert.Equal("id", parameter.Name);
     }
 
     [Fact]

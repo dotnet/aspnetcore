@@ -192,7 +192,6 @@ public static class OpenApiRouteHandlerBuilderExtensions
         return builder;
     }
 
-
     /// <summary>
     /// Adds <see cref="IAcceptsMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
     /// produced by <paramref name="builder"/>.

@@ -150,7 +150,6 @@ public class HubFilterTests : VerifiableLoggedTest
                 });
             }, LoggerFactory);
 
-
             var connectionHandler = serviceProvider.GetService<HubConnectionHandler<DynamicTestHub>>();
 
             using (var client = new TestClient())

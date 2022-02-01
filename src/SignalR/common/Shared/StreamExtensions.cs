@@ -34,12 +34,12 @@ internal static class StreamExtensions
         while (buffer.TryGet(ref position, out var segment))
         {
 #if NETCOREAPP || NETSTANDARD2_1
-            await stream.WriteAsync(segment, cancellationToken);
+            await stream.WriteAsync(segment, cancellationToken).ConfigureAwait(false);
 #else
             var isArray = MemoryMarshal.TryGetArray(segment, out var arraySegment);
             // We're using the managed memory pool which is backed by managed buffers
             Debug.Assert(isArray);
-            await stream.WriteAsync(arraySegment.Array, arraySegment.Offset, arraySegment.Count, cancellationToken);
+            await stream.WriteAsync(arraySegment.Array, arraySegment.Offset, arraySegment.Count, cancellationToken).ConfigureAwait(false);
 #endif
         }
     }

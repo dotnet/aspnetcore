@@ -156,12 +156,10 @@ public class RequestResponseTests
     }
 
     [ConditionalFact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/26294")]
-    [SkipNonHelix("This test takes 5 minutes to run")]
     public async Task ReadAndWriteSynchronously()
     {
         var content = new StringContent(new string('a', 100000));
-        for (int i = 0; i < 500; i++)
+        for (int i = 0; i < 50; i++)
         {
             var response = await _fixture.Client.PostAsync("ReadAndWriteSynchronously", content);
             var responseText = await response.Content.ReadAsStringAsync();
@@ -441,7 +439,6 @@ public class RequestResponseTests
         });
     }
 
-
     [ConditionalFact]
     public async Task TestReadOffsetWorks()
     {
@@ -505,7 +502,6 @@ public class RequestResponseTests
         Assert.Equal("Success", await result.Content.ReadAsStringAsync());
     }
 
-
     [ConditionalFact]
     public async Task AddEmptyHeaderSkipped()
     {
@@ -547,7 +543,6 @@ public class RequestResponseTests
     [InlineData(200, "custom", "custom", null)]
     [InlineData(200, "custom", "custom", "Custom body")]
     [InlineData(200, "custom", "custom", "")]
-
 
     [InlineData(500, "", "Internal Server Error", null)]
     [InlineData(500, "", "Internal Server Error", "Custom body")]

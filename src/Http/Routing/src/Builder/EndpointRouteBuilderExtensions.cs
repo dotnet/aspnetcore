@@ -207,7 +207,6 @@ public static class EndpointRouteBuilderExtensions
         return dataSource.AddEndpointBuilder(builder);
     }
 
-
     /// <summary>
     /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP GET requests
     /// for the specified pattern.
@@ -271,7 +270,6 @@ public static class EndpointRouteBuilderExtensions
     {
         return MapMethods(endpoints, pattern, DeleteVerb, handler);
     }
-
 
     /// <summary>
     /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP PATCH requests

@@ -306,7 +306,6 @@ public class SymbolApiConventionMatcherTest
         var type = compilation.GetTypeByMetadataName(DerivedTypeName);
         var conventionType = compilation.GetTypeByMetadataName(BaseTypeName);
 
-
         // Act
         var result = IsTypeMatch(type, conventionType, SymbolApiConventionTypeMatchBehavior.AssignableFrom);
 

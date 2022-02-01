@@ -162,7 +162,7 @@ public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPo
         if (needs405Endpoint == true)
         {
             // We saw some endpoints coming in, and we eliminated them all.
-            httpContext.SetEndpoint(CreateRejectionEndpoint(methods!.OrderBy(m => m, StringComparer.OrdinalIgnoreCase)));
+            httpContext.SetEndpoint(CreateRejectionEndpoint(methods?.OrderBy(m => m, StringComparer.OrdinalIgnoreCase)));
             httpContext.Request.RouteValues = null!;
         }
 
@@ -398,9 +398,9 @@ public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPo
         }
     }
 
-    private static Endpoint CreateRejectionEndpoint(IEnumerable<string> httpMethods)
+    private static Endpoint CreateRejectionEndpoint(IEnumerable<string>? httpMethods)
     {
-        var allow = string.Join(", ", httpMethods);
+        var allow = httpMethods is null ? string.Empty : string.Join(", ", httpMethods);
         return new Endpoint(
             (context) =>
             {

@@ -274,7 +274,7 @@ public static partial class HubConnectionExtensions
             throw new ArgumentNullException(nameof(hubConnection));
         }
 
-        return (TResult)(await hubConnection.InvokeCoreAsync(methodName, typeof(TResult), args, cancellationToken))!;
+        return (TResult)(await hubConnection.InvokeCoreAsync(methodName, typeof(TResult), args, cancellationToken).ConfigureAwait(false))!;
     }
 
 }

@@ -862,7 +862,6 @@ public class Http2StreamTests : Http2TestBase
             Assert.Equal(12, total);
         });
 
-
         await StartStreamAsync(1, headers, endStream: false);
         await SendDataAsync(1, new byte[1], endStream: false);
         await SendDataAsync(1, new byte[3], endStream: false);
@@ -3143,7 +3142,7 @@ public class Http2StreamTests : Http2TestBase
     public async Task WriteAsync_CancellationTokenTriggeredDueToFlowControl_SendRST()
     {
         var cts = new CancellationTokenSource();
-        var writeStarted = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var writeStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
         {
                 new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
@@ -3154,7 +3153,7 @@ public class Http2StreamTests : Http2TestBase
         {
             await context.Response.Body.FlushAsync(); // https://github.com/aspnet/KestrelHttpServer/issues/3031
             var writeTask = context.Response.WriteAsync("hello,", cts.Token);
-            writeStarted.SetResult(0);
+            writeStarted.SetResult();
             await Assert.ThrowsAsync<OperationCanceledException>(() => writeTask);
         });
 
@@ -3492,7 +3491,6 @@ public class Http2StreamTests : Http2TestBase
         await InitializeConnectionAsync(async httpContext =>
         {
             var response = httpContext.Response;
-
 
             var memory = response.BodyWriter.GetMemory(4096);
             var fisrtPartOfResponse = Encoding.ASCII.GetBytes("hello,");
@@ -3975,9 +3973,9 @@ public class Http2StreamTests : Http2TestBase
     [Fact]
     public async Task CompleteAsync_BeforeBodyStarted_SendsHeadersWithEndStream()
     {
-        var startingTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var appTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var clientTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var startingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
         {
                 new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
@@ -3988,7 +3986,7 @@ public class Http2StreamTests : Http2TestBase
         {
             try
             {
-                context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
+                context.Response.OnStarting(() => { startingTcs.SetResult(); return Task.CompletedTask; });
                 await context.Response.CompleteAsync().DefaultTimeout();
 
                 Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
@@ -3997,7 +3995,7 @@ public class Http2StreamTests : Http2TestBase
 
                 // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
                 await clientTcs.Task.DefaultTimeout();
-                appTcs.SetResult(0);
+                appTcs.SetResult();
             }
             catch (Exception ex)
             {
@@ -4012,7 +4010,7 @@ public class Http2StreamTests : Http2TestBase
             withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
             withStreamId: 1);
 
-        clientTcs.SetResult(0);
+        clientTcs.SetResult();
         await appTcs.Task;
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
@@ -4028,9 +4026,9 @@ public class Http2StreamTests : Http2TestBase
     [Fact]
     public async Task CompleteAsync_BeforeBodyStarted_WithTrailers_SendsHeadersAndTrailersWithEndStream()
     {
-        var startingTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var appTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var clientTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var startingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
         {
                 new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
@@ -4041,7 +4039,7 @@ public class Http2StreamTests : Http2TestBase
         {
             try
             {
-                context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
+                context.Response.OnStarting(() => { startingTcs.SetResult(); return Task.CompletedTask; });
                 context.Response.AppendTrailer("CustomName", "Custom Value");
 
                 await context.Response.CompleteAsync().DefaultTimeout();
@@ -4053,7 +4051,7 @@ public class Http2StreamTests : Http2TestBase
 
                 // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
                 await clientTcs.Task.DefaultTimeout();
-                appTcs.SetResult(0);
+                appTcs.SetResult();
             }
             catch (Exception ex)
             {
@@ -4072,7 +4070,7 @@ public class Http2StreamTests : Http2TestBase
             withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
             withStreamId: 1);
 
-        clientTcs.SetResult(0);
+        clientTcs.SetResult();
         await appTcs.Task;
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
@@ -4095,8 +4093,8 @@ public class Http2StreamTests : Http2TestBase
     [Fact]
     public async Task CompleteAsync_BeforeBodyStarted_WithTrailers_TruncatedContentLength_ThrowsAnd500()
     {
-        var startingTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var appTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var startingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
         {
                 new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
@@ -4107,7 +4105,7 @@ public class Http2StreamTests : Http2TestBase
         {
             try
             {
-                context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
+                context.Response.OnStarting(() => { startingTcs.SetResult(); return Task.CompletedTask; });
 
                 context.Response.ContentLength = 25;
                 context.Response.AppendTrailer("CustomName", "Custom Value");
@@ -4119,7 +4117,7 @@ public class Http2StreamTests : Http2TestBase
                 Assert.False(context.Response.Headers.IsReadOnly);
                 Assert.False(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
 
-                appTcs.SetResult(0);
+                appTcs.SetResult();
             }
             catch (Exception ex)
             {
@@ -4149,9 +4147,9 @@ public class Http2StreamTests : Http2TestBase
     [Fact]
     public async Task CompleteAsync_AfterBodyStarted_SendsBodyWithEndStream()
     {
-        var startingTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var appTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var clientTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var startingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
         {
                 new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
@@ -4162,7 +4160,7 @@ public class Http2StreamTests : Http2TestBase
         {
             try
             {
-                context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
+                context.Response.OnStarting(() => { startingTcs.SetResult(); return Task.CompletedTask; });
 
                 await context.Response.WriteAsync("Hello World");
                 Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
@@ -4175,7 +4173,7 @@ public class Http2StreamTests : Http2TestBase
 
                 // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
                 await clientTcs.Task.DefaultTimeout();
-                appTcs.SetResult(0);
+                appTcs.SetResult();
             }
             catch (Exception ex)
             {
@@ -4198,7 +4196,7 @@ public class Http2StreamTests : Http2TestBase
             withFlags: (byte)(Http2HeadersFrameFlags.END_STREAM),
             withStreamId: 1);
 
-        clientTcs.SetResult(0);
+        clientTcs.SetResult();
         await appTcs.Task;
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
@@ -4215,9 +4213,9 @@ public class Http2StreamTests : Http2TestBase
     [Fact]
     public async Task CompleteAsync_WriteAfterComplete_Throws()
     {
-        var startingTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var appTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var clientTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var startingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
         {
                 new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
@@ -4228,7 +4226,7 @@ public class Http2StreamTests : Http2TestBase
         {
             try
             {
-                context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
+                context.Response.OnStarting(() => { startingTcs.SetResult(); return Task.CompletedTask; });
                 await context.Response.CompleteAsync().DefaultTimeout();
 
                 Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
@@ -4240,7 +4238,7 @@ public class Http2StreamTests : Http2TestBase
 
                 // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
                 await clientTcs.Task.DefaultTimeout();
-                appTcs.SetResult(0);
+                appTcs.SetResult();
             }
             catch (Exception ex)
             {
@@ -4255,7 +4253,7 @@ public class Http2StreamTests : Http2TestBase
             withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
             withStreamId: 1);
 
-        clientTcs.SetResult(0);
+        clientTcs.SetResult();
         await appTcs.Task;
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
@@ -4271,9 +4269,9 @@ public class Http2StreamTests : Http2TestBase
     [Fact]
     public async Task CompleteAsync_WriteAgainAfterComplete_Throws()
     {
-        var startingTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var appTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var clientTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var startingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
         {
                 new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
@@ -4284,7 +4282,7 @@ public class Http2StreamTests : Http2TestBase
         {
             try
             {
-                context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
+                context.Response.OnStarting(() => { startingTcs.SetResult(); return Task.CompletedTask; });
 
                 await context.Response.WriteAsync("Hello World").DefaultTimeout();
                 Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
@@ -4299,7 +4297,7 @@ public class Http2StreamTests : Http2TestBase
 
                 // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
                 await clientTcs.Task.DefaultTimeout();
-                appTcs.SetResult(0);
+                appTcs.SetResult();
             }
             catch (Exception ex)
             {
@@ -4322,7 +4320,7 @@ public class Http2StreamTests : Http2TestBase
             withFlags: (byte)(Http2HeadersFrameFlags.END_STREAM),
             withStreamId: 1);
 
-        clientTcs.SetResult(0);
+        clientTcs.SetResult();
         await appTcs.Task;
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
@@ -4385,9 +4383,9 @@ public class Http2StreamTests : Http2TestBase
     [Fact]
     public async Task CompleteAsync_AfterPipeWrite_WithTrailers_SendsBodyAndTrailersWithEndStream()
     {
-        var startingTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var appTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var clientTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var startingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
         {
                 new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
@@ -4398,7 +4396,7 @@ public class Http2StreamTests : Http2TestBase
         {
             try
             {
-                context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
+                context.Response.OnStarting(() => { startingTcs.SetResult(); return Task.CompletedTask; });
 
                 var buffer = context.Response.BodyWriter.GetMemory();
                 var length = Encoding.UTF8.GetBytes("Hello World", buffer.Span);
@@ -4417,7 +4415,7 @@ public class Http2StreamTests : Http2TestBase
 
                 // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
                 await clientTcs.Task.DefaultTimeout();
-                appTcs.SetResult(0);
+                appTcs.SetResult();
             }
             catch (Exception ex)
             {
@@ -4440,7 +4438,7 @@ public class Http2StreamTests : Http2TestBase
             withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
             withStreamId: 1);
 
-        clientTcs.SetResult(0);
+        clientTcs.SetResult();
         await appTcs.Task;
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
@@ -4464,9 +4462,9 @@ public class Http2StreamTests : Http2TestBase
     [Fact]
     public async Task CompleteAsync_AfterBodyStarted_WithTrailers_SendsBodyAndTrailersWithEndStream()
     {
-        var startingTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var appTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var clientTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var startingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
         {
                 new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
@@ -4477,7 +4475,7 @@ public class Http2StreamTests : Http2TestBase
         {
             try
             {
-                context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
+                context.Response.OnStarting(() => { startingTcs.SetResult(); return Task.CompletedTask; });
 
                 await context.Response.WriteAsync("Hello World");
                 Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
@@ -4491,7 +4489,7 @@ public class Http2StreamTests : Http2TestBase
 
                 // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
                 await clientTcs.Task.DefaultTimeout();
-                appTcs.SetResult(0);
+                appTcs.SetResult();
             }
             catch (Exception ex)
             {
@@ -4514,7 +4512,7 @@ public class Http2StreamTests : Http2TestBase
             withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
             withStreamId: 1);
 
-        clientTcs.SetResult(0);
+        clientTcs.SetResult();
         await appTcs.Task;
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
@@ -4538,9 +4536,9 @@ public class Http2StreamTests : Http2TestBase
     [Fact]
     public async Task CompleteAsync_AfterBodyStarted_WithTrailers_TruncatedContentLength_ThrowsAndReset()
     {
-        var startingTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var appTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var clientTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var startingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
         {
                 new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
@@ -4551,7 +4549,7 @@ public class Http2StreamTests : Http2TestBase
         {
             try
             {
-                context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
+                context.Response.OnStarting(() => { startingTcs.SetResult(); return Task.CompletedTask; });
 
                 context.Response.ContentLength = 25;
                 await context.Response.WriteAsync("Hello World");
@@ -4567,7 +4565,7 @@ public class Http2StreamTests : Http2TestBase
 
                 // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
                 await clientTcs.Task.DefaultTimeout();
-                appTcs.SetResult(0);
+                appTcs.SetResult();
             }
             catch (Exception ex)
             {
@@ -4586,7 +4584,7 @@ public class Http2StreamTests : Http2TestBase
             withFlags: (byte)(Http2HeadersFrameFlags.NONE),
             withStreamId: 1);
 
-        clientTcs.SetResult(0);
+        clientTcs.SetResult();
 
         await WaitForStreamErrorAsync(1, Http2ErrorCode.INTERNAL_ERROR,
             expectedErrorMessage: CoreStrings.FormatTooFewBytesWritten(11, 25));
@@ -4608,9 +4606,9 @@ public class Http2StreamTests : Http2TestBase
     [Fact]
     public async Task PipeWriterComplete_AfterBodyStarted_WithTrailers_TruncatedContentLength_ThrowsAndReset()
     {
-        var startingTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var appTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var clientTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var startingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
         {
                 new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
@@ -4622,7 +4620,7 @@ public class Http2StreamTests : Http2TestBase
         {
             try
             {
-                context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
+                context.Response.OnStarting(() => { startingTcs.SetResult(); return Task.CompletedTask; });
 
                 context.Response.ContentLength = 25;
                 await context.Response.WriteAsync("Hello World");
@@ -4638,7 +4636,7 @@ public class Http2StreamTests : Http2TestBase
 
                 // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
                 await clientTcs.Task.DefaultTimeout();
-                appTcs.SetResult(0);
+                appTcs.SetResult();
             }
             catch (Exception ex)
             {
@@ -4657,7 +4655,7 @@ public class Http2StreamTests : Http2TestBase
             withFlags: (byte)(Http2HeadersFrameFlags.NONE),
             withStreamId: 1);
 
-        clientTcs.SetResult(0);
+        clientTcs.SetResult();
 
         await WaitForStreamErrorAsync(1, Http2ErrorCode.INTERNAL_ERROR,
             expectedErrorMessage: CoreStrings.FormatTooFewBytesWritten(11, 25));
@@ -4679,9 +4677,9 @@ public class Http2StreamTests : Http2TestBase
     [Fact]
     public async Task AbortAfterCompleteAsync_GETWithResponseBodyAndTrailers_ResetsAfterResponse()
     {
-        var startingTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var appTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var clientTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var startingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
         {
                 new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
@@ -4692,7 +4690,7 @@ public class Http2StreamTests : Http2TestBase
         {
             try
             {
-                context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
+                context.Response.OnStarting(() => { startingTcs.SetResult(); return Task.CompletedTask; });
 
                 await context.Response.WriteAsync("Hello World");
                 Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
@@ -4710,7 +4708,7 @@ public class Http2StreamTests : Http2TestBase
 
                 // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
                 await clientTcs.Task.DefaultTimeout();
-                appTcs.SetResult(0);
+                appTcs.SetResult();
             }
             catch (Exception ex)
             {
@@ -4734,7 +4732,7 @@ public class Http2StreamTests : Http2TestBase
             withStreamId: 1);
         await WaitForStreamErrorAsync(1, Http2ErrorCode.INTERNAL_ERROR, expectedErrorMessage: null);
 
-        clientTcs.SetResult(0);
+        clientTcs.SetResult();
         await appTcs.Task;
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
@@ -4758,9 +4756,9 @@ public class Http2StreamTests : Http2TestBase
     [Fact]
     public async Task AbortAfterCompleteAsync_POSTWithResponseBodyAndTrailers_RequestBodyThrows()
     {
-        var startingTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var appTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var clientTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var startingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
         {
                 new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
@@ -4773,7 +4771,7 @@ public class Http2StreamTests : Http2TestBase
             {
                 var requestBodyTask = context.Request.BodyReader.ReadAsync();
 
-                context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
+                context.Response.OnStarting(() => { startingTcs.SetResult(); return Task.CompletedTask; });
 
                 await context.Response.WriteAsync("Hello World");
                 Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
@@ -4794,7 +4792,7 @@ public class Http2StreamTests : Http2TestBase
 
                 // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
                 await clientTcs.Task.DefaultTimeout();
-                appTcs.SetResult(0);
+                appTcs.SetResult();
             }
             catch (Exception ex)
             {
@@ -4818,7 +4816,7 @@ public class Http2StreamTests : Http2TestBase
             withStreamId: 1);
         await WaitForStreamErrorAsync(1, Http2ErrorCode.INTERNAL_ERROR, expectedErrorMessage: null);
 
-        clientTcs.SetResult(0);
+        clientTcs.SetResult();
         await appTcs.Task;
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
@@ -4842,9 +4840,9 @@ public class Http2StreamTests : Http2TestBase
     [Fact]
     public async Task ResetAfterCompleteAsync_GETWithResponseBodyAndTrailers_ResetsAfterResponse()
     {
-        var startingTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var appTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var clientTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var startingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
         {
                 new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
@@ -4855,7 +4853,7 @@ public class Http2StreamTests : Http2TestBase
         {
             try
             {
-                context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
+                context.Response.OnStarting(() => { startingTcs.SetResult(); return Task.CompletedTask; });
 
                 await context.Response.WriteAsync("Hello World");
                 Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
@@ -4875,7 +4873,7 @@ public class Http2StreamTests : Http2TestBase
 
                 // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
                 await clientTcs.Task.DefaultTimeout();
-                appTcs.SetResult(0);
+                appTcs.SetResult();
             }
             catch (Exception ex)
             {
@@ -4900,7 +4898,7 @@ public class Http2StreamTests : Http2TestBase
         await WaitForStreamErrorAsync(1, Http2ErrorCode.NO_ERROR, expectedErrorMessage:
             "The HTTP/2 stream was reset by the application with error code NO_ERROR.");
 
-        clientTcs.SetResult(0);
+        clientTcs.SetResult();
         await appTcs.Task;
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
@@ -4924,9 +4922,9 @@ public class Http2StreamTests : Http2TestBase
     [Fact]
     public async Task ResetAfterCompleteAsync_POSTWithResponseBodyAndTrailers_RequestBodyThrows()
     {
-        var startingTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var appTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var clientTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var startingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
         {
                 new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
@@ -4939,7 +4937,7 @@ public class Http2StreamTests : Http2TestBase
             {
                 var requestBodyTask = context.Request.BodyReader.ReadAsync();
 
-                context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
+                context.Response.OnStarting(() => { startingTcs.SetResult(); return Task.CompletedTask; });
 
                 await context.Response.WriteAsync("Hello World");
                 Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
@@ -4962,7 +4960,7 @@ public class Http2StreamTests : Http2TestBase
 
                 // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
                 await clientTcs.Task.DefaultTimeout();
-                appTcs.SetResult(0);
+                appTcs.SetResult();
             }
             catch (Exception ex)
             {
@@ -4987,7 +4985,7 @@ public class Http2StreamTests : Http2TestBase
         await WaitForStreamErrorAsync(1, Http2ErrorCode.NO_ERROR, expectedErrorMessage:
             "The HTTP/2 stream was reset by the application with error code NO_ERROR.");
 
-        clientTcs.SetResult(0);
+        clientTcs.SetResult();
         await appTcs.Task;
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);

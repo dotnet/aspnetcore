@@ -139,11 +139,6 @@
     <RuntimeInstallerBaseName>aspnetcore-runtime</RuntimeInstallerBaseName>
     <TargetingPackInstallerBaseName>aspnetcore-targeting-pack</TargetingPackInstallerBaseName>
 
-    <!-- This is used to produce targeting pack installers/packages once per major.minor. -->
-    <IsTargetingPackBuilding
-        Condition=" '$(IsTargetingPackBuilding)' == '' AND '$(AspNetCorePatchVersion)' != '0' ">false</IsTargetingPackBuilding>
-    <IsTargetingPackBuilding Condition=" '$(IsTargetingPackBuilding)' == '' ">true</IsTargetingPackBuilding>
-
     <!--
       Archives and installers using this prefix are intended for internal use only.
       For example, this .zip is used to handoff bits to partner teams who then incorporate our shared frameworks
@@ -225,7 +220,7 @@
     <MvcTestingTargets>$(MSBuildThisFileDirectory)src\Mvc\Mvc.Testing\src\Microsoft.AspNetCore.Mvc.Testing.targets</MvcTestingTargets>
     <_MvcTestingTasksAssembly>$(ArtifactsBinDir)\Microsoft.AspNetCore.Mvc.Testing.Tasks\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Mvc.Testing.Tasks.dll</_MvcTestingTasksAssembly>
     <!-- IIS native projects can only be built on Windows for x86/x64/ARM64. -->
-    <BuildIisNativeProjects Condition=" '$(TargetOsName)' == 'win' AND ('$(TargetArchitecture)' == 'x86' OR '$(TargetArchitecture)' == 'x64' OR '$(TargetArchitecture)' == 'ARM64') ">true</BuildIisNativeProjects>
+    <UseIisNativeAssets Condition=" '$(TargetOsName)' == 'win' AND ('$(TargetArchitecture)' == 'x86' OR '$(TargetArchitecture)' == 'x64' OR '$(TargetArchitecture)' == 'ARM64') ">true</UseIisNativeAssets>
     <!-- This property is shared by several projects to layout the AspNetCore.App targeting pack for installers -->
     <TargetingPackLayoutRoot>$(ArtifactsObjDir)TargetingPack.Layout\$(Configuration)\</TargetingPackLayoutRoot>
     <!-- This property is shared by several projects to layout the AspNetCore.App shared framework for installers -->
@@ -249,4 +244,5 @@
   <Import Project="eng\targets\Npm.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.npmproj'" />
   <Import Project="eng\targets\Java.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.javaproj'" />
   <Import Project="eng\targets\Helix.props" Condition=" $(IsTestProject) " />
+  <Import Project="eng\targets\FunctionalTestWithAssets.props" Condition=" $(IsTestProject) " />
 </Project>

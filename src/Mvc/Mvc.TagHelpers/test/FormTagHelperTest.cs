@@ -990,7 +990,6 @@ public class FormTagHelperTest
             items: new Dictionary<object, object>(),
             uniqueId: "test");
 
-
         // Act
         await formTagHelper.ProcessAsync(context, output);
 

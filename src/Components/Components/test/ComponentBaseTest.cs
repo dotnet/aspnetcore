@@ -234,7 +234,7 @@ public class ComponentBaseTest
         // Arrange
         var renderer = new TestRenderer();
         var component = new TestComponent() { Counter = 1 };
-        var initTask = new TaskCompletionSource<object>();
+        var initTask = new TaskCompletionSource();
         component.OnInitAsyncLogic = _ => initTask.Task;
 
         // Act
@@ -307,7 +307,7 @@ public class ComponentBaseTest
         var component = new TestComponent() { Counter = 1 };
 
         var onAfterRenderCompleted = false;
-        var tcs = new TaskCompletionSource<object>();
+        var tcs = new TaskCompletionSource();
         component.OnAfterRenderAsyncLogic = async (c, firstRender) =>
         {
             Assert.True(firstRender);
@@ -321,7 +321,7 @@ public class ComponentBaseTest
         var renderTask = renderer.RenderRootComponentAsync(componentId);
 
         // Assert
-        tcs.SetResult(null);
+        tcs.SetResult();
         await renderTask;
         Assert.True(onAfterRenderCompleted);
 
@@ -330,7 +330,7 @@ public class ComponentBaseTest
 
         // Act: Render again!
         onAfterRenderCompleted = false;
-        tcs = new TaskCompletionSource<object>();
+        tcs = new TaskCompletionSource();
         component.OnAfterRenderAsyncLogic = async (c, firstRender) =>
         {
             Assert.False(firstRender);
@@ -342,7 +342,7 @@ public class ComponentBaseTest
         renderTask = renderer.RenderRootComponentAsync(componentId);
 
         // Assert
-        tcs.SetResult(null);
+        tcs.SetResult();
         await renderTask;
         Assert.True(onAfterRenderCompleted);
         Assert.Equal(2, renderer.Batches.Count);
@@ -378,7 +378,7 @@ public class ComponentBaseTest
         // Arrange
         var renderer = new TestRenderer();
         var component = new TestComponent() { Counter = 1 };
-        var onParametersSetTask = new TaskCompletionSource<object>();
+        var onParametersSetTask = new TaskCompletionSource();
         component.OnParametersSetAsyncLogic = _ => onParametersSetTask.Task;
 
         // Act

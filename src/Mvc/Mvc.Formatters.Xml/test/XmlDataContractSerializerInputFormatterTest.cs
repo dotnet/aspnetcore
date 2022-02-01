@@ -406,7 +406,6 @@ public class XmlDataContractSerializerInputFormatterTest
         var contentBytes = Encoding.UTF8.GetBytes(input);
         var context = GetInputFormatterContext(contentBytes, typeof(DummyClass));
 
-
         // Act
         var result = await formatter.ReadAsync(context);
 

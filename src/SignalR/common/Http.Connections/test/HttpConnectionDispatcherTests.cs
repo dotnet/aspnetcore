@@ -632,13 +632,13 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
 
             // Allow a maximum of one caller to use code at one time
             var callerTracker = new SemaphoreSlim(1, 1);
-            var waitTcs = new TaskCompletionSource<bool>();
+            var waitTcs = new TaskCompletionSource();
 
             // This tests thread safety of sending multiple pieces of data to a connection at once
             var executeTask1 = DispatcherExecuteAsync(dispatcher, connection, callerTracker, waitTcs.Task);
             var executeTask2 = DispatcherExecuteAsync(dispatcher, connection, callerTracker, waitTcs.Task);
 
-            waitTcs.SetResult(true);
+            waitTcs.SetResult();
 
             await Task.WhenAll(executeTask1, executeTask2);
         }
@@ -1510,7 +1510,6 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var app = builder.Build();
             var options = new HttpConnectionDispatcherOptions();
             await dispatcher.ExecuteAsync(context, options, app);
-
 
             Assert.Equal(StatusCodes.Status404NotFound, context.Response.StatusCode);
 
@@ -2564,12 +2563,12 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
 
             connection.Abort();
 
-            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            connection.ConnectionClosed.Register(() => tcs.SetResult(null));
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            connection.ConnectionClosed.Register(() => tcs.SetResult());
             await tcs.Task.DefaultTimeout();
 
-            tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            lifetimeFeature.RequestAborted.Register(() => tcs.SetResult(null));
+            tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            lifetimeFeature.RequestAborted.Register(() => tcs.SetResult());
             await tcs.Task.DefaultTimeout();
         }
     }

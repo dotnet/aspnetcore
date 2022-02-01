@@ -39,8 +39,5 @@
     <!-- Set package revision to '1' for RTM releases, but include the build number in pre-releases -->
     <PackageRevision Condition=" '$(VersionSuffix)' == '' ">1</PackageRevision>
     <PackageRevision Condition=" '$(VersionSuffix)' != '' ">0.1.$(VersionSuffix.Replace('-', '_'))</PackageRevision>
-
-    <!-- Suppresses building this project completely during servicing builds. -->
-    <RpmBuildDependsOn Condition="'$(IsTargetingPackBuilding)' == 'false'" />
   </PropertyGroup>
 </Project>

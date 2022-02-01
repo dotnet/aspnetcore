@@ -126,24 +126,24 @@ public class ResponseTests
     [ConditionalFact]
     public async Task Response_Empty_CallsOnStartingAndOnCompleted()
     {
-        var onStartingCalled = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var onCompletedCalled = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var onStartingCalled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var onCompletedCalled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         using (Utilities.CreateHttpServer(out var address, httpContext =>
         {
             httpContext.Response.OnStarting(state =>
             {
                 Assert.Same(state, httpContext);
-                onStartingCalled.SetResult(0);
-                return Task.FromResult(0);
+                onStartingCalled.SetResult();
+                return Task.CompletedTask;
             }, httpContext);
             httpContext.Response.OnCompleted(state =>
             {
                 Assert.Same(state, httpContext);
-                onCompletedCalled.SetResult(0);
-                return Task.FromResult(0);
+                onCompletedCalled.SetResult();
+                return Task.CompletedTask;
             }, httpContext);
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }))
         {
             var response = await SendRequestAsync(address);
@@ -157,22 +157,22 @@ public class ResponseTests
     [ConditionalFact]
     public async Task Response_OnStartingThrows_StillCallsOnCompleted()
     {
-        var onStartingCalled = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var onCompletedCalled = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var onStartingCalled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var onCompletedCalled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         using (Utilities.CreateHttpServer(out var address, httpContext =>
         {
             httpContext.Response.OnStarting(state =>
             {
-                onStartingCalled.SetResult(0);
+                onStartingCalled.SetResult();
                 throw new Exception("Failed OnStarting");
             }, httpContext);
             httpContext.Response.OnCompleted(state =>
             {
                 Assert.Same(state, httpContext);
-                onCompletedCalled.SetResult(0);
-                return Task.FromResult(0);
+                onCompletedCalled.SetResult();
+                return Task.CompletedTask;
             }, httpContext);
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }))
         {
             var response = await SendRequestAsync(address);
@@ -186,23 +186,23 @@ public class ResponseTests
     [ConditionalFact]
     public async Task Response_OnStartingThrowsAfterWrite_WriteThrowsAndStillCallsOnCompleted()
     {
-        var onStartingCalled = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var onCompletedCalled = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var onStartingCalled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var onCompletedCalled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         using (Utilities.CreateHttpServer(out var address, httpContext =>
         {
             httpContext.Response.OnStarting(state =>
             {
-                onStartingCalled.SetResult(0);
+                onStartingCalled.SetResult();
                 throw new InvalidTimeZoneException("Failed OnStarting");
             }, httpContext);
             httpContext.Response.OnCompleted(state =>
             {
                 Assert.Same(state, httpContext);
-                onCompletedCalled.SetResult(0);
-                return Task.FromResult(0);
+                onCompletedCalled.SetResult();
+                return Task.CompletedTask;
             }, httpContext);
             Assert.Throws<InvalidTimeZoneException>(() => httpContext.Response.Body.Write(new byte[10], 0, 10));
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }))
         {
             var response = await SendRequestAsync(address);

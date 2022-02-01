@@ -601,7 +601,6 @@ public class WebHostBuilderTests
 
         var expected = "MY_TEST_ENVIRONMENT";
 
-
         using (var host = builder
             .UseConfiguration(config)
             .UseEnvironment(expected)

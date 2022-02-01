@@ -1383,7 +1383,6 @@ public class RazorPageTest
         }, context);
     }
 
-
     private static TestableRazorPage CreatePage(
         Func<TestableRazorPage, Task> executeAction,
         ViewContext context = null)

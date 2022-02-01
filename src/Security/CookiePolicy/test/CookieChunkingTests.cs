@@ -145,8 +145,6 @@ public class CookieChunkingTests
             }, cookies);
     }
 
-
-
     [Fact]
     public void DeleteChunkedCookieWithOptionsAndResponseCookies_AllDeleted()
     {

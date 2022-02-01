@@ -19,7 +19,6 @@ public enum AuthenticationSchemes
     /// </summary>
     Basic = 0x1,
 
-
     // Digest = 0x2, // TODO: Verify this is no longer supported by Http.Sys
 
     /// <summary>

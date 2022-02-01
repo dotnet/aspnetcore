@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Primitives;
 using Moq;
 
@@ -129,7 +130,8 @@ public abstract class ActionEndpointDataSourceBaseTest
         {
             actions = new DefaultActionDescriptorCollectionProvider(
                 Array.Empty<IActionDescriptorProvider>(),
-                Array.Empty<IActionDescriptorChangeProvider>());
+                Array.Empty<IActionDescriptorChangeProvider>(),
+                NullLogger<DefaultActionDescriptorCollectionProvider>.Instance);
         }
 
         var services = new ServiceCollection();

@@ -125,7 +125,6 @@ static class ActivatorUtilities
         return (T)CreateInstance(provider, typeof(T), parameters);
     }
 
-
     /// <summary>
     /// Retrieve an instance of the given type from the service provider. If one is not found then instantiate it directly.
     /// </summary>

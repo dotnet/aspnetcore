@@ -168,7 +168,6 @@ public class DefaultHttpContextTests
         context.Uninitialize();
         TestCachedFeaturesAreNull(context, null);
 
-
         var newFeatures = new FeatureCollection();
         newFeatures.Set<IHttpRequestFeature>(new HttpRequestFeature());
         newFeatures.Set<IHttpResponseFeature>(new HttpResponseFeature());

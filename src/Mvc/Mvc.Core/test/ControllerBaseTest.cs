@@ -2715,7 +2715,6 @@ public class ControllerBaseTest
             Assert.False(context.PropertyFilter(context.ModelMetadata.Properties["Exclude2"]));
         });
 
-
         var controller = GetController(binder, valueProvider.Object);
         var model = new MyModel();
 
@@ -3119,7 +3118,6 @@ public class ControllerBaseTest
     {
         public int IntegerProperty { get; set; }
     }
-
 
     private class TestableController : ControllerBase
     {

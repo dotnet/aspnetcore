@@ -540,9 +540,9 @@ public class CacheTagHelperTest
         // Arrange
         var id = "unique-id";
         var childContent = "some-content";
-        var event1 = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var event2 = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var event3 = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var event1 = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var event2 = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var event3 = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var calls = 0;
         var cache = new MemoryCache(new MemoryCacheOptions());
 
@@ -555,7 +555,7 @@ public class CacheTagHelperTest
             getChildContentAsync: (useCachedResult, encoder) =>
             {
                 calls++;
-                event2.SetResult(0);
+                event2.SetResult();
 
                 var tagHelperContent = new DefaultTagHelperContent();
                 tagHelperContent.SetHtmlContent(childContent);
@@ -593,7 +593,7 @@ public class CacheTagHelperTest
         {
             await event1.Task.TimeoutAfter(TimeSpan.FromSeconds(5));
             await cacheTagHelper1.ProcessAsync(tagHelperContext1, tagHelperOutput1);
-            event3.SetResult(0);
+            event3.SetResult();
         });
 
         var task2 = Task.Run(async () =>
@@ -602,7 +602,7 @@ public class CacheTagHelperTest
             await cacheTagHelper2.ProcessAsync(tagHelperContext1, tagHelperOutput2);
         });
 
-        event1.SetResult(0);
+        event1.SetResult();
         await Task.WhenAll(task1, task2);
 
         // Assert
@@ -625,9 +625,9 @@ public class CacheTagHelperTest
         // Arrange
         var id = "unique-id";
         var childContent = "some-content";
-        var event1 = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var event2 = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var event3 = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var event1 = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var event2 = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var event3 = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var calls = 0;
         var cache = new MemoryCache(new MemoryCacheOptions());
 
@@ -640,7 +640,7 @@ public class CacheTagHelperTest
             getChildContentAsync: (useCachedResult, encoder) =>
             {
                 calls++;
-                event2.SetResult(0);
+                event2.SetResult();
 
                 throw new Exception();
             });
@@ -676,7 +676,7 @@ public class CacheTagHelperTest
         {
             await event1.Task.TimeoutAfter(TimeSpan.FromSeconds(5));
             await Assert.ThrowsAsync<Exception>(() => cacheTagHelper1.ProcessAsync(tagHelperContext1, tagHelperOutput1));
-            event3.SetResult(0);
+            event3.SetResult();
         });
 
         var task2 = Task.Run(async () =>
@@ -685,7 +685,7 @@ public class CacheTagHelperTest
             await cacheTagHelper2.ProcessAsync(tagHelperContext2, tagHelperOutput2);
         });
 
-        event1.SetResult(0);
+        event1.SetResult();
         await Task.WhenAll(task1, task2);
 
         // Assert

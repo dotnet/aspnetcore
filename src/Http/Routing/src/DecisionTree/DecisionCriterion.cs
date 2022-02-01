@@ -3,7 +3,6 @@
 
 #nullable disable
 
-
 namespace Microsoft.AspNetCore.Routing.DecisionTree;
 
 internal class DecisionCriterion<TItem>

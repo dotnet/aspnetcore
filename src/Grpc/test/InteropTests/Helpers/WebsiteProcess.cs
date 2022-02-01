@@ -16,7 +16,7 @@ public class WebsiteProcess : IDisposable
 {
     private readonly Process _process;
     private readonly ProcessEx _processEx;
-    private readonly TaskCompletionSource<object> _startTcs;
+    private readonly TaskCompletionSource _startTcs;
     private static readonly Regex NowListeningRegex = new Regex(@"^\s*Now listening on: .*:(?<port>\d*)$");
     private readonly StringBuilder _output;
     private readonly object _outputLock = new object();
@@ -43,7 +43,7 @@ public class WebsiteProcess : IDisposable
 
         _processEx = new ProcessEx(output, _process, Timeout.InfiniteTimeSpan);
 
-        _startTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        _startTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
     }
 
     public string GetOutput()
@@ -77,7 +77,7 @@ public class WebsiteProcess : IDisposable
 
             if (data.Contains("Application started. Press Ctrl+C to shut down."))
             {
-                _startTcs.TrySetResult(null);
+                _startTcs.TrySetResult();
             }
 
             lock (_outputLock)

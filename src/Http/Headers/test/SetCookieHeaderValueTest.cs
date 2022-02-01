@@ -180,7 +180,6 @@ public class SetCookieHeaderValueTest
             header9.Extensions.Add("extension2=value");
             var string9 = "name9=value9; extension1; extension2=value";
 
-
             dataset.Add(new[] { header1 }.ToList(), new[] { string1 });
             dataset.Add(new[] { header1, header1 }.ToList(), new[] { string1, string1 });
             dataset.Add(new[] { header1, header1 }.ToList(), new[] { string1, null, "", " ", ",", " , ", string1 });

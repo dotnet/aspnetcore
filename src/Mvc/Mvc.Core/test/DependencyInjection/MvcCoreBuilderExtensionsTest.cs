@@ -100,7 +100,6 @@ public class MvcCoreBuilderExtensionsTest
         Assert.True(options.SuppressMapClientErrors);
     }
 
-
     private class TestApplicationPartFactory : ApplicationPartFactory
     {
         public static readonly ApplicationPart TestPart = Mock.Of<ApplicationPart>();

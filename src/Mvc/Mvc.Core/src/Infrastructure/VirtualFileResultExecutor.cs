@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
@@ -14,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 /// <summary>
 /// A <see cref="IActionResultExecutor{VirtualFileResult}"/> for <see cref="VirtualFileResult"/>.
 /// </summary>
-public class VirtualFileResultExecutor : FileResultExecutorBase, IActionResultExecutor<VirtualFileResult>
+public partial class VirtualFileResultExecutor : FileResultExecutorBase, IActionResultExecutor<VirtualFileResult>
 {
     private readonly IWebHostEnvironment _hostingEnvironment;
 
@@ -105,7 +104,7 @@ public class VirtualFileResultExecutor : FileResultExecutorBase, IActionResultEx
 
         if (range != null)
         {
-            logger.WritingRangeToBody();
+            Log.WritingRangeToBody(logger);
         }
 
         if (range != null)
@@ -158,5 +157,11 @@ public class VirtualFileResultExecutor : FileResultExecutorBase, IActionResultEx
     protected virtual Stream GetFileStream(IFileInfo fileInfo)
     {
         return fileInfo.CreateReadStream();
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(17, LogLevel.Debug, "Writing the requested range of bytes to the body...", EventName = "WritingRangeToBody")]
+        public static partial void WritingRangeToBody(ILogger logger);
     }
 }

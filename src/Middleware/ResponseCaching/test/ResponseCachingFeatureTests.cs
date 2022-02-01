@@ -44,7 +44,6 @@ public class ResponseCachingFeatureTests
         }
     }
 
-
     [Theory]
     [MemberData(nameof(InvalidVaryRules))]
     public void VaryByQueryKeys_Set_InValidEmptyValues_Throws(string[] value)

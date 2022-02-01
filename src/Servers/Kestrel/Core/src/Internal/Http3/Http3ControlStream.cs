@@ -8,6 +8,7 @@ using System.Net.Http;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
@@ -37,8 +38,8 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
         var httpLimits = context.ServiceContext.ServerOptions.Limits;
         _context = context;
         _serverPeerSettings = context.ServerPeerSettings;
-        _streamIdFeature = context.ConnectionFeatures.Get<IStreamIdFeature>()!;
-        _errorCodeFeature = context.ConnectionFeatures.Get<IProtocolErrorCodeFeature>()!;
+        _streamIdFeature = context.ConnectionFeatures.GetRequiredFeature<IStreamIdFeature>();
+        _errorCodeFeature = context.ConnectionFeatures.GetRequiredFeature<IProtocolErrorCodeFeature>();
         _headerType = -1;
 
         _frameWriter = new Http3FrameWriter(

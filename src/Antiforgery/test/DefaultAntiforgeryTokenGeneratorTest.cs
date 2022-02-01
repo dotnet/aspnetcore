@@ -261,7 +261,6 @@ public class DefaultAntiforgeryTokenGeneratorProviderTest
         Assert.True(isValid);
     }
 
-
     [Fact]
     public void TryValidateTokenSet_CookieTokenMissing()
     {
@@ -295,7 +294,6 @@ public class DefaultAntiforgeryTokenGeneratorProviderTest
         var tokenProvider = new DefaultAntiforgeryTokenGenerator(
             claimUidExtractor: null,
             additionalDataProvider: null);
-
 
         // Act & Assert
         string message;

@@ -28,7 +28,6 @@ public class RouteViewTest
             _ = _routeViewComponent.SetParametersAsync(ParameterView.Empty);
         });
 
-
         Assert.Equal($"The {nameof(RouteView)} component requires a non-null value for the parameter {nameof(RouteView.RouteData)}.", ex.Message);
     }
 

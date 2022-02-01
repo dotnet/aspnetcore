@@ -42,13 +42,13 @@ export function getAndRemovePendingRootComponentContainer(containerIdentifier: s
 class EventCallbackWrapper {
   private _callback: any;
 
-  private _selfJSObjectReference: any;
+  private _selfJSObjectReference: unknown;
 
-  invoke(arg: any) {
+  invoke(arg: unknown) {
     return this._callback(arg);
   }
 
-  setCallback(callback: any): void {
+  setCallback(callback: unknown): void {
     if (!this._selfJSObjectReference) {
       this._selfJSObjectReference = DotNet.createJSObjectReference(this);
     }

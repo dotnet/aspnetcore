@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 /// <summary>
 /// <see cref="IModelBinder"/> implementation to bind posted files to <see cref="IFormFile"/>.
 /// </summary>
-public class FormFileModelBinder : IModelBinder
+public partial class FormFileModelBinder : IModelBinder
 {
     private readonly ILogger _logger;
 
@@ -164,7 +164,7 @@ public class FormFileModelBinder : IModelBinder
 
             if (postedFiles.Count == 0)
             {
-                _logger.NoFilesFoundInRequest();
+                Log.NoFilesFoundInRequest(_logger);
             }
         }
         else
@@ -210,5 +210,11 @@ public class FormFileModelBinder : IModelBinder
 
             return files;
         }
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(21, LogLevel.Debug, "No files found in the request to bind the model to.", EventName = "NoFilesFoundInRequest")]
+        public static partial void NoFilesFoundInRequest(ILogger logger);
     }
 }

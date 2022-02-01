@@ -157,7 +157,6 @@ public class WebAssemblyHostBuilderTest
         public TestServiceThatTakesStringBuilder(StringBuilder builder) { }
     }
 
-
     private class MyFakeDIBuilderThing
     {
         public MyFakeDIBuilderThing(IServiceCollection serviceCollection)

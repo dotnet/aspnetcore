@@ -230,7 +230,7 @@ public class CircuitRegistryTest
 
         var registry = new TestCircuitRegistry(circuitIdFactory);
         registry.BeforeDisconnect = new ManualResetEventSlim();
-        var tcs = new TaskCompletionSource<int>();
+        var tcs = new TaskCompletionSource();
 
         var circuitHost = TestCircuitHost.Create(circuitIdFactory.CreateCircuitId());
         registry.Register(circuitHost);
@@ -241,7 +241,7 @@ public class CircuitRegistryTest
         var disconnect = Task.Run(() =>
         {
             var task = registry.DisconnectAsync(circuitHost, circuitHost.Client.ConnectionId);
-            tcs.SetResult(0);
+            tcs.SetResult();
             return task;
         });
         var connect = Task.Run(async () =>
@@ -303,11 +303,11 @@ public class CircuitRegistryTest
             DisconnectedCircuitRetentionPeriod = TimeSpan.FromSeconds(3),
         };
         var registry = new TestCircuitRegistry(circuitIdFactory, circuitOptions);
-        var tcs = new TaskCompletionSource<object>();
+        var tcs = new TaskCompletionSource();
 
         registry.OnAfterEntryEvicted = () =>
         {
-            tcs.TrySetResult(new object());
+            tcs.TrySetResult();
         };
         var circuitHost = TestCircuitHost.Create();
 
@@ -330,11 +330,11 @@ public class CircuitRegistryTest
             DisconnectedCircuitRetentionPeriod = TimeSpan.FromSeconds(8),
         };
         var registry = new TestCircuitRegistry(circuitIdFactory, circuitOptions);
-        var tcs = new TaskCompletionSource<object>();
+        var tcs = new TaskCompletionSource();
 
         registry.OnAfterEntryEvicted = () =>
         {
-            tcs.TrySetResult(new object());
+            tcs.TrySetResult();
         };
         var circuitHost = TestCircuitHost.Create(circuitIdFactory.CreateCircuitId());
 

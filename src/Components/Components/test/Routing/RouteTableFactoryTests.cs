@@ -269,7 +269,6 @@ public class RouteTableFactoryTests
         Assert.Equal(expectedParameters, context.Parameters);
     }
 
-
     [Fact]
     public void CanMatchTemplateWithMultipleParametersAndCatchAllParameter()
     {
@@ -418,7 +417,6 @@ public class RouteTableFactoryTests
         Assert.True(context.Parameters.TryGetValue("values", out var values));
         Assert.Equal("1/2/3/4/5", values);
     }
-
 
     [Fact]
     public void CatchAllEmpty()

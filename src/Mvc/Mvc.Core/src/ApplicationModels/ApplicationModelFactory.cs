@@ -122,7 +122,6 @@ internal class ApplicationModelFactory
             throw new InvalidOperationException(message);
         }
 
-
         return results;
     }
 

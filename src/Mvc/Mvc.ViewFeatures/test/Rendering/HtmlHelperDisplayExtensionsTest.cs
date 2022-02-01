@@ -506,7 +506,6 @@ public class HtmlHelperDisplayExtensionsTest
         Assert.Equal("SomeField", HtmlContentUtilities.HtmlContentToString(displayResult));
     }
 
-
     public class StatusResource
     {
         public static string FaultedKey { get { return "Faulted from ResourceType"; } }

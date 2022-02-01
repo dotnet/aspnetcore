@@ -100,7 +100,6 @@ public abstract class JsonHelperTestBase
         Assert.Equal(expectedOutput, htmlString.ToString());
     }
 
-
     [Fact]
     public virtual void Serialize_WithHTMLNonAsciiAndControlChars()
     {

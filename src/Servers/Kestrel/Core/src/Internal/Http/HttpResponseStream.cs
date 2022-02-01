@@ -43,6 +43,9 @@ internal sealed class HttpResponseStream : Stream
     public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
       => throw new NotSupportedException();
 
+    public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken)
+      => throw new NotSupportedException();
+
     public override void Flush()
     {
         if (!_bodyControl.AllowSynchronousIO)
@@ -63,13 +66,10 @@ internal sealed class HttpResponseStream : Stream
         throw new NotSupportedException();
     }
 
-
     public override void SetLength(long value)
     {
         throw new NotSupportedException();
     }
-
-
     public override void Write(byte[] buffer, int offset, int count)
     {
         if (!_bodyControl.AllowSynchronousIO)
@@ -79,7 +79,6 @@ internal sealed class HttpResponseStream : Stream
 
         WriteAsync(buffer, offset, count, default).GetAwaiter().GetResult();
     }
-
     public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
     {
         return TaskToApm.Begin(WriteAsync(buffer, offset, count), callback, state);
@@ -94,7 +93,6 @@ internal sealed class HttpResponseStream : Stream
     {
         return _pipeWriter.WriteAsync(new ReadOnlyMemory<byte>(buffer, offset, count), cancellationToken).GetAsTask();
     }
-
     public override ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
     {
         return _pipeWriter.WriteAsync(source, cancellationToken).GetAsValueTask();
