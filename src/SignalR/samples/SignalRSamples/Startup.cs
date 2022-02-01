@@ -32,6 +32,14 @@ public class Startup
         var sn = new ShutdownNotification();
         services.AddSingleton(sn);
 
+        services.AddConnections(o =>
+        {
+            o.RegisterBeforeShutdown(() =>
+            {
+                sn.Cancel();
+                return Task.CompletedTask;
+            });
+        });
         services.AddSignalR()
         .AddMessagePackProtocol();
         //.AddStackExchangeRedis();

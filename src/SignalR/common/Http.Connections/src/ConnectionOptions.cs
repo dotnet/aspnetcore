@@ -15,6 +15,11 @@ public class ConnectionOptions
 
     internal List<Func<Task>> ShutdownCallbacks = new();
 
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="callback"></param>
+    /// <returns></returns>
     public IDisposable RegisterBeforeShutdown(Func<Task> callback)
     {
         ShutdownCallbacks.Add(callback);
