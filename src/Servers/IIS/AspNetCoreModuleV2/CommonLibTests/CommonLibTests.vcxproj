@@ -40,7 +40,7 @@
     <ProjectGuid>{1eac8125-1765-4e2d-8cbe-56dc98a1c8c1}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <WindowsTargetPlatformVersion Condition=" '$(WindowsTargetPlatformVersion)' == '' ">10.0.18362.0</WindowsTargetPlatformVersion>
-    <PlatformToolsetVersion>v142</PlatformToolsetVersion>
+    <PlatformToolsetVersion Condition=" '$(PlatformToolsetVersion)' == '' ">v142</PlatformToolsetVersion>
     <ConfigurationType>Application</ConfigurationType>
     <PlatformToolset>$(PlatformToolsetVersion)</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
