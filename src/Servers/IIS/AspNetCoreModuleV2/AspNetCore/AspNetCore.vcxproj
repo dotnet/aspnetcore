@@ -165,7 +165,7 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <TreatWarningAsError>true</TreatWarningAsError>
       <SDLCheck>true</SDLCheck>
-      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
       <PreprocessKeepComments>false</PreprocessKeepComments>
       <ExceptionHandling>SyncCThrow</ExceptionHandling>
       <StructMemberAlignment>8Bytes</StructMemberAlignment>
@@ -228,7 +228,6 @@
       <AdditionalDependencies>kernel32.lib;user32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;ahadmin.lib;ws2_32.lib;iphlpapi.lib;version.lib;$(LibNetHostPath)\libnethost.lib</AdditionalDependencies>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
       <AdditionalLibraryDirectories>$(LibNetHostPath)</AdditionalLibraryDirectories>
-      <IgnoreAllDefaultLibraries Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</IgnoreAllDefaultLibraries>
     </Link>
     <ResourceCompile>
       <AdditionalIncludeDirectories>..\Commonlib</AdditionalIncludeDirectories>
