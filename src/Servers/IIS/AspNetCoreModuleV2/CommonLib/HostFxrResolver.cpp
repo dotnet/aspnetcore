@@ -79,8 +79,9 @@ HostFxrResolver::GetHostFxrParameters(
 
         LOG_INFOF(L"hostfxr.dotnet_root: '%ls'", params.dotnet_root);
         //LOG_INFOF(L"hostfxr.assembly_path: '%ls'", applicationPhysicalPath.c_str());
+        //LOG_INFOF(L"hostfxr with null params");
 
-        int result = get_hostfxr_path(hostfxrPath.data(), &size, NULL);
+        int result = get_hostfxr_path(hostfxrPath.data(), &size, &params);
 
         // If this fails, path probe
         if (result != 0)

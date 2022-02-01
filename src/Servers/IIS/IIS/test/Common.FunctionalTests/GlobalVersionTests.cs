@@ -54,7 +54,7 @@ public class GlobalVersionTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
-    [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
+    //[MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
     [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
     [RequiresNewShim]
     public async Task GlobalVersion_EnvironmentVariableWorks()
@@ -101,9 +101,11 @@ public class GlobalVersionTests : IISFunctionalTestBase
     }
 
     [ConditionalTheory]
-    [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
+    //[MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
     [InlineData("2.1.0")]
     [InlineData("2.1.0-preview")]
+    [InlineData("7.0.0")]
+    [InlineData("7.0.0-preview")]
     public async Task GlobalVersion_NewVersionNumber(string version)
     {
         var deploymentParameters = GetGlobalVersionBaseDeploymentParameters();
@@ -123,7 +125,6 @@ public class GlobalVersionTests : IISFunctionalTestBase
     }
 
     [ConditionalTheory]
-    [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
     [InlineData("2.1.0")]
     [InlineData("2.1.0-preview")]
     public async Task GlobalVersion_MultipleRequestHandlers_PicksHighestOne(string version)
@@ -147,7 +148,7 @@ public class GlobalVersionTests : IISFunctionalTestBase
     }
 
     [ConditionalTheory]
-    [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
+    //[MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
     [InlineData("2.1.0")]
     [InlineData("2.1.0-preview")]
     public async Task GlobalVersion_MultipleRequestHandlers_UpgradeWorks(string version)
