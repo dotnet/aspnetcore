@@ -627,8 +627,8 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
         var nullabilityContext = new NullabilityInfoContext();
         var nullability = MetadataKind switch
         {
-            ModelMetadataKind.Parameter => nullabilityContext.Create(Identity.ParameterInfo!),
-            ModelMetadataKind.Property => nullabilityContext.Create(Identity.PropertyInfo!),
+            ModelMetadataKind.Parameter => Identity.ParameterInfo != null ? nullabilityContext.Create(Identity.ParameterInfo!) : null,
+            ModelMetadataKind.Property => Identity.PropertyInfo != null ? nullabilityContext.Create(Identity.PropertyInfo!) : null,
             _ => null
         };
         NullabilityState = nullability?.ReadState ?? NullabilityState.Unknown;
