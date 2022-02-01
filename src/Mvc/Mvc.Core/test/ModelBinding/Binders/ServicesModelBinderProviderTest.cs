@@ -77,12 +77,12 @@ public class ServicesModelBinderProviderTest
     public static TheoryData<ParameterInfo, bool> ParameterInfoData()
     {
         return new TheoryData<ParameterInfo, bool>()
-            {
-                { ParameterInfos.NullableParameterInfo, true },
-                { ParameterInfos.DefaultValueParameterInfo, true },
-                { ParameterInfos.NonNullabilityContextParameterInfo, false },
-                { ParameterInfos.NonNullableParameterInfo, false },
-            };
+        {
+            { ParameterInfos.NullableParameterInfo, true },
+            { ParameterInfos.DefaultValueParameterInfo, true },
+            { ParameterInfos.NonNullabilityContextParameterInfo, false },
+            { ParameterInfos.NonNullableParameterInfo, false },
+        };
     }
 
     private class ParameterInfos
@@ -114,6 +114,5 @@ public class ServicesModelBinderProviderTest
             = typeof(ParameterInfos)
                 .GetMethod(nameof(ParameterInfos.TestMethod))
                 .GetParameters()[1];
-
     }
 }
