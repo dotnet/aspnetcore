@@ -474,9 +474,6 @@ public class DefaultModelMetadata : ModelMetadata
     /// <inheritdoc />
     internal override string? ValidationModelName => ValidationMetadata.ValidationModelName;
 
-    /// <inheritdoc />
-    internal override bool? IsEmptyBodyAllowed => BindingMetadata.IsEmptyBodyAllowed;
-
     internal static bool CalculateHasValidators(HashSet<DefaultModelMetadata> visited, ModelMetadata metadata)
     {
         RuntimeHelpers.EnsureSufficientExecutionStack();

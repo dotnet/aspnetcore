@@ -1,7 +1,4 @@
 #nullable enable
-Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.NullableEmptyBodyBindingMetadataProvider
-Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.NullableEmptyBodyBindingMetadataProvider.CreateBindingMetadata(Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.BindingMetadataProviderContext! context) -> void
-Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.NullableEmptyBodyBindingMetadataProvider.NullableEmptyBodyBindingMetadataProvider() -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.SystemTextJsonValidationMetadataProvider
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.SystemTextJsonValidationMetadataProvider.CreateDisplayMetadata(Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DisplayMetadataProviderContext! context) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.SystemTextJsonValidationMetadataProvider.CreateValidationMetadata(Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ValidationMetadataProviderContext! context) -> void

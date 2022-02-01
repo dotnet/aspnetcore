@@ -88,6 +88,12 @@ public class InferParameterBindingInfoConvention : IActionModelConvention
             message += Environment.NewLine + parameters;
             throw new InvalidOperationException(message);
         }
+        else if (fromBodyParameters.Count == 1 &&
+                  fromBodyParameters[0].BindingInfo!.EmptyBodyBehavior == EmptyBodyBehavior.Default &&
+                  IsOptionalParameter(fromBodyParameters[0]))
+        {
+            fromBodyParameters[0].BindingInfo!.EmptyBodyBehavior = EmptyBodyBehavior.Allow;
+        }
     }
 
     // Internal for unit testing.
@@ -131,5 +137,31 @@ public class InferParameterBindingInfoConvention : IActionModelConvention
         var metadata = _modelMetadataProvider.GetMetadataForType(parameter.ParameterInfo.ParameterType);
 
         return metadata.IsComplexType;
+    }
+
+    private bool IsOptionalParameter(ParameterModel parameter)
+    {
+        if (parameter.ParameterInfo.HasDefaultValue)
+        {
+            return true;
+        }
+
+        if (_modelMetadataProvider is ModelMetadataProvider modelMetadataProvider)
+        {
+            var metadata = modelMetadataProvider.GetMetadataForParameter(parameter.ParameterInfo);
+            return !metadata.IsRequired;
+        }
+        else
+        {
+            // Cannot be determine if the parameter is optional since the provider
+            // does not provides an option to getMetadata from the parameter info
+            // so, we will use the Nullability context
+
+            // Waiting for PR https://github.com/dotnet/aspnetcore/pull/39804
+            // No need for information from attributes on the parameter. Just use its type.
+            // var metadata = _modelMetadataProvider.GetMetadataForType(parameter.ParameterInfo.ParameterType);
+            // return metadata.NullabilityState != NullabilityState.NotNull;
+            return false;
+        }
     }
 }

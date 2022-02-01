@@ -500,9 +500,10 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
     internal virtual string? ValidationModelName { get; }
 
     /// <summary>
-    /// Gets or sets the value which decides if empty bodies are treated as valid inputs.
+    /// Gets the value that indicates if the parameter has a default value set.
+    /// This is only available when <see cref="MetadataKind"/> is <see cref="ModelMetadataKind.Parameter"/> otherwise it will be false.
     /// </summary>
-    internal virtual bool? IsEmptyBodyAllowed { get; set; }
+    internal bool HasDefaultValue { get; private set; }
 
     /// <summary>
     /// Throws if the ModelMetadata is for a record type with validation on properties.
@@ -615,6 +616,7 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
         IsNullableValueType = Nullable.GetUnderlyingType(ModelType) != null;
         IsReferenceOrNullableType = !ModelType.IsValueType || IsNullableValueType;
         UnderlyingOrModelType = Nullable.GetUnderlyingType(ModelType) ?? ModelType;
+        HasDefaultValue = MetadataKind == ModelMetadataKind.Parameter && Identity.ParameterInfo!.HasDefaultValue;
 
         var collectionType = ClosedGenericMatcher.ExtractGenericInterface(ModelType, typeof(ICollection<>));
         IsCollectionType = collectionType != null;

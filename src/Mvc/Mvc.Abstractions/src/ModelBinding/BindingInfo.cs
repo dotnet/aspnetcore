@@ -246,10 +246,15 @@ public class BindingInfo
             PropertyFilterProvider = modelMetadata.PropertyFilterProvider;
         }
 
-        if (EmptyBodyBehavior == EmptyBodyBehavior.Default && modelMetadata.IsEmptyBodyAllowed != null)
+        // If the EmptyBody behavior is not configured will be infer
+        // as Allow when the ModelMetadata.IsRequired is false or HasDefaultValue
+        // https://github.com/dotnet/aspnetcore/issues/39754
+        if (EmptyBodyBehavior == EmptyBodyBehavior.Default &&
+            BindingSource == BindingSource.Body &&
+                (!modelMetadata.IsRequired || modelMetadata.HasDefaultValue))
         {
             isBindingInfoPresent = true;
-            EmptyBodyBehavior = modelMetadata.IsEmptyBodyAllowed == true ? EmptyBodyBehavior.Allow : EmptyBodyBehavior.Disallow;
+            EmptyBodyBehavior = EmptyBodyBehavior.Allow;
         }
 
         return isBindingInfoPresent;
