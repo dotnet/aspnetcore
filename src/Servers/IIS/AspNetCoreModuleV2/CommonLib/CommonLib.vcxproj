@@ -155,7 +155,6 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ForcedIncludeFiles>stdafx.h</ForcedIncludeFiles>
-      <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -186,7 +185,6 @@
       <ShowIncludes>false</ShowIncludes>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ForcedIncludeFiles>stdafx.h</ForcedIncludeFiles>
-      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</WholeProgramOptimization>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
