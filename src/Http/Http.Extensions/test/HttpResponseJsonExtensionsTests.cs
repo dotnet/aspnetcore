@@ -484,8 +484,8 @@ public class HttpResponseJsonExtensionsTests
 
         public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
         {
-            var tcs = new TaskCompletionSource<int>();
-            cancellationToken.Register(s => ((TaskCompletionSource<int>)s!).SetCanceled(), tcs);
+            var tcs = new TaskCompletionSource();
+            cancellationToken.Register(s => ((TaskCompletionSource)s!).SetCanceled(), tcs);
             return new ValueTask(tcs.Task);
         }
     }

@@ -38,10 +38,6 @@ jobs:
       value: ${{ parameters.configuration }}
     - group: Publish-Build-Assets
     - group: AzureDevOps-Artifact-Feeds-Pats
-    # Skip component governance and codesign validation for SDL. These jobs
-    # create no content.
-    - name: skipComponentGovernanceDetection
-      value: true
     - name: runCodesignValidationInjection
       value: false
 

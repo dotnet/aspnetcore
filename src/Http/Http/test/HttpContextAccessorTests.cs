@@ -35,16 +35,16 @@ public class HttpContextAccessorTests
         var context = new DefaultHttpContext();
         accessor.HttpContext = context;
 
-        var checkAsyncFlowTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var waitForNullTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var afterNullCheckTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var checkAsyncFlowTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var waitForNullTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var afterNullCheckTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         ThreadPool.QueueUserWorkItem(async _ =>
         {
             // The HttpContext flows with the execution context
             Assert.Same(context, accessor.HttpContext);
 
-            checkAsyncFlowTcs.SetResult(null);
+            checkAsyncFlowTcs.SetResult();
 
             await waitForNullTcs.Task;
 
@@ -52,7 +52,7 @@ public class HttpContextAccessorTests
             {
                 Assert.Null(accessor.HttpContext);
 
-                afterNullCheckTcs.SetResult(null);
+                afterNullCheckTcs.SetResult();
             }
             catch (Exception ex)
             {
@@ -65,7 +65,7 @@ public class HttpContextAccessorTests
         // Null out the accessor
         accessor.HttpContext = null;
 
-        waitForNullTcs.SetResult(null);
+        waitForNullTcs.SetResult();
 
         Assert.Null(accessor.HttpContext);
 
@@ -80,16 +80,16 @@ public class HttpContextAccessorTests
         var context = new DefaultHttpContext();
         accessor.HttpContext = context;
 
-        var checkAsyncFlowTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var waitForNullTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var afterNullCheckTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var checkAsyncFlowTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var waitForNullTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var afterNullCheckTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         ThreadPool.QueueUserWorkItem(async _ =>
         {
             // The HttpContext flows with the execution context
             Assert.Same(context, accessor.HttpContext);
 
-            checkAsyncFlowTcs.SetResult(null);
+            checkAsyncFlowTcs.SetResult();
 
             await waitForNullTcs.Task;
 
@@ -97,7 +97,7 @@ public class HttpContextAccessorTests
             {
                 Assert.Null(accessor.HttpContext);
 
-                afterNullCheckTcs.SetResult(null);
+                afterNullCheckTcs.SetResult();
             }
             catch (Exception ex)
             {
@@ -111,7 +111,7 @@ public class HttpContextAccessorTests
         var context2 = new DefaultHttpContext();
         accessor.HttpContext = context2;
 
-        waitForNullTcs.SetResult(null);
+        waitForNullTcs.SetResult();
 
         Assert.Same(context2, accessor.HttpContext);
 
@@ -126,7 +126,7 @@ public class HttpContextAccessorTests
         var context = new DefaultHttpContext();
         accessor.HttpContext = context;
 
-        var checkAsyncFlowTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var checkAsyncFlowTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         accessor.HttpContext = null;
 
@@ -136,7 +136,7 @@ public class HttpContextAccessorTests
             {
                 // The HttpContext flows with the execution context
                 Assert.Null(accessor.HttpContext);
-                checkAsyncFlowTcs.SetResult(null);
+                checkAsyncFlowTcs.SetResult();
             }
             catch (Exception ex)
             {
@@ -155,7 +155,7 @@ public class HttpContextAccessorTests
         var context = new DefaultHttpContext();
         accessor.HttpContext = context;
 
-        var checkAsyncFlowTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var checkAsyncFlowTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         ThreadPool.UnsafeQueueUserWorkItem(_ =>
         {
@@ -163,7 +163,7 @@ public class HttpContextAccessorTests
             {
                 // The HttpContext flows with the execution context
                 Assert.Null(accessor.HttpContext);
-                checkAsyncFlowTcs.SetResult(null);
+                checkAsyncFlowTcs.SetResult();
             }
             catch (Exception ex)
             {

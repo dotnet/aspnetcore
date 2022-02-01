@@ -115,7 +115,7 @@ public class HttpContextBuilderTests
     [Fact]
     public async Task HeadersAvailableBeforeSyncBodyFinished()
     {
-        var block = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var block = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var builder = new WebHostBuilder().Configure(app =>
         {
             app.Run(async c =>
@@ -135,14 +135,14 @@ public class HttpContextBuilderTests
         Assert.Equal("TestValue", context.Response.Headers["TestHeader"]);
         var reader = new StreamReader(context.Response.Body);
         Assert.Equal("BodyStarted", reader.ReadLine());
-        block.SetResult(0);
+        block.SetResult();
         Assert.Equal("BodyFinished", reader.ReadToEnd());
     }
 
     [Fact]
     public async Task HeadersAvailableBeforeAsyncBodyFinished()
     {
-        var block = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var block = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var builder = new WebHostBuilder().Configure(app =>
         {
             app.Run(async c =>
@@ -159,14 +159,14 @@ public class HttpContextBuilderTests
         Assert.Equal("TestValue", context.Response.Headers["TestHeader"]);
         var reader = new StreamReader(context.Response.Body);
         Assert.Equal("BodyStarted", await reader.ReadLineAsync());
-        block.SetResult(0);
+        block.SetResult();
         Assert.Equal("BodyFinished", await reader.ReadToEndAsync());
     }
 
     [Fact]
     public async Task FlushSendsHeaders()
     {
-        var block = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var block = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var builder = new WebHostBuilder().Configure(app =>
         {
             app.Run(async c =>
@@ -181,14 +181,14 @@ public class HttpContextBuilderTests
         var context = await server.SendAsync(c => { });
 
         Assert.Equal("TestValue", context.Response.Headers["TestHeader"]);
-        block.SetResult(0);
+        block.SetResult();
         Assert.Equal("BodyFinished", new StreamReader(context.Response.Body).ReadToEnd());
     }
 
     [Fact]
     public async Task ClientDisposalCloses()
     {
-        var block = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var block = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var builder = new WebHostBuilder().Configure(app =>
         {
             app.Run(async c =>
@@ -208,18 +208,18 @@ public class HttpContextBuilderTests
         Assert.False(readTask.IsCompleted);
         responseStream.Dispose();
         await Assert.ThrowsAsync<OperationCanceledException>(() => readTask.DefaultTimeout());
-        block.SetResult(0);
+        block.SetResult();
     }
 
     [Fact]
     public async Task ClientCancellationAborts()
     {
-        var block = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var block = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var builder = new WebHostBuilder().Configure(app =>
         {
             app.Run(c =>
             {
-                block.SetResult(0);
+                block.SetResult();
                 Assert.True(c.RequestAborted.WaitHandle.WaitOne(TimeSpan.FromSeconds(10)));
                 c.RequestAborted.ThrowIfCancellationRequested();
                 return Task.CompletedTask;
@@ -237,7 +237,7 @@ public class HttpContextBuilderTests
     [Fact]
     public async Task ClientCancellationAbortsReadAsync()
     {
-        var block = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var block = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var builder = new WebHostBuilder().Configure(app =>
         {
             app.Run(async c =>
@@ -258,7 +258,7 @@ public class HttpContextBuilderTests
         Assert.False(readTask.IsCompleted);
         cts.Cancel();
         await Assert.ThrowsAsync<OperationCanceledException>(() => readTask.DefaultTimeout());
-        block.SetResult(0);
+        block.SetResult();
     }
 
     [Fact]
@@ -278,7 +278,7 @@ public class HttpContextBuilderTests
     [Fact]
     public async Task ExceptionAfterFirstWriteIsReported()
     {
-        var block = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var block = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var builder = new WebHostBuilder().Configure(app =>
         {
             app.Run(async c =>
@@ -294,7 +294,7 @@ public class HttpContextBuilderTests
 
         Assert.Equal("TestValue", context.Response.Headers["TestHeader"]);
         Assert.Equal(11, context.Response.Body.Read(new byte[100], 0, 100));
-        block.SetResult(0);
+        block.SetResult();
         var ex = Assert.Throws<IOException>(() => context.Response.Body.Read(new byte[100], 0, 100));
         Assert.IsAssignableFrom<InvalidOperationException>(ex.InnerException);
     }
@@ -325,13 +325,13 @@ public class HttpContextBuilderTests
     [Fact]
     public async Task CallingAbortInsideHandlerShouldSetRequestAborted()
     {
-        var requestAborted = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var requestAborted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var builder = new WebHostBuilder()
             .Configure(app =>
             {
                 app.Run(context =>
                 {
-                    context.RequestAborted.Register(() => requestAborted.SetResult(0));
+                    context.RequestAborted.Register(() => requestAborted.SetResult());
                     context.Abort();
                     return Task.CompletedTask;
                 });

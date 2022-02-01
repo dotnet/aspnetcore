@@ -147,7 +147,7 @@ internal class RendererSynchronizationContext : SynchronizationContext
     public override void Send(SendOrPostCallback d, object state)
     {
         Task antecedent;
-        var completion = new TaskCompletionSource<object>();
+        var completion = new TaskCompletionSource();
 
         lock (_state.Lock)
         {
@@ -176,7 +176,7 @@ internal class RendererSynchronizationContext : SynchronizationContext
     // if necessary.
     private void ExecuteSynchronouslyIfPossible(SendOrPostCallback d, object state)
     {
-        TaskCompletionSource<object> completion;
+        TaskCompletionSource completion;
         lock (_state.Lock)
         {
             if (!_state.Task.IsCompleted)
@@ -187,7 +187,7 @@ internal class RendererSynchronizationContext : SynchronizationContext
 
             // We can execute this synchronously because nothing is currently running
             // or queued.
-            completion = new TaskCompletionSource<object>();
+            completion = new TaskCompletionSource();
             _state.Task = completion.Task;
         }
 
@@ -221,7 +221,7 @@ internal class RendererSynchronizationContext : SynchronizationContext
     }
 
     private void ExecuteSynchronously(
-        TaskCompletionSource<object> completion,
+        TaskCompletionSource completion,
         SendOrPostCallback d,
         object state)
     {
@@ -238,7 +238,7 @@ internal class RendererSynchronizationContext : SynchronizationContext
             _state.IsBusy = false;
             SetSynchronizationContext(original);
 
-            completion?.SetResult(null);
+            completion?.SetResult();
         }
     }
 

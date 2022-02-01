@@ -11,8 +11,8 @@ module.exports = function (modulePath, browserBaseName, options) {
 
     options = options || {};
 
-    return {
-        entry: path.resolve(modulePath, "src", "browser-index.ts"),
+    const webpackOptions = {
+        entry: {},
         mode: "none",
         node: {
             global: true
@@ -45,7 +45,7 @@ module.exports = function (modulePath, browserBaseName, options) {
             }
         },
         output: {
-            filename: `${browserBaseName}.js`,
+            filename: '[name].js',
             path: path.resolve(modulePath, "dist", options.platformDist || "browser"),
             library: {
                 root: pkg.umd_name.split("."),
@@ -55,7 +55,7 @@ module.exports = function (modulePath, browserBaseName, options) {
         },
         plugins: [
             new webpack.SourceMapDevToolPlugin({
-                filename: `${browserBaseName}.js.map`,
+                filename: '[name].js.map',
                 moduleFilenameTemplate(info) {
                     let resourcePath = info.resourcePath;
 
@@ -88,6 +88,7 @@ module.exports = function (modulePath, browserBaseName, options) {
           innerGraph: true,
           minimize: true,
           minimizer: [new TerserJsPlugin({
+              include: /\.min\.js$/,
               terserOptions: {
                   ecma: 2019,
                   compress: {},
@@ -114,4 +115,8 @@ module.exports = function (modulePath, browserBaseName, options) {
         },
         externals: options.externals,
     };
+
+    webpackOptions.entry[browserBaseName] = path.resolve(modulePath, "src", "browser-index.ts");
+    webpackOptions.entry[`${browserBaseName}.min`] = path.resolve(modulePath, "src", "browser-index.ts");
+    return webpackOptions;
 }

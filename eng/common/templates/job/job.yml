@@ -24,6 +24,7 @@ parameters:
   enablePublishBuildAssets: false
   enablePublishTestResults: false
   enablePublishUsingPipelines: false
+  disableComponentGovernance: false
   mergeTestResults: false
   testRunTitle: ''
   testResultsFormat: ''
@@ -136,6 +137,9 @@ jobs:
         environment: ${{ coalesce(parameters.richCodeNavigationEnvironment, 'production') }}
         richNavLogOutputDirectory: $(Build.SourcesDirectory)/artifacts/bin
       continueOnError: true
+
+  - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), ne(parameters.disableComponentGovernance, 'true')) }}:
+      - task: ComponentGovernanceComponentDetection@0
 
   - ${{ if eq(parameters.enableMicrobuild, 'true') }}:
     - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:

@@ -321,7 +321,7 @@ public class TestClientTests
     public async Task ClientStreaming_ResponseCompletesWithoutReadingRequest()
     {
         // Arrange
-        var requestStreamTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var requestStreamTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var responseEndingSyncPoint = new SyncPoint();
 
         RequestDelegate appDelegate = async ctx =>
@@ -362,7 +362,7 @@ public class TestClientTests
             try
             {
                 await requestStream.WriteAsync(Encoding.UTF8.GetBytes(new string('!', 1024 * 1024 * 50))).AsTask().DefaultTimeout();
-                requestStreamTcs.SetResult(null);
+                requestStreamTcs.SetResult();
             }
             catch (Exception ex)
             {
@@ -383,7 +383,7 @@ public class TestClientTests
     public async Task ClientStreaming_ResponseCompletesWithPendingRead_ThrowError()
     {
         // Arrange
-        var requestStreamTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var requestStreamTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         RequestDelegate appDelegate = async ctx =>
         {
@@ -424,14 +424,14 @@ public class TestClientTests
         Assert.Equal("An error occurred when completing the request. Request delegate may have finished while there is a pending read of the request body.", ex.InnerException.Message);
 
         // Unblock request
-        requestStreamTcs.TrySetResult(null);
+        requestStreamTcs.TrySetResult();
     }
 
     [Fact]
     public async Task ClientStreaming_ResponseCompletesWithoutResponseBodyWrite()
     {
         // Arrange
-        var requestStreamTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var requestStreamTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         RequestDelegate appDelegate = ctx =>
         {
@@ -471,7 +471,7 @@ public class TestClientTests
         await Assert.ThrowsAnyAsync<Exception>(() => requestStream.WriteAsync(buffer).AsTask());
 
         // Unblock request
-        requestStreamTcs.TrySetResult(null);
+        requestStreamTcs.TrySetResult();
     }
 
     [Fact]
@@ -804,7 +804,7 @@ public class TestClientTests
     public async Task ClientDisposalAbortsRequest()
     {
         // Arrange
-        var tcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         RequestDelegate appDelegate = async ctx =>
         {
             // Write Headers
@@ -837,13 +837,13 @@ public class TestClientTests
     [Fact]
     public async Task ClientCancellationAbortsRequest()
     {
-        var tcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var builder = new WebHostBuilder().Configure(app => app.Run(async ctx =>
         {
             try
             {
                 await Task.Delay(TimeSpan.FromSeconds(30), ctx.RequestAborted);
-                tcs.SetResult(0);
+                tcs.SetResult();
             }
             catch (Exception e)
             {
