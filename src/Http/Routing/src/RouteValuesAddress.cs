@@ -12,7 +12,6 @@ namespace Microsoft.AspNetCore.Routing;
 public class RouteValuesAddress
 {
     private string? _toString;
-    
     /// <summary>
     /// Gets or sets the route name.
     /// </summary>
