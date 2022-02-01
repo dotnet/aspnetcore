@@ -5,6 +5,7 @@ using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using TestServer;
@@ -37,7 +38,7 @@ public class SignalRClientTest : ServerTestBase<BlazorWasmTestAppFixture<BasicTe
 
     public override Task InitializeAsync() => base.InitializeAsync(Guid.NewGuid().ToString());
 
-    [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/39914")]
     public void SignalRClientWorksWithLongPolling()
     {
         Browser.Exists(By.Id("hub-url")).SendKeys(
@@ -50,7 +51,7 @@ public class SignalRClientTest : ServerTestBase<BlazorWasmTestAppFixture<BasicTe
             () => Browser.FindElements(By.CssSelector("li")).FirstOrDefault()?.Text);
     }
 
-    [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/39914")]
     public void SignalRClientWorksWithWebSockets()
     {
         Browser.Exists(By.Id("hub-url")).SendKeys(
@@ -63,7 +64,7 @@ public class SignalRClientTest : ServerTestBase<BlazorWasmTestAppFixture<BasicTe
             () => Browser.FindElements(By.CssSelector("li")).FirstOrDefault()?.Text);
     }
 
-    [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/39914")]
     public void SignalRClientSendsUserAgent()
     {
         Browser.Exists(By.Id("hub-url")).SendKeys(
