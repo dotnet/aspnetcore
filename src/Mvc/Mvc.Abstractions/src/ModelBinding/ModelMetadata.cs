@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
@@ -475,6 +476,15 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
     public Type UnderlyingOrModelType { get; private set; } = default!;
 
     /// <summary>
+    /// Gets a value indicating the NullabilityState of the value or reference type.
+    /// </summary>
+    /// <remarks>
+    /// The state will be set for Parameters and Properties <see cref="ModelMetadataKind"/>
+    /// otherwise the state will be <c>NullabilityState.Unknown</c>
+    /// </remarks>
+    internal NullabilityState NullabilityState { get; set; }
+
+    /// <summary>
     /// Gets a property getter delegate to get the property value from a model object.
     /// </summary>
     public abstract Func<object, object?>? PropertyGetter { get; }
@@ -620,6 +630,15 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
 
         var collectionType = ClosedGenericMatcher.ExtractGenericInterface(ModelType, typeof(ICollection<>));
         IsCollectionType = collectionType != null;
+
+        var nullabilityContext = new NullabilityInfoContext();
+        var nullability = MetadataKind switch
+        {
+            ModelMetadataKind.Parameter => Identity.ParameterInfo != null ? nullabilityContext.Create(Identity.ParameterInfo!) : null,
+            ModelMetadataKind.Property => Identity.PropertyInfo != null ? nullabilityContext.Create(Identity.PropertyInfo!) : null,
+            _ => null
+        };
+        NullabilityState = nullability?.ReadState ?? NullabilityState.Unknown;
 
         if (ModelType == typeof(string) || !typeof(IEnumerable).IsAssignableFrom(ModelType))
         {
