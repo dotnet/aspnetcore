@@ -31,12 +31,22 @@ public class InferParameterBindingInfoConvention : IActionModelConvention
     /// </summary>
     /// <param name="modelMetadataProvider">The model metadata provider.</param>
     /// <param name="serviceProviderIsService">The service to determine if the a type is available from the <see cref="IServiceProvider"/>.</param>
-    public InferParameterBindingInfoConvention(
+    internal InferParameterBindingInfoConvention(
         IModelMetadataProvider modelMetadataProvider,
         IServiceProviderIsService? serviceProviderIsService = null)
     {
         _modelMetadataProvider = modelMetadataProvider ?? throw new ArgumentNullException(nameof(modelMetadataProvider));
         _serviceProviderIsService = serviceProviderIsService;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="InferParameterBindingInfoConvention"/>.
+    /// </summary>
+    /// <param name="modelMetadataProvider">The model metadata provider.</param>
+    public InferParameterBindingInfoConvention(
+        IModelMetadataProvider modelMetadataProvider)
+    {
+        _modelMetadataProvider = modelMetadataProvider ?? throw new ArgumentNullException(nameof(modelMetadataProvider));
     }
 
     internal bool IsInferForServiceParametersEnabled => _serviceProviderIsService != null;

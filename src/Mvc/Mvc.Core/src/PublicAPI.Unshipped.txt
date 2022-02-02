@@ -1,7 +1,6 @@
 #nullable enable
 Microsoft.AspNetCore.Mvc.ApiBehaviorOptions.DisableImplicitFromServiceParameters.get -> bool
 Microsoft.AspNetCore.Mvc.ApiBehaviorOptions.DisableImplicitFromServiceParameters.set -> void
-Microsoft.AspNetCore.Mvc.ApplicationModels.InferParameterBindingInfoConvention.InferParameterBindingInfoConvention(Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider! modelMetadataProvider, Microsoft.Extensions.DependencyInjection.IServiceProviderIsService? serviceProviderIsService = null) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.SystemTextJsonValidationMetadataProvider
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.SystemTextJsonValidationMetadataProvider.CreateDisplayMetadata(Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DisplayMetadataProviderContext! context) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.SystemTextJsonValidationMetadataProvider.CreateValidationMetadata(Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ValidationMetadataProviderContext! context) -> void
