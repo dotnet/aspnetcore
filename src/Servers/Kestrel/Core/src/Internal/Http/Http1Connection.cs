@@ -612,6 +612,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         // replace it with the value from the request line.
                         if (_context.ServiceContext.ServerOptions.EnableInsecureAbsoluteFormHostOverride)
                         {
+                            ReportAllowedBadRequest(KestrelBadHttpRequestException.GetException(RequestRejectionReason.InvalidHostHeader, hostText));
+
                             hostText = _absoluteRequestTarget.Authority + ":" + _absoluteRequestTarget.Port.ToString(CultureInfo.InvariantCulture);
                             HttpRequestHeaders.HeaderHost = hostText;
                         }

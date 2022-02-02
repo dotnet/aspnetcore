@@ -1340,6 +1340,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _keepAlive = false;
         }
 
+        // Normally this would have been rejected, but the developer opted into allowing the bad behavior.
+        public void ReportAllowedBadRequest(BadHttpRequestException ex)
+        {
+            Log.ConnectionBadRequest(ConnectionId, ex);
+            _requestRejectedException = ex;
+
+            const string badRequestEventName = "Microsoft.AspNetCore.Server.Kestrel.BadRequest";
+            if (ServiceContext.DiagnosticSource?.IsEnabled(badRequestEventName) == true)
+            {
+                ServiceContext.DiagnosticSource.Write(badRequestEventName, this);
+            }
+
+            _requestRejectedException = null;
+        }
+
         public void ReportApplicationError(Exception? ex)
         {
             // ReportApplicationError can be called with a null exception from MessageBody
