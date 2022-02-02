@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
-//using System.Text;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -24,7 +23,6 @@ internal class W3CLoggerProcessor : FileLoggerProcessor
 
         await WriteMessageLineAsync("#Start-Date: " + DateTimeOffset.UtcNow.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture), streamWriter, cancellationToken);
 
-        // await WriteMessageLineAsync(GetFieldsDirective(), streamWriter, cancellationToken);
         await WriteFieldsDirective(streamWriter, cancellationToken);
     }
 
@@ -106,9 +104,7 @@ internal class W3CLoggerProcessor : FileLoggerProcessor
             await WriteMessageAsync(" cs(Referer)", streamWriter, cancellationToken);
         }
 
-        // Send of line (only for test)
-        await WriteMessageAsync(string.Empty, streamWriter, cancellationToken, true);
-        await streamWriter.FlushAsync();
+        await EndMessageAndFlushAsync(streamWriter);
     }
 
     internal override Task WriteMessageLineAsync(string message, StreamWriter streamWriter, CancellationToken cancellationToken)
@@ -118,19 +114,20 @@ internal class W3CLoggerProcessor : FileLoggerProcessor
     }
 
     // For testing
-    internal Task WriteMessageAsync(string message, StreamWriter streamWriter, CancellationToken cancellationToken, bool endLine = false)
+    internal override Task WriteMessageAsync(string message, StreamWriter streamWriter, CancellationToken cancellationToken)
     {
-        OnWrite(message, endLine);
-        if (message != string.Empty)
-        {
-            return base.WriteMessageAsync(message, streamWriter, cancellationToken);
-        }
+        OnWrite(message);
+        return base.WriteMessageAsync(message, streamWriter, cancellationToken);
+    }
 
-        return Task.CompletedTask;
+    internal Task EndMessageAndFlushAsync(StreamWriter streamWriter)
+    {
+        OnFlush();
+        return streamWriter.FlushAsync();
     }
 
     // Extensibility point for tests
     internal virtual void OnWriteLine(string message) { }
-
-    internal virtual void OnWrite(string message, bool endLine = false) { }
+    internal virtual void OnWrite(string message, bool endOfLine = false) { }
+    internal virtual void OnFlush() { }
 }

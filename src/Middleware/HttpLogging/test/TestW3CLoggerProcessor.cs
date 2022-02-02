@@ -41,14 +41,20 @@ internal sealed class TestW3CLoggerProcessor : W3CLoggerProcessor
         }
     }
 
-    internal override void OnWrite(string message, bool endLine = false)
+    internal override void OnWrite(string message, bool endOfLine = false)
     {
         _messageLine = $"{_messageLine}{message}";
-        if (endLine == true)
+        if (endOfLine == true)
         {
             OnWriteLine(_messageLine);
             _messageLine = string.Empty;
         }
+    }
+
+    internal override void OnFlush()
+    {
+        // Send end of line message
+        OnWrite(string.Empty, true);
     }
 
     public Task WaitForWrites(int numWrites)

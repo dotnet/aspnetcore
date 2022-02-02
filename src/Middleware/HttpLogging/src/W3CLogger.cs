@@ -35,7 +35,7 @@ internal class W3CLogger : IAsyncDisposable
 
     public void Log(string[] elements)
     {
-        _messageQueue.EnqueueMessage(Format(elements.AsSpan()));
+        _messageQueue.EnqueueMessage(Format(elements));
     }
 
     private string Format(Span<string> elements)
