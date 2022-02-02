@@ -44,9 +44,6 @@
     <!-- Deb installers are versioned as M.N.P~PreReleaseVersionLabel-Build following the core-setup convention -->
     <DebPackageVersion Condition="'$(VersionSuffix)' != ''">$(DebPackageVersion)~$(VersionSuffix)</DebPackageVersion>
     <PackageRevision>1</PackageRevision>
-
-    <!-- Suppresses building this project completely during servicing builds. -->
-    <DebBuildDependsOn Condition="'$(IsTargetingPackBuilding)' == 'false'" />
   </PropertyGroup>
 
 </Project>

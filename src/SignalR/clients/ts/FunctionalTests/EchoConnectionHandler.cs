@@ -4,7 +4,6 @@
 using System.Buffers;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Http.Connections;
 
 namespace FunctionalTests
 {
@@ -12,13 +11,6 @@ namespace FunctionalTests
     {
         public override async Task OnConnectedAsync(ConnectionContext connection)
         {
-            var context = connection.GetHttpContext();
-            // The 'withCredentials' tests wont send a cookie for cross-site requests
-            if (!context.WebSockets.IsWebSocketRequest && !context.Request.Cookies.ContainsKey("testCookie"))
-            {
-                return;
-            }
-
             while (true)
             {
                 var result = await connection.Transport.Input.ReadAsync();

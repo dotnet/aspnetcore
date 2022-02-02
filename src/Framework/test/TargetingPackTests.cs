@@ -23,7 +23,6 @@ namespace Microsoft.AspNetCore
         private readonly string _targetingPackTfm;
         private readonly string _targetingPackRoot;
         private readonly ITestOutputHelper _output;
-        private readonly bool _isTargetingPackBuilding;
 
         public TargetingPackTests(ITestOutputHelper output)
         {
@@ -38,17 +37,11 @@ namespace Microsoft.AspNetCore
                 "packs",
                 "Microsoft.AspNetCore.App.Ref",
                 TestData.GetTestDataValue("TargetingPackVersion"));
-            _isTargetingPackBuilding = bool.Parse(TestData.GetTestDataValue("IsTargetingPackBuilding"));
         }
 
         [Fact]
         public void TargetingPackContainsListedAssemblies()
         {
-            if (!_isTargetingPackBuilding)
-            {
-                return;
-            }
-
             var actualAssemblies = Directory.GetFiles(Path.Combine(_targetingPackRoot, "ref", _targetingPackTfm), "*.dll")
                 .Select(Path.GetFileNameWithoutExtension)
                 .ToHashSet();
@@ -74,11 +67,6 @@ namespace Microsoft.AspNetCore
         [Fact]
         public void RefAssembliesHaveExpectedAssemblyVersions()
         {
-            if (!_isTargetingPackBuilding)
-            {
-                return;
-            }
-
             IEnumerable<string> dlls = Directory.GetFiles(Path.Combine(_targetingPackRoot, "ref", _targetingPackTfm), "*.dll", SearchOption.AllDirectories);
             Assert.NotEmpty(dlls);
 
@@ -99,11 +87,6 @@ namespace Microsoft.AspNetCore
         [Fact]
         public void RefAssemblyReferencesHaveExpectedAssemblyVersions()
         {
-            if (!_isTargetingPackBuilding)
-            {
-                return;
-            }
-
             IEnumerable<string> dlls = Directory.GetFiles(Path.Combine(_targetingPackRoot, "ref", _targetingPackTfm), "*.dll", SearchOption.AllDirectories);
             Assert.NotEmpty(dlls);
 
@@ -126,11 +109,6 @@ namespace Microsoft.AspNetCore
         [Fact]
         public void PackageOverridesContainsCorrectEntries()
         {
-            if (!_isTargetingPackBuilding)
-            {
-                return;
-            }
-
             var packageOverridePath = Path.Combine(_targetingPackRoot, "data", "PackageOverrides.txt");
 
             AssertEx.FileExists(packageOverridePath);
@@ -190,11 +168,6 @@ namespace Microsoft.AspNetCore
         [Fact]
         public void AssembliesAreReferenceAssemblies()
         {
-            if (!_isTargetingPackBuilding)
-            {
-                return;
-            }
-
             IEnumerable<string> dlls = Directory.GetFiles(Path.Combine(_targetingPackRoot, "ref"), "*.dll", SearchOption.AllDirectories);
             Assert.NotEmpty(dlls);
 
@@ -222,11 +195,6 @@ namespace Microsoft.AspNetCore
         [Fact]
         public void PlatformManifestListsAllFiles()
         {
-            if (!_isTargetingPackBuilding)
-            {
-                return;
-            }
-
             var platformManifestPath = Path.Combine(_targetingPackRoot, "data", "PlatformManifest.txt");
             var expectedAssemblies = TestData.GetSharedFxDependencies()
                 .Split(';', StringSplitOptions.RemoveEmptyEntries)
@@ -292,11 +260,6 @@ namespace Microsoft.AspNetCore
         [Fact]
         public void FrameworkListListsContainsCorrectEntries()
         {
-            if (!_isTargetingPackBuilding)
-            {
-                return;
-            }
-
             var frameworkListPath = Path.Combine(_targetingPackRoot, "data", "FrameworkList.xml");
             var expectedAssemblies = TestData.GetTargetingPackDependencies()
                 .Split(';', StringSplitOptions.RemoveEmptyEntries)
@@ -364,7 +327,7 @@ namespace Microsoft.AspNetCore
         [Fact]
         public void FrameworkListListsContainsCorrectPaths()
         {
-            if (!_isTargetingPackBuilding || string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))
+            if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))
             {
                 return;
             }
@@ -406,7 +369,7 @@ namespace Microsoft.AspNetCore
         [Fact]
         public void FrameworkListListsContainsAnalyzerLanguage()
         {
-            if (!_isTargetingPackBuilding || string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))
+            if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))
             {
                 return;
             }

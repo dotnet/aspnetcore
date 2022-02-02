@@ -56,10 +56,6 @@
       <_Parameter2>$(TargetingPackLayoutRoot)</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
-      <_Parameter1>IsTargetingPackBuilding</_Parameter1>
-      <_Parameter2>$(IsTargetingPackBuilding)</_Parameter2>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
       <_Parameter1>VerifyAncmBinary</_Parameter1>
       <_Parameter2>$(VerifyAncmBinary)</_Parameter2>
     </AssemblyAttribute>
@@ -71,16 +67,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj"
-        Condition=" $(IsTargetingPackBuilding) ">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
-    </ProjectReference>
-    <ProjectReference Include="..\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
-        Condition=" !$(IsTargetingPackBuilding) ">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
-    </ProjectReference>
+    <ProjectReference Include="$(RepoRoot)\src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj"
+      Private="false"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
 
   <Target Name="GenerateTestData" BeforeTargets="GetAssemblyAttributes" DependsOnTargets="InitializeSourceControlInformation">
