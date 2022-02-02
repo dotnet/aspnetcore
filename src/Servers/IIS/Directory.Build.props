@@ -4,7 +4,11 @@
   <PropertyGroup>
     <BundledNETCoreAppPackageVersion></BundledNETCoreAppPackageVersion>
     <KestrelSharedSourceRoot>$(MSBuildThisFileDirectory)..\Kestrel\shared\</KestrelSharedSourceRoot>
-    <LibNetHostPath>$(NetCoreTargetingPackRoot)\Microsoft.NETCore.App.Host.win-$(Platform)\$(AppHostPackVersion)\runtimes\win-$(Platform)\native</LibNetHostPath>
+
+    <HostArchDir>$(Platform)</HostArchDir>
+    <HostArchDir Condition="'$(Platform)' == 'Win32'">x86</HostArchDir>
+    <HostArchDir Condition="'$(Platform)' == 'AnyCPU'">x64</HostArchDir>
+    <LibNetHostPath>$(NetCoreTargetingPackRoot)\Microsoft.NETCore.App.Host.win-$(HostArchDir)\$(AppHostPackVersion)\runtimes\win-$(HostArchDir)\native</LibNetHostPath>
     <!-- This tools version MUST match the same version as runtime uses to compile libnethost.lib -->
     <PlatformToolsetVersion>v142</PlatformToolsetVersion>
   </PropertyGroup>
