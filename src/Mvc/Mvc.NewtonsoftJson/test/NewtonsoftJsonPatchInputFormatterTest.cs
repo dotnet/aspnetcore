@@ -39,7 +39,6 @@ public class NewtonsoftJsonPatchInputFormatterTest
         httpContext.Features.Set<IHttpResponseFeature>(new TestResponseFeature());
         httpContext.Request.Body = new NonSeekableReadStream(contentBytes, allowSyncReads: false);
         httpContext.Request.ContentType = "application/json";
-        httpContext.Request.ContentLength = contentBytes.Length;
 
         var formatterContext = CreateInputFormatterContext(typeof(JsonPatchDocument<Customer>), httpContext);
 
@@ -77,7 +76,6 @@ public class NewtonsoftJsonPatchInputFormatterTest
         httpContext.Features.Set<IHttpResponseFeature>(new TestResponseFeature());
         httpContext.Request.Body = new NonSeekableReadStream(contentBytes);
         httpContext.Request.ContentType = "application/json";
-        httpContext.Request.ContentLength = contentBytes.Length;
 
         var formatterContext = CreateInputFormatterContext(typeof(JsonPatchDocument<Customer>), httpContext);
 

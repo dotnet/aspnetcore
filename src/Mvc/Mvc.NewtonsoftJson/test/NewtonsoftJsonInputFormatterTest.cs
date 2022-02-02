@@ -40,7 +40,6 @@ public class NewtonsoftJsonInputFormatterTest : JsonInputFormatterTestBase
         httpContext.Features.Set<IHttpResponseFeature>(new TestResponseFeature());
         httpContext.Request.Body = new NonSeekableReadStream(contentBytes, allowSyncReads: false);
         httpContext.Request.ContentType = "application/json";
-        httpContext.Request.ContentLength = contentBytes.Length;
 
         var formatterContext = CreateInputFormatterContext(typeof(User), httpContext);
 
@@ -77,7 +76,6 @@ public class NewtonsoftJsonInputFormatterTest : JsonInputFormatterTestBase
         httpContext.Features.Set<IHttpResponseFeature>(new TestResponseFeature());
         httpContext.Request.Body = new NonSeekableReadStream(contentBytes);
         httpContext.Request.ContentType = "application/json";
-        httpContext.Request.ContentLength = contentBytes.Length;
 
         var formatterContext = CreateInputFormatterContext(typeof(User), httpContext);
 
@@ -114,7 +112,6 @@ public class NewtonsoftJsonInputFormatterTest : JsonInputFormatterTestBase
         httpContext.Features.Set<IHttpResponseFeature>(new TestResponseFeature());
         httpContext.Request.Body = new NonSeekableReadStream(contentBytes);
         httpContext.Request.ContentType = "application/json";
-        httpContext.Request.ContentLength = contentBytes.Length;
 
         var formatterContext = CreateInputFormatterContext(typeof(User), httpContext);
 
@@ -476,7 +473,6 @@ public class NewtonsoftJsonInputFormatterTest : JsonInputFormatterTestBase
             httpContext.Features.Set<IHttpResponseFeature>(new TestResponseFeature());
             httpContext.Request.Body = new NonSeekableReadStream(contentBytes, allowSyncReads: false);
             httpContext.Request.ContentType = "application/json";
-            httpContext.Request.ContentLength = contentBytes.Length;
 
             var formatterContext = CreateInputFormatterContext(typeof(TypeWithPrimitives), httpContext);
 
@@ -520,7 +516,6 @@ public class NewtonsoftJsonInputFormatterTest : JsonInputFormatterTestBase
         httpContext.Features.Set<IHttpResponseFeature>(new TestResponseFeature());
         httpContext.Request.Body = new NonSeekableReadStream(contentBytes, allowSyncReads: false);
         httpContext.Request.ContentType = "application/json";
-        httpContext.Request.ContentLength = contentBytes.Length;
 
         var formatterContext = CreateInputFormatterContext(typeof(Location), httpContext);
 

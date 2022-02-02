@@ -101,7 +101,7 @@ public abstract class InputFormatter : IInputFormatter, IApiRequestFormatMetadat
 
         var hasBody = context.HttpContext.Features.Get<IHttpRequestBodyDetectionFeature>()?.CanHaveBody;
         // In case the feature is not registered
-        hasBody ??= context.HttpContext.Request.ContentLength is not null && context.HttpContext.Request.ContentLength != 0;
+        hasBody ??= context.HttpContext.Request.ContentLength != 0;
 
         if (hasBody == false)
         {
