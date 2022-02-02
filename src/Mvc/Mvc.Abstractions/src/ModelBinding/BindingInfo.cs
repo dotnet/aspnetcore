@@ -246,7 +246,7 @@ public class BindingInfo
             PropertyFilterProvider = modelMetadata.PropertyFilterProvider;
         }
 
-        // If the EmptyBody behavior is not configured will be infer
+        // If the EmptyBody behavior is not configured will be inferred
         // as Allow when the ModelMetadata.IsRequired is false or HasDefaultValue
         // https://github.com/dotnet/aspnetcore/issues/39754
         if (EmptyBodyBehavior == EmptyBodyBehavior.Default &&

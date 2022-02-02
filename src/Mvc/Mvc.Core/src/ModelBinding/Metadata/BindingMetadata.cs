@@ -78,11 +78,6 @@ public class BindingMetadata
     public bool? IsReadOnly { get; set; }
 
     /// <summary>
-    /// Gets or sets the value which decides if empty bodies are treated as valid inputs.
-    /// </summary>
-    internal bool? IsEmptyBodyAllowed { get; set; }
-
-    /// <summary>
     /// Gets the <see cref="Metadata.DefaultModelBindingMessageProvider"/> instance. See
     /// <see cref="ModelMetadata.ModelBindingMessageProvider"/>.
     /// </summary>
