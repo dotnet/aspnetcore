@@ -306,7 +306,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/39669")]
         public async Task VerifyValidClientCertWithTrustedChainAuthenticates()
         {
             using var host = await CreateHost(
