@@ -1344,6 +1344,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public void ReportAllowedBadRequest(BadHttpRequestException ex)
         {
             Log.ConnectionBadRequest(ConnectionId, ex);
+            // Set this so DiagnosticSource listeners can observe the exception via the IBadRequestExceptionFeature.
+            // Make sure to unset before exiting the method so the request doesn't actually get rejected.
+            // This means the exception will not be visible to normal middleware.
             _requestRejectedException = ex;
 
             const string badRequestEventName = "Microsoft.AspNetCore.Server.Kestrel.BadRequest";
