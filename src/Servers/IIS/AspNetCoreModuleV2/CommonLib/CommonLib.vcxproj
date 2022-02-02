@@ -183,7 +183,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalLibraryDirectories>..\iislib;C:\Github\aspnetcore\.dotnet\packs\Microsoft.NETCore.App.Host.win-x64\7.0.0-alpha.1.21612.5\runtimes\win-x64\native</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\iislib;$(LibNetHostPath)</AdditionalLibraryDirectories>
       <AdditionalIncludeDirectories>..\iislib;$(LibNetHostPath)</AdditionalIncludeDirectories>
       <AdditionalDependencies>$(LibNetHostPath)\libnethost.lib</AdditionalDependencies>
     </Lib>
@@ -237,7 +237,6 @@
     <ClCompile Include="Environment.cpp" />
     <ClCompile Include="EventLog.cpp" />
     <ClCompile Include="file_utility.cpp" />
-    <ClCompile Include="fx_ver.cpp" />
     <ClCompile Include="GlobalVersionUtility.cpp" />
     <ClCompile Include="HostFxr.cpp" />
     <ClCompile Include="HostFxrResolver.cpp" />
