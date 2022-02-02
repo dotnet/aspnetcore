@@ -104,7 +104,7 @@ internal class W3CLoggerProcessor : FileLoggerProcessor
             await WriteMessageAsync(" cs(Referer)", streamWriter, cancellationToken);
         }
 
-        await EndMessageAndFlushAsync(streamWriter);
+        await EndMessageAndFlushAsync(streamWriter, cancellationToken);
     }
 
     internal override Task WriteMessageLineAsync(string message, StreamWriter streamWriter, CancellationToken cancellationToken)
@@ -120,10 +120,11 @@ internal class W3CLoggerProcessor : FileLoggerProcessor
         return base.WriteMessageAsync(message, streamWriter, cancellationToken);
     }
 
-    internal Task EndMessageAndFlushAsync(StreamWriter streamWriter)
+    internal async Task EndMessageAndFlushAsync(StreamWriter streamWriter, CancellationToken cancellationToken)
     {
         OnFlush();
-        return streamWriter.FlushAsync();
+        await base.WriteMessageAsync(Environment.NewLine, streamWriter, cancellationToken);
+        await streamWriter.FlushAsync();
     }
 
     // Extensibility point for tests
