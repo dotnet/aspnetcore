@@ -147,6 +147,11 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Lib>
+      <AdditionalLibraryDirectories>..\iislib;$(LibNetHostPath)</AdditionalLibraryDirectories>
+      <AdditionalIncludeDirectories>..\iislib;$(LibNetHostPath)</AdditionalIncludeDirectories>
+      <AdditionalDependencies>$(LibNetHostPath)\libnethost.lib</AdditionalDependencies>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64' OR '$(Configuration)|$(Platform)'=='Release|ARM64' OR '$(Configuration)|$(Platform)'=='Release|Any CPU'">
     <ClCompile>

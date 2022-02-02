@@ -46,7 +46,7 @@ HostFxrResolver::GetHostFxrParameters(
         // The only executable extension inprocess supports
         expandedProcessPath.replace_extension(".exe");
     }
-    else if (!ends_with(expandedProcessPath, L".exe", true))
+    else if (!endsWith(expandedProcessPath, L".exe", true))
     {
         throw InvalidOperationException(format(L"Process path '%s' doesn't have '.exe' extension.", expandedProcessPath.c_str()));
     }
@@ -75,7 +75,6 @@ HostFxrResolver::GetHostFxrParameters(
         get_hostfxr_parameters params;
         //params.assembly_path = applicationPhysicalPath.c_str();
         params.dotnet_root = expandedProcessPath.parent_path().c_str();
-        //// REVIEW: when do we set dotnet_root path?
 
         LOG_INFOF(L"hostfxr.dotnet_root: '%ls'", params.dotnet_root);
         //LOG_INFOF(L"hostfxr.assembly_path: '%ls'", applicationPhysicalPath.c_str());
@@ -238,7 +237,7 @@ HostFxrResolver::AppendArguments(
         std::wstring argument = pwzArgs[intArgsProcessed];
 
         // Try expanding arguments ending in .dll to a full paths
-        if (expandDllPaths && ends_with(argument, L".dll", true))
+        if (expandDllPaths && endsWith(argument, L".dll", true))
         {
             fs::path argumentAsPath = argument;
             if (argumentAsPath.is_relative())
