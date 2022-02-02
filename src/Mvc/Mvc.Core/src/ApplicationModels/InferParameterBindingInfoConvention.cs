@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
+using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing.Template;
 using Resources = Microsoft.AspNetCore.Mvc.Core.Resources;
@@ -157,11 +158,9 @@ public class InferParameterBindingInfoConvention : IActionModelConvention
             // does not provides an option to getMetadata from the parameter info
             // so, we will use the Nullability context
 
-            // Waiting for PR https://github.com/dotnet/aspnetcore/pull/39804
             // No need for information from attributes on the parameter. Just use its type.
-            // var metadata = _modelMetadataProvider.GetMetadataForType(parameter.ParameterInfo.ParameterType);
-            // return metadata.NullabilityState != NullabilityState.NotNull;
-            return false;
+            var metadata = _modelMetadataProvider.GetMetadataForType(parameter.ParameterInfo.ParameterType);
+            return metadata.NullabilityState != NullabilityState.NotNull;
         }
     }
 }

@@ -120,6 +120,26 @@ public class BindingInfoTest
     }
 
     [Fact]
+    public void GetBindingInfo_WithAttributesAndModelMetadata_UsesEmptyBodyBehaviorFromBindingInfo_IfAttributesPresent()
+    {
+        // Arrange
+        var attributes = new object[]
+        {
+                new FromBodyAttribute() { EmptyBodyBehavior = EmptyBodyBehavior.Disallow }
+        };
+        var modelType = typeof(Guid?);
+        var provider = new TestModelMetadataProvider();
+        var modelMetadata = provider.GetMetadataForType(modelType);
+
+        // Act
+        var bindingInfo = BindingInfo.GetBindingInfo(attributes, modelMetadata);
+
+        // Assert
+        Assert.NotNull(bindingInfo);
+        Assert.Equal(EmptyBodyBehavior.Disallow, bindingInfo.EmptyBodyBehavior);
+    }
+
+    [Fact]
     public void GetBindingInfo_WithAttributesAndModelMetadata_UsesBinderNameFromModelMetadata_WhenNotFoundViaAttributes()
     {
         // Arrange
@@ -229,9 +249,9 @@ public class BindingInfoTest
         // Arrange
         var attributes = new object[]
         {
-                new ModelBinderAttribute(typeof(ComplexObjectModelBinder)),
                 new ControllerAttribute(),
                 new BindNeverAttribute(),
+                new FromBodyAttribute(),
         };
         var modelType = typeof(Guid?);
         var provider = new TestModelMetadataProvider();
