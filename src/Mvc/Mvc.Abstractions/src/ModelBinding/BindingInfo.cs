@@ -250,7 +250,7 @@ public class BindingInfo
         // as Allow when the ModelMetadata.IsRequired is false or HasDefaultValue
         // https://github.com/dotnet/aspnetcore/issues/39754
         if (EmptyBodyBehavior == EmptyBodyBehavior.Default &&
-            BindingSource == BindingSource.Body &&
+                BindingSource == BindingSource.Body &&
                 (!modelMetadata.IsRequired || modelMetadata.HasDefaultValue))
         {
             isBindingInfoPresent = true;
