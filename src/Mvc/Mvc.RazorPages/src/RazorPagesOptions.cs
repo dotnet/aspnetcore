@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// Gets a collection of <see cref="IPageConvention"/> instances that are applied during
         /// route and page model construction.
         /// </summary>
-        public PageConventionCollection Conventions { get; internal set; } = default!;
+        public PageConventionCollection Conventions { get; internal set; } = new();
 
         /// <summary>
         /// Application relative path used as the root of discovery for Razor Page files.
