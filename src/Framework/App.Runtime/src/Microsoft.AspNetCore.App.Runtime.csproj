@@ -166,8 +166,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <RedistLayoutTargetDir>$(RedistSharedFrameworkLayoutRoot)$(SharedRuntimeSubPath)</RedistLayoutTargetDir>
     <LocalInstallationOutputPath>$(LocalDotNetRoot)$(SharedRuntimeSubPath)</LocalInstallationOutputPath>
 
-    <RuntimeListFileName>RuntimeList.xml</RuntimeListFileName>
-    <RuntimeListOutputPath>$(BaseIntermediateOutputPath)$(RuntimeListFileName)</RuntimeListOutputPath>
+    <FrameworkListFileName>RuntimeList.xml</FrameworkListFileName>
+    <FrameworkListOutputPath>$(ArtifactsObjDir)$(FrameworkListFileName)</FrameworkListOutputPath>
 
     <InternalArchiveOutputFileName>$(InternalInstallerBaseName)-$(PackageVersion)-$(TargetRuntimeIdentifier)$(ArchiveExtension)</InternalArchiveOutputFileName>
     <InternalArchiveOutputPath>$(InstallersOutputPath)$(InternalArchiveOutputFileName)</InternalArchiveOutputPath>
@@ -185,14 +185,10 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     </ResolveReferencesDependsOn>
     <CoreBuildDependsOn>
       $(CoreBuildDependsOn);
-      Crossgen;
       GenerateSharedFxDepsFile;
       GenerateSharedFxVersionsFiles;
-      _ResolveNativePackContent;
-      _IncludeVersionFile;
-      _ResolveInitialSharedFrameworkContent;
-      _GenerateRuntimeListFile;
-      _ResolveRuntimePackContent;
+      Crossgen;
+      IncludeFrameworkListFile;
       _ResolveSharedFrameworkContent;
       _InstallFrameworkIntoLocalDotNet;
       _DownloadAndExtractDotNetRuntime;
@@ -201,15 +197,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       _CreateInternalSharedFxArchive;
       _CreateRedistSharedFxArchive;
     </CoreBuildDependsOn>
-    <!-- If Build won't run in the GenerateNuspec context, need to update Content, None and _PackageFiles. -->
-    <GenerateNuspecDependsOn Condition=" '$(NoBuild)' == 'true' AND '$(GeneratePackageOnBuild)' != 'true' ">
-      _ResolveNativePackContent;
-      _IncludeVersionFile;
-      $(GenerateNuspecDependsOn);
-      _ResolveInitialSharedFrameworkContent;
-      _ResolveRuntimePackContent;
-      _ResolveSharedFrameworkContent;
-    </GenerateNuspecDependsOn>
     <CrossGenDependsOn>
       ResolveReferences;
     </CrossGenDependsOn>
@@ -217,7 +204,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       $(CrossGenDependsOn);
       _BatchCrossGenAssemblies;
     </CrossGenDependsOn>
-    <!-- _GetBuildOutputFilesWithTfm executes in a separate context from Build, GenerateNuspec, and so on. -->
     <TargetsForTfmSpecificBuildOutput>
       $(TargetsForTfmSpecificBuildOutput);
       _ResolveRuntimePackBuildOutput
@@ -259,7 +245,11 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     </ItemGroup>
   </Target>
 
-  <Target Name="GenerateSharedFxDepsFile" DependsOnTargets="ResolveReferences">
+  <Target Name="GenerateSharedFxDepsFile"
+          DependsOnTargets="ResolveReferences;CrossGen"
+          Inputs="@(ReferenceCopyLocalPaths);$(_RepoTaskAssembly);$(ProjectAssetsFile);$(MSBuildAllProjects)"
+          Outputs="$(ProjectDepsFilePath)">
+
     <ItemGroup>
       <_RuntimeReference Include="@(ReferenceCopyLocalPaths)" Condition="'%(ReferenceCopyLocalPaths.Extension)' != '.pdb' AND '%(ReferenceCopyLocalPaths.Extension)' != '.r2rmap'" />
     </ItemGroup>
@@ -302,7 +292,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   </Target>
 
   <!-- This target resolves files into the BuiltProjectOutputGroupOutput which NuGet uses to generate the package files. -->
-  <Target Name="_ResolveRuntimePackBuildOutput" DependsOnTargets="ResolveReferences">
+  <Target Name="_ResolveRuntimePackBuildOutput" DependsOnTargets="ResolveReferences;Crossgen">
     <ItemGroup>
       <BuildOutputFiles Include="$(ProjectDepsFilePath)" />
       <BuildOutputFiles Include="@(ReferenceCopyLocalPaths)" Condition=" '%(ReferenceCopyLocalPaths.IsNativeImage)' != 'true' " />
@@ -317,13 +307,15 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       </OutputFileNames>
       <DistinctOutputFileNames Include="@(OutputFileNames->Distinct())"></DistinctOutputFileNames>
 
-      <!--BuiltProjectOutputGroupOutput is the item actually used by Nuget -->
+      <!--BuiltProjectOutputGroupOuput is the item actually used by Nuget -->
       <BuiltProjectOutputGroupOutput Include="%(DistinctOutputFileNames.ItemPath)" />
       <NuGetPackInput Include="@(BuiltProjectOutputGroupOutput)" />
     </ItemGroup>
   </Target>
 
-  <Target Name="_ResolveNativePackContent" DependsOnTargets="ResolveReferences">
+  <Target Name="_ResolveNativePackContent"
+          BeforeTargets="_GetPackageFiles;GenerateNuspec"
+          DependsOnTargets="ResolveReferences">
     <ItemGroup>
       <!-- Native files are included in _PackageFile instead because they belong in a separate package folder. -->
       <Content Include="@(ReferenceCopyLocalPaths)" PackagePath="$(NativeAssetsPackagePath)"
@@ -331,7 +323,9 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     </ItemGroup>
   </Target>
 
-  <Target Name="_ResolveRuntimePackContent">
+  <Target Name="_ResolveRuntimePackContent"
+          BeforeTargets="_GetPackageFiles"
+          DependsOnTargets="GenerateSharedFxDepsFile">
     <ItemGroup>
       <RuntimePackContent Include="$(PlatformManifestOutputPath)" PackagePath="$(ManifestsPackagePath)" />
     </ItemGroup>
@@ -479,87 +473,48 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       OverwriteReadOnlyFiles="true" />
   </Target>
 
-  <Target Name="_ResolveInitialSharedFrameworkContent" DependsOnTargets="ResolveReferences">
+  <Target Name="_ResolveSharedFrameworkContent" DependsOnTargets="ResolveReferences;Crossgen">
     <ItemGroup>
-      <_InitialSharedFxContent Include="$(DotVersionFileIntermediateOutputPath)" />
-      <_InitialSharedFxContent Include="$(ProjectDepsFilePath)" />
-      <_InitialSharedFxContent Include="$(ProjectRuntimeConfigFilePath)" />
-      <_InitialSharedFxContent Include="@(ReferenceCopyLocalPaths)" Condition="'%(Extension)' != '.pdb'" />
-      <_InitialSharedFxContent Include="$(RepoRoot)THIRD-PARTY-NOTICES.txt" />
-    </ItemGroup>
-    <ItemGroup>
-      <_InitialSharedFxContent Condition="'%(_InitialSharedFxContent.Extension)' == '.dll'">
-        <PackagePath Condition="'%(_InitialSharedFxContent.IsNativeImage)' == 'true'">$(NativeAssetsPackagePath)</PackagePath>
-        <PackagePath Condition="'%(_InitialSharedFxContent.IsNativeImage)' != 'true'">$(ManagedAssetsPackagePath)</PackagePath>
-      </_InitialSharedFxContent>
+      <SharedFxContent Include="$(DotVersionFileIntermediateOutputPath)" />
+      <SharedFxContent Include="$(ProjectDepsFilePath)" />
+      <SharedFxContent Include="$(ProjectRuntimeConfigFilePath)" />
+      <SharedFxContent Include="@(ReferenceCopyLocalPaths)" Condition="'%(Extension)' != '.pdb'" />
+      <SharedFxContent Include="$(RepoRoot)THIRD-PARTY-NOTICES.txt" />
     </ItemGroup>
   </Target>
 
-  <Target Name="_ResolveSharedFrameworkContent">
-    <ItemGroup>
-      <SharedFxContent Include="@(_InitialSharedFxContent)" />
-
-      <!-- We only need RuntimeList.xml in the .nupkg, so we intentionally do not include it in the archives -->
-      <_PackageFiles Include="$(RuntimeListOutputPath)" PackagePath="$(ManifestsPackagePath)" />
-      <_PackageFiles Include="@(RuntimePackContent)" />
-    </ItemGroup>
-  </Target>
-
-  <!--
-    Cannot use RemoveDir task because _BatchCopyToSharedFrameworkLayout may only copy a subset of the files to the
-    layout directory. Instead, remove any files that shouldn't exist.
-  -->
-  <Target Name="_CleanLayout" BeforeTargets="_BatchCopyToSharedFrameworkLayout">
-    <ItemGroup>
-      <_ExtraLayoutFiles Include="$(SharedFxLayoutTargetDir)**\*.*"
-          Exclude="@(RefPackContent->'$(SharedFxLayoutTargetDir)%(FileName)%(Extension)')" />
-    </ItemGroup>
-    <Delete Files="@(_ExtraLayoutFiles)" />
-  </Target>
-
+  <!-- Written to take advantage of target batching in MSBuild. -->
   <Target Name="_BatchCopyToSharedFrameworkLayout"
+          DependsOnTargets="_ResolveSharedFrameworkContent"
           Inputs="@(SharedFxContent)"
           Outputs="@(SharedFxContent->'$(SharedFxLayoutTargetDir)%(FileName)%(Extension)')">
+    <RemoveDir Directories="$(SharedFrameworkLayoutRoot)" />
     <Copy SourceFiles="@(SharedFxContent)"
           DestinationFiles="@(SharedFxContent->'$(SharedFxLayoutTargetDir)%(FileName)%(Extension)')"
           UseHardlinksIfPossible="true" />
     <Message Importance="High" Text="$(MSbuildProjectFile) -> $(SharedFxLayoutTargetDir)" />
   </Target>
 
-  <Target Name="_CleanRedist" BeforeTargets="_BatchCopyToRedistLayout">
-    <ItemGroup>
-      <_ExtraRedistFiles Include="$(RedistLayoutTargetDir)**\*.*"
-          Exclude="@(RefPackContent->'$(RedistLayoutTargetDir)%(FileName)%(Extension)')" />
-    </ItemGroup>
-    <Delete Files="@(_ExtraRedistFiles)" />
-  </Target>
-
+  <!-- Written to take advantage of target batching in MSBuild. -->
   <Target Name="_BatchCopyToRedistLayout"
+          DependsOnTargets="_ResolveSharedFrameworkContent"
           Inputs="@(SharedFxContent)"
           Outputs="@(SharedFxContent->'$(RedistLayoutTargetDir)%(FileName)%(Extension)')">
+    <RemoveDir Directories="$(RedistLayoutTargetDir)" />
     <Copy SourceFiles="@(SharedFxContent)"
           DestinationFiles="@(SharedFxContent->'$(RedistLayoutTargetDir)%(FileName)%(Extension)')"
           UseHardlinksIfPossible="true" />
     <Message Importance="High" Text="$(MSbuildProjectFile) -> $(RedistLayoutTargetDir)" />
   </Target>
 
-  <Target Name="_CleanLocalDotNet" BeforeTargets="_InstallFrameworkIntoLocalDotNet">
-    <ItemGroup>
-      <_ExtraDotNetFiles Include="$(LocalInstallationOutputPath)**\*.*"
-          Exclude="@(RefPackContent->'$(LocalInstallationOutputPath)%(FileName)%(Extension)')" />
-    </ItemGroup>
-    <Delete Files="@(_ExtraDotNetFiles)" />
-  </Target>
-
-  <!--
-    Required to workaround https://github.com/dotnet/core-setup/issues/4809. This copies the shared framework
-    into the $reporoot/.dotnet folder so tests can run against the shared framework. This workaround is not
-    needed in source build.
-  -->
+  <!-- Required to workaround https://github.com/dotnet/core-setup/issues/4809. This copies the shared framework into the $reporoot/.dotnet folder so tests can run against the shared framework. -->
+  <!-- This workaround is not needed in source build -->
   <Target Name="_InstallFrameworkIntoLocalDotNet"
+          DependsOnTargets="_ResolveSharedFrameworkContent"
           Condition="'$(DotNetBuildFromSource)' != 'true'"
           Inputs="@(SharedFxContent)"
           Outputs="@(SharedFxContent->'$(LocalInstallationOutputPath)%(FileName)%(Extension)')">
+    <RemoveDir Directories="$(LocalInstallationOutputPath)" />
     <Copy SourceFiles="@(SharedFxContent)"
           DestinationFiles="@(SharedFxContent->'$(LocalInstallationOutputPath)%(FileName)%(Extension)')"
           UseHardlinksIfPossible="true" />
@@ -567,6 +522,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   </Target>
 
   <Target Name="_CreateInternalSharedFxArchive"
+          DependsOnTargets="_BatchCopyToSharedFrameworkLayout"
           Inputs="@(SharedFxContent)"
           Outputs="$(InternalArchiveOutputPath)">
     <ZipDirectory
@@ -583,6 +539,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
   <!-- Redist tarball including the dotnet-runtime is not needed in source build -->
   <Target Name="_CreateRedistSharedFxArchive"
+          DependsOnTargets="_DownloadAndExtractDotNetRuntime;_BatchCopyToRedistLayout"
           Condition="'$(DotNetBuildFromSource)' != 'true'"
           Inputs="@(SharedFxContent)"
           Outputs="$(RedistArchiveOutputPath)">
@@ -598,16 +555,34 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       Condition="'$(ArchiveExtension)' == '.tar.gz'" />
   </Target>
 
-  <Target Name="_GenerateRuntimeListFile">
+  <Target Name="IncludeFrameworkListFile"
+          DependsOnTargets="_ResolveSharedFrameworkContent"
+          BeforeTargets="_GetPackageFiles">
+    <ItemGroup>
+      <SharedFxContent Condition="'%(SharedFxContent.Extension)' == '.dll'">
+        <PackagePath Condition="'%(SharedFxContent.IsNativeImage)' == 'true'">$(NativeAssetsPackagePath)</PackagePath>
+        <PackagePath Condition="'%(SharedFxContent.IsNativeImage)' != 'true'">$(ManagedAssetsPackagePath)</PackagePath>
+      </SharedFxContent>
+    </ItemGroup>
+
     <RepoTasks.CreateFrameworkListFile
-      Files="@(_InitialSharedFxContent)"
-      TargetFile="$(RuntimeListOutputPath)"
+      Files="@(SharedFxContent)"
+      TargetFile="$(FrameworkListOutputPath)"
       RootAttributes="@(FrameworkListRootAttributes)" />
+
+    <ItemGroup>
+      <!-- We only need RuntimeList.xml in the .nupkg, so we intentionally do not include it in the archives -->
+      <_PackageFiles Include="$(FrameworkListOutputPath)" PackagePath="$(ManifestsPackagePath)" />
+      <_PackageFiles Include="@(RuntimePackContent)" />
+    </ItemGroup>
   </Target>
 
-  <Target Name="_IncludeVersionFile">
+  <Target Name="IncludeVersionFile"
+          DependsOnTargets="GenerateSharedFxVersionsFiles"
+          BeforeTargets="_GetPackageFiles">
     <ItemGroup>
       <None Include="$(VersionTxtFileIntermediateOutputPath)" Pack="true" PackagePath="." />
     </ItemGroup>
   </Target>
+
 </Project>
