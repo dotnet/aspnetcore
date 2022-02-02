@@ -141,11 +141,6 @@
     <RuntimeInstallerBaseName>aspnetcore-runtime</RuntimeInstallerBaseName>
     <TargetingPackInstallerBaseName>aspnetcore-targeting-pack</TargetingPackInstallerBaseName>
 
-    <!-- This is used to produce targeting pack installers/packages once per major.minor, or when we need to service it (e.g. 6.0.2) -->
-    <IsTargetingPackBuilding
-        Condition=" '$(IsTargetingPackBuilding)' == '' AND '$(AspNetCorePatchVersion)' != '2' ">false</IsTargetingPackBuilding>
-    <IsTargetingPackBuilding Condition=" '$(IsTargetingPackBuilding)' == '' ">true</IsTargetingPackBuilding>
-
     <!--
       Archives and installers using this prefix are intended for internal use only.
       For example, this .zip is used to handoff bits to partner teams who then incorporate our shared frameworks
@@ -247,5 +242,4 @@
   <Import Project="eng\targets\Npm.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.npmproj'" />
   <Import Project="eng\targets\Java.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.javaproj'" />
   <Import Project="eng\targets\Helix.props" Condition="'$(IsTestProject)' == 'true'" />
-
 </Project>
