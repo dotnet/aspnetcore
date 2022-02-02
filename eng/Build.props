@@ -16,19 +16,24 @@
     <!-- Exclude the websockets samples for now because they use classic .csproj, which is not yet supported in our build. -->
     <ProjectToExclude Include="$(RepoRoot)src\Middleware\WebSockets\samples\**\*.csproj" />
 
-    <!-- These projects are meant to be executed by tests. -->
+    <!-- These projects are meant to be referenced only by tests. -->
+    <ProjectToExclude Include="$(RepoRoot)src\**\testassets\**\*.*proj"
+                      Exclude="$(RepoRoot)src\Components\WebAssembly\testassets\WasmLinkerTest\*.*proj;
+                      $(RepoRoot)src\Components\WebView\Samples\PhotinoPlatform\testassets\PhotinoTestApp\*.*proj;
+                      $(RepoRoot)src\Http\Routing\test\testassets\RoutingSandbox\*.*proj;
+                      $(RepoRoot)src\Security\Authentication\Negotiate\test\testassets\Negotiate.Client\*.*proj;
+                      $(RepoRoot)src\Security\Authentication\Negotiate\test\testassets\Negotiate.Server\*.*proj;
+                      " />
+
+    <!-- These projects are not meant to be built in this repo. In the Installers case, must explicitly opt in. -->
     <ProjectToExclude Include="
-                      $(RepoRoot)src\Tools\dotnet-watch\test\TestProjects\**\*.csproj;
-                      $(RepoRoot)src\Tools\Tests.Common\TestProjects\**\*.csproj;
-                      $(RepoRoot)src\Razor\Razor.Design\test\testassets\**\*.*proj;
-                      $(RepoRoot)src\submodules\**\*.*proj;
+                      $(RepoRoot)src\submodules\googletest\**\*.*proj;
+                      $(RepoRoot)src\submodules\MessagePack-CSharp\**\*.*proj;
+                      $(RepoRoot)src\Components\Web.JS\node_modules\**\*.*proj;
                       $(RepoRoot)src\Installers\**\*.*proj;
                       $(RepoRoot)src\SignalR\clients\ts\**\node_modules\**\*.*proj;
-                      $(RepoRoot)src\Components\Web.JS\node_modules\**\*.*proj;
-                      $(RepoRoot)src\Components\WebAssembly\Sdk\testassets\**\*.csproj;
-                      $(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\content\**\*.csproj;
-                      $(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\content\**\*.fsproj;
-                      $(RepoRoot)src\ProjectTemplates\Web.Spa.ProjectTemplates\content\**\*.csproj;
+                      $(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\content\**\*.*proj;
+                      $(RepoRoot)src\ProjectTemplates\Web.Spa.ProjectTemplates\content\**\*.*proj;
                       " />
 
     <!-- Exclude the benchmarks because they use <PackageReference>. -->

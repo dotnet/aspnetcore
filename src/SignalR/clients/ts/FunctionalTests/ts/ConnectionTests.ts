@@ -176,8 +176,8 @@ describe("connection", () => {
                             withCredentials: false,
                         });
 
-                        connection.onreceive = (data: any) => {
-                            fail(new Error(`Unexpected messaged received '${data}'.`));
+                        connection.onreceive = (_: any) => {
+                            connection.stop();
                         };
 
                         // @ts-ignore: We don't use the error parameter intentionally.
