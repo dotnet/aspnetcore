@@ -130,6 +130,7 @@ internal sealed class HttpLoggingMiddleware
 
         ResponseBufferingStream? responseBufferingStream = null;
         IHttpResponseBodyFeature? originalBodyFeature = null;
+        StreamResponseBodyFeature? streamResponseBodyFeature = null;
 
         try
         {
@@ -146,11 +147,16 @@ internal sealed class HttpLoggingMiddleware
                     context,
                     options.MediaTypeOptions.MediaTypeStates,
                     options);
-                response.Body = responseBufferingStream;
-                context.Features.Set<IHttpResponseBodyFeature>(responseBufferingStream);
-            }
 
+                streamResponseBodyFeature = new StreamResponseBodyFeature(responseBufferingStream);
+                context.Features.Set<IHttpResponseBodyFeature>(streamResponseBodyFeature);
+            }
             await _next(context);
+
+            if (streamResponseBodyFeature != null)
+            {
+                await streamResponseBodyFeature.FlushWriterAsync();
+            }
 
             if (requestBufferingStream?.HasLogged == false)
             {

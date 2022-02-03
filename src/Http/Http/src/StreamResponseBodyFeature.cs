@@ -136,6 +136,23 @@ public class StreamResponseBodyFeature : IHttpResponseBodyFeature
         {
             await _pipeWriter.CompleteAsync();
         }
+
+        if (PriorFeature != null)
+        {
+            await PriorFeature.CompleteAsync();
+        }
+    }
+
+    /// <summary>
+    /// Flushes the current PipeWriter, if it exists
+    /// </summary>
+    /// <returns></returns>
+    public async Task FlushWriterAsync()
+    {
+        if (_pipeWriter != null)
+        {
+            await _pipeWriter.FlushAsync();
+        }
     }
 
     /// <summary>
