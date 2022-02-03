@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Provides abstractions for a loosly coupled collection of features.
+    
+Commonly Used Types:
+Microsoft.AspNetCore.Http.Features.IFeatureCollection
+Microsoft.AspNetCore.Http.Features.FeatureCollection
+    </Description>
+    <TargetFrameworks>$(DefaultNetFxTargetFramework);netstandard2.0;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore</PackageTags>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

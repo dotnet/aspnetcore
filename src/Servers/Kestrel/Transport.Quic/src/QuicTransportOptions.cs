@@ -1,63 +1,44 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Buffers;
-using System.Security.Cryptography.X509Certificates;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic;
+
+/// <summary>
+/// Options for Quic based connections.
+/// </summary>
+public class QuicTransportOptions
 {
     /// <summary>
-    /// Options for Quic based connections.
+    /// The maximum number of concurrent bi-directional streams per connection.
     /// </summary>
-    public class QuicTransportOptions
-    {
-        /// <summary>
-        /// The maximum number of concurrent bi-directional streams per connection.
-        /// </summary>
-        public ushort MaxBidirectionalStreamCount { get; set; } = 100;
+    public ushort MaxBidirectionalStreamCount { get; set; } = 100;
 
-        /// <summary>
-        /// The maximum number of concurrent inbound uni-directional streams per connection.
-        /// </summary>
-        public ushort MaxUnidirectionalStreamCount { get; set; } = 10;
+    /// <summary>
+    /// The maximum number of concurrent inbound uni-directional streams per connection.
+    /// </summary>
+    public ushort MaxUnidirectionalStreamCount { get; set; } = 10;
 
-        /// <summary>
-        /// The Application Layer Protocol Negotiation string.
-        /// </summary>
-        public string? Alpn { get; set; }
+    /// <summary>
+    /// Sets the idle timeout for connections and streams.
+    /// </summary>
+    public TimeSpan IdleTimeout { get; set; } = TimeSpan.FromSeconds(130); // Matches KestrelServerLimits.KeepAliveTimeout.
 
-        /// <summary>
-        /// The certificate that MsQuic will use.
-        /// </summary>
-        public X509Certificate2? Certificate { get; set; }
+    /// <summary>
+    /// The maximum read size.
+    /// </summary>
+    public long? MaxReadBufferSize { get; set; } = 1024 * 1024;
 
-        /// <summary>
-        /// Optional path to certificate file to configure the security configuration.
-        /// </summary>
-        public string? CertificateFilePath { get; set; }
+    /// <summary>
+    /// The maximum write size.
+    /// </summary>
+    public long? MaxWriteBufferSize { get; set; } = 64 * 1024;
 
-        /// <summary>
-        /// Optional path to private key file to configure the security configuration.
-        /// </summary>
-        public string? PrivateKeyFilePath { get; set; }
+    /// <summary>
+    /// The maximum length of the pending connection queue.
+    /// </summary>
+    public int Backlog { get; set; } = 512;
 
-        /// <summary>
-        /// Sets the idle timeout for connections and streams.
-        /// </summary>
-        public TimeSpan IdleTimeout { get; set; }
-
-        /// <summary>
-        /// The maximum read size.
-        /// </summary>
-        public long? MaxReadBufferSize { get; set; } = 1024 * 1024;
-
-        /// <summary>
-        /// The maximum write size.
-        /// </summary>
-        public long? MaxWriteBufferSize { get; set; } = 64 * 1024;
-
-        internal Func<MemoryPool<byte>> MemoryPoolFactory { get; set; } = System.Buffers.SlabMemoryPoolFactory.Create;
-
-    }
+    internal ISystemClock SystemClock = new SystemClock();
 }

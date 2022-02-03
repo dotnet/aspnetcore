@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -12,113 +12,112 @@ using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.Extensions.DependencyModel;
 
-namespace RepoTasks
+namespace RepoTasks;
+
+public class GenerateSharedFrameworkDepsFile : Microsoft.Build.Utilities.Task
 {
-    public class GenerateSharedFrameworkDepsFile : Task
+    [Required]
+    public string DepsFilePath { get; set; }
+
+    [Required]
+    public string TargetFramework { get; set; }
+
+    [Required]
+    public string FrameworkName { get; set; }
+
+    [Required]
+    public string FrameworkVersion { get; set; }
+
+    [Required]
+    public ITaskItem[] References { get; set; }
+
+    [Required]
+    public string RuntimeIdentifier { get; set; }
+
+    [Required]
+    public string RuntimePackageName { get; set; }
+
+    [Required]
+    public string PlatformManifestOutputPath { get; set; }
+
+    public override bool Execute()
     {
-        [Required]
-        public string DepsFilePath { get; set; }
+        ExecuteCore();
 
-        [Required]
-        public string TargetFramework { get; set; }
+        return !Log.HasLoggedErrors;
+    }
 
-        [Required]
-        public string FrameworkName { get; set; }
+    private void ExecuteCore()
+    {
+        var target = new TargetInfo(TargetFramework, RuntimeIdentifier, string.Empty, isPortable: false);
+        var runtimeFiles = new List<RuntimeFile>();
+        var nativeFiles = new List<RuntimeFile>();
+        var resourceAssemblies = new List<ResourceAssembly>();
+        var platformManifest = new List<string>();
 
-        [Required]
-        public string FrameworkVersion { get; set; }
-
-        [Required]
-        public ITaskItem[] References { get; set; }
-
-        [Required]
-        public string RuntimeIdentifier { get; set; }
-
-        [Required]
-        public string RuntimePackageName { get; set; }
-
-        [Required]
-        public string PlatformManifestOutputPath { get; set; }
-
-        public override bool Execute()
+        foreach (var reference in References)
         {
-            ExecuteCore();
-
-            return !Log.HasLoggedErrors;
+            var filePath = reference.ItemSpec;
+            var fileName = Path.GetFileName(filePath);
+            var fileVersion = FileUtilities.GetFileVersion(filePath)?.ToString() ?? string.Empty;
+            var assemblyVersion = FileUtilities.GetAssemblyName(filePath)?.Version;
+            if (assemblyVersion == null)
+            {
+                var nativeFile = new RuntimeFile(fileName, null, fileVersion);
+                nativeFiles.Add(nativeFile);
+                platformManifest.Add($"{fileName}|{FrameworkName}||{fileVersion}");
+            }
+            else
+            {
+                var runtimeFile = new RuntimeFile(fileName,
+                    fileVersion: fileVersion,
+                    assemblyVersion: assemblyVersion.ToString());
+                runtimeFiles.Add(runtimeFile);
+                platformManifest.Add($"{fileName}|{FrameworkName}|{assemblyVersion}|{fileVersion}");
+            }
         }
 
-        private void ExecuteCore()
+        var runtimeLibrary = new RuntimeLibrary("package",
+           RuntimePackageName,
+           FrameworkVersion,
+           hash: string.Empty,
+           runtimeAssemblyGroups: new[] { new RuntimeAssetGroup(string.Empty, runtimeFiles) },
+           nativeLibraryGroups: new[] { new RuntimeAssetGroup(string.Empty, nativeFiles) },
+           Enumerable.Empty<ResourceAssembly>(),
+           Array.Empty<Dependency>(),
+           hashPath: null,
+           path: $"{RuntimePackageName.ToLowerInvariant()}/{FrameworkVersion}",
+           serviceable: true);
+
+        var context = new DependencyContext(target,
+            CompilationOptions.Default,
+            Enumerable.Empty<CompilationLibrary>(),
+            new[] { runtimeLibrary },
+            Enumerable.Empty<RuntimeFallbacks>());
+
+        Directory.CreateDirectory(Path.GetDirectoryName(DepsFilePath));
+        Directory.CreateDirectory(Path.GetDirectoryName(PlatformManifestOutputPath));
+
+        File.WriteAllText(
+            PlatformManifestOutputPath,
+            string.Join("\n", platformManifest.OrderBy(n => n)),
+            Encoding.UTF8);
+
+        try
         {
-            var target = new TargetInfo(TargetFramework, RuntimeIdentifier, string.Empty, isPortable: false);
-            var runtimeFiles = new List<RuntimeFile>();
-            var nativeFiles = new List<RuntimeFile>();
-            var resourceAssemblies = new List<ResourceAssembly>();
-            var platformManifest = new List<string>();
-
-            foreach (var reference in References)
+            using (var depsStream = File.Create(DepsFilePath))
             {
-                var filePath = reference.ItemSpec;
-                var fileName = Path.GetFileName(filePath);
-                var fileVersion = FileUtilities.GetFileVersion(filePath)?.ToString() ?? string.Empty;
-                var assemblyVersion = FileUtilities.GetAssemblyName(filePath)?.Version;
-                if (assemblyVersion == null)
-                {
-                    var nativeFile = new RuntimeFile(fileName, null, fileVersion);
-                    nativeFiles.Add(nativeFile);
-                    platformManifest.Add($"{fileName}|{FrameworkName}||{fileVersion}");
-                }
-                else
-                {
-                    var runtimeFile = new RuntimeFile(fileName,
-                        fileVersion: fileVersion,
-                        assemblyVersion: assemblyVersion.ToString());
-                    runtimeFiles.Add(runtimeFile);
-                    platformManifest.Add($"{fileName}|{FrameworkName}|{assemblyVersion}|{fileVersion}");
-                }
+                new DependencyContextWriter().Write(context, depsStream);
             }
-
-            var runtimeLibrary = new RuntimeLibrary("package",
-               RuntimePackageName,
-               FrameworkVersion,
-               hash: string.Empty,
-               runtimeAssemblyGroups: new[] { new RuntimeAssetGroup(string.Empty, runtimeFiles) },
-               nativeLibraryGroups: new[] { new RuntimeAssetGroup(string.Empty, nativeFiles) },
-               Enumerable.Empty<ResourceAssembly>(),
-               Array.Empty<Dependency>(),
-               hashPath: null,
-               path: $"{RuntimePackageName.ToLowerInvariant()}/{FrameworkVersion}",
-               serviceable: true);
-
-            var context = new DependencyContext(target,
-                CompilationOptions.Default,
-                Enumerable.Empty<CompilationLibrary>(),
-                new[] { runtimeLibrary },
-                Enumerable.Empty<RuntimeFallbacks>());
-
-            Directory.CreateDirectory(Path.GetDirectoryName(DepsFilePath));
-            Directory.CreateDirectory(Path.GetDirectoryName(PlatformManifestOutputPath));
-
-            File.WriteAllText(
-                PlatformManifestOutputPath,
-                string.Join("\n", platformManifest.OrderBy(n => n)),
-                Encoding.UTF8);
-
-            try
+        }
+        catch (Exception ex)
+        {
+            // If there is a problem, ensure we don't write a partially complete version to disk.
+            if (File.Exists(DepsFilePath))
             {
-                using (var depsStream = File.Create(DepsFilePath))
-                {
-                    new DependencyContextWriter().Write(context, depsStream);
-                }
+                File.Delete(DepsFilePath);
             }
-            catch (Exception ex)
-            {
-                // If there is a problem, ensure we don't write a partially complete version to disk.
-                if (File.Exists(DepsFilePath))
-                {
-                    File.Delete(DepsFilePath);
-                }
-                Log.LogErrorFromException(ex);
-            }
+            Log.LogErrorFromException(ex);
         }
     }
 }

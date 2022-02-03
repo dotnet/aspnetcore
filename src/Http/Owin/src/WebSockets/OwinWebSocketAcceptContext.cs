@@ -1,62 +1,60 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Owin
+namespace Microsoft.AspNetCore.Owin;
+
+/// <summary>
+/// OWIN WebSocket accept context.
+/// </summary>
+public class OwinWebSocketAcceptContext : WebSocketAcceptContext
 {
+    private IDictionary<string, object> _options;
+
     /// <summary>
-    /// OWIN WebSocket accept context.
+    /// Initializes a new instance of <see cref="OwinWebSocketAcceptContext"/>.
     /// </summary>
-    public class OwinWebSocketAcceptContext : WebSocketAcceptContext
+    public OwinWebSocketAcceptContext() : this(new Dictionary<string, object>(1))
     {
-        private IDictionary<string, object> _options;
+    }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="OwinWebSocketAcceptContext"/>.
-        /// </summary>
-        public OwinWebSocketAcceptContext() : this(new Dictionary<string, object>(1))
-        {
-        }
+    /// <summary>
+    /// Initializes a new instance of <see cref="OwinWebSocketAcceptContext"/>.
+    /// </summary>
+    /// <param name="options">OWIN WebSocket options.</param>
+    public OwinWebSocketAcceptContext(IDictionary<string, object> options)
+    {
+        _options = options;
+    }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="OwinWebSocketAcceptContext"/>.
-        /// </summary>
-        /// <param name="options">OWIN WebSocket options.</param>
-        public OwinWebSocketAcceptContext(IDictionary<string, object> options)
+    /// <inheritdocs />
+    public override string SubProtocol
+    {
+        get
         {
-            _options = options;
-        }
-
-        /// <inheritdocs />
-        public override string SubProtocol
-        {
-            get
+            object obj;
+            if (_options != null && _options.TryGetValue(OwinConstants.WebSocket.SubProtocol, out obj))
             {
-                object obj;
-                if (_options != null && _options.TryGetValue(OwinConstants.WebSocket.SubProtocol, out obj))
-                {
-                    return (string)obj;
-                }
-                return null;
+                return (string)obj;
             }
-            set
-            {
-                if (_options == null)
-                {
-                    _options = new Dictionary<string, object>(1);
-                }
-                _options[OwinConstants.WebSocket.SubProtocol] = value;
-            }
+            return null;
         }
-
-        /// <summary>
-        /// Gets OWIN WebSocket options.
-        /// </summary>
-        public IDictionary<string, object> Options
+        set
         {
-            get { return _options; }
+            if (_options == null)
+            {
+                _options = new Dictionary<string, object>(1);
+            }
+            _options[OwinConstants.WebSocket.SubProtocol] = value;
         }
+    }
+
+    /// <summary>
+    /// Gets OWIN WebSocket options.
+    /// </summary>
+    public IDictionary<string, object> Options
+    {
+        get { return _options; }
     }
 }

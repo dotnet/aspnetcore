@@ -1,20 +1,17 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable enable
+namespace Microsoft.AspNetCore.Mvc.Routing;
 
-namespace Microsoft.AspNetCore.Mvc.Routing
+/// <summary>
+/// A factory for creating <see cref="IUrlHelper"/> instances.
+/// </summary>
+public interface IUrlHelperFactory
 {
     /// <summary>
-    /// A factory for creating <see cref="IUrlHelper"/> instances.
+    /// Gets an <see cref="IUrlHelper"/> for the request associated with <paramref name="context"/>.
     /// </summary>
-    public interface IUrlHelperFactory
-    {
-        /// <summary>
-        /// Gets an <see cref="IUrlHelper"/> for the request associated with <paramref name="context"/>.
-        /// </summary>
-        /// <param name="context">The <see cref="ActionContext"/> associated with the current request.</param>
-        /// <returns>An <see cref="IUrlHelper"/> for the request associated with <paramref name="context"/></returns>
-        IUrlHelper GetUrlHelper(ActionContext context);
-    }
+    /// <param name="context">The <see cref="ActionContext"/> associated with the current request.</param>
+    /// <returns>An <see cref="IUrlHelper"/> for the request associated with <paramref name="context"/></returns>
+    IUrlHelper GetUrlHelper(ActionContext context);
 }

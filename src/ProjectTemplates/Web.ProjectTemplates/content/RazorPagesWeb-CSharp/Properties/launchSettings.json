@@ -17,21 +17,9 @@
     }
   },
   "profiles": {
-    "IIS Express": {
-      "commandName": "IISExpress",
-      "launchBrowser": true,
-      "environmentVariables": {
-        //#if(RazorRuntimeCompilation)
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation"
-        //#else
-        "ASPNETCORE_ENVIRONMENT": "Development"
-        //#endif
-      }
-    },
     "Company.WebApplication1": {
       "commandName": "Project",
-      "dotnetRunMessages": "true",
+      "dotnetRunMessages": true,
       "launchBrowser": true,
       //#if(RequiresHttps)
       "applicationUrl": "https://localhost:5001;http://localhost:5000",
@@ -39,12 +27,14 @@
       "applicationUrl": "http://localhost:5000",
       //#endif
       "environmentVariables": {
-        //#if(RazorRuntimeCompilation)
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation"
-        //#else
         "ASPNETCORE_ENVIRONMENT": "Development"
-        //#endif
+      }
+    },
+    "IIS Express": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
       }
     }
   }

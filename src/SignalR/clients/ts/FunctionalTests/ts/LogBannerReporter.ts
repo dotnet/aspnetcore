@@ -1,5 +1,5 @@
 export class LogBannerReporter implements jasmine.CustomReporter {
-    private lastTestStarted?: Date;
+    private _lastTestStarted?: Date;
 
     public jasmineStarted(): void {
         console.log("*** JASMINE SUITE STARTED ***");
@@ -11,14 +11,14 @@ export class LogBannerReporter implements jasmine.CustomReporter {
 
     public specStarted(result: jasmine.CustomReporterResult): void {
         const timestamp = new Date();
-        this.lastTestStarted = timestamp;
+        this._lastTestStarted = timestamp;
         console.log(`*** SPEC STARTED: ${result.fullName} [${timestamp.toISOString()}] ***`);
     }
 
     public specDone(result: jasmine.CustomReporterResult): void {
         const timestamp = new Date();
 
-        const duration = this.lastTestStarted ? `${timestamp.getTime() - this.lastTestStarted.getTime()}ms` : "<<unknown>>";
+        const duration = this._lastTestStarted ? `${timestamp.getTime() - this._lastTestStarted.getTime()}ms` : "<<unknown>>";
         console.log(`*** SPEC DONE: ${result.fullName} [${timestamp.toISOString()}; Duration: ${duration}] ***`);
     }
 }

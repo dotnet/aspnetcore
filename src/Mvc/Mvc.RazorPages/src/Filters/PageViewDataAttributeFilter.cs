@@ -1,48 +1,46 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Filters;
 
-namespace Microsoft.AspNetCore.Mvc.Filters
+namespace Microsoft.AspNetCore.Mvc.Filters;
+
+internal sealed class PageViewDataAttributeFilter : IPageFilter, IViewDataValuesProviderFeature
 {
-    internal class PageViewDataAttributeFilter : IPageFilter, IViewDataValuesProviderFeature
+    public PageViewDataAttributeFilter(IReadOnlyList<LifecycleProperty> properties)
     {
-        public PageViewDataAttributeFilter(IReadOnlyList<LifecycleProperty> properties)
+        Properties = properties;
+    }
+
+    public IReadOnlyList<LifecycleProperty> Properties { get; }
+
+    public object? Subject { get; set; }
+
+    public void OnPageHandlerExecuted(PageHandlerExecutedContext context)
+    {
+    }
+
+    public void OnPageHandlerExecuting(PageHandlerExecutingContext context)
+    {
+        Subject = context.HandlerInstance;
+        context.HttpContext.Features.Set<IViewDataValuesProviderFeature>(this);
+    }
+
+    public void OnPageHandlerSelected(PageHandlerSelectedContext context)
+    {
+    }
+
+    public void ProvideViewDataValues(ViewDataDictionary viewData)
+    {
+        for (var i = 0; i < Properties.Count; i++)
         {
-            Properties = properties;
-        }
+            var property = Properties[i];
+            var value = property.GetValue(Subject);
 
-        public IReadOnlyList<LifecycleProperty> Properties { get;  }
-
-        public object Subject { get; set; }
-
-        public void OnPageHandlerExecuted(PageHandlerExecutedContext context)
-        {
-        }
-
-        public void OnPageHandlerExecuting(PageHandlerExecutingContext context)
-        {
-            Subject = context.HandlerInstance;
-            context.HttpContext.Features.Set<IViewDataValuesProviderFeature>(this);
-        }
-
-        public void OnPageHandlerSelected(PageHandlerSelectedContext context)
-        {
-        }
-
-        public void ProvideViewDataValues(ViewDataDictionary viewData)
-        {
-            for (var i = 0; i < Properties.Count; i++)
+            if (value != null)
             {
-                var property = Properties[i];
-                var value = property.GetValue(Subject);
-
-                if (value != null)
-                {
-                    viewData[property.Key] = value;
-                }
+                viewData[property.Key] = value;
             }
         }
     }

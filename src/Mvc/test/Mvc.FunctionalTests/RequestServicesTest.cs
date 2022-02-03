@@ -1,33 +1,30 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.FunctionalTests
+namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
+
+public class RequestServicesTest : RequestServicesTestBase<BasicWebSite.StartupWithoutEndpointRouting>
 {
-    public class RequestServicesTest : RequestServicesTestBase<BasicWebSite.StartupWithoutEndpointRouting>
+    public RequestServicesTest(MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting> fixture)
+        : base(fixture)
     {
-        public RequestServicesTest(MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting> fixture)
-            : base(fixture)
-        {
-        }
+    }
 
-        [Fact]
-        public async override Task HasEndpointMatch()
-        {
-            // Arrange & Act
-            var response = await Client.GetAsync("http://localhost/Routing/HasEndpointMatch");
+    [Fact]
+    public override async Task HasEndpointMatch()
+    {
+        // Arrange & Act
+        var response = await Client.GetAsync("http://localhost/Routing/HasEndpointMatch");
 
-            // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-            var body = await response.Content.ReadAsStringAsync();
-            var result = JsonConvert.DeserializeObject<bool>(body);
+        var body = await response.Content.ReadAsStringAsync();
+        var result = JsonConvert.DeserializeObject<bool>(body);
 
-            Assert.False(result);
-        }
+        Assert.False(result);
     }
 }

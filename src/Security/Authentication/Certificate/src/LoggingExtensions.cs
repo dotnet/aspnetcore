@@ -1,59 +1,19 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
+namespace Microsoft.Extensions.Logging;
 
-namespace Microsoft.Extensions.Logging
+internal static partial class LoggingExtensions
 {
-    internal static class LoggingExtensions
-    {
-        private static Action<ILogger, Exception?> _noCertificate;
-        private static Action<ILogger, Exception?> _notHttps;
-        private static Action<ILogger, string, string, Exception?> _certRejected;
-        private static Action<ILogger, string, string, Exception?> _certFailedValidation;
+    [LoggerMessage(0, LogLevel.Debug, "No client certificate found.", EventName = "NoCertificate")]
+    public static partial void NoCertificate(this ILogger logger);
 
-        static LoggingExtensions()
-        {
-            _noCertificate = LoggerMessage.Define(
-                eventId: new EventId(0, "NoCertificate"),
-                logLevel: LogLevel.Debug,
-                formatString: "No client certificate found.");
+    [LoggerMessage(3, LogLevel.Debug, "Not https, skipping certificate authentication.", EventName = "NotHttps")]
+    public static partial void NotHttps(this ILogger logger);
 
-            _certRejected = LoggerMessage.Define<string, string>(
-                eventId: new EventId(1, "CertificateRejected"),
-                logLevel: LogLevel.Warning,
-                formatString: "{CertificateType} certificate rejected, subject was {Subject}.");
+    [LoggerMessage(1, LogLevel.Warning, "{CertificateType} certificate rejected, subject was {Subject}.", EventName = "CertificateRejected")]
+    public static partial void CertificateRejected(this ILogger logger, string certificateType, string subject);
 
-            _certFailedValidation = LoggerMessage.Define<string, string>(
-                eventId: new EventId(2, "CertificateFailedValidation"),
-                logLevel: LogLevel.Warning,
-                formatString: "Certificate validation failed, subject was {Subject}." + Environment.NewLine + "{ChainErrors}");
-            
-            _notHttps = LoggerMessage.Define(
-                eventId: new EventId(3, "NotHttps"),
-                logLevel: LogLevel.Debug,
-                formatString: "Not https, skipping certificate authentication.");
-        }
-
-        public static void NoCertificate(this ILogger logger)
-        {
-            _noCertificate(logger, null);
-        }
-
-        public static void NotHttps(this ILogger logger)
-        {
-            _notHttps(logger, null);
-        }
-
-        public static void CertificateRejected(this ILogger logger, string certificateType, string subject)
-        {
-            _certRejected(logger, certificateType, subject, null);
-        }
-
-        public static void CertificateFailedValidation(this ILogger logger, string subject, IEnumerable<string> chainedErrors)
-        {
-            _certFailedValidation(logger, subject, String.Join(Environment.NewLine, chainedErrors), null);
-        }
-    }
+    [LoggerMessage(2, LogLevel.Warning, "Certificate validation failed, subject was {Subject}. {ChainErrors}", EventName = "CertificateFailedValidation")]
+    public static partial void CertificateFailedValidation(this ILogger logger, string subject, IEnumerable<string> chainErrors);
 }

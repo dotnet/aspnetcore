@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 
 [assembly: Microsoft.AspNetCore.Mvc.ApiConventionType(typeof(Microsoft.AspNetCore.Mvc.DefaultApiConventions))]
 
@@ -10,7 +10,6 @@ namespace TestApp._OUTPUT_
     [Route("[controller]/[action]")]
     public class BaseController : ControllerBase
     {
-
     }
 }
 

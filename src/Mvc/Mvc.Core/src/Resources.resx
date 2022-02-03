@@ -1,17 +1,17 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!-- 
-    Microsoft ResX Schema 
-    
+  <!--
+    Microsoft ResX Schema
+
     Version 2.0
-    
-    The primary goals of this format is to allow a simple XML format 
-    that is mostly human readable. The generation and parsing of the 
-    various data types are done through the TypeConverter classes 
+
+    The primary goals of this format is to allow a simple XML format
+    that is mostly human readable. The generation and parsing of the
+    various data types are done through the TypeConverter classes
     associated with the data types.
-    
+
     Example:
-    
+
     ... ado.net/XML headers & schema ...
     <resheader name="resmimetype">text/microsoft-resx</resheader>
     <resheader name="version">2.0</resheader>
@@ -26,36 +26,36 @@
         <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
         <comment>This is a comment</comment>
     </data>
-                
-    There are any number of "resheader" rows that contain simple 
+
+    There are any number of "resheader" rows that contain simple
     name/value pairs.
-    
-    Each data row contains a name, and value. The row also contains a 
-    type or mimetype. Type corresponds to a .NET class that support 
-    text/value conversion through the TypeConverter architecture. 
-    Classes that don't support this are serialized and stored with the 
+
+    Each data row contains a name, and value. The row also contains a
+    type or mimetype. Type corresponds to a .NET class that support
+    text/value conversion through the TypeConverter architecture.
+    Classes that don't support this are serialized and stored with the
     mimetype set.
-    
-    The mimetype is used for serialized objects, and tells the 
-    ResXResourceReader how to depersist the object. This is currently not 
+
+    The mimetype is used for serialized objects, and tells the
+    ResXResourceReader how to depersist the object. This is currently not
     extensible. For a given mimetype the value must be set accordingly:
-    
-    Note - application/x-microsoft.net.object.binary.base64 is the format 
-    that the ResXResourceWriter will generate, however the reader can 
+
+    Note - application/x-microsoft.net.object.binary.base64 is the format
+    that the ResXResourceWriter will generate, however the reader can
     read any of the formats listed below.
-    
+
     mimetype: application/x-microsoft.net.object.binary.base64
-    value   : The object must be serialized with 
+    value   : The object must be serialized with
             : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
             : and then encoded with base64 encoding.
-    
+
     mimetype: application/x-microsoft.net.object.soap.base64
-    value   : The object must be serialized with 
+    value   : The object must be serialized with
             : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
             : and then encoded with base64 encoding.
 
     mimetype: application/x-microsoft.net.object.bytearray.base64
-    value   : The object must be serialized into a byte array 
+    value   : The object must be serialized into a byte array
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
@@ -237,7 +237,7 @@
     <comment>0 is the newline - 1 is a newline separate list of action display names</comment>
   </data>
   <data name="FileResult_InvalidPath" xml:space="preserve">
-    <value>Could not find file: {0}</value>
+    <value>Could not find file: {0}.</value>
     <comment>{0} is the value for the provided path</comment>
   </data>
   <data name="SerializableError_DefaultError" xml:space="preserve">
@@ -367,9 +367,6 @@
   <data name="MiddewareFilter_NoConfigureMethod" xml:space="preserve">
     <value>A public method named '{0}' could not be found in the '{1}' type.</value>
   </data>
-  <data name="MiddlewareFilterBuilder_NoMiddlewareFeature" xml:space="preserve">
-    <value>Could not find '{0}' in the feature list.</value>
-  </data>
   <data name="MiddlewareFilterBuilder_NullApplicationBuilder" xml:space="preserve">
     <value>The '{0}' property cannot be null.</value>
   </data>
@@ -466,30 +463,6 @@
   <data name="ValidationVisitor_ExceededMaxPropertyDepth" xml:space="preserve">
     <value>{0} exceeded the maximum configured validation depth '{1}' when validating property '{2}' on type '{3}'.</value>
   </data>
-  <data name="ApiConventions_Title_400" xml:space="preserve">
-    <value>Bad Request</value>
-  </data>
-  <data name="ApiConventions_Title_401" xml:space="preserve">
-    <value>Unauthorized</value>
-  </data>
-  <data name="ApiConventions_Title_403" xml:space="preserve">
-    <value>Forbidden</value>
-  </data>
-  <data name="ApiConventions_Title_404" xml:space="preserve">
-    <value>Not Found</value>
-  </data>
-  <data name="ApiConventions_Title_406" xml:space="preserve">
-    <value>Not Acceptable</value>
-  </data>
-  <data name="ApiConventions_Title_409" xml:space="preserve">
-    <value>Conflict</value>
-  </data>
-  <data name="ApiConventions_Title_415" xml:space="preserve">
-    <value>Unsupported Media Type</value>
-  </data>
-  <data name="ApiConventions_Title_422" xml:space="preserve">
-    <value>Unprocessable Entity</value>
-  </data>
   <data name="ReferenceToNewtonsoftJsonRequired" xml:space="preserve">
     <value>'{0}' requires a reference to '{1}'. Configure your application by adding a reference to the '{1}' package and calling '{2}.{3}' inside the call to '{4}' in the application startup code.</value>
   </data>
@@ -509,9 +482,6 @@
   </data>
   <data name="UnexpectedJsonEnd" xml:space="preserve">
     <value>Unexcepted end when reading JSON.</value>
-  </data>
-  <data name="ApiConventions_Title_500" xml:space="preserve">
-    <value>An error occurred while processing your request.</value>
   </data>
   <data name="FailedToReadRequestForm" xml:space="preserve">
     <value>Failed to read the request form. {0}</value>
@@ -536,5 +506,8 @@
   </data>
   <data name="TryUpdateModel_RecordTypeNotSupported" xml:space="preserve">
     <value>{0} cannot update a record type model. If a '{1}' must be updated, include it in an object type.</value>
+  </data>
+  <data name="GetContentTypes_WildcardsNotSupported" xml:space="preserve">
+    <value>Could not parse '{0}'. Content types with wildcards are not supported.</value>
   </data>
 </root>

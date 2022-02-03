@@ -1,63 +1,61 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
 using Moq;
-using Xunit;
 
-namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
+namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
+
+public class AbsoluteUrlFactoryTests
 {
-    public class AbsoluteUrlFactoryTests
+    [Fact]
+    public void GetAbsoluteUrl_ReturnsNull_ForInvalidData()
     {
-        [Fact]
-        public void GetAbsoluteUrl_ReturnsNull_ForInvalidData()
-        {
-            // Arrange
-            var accessor = new Mock<IHttpContextAccessor>();
-            var factory = new AbsoluteUrlFactory(accessor.Object);
-            var path = "something|invalid";
+        // Arrange
+        var accessor = new Mock<IHttpContextAccessor>();
+        var factory = new AbsoluteUrlFactory(accessor.Object);
+        var path = "something|invalid";
 
-            // Act
-            var result = factory.GetAbsoluteUrl(path);
+        // Act
+        var result = factory.GetAbsoluteUrl(path);
 
-            // Assert
-            Assert.Null(result);
-        }
+        // Assert
+        Assert.Null(result);
+    }
 
-        [Fact]
-        public void GetAbsoluteUrl_ReturnsUnmodifiedUrl_ForAbsoluteUrls()
-        {
-            // Arrange
-            var accessor = new Mock<IHttpContextAccessor>();
-            var factory = new AbsoluteUrlFactory(accessor.Object);
-            var path = "https://localhost:5001/authenticate";
+    [Fact]
+    public void GetAbsoluteUrl_ReturnsUnmodifiedUrl_ForAbsoluteUrls()
+    {
+        // Arrange
+        var accessor = new Mock<IHttpContextAccessor>();
+        var factory = new AbsoluteUrlFactory(accessor.Object);
+        var path = "https://localhost:5001/authenticate";
 
-            // Act
-            var result = factory.GetAbsoluteUrl(path);
+        // Act
+        var result = factory.GetAbsoluteUrl(path);
 
-            // Assert
-            Assert.Equal(path, result);
-        }
+        // Assert
+        Assert.Equal(path, result);
+    }
 
-        [Fact]
-        public void GetAbsoluteUrl_ReturnsContextBasedAbsoluteUrl_ForRelativeUrls()
-        {
-            // Arrange
-            var ctx = new DefaultHttpContext();
-            ctx.Request.Scheme = "https";
-            ctx.Request.Host = new HostString("localhost:5001");
-            ctx.Request.PathBase = "/virtual";
+    [Fact]
+    public void GetAbsoluteUrl_ReturnsContextBasedAbsoluteUrl_ForRelativeUrls()
+    {
+        // Arrange
+        var ctx = new DefaultHttpContext();
+        ctx.Request.Scheme = "https";
+        ctx.Request.Host = new HostString("localhost:5001");
+        ctx.Request.PathBase = "/virtual";
 
-            var accessor = new Mock<IHttpContextAccessor>();
-            accessor.SetupGet(c => c.HttpContext).Returns(ctx);
-            var factory = new AbsoluteUrlFactory(accessor.Object);
-            var path = "/authenticate";
+        var accessor = new Mock<IHttpContextAccessor>();
+        accessor.SetupGet(c => c.HttpContext).Returns(ctx);
+        var factory = new AbsoluteUrlFactory(accessor.Object);
+        var path = "/authenticate";
 
-            // Act
-            var result = factory.GetAbsoluteUrl(path);
+        // Act
+        var result = factory.GetAbsoluteUrl(path);
 
-            // Assert
-            Assert.Equal("https://localhost:5001/virtual/authenticate", result);
-        }
+        // Assert
+        Assert.Equal("https://localhost:5001/virtual/authenticate", result);
     }
 }

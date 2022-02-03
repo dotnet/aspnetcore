@@ -1,41 +1,38 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Mvc.TagHelpers
+namespace Microsoft.AspNetCore.Mvc.TagHelpers;
+
+public class TagHelperLogger<T> : ILogger<T>
 {
-    public class TagHelperLogger<T> : ILogger<T>
+    public List<LoggerData> Logged { get; } = new List<LoggerData>();
+
+    public IDisposable BeginScope<TState>(TState state)
     {
-        public List<LoggerData> Logged { get; } = new List<LoggerData>();
+        return null;
+    }
 
-        public IDisposable BeginScope<TState>(TState state)
+    public bool IsEnabled(LogLevel logLevel)
+    {
+        return true;
+    }
+
+    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+    {
+        Logged.Add(new LoggerData(logLevel, state));
+    }
+
+    public class LoggerData
+    {
+        public LoggerData(LogLevel logLevel, object state)
         {
-            return null;
+            LogLevel = logLevel;
+            State = state;
         }
 
-        public bool IsEnabled(LogLevel logLevel)
-        {
-            return true;
-        }
-
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
-        {
-            Logged.Add(new LoggerData(logLevel, state));
-        }
-
-        public class LoggerData
-        {
-            public LoggerData(LogLevel logLevel, object state)
-            {
-                LogLevel = logLevel;
-                State = state;
-            }
-
-            public LogLevel LogLevel { get; set; }
-            public object State { get; set; }
-        }
+        public LogLevel LogLevel { get; set; }
+        public object State { get; set; }
     }
 }

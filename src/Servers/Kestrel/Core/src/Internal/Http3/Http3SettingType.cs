@@ -1,15 +1,17 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
+
+internal enum Http3SettingType : long
 {
-    internal enum Http3SettingType : long
-    {
-        QPackMaxTableCapacity = 0x1,
-        /// <summary>
-        /// SETTINGS_MAX_HEADER_LIST_SIZE, default is unlimited.
-        /// </summary>
-        MaxHeaderListSize = 0x6,
-        QPackBlockedStreams = 0x7
-    }
+    // https://quicwg.org/base-drafts/draft-ietf-quic-qpack.html#section-5
+    QPackMaxTableCapacity = 0x1,
+    /// <summary>
+    /// SETTINGS_MAX_FIELD_SECTION_SIZE, default is unlimited.
+    /// https://quicwg.org/base-drafts/draft-ietf-quic-qpack.html#section-5
+    /// </summary>
+    MaxFieldSectionSize = 0x6,
+    // https://quicwg.org/base-drafts/draft-ietf-quic-qpack.html#section-5
+    QPackBlockedStreams = 0x7
 }

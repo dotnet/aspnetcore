@@ -1,73 +1,72 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Components.WebAssembly.DevServer.Server
+namespace Microsoft.AspNetCore.Components.WebAssembly.DevServer.Server;
+
+internal class Startup
 {
-    internal class Startup
+    public Startup(IConfiguration configuration)
     {
-        public Startup(IConfiguration configuration)
+        Configuration = configuration;
+    }
+
+    public IConfiguration Configuration { get; }
+
+    public static void ConfigureServices(IServiceCollection services)
+    {
+        services.AddRouting();
+    }
+
+    public static void Configure(IApplicationBuilder app, IConfiguration configuration)
+    {
+        app.UseDeveloperExceptionPage();
+        EnableConfiguredPathbase(app, configuration);
+
+        app.UseWebAssemblyDebugging();
+
+        app.UseBlazorFrameworkFiles();
+        app.UseStaticFiles(new StaticFileOptions
         {
-            Configuration = configuration;
-        }
+            // In development, serve everything, as there's no other way to configure it.
+            // In production, developers are responsible for configuring their own production server
+            ServeUnknownFileTypes = true,
+        });
 
-        public IConfiguration Configuration { get; }
+        app.UseRouting();
 
-        public void ConfigureServices(IServiceCollection services)
+        app.UseEndpoints(endpoints =>
         {
-            services.AddRouting();
-        }
+            endpoints.MapFallbackToFile("index.html");
+        });
+    }
 
-        public void Configure(IApplicationBuilder app, IConfiguration configuration)
+    private static void EnableConfiguredPathbase(IApplicationBuilder app, IConfiguration configuration)
+    {
+        var pathBase = configuration.GetValue<string>("pathbase");
+        if (!string.IsNullOrEmpty(pathBase))
         {
-            app.UseDeveloperExceptionPage();
-            EnableConfiguredPathbase(app, configuration);
+            app.UsePathBase(pathBase);
 
-            app.UseWebAssemblyDebugging();
-
-            app.UseBlazorFrameworkFiles();
-            app.UseStaticFiles(new StaticFileOptions
+            // To ensure consistency with a production environment, only handle requests
+            // that match the specified pathbase.
+            app.Use((context, next) =>
             {
-                // In development, serve everything, as there's no other way to configure it.
-                // In production, developers are responsible for configuring their own production server
-                ServeUnknownFileTypes = true,
-            });
-
-            app.UseRouting();
-
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapFallbackToFile("index.html");
-            });
-        }
-
-        private static void EnableConfiguredPathbase(IApplicationBuilder app, IConfiguration configuration)
-        {
-            var pathBase = configuration.GetValue<string>("pathbase");
-            if (!string.IsNullOrEmpty(pathBase))
-            {
-                app.UsePathBase(pathBase);
-
-                // To ensure consistency with a production environment, only handle requests
-                // that match the specified pathbase.
-                app.Use((context, next) =>
+                if (context.Request.PathBase == pathBase)
                 {
-                    if (context.Request.PathBase == pathBase)
-                    {
-                        return next();
-                    }
-                    else
-                    {
-                        context.Response.StatusCode = 404;
-                        return context.Response.WriteAsync($"The server is configured only to " +
-                            $"handle request URIs within the PathBase '{pathBase}'.");
-                    }
-                });
-            }
+                    return next(context);
+                }
+                else
+                {
+                    context.Response.StatusCode = 404;
+                    return context.Response.WriteAsync($"The server is configured only to " +
+                        $"handle request URIs within the PathBase '{pathBase}'.");
+                }
+            });
         }
     }
 }

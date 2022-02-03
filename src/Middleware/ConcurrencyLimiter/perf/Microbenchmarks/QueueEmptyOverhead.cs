@@ -1,76 +1,73 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Running;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.ConcurrencyLimiter.Tests;
+using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.ConcurrencyLimiter.Microbenchmarks
+namespace Microsoft.AspNetCore.ConcurrencyLimiter.Microbenchmarks;
+
+public class QueueEmptyOverhead
 {
-    public class QueueEmptyOverhead
+    private const int _numRequests = 20000;
+
+    private ConcurrencyLimiterMiddleware _middlewareQueue;
+    private ConcurrencyLimiterMiddleware _middlewareStack;
+    private RequestDelegate _restOfServer;
+
+    [GlobalSetup]
+    public void GlobalSetup()
     {
-        private const int _numRequests = 20000;
+        _restOfServer = YieldsThreadInternally ? (RequestDelegate)YieldsThread : (RequestDelegate)CompletesImmediately;
 
-        private ConcurrencyLimiterMiddleware _middlewareQueue;
-        private ConcurrencyLimiterMiddleware _middlewareStack;
-        private RequestDelegate _restOfServer;
+        _middlewareQueue = TestUtils.CreateTestMiddleware_QueuePolicy(
+            maxConcurrentRequests: 1,
+            requestQueueLimit: 100,
+            next: _restOfServer);
 
-        [GlobalSetup]
-        public void GlobalSetup()
+        _middlewareStack = TestUtils.CreateTestMiddleware_StackPolicy(
+            maxConcurrentRequests: 1,
+            requestQueueLimit: 100,
+            next: _restOfServer);
+    }
+
+    [Params(false, true)]
+    public bool YieldsThreadInternally;
+
+    [Benchmark(OperationsPerInvoke = _numRequests)]
+    public async Task Baseline()
+    {
+        for (int i = 0; i < _numRequests; i++)
         {
-            _restOfServer = YieldsThreadInternally ? (RequestDelegate)YieldsThread : (RequestDelegate)CompletesImmediately;
-
-            _middlewareQueue = TestUtils.CreateTestMiddleware_QueuePolicy(
-                maxConcurrentRequests: 1,
-                requestQueueLimit: 100,
-                next: _restOfServer);
-
-            _middlewareStack = TestUtils.CreateTestMiddleware_StackPolicy(
-                maxConcurrentRequests: 1,
-                requestQueueLimit: 100,
-                next: _restOfServer);
+            await _restOfServer(null);
         }
+    }
 
-        [Params(false, true)]
-        public bool YieldsThreadInternally;
-
-        [Benchmark(OperationsPerInvoke = _numRequests)]
-        public async Task Baseline()
+    [Benchmark(OperationsPerInvoke = _numRequests)]
+    public async Task WithEmptyQueueOverhead_QueuePolicy()
+    {
+        for (int i = 0; i < _numRequests; i++)
         {
-            for (int i = 0; i < _numRequests; i++)
-            {
-                await _restOfServer(null);
-            }
+            await _middlewareQueue.Invoke(null);
         }
+    }
 
-        [Benchmark(OperationsPerInvoke = _numRequests)]
-        public async Task WithEmptyQueueOverhead_QueuePolicy()
+    [Benchmark(OperationsPerInvoke = _numRequests)]
+    public async Task WithEmptyQueueOverhead_StackPolicy()
+    {
+        for (int i = 0; i < _numRequests; i++)
         {
-            for (int i = 0; i < _numRequests; i++)
-            {
-                await _middlewareQueue.Invoke(null);
-            }
+            await _middlewareStack.Invoke(null);
         }
+    }
 
-        [Benchmark(OperationsPerInvoke = _numRequests)]
-        public async Task WithEmptyQueueOverhead_StackPolicy()
-        {
-            for (int i = 0; i < _numRequests; i++)
-            {
-                await _middlewareStack.Invoke(null);
-            }
-        }
+    private static async Task YieldsThread(HttpContext context)
+    {
+        await Task.Yield();
+    }
 
-        private static async Task YieldsThread(HttpContext context)
-        {
-            await Task.Yield();
-        }
-
-        private static Task CompletesImmediately(HttpContext context)
-        {
-            return Task.CompletedTask;
-        }
+    private static Task CompletesImmediately(HttpContext context)
+    {
+        return Task.CompletedTask;
     }
 }

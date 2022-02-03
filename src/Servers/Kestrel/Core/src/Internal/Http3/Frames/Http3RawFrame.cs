@@ -1,17 +1,20 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace System.Net.Http
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
+
+namespace System.Net.Http;
+
+internal partial class Http3RawFrame
 {
-    internal partial class Http3RawFrame
+    public long Length { get; set; }
+
+    public Http3FrameType Type { get; internal set; }
+
+    public string FormattedType => Http3Formatting.ToFormattedType(Type);
+
+    public override string ToString()
     {
-        public long Length { get; set; }
-
-        public Http3FrameType Type { get; internal set; }
-
-        public override string ToString()
-        {
-            return $"{Type} Length: {Length}";
-        }
+        return $"{FormattedType} Length: {Length}";
     }
 }

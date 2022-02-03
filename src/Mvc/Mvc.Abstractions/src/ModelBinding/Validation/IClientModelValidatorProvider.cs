@@ -1,18 +1,17 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
+namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+
+/// <summary>
+/// Provides a collection of <see cref="IClientModelValidator"/>s.
+/// </summary>
+public interface IClientModelValidatorProvider
 {
     /// <summary>
-    /// Provides a collection of <see cref="IClientModelValidator"/>s.
+    /// Creates set of <see cref="IClientModelValidator"/>s by updating
+    /// <see cref="ClientValidatorItem.Validator"/> in <see cref="ClientValidatorProviderContext.Results"/>.
     /// </summary>
-    public interface IClientModelValidatorProvider
-    {
-        /// <summary>
-        /// Creates set of <see cref="IClientModelValidator"/>s by updating
-        /// <see cref="ClientValidatorItem.Validator"/> in <see cref="ClientValidatorProviderContext.Results"/>.
-        /// </summary>
-        /// <param name="context">The <see cref="ClientModelValidationContext"/> associated with this call.</param>
-        void CreateValidators(ClientValidatorProviderContext context);
-    }
+    /// <param name="context">The <see cref="ClientModelValidationContext"/> associated with this call.</param>
+    void CreateValidators(ClientValidatorProviderContext context);
 }

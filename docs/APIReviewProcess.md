@@ -1,33 +1,10 @@
-## Description
-Starting in 5.0, certain areas within the dotnet/aspnetcore and dotnet/extensions repos will require formal *incremental* API reviews before any PRs that change APIs are merged.
-
-API changes to the following areas are required to go follow this process:
-
-* area-blazor
-* area-dataprotection
-* area-healthchecks
-* area-grpc
-* area-mvc
-    * feature-model-binding
-    * feature-razor-pages
-    * feature-JSONPatch
-    * feature-discovery
-    * feature-formatters
-    * feature-api-explorer
-    * feature-tag-helpers
-* area-razor.compiler
-* area-security
-* area-signalr
-* area-identity
-* area-servers
-
 ## Process
+
 The goal of the API Review process is to ensure that the new APIs are following common patterns and the best practices.
 Also, it's aimed to help and guide engineers towards better API design decisions. People should feel empowered to submit their APIs for review as besides all the benefits it's also a learning and knowledge sharing experience.
 
 The process is visualized in the below diagram:
 ![A sequence diagram illustrating the same process described below.](https://user-images.githubusercontent.com/34246760/66542496-95052c80-eae7-11e9-9c7c-549b82a8d492.png)
-
 
 1. API review process kicks in after the owner for the issue identifies that the work required for the issue will need an API change or addition. In such cases, the issue owner will handle (either himself/herself, or with the community member who has expressed interest in handling the work) driving a design proposal. When working with a community member, the issue owner is responsible for guiding them to an acceptable design.
 1. If the proposed design adds new APIs, mark those issues with the `api-suggestion` label
@@ -42,12 +19,12 @@ The process is visualized in the below diagram:
 
 Before marking an issue as `api-ready-for-review`, make sure that the issue has the following:
 
-- A short description that will help reviewers not familiar with this area.
-- The API changes in ref-assembly format. It's fine to link this to the generated ref-assembly-code in the PR. If the changes are to an area that does produce ref-assemblies, please write out what it would look like in ref-assembly format for us to review.
+* A short description that will help reviewers not familiar with this area.
+* The API changes in ref-assembly format. It's fine to link this to the generated ref-assembly-code in the PR. If the changes are to an area that does produce ref-assemblies, please write out what it would look like in ref-assembly format for us to review.
 
 ```txt
-Good: This is the API for the widget factory, users use it in startup code to 
-configure how their widgets work. We have an overload that accepts URI, but 
+Good: This is the API for the widget factory, users use it in startup code to
+configure how their widgets work. We have an overload that accepts URI, but
 not one that accepts string, so we're adding it for convenience.
 
 Bad: Adding a string overload for Widget.ConfigureFactory.
@@ -69,4 +46,4 @@ If you are assigned a community-submitted change to *champion* in our API-review
 
 ## API Review Meeting
 
-The API Review meeting is open to all members of the ASP.NET Core team. The meeting invite is sent out to all the team members to join. Every API review meeting should include the area owners of the API change proposals as mandatory attendees. To list of all pending API review proposals can be found at: https://aka.ms/aspnet/apireviews
+The API Review meeting is open to all members of the ASP.NET Core team. The meeting invite as well as communication about API reviews is shared on the internal `ASP.NET Core API Reviews` distribution list. Every API review meeting should include the area owners of the API change proposals as mandatory attendees. To list of all pending API review proposals can be found at: <https://aka.ms/aspnet/apireviews>

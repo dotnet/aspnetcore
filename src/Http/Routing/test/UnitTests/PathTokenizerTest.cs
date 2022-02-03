@@ -1,19 +1,18 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Routing
+namespace Microsoft.AspNetCore.Routing;
+
+public class PathTokenizerTest
 {
-    public class PathTokenizerTest
+    public static TheoryData<string, StringSegment[]> TokenizationData
     {
-        public static TheoryData<string, StringSegment[]> TokenizationData
+        get
         {
-            get
-            {
-                return new TheoryData<string, StringSegment[]>
+            return new TheoryData<string, StringSegment[]>
                 {
                     { string.Empty, new StringSegment[] { } },
                     { "/", new StringSegment[] { } },
@@ -72,46 +71,45 @@ namespace Microsoft.AspNetCore.Routing
                         }
                     },
                 };
-            }
         }
+    }
 
-        [Theory]
-        [MemberData(nameof(TokenizationData))]
-        public void PathTokenizer_Count(string path, StringSegment[] expectedSegments)
+    [Theory]
+    [MemberData(nameof(TokenizationData))]
+    public void PathTokenizer_Count(string path, StringSegment[] expectedSegments)
+    {
+        // Arrange
+        var tokenizer = new PathTokenizer(new PathString(path));
+
+        // Act
+        var count = tokenizer.Count;
+
+        // Assert
+        Assert.Equal(expectedSegments.Length, count);
+    }
+
+    [Theory]
+    [MemberData(nameof(TokenizationData))]
+    public void PathTokenizer_Indexer(string path, StringSegment[] expectedSegments)
+    {
+        // Arrange
+        var tokenizer = new PathTokenizer(new PathString(path));
+
+        // Act & Assert
+        for (var i = 0; i < expectedSegments.Length; i++)
         {
-            // Arrange
-            var tokenizer = new PathTokenizer(new PathString(path));
-
-            // Act
-            var count = tokenizer.Count;
-
-            // Assert
-            Assert.Equal(expectedSegments.Length, count);
+            Assert.Equal(expectedSegments[i], tokenizer[i]);
         }
+    }
 
-        [Theory]
-        [MemberData(nameof(TokenizationData))]
-        public void PathTokenizer_Indexer(string path, StringSegment[] expectedSegments)
-        {
-            // Arrange
-            var tokenizer = new PathTokenizer(new PathString(path));
+    [Theory]
+    [MemberData(nameof(TokenizationData))]
+    public void PathTokenizer_Enumerator(string path, StringSegment[] expectedSegments)
+    {
+        // Arrange
+        var tokenizer = new PathTokenizer(new PathString(path));
 
-            // Act & Assert
-            for (var i = 0; i < expectedSegments.Length; i++)
-            {
-                Assert.Equal(expectedSegments[i], tokenizer[i]);
-            }
-        }
-
-        [Theory]
-        [MemberData(nameof(TokenizationData))]
-        public void PathTokenizer_Enumerator(string path, StringSegment[] expectedSegments)
-        {
-            // Arrange
-            var tokenizer = new PathTokenizer(new PathString(path));
-
-            // Act & Assert
-            Assert.Equal<StringSegment>(expectedSegments, tokenizer);
-        }
+        // Act & Assert
+        Assert.Equal<StringSegment>(expectedSegments, tokenizer);
     }
 }

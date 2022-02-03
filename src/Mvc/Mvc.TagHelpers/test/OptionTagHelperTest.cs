@@ -1,24 +1,20 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Razor.TagHelpers;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.TagHelpers
+namespace Microsoft.AspNetCore.Mvc.TagHelpers;
+
+public class OptionTagHelperTest
 {
-    public class OptionTagHelperTest
+    // Original content, selected attribute, value attribute, selected values (to place in TagHelperContext.Items)
+    // and expected tag helper output.
+    public static TheoryData<string, string, string, ICollection<string>, TagHelperOutput> GeneratesExpectedDataSet
     {
-        // Original content, selected attribute, value attribute, selected values (to place in TagHelperContext.Items)
-        // and expected tag helper output.
-        public static TheoryData<string, string, string, ICollection<string>, TagHelperOutput> GeneratesExpectedDataSet
+        get
         {
-            get
-            {
-                return new TheoryData<string, string, string, ICollection<string>, TagHelperOutput>
+            return new TheoryData<string, string, string, ICollection<string>, TagHelperOutput>
                 {
                     // original content, selected, value, selected values,
                     // expected tag helper output - attributes, content
@@ -348,239 +344,238 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                             "text")
                     }
                 };
-            }
         }
+    }
 
-        // Original content, selected attribute, value attribute, selected values (to place in TagHelperContext.Items)
-        // and expected output (concatenation of TagHelperOutput generations). Excludes non-null selected attribute,
-        // null selected values, and empty selected values cases.
-        public static IEnumerable<object[]> DoesNotUseGeneratorDataSet
+    // Original content, selected attribute, value attribute, selected values (to place in TagHelperContext.Items)
+    // and expected output (concatenation of TagHelperOutput generations). Excludes non-null selected attribute,
+    // null selected values, and empty selected values cases.
+    public static IEnumerable<object[]> DoesNotUseGeneratorDataSet
+    {
+        get
         {
-            get
-            {
-                return GeneratesExpectedDataSet.Where(
-                    entry => (entry[1] != null || entry[3] == null || ((ICollection<string>)(entry[3])).Count == 0));
-            }
+            return GeneratesExpectedDataSet.Where(
+                entry => (entry[1] != null || entry[3] == null || ((ICollection<string>)(entry[3])).Count == 0));
         }
+    }
 
-        // Original content, selected attribute, value attribute, selected values (to place in TagHelperContext.Items)
-        // and expected output (concatenation of TagHelperOutput generations). Excludes non-null selected attribute
-        // cases.
-        public static IEnumerable<object[]> DoesNotUseViewContextDataSet
+    // Original content, selected attribute, value attribute, selected values (to place in TagHelperContext.Items)
+    // and expected output (concatenation of TagHelperOutput generations). Excludes non-null selected attribute
+    // cases.
+    public static IEnumerable<object[]> DoesNotUseViewContextDataSet
+    {
+        get
         {
-            get
-            {
-                return GeneratesExpectedDataSet.Where(entry => entry[1] != null);
-            }
+            return GeneratesExpectedDataSet.Where(entry => entry[1] != null);
         }
+    }
 
-        [Theory]
-        [MemberData(nameof(GeneratesExpectedDataSet))]
-        public async Task ProcessAsync_GeneratesExpectedOutput(
-            string originalContent,
-            string selected,
-            string value,
-            ICollection<string> currentValues,
-            TagHelperOutput expectedTagHelperOutput)
-        {
-            // Arrange
-            var originalAttributes = new TagHelperAttributeList
+    [Theory]
+    [MemberData(nameof(GeneratesExpectedDataSet))]
+    public async Task ProcessAsync_GeneratesExpectedOutput(
+        string originalContent,
+        string selected,
+        string value,
+        ICollection<string> currentValues,
+        TagHelperOutput expectedTagHelperOutput)
+    {
+        // Arrange
+        var originalAttributes = new TagHelperAttributeList
             {
                 { "label", "my-label" },
             };
-            if (selected != null)
-            {
-                originalAttributes.Add("selected", selected);
-            }
-
-            var contextAttributes = new TagHelperAttributeList(originalAttributes);
-            if (value != null)
-            {
-                contextAttributes.Add("value", value);
-            }
-
-            var tagHelperContext = new TagHelperContext(
-                tagName: "option",
-                allAttributes: contextAttributes,
-                items: new Dictionary<object, object>(),
-                uniqueId: "test");
-
-            var output = new TagHelperOutput(
-                expectedTagHelperOutput.TagName,
-                originalAttributes,
-                getChildContentAsync: (useCachedResult, encoder) =>
-                {
-                    // GetChildContentAsync should not be invoked since we are setting the content below.
-                    Assert.True(false);
-                    return Task.FromResult<TagHelperContent>(null);
-                })
-            {
-                TagMode = TagMode.StartTagAndEndTag
-            };
-
-            output.Content.SetContent(originalContent);
-
-            var metadataProvider = new EmptyModelMetadataProvider();
-            var htmlGenerator = new TestableHtmlGenerator(metadataProvider);
-            var viewContext = TestableHtmlGenerator.GetViewContext(
-                model: null,
-                htmlGenerator: htmlGenerator,
-                metadataProvider: metadataProvider);
-            tagHelperContext.Items[typeof(SelectTagHelper)] = currentValues == null ? null : new CurrentValues(currentValues);
-            var tagHelper = new OptionTagHelper(htmlGenerator)
-            {
-                Value = value,
-                ViewContext = viewContext,
-            };
-
-            // Act
-            await tagHelper.ProcessAsync(tagHelperContext, output);
-
-            // Assert
-            Assert.Equal(expectedTagHelperOutput.TagName, output.TagName);
-            Assert.Equal(expectedTagHelperOutput.Content.GetContent(), output.Content.GetContent());
-            Assert.Equal(expectedTagHelperOutput.Attributes.Count, output.Attributes.Count);
-            foreach (var attribute in output.Attributes)
-            {
-                Assert.Contains(attribute, expectedTagHelperOutput.Attributes);
-            }
+        if (selected != null)
+        {
+            originalAttributes.Add("selected", selected);
         }
 
-        [Theory]
-        [MemberData(nameof(DoesNotUseGeneratorDataSet))]
-        public async Task ProcessAsync_DoesNotUseGenerator_IfSelectedNullOrNoSelectedValues(
-            string originalContent,
-            string selected,
-            string value,
-            ICollection<string> currentValues,
-            TagHelperOutput _)
+        var contextAttributes = new TagHelperAttributeList(originalAttributes);
+        if (value != null)
         {
-            // Arrange
-            var originalAttributes = new TagHelperAttributeList
-            {
-                { "label", "my-label" },
-                { "selected", selected },
-            };
-            var originalTagName = "not-option";
-
-            var contextAttributes = new TagHelperAttributeList
-            {
-                { "label", "my-label" },
-                { "selected", selected },
-                { "value", value },
-            };
-            var originalPreContent = "original pre-content";
-            var originalPostContent = "original post-content";
-            var tagHelperContext = new TagHelperContext(
-                tagName: "option",
-                allAttributes: contextAttributes,
-                items: new Dictionary<object, object>(),
-                uniqueId: "test");
-            var output = new TagHelperOutput(
-                originalTagName,
-                originalAttributes,
-                getChildContentAsync: (useCachedResult, encoder) =>
-                {
-                    var tagHelperContent = new DefaultTagHelperContent();
-                    tagHelperContent.SetContent(originalContent);
-                    return Task.FromResult<TagHelperContent>(tagHelperContent);
-                })
-            {
-                TagMode = TagMode.StartTagAndEndTag,
-            };
-            output.PreContent.SetContent(originalPreContent);
-            output.Content.SetContent(originalContent);
-            output.PostContent.SetContent(originalPostContent);
-
-            var metadataProvider = new EmptyModelMetadataProvider();
-            var htmlGenerator = new TestableHtmlGenerator(metadataProvider);
-            var viewContext = TestableHtmlGenerator.GetViewContext(
-                model: null,
-                htmlGenerator: htmlGenerator,
-                metadataProvider: metadataProvider);
-            tagHelperContext.Items[typeof(SelectTagHelper)] = currentValues == null ? null : new CurrentValues(currentValues);
-            var tagHelper = new OptionTagHelper(htmlGenerator)
-            {
-                Value = value,
-                ViewContext = viewContext,
-            };
-
-            // Act & Assert (does not throw)
-            // Tag helper would throw an NRE if it used Generator value.
-            await tagHelper.ProcessAsync(tagHelperContext, output);
+            contextAttributes.Add("value", value);
         }
 
-        [Theory]
-        [MemberData(nameof(DoesNotUseViewContextDataSet))]
-        public async Task ProcessAsync_DoesNotUseViewContext_IfSelectedNotNull(
-            string originalContent,
-            string selected,
-            string value,
-            ICollection<string> _,
-            TagHelperOutput __)
+        var tagHelperContext = new TagHelperContext(
+            tagName: "option",
+            allAttributes: contextAttributes,
+            items: new Dictionary<object, object>(),
+            uniqueId: "test");
+
+        var output = new TagHelperOutput(
+            expectedTagHelperOutput.TagName,
+            originalAttributes,
+            getChildContentAsync: (useCachedResult, encoder) =>
+            {
+                // GetChildContentAsync should not be invoked since we are setting the content below.
+                Assert.True(false);
+                return Task.FromResult<TagHelperContent>(null);
+            })
         {
-            // Arrange
-            var originalAttributes = new TagHelperAttributeList
+            TagMode = TagMode.StartTagAndEndTag
+        };
+
+        output.Content.SetContent(originalContent);
+
+        var metadataProvider = new EmptyModelMetadataProvider();
+        var htmlGenerator = new TestableHtmlGenerator(metadataProvider);
+        var viewContext = TestableHtmlGenerator.GetViewContext(
+            model: null,
+            htmlGenerator: htmlGenerator,
+            metadataProvider: metadataProvider);
+        tagHelperContext.Items[typeof(SelectTagHelper)] = currentValues == null ? null : new CurrentValues(currentValues);
+        var tagHelper = new OptionTagHelper(htmlGenerator)
+        {
+            Value = value,
+            ViewContext = viewContext,
+        };
+
+        // Act
+        await tagHelper.ProcessAsync(tagHelperContext, output);
+
+        // Assert
+        Assert.Equal(expectedTagHelperOutput.TagName, output.TagName);
+        Assert.Equal(expectedTagHelperOutput.Content.GetContent(), output.Content.GetContent());
+        Assert.Equal(expectedTagHelperOutput.Attributes.Count, output.Attributes.Count);
+        foreach (var attribute in output.Attributes)
+        {
+            Assert.Contains(attribute, expectedTagHelperOutput.Attributes);
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(DoesNotUseGeneratorDataSet))]
+    public async Task ProcessAsync_DoesNotUseGenerator_IfSelectedNullOrNoSelectedValues(
+        string originalContent,
+        string selected,
+        string value,
+        ICollection<string> currentValues,
+        TagHelperOutput _)
+    {
+        // Arrange
+        var originalAttributes = new TagHelperAttributeList
             {
                 { "label", "my-label" },
                 { "selected", selected },
             };
-            var originalTagName = "not-option";
+        var originalTagName = "not-option";
 
-            var contextAttributes = new TagHelperAttributeList
+        var contextAttributes = new TagHelperAttributeList
             {
                 { "label", "my-label" },
                 { "selected", selected },
                 { "value", value },
             };
-            var originalPreContent = "original pre-content";
-            var originalPostContent = "original post-content";
-            var tagHelperContext = new TagHelperContext(
-                tagName: "option",
-                allAttributes: contextAttributes,
-                items: new Dictionary<object, object>(),
-                uniqueId: "test");
-
-            var output = new TagHelperOutput(
-                originalTagName,
-                originalAttributes,
-                getChildContentAsync: (useCachedResult, encoder) =>
-                {
-                    var tagHelperContent = new DefaultTagHelperContent();
-                    tagHelperContent.SetContent(originalContent);
-                    return Task.FromResult<TagHelperContent>(tagHelperContent);
-                })
+        var originalPreContent = "original pre-content";
+        var originalPostContent = "original post-content";
+        var tagHelperContext = new TagHelperContext(
+            tagName: "option",
+            allAttributes: contextAttributes,
+            items: new Dictionary<object, object>(),
+            uniqueId: "test");
+        var output = new TagHelperOutput(
+            originalTagName,
+            originalAttributes,
+            getChildContentAsync: (useCachedResult, encoder) =>
             {
-                TagMode = TagMode.StartTagAndEndTag,
-            };
-            output.PreContent.SetContent(originalPreContent);
-            output.Content.SetContent(originalContent);
-            output.PostContent.SetContent(originalPostContent);
-
-            var metadataProvider = new EmptyModelMetadataProvider();
-            var htmlGenerator = new TestableHtmlGenerator(metadataProvider);
-
-            var tagHelper = new OptionTagHelper(htmlGenerator)
-            {
-                Value = value,
-            };
-
-            // Act & Assert (does not throw)
-            // Tag helper would throw an NRE if it used ViewContext or Generator values.
-            await tagHelper.ProcessAsync(tagHelperContext, output);
-        }
-
-        private static TagHelperOutput GetTagHelperOutput(
-            string tagName, TagHelperAttributeList attributes, string content)
+                var tagHelperContent = new DefaultTagHelperContent();
+                tagHelperContent.SetContent(originalContent);
+                return Task.FromResult<TagHelperContent>(tagHelperContent);
+            })
         {
-            var tagHelperOutput = new TagHelperOutput(
-                tagName,
-                attributes,
-                getChildContentAsync: (useCachedResult, encoder) => Task.FromResult<TagHelperContent>(
-                    new DefaultTagHelperContent()));
-            tagHelperOutput.Content.SetContent(content);
+            TagMode = TagMode.StartTagAndEndTag,
+        };
+        output.PreContent.SetContent(originalPreContent);
+        output.Content.SetContent(originalContent);
+        output.PostContent.SetContent(originalPostContent);
 
-            return tagHelperOutput;
-        }
+        var metadataProvider = new EmptyModelMetadataProvider();
+        var htmlGenerator = new TestableHtmlGenerator(metadataProvider);
+        var viewContext = TestableHtmlGenerator.GetViewContext(
+            model: null,
+            htmlGenerator: htmlGenerator,
+            metadataProvider: metadataProvider);
+        tagHelperContext.Items[typeof(SelectTagHelper)] = currentValues == null ? null : new CurrentValues(currentValues);
+        var tagHelper = new OptionTagHelper(htmlGenerator)
+        {
+            Value = value,
+            ViewContext = viewContext,
+        };
+
+        // Act & Assert (does not throw)
+        // Tag helper would throw an NRE if it used Generator value.
+        await tagHelper.ProcessAsync(tagHelperContext, output);
+    }
+
+    [Theory]
+    [MemberData(nameof(DoesNotUseViewContextDataSet))]
+    public async Task ProcessAsync_DoesNotUseViewContext_IfSelectedNotNull(
+        string originalContent,
+        string selected,
+        string value,
+        ICollection<string> _,
+        TagHelperOutput __)
+    {
+        // Arrange
+        var originalAttributes = new TagHelperAttributeList
+            {
+                { "label", "my-label" },
+                { "selected", selected },
+            };
+        var originalTagName = "not-option";
+
+        var contextAttributes = new TagHelperAttributeList
+            {
+                { "label", "my-label" },
+                { "selected", selected },
+                { "value", value },
+            };
+        var originalPreContent = "original pre-content";
+        var originalPostContent = "original post-content";
+        var tagHelperContext = new TagHelperContext(
+            tagName: "option",
+            allAttributes: contextAttributes,
+            items: new Dictionary<object, object>(),
+            uniqueId: "test");
+
+        var output = new TagHelperOutput(
+            originalTagName,
+            originalAttributes,
+            getChildContentAsync: (useCachedResult, encoder) =>
+            {
+                var tagHelperContent = new DefaultTagHelperContent();
+                tagHelperContent.SetContent(originalContent);
+                return Task.FromResult<TagHelperContent>(tagHelperContent);
+            })
+        {
+            TagMode = TagMode.StartTagAndEndTag,
+        };
+        output.PreContent.SetContent(originalPreContent);
+        output.Content.SetContent(originalContent);
+        output.PostContent.SetContent(originalPostContent);
+
+        var metadataProvider = new EmptyModelMetadataProvider();
+        var htmlGenerator = new TestableHtmlGenerator(metadataProvider);
+
+        var tagHelper = new OptionTagHelper(htmlGenerator)
+        {
+            Value = value,
+        };
+
+        // Act & Assert (does not throw)
+        // Tag helper would throw an NRE if it used ViewContext or Generator values.
+        await tagHelper.ProcessAsync(tagHelperContext, output);
+    }
+
+    private static TagHelperOutput GetTagHelperOutput(
+        string tagName, TagHelperAttributeList attributes, string content)
+    {
+        var tagHelperOutput = new TagHelperOutput(
+            tagName,
+            attributes,
+            getChildContentAsync: (useCachedResult, encoder) => Task.FromResult<TagHelperContent>(
+                new DefaultTagHelperContent()));
+        tagHelperOutput.Content.SetContent(content);
+
+        return tagHelperOutput;
     }
 }

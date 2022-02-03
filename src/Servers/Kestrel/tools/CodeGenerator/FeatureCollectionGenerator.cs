@@ -1,39 +1,45 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace CodeGenerator
-{
-    public static class FeatureCollectionGenerator
-    {
-        public static string GenerateFile(string namespaceName, string className, string[] allFeatures, string[] implementedFeatures, string extraUsings, string fallbackFeatures)
-        {
-            // NOTE: This list MUST always match the set of feature interfaces implemented by TransportConnection.
-            // See also: src/Kestrel/Http/TransportConnection.FeatureCollection.cs
-            var features = allFeatures.Select((type, index) => new KnownFeature
-            {
-                Name = type,
-                Index = index
-            });
+namespace CodeGenerator;
 
-            return $@"// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+public static class FeatureCollectionGenerator
+{
+    public static string GenerateFile(string namespaceName, string className, string[] allFeatures, string[] implementedFeatures, string extraUsings, string fallbackFeatures)
+    {
+        // NOTE: This list MUST always match the set of feature interfaces implemented by TransportConnection.
+        // See also: src/Kestrel/Http/TransportConnection.FeatureCollection.cs
+        var features = allFeatures.Select((type, index) => new KnownFeature
+        {
+            Name = type,
+            Index = index
+        });
+
+        var s = $@"// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 {extraUsings}
 
 #nullable enable
 
 namespace {namespaceName}
 {{
-    internal partial class {className} : IFeatureCollection
-    {{{Each(features, feature => $@"
-        private object? _current{feature.Name};")}
+    internal partial class {className} : IFeatureCollection{Each(implementedFeatures, feature => $@",
+                              {new string(' ', className.Length)}{feature}")}
+    {{
+        // Implemented features{Each(implementedFeatures, feature => $@"
+        internal protected {feature}? _current{feature};")}{(allFeatures.Where(f => !implementedFeatures.Contains(f)).FirstOrDefault() is not null ? @"
+
+        // Other reserved feature slots" : "")}{Each(allFeatures.Where(f => !implementedFeatures.Contains(f)), feature => $@"
+        internal protected {feature}? _current{feature};")}
 
         private int _featureRevision;
 
@@ -124,7 +130,7 @@ namespace {namespaceName}
                     feature = ExtraFeatureGet(key);
                 }}
 
-                return feature{(string.IsNullOrEmpty(fallbackFeatures) ? "" : $" ?? {fallbackFeatures}[key]")};
+                return feature{(string.IsNullOrEmpty(fallbackFeatures) ? "" : $" ?? {fallbackFeatures}?[key]")};
             }}
 
             set
@@ -133,7 +139,7 @@ namespace {namespaceName}
 {Each(features, feature => $@"
                 {(feature.Index != 0 ? "else " : "")}if (key == typeof({feature.Name}))
                 {{
-                    _current{feature.Name} = value;
+                    _current{feature.Name} = ({feature.Name}?)value;
                 }}")}
                 else
                 {{
@@ -144,17 +150,21 @@ namespace {namespaceName}
 
         TFeature? IFeatureCollection.Get<TFeature>() where TFeature : default
         {{
+            // Using Unsafe.As for the cast due to https://github.com/dotnet/runtime/issues/49614
+            // The type of TFeature is confirmed by the typeof() check and the As cast only accepts
+            // that type; however the Jit does not eliminate a regular cast in a shared generic.
+
             TFeature? feature = default;{Each(features, feature => $@"
             {(feature.Index != 0 ? "else " : "")}if (typeof(TFeature) == typeof({feature.Name}))
             {{
-                feature = (TFeature?)_current{feature.Name};
+                feature = Unsafe.As<{feature.Name}?, TFeature?>(ref _current{feature.Name});
             }}")}
             else if (MaybeExtra != null)
             {{
                 feature = (TFeature?)(ExtraFeatureGet(typeof(TFeature)));
             }}{(string.IsNullOrEmpty(fallbackFeatures) ? "" : $@"
 
-            if (feature == null)
+            if (feature == null && {fallbackFeatures} != null)
             {{
                 feature = {fallbackFeatures}.Get<TFeature>();
             }}")}
@@ -164,10 +174,14 @@ namespace {namespaceName}
 
         void IFeatureCollection.Set<TFeature>(TFeature? feature) where TFeature : default
         {{
+            // Using Unsafe.As for the cast due to https://github.com/dotnet/runtime/issues/49614
+            // The type of TFeature is confirmed by the typeof() check and the As cast only accepts
+            // that type; however the Jit does not eliminate a regular cast in a shared generic.
+
             _featureRevision++;{Each(features, feature => $@"
             {(feature.Index != 0 ? "else " : "")}if (typeof(TFeature) == typeof({feature.Name}))
             {{
-                _current{feature.Name} = feature;
+                _current{feature.Name} = Unsafe.As<TFeature?, {feature.Name}?>(ref feature);
             }}")}
             else
             {{
@@ -197,17 +211,18 @@ namespace {namespaceName}
     }}
 }}
 ";
-        }
 
-        static string Each<T>(IEnumerable<T> values, Func<T, string> formatter)
-        {
-            return values.Any() ? values.Select(formatter).Aggregate((a, b) => a + b) : "";
-        }
+        return s;
+    }
 
-        private class KnownFeature
-        {
-            public string Name;
-            public int Index;
-        }
+    static string Each<T>(IEnumerable<T> values, Func<T, string> formatter)
+    {
+        return values.Any() ? values.Select(formatter).Aggregate((a, b) => a + b) : "";
+    }
+
+    private class KnownFeature
+    {
+        public string Name;
+        public int Index;
     }
 }

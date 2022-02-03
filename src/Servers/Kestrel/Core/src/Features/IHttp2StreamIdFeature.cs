@@ -1,16 +1,15 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Features
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Features;
+
+/// <summary>
+/// The stream id for a given stream in an HTTP/2 connection.
+/// </summary>
+public interface IHttp2StreamIdFeature
 {
     /// <summary>
-    /// The stream id for a given stream in an HTTP/2 connection.
+    /// Gets the id for the HTTP/2 stream.
     /// </summary>
-    public interface IHttp2StreamIdFeature
-    {
-        /// <summary>
-        /// Gets the id for the HTTP/2 stream.
-        /// </summary>
-        int StreamId { get; }
-    }
+    int StreamId { get; }
 }

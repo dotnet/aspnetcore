@@ -1,35 +1,32 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Filters;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Mvc.Filters
+namespace Microsoft.AspNetCore.Mvc.Filters;
+
+internal class PageSaveTempDataPropertyFilterFactory : IFilterFactory
 {
-    internal class PageSaveTempDataPropertyFilterFactory : IFilterFactory
+    public PageSaveTempDataPropertyFilterFactory(IReadOnlyList<LifecycleProperty> properties)
     {
-        public PageSaveTempDataPropertyFilterFactory(IReadOnlyList<LifecycleProperty> properties)
+        Properties = properties;
+    }
+
+    public IReadOnlyList<LifecycleProperty> Properties { get; }
+
+    public bool IsReusable => false;
+
+    public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
+    {
+        if (serviceProvider == null)
         {
-            Properties = properties;
+            throw new ArgumentNullException(nameof(serviceProvider));
         }
 
-        public IReadOnlyList<LifecycleProperty> Properties { get; }
+        var service = serviceProvider.GetRequiredService<PageSaveTempDataPropertyFilter>();
+        service.Properties = Properties;
 
-        public bool IsReusable => false;
-
-        public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
-        {
-            if (serviceProvider == null)
-            {
-                throw new ArgumentNullException(nameof(serviceProvider));
-            }
-
-            var service = serviceProvider.GetRequiredService<PageSaveTempDataPropertyFilter>();
-            service.Properties = Properties;
-
-            return service;
-        }
+        return service;
     }
 }

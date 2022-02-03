@@ -79,6 +79,9 @@ private:
     HRESULT
     TryCreateApplication(IHttpContext& pHttpContext, const ShimOptions& options, ErrorContext& error);
 
+    std::filesystem::path
+    HandleShadowCopy(const ShimOptions& options, IHttpContext& pHttpContext);
+
     IHttpServer            &m_pServer;
     HandlerResolver        &m_handlerResolver;
 

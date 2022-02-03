@@ -1,0 +1,148 @@
+﻿@page "/save-state"
+@using Components.TestServer
+@inject PreserveStateService PreserveService
+@{
+    var scenario = HttpContext.Request.Query.TryGetValue("Scenario", out var existing) ? existing.ToString() : null;
+    var state1 = HttpContext.Request.Query["State1"].ToString();
+    var state2 = HttpContext.Request.Query["State2"].ToString();
+    var script = scenario switch
+    {
+        "SingleComponentServer" => "server",
+        "MultipleComponentServer" => "server",
+        "SingleComponentClient" => "client",
+        "MultipleComponentClient" => "client",
+        null => "server", // doesn't matter what we pick
+        _ => throw new InvalidOperationException("Invalid scenario!")
+    };
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Multiple component entry points</title>
+    <base href="~/" />
+    @* This page is used to validate the ability to preserve and restore the state of components in Blazor server and WebAssembly. *@
+</head>
+<body>
+    @if (script == "client")
+    {
+        @* This is here to keep BasicTestApp.Program.cs happy *@
+        <root>Loading...</root>
+    }
+
+    @if (scenario != null)
+    {
+        @switch (scenario)
+        {
+            case "SingleComponentServer":
+                <component render-mode="ServerPrerendered" type="typeof(PreserveStateComponent)" param-State="@state1" param-ExtraState="@("Extra")"></component>
+                break;
+            case "MultipleComponentServer":
+                <component render-mode="ServerPrerendered" type="typeof(PreserveStateComponent)" param-State="@state1"></component>
+                @* State can change after a component has rendered, when this happens the output will not be updated during prerendering
+                   and will have to wait until the app restarts in interactive mode.
+                *@ 
+                PreserveService.NewState();
+                <component render-mode="ServerPrerendered" type="typeof(PreserveStateComponent)" param-State="@state2"></component>
+                break;
+            case "SingleComponentClient":
+                <component render-mode="WebAssemblyPrerendered" type="typeof(PreserveStateComponent)" param-State="@state1" param-ExtraState="@("Extra")"></component>
+                break;
+            case "MultipleComponentClient":
+                <component render-mode="WebAssemblyPrerendered" type="typeof(PreserveStateComponent)" param-State="@state1"></component>
+                PreserveService.NewState();
+                <component render-mode="WebAssemblyPrerendered" type="typeof(PreserveStateComponent)" param-State="@state2"></component>
+                break;
+        }
+        PreserveService.NewState();
+
+        @* This is just to show that the state of a service can still change after the component has rendered and it's the component
+           responsibility to deal with updates after the initial render
+        *@ 
+        <p>
+            Service state after components have rendered: <span id="service-state">@PreserveService.Guid</span>
+        </p>
+
+        <persist-component-state />
+
+        PreserveService.NewState();
+
+        @* This is just to show that this state will be lost and not restored since the state was persisted before *@ 
+        <p>
+            Service state after state has been persisted: <span id="service-state-after">@PreserveService.Guid</span>
+        </p>
+    }
+    else
+    {
+        <table>
+            <thead>
+                <tr>
+                    <th>Scenario</th>
+                    <th>Link</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>SingleComponentServer</td>
+                    <td>
+                        <a id="SingleComponentServer" href="/save-state?Scenario=SingleComponentServer&State1=State1&State2=State2">
+                            /save-state?Scenario=SingleComponentServer&State1=State1&State2=State2
+                        </a>
+                    </td>
+                </tr>
+                <tr>
+                    <td>MultipleComponentServer</td>
+                    <td>
+                        <a id="MultipleComponentServer" href="/save-state?Scenario=MultipleComponentServer&State1=State1&State2=State2">
+                            /save-state?Scenario=MultipleComponentServer&State1=State1&State2=State2
+                        </a>
+                    </td>
+                </tr>
+                <tr>
+                    <td>SingleComponentClient</td>
+                    <td>
+                        <a id="SingleComponentClient" href="/save-state?Scenario=SingleComponentClient&State1=State1&State2=State2">
+                            /save-state?Scenario=SingleComponentClient&State1=State1&State2=State2
+                        </a>
+                    </td>
+                </tr>
+                <tr>
+                    <td>MultipleComponentClient</td>
+                    <td>
+                        <a id="MultipleComponentClient" href="/save-state?Scenario=MultipleComponentClient&State1=State1&State2=State2">
+                            /save-state?Scenario=MultipleComponentClient&State1=State1&State2=State2
+                        </a>
+                    </td>
+                </tr>
+        </table>
+    }
+
+    @*
+        So that E2E tests can make assertions about both the prerendered and
+        interactive states, we only load the .js file when told to.
+    *@
+    <hr />
+
+    @if (script == "server")
+    {
+        <script src="_framework/blazor.server.js" autostart="false"></script>
+    }
+    else
+    {
+        <script src="_framework/blazor.webassembly.js" autostart="false"></script>
+    }
+
+    <script src="js/jsRootComponentInitializers.js"></script>
+    <script>
+        function start() {
+            Blazor.start({
+                logLevel: 1 // LogLevel.Debug
+            });
+        }
+
+        function getCurrentUrl() {
+            return location.href;
+        }
+    </script>
+    <button id="load-boot-script" onclick="start()">Load boot script</button>
+</body>
+</html>

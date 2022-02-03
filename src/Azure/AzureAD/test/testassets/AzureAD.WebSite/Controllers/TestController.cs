@@ -1,15 +1,14 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.using Microsoft.AspNetCore.Authorization;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace AzureAD.WebSite.Controllers
+namespace AzureAD.WebSite.Controllers;
+
+public class TestController : Controller
 {
-    public class TestController : Controller
-    {
-        [Authorize]
-        [HttpGet("/api/get")]
-        public IActionResult Get() => Ok();
-    }
+    [Authorize]
+    [HttpGet("/api/get")]
+    public IActionResult Get() => Ok();
 }

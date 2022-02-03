@@ -1,16 +1,20 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 import { WebAssemblyResourceLoader } from '../WebAssemblyResourceLoader';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const currentBrowserIsChrome = (window as any).chrome
   && navigator.userAgent.indexOf('Edge') < 0; // Edge pretends to be Chrome
 
 let hasReferencedPdbs = false;
 let debugBuild = false;
 
-export function hasDebuggingEnabled() {
+export function hasDebuggingEnabled(): boolean {
   return (hasReferencedPdbs || debugBuild) && currentBrowserIsChrome;
 }
 
-export function attachDebuggerHotkey(resourceLoader: WebAssemblyResourceLoader) {
+export function attachDebuggerHotkey(resourceLoader: WebAssemblyResourceLoader): void {
   hasReferencedPdbs = !!resourceLoader.bootConfig.resources.pdb;
   debugBuild = resourceLoader.bootConfig.debugBuild;
   // Use the combination shift+alt+D because it isn't used by the major browsers

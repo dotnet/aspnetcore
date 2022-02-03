@@ -1,135 +1,130 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Moq;
-using Xunit;
 
-namespace Microsoft.AspNetCore.DataProtection.Test
+namespace Microsoft.AspNetCore.DataProtection.Test;
+
+public class HostingTests
 {
-    public class HostingTests
+    [Fact]
+    public async Task WebhostLoadsKeyRingBeforeServerStarts()
     {
-        [Fact]
-        public async Task WebhostLoadsKeyRingBeforeServerStarts()
+        var tcs = new TaskCompletionSource();
+        var mockKeyRing = new Mock<IKeyRingProvider>();
+        mockKeyRing.Setup(m => m.GetCurrentKeyRing())
+            .Returns(Mock.Of<IKeyRing>())
+            .Callback(() => tcs.TrySetResult());
+
+        var builder = new WebHostBuilder()
+            .UseStartup<TestStartup>()
+            .ConfigureServices(s =>
+                s.AddDataProtection()
+                .Services
+                .Replace(ServiceDescriptor.Singleton(mockKeyRing.Object))
+                .AddSingleton<IServer>(
+                    new FakeServer(onStart: () => tcs.TrySetException(new InvalidOperationException("Server was started before key ring was initialized")))));
+
+        using (var host = builder.Build())
         {
-            var tcs = new TaskCompletionSource<object>();
-            var mockKeyRing = new Mock<IKeyRingProvider>();
-            mockKeyRing.Setup(m => m.GetCurrentKeyRing())
-                .Returns(Mock.Of<IKeyRing>())
-                .Callback(() => tcs.TrySetResult(null));
-
-            var builder = new WebHostBuilder()
-                .UseStartup<TestStartup>()
-                .ConfigureServices(s =>
-                    s.AddDataProtection()
-                    .Services
-                    .Replace(ServiceDescriptor.Singleton(mockKeyRing.Object))
-                    .AddSingleton<IServer>(
-                        new FakeServer(onStart: () => tcs.TrySetException(new InvalidOperationException("Server was started before key ring was initialized")))));
-
-            using (var host = builder.Build())
-            {
-                await host.StartAsync();
-            }
-
-            await tcs.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
-            mockKeyRing.VerifyAll();
+            await host.StartAsync();
         }
 
-        [Fact]
-        public async Task GenericHostLoadsKeyRingBeforeServerStarts()
-        {
-            var tcs = new TaskCompletionSource<object>();
-            var mockKeyRing = new Mock<IKeyRingProvider>();
-            mockKeyRing.Setup(m => m.GetCurrentKeyRing())
-                .Returns(Mock.Of<IKeyRing>())
-                .Callback(() => tcs.TrySetResult(null));
+        await tcs.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
+        mockKeyRing.VerifyAll();
+    }
 
-            var builder = new HostBuilder()
-                .ConfigureServices(s =>
-                    s.AddDataProtection()
-                    .Services
-                    .Replace(ServiceDescriptor.Singleton(mockKeyRing.Object))
-                    .AddSingleton<IServer>(
-                        new FakeServer(onStart: () => tcs.TrySetException(new InvalidOperationException("Server was started before key ring was initialized")))))
+    [Fact]
+    public async Task GenericHostLoadsKeyRingBeforeServerStarts()
+    {
+        var tcs = new TaskCompletionSource();
+        var mockKeyRing = new Mock<IKeyRingProvider>();
+        mockKeyRing.Setup(m => m.GetCurrentKeyRing())
+            .Returns(Mock.Of<IKeyRing>())
+            .Callback(() => tcs.TrySetResult());
+
+        var builder = new HostBuilder()
+            .ConfigureServices(s =>
+                s.AddDataProtection()
+                .Services
+                .Replace(ServiceDescriptor.Singleton(mockKeyRing.Object))
+                .AddSingleton<IServer>(
+                    new FakeServer(onStart: () => tcs.TrySetException(new InvalidOperationException("Server was started before key ring was initialized")))))
+            .ConfigureWebHost(b => b.UseStartup<TestStartup>());
+
+        using (var host = builder.Build())
+        {
+            await host.StartAsync();
+        }
+
+        await tcs.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
+        mockKeyRing.VerifyAll();
+    }
+
+    [Fact]
+    public async Task StartupContinuesOnFailureToLoadKey()
+    {
+        var mockKeyRing = new Mock<IKeyRingProvider>();
+        mockKeyRing.Setup(m => m.GetCurrentKeyRing())
+            .Throws(new NotSupportedException("This mock doesn't actually work, but shouldn't kill the server"))
+            .Verifiable();
+
+        var mockServer = new Mock<IServer>();
+        mockServer.Setup(m => m.Features).Returns(new FeatureCollection());
+
+        var builder = new HostBuilder()
+            .ConfigureServices(s =>
+                s.AddDataProtection()
+                .Services
+                .Replace(ServiceDescriptor.Singleton(mockKeyRing.Object))
+                .AddSingleton(mockServer.Object))
                 .ConfigureWebHost(b => b.UseStartup<TestStartup>());
 
-            using (var host = builder.Build())
-            {
-                await host.StartAsync();
-            }
-
-            await tcs.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
-            mockKeyRing.VerifyAll();
+        using (var host = builder.Build())
+        {
+            await host.StartAsync();
         }
 
-        [Fact]
-        public async Task StartupContinuesOnFailureToLoadKey()
+        mockKeyRing.VerifyAll();
+    }
+
+    private class TestStartup
+    {
+        public void Configure(IApplicationBuilder app)
         {
-            var mockKeyRing = new Mock<IKeyRingProvider>();
-            mockKeyRing.Setup(m => m.GetCurrentKeyRing())
-                .Throws(new NotSupportedException("This mock doesn't actually work, but shouldn't kill the server"))
-                .Verifiable();
+        }
+    }
 
-            var mockServer = new Mock<IServer>();
-            mockServer.Setup(m => m.Features).Returns(new FeatureCollection());
+    public class FakeServer : IServer
+    {
+        private readonly Action _onStart;
 
-            var builder = new HostBuilder()
-                .ConfigureServices(s =>
-                    s.AddDataProtection()
-                    .Services
-                    .Replace(ServiceDescriptor.Singleton(mockKeyRing.Object))
-                    .AddSingleton(mockServer.Object))
-                    .ConfigureWebHost(b => b.UseStartup<TestStartup>());
-
-            using (var host = builder.Build())
-            {
-                await host.StartAsync();
-            }
-            
-            mockKeyRing.VerifyAll();
+        public FakeServer(Action onStart)
+        {
+            _onStart = onStart;
         }
 
-        private class TestStartup
+        public IFeatureCollection Features => new FeatureCollection();
+
+        public Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken)
         {
-            public void Configure(IApplicationBuilder app)
-            {
-            }
+            _onStart();
+            return Task.CompletedTask;
         }
 
-        public class FakeServer : IServer
+        public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+
+        public void Dispose()
         {
-            private readonly Action _onStart;
-
-            public FakeServer(Action onStart)
-            {
-                _onStart = onStart;
-            }
-
-            public IFeatureCollection Features => new FeatureCollection();
-
-            public Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken)
-            {
-                _onStart();
-                return Task.CompletedTask;
-            }
-
-            public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
-
-            public void Dispose()
-            {
-            }
         }
     }
 }

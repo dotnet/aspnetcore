@@ -1,0 +1,193 @@
+﻿@using Microsoft.JSInterop
+@inject IJSRuntime JS
+
+<h1>JavaScript root components</h1>
+
+<p>This shows that we can dynamically add root components using JavaScript.</p>
+
+<p id="message"></p>
+
+<div id="container-rendered-by-blazor"></div>
+
+<p>
+    <button id="add-root-component" onclick="addRootComponent(false)">Add new root component</button>
+    <button id="add-root-component-inside-blazor" onclick="addRootComponent(true)">Add new root component inside Blazor UI</button>
+    <button id="remove-root-component" onclick="removeRootComponent()">Remove root component</button>
+    <button id="show-initializer-call-log" onclick="showInitializerCallLog()">Show initializer calls</button>
+</p>
+
+<p>
+    <label>
+        <input type="checkbox" id="add-shadow-root" />
+        When adding, create shadow DOM for root component
+    </label>
+</p>
+
+<p>
+    Increment amount: <input type="number" id="increment-amount" value="1" />
+    <button id="set-increment-amount" onclick="setIncrementAmount()">Set</button>
+</p>
+
+<p>
+    <button id="set-complex-params" onclick="setComplexParameters()">Set complex parameters</button>
+    <button id="set-invalid-params" onclick="setInvalidParameters()">Set invalid parameters</button>
+    <button id="set-catchall-params" onclick="setCatchAllParameters()">Set catch-all parameters</button>
+    <button id="set-callback-params" onclick="setCallbackParameters()">Set function parameters</button>
+    <button id="remove-callback-params" onclick="removeCallbackParameters()">Remove function parameters</button>
+</p>
+
+<script suppress-error="BL9992">
+    let dotNetObjectReferenceForJSComponents;
+    let numAddedComponents = 0;
+    let nextCallbackParameterId = 0;
+    const addedComponents = [];
+    const jsObject = DotNet.createJSObjectReference({
+        getValue() {
+            return `You've added ${numAddedComponents} components.`;
+        },
+
+        willDispose() {
+            setMessage('Received call to willDispose');
+        }
+    });
+
+    async function addRootComponent(intoBlazorUi) {
+        let containerElement;
+        if (intoBlazorUi) {
+            // We want to test putting it *directly* into a Blazor-rendered element, not some child of it
+            containerElement = document.getElementById('container-rendered-by-blazor');
+        } else {
+            containerElement = document.createElement('div');
+            containerElement.id = `root-container-${++numAddedComponents}`;
+            document.body.appendChild(containerElement);
+        }
+
+        if (document.getElementById('add-shadow-root').checked) {
+            containerElement = containerElement.attachShadow({ mode: 'open' });
+            containerElement.id = 'ShadowDOM';
+        }
+
+        const component = await Blazor.rootComponents.add(containerElement, 'my-dynamic-root-component', { incrementAmount: 1 });
+        addedComponents.push({ component, containerElement });
+        setMessage(`Added component in ${containerElement.id}`);
+    }
+
+    async function setIncrementAmount() {
+        const { component, containerElement } = addedComponents[addedComponents.length - 1];
+        const value = parseInt(document.getElementById('increment-amount').value);
+
+        setMessage(`Calling setParameters on component in ${containerElement.id}...`);
+
+        try {
+            await component.setParameters({ incrementAmount: value });
+            setMessage(`Updated parameters on component in ${containerElement.id}`);
+        } catch (ex) {
+            setMessage(`Error setting parameters: ${ex}`);
+        }
+    }
+
+    function setComplexParameters() {
+        const { component, containerElement } = addedComponents[addedComponents.length - 1];
+        component.setParameters({
+            incrementAmount: 123,
+            showComplexParameters: true,
+            somePerson: { name: 'Bert', age: 123.456 },
+            someJSObject: jsObject,
+            someDotNetObject: dotNetObjectReferenceForJSComponents,
+            byteArray: new Uint8Array([2, 3, 5, 7, 11, 13, 17]),
+            someUndefinedValue: undefined, // Undefined isn't serialized into the JSON. Adding this to show parameter counting still works.
+        });
+    }
+
+    async function setInvalidParameters() {
+        const { component, containerElement } = addedComponents[addedComponents.length - 1];
+        try {
+            await component.setParameters({ incrementAmount: 'not-a-number' });
+        } catch (ex) {
+            setMessage(`Error setting parameters: ${ex}`);
+        }
+    }
+
+    async function setCatchAllParameters() {
+        const { component, containerElement } = addedComponents[addedComponents.length - 1];
+        await component.setParameters({
+            stringVal: 'Hello',
+            wholeNumberVal: 1,
+            fractionalNumberVal: -123.456,
+            trueVal: true,
+            falseVal: false,
+            nullVal: null
+        });
+        setMessage(`Finished setting catchall parameters on component in ${containerElement.id}`);
+    }
+
+    async function setCallbackParameters() {
+        const { component, containerElement } = addedComponents[addedComponents.length - 1];
+        const id = nextCallbackParameterId++;
+        await component.setParameters({
+            onJSCallbackButtonClick: () => onJSCallbackButtonClick(id),
+            onJSCallbackWithParamsButtonClick: (eventArgs) => onJSCallbackWithParamsButtonClick(id, eventArgs),
+        });
+        setMessage(`Finished setting callback parameters on component in ${containerElement.id}`);
+    }
+
+    async function removeCallbackParameters() {
+        const { component, containerElement } = addedComponents[addedComponents.length - 1];
+        await component.setParameters({
+            onJSCallbackButtonClick: null,
+            onJSCallbackWithParamsButtonClick: null,
+        });
+        setMessage(`Finished removing callback parameters on component in ${containerElement.id}`);
+    }
+
+    function removeRootComponent() {
+        // Treat it like a FIFO queue
+        const { component, containerElement } = addedComponents.shift();
+        setMessage(`Disposed component in ${containerElement.id}`);
+        component.dispose();
+    }
+
+    function onJSCallbackButtonClick(id) {
+        setMessage(`JavaScript button callback invoked (id=${id})`);
+    }
+
+    function onJSCallbackWithParamsButtonClick(id, mouseEventArgs) {
+        setMessage(`JavaScript button callback received mouse event args (id=${id}, buttons=${mouseEventArgs.buttons})`);
+    }
+
+    function showInitializerCallLog() {
+        const callLog = myJsRootComponentInitializers.getCallLog();
+        setMessage(JSON.stringify(callLog));
+    }
+
+    function setMessage(message) {
+        document.getElementById('message').textContent = message;
+    }
+
+    function setDotNetObjectReferenceForJSComponents(value) {
+        dotNetObjectReferenceForJSComponents = value;
+    }
+</script>
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var value = new DotNetType("This is correct");
+            await JS.InvokeVoidAsync("setDotNetObjectReferenceForJSComponents", DotNetObjectReference.Create(value));
+        }
+    }
+
+    public class DotNetType
+    {
+        // Deliberately not creatable through JSON deserialization
+        // since we want to show it's the original .NET object instance
+        public string Property { get; }
+
+        public DotNetType(string propertyValue)
+        {
+            Property = propertyValue;
+        }
+    }
+}

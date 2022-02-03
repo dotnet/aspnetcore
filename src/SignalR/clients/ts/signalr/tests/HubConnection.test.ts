@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 import { HubConnection, HubConnectionState } from "../src/HubConnection";
 import { IConnection } from "../src/IConnection";
@@ -109,7 +109,7 @@ describe("HubConnection", () => {
     });
 
     describe("ping", () => {
-        it("automatically sends multiple pings", async () => {
+        it("sends pings when receiving pings", async () => {
             await VerifyLogger.run(async (logger) => {
                 const connection = new TestConnection();
                 const hubConnection = createHubConnection(connection, logger);
@@ -118,7 +118,14 @@ describe("HubConnection", () => {
 
                 try {
                     await hubConnection.start();
+
+                    const pingInterval = setInterval(async () => {
+                        await connection.receive({ type: MessageType.Ping });
+                    }, 5);
+
                     await delayUntil(500);
+
+                    clearInterval(pingInterval);
 
                     const numPings = connection.sentData.filter((s) => JSON.parse(s).type === MessageType.Ping).length;
                     expect(numPings).toBeGreaterThanOrEqual(2);
@@ -173,7 +180,6 @@ describe("HubConnection", () => {
                 const hubConnection = createHubConnection(connection, logger);
                 try {
                     // We don't actually care to wait for the send.
-                    // tslint:disable-next-line:no-floating-promises
                     hubConnection.send("testMethod", "arg", 42)
                         .catch((_) => { }); // Suppress exception and unhandled promise rejection warning.
 
@@ -201,7 +207,6 @@ describe("HubConnection", () => {
                 const hubConnection = createHubConnection(connection, logger);
                 try {
                     // We don't actually care to wait for the send.
-                    // tslint:disable-next-line:no-floating-promises
                     hubConnection.send("testMethod", "arg", null)
                         .catch((_) => { }); // Suppress exception and unhandled promise rejection warning.
 
@@ -231,7 +236,6 @@ describe("HubConnection", () => {
                 const hubConnection = createHubConnection(connection, logger);
                 try {
                     // We don't actually care to wait for the send.
-                    // tslint:disable-next-line:no-floating-promises
                     hubConnection.invoke("testMethod", "arg", 42)
                         .catch((_) => { }); // Suppress exception and unhandled promise rejection warning.
 
@@ -914,6 +918,52 @@ describe("HubConnection", () => {
             });
         });
 
+        it("unsubscribing dynamically doesn't affect the current invocation loop", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const eventToTrack = "eventName";
+
+                const connection = new TestConnection();
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    await hubConnection.start();
+
+                    let numInvocations1 = 0;
+                    let numInvocations2 = 0;
+                    const callback1 = () => {
+                        hubConnection.off(eventToTrack, callback1);
+                        numInvocations1++;
+                    }
+                    const callback2 = () => numInvocations2++;
+
+                    hubConnection.on(eventToTrack, callback1);
+                    hubConnection.on(eventToTrack, callback2);
+
+                    connection.receive({
+                        arguments: [],
+                        nonblocking: true,
+                        target: eventToTrack,
+                        type: MessageType.Invocation,
+                    });
+
+                    expect(numInvocations1).toBe(1);
+                    expect(numInvocations2).toBe(1);
+
+                    connection.receive({
+                        arguments: [],
+                        nonblocking: true,
+                        target: eventToTrack,
+                        type: MessageType.Invocation,
+                    });
+
+                    expect(numInvocations1).toBe(1);
+                    expect(numInvocations2).toBe(2);
+                }
+                finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
         it("unsubscribing from non-existing callbacks no-ops", async () => {
             await VerifyLogger.run(async (logger) => {
                 const connection = new TestConnection();
@@ -1186,6 +1236,57 @@ describe("HubConnection", () => {
                 }
             });
         });
+
+        it("ignores error from 'next' and 'complete' function", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    await hubConnection.start();
+
+                    hubConnection.stream("testMethod")
+                        .subscribe({
+                            next: (_item) => {
+                                throw new Error("from next");
+                            },
+                            error: (_e) => {},
+                            complete: () => {
+                                throw new Error("from complete");
+                            }
+                        });
+
+                    connection.receive({ type: MessageType.StreamItem, invocationId: connection.lastInvocationId, item: 1 });
+
+                    connection.receive({ type: MessageType.Completion, invocationId: connection.lastInvocationId });
+                } finally {
+                    await hubConnection.stop();
+                }
+            }, /Stream callback threw error: Error: from complete/,
+            /Stream callback threw error: Error: from next/);
+        });
+
+        it("ignores error from 'error' function", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    await hubConnection.start();
+
+                    hubConnection.stream("testMethod")
+                        .subscribe({
+                            next: (_item) => {},
+                            error: (_e) => {
+                                throw new Error("from error");
+                            },
+                            complete: () => {}
+                        });
+
+                    connection.receive({ type: MessageType.StreamItem, invocationId: connection.lastInvocationId, item: 1 });
+                } finally {
+                    await hubConnection.stop();
+                }
+            }, /Stream 'error' callback called with 'Error: Invocation canceled due to the underlying connection being closed.' threw error: Error: from error/);
+        });
     });
 
     describe("onClose", () => {
@@ -1293,7 +1394,7 @@ describe("HubConnection", () => {
                     const timeoutInMilliseconds = 400;
                     hubConnection.serverTimeoutInMilliseconds = timeoutInMilliseconds;
 
-                    const p = new PromiseSource<Error>();
+                    const p = new PromiseSource<Error | undefined>();
                     hubConnection.onclose((e) => p.resolve(e));
 
                     await hubConnection.start();
@@ -1323,7 +1424,7 @@ describe("HubConnection", () => {
                 try {
                     hubConnection.serverTimeoutInMilliseconds = 100;
 
-                    const p = new PromiseSource<Error>();
+                    const p = new PromiseSource<Error | undefined>();
                     hubConnection.onclose((e) => p.resolve(e));
 
                     await hubConnection.start();
@@ -1368,15 +1469,15 @@ class TestProtocol implements IHubProtocol {
 class TestObserver implements IStreamSubscriber<any> {
     public readonly closed: boolean = false;
     public itemsReceived: any[];
-    private itemsSource: PromiseSource<any[]>;
+    private _itemsSource: PromiseSource<any[]>;
 
     get completed(): Promise<any[]> {
-        return this.itemsSource.promise;
+        return this._itemsSource.promise;
     }
 
     constructor() {
         this.itemsReceived = [];
-        this.itemsSource = new PromiseSource<any[]>();
+        this._itemsSource = new PromiseSource<any[]>();
     }
 
     public next(value: any) {
@@ -1384,11 +1485,11 @@ class TestObserver implements IStreamSubscriber<any> {
     }
 
     public error(err: any) {
-        this.itemsSource.reject(new Error(err));
+        this._itemsSource.reject(new Error(err));
     }
 
     public complete() {
-        this.itemsSource.resolve(this.itemsReceived);
+        this._itemsSource.resolve(this.itemsReceived);
     }
 }
 

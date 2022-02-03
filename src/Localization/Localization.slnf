@@ -5,7 +5,7 @@
       "src\\Localization\\Abstractions\\src\\Microsoft.Extensions.Localization.Abstractions.csproj",
       "src\\Localization\\Localization\\src\\Microsoft.Extensions.Localization.csproj",
       "src\\Localization\\Localization\\test\\Microsoft.Extensions.Localization.RootNamespace.Tests\\Microsoft.Extensions.Localization.RootNamespace.Tests.csproj",
-      "src\\Localization\\Localization\\test\\Microsoft.Extensions.Localization.Tests\\Microsoft.Extensions.Localization.Tests.csproj",
+      "src\\Localization\\Localization\\test\\Microsoft.Extensions.Localization.Tests\\Microsoft.Extensions.Localization.Tests.csproj"
     ]
   }
 }

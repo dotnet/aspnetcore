@@ -1,52 +1,49 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.HttpSys.Internal;
 
-namespace Microsoft.AspNetCore.Server.IIS.Core.IO
+namespace Microsoft.AspNetCore.Server.IIS.Core.IO;
+
+internal partial class WebSocketsAsyncIOEngine
 {
-    internal partial class WebSocketsAsyncIOEngine
+    internal sealed class WebSocketWriteOperation : AsyncWriteOperationBase
     {
-        internal sealed class WebSocketWriteOperation : AsyncWriteOperationBase
+        [UnmanagedCallersOnly]
+        private static NativeMethods.REQUEST_NOTIFICATION_STATUS WriteCallback(IntPtr httpContext, IntPtr completionInfo, IntPtr completionContext)
         {
-            [UnmanagedCallersOnly]
-            private static NativeMethods.REQUEST_NOTIFICATION_STATUS WriteCallback(IntPtr httpContext, IntPtr completionInfo, IntPtr completionContext)
-            {
-                var context = (WebSocketWriteOperation)GCHandle.FromIntPtr(completionContext).Target!;
+            var context = (WebSocketWriteOperation)GCHandle.FromIntPtr(completionContext).Target!;
 
-                NativeMethods.HttpGetCompletionInfo(completionInfo, out var cbBytes, out var hr);
+            NativeMethods.HttpGetCompletionInfo(completionInfo, out var cbBytes, out var hr);
 
-                var continuation = context.Complete(hr, cbBytes);
-                continuation.Invoke();
+            var continuation = context.Complete(hr, cbBytes);
+            continuation.Invoke();
 
-                return NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_PENDING;
-            }
+            return NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_PENDING;
+        }
 
-            private readonly WebSocketsAsyncIOEngine _engine;
-            private GCHandle _thisHandle;
+        private readonly WebSocketsAsyncIOEngine _engine;
+        private GCHandle _thisHandle;
 
-            public WebSocketWriteOperation(WebSocketsAsyncIOEngine engine)
-            {
-                _engine = engine;
-            }
+        public WebSocketWriteOperation(WebSocketsAsyncIOEngine engine)
+        {
+            _engine = engine;
+        }
 
-            protected override unsafe int WriteChunks(NativeSafeHandle requestHandler, int chunkCount, HttpApiTypes.HTTP_DATA_CHUNK* dataChunks, out bool completionExpected)
-            {
-                _thisHandle = GCHandle.Alloc(this);
-                return NativeMethods.HttpWebsocketsWriteBytes(requestHandler, dataChunks, chunkCount, &WriteCallback, (IntPtr)_thisHandle, out completionExpected);
-            }
+        protected override unsafe int WriteChunks(NativeSafeHandle requestHandler, int chunkCount, HttpApiTypes.HTTP_DATA_CHUNK* dataChunks, out bool completionExpected)
+        {
+            _thisHandle = GCHandle.Alloc(this);
+            return NativeMethods.HttpWebsocketsWriteBytes(requestHandler, dataChunks, chunkCount, &WriteCallback, (IntPtr)_thisHandle, out completionExpected);
+        }
 
-            protected override void ResetOperation()
-            {
-                base.ResetOperation();
+        protected override void ResetOperation()
+        {
+            base.ResetOperation();
 
-                _thisHandle.Free();
+            _thisHandle.Free();
 
-                _engine.ReturnOperation(this);
-            }
+            _engine.ReturnOperation(this);
         }
     }
 }

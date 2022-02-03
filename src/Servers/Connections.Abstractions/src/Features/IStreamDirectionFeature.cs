@@ -1,21 +1,20 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Connections.Features
+namespace Microsoft.AspNetCore.Connections.Features;
+
+/// <summary>
+/// The direction of a connection stream
+/// </summary>
+public interface IStreamDirectionFeature
 {
     /// <summary>
-    /// The direction of a connection stream
+    /// Gets whether or not the connection stream can be read.
     /// </summary>
-    public interface IStreamDirectionFeature
-    {
-        /// <summary>
-        /// Gets whether or not the connection stream can be read.
-        /// </summary>
-        bool CanRead { get; }
+    bool CanRead { get; }
 
-        /// <summary>
-        /// Gets whether or not the connection stream can be written.
-        /// </summary>
-        bool CanWrite { get; }
-    }
+    /// <summary>
+    /// Gets whether or not the connection stream can be written.
+    /// </summary>
+    bool CanWrite { get; }
 }

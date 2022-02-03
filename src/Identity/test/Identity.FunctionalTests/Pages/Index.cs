@@ -1,86 +1,83 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net.Http;
-using System.Threading.Tasks;
 using AngleSharp.Dom.Html;
 using Microsoft.AspNetCore.Identity.FunctionalTests.Account;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Identity.FunctionalTests
+namespace Microsoft.AspNetCore.Identity.FunctionalTests;
+
+public class Index : DefaultUIPage
 {
-    public class Index : DefaultUIPage
+    private readonly IHtmlAnchorElement _registerLink;
+    private readonly IHtmlAnchorElement _loginLink;
+    private readonly IHtmlAnchorElement _manageLink;
+    public static readonly string Path = "/";
+
+    public Index(
+        HttpClient client,
+        IHtmlDocument index,
+        DefaultUIContext context)
+        : base(client, index, context)
     {
-        private readonly IHtmlAnchorElement _registerLink;
-        private readonly IHtmlAnchorElement _loginLink;
-        private readonly IHtmlAnchorElement _manageLink;
-        public static readonly string Path = "/";
-
-        public Index(
-            HttpClient client,
-            IHtmlDocument index,
-            DefaultUIContext context)
-            : base(client, index, context)
+        if (!Context.UserAuthenticated)
         {
-            if (!Context.UserAuthenticated)
-            {
-                _registerLink = HtmlAssert.HasLink("#register", Document);
-                _loginLink = HtmlAssert.HasLink("#login", Document);
-            }
-            else
-            {
-                _manageLink = HtmlAssert.HasLink("#manage", Document);
-            }
+            _registerLink = HtmlAssert.HasLink("#register", Document);
+            _loginLink = HtmlAssert.HasLink("#login", Document);
         }
-
-        public static async Task<Index> CreateAsync(HttpClient client, DefaultUIContext context = null)
+        else
         {
-            var goToIndex = await client.GetAsync("/");
-            var index = await ResponseAssert.IsHtmlDocumentAsync(goToIndex);
-
-            return new Index(client, index, context ?? new DefaultUIContext());
+            _manageLink = HtmlAssert.HasLink("#manage", Document);
         }
+    }
 
-        public async Task<Register> ClickRegisterLinkAsync()
-        {
-            Assert.False(Context.UserAuthenticated);
+    public static async Task<Index> CreateAsync(HttpClient client, DefaultUIContext context = null)
+    {
+        var goToIndex = await client.GetAsync("/");
+        var index = await ResponseAssert.IsHtmlDocumentAsync(goToIndex);
 
-            var goToRegister = await Client.GetAsync(_registerLink.Href);
-            var register = await ResponseAssert.IsHtmlDocumentAsync(goToRegister);
+        return new Index(client, index, context ?? new DefaultUIContext());
+    }
 
-            return new Register(Client, register, Context);
-        }
+    public async Task<Register> ClickRegisterLinkAsync()
+    {
+        Assert.False(Context.UserAuthenticated);
 
-        public async Task<Login> ClickLoginLinkAsync()
-        {
-            Assert.False(Context.UserAuthenticated);
+        var goToRegister = await Client.GetAsync(_registerLink.Href);
+        var register = await ResponseAssert.IsHtmlDocumentAsync(goToRegister);
 
-            var goToLogin = await Client.GetAsync(_loginLink.Href);
-            var login = await ResponseAssert.IsHtmlDocumentAsync(goToLogin);
+        return new Register(Client, register, Context);
+    }
 
-            return new Login(Client, login, Context);
-        }
+    public async Task<Login> ClickLoginLinkAsync()
+    {
+        Assert.False(Context.UserAuthenticated);
 
-        internal async Task<Account.Manage.Index> ClickManageLinkAsync()
-        {
-            Assert.True(Context.UserAuthenticated);
+        var goToLogin = await Client.GetAsync(_loginLink.Href);
+        var login = await ResponseAssert.IsHtmlDocumentAsync(goToLogin);
 
-            var goToManage = await Client.GetAsync(_manageLink.Href);
-            var manage = await ResponseAssert.IsHtmlDocumentAsync(goToManage);
+        return new Login(Client, login, Context);
+    }
 
-            return new Account.Manage.Index(Client, manage, Context);
-        }
+    internal async Task<Account.Manage.Index> ClickManageLinkAsync()
+    {
+        Assert.True(Context.UserAuthenticated);
 
-        internal async Task<Account.Manage.Index> ClickManageLinkWithExternalLoginAsync()
-        {
-            Assert.True(Context.UserAuthenticated);
+        var goToManage = await Client.GetAsync(_manageLink.Href);
+        var manage = await ResponseAssert.IsHtmlDocumentAsync(goToManage);
 
-            var goToManage = await Client.GetAsync(_manageLink.Href);
-            var manage = await ResponseAssert.IsHtmlDocumentAsync(goToManage);
+        return new Account.Manage.Index(Client, manage, Context);
+    }
 
-            return new Account.Manage.Index(Client, manage, Context
-                .WithSocialLoginEnabled()
-                .WithSocialLoginProvider());
-        }
+    internal async Task<Account.Manage.Index> ClickManageLinkWithExternalLoginAsync()
+    {
+        Assert.True(Context.UserAuthenticated);
+
+        var goToManage = await Client.GetAsync(_manageLink.Href);
+        var manage = await ResponseAssert.IsHtmlDocumentAsync(goToManage);
+
+        return new Account.Manage.Index(Client, manage, Context
+            .WithSocialLoginEnabled()
+            .WithSocialLoginProvider());
     }
 }

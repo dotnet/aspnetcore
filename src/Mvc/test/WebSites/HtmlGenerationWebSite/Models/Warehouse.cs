@@ -1,30 +1,29 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
 
-namespace HtmlGenerationWebSite.Models
+namespace HtmlGenerationWebSite.Models;
+
+public class Warehouse
 {
-    public class Warehouse
+    [MinLength(2)]
+    public string City
     {
-        [MinLength(2)]
-        public string City
-        {
-            get;
-            set;
-        }
+        get;
+        set;
+    }
 
-        [Range(1, 100)]
-        public int Product
-        {
-            get;
-            set;
-        }
+    [Range(1, 100)]
+    public int Product
+    {
+        get;
+        set;
+    }
 
-        public Employee Employee
-        {
-            get;
-            set;
-        }
+    public Employee Employee
+    {
+        get;
+        set;
     }
 }

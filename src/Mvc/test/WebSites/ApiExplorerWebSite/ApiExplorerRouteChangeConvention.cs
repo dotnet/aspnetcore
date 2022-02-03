@@ -1,35 +1,32 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Linq;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 
-namespace ApiExplorerWebSite
+namespace ApiExplorerWebSite;
+
+public class ApiExplorerRouteChangeConvention : Attribute, IActionModelConvention
 {
-    public class ApiExplorerRouteChangeConvention : Attribute, IActionModelConvention
+    public ApiExplorerRouteChangeConvention(WellKnownChangeToken changeToken)
     {
-        public ApiExplorerRouteChangeConvention(WellKnownChangeToken changeToken)
-        {
-            ChangeToken = changeToken;
-        }
+        ChangeToken = changeToken;
+    }
 
-        public WellKnownChangeToken ChangeToken { get; }
+    public WellKnownChangeToken ChangeToken { get; }
 
-        public void Apply(ActionModel action)
+    public void Apply(ActionModel action)
+    {
+        if (action.Attributes.OfType<ReloadAttribute>().Any() && ChangeToken.TokenSource.IsCancellationRequested)
         {
-            if (action.Attributes.OfType<ReloadAttribute>().Any() && ChangeToken.TokenSource.IsCancellationRequested)
+            action.ActionName = "NewIndex";
+            action.Selectors.Clear();
+            action.Selectors.Add(new SelectorModel
             {
-                action.ActionName = "NewIndex";
-                action.Selectors.Clear();
-                action.Selectors.Add(new SelectorModel
+                AttributeRouteModel = new AttributeRouteModel
                 {
-                    AttributeRouteModel = new AttributeRouteModel
-                    {
-                        Template = "NewIndex"
-                    }
-                });
-            }
+                    Template = "NewIndex"
+                }
+            });
         }
     }
 }

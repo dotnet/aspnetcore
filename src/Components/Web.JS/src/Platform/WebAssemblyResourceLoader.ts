@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 import { toAbsoluteUri } from '../Services/NavigationManager';
 import { BootJsonData, ResourceList } from './BootConfig';
 import { WebAssemblyStartOptions, WebAssemblyBootResourceType } from './WebAssemblyStartOptions';
@@ -5,7 +8,9 @@ const networkFetchCacheMode = 'no-cache';
 
 export class WebAssemblyResourceLoader {
   private usedCacheKeys: { [key: string]: boolean } = {};
+
   private networkLoads: { [name: string]: LoadLogEntry } = {};
+
   private cacheLoads: { [name: string]: LoadLogEntry } = {};
 
   static async initAsync(bootConfig: BootJsonData, startOptions: Partial<WebAssemblyStartOptions>): Promise<WebAssemblyResourceLoader> {
@@ -29,7 +34,7 @@ export class WebAssemblyResourceLoader {
     return { name, url, response };
   }
 
-  logToConsole() {
+  logToConsole(): void {
     const cacheLoadsEntries = Object.values(this.cacheLoads);
     const networkLoadsEntries = Object.values(this.networkLoads);
     const cacheResponseBytes = countTotalBytes(cacheLoadsEntries);
@@ -58,7 +63,7 @@ export class WebAssemblyResourceLoader {
     console.groupEnd();
   }
 
-  async purgeUnusedCacheEntriesAsync() {
+  async purgeUnusedCacheEntriesAsync(): Promise<void> {
     // We want to keep the cache small because, even though the browser will evict entries if it
     // gets too big, we don't want to be considered problematic by the end user viewing storage stats
     const cache = this.cacheIfUsed;
@@ -124,7 +129,7 @@ export class WebAssemblyResourceLoader {
     // there's anything they don't like about it.
     return fetch(url, {
       cache: networkFetchCacheMode,
-      integrity: this.bootConfig.cacheBootResources ? contentHash : undefined
+      integrity: this.bootConfig.cacheBootResources ? contentHash : undefined,
     });
   }
 
@@ -146,8 +151,8 @@ export class WebAssemblyResourceLoader {
     const responseToCache = new Response(responseData, {
       headers: {
         'content-type': response.headers.get('content-type') || '',
-        'content-length': (responseBytes || response.headers.get('content-length') || '').toString()
-      }
+        'content-length': (responseBytes || response.headers.get('content-length') || '').toString(),
+      },
     });
 
     try {

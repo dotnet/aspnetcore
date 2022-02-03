@@ -4,13 +4,13 @@
 <CascadingValue TValue="Task<AuthenticationState>" Value="@_currentAuthenticationStateTask" ChildContent="@ChildContent" />
 
 @code {
-    private Task<AuthenticationState> _currentAuthenticationStateTask;
+    private Task<AuthenticationState>? _currentAuthenticationStateTask;
 
     /// <summary>
     /// The content to which the authentication state should be provided.
     /// </summary>
     [Parameter]
-    public RenderFragment ChildContent { get; set; }
+    public RenderFragment? ChildContent { get; set; }
 
     protected override void OnInitialized()
     {

@@ -6,6 +6,8 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Description>Authenticate your Blazor webassembly applications with Azure Active Directory and Azure Active Directory B2C</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Trimmable>true</Trimmable>
+    <Nullable>disable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,18 +18,22 @@
     <InternalsVisibleTo Include="Microsoft.Authentication.WebAssembly.Msal.Tests" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
+  </ItemGroup>
+
   <PropertyGroup>
     <YarnWorkingDir>$(MSBuildThisFileDirectory)Interop\</YarnWorkingDir>
-    <ResolveCurrentProjectStaticWebAssetsInputsDependsOn>
+    <ResolveStaticWebAssetsInputsDependsOn>
       CompileInterop;
-      $(ResolveCurrentProjectStaticWebAssetsInputsDependsOn)
-    </ResolveCurrentProjectStaticWebAssetsInputsDependsOn>
+      IncludeCompileInteropOutput;
+      $(ResolveStaticWebAssetsInputsDependsOn)
+    </ResolveStaticWebAssetsInputsDependsOn>
   </PropertyGroup>
 
   <ItemGroup>
     <YarnInputs Include="$(YarnWorkingDir)**" Exclude="$(YarnWorkingDir)node_modules\**;$(YarnWorkingDir)*.d.ts;$(YarnWorkingDir)dist\**" />
     <YarnOutputs Include="$(YarnWorkingDir)dist\$(Configuration)\AuthenticationService.js" />
-    <YarnOutputs Include="$(YarnWorkingDir)dist\$(Configuration)\AuthenticationService.js.map" Condition="'$(Configuration)' == 'Debug'" />
 
     <Content Remove="$(YarnWorkingDir)**" />
     <None Include="$(YarnWorkingDir)*" Exclude="$(YarnWorkingDir)node_modules\**" />
@@ -55,26 +61,34 @@
   </Target>
 
   <Target Name="CompileInterop" Condition="'$(BuildNodeJS)' != 'false' AND '$(DesignTimeBuild)' != 'true'" Inputs="$(InteropCompilationCacheFile)" Outputs="@(YarnOutputs)">
-    <Yarn Command="install --mutex network" WorkingDirectory="$(YarnWorkingDir)" IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)" />
-    <Yarn Command="run build:release" WorkingDirectory="$(YarnWorkingDir)" Condition="'$(Configuration)' == 'Release'" IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)" />
+    <Yarn Command="install --mutex network --frozen-lockfile" WorkingDirectory="$(YarnWorkingDir)" IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)" />
+    <Yarn Command="run build:production" WorkingDirectory="$(YarnWorkingDir)" Condition="'$(Configuration)' == 'Release'" IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)" />
     <Yarn Command="run build:debug" WorkingDirectory="$(YarnWorkingDir)" Condition="'$(Configuration)' == 'Debug'" IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)" />
-
-    <ItemGroup>
-      <_InteropBuildOutput Include="$(YarnWorkingDir)dist\$(Configuration)\**" Exclude="$(YarnWorkingDir)dist\.gitignore" />
-
-      <StaticWebAsset Include="@(_InteropBuildOutput->'%(FullPath)')">
-        <SourceType></SourceType>
-        <SourceId>$(PackageId)</SourceId>
-        <ContentRoot>$([MSBuild]::NormalizeDirectory('$(YarnWorkingDir)\dist\$(Configuration)'))</ContentRoot>
-        <BasePath>_content/$(PackageId)</BasePath>
-        <RelativePath>$([System.String]::Copy('%(RecursiveDir)%(FileName)%(Extension)').Replace('\','/'))</RelativePath>
-      </StaticWebAsset>
-
-      <FileWrites Include="$(_InteropBuildOutput)" />
-    </ItemGroup>
 
     <Message Importance="high" Text="@(_InteropBuildOutput->'Emitted %(FullPath)')" />
 
+  </Target>
+
+  <Target Name="IncludeCompileInteropOutput">
+    <ItemGroup>
+      <_InteropBuildOutput Include="$(YarnWorkingDir)dist\$(Configuration)\**" Exclude="$(YarnWorkingDir)dist\.gitignore" />
+    </ItemGroup>
+
+    <DefineStaticWebAssets Condition="@(_InteropBuildOutput) != ''"
+      SourceType="Computed"
+      SourceId="$(PackageId)"
+      ContentRoot="$(YarnWorkingDir)dist\$(Configuration)\"
+      BasePath="_content/$(PackageId)"
+      CandidateAssets="@(_InteropBuildOutput)"
+      RelativePathFilter="**.js"
+    >
+      <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
+    </DefineStaticWebAssets>
+
+    <ItemGroup>
+      <_InteropBuildOutput Include="$(YarnWorkingDir)dist\$(Configuration)\**" Exclude="$(YarnWorkingDir)dist\.gitignore" />
+      <FileWrites Include="$(_InteropBuildOutput)" />
+    </ItemGroup>
   </Target>
 
 </Project>

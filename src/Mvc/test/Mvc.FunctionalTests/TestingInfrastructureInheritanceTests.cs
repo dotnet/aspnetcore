@@ -1,130 +1,168 @@
-// Copyright (c) .NET  Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.FunctionalTests
+namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
+
+public class TestingInfrastructureInheritanceTests
 {
-    public class TestingInfrastructureInheritanceTests
+    [Fact]
+    public void TestingInfrastructure_WebHost_WithWebHostBuilderRespectsCustomizations()
     {
-        [Fact]
-        public void TestingInfrastructure_WebHost_WithWebHostBuilderRespectsCustomizations()
-        {
-            // Act
-            using var factory = new CustomizedFactory<BasicWebSite.StartupWithoutEndpointRouting>();
-            using var customized = factory
-                .WithWebHostBuilder(builder => factory.ConfigureWebHostCalled.Add("Customization"))
-                .WithWebHostBuilder(builder => factory.ConfigureWebHostCalled.Add("FurtherCustomization"));
-            var client = customized.CreateClient();
+        // Act
+        using var factory = new CustomizedFactory<BasicWebSite.StartupWithoutEndpointRouting>();
+        using var customized = factory
+            .WithWebHostBuilder(builder => factory.ConfigureWebHostCalled.Add("Customization"))
+            .WithWebHostBuilder(builder => factory.ConfigureWebHostCalled.Add("FurtherCustomization"));
+        var client = customized.CreateClient();
 
-            // Assert
-            Assert.Equal(new[] { "ConfigureWebHost", "Customization", "FurtherCustomization" }, factory.ConfigureWebHostCalled.ToArray());
-            Assert.True(factory.CreateServerCalled);
-            Assert.True(factory.CreateWebHostBuilderCalled);
-            // GetTestAssemblies is not called when reading content roots from MvcAppManifest
-            Assert.False(factory.GetTestAssembliesCalled);
-            Assert.True(factory.CreateHostBuilderCalled);
-            Assert.False(factory.CreateHostCalled);
+        // Assert
+        Assert.Equal(new[] { "ConfigureWebHost", "Customization", "FurtherCustomization" }, factory.ConfigureWebHostCalled.ToArray());
+        Assert.True(factory.CreateServerCalled);
+        Assert.True(factory.CreateWebHostBuilderCalled);
+        // GetTestAssemblies is not called when reading content roots from MvcAppManifest
+        Assert.False(factory.GetTestAssembliesCalled);
+        Assert.True(factory.CreateHostBuilderCalled);
+        Assert.False(factory.CreateHostCalled);
+    }
+
+    [Fact]
+    public void TestingInfrastructure_GenericHost_WithWithHostBuilderRespectsCustomizations()
+    {
+        // Act
+        using var factory = new CustomizedFactory<GenericHostWebSite.Startup>();
+        using var customized = factory
+            .WithWebHostBuilder(builder => factory.ConfigureWebHostCalled.Add("Customization"))
+            .WithWebHostBuilder(builder => factory.ConfigureWebHostCalled.Add("FurtherCustomization"));
+        var client = customized.CreateClient();
+
+        // Assert
+        Assert.Equal(new[] { "ConfigureWebHost", "Customization", "FurtherCustomization" }, factory.ConfigureWebHostCalled.ToArray());
+        Assert.False(factory.GetTestAssembliesCalled);
+        Assert.True(factory.CreateHostBuilderCalled);
+        Assert.True(factory.CreateHostCalled);
+        Assert.False(factory.CreateServerCalled);
+        Assert.False(factory.CreateWebHostBuilderCalled);
+    }
+
+    [Fact]
+    public void TestingInfrastructure_GenericHost_WithWithHostBuilderHasServices()
+    {
+        // Act
+        using var factory = new CustomizedFactory<GenericHostWebSite.Startup>();
+
+        // Assert
+        Assert.NotNull(factory.Services);
+        Assert.NotNull(factory.Services.GetService(typeof(IConfiguration)));
+    }
+
+    [Fact]
+    public void TestingInfrastructure_GenericHost_HostShouldStopBeforeDispose()
+    {
+        // Act
+        using var factory = new CustomizedFactory<GenericHostWebSite.Startup>();
+        var callbackCalled = false;
+
+        var lifetimeService = (IHostApplicationLifetime)factory.Services.GetService(typeof(IHostApplicationLifetime));
+        lifetimeService.ApplicationStopped.Register(() => { callbackCalled = true; });
+        factory.Dispose();
+
+        // Assert
+        Assert.True(callbackCalled);
+    }
+
+    [Fact]
+    public async Task TestingInfrastructure_GenericHost_HostDisposeAsync()
+    {
+        // Arrange
+        using var factory = new CustomizedFactory<GenericHostWebSite.Startup>().WithWebHostBuilder(ConfigureWebHostBuilder);
+        var sink = factory.Services.GetRequiredService<DisposableService>();
+
+        // Act
+        await factory.DisposeAsync();
+
+        // Assert
+        Assert.True(sink._asyncDisposed);
+    }
+
+    [Fact]
+    public void TestingInfrastructure_GenericHost_HostDispose()
+    {
+        // Arrange
+        using var factory = new CustomizedFactory<GenericHostWebSite.Startup>().WithWebHostBuilder(ConfigureWebHostBuilder);
+        var sink = factory.Services.GetRequiredService<DisposableService>();
+
+        // Act
+        factory.Dispose();
+
+        // Assert
+        Assert.True(sink._asyncDisposed);
+    }
+
+    private static void ConfigureWebHostBuilder(IWebHostBuilder builder) =>
+        builder.UseStartup<GenericHostWebSite.Startup>()
+        .ConfigureServices(s => s.AddScoped<DisposableService>());
+
+    private class DisposableService : IAsyncDisposable
+    {
+        public bool _asyncDisposed = false;
+        public ValueTask DisposeAsync()
+        {
+            _asyncDisposed = true;
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    private class CustomizedFactory<TEntryPoint> : WebApplicationFactory<TEntryPoint> where TEntryPoint : class
+    {
+        public bool GetTestAssembliesCalled { get; private set; }
+        public bool CreateWebHostBuilderCalled { get; private set; }
+        public bool CreateHostBuilderCalled { get; private set; }
+        public bool CreateServerCalled { get; private set; }
+        public bool CreateHostCalled { get; private set; }
+        public IList<string> ConfigureWebHostCalled { get; private set; } = new List<string>();
+
+        protected override void ConfigureWebHost(IWebHostBuilder builder)
+        {
+            ConfigureWebHostCalled.Add("ConfigureWebHost");
+            base.ConfigureWebHost(builder);
         }
 
-        [Fact]
-        public void TestingInfrastructure_GenericHost_WithWithHostBuilderRespectsCustomizations()
+        protected override TestServer CreateServer(IWebHostBuilder builder)
         {
-            // Act
-            using var factory = new CustomizedFactory<GenericHostWebSite.Startup>();
-            using var customized = factory
-                .WithWebHostBuilder(builder => factory.ConfigureWebHostCalled.Add("Customization"))
-                .WithWebHostBuilder(builder => factory.ConfigureWebHostCalled.Add("FurtherCustomization"));
-            var client = customized.CreateClient();
-
-            // Assert
-            Assert.Equal(new[] { "ConfigureWebHost", "Customization", "FurtherCustomization" }, factory.ConfigureWebHostCalled.ToArray());
-            Assert.False(factory.GetTestAssembliesCalled);
-            Assert.True(factory.CreateHostBuilderCalled);
-            Assert.True(factory.CreateHostCalled);
-            Assert.False(factory.CreateServerCalled);
-            Assert.False(factory.CreateWebHostBuilderCalled);
+            CreateServerCalled = true;
+            return base.CreateServer(builder);
         }
 
-        [Fact]
-        public void TestingInfrastructure_GenericHost_WithWithHostBuilderHasServices()
+        protected override IHost CreateHost(IHostBuilder builder)
         {
-            // Act
-            using var factory = new CustomizedFactory<GenericHostWebSite.Startup>();
-
-            // Assert
-            Assert.NotNull(factory.Services);
-            Assert.NotNull(factory.Services.GetService(typeof(IConfiguration)));
+            CreateHostCalled = true;
+            return base.CreateHost(builder);
         }
 
-        [Fact]
-        public void TestingInfrastructure_GenericHost_HostShouldStopBeforeDispose()
+        protected override IWebHostBuilder CreateWebHostBuilder()
         {
-            // Act
-            using var factory = new CustomizedFactory<GenericHostWebSite.Startup>();
-            var callbackCalled = false;
-
-            var lifetimeService = (IHostApplicationLifetime) factory.Services.GetService(typeof(IHostApplicationLifetime));
-            lifetimeService.ApplicationStopped.Register(() => { callbackCalled = true; });
-            factory.Dispose();
-
-            // Assert
-            Assert.True(callbackCalled);
+            CreateWebHostBuilderCalled = true;
+            return base.CreateWebHostBuilder();
         }
 
-        private class CustomizedFactory<TEntryPoint> : WebApplicationFactory<TEntryPoint> where TEntryPoint : class
+        protected override IHostBuilder CreateHostBuilder()
         {
-            public bool GetTestAssembliesCalled { get; private set; }
-            public bool CreateWebHostBuilderCalled { get; private set; }
-            public bool CreateHostBuilderCalled { get; private set; }
-            public bool CreateServerCalled { get; private set; }
-            public bool CreateHostCalled { get; private set; }
-            public IList<string> ConfigureWebHostCalled { get; private set; } = new List<string>();
-            public bool DisposeHostCalled { get; private set; }
+            CreateHostBuilderCalled = true;
+            return base.CreateHostBuilder();
+        }
 
-            protected override void ConfigureWebHost(IWebHostBuilder builder)
-            {
-                ConfigureWebHostCalled.Add("ConfigureWebHost");
-                base.ConfigureWebHost(builder);
-            }
-
-            protected override TestServer CreateServer(IWebHostBuilder builder)
-            {
-                CreateServerCalled = true;
-                return base.CreateServer(builder);
-            }
-
-            protected override IHost CreateHost(IHostBuilder builder)
-            {
-                CreateHostCalled = true;
-                return base.CreateHost(builder);
-            }
-
-            protected override IWebHostBuilder CreateWebHostBuilder()
-            {
-                CreateWebHostBuilderCalled = true;
-                return base.CreateWebHostBuilder();
-            }
-
-            protected override IHostBuilder CreateHostBuilder()
-            {
-                CreateHostBuilderCalled = true;
-                return base.CreateHostBuilder();
-            }
-
-            protected override IEnumerable<Assembly> GetTestAssemblies()
-            {
-                GetTestAssembliesCalled = true;
-                return base.GetTestAssemblies();
-            }
+        protected override IEnumerable<Assembly> GetTestAssemblies()
+        {
+            GetTestAssembliesCalled = true;
+            return base.GetTestAssemblies();
         }
     }
 }

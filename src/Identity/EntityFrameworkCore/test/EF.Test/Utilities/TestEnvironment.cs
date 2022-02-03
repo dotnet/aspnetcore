@@ -1,24 +1,22 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
 using Microsoft.Extensions.Configuration;
 
-namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test.Utilities
+namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test.Utilities;
+
+public static class TestEnvironment
 {
-    public static class TestEnvironment
+    public static IConfiguration Config { get; }
+
+    static TestEnvironment()
     {
-        public static IConfiguration Config { get; }
+        var configBuilder = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("config.json", optional: true)
+            .AddJsonFile("config.test.json", optional: true)
+            .AddEnvironmentVariables();
 
-        static TestEnvironment()
-        {
-            var configBuilder = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("config.json", optional: true)
-                .AddJsonFile("config.test.json", optional: true)
-                .AddEnvironmentVariables();
-
-            Config = configBuilder.Build();
-        }
+        Config = configBuilder.Build();
     }
 }

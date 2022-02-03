@@ -1,45 +1,44 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 
-namespace BasicWebSite.Controllers
+namespace BasicWebSite.Controllers;
+
+public class JsonResultWithSystemTextJsonController : Controller
 {
-    public class JsonResultWithSystemTextJsonController : Controller
+    private static readonly JsonSerializerOptions _customSerializerSettings;
+
+    static JsonResultWithSystemTextJsonController()
     {
-        private static readonly JsonSerializerOptions _customSerializerSettings;
+        _customSerializerSettings = new JsonSerializerOptions();
+    }
 
-        static JsonResultWithSystemTextJsonController()
-        {
-            _customSerializerSettings = new JsonSerializerOptions();
-        }
+    public JsonResult Plain()
+    {
+        return new JsonResult(new { Message = "hello" });
+    }
 
-        public JsonResult Plain()
-        {
-            return new JsonResult(new { Message = "hello" });
-        }
+    public JsonResult CustomContentType()
+    {
+        var result = new JsonResult(new { Message = "hello" });
+        result.ContentType = "application/message+json";
+        return result;
+    }
 
-        public JsonResult CustomContentType()
-        {
-            var result = new JsonResult(new { Message = "hello" });
-            result.ContentType = "application/message+json";
-            return result;
-        }
+    public JsonResult CustomSerializerSettings()
+    {
+        return new JsonResult(new { Message = "hello" }, _customSerializerSettings);
+    }
 
-        public JsonResult CustomSerializerSettings()
-        {
-            return new JsonResult(new { Message = "hello" }, _customSerializerSettings);
-        }
+    public JsonResult Null()
+    {
+        return new JsonResult(null);
+    }
 
-        public JsonResult Null()
-        {
-            return new JsonResult(null);
-        }
-
-        public JsonResult String()
-        {
-            return new JsonResult("hello");
-        }
+    public JsonResult String()
+    {
+        return new JsonResult("hello");
     }
 }

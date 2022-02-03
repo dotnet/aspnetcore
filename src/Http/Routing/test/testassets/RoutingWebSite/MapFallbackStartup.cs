@@ -1,36 +1,31 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
+namespace RoutingWebSite;
 
-namespace RoutingWebSite
+public class MapFallbackStartup
 {
-    public class MapFallbackStartup
+    public void ConfigureServices(IServiceCollection services)
     {
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services.AddRouting();
-        }
+        services.AddRouting();
+    }
 
-        public void Configure(IApplicationBuilder app)
+    public void Configure(IApplicationBuilder app)
+    {
+        app.UseRouting();
+        app.UseEndpoints(endpoints =>
         {
-            app.UseRouting();
-            app.UseEndpoints(endpoints =>
+            endpoints.MapFallback("/prefix/{*path:nonfile}", (context) =>
             {
-                endpoints.MapFallback("/prefix/{*path:nonfile}", (context) =>
-                {
-                    return context.Response.WriteAsync("FallbackCustomPattern");
-                });
-
-                endpoints.MapFallback((context) =>
-                {
-                    return context.Response.WriteAsync("FallbackDefaultPattern");
-                });
-
-                endpoints.MapHello("/helloworld", "World");
+                return context.Response.WriteAsync("FallbackCustomPattern");
             });
-        }
+
+            endpoints.MapFallback((context) =>
+            {
+                return context.Response.WriteAsync("FallbackDefaultPattern");
+            });
+
+            endpoints.MapHello("/helloworld", "World");
+        });
     }
 }

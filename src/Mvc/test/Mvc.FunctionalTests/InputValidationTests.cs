@@ -1,31 +1,27 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.FunctionalTests
+namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
+
+public class InputValidationTests : IClassFixture<MvcTestFixture<FormatterWebSite.Startup>>
 {
-    public class InputValidationTests : IClassFixture<MvcTestFixture<FormatterWebSite.Startup>>
+    public InputValidationTests(MvcTestFixture<FormatterWebSite.Startup> fixture)
     {
-        public InputValidationTests(MvcTestFixture<FormatterWebSite.Startup> fixture)
-        {
-            Client = fixture.CreateDefaultClient();
-        }
+        Client = fixture.CreateDefaultClient();
+    }
 
-        public HttpClient Client { get; }
+    public HttpClient Client { get; }
 
-        [Fact]
-        public async Task ValidRequest_IsAccepted()
-        {
-            // Arrange
-            var content = new FormUrlEncodedContent(new Dictionary<string, string>
+    [Fact]
+    public async Task ValidRequest_IsAccepted()
+    {
+        // Arrange
+        var content = new FormUrlEncodedContent(new Dictionary<string, string>
             {
                 { "RequiredProp", "1" },
                 { "BindRequiredProp", "2" },
@@ -38,34 +34,34 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 { "BindNeverRequiredProp", "ignoredValue" }, // Value should not be used
             });
 
-            // Act
-            var response = await Client.PostAsync("http://localhost/TopLevelValidation", content);
-            var responseText = await response.Content.ReadAsStringAsync();
+        // Act
+        var response = await Client.PostAsync("http://localhost/TopLevelValidation", content);
+        var responseText = await response.Content.ReadAsStringAsync();
 
-            // Assert
-            Assert.Contains("[OptionalProp:0]", responseText);
-            Assert.Contains("[RequiredProp:1]", responseText);
-            Assert.Contains("[BindRequiredProp:2]", responseText);
-            Assert.Contains("[RequiredAndBindRequiredProp:3]", responseText);
-            Assert.Contains("[OptionalStringLengthProp:]", responseText);
-            Assert.Contains("[OptionalRangeDisplayNameProp:0]", responseText);
-            Assert.Contains("[UnboundRequiredProp:0]", responseText);
-            Assert.Contains("[UnboundBindRequiredProp:0]", responseText);
-            Assert.Contains("[BindNeverRequiredProp:]", responseText);
-            Assert.Contains("[optionalParam:0]", responseText);
-            Assert.Contains("[requiredParam:4]", responseText);
-            Assert.Contains("[bindRequiredParam:5]", responseText);
-            Assert.Contains("[requiredAndBindRequiredParam:6]", responseText);
-            Assert.Contains("[optionalStringLengthParam:]", responseText);
-            Assert.Contains("[optionalRangeDisplayNameParam:0]", responseText);
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        }
+        // Assert
+        Assert.Contains("[OptionalProp:0]", responseText);
+        Assert.Contains("[RequiredProp:1]", responseText);
+        Assert.Contains("[BindRequiredProp:2]", responseText);
+        Assert.Contains("[RequiredAndBindRequiredProp:3]", responseText);
+        Assert.Contains("[OptionalStringLengthProp:]", responseText);
+        Assert.Contains("[OptionalRangeDisplayNameProp:0]", responseText);
+        Assert.Contains("[UnboundRequiredProp:0]", responseText);
+        Assert.Contains("[UnboundBindRequiredProp:0]", responseText);
+        Assert.Contains("[BindNeverRequiredProp:]", responseText);
+        Assert.Contains("[optionalParam:0]", responseText);
+        Assert.Contains("[requiredParam:4]", responseText);
+        Assert.Contains("[bindRequiredParam:5]", responseText);
+        Assert.Contains("[requiredAndBindRequiredParam:6]", responseText);
+        Assert.Contains("[optionalStringLengthParam:]", responseText);
+        Assert.Contains("[optionalRangeDisplayNameParam:0]", responseText);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
 
-        [Fact]
-        public async Task InvalidRequest_IsRejected()
-        {
-            // Arrange
-            var content = new FormUrlEncodedContent(new Dictionary<string, string>
+    [Fact]
+    public async Task InvalidRequest_IsRejected()
+    {
+        // Arrange
+        var content = new FormUrlEncodedContent(new Dictionary<string, string>
             {
                 { "OptionalStringLengthProp", "ThisStringIsTooLongForTheProperty" },
                 { "OptionalRangeDisplayNameProp", "123" },
@@ -73,48 +69,47 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 { "optionalRangeDisplayNameParam", "456" },
             });
 
-            // Act
-            var response = await Client.PostAsync("http://localhost/TopLevelValidation", content);
-            var responseText = await response.Content.ReadAsStringAsync();
-            var errors = JsonConvert.DeserializeObject<JObject>(responseText)
-                .Properties()
-                .ToDictionary(
-                    prop => prop.Name,
-                    prop => ((JArray)prop.Value).Single().Value<string>());
+        // Act
+        var response = await Client.PostAsync("http://localhost/TopLevelValidation", content);
+        var responseText = await response.Content.ReadAsStringAsync();
+        var errors = JsonConvert.DeserializeObject<JObject>(responseText)
+            .Properties()
+            .ToDictionary(
+                prop => prop.Name,
+                prop => ((JArray)prop.Value).Single().Value<string>());
 
-            // Assert
-            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-            Assert.Equal(10, errors.Count);
-            Assert.Equal(
-                "The RequiredProp field is required.",
-                errors["RequiredProp"]);
-            Assert.Equal(
-                "A value for the 'BindRequiredProp' parameter or property was not provided.",
-                errors["BindRequiredProp"]);
-            Assert.Equal(
-                "A value for the 'RequiredAndBindRequiredProp' parameter or property was not provided.",
-                errors["RequiredAndBindRequiredProp"]);
-            Assert.Equal(
-                "The field OptionalStringLengthProp must be a string with a maximum length of 5.",
-                errors["OptionalStringLengthProp"]);
-            Assert.Equal(
-                "The field Some Display Name For Prop must be between 1 and 100.",
-                errors["OptionalRangeDisplayNameProp"]);
-            Assert.Equal(
-                "The requiredParam field is required.",
-                errors["requiredParam"]);
-            Assert.Equal(
-                "A value for the 'bindRequiredParam' parameter or property was not provided.",
-                errors["bindRequiredParam"]);
-            Assert.Equal(
-                "A value for the 'requiredAndBindRequiredParam' parameter or property was not provided.",
-                errors["requiredAndBindRequiredParam"]);
-            Assert.Equal(
-                "The field optionalStringLengthParam must be a string with a maximum length of 5.",
-                errors["optionalStringLengthParam"]);
-            Assert.Equal(
-                "The field Some Display Name For Param must be between 1 and 100.",
-                errors["optionalRangeDisplayNameParam"]);
-        }
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(10, errors.Count);
+        Assert.Equal(
+            "The RequiredProp field is required.",
+            errors["RequiredProp"]);
+        Assert.Equal(
+            "A value for the 'BindRequiredProp' parameter or property was not provided.",
+            errors["BindRequiredProp"]);
+        Assert.Equal(
+            "A value for the 'RequiredAndBindRequiredProp' parameter or property was not provided.",
+            errors["RequiredAndBindRequiredProp"]);
+        Assert.Equal(
+            "The field OptionalStringLengthProp must be a string with a maximum length of 5.",
+            errors["OptionalStringLengthProp"]);
+        Assert.Equal(
+            "The field Some Display Name For Prop must be between 1 and 100.",
+            errors["OptionalRangeDisplayNameProp"]);
+        Assert.Equal(
+            "The requiredParam field is required.",
+            errors["requiredParam"]);
+        Assert.Equal(
+            "A value for the 'bindRequiredParam' parameter or property was not provided.",
+            errors["bindRequiredParam"]);
+        Assert.Equal(
+            "A value for the 'requiredAndBindRequiredParam' parameter or property was not provided.",
+            errors["requiredAndBindRequiredParam"]);
+        Assert.Equal(
+            "The field optionalStringLengthParam must be a string with a maximum length of 5.",
+            errors["optionalStringLengthParam"]);
+        Assert.Equal(
+            "The field Some Display Name For Param must be between 1 and 100.",
+            errors["optionalRangeDisplayNameParam"]);
     }
 }

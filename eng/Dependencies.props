@@ -13,11 +13,15 @@ and are generated based on the last package release.
   </PropertyGroup>
 
   <ItemGroup Label=".NET team dependencies">
+    <LatestPackageReference Include="Microsoft.AspNetCore.Razor.Language" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" />
     <LatestPackageReference Include="Microsoft.Azure.SignalR" />
+    <LatestPackageReference Include="Microsoft.Bcl.HashCode" />
     <LatestPackageReference Include="Microsoft.Css.Parser" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.Common" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+    <LatestPackageReference Include="Microsoft.CodeAnalysis.Razor" />
     <LatestPackageReference Include="Microsoft.CSharp" />
     <LatestPackageReference Include="Microsoft.Extensions.Caching.Abstractions" />
     <LatestPackageReference Include="Microsoft.Extensions.Caching.Memory" />
@@ -56,7 +60,8 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.Extensions.Options" />
     <LatestPackageReference Include="Microsoft.Extensions.Primitives" />
     <LatestPackageReference Include="Microsoft.Win32.Registry" />
-    <LatestPackageReference Include="Microsoft.Win32.SystemEvents" />
+    <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing.XUnit" />
+    <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing.XUnit" />
     <LatestPackageReference Include="System.Buffers" />
     <LatestPackageReference Include="System.CodeDom" />
     <LatestPackageReference Include="System.CommandLine.Experimental" />
@@ -65,7 +70,6 @@ and are generated based on the last package release.
     <LatestPackageReference Include="System.Diagnostics.DiagnosticSource" />
     <LatestPackageReference Include="System.Diagnostics.EventLog" />
     <LatestPackageReference Include="System.DirectoryServices.Protocols" />
-    <LatestPackageReference Include="System.Drawing.Common" />
     <LatestPackageReference Include="System.IO.Pipelines" />
     <LatestPackageReference Include="System.Net.Http" />
     <LatestPackageReference Include="System.Net.Http.Json" />
@@ -73,17 +77,13 @@ and are generated based on the last package release.
     <LatestPackageReference Include="System.Reflection.Metadata" />
     <LatestPackageReference Include="System.Runtime.CompilerServices.Unsafe" />
     <LatestPackageReference Include="System.Runtime.InteropServices.RuntimeInformation" />
-    <!-- System.Security.AccessControl should only be referenced in Dependencies.props and RepoTasks.csproj. -->
-    <LatestPackageReference Include="System.Security.AccessControl" />
-    <LatestPackageReference Include="System.Security.Cryptography.Cng" />
     <LatestPackageReference Include="System.Security.Cryptography.Pkcs" />
     <LatestPackageReference Include="System.Security.Cryptography.Xml" />
-    <LatestPackageReference Include="System.Security.Permissions" />
     <LatestPackageReference Include="System.Security.Principal.Windows" />
     <LatestPackageReference Include="System.Text.Encodings.Web" />
     <LatestPackageReference Include="System.Text.Json" />
     <LatestPackageReference Include="System.Threading.Channels" />
-    <LatestPackageReference Include="System.Windows.Extensions" />
+    <LatestPackageReference Include="System.Threading.RateLimiting" />
     <LatestPackageReference Include="System.ValueTuple" />
 
     <!-- Runtime packages required for crossgen -->
@@ -99,6 +99,22 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.linux-musl-x64" />
     <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.linux-musl-arm" />
     <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.linux-musl-arm64" />
+    <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.freebsd-x64" />
+
+    <!-- Crossgen2 compiler -->
+    <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.osx-x64" />
+    <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.osx-arm64" />
+    <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.linux-arm" />
+    <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.linux-arm64" />
+    <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.linux-musl-arm" />
+    <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.linux-musl-arm64" />
+    <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.linux-musl-x64" />
+    <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.linux-x64" />
+    <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.win-x64" />
+    <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.win-x86" />
+    <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.win-arm" />
+    <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.win-arm64" />
+    <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.freebsd-x64" />
   </ItemGroup>
 
   <ItemGroup Label=".NET team dependencies (Non-source-build)" Condition="'$(DotNetBuildFromSource)' != 'true'">
@@ -108,9 +124,11 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.1.x86" />
     <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.5.0.x64" />
     <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.5.0.x86" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.6.0.x64" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.6.0.x86" />
     <LatestPackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Runtime" />
+    <LatestPackageReference Include="Microsoft.Internal.Runtime.AspNetCore.Transport" />
     <LatestPackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
-    <LatestPackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" />
     <LatestPackageReference Include="Microsoft.EntityFrameworkCore.Design" />
     <LatestPackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
@@ -121,11 +139,9 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.EntityFrameworkCore" />
     <LatestPackageReference Include="Microsoft.Extensions.Caching.SqlServer" />
     <LatestPackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" />
-    <LatestPackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" />
     <LatestPackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" />
     <LatestPackageReference Include="Microsoft.IdentityModel.Protocols.WsFederation" />
     <LatestPackageReference Include="Microsoft.Internal.AspNetCore.H2Spec.All" />
-    <LatestPackageReference Include="Microsoft.Extensions.Internal.Transport" />
     <LatestPackageReference Include="Microsoft.NETCore.Windows.ApiSets" />
     <LatestPackageReference Include="Microsoft.NETCore.BrowserDebugHost.Transport" />
     <LatestPackageReference Include="Microsoft.Owin.Security.Cookies" />
@@ -155,18 +171,17 @@ and are generated based on the last package release.
     <LatestPackageReference Include="AngleSharp" />
     <LatestPackageReference Include="BenchmarkDotNet" />
     <LatestPackageReference Include="CommandLineParser" />
+    <LatestPackageReference Include="Duende.IdentityServer" />
+    <LatestPackageReference Include="Duende.IdentityServer.AspNetIdentity" />
+    <LatestPackageReference Include="Duende.IdentityServer.EntityFramework" />
+    <LatestPackageReference Include="Duende.IdentityServer.EntityFramework.Storage" />
+    <LatestPackageReference Include="Duende.IdentityServer.Storage" />
     <LatestPackageReference Include="FSharp.Core" />
     <LatestPackageReference Include="Google.Protobuf" />
     <LatestPackageReference Include="Grpc.AspNetCore" />
     <LatestPackageReference Include="Grpc.Auth" />
     <LatestPackageReference Include="Grpc.Net.Client" />
     <LatestPackageReference Include="Grpc.Tools" />
-    <LatestPackageReference Include="IdentityServer4" />
-    <LatestPackageReference Include="IdentityServer4.AspNetIdentity" />
-    <LatestPackageReference Include="IdentityServer4.EntityFramework" />
-    <LatestPackageReference Include="IdentityServer4.EntityFramework.Storage" />
-    <LatestPackageReference Include="IdentityServer4.Storage" />
-    <LatestPackageReference Include="Libuv" />
     <LatestPackageReference Include="MessagePack" />
     <LatestPackageReference Include="MessagePackAnalyzer" />
     <LatestPackageReference Include="Microsoft.Data.SqlClient" />
@@ -174,13 +189,15 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Moq" />
     <LatestPackageReference Include="Newtonsoft.Json.Bson" />
     <LatestPackageReference Include="NSwag.ApiDescription.Client" />
+    <LatestPackageReference Include="NuGet.Frameworks" />
     <LatestPackageReference Include="NuGet.Versioning" />
+    <LatestPackageReference Include="Photino.NET" />
+    <LatestPackageReference Include="Microsoft.Playwright" />
     <LatestPackageReference Include="Polly" />
     <LatestPackageReference Include="Polly.Extensions.Http" />
     <LatestPackageReference Include="Selenium.Support" />
     <LatestPackageReference Include="Selenium.WebDriver" />
     <LatestPackageReference Include="Selenium.WebDriver.ChromeDriver" />
-    <LatestPackageReference Include="Selenium.WebDriver.MicrosoftDriver" />
     <LatestPackageReference Include="Serilog.Extensions.Logging" />
     <LatestPackageReference Include="Serilog.Sinks.File" />
     <LatestPackageReference Include="StackExchange.Redis" />
@@ -201,10 +218,8 @@ and are generated based on the last package release.
     <!-- Get versions. -->
     <LatestPackageReference Update="@(LatestPackageReference)">
       <Version>$(%(VersionName)Version)</Version>
-      <RTMVersion>$(%(VersionName)V0Version)</RTMVersion>
 
       <!-- Remove excess metadata. -->
-      <RTMVersion Condition=" '%(Version)' == '%(RTMVersion)' " />
       <VersionName />
     </LatestPackageReference>
 
@@ -214,7 +229,7 @@ and are generated based on the last package release.
     -->
     <LatestPackageReference Update="@(LatestPackageReference->WithMetadataValue('Version', ''))">
       <Version
-          Condition=" $([System.String]::new('%(Identity)').StartsWith('Microsoft.NETCore.App.Runtime.')) ">$(MicrosoftNETCoreAppRuntimeVersion)</Version>
+          Condition=" $([System.String]::new('%(Identity)').StartsWith('Microsoft.NETCore.App.Runtime.')) or $([System.String]::new('%(Identity)').StartsWith('Microsoft.NETCore.App.Crossgen2.'))">$(MicrosoftNETCoreAppRuntimeVersion)</Version>
     </LatestPackageReference>
   </ItemGroup>
 </Project>

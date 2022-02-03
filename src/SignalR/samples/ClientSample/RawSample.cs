@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -12,99 +12,98 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.Extensions.CommandLineUtils;
 
-namespace ClientSample
+namespace ClientSample;
+
+internal class RawSample
 {
-    internal class RawSample
+    internal static void Register(CommandLineApplication app)
     {
-        internal static void Register(CommandLineApplication app)
+        app.Command("raw", cmd =>
         {
-            app.Command("raw", cmd =>
-            {
-                cmd.Description = "Tests a connection to an endpoint";
+            cmd.Description = "Tests a connection to an endpoint";
 
-                var baseUrlArgument = cmd.Argument("<BASEURL>", "The URL to the Chat EndPoint to test");
+            var baseUrlArgument = cmd.Argument("<BASEURL>", "The URL to the Chat EndPoint to test");
 
-                cmd.OnExecute(() => ExecuteAsync(baseUrlArgument.Value));
-            });
-        }
+            cmd.OnExecute(() => ExecuteAsync(baseUrlArgument.Value));
+        });
+    }
 
-        public static async Task<int> ExecuteAsync(string baseUrl)
+    public static async Task<int> ExecuteAsync(string baseUrl)
+    {
+        baseUrl = string.IsNullOrEmpty(baseUrl) ? "http://localhost:5000/chat" : baseUrl;
+
+        Console.WriteLine($"Connecting to {baseUrl}...");
+
+        var connectionOptions = new HttpConnectionOptions
         {
-            baseUrl = string.IsNullOrEmpty(baseUrl) ? "http://localhost:5000/chat" : baseUrl;
+            Url = new Uri(baseUrl),
+            DefaultTransferFormat = TransferFormat.Text,
+        };
 
-            Console.WriteLine($"Connecting to {baseUrl}...");
+        var connection = new HttpConnection(connectionOptions, loggerFactory: null);
 
-            var connectionOptions = new HttpConnectionOptions
+        try
+        {
+            await connection.StartAsync();
+
+            Console.WriteLine($"Connected to {baseUrl}");
+            var shutdown = new TaskCompletionSource<object>();
+            Console.CancelKeyPress += (sender, a) =>
             {
-                Url = new Uri(baseUrl),
-                DefaultTransferFormat = TransferFormat.Text,
+                a.Cancel = true;
+                shutdown.TrySetResult(null);
             };
 
-            var connection = new HttpConnection(connectionOptions, loggerFactory: null);
+            _ = ReceiveLoop(Console.Out, connection.Transport.Input);
+            _ = SendLoop(Console.In, connection.Transport.Output);
+
+            await shutdown.Task;
+        }
+        catch (AggregateException aex) when (aex.InnerExceptions.All(e => e is OperationCanceledException))
+        {
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        finally
+        {
+            await connection.DisposeAsync();
+        }
+        return 0;
+    }
+
+    private static async Task ReceiveLoop(TextWriter output, PipeReader input)
+    {
+        while (true)
+        {
+            var result = await input.ReadAsync();
+            var buffer = result.Buffer;
 
             try
             {
-                await connection.StartAsync();
-
-                Console.WriteLine($"Connected to {baseUrl}");
-                var shutdown = new TaskCompletionSource<object>();
-                Console.CancelKeyPress += (sender, a) =>
+                if (!buffer.IsEmpty)
                 {
-                    a.Cancel = true;
-                    shutdown.TrySetResult(null);
-                };
-
-                _ = ReceiveLoop(Console.Out, connection.Transport.Input);
-                _ = SendLoop(Console.In, connection.Transport.Output);
-
-                await shutdown.Task;
-            }
-            catch (AggregateException aex) when (aex.InnerExceptions.All(e => e is OperationCanceledException))
-            {
-            }
-            catch (OperationCanceledException)
-            {
+                    await output.WriteLineAsync(Encoding.UTF8.GetString(buffer.ToArray()));
+                }
+                else if (result.IsCompleted)
+                {
+                    // No more data, and the pipe is complete
+                    break;
+                }
             }
             finally
             {
-                await connection.DisposeAsync();
-            }
-            return 0;
-        }
-
-        private static async Task ReceiveLoop(TextWriter output, PipeReader input)
-        {
-            while (true)
-            {
-                var result = await input.ReadAsync();
-                var buffer = result.Buffer;
-
-                try
-                {
-                    if (!buffer.IsEmpty)
-                    {
-                        await output.WriteLineAsync(Encoding.UTF8.GetString(buffer.ToArray()));
-                    }
-                    else if (result.IsCompleted)
-                    {
-                        // No more data, and the pipe is complete
-                        break;
-                    }
-                }
-                finally
-                {
-                    input.AdvanceTo(buffer.End);
-                }
+                input.AdvanceTo(buffer.End);
             }
         }
+    }
 
-        private static async Task SendLoop(TextReader input, PipeWriter output)
+    private static async Task SendLoop(TextReader input, PipeWriter output)
+    {
+        while (true)
         {
-            while (true)
-            {
-                var result = await input.ReadLineAsync();
-                await output.WriteAsync(Encoding.UTF8.GetBytes(result));
-            }
+            var result = await input.ReadLineAsync();
+            await output.WriteAsync(Encoding.UTF8.GetBytes(result));
         }
     }
 }

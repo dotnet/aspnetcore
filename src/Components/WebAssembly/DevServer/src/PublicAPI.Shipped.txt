@@ -1,4 +1,0 @@
-﻿#nullable enable
-Microsoft.AspNetCore.Components.WebAssembly.DevServer.Server.Program
-Microsoft.AspNetCore.Components.WebAssembly.DevServer.Server.Program.Program() -> void
-~static Microsoft.AspNetCore.Components.WebAssembly.DevServer.Server.Program.BuildWebHost(string[] args) -> Microsoft.Extensions.Hosting.IHost

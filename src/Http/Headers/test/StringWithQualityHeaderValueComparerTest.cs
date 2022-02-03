@@ -1,19 +1,15 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.Linq;
-using Xunit;
+namespace Microsoft.Net.Http.Headers;
 
-namespace Microsoft.Net.Http.Headers
+public class StringWithQualityHeaderValueComparerTest
 {
-    public class StringWithQualityHeaderValueComparerTest
+    public static TheoryData<string[], string[]> StringWithQualityHeaderValueComparerTestsBeforeAfterSortedValues
     {
-        public static TheoryData<string[], string[]> StringWithQualityHeaderValueComparerTestsBeforeAfterSortedValues
+        get
         {
-            get
-            {
-                return new TheoryData<string[], string[]>
+            return new TheoryData<string[], string[]>
                 {
                     {
                         new string[]
@@ -46,19 +42,18 @@ namespace Microsoft.Net.Http.Headers
                         }
                     }
                 };
-            }
         }
+    }
 
-        [Theory]
-        [MemberData(nameof(StringWithQualityHeaderValueComparerTestsBeforeAfterSortedValues))]
-        public void SortStringWithQualityHeaderValuesByQFactor_SortsCorrectly(IEnumerable<string> unsorted, IEnumerable<string> expectedSorted)
-        {
-            var unsortedValues = StringWithQualityHeaderValue.ParseList(unsorted.ToList());
-            var expectedSortedValues = StringWithQualityHeaderValue.ParseList(expectedSorted.ToList());
+    [Theory]
+    [MemberData(nameof(StringWithQualityHeaderValueComparerTestsBeforeAfterSortedValues))]
+    public void SortStringWithQualityHeaderValuesByQFactor_SortsCorrectly(IEnumerable<string> unsorted, IEnumerable<string> expectedSorted)
+    {
+        var unsortedValues = StringWithQualityHeaderValue.ParseList(unsorted.ToList());
+        var expectedSortedValues = StringWithQualityHeaderValue.ParseList(expectedSorted.ToList());
 
-            var actualSorted = unsortedValues.OrderByDescending(k => k, StringWithQualityHeaderValueComparer.QualityComparer).ToList();
+        var actualSorted = unsortedValues.OrderByDescending(k => k, StringWithQualityHeaderValueComparer.QualityComparer).ToList();
 
-            Assert.True(expectedSortedValues.SequenceEqual(actualSorted));
-        }
+        Assert.True(expectedSortedValues.SequenceEqual(actualSorted));
     }
 }

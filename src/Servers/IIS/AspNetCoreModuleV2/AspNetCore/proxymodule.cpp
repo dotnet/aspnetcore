@@ -100,7 +100,12 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
             *pHttpContext,
             m_pApplicationInfo));
 
-        FINISHED_IF_FAILED(m_pApplicationInfo->CreateHandler(*pHttpContext, m_pHandler));
+        FINISHED_IF_FAILED(hr = m_pApplicationInfo->CreateHandler(*pHttpContext, m_pHandler));
+
+        if (m_pHandler == nullptr)
+        {
+            FINISHED(HRESULT_FROM_WIN32(ERROR_SERVER_SHUTDOWN_IN_PROGRESS));
+        }
 
         SetupDisconnectHandler(pHttpContext);
 

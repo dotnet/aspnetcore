@@ -1,31 +1,30 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Mvc.Rendering
+namespace Microsoft.AspNetCore.Mvc.Rendering;
+
+/// <summary>
+/// Specifies constants for tag rendering modes.
+/// </summary>
+public enum TagRenderMode
 {
     /// <summary>
-    /// Specifies constants for tag rendering modes.
+    /// Normal mode.
     /// </summary>
-    public enum TagRenderMode
-    {
-        /// <summary>
-        /// Normal mode.
-        /// </summary>
-        Normal,
+    Normal,
 
-        /// <summary>
-        /// Start tag mode.
-        /// </summary>
-        StartTag,
+    /// <summary>
+    /// Start tag mode.
+    /// </summary>
+    StartTag,
 
-        /// <summary>
-        /// End tag mode.
-        /// </summary>
-        EndTag,
+    /// <summary>
+    /// End tag mode.
+    /// </summary>
+    EndTag,
 
-        /// <summary>
-        /// Self closing mode.
-        /// </summary>
-        SelfClosing
-    }
+    /// <summary>
+    /// Self closing mode.
+    /// </summary>
+    SelfClosing
 }

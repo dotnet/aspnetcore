@@ -1,7 +1,12 @@
-[submodule "googletest"]
+[submodule "src/submodules/googletest"]
 	path = src/submodules/googletest
 	url = https://github.com/google/googletest
-
+	branch = main
 [submodule "src/submodules/MessagePack-CSharp"]
 	path = src/submodules/MessagePack-CSharp
 	url = https://github.com/aspnet/MessagePack-CSharp.git
+	branch = master
+[submodule "src/submodules/spa-templates"]
+	path = src/submodules/spa-templates
+	url = https://github.com/dotnet/spa-templates.git
+	branch = main

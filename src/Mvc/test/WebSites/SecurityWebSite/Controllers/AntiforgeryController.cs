@@ -1,18 +1,17 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace SecurityWebSite.Controllers
+namespace SecurityWebSite.Controllers;
+
+[AutoValidateAntiforgeryToken]
+public class AntiforgeryController : Controller
 {
-    [AutoValidateAntiforgeryToken]
-    public class AntiforgeryController : Controller
+    [HttpPost]
+    [IgnoreAntiforgeryToken]
+    public IActionResult Index()
     {
-        [HttpPost]
-        [IgnoreAntiforgeryToken]
-        public IActionResult Index()
-        {
-            return Content("Ok");
-        }
+        return Content("Ok");
     }
 }

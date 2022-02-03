@@ -1,33 +1,30 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using System.Net.Http;
-using System.Threading.Tasks;
 using AngleSharp.Dom.Html;
 
-namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account
+namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account;
+
+public class ForgotPassword : DefaultUIPage
 {
-    public class ForgotPassword : DefaultUIPage
+    private readonly IHtmlFormElement _forgotPasswordForm;
+
+    public ForgotPassword(HttpClient client, IHtmlDocument document, DefaultUIContext context) : base(client, document, context)
     {
-        private readonly IHtmlFormElement _forgotPasswordForm;
+        _forgotPasswordForm = HtmlAssert.HasForm(document);
+    }
 
-        public ForgotPassword(HttpClient client, IHtmlDocument document, DefaultUIContext context) : base(client, document, context)
+    public async Task<ForgotPasswordConfirmation> SendForgotPasswordAsync(string email)
+    {
+        var response = await Client.SendAsync(_forgotPasswordForm, new Dictionary<string, string>
         {
-            _forgotPasswordForm = HtmlAssert.HasForm(document);
-        }
+            ["Input_Email"] = email
+        });
+        var goToForgotPasswordConfirmation = ResponseAssert.IsRedirect(response);
+        var forgotPasswordConfirmationResponse = await Client.GetAsync(goToForgotPasswordConfirmation);
+        var forgotPasswordConfirmation = await ResponseAssert.IsHtmlDocumentAsync(forgotPasswordConfirmationResponse);
 
-        public async Task<ForgotPasswordConfirmation> SendForgotPasswordAsync(string email)
-        {
-            var response = await Client.SendAsync(_forgotPasswordForm, new Dictionary<string, string>
-            {
-                ["Input_Email"] = email
-            });
-            var goToForgotPasswordConfirmation = ResponseAssert.IsRedirect(response);
-            var forgotPasswordConfirmationResponse = await Client.GetAsync(goToForgotPasswordConfirmation);
-            var forgotPasswordConfirmation = await ResponseAssert.IsHtmlDocumentAsync(forgotPasswordConfirmationResponse);
-
-            return new ForgotPasswordConfirmation(Client, forgotPasswordConfirmation, Context);
-        }
+        return new ForgotPasswordConfirmation(Client, forgotPasswordConfirmation, Context);
     }
 }

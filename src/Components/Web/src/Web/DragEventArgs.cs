@@ -1,17 +1,16 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Components.Web
+namespace Microsoft.AspNetCore.Components.Web;
+
+/// <summary>
+/// Supplies information about an drag event that is being raised.
+/// </summary>
+public class DragEventArgs : MouseEventArgs
 {
     /// <summary>
-    /// Supplies information about an drag event that is being raised.
+    /// The data that underlies a drag-and-drop operation, known as the drag data store.
+    /// See <see cref="DataTransfer"/>.
     /// </summary>
-    public class DragEventArgs : MouseEventArgs
-    {
-        /// <summary>
-        /// The data that underlies a drag-and-drop operation, known as the drag data store.
-        /// See <see cref="DataTransfer"/>.
-        /// </summary>
-        public DataTransfer DataTransfer { get; set; } = default!;
-    }
+    public DataTransfer DataTransfer { get; set; } = default!;
 }

@@ -1,28 +1,27 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
 
-namespace Microsoft.AspNetCore.Routing
+namespace Microsoft.AspNetCore.Routing;
+
+/// <summary>
+/// An address of route name and values.
+/// </summary>
+public class RouteValuesAddress
 {
     /// <summary>
-    /// An address of route name and values.
+    /// Gets or sets the route name.
     /// </summary>
-    public class RouteValuesAddress
-    {
-        /// <summary>
-        /// Gets or sets the route name.
-        /// </summary>
-        public string? RouteName { get; set; }
+    public string? RouteName { get; set; }
 
-        /// <summary>
-        /// Gets or sets the route values that are explicitly specified.
-        /// </summary>
-        public RouteValueDictionary ExplicitValues { get; set; } = default!;
+    /// <summary>
+    /// Gets or sets the route values that are explicitly specified.
+    /// </summary>
+    public RouteValueDictionary ExplicitValues { get; set; } = default!;
 
-        /// <summary>
-        /// Gets or sets ambient route values from the current HTTP request.
-        /// </summary>
-        public RouteValueDictionary? AmbientValues { get; set; }
-    }
+    /// <summary>
+    /// Gets or sets ambient route values from the current HTTP request.
+    /// </summary>
+    public RouteValueDictionary? AmbientValues { get; set; }
 }

@@ -1,85 +1,94 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal;
+
+internal sealed class SocketSender : SocketAwaitableEventArgs
 {
-    internal sealed class SocketSender : SocketSenderReceiverBase
+    private List<ArraySegment<byte>>? _bufferList;
+
+    public SocketSender(PipeScheduler scheduler) : base(scheduler)
     {
-        private List<ArraySegment<byte>>? _bufferList;
+    }
 
-        public SocketSender(Socket socket, PipeScheduler scheduler) : base(socket, scheduler)
+    public ValueTask<int> SendAsync(Socket socket, in ReadOnlySequence<byte> buffers)
+    {
+        if (buffers.IsSingleSegment)
         {
+            return SendAsync(socket, buffers.First);
         }
 
-        public SocketAwaitableEventArgs SendAsync(in ReadOnlySequence<byte> buffers)
+        SetBufferList(buffers);
+
+        if (socket.SendAsync(this))
         {
-            if (buffers.IsSingleSegment)
-            {
-                return SendAsync(buffers.First);
-            }
-
-            if (!_awaitableEventArgs.MemoryBuffer.Equals(Memory<byte>.Empty))
-            {
-                _awaitableEventArgs.SetBuffer(null, 0, 0);
-            }
-
-            _awaitableEventArgs.BufferList = GetBufferList(buffers);
-
-            if (!_socket.SendAsync(_awaitableEventArgs))
-            {
-                _awaitableEventArgs.Complete();
-            }
-
-            return _awaitableEventArgs;
+            return new ValueTask<int>(this, 0);
         }
 
-        private SocketAwaitableEventArgs SendAsync(ReadOnlyMemory<byte> memory)
+        var bytesTransferred = BytesTransferred;
+        var error = SocketError;
+
+        return error == SocketError.Success ?
+            new ValueTask<int>(bytesTransferred) :
+           ValueTask.FromException<int>(CreateException(error));
+    }
+
+    public void Reset()
+    {
+        // We clear the buffer and buffer list before we put it back into the pool
+        // it's a small performance hit but it removes the confusion when looking at dumps to see this still
+        // holds onto the buffer when it's back in the pool
+        if (BufferList != null)
         {
-            // The BufferList getter is much less expensive then the setter.
-            if (_awaitableEventArgs.BufferList != null)
-            {
-                _awaitableEventArgs.BufferList = null;
-            }
+            BufferList = null;
 
-            _awaitableEventArgs.SetBuffer(MemoryMarshal.AsMemory(memory));
+            _bufferList?.Clear();
+        }
+        else
+        {
+            SetBuffer(null, 0, 0);
+        }
+    }
 
-            if (!_socket.SendAsync(_awaitableEventArgs))
-            {
-                _awaitableEventArgs.Complete();
-            }
+    private ValueTask<int> SendAsync(Socket socket, ReadOnlyMemory<byte> memory)
+    {
+        SetBuffer(MemoryMarshal.AsMemory(memory));
 
-            return _awaitableEventArgs;
+        if (socket.SendAsync(this))
+        {
+            return new ValueTask<int>(this, 0);
         }
 
-        private List<ArraySegment<byte>> GetBufferList(in ReadOnlySequence<byte> buffer)
+        var bytesTransferred = BytesTransferred;
+        var error = SocketError;
+
+        return error == SocketError.Success ?
+            new ValueTask<int>(bytesTransferred) :
+           ValueTask.FromException<int>(CreateException(error));
+    }
+
+    private void SetBufferList(in ReadOnlySequence<byte> buffer)
+    {
+        Debug.Assert(!buffer.IsEmpty);
+        Debug.Assert(!buffer.IsSingleSegment);
+
+        if (_bufferList == null)
         {
-            Debug.Assert(!buffer.IsEmpty);
-            Debug.Assert(!buffer.IsSingleSegment);
-
-            if (_bufferList == null)
-            {
-                _bufferList = new List<ArraySegment<byte>>();
-            }
-            else
-            {
-                // Buffers are pooled, so it's OK to root them until the next multi-buffer write.
-                _bufferList.Clear();
-            }
-
-            foreach (var b in buffer)
-            {
-                _bufferList.Add(b.GetArray());
-            }
-
-            return _bufferList;
+            _bufferList = new List<ArraySegment<byte>>();
         }
+
+        foreach (var b in buffer)
+        {
+            _bufferList.Add(b.GetArray());
+        }
+
+        // The act of setting this list, sets the buffers in the internal buffer list
+        BufferList = _bufferList;
     }
 }

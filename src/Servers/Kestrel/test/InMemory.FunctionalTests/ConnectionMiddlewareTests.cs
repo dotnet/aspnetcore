@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
@@ -16,429 +17,430 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
+namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
+
+public class ConnectionMiddlewareTests : TestApplicationErrorLoggerLoggedTest
 {
-    public class ConnectionMiddlewareTests : TestApplicationErrorLoggerLoggedTest
-    {
-        public static TheoryData<RequestDelegate> EchoAppRequestDelegates =>
-            new TheoryData<RequestDelegate>
-            {
+    public static TheoryData<RequestDelegate> EchoAppRequestDelegates =>
+        new TheoryData<RequestDelegate>
+        {
                 { TestApp.EchoApp },
                 { TestApp.EchoAppPipeWriter }
+        };
+
+    [Theory]
+    [MemberData(nameof(EchoAppRequestDelegates))]
+    public async Task CanReadAndWriteWithRewritingConnectionAdapter(RequestDelegate requestDelegate)
+    {
+        RewritingConnectionMiddleware middleware = null;
+
+        var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
+        listenOptions.Use(next =>
+        {
+            middleware = new RewritingConnectionMiddleware(next);
+            return middleware.OnConnectionAsync;
+        });
+
+        var serviceContext = new TestServiceContext(LoggerFactory);
+
+        var sendString = "POST / HTTP/1.0\r\nContent-Length: 12\r\n\r\nHello World?";
+
+        await using (var server = new TestServer(requestDelegate, serviceContext, listenOptions))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                // "?" changes to "!"
+                await connection.Send(sendString);
+                await connection.ReceiveEnd(
+                    "HTTP/1.1 200 OK",
+                    "Connection: close",
+                    $"Date: {serviceContext.DateHeaderValue}",
+                    "",
+                    "Hello World!");
+            }
+        }
+
+        Assert.Equal(sendString.Length, middleware.BytesRead);
+    }
+
+    [Theory]
+    [MemberData(nameof(EchoAppRequestDelegates))]
+    public async Task CanReadAndWriteWithAsyncConnectionMiddleware(RequestDelegate requestDelegate)
+    {
+        var serviceContext = new TestServiceContext(LoggerFactory);
+
+        await using (var server = new TestServer(requestDelegate, serviceContext, listenOptions =>
+        {
+            listenOptions.UseConnectionLogging();
+            listenOptions.Use(next => new AsyncConnectionMiddleware(next).OnConnectionAsync);
+            listenOptions.UseConnectionLogging();
+        }))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                await connection.Send(
+                    "POST / HTTP/1.0",
+                    "Content-Length: 12",
+                    "",
+                    "Hello World?");
+                await connection.ReceiveEnd(
+                    "HTTP/1.1 200 OK",
+                    "Connection: close",
+                    $"Date: {serviceContext.DateHeaderValue}",
+                    "",
+                    "Hello World!");
+            }
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(EchoAppRequestDelegates))]
+    public async Task ImmediateFinAfterOnConnectionAsyncClosesGracefully(RequestDelegate requestDelegate)
+    {
+        var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
+        listenOptions.Use(next => new AsyncConnectionMiddleware(next).OnConnectionAsync);
+
+        var serviceContext = new TestServiceContext(LoggerFactory);
+
+        await using (var server = new TestServer(requestDelegate, serviceContext, listenOptions))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                // FIN
+                connection.ShutdownSend();
+                await connection.WaitForConnectionClose();
+            }
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(EchoAppRequestDelegates))]
+    public async Task ImmediateFinAfterThrowingClosesGracefully(RequestDelegate requestDelegate)
+    {
+        var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
+        listenOptions.Use(next => context => throw new InvalidOperationException());
+
+        var serviceContext = new TestServiceContext(LoggerFactory);
+
+        await using (var server = new TestServer(requestDelegate, serviceContext, listenOptions))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                // FIN
+                connection.ShutdownSend();
+                await connection.WaitForConnectionClose();
+            }
+        }
+    }
+
+    [Theory]
+    [CollectDump]
+    [MemberData(nameof(EchoAppRequestDelegates))]
+    public async Task ImmediateShutdownAfterOnConnectionAsyncDoesNotCrash(RequestDelegate requestDelegate)
+    {
+        var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
+        listenOptions.Use(next => new AsyncConnectionMiddleware(next).OnConnectionAsync);
+
+        var serviceContext = new TestServiceContext(LoggerFactory);
+
+        ThrowOnUngracefulShutdown = false;
+
+        var stopTask = Task.CompletedTask;
+        await using (var server = new TestServer(requestDelegate, serviceContext, listenOptions))
+        using (var shutdownCts = new CancellationTokenSource(TestConstants.DefaultTimeout))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                // We assume all CI servers are really slow, so we use a 30 second default test timeout
+                // instead of the 5 second default production timeout. If this test is still flaky,
+                // *then* we can consider collecting and investigating memory dumps.
+                stopTask = server.StopAsync(shutdownCts.Token);
+            }
+
+            await stopTask;
+        }
+    }
+
+    [Fact]
+    public async Task ImmediateShutdownDuringOnConnectionAsyncDoesNotCrash()
+    {
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
+        listenOptions.Use(next =>
+        {
+            return async context =>
+            {
+                await tcs.Task;
+                await next(context);
             };
+        });
 
-        [Theory]
-        [MemberData(nameof(EchoAppRequestDelegates))]
-        public async Task CanReadAndWriteWithRewritingConnectionAdapter(RequestDelegate requestDelegate)
+        var serviceContext = new TestServiceContext(LoggerFactory);
+
+        await using (var server = new TestServer(TestApp.EchoApp, serviceContext, listenOptions))
         {
-            RewritingConnectionMiddleware middleware = null;
+            Task stopTask;
 
-            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
-            listenOptions.Use(next =>
+            using (var connection = server.CreateConnection())
             {
-                middleware = new RewritingConnectionMiddleware(next);
-                return middleware.OnConnectionAsync;
-            });
+                stopTask = server.StopAsync();
 
-            var serviceContext = new TestServiceContext(LoggerFactory);
-
-            var sendString = "POST / HTTP/1.0\r\nContent-Length: 12\r\n\r\nHello World?";
-
-            await using (var server = new TestServer(requestDelegate, serviceContext, listenOptions))
-            {
-                using (var connection = server.CreateConnection())
-                {
-                    // "?" changes to "!"
-                    await connection.Send(sendString);
-                    await connection.ReceiveEnd(
-                        "HTTP/1.1 200 OK",
-                        "Connection: close",
-                        $"Date: {serviceContext.DateHeaderValue}",
-                        "",
-                        "Hello World!");
-                }
+                tcs.TrySetResult();
             }
 
-            Assert.Equal(sendString.Length, middleware.BytesRead);
+            await stopTask;
         }
+    }
 
-        [Theory]
-        [MemberData(nameof(EchoAppRequestDelegates))]
-        public async Task CanReadAndWriteWithAsyncConnectionMiddleware(RequestDelegate requestDelegate)
+    [Theory]
+    [MemberData(nameof(EchoAppRequestDelegates))]
+    public async Task ThrowingSynchronousConnectionMiddlewareDoesNotCrashServer(RequestDelegate requestDelegate)
+    {
+        var connectionId = "";
+        var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
+        listenOptions.Use(next => context =>
         {
-            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
-            listenOptions.Use(next => new AsyncConnectionMiddleware(next).OnConnectionAsync);
+            connectionId = context.ConnectionId;
+            throw new InvalidOperationException();
+        });
 
-            var serviceContext = new TestServiceContext(LoggerFactory);
+        var serviceContext = new TestServiceContext(LoggerFactory);
 
-            await using (var server = new TestServer(requestDelegate, serviceContext, listenOptions))
+        await using (var server = new TestServer(requestDelegate, serviceContext, listenOptions))
+        {
+            using (var connection = server.CreateConnection())
             {
-                using (var connection = server.CreateConnection())
-                {
-                    await connection.Send(
-                        "POST / HTTP/1.0",
-                        "Content-Length: 12",
-                        "",
-                        "Hello World?");
-                    await connection.ReceiveEnd(
-                        "HTTP/1.1 200 OK",
-                        "Connection: close",
-                        $"Date: {serviceContext.DateHeaderValue}",
-                        "",
-                        "Hello World!");
-                }
+                await connection.Send(
+                   "POST / HTTP/1.0",
+                   "Content-Length: 1000",
+                   "\r\n");
+
+                await connection.WaitForConnectionClose();
             }
         }
 
-        [Theory]
-        [MemberData(nameof(EchoAppRequestDelegates))]
-        public async Task ImmediateFinAfterOnConnectionAsyncClosesGracefully(RequestDelegate requestDelegate)
+        Assert.Contains(LogMessages, m => m.Message.Contains("Unhandled exception while processing " + connectionId + "."));
+    }
+
+    [Fact]
+    public async Task CanFlushAsyncWithConnectionMiddleware()
+    {
+        var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            .UsePassThrough();
+
+        var serviceContext = new TestServiceContext(LoggerFactory);
+
+        await using (var server = new TestServer(async context =>
         {
-            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
-            listenOptions.Use(next => new AsyncConnectionMiddleware(next).OnConnectionAsync);
-
-            var serviceContext = new TestServiceContext(LoggerFactory);
-
-            await using (var server = new TestServer(requestDelegate, serviceContext, listenOptions))
+            await context.Response.WriteAsync("Hello ");
+            await context.Response.Body.FlushAsync();
+            await context.Response.WriteAsync("World!");
+        }, serviceContext, listenOptions))
+        {
+            using (var connection = server.CreateConnection())
             {
-                using (var connection = server.CreateConnection())
+                await connection.Send(
+                    "GET / HTTP/1.0",
+                    "",
+                    "");
+                await connection.ReceiveEnd(
+                    "HTTP/1.1 200 OK",
+                    "Connection: close",
+                    $"Date: {serviceContext.DateHeaderValue}",
+                    "",
+                    "Hello World!");
+            }
+        }
+    }
+
+    [Fact]
+    public async Task CanFlushAsyncWithConnectionMiddlewarePipeWriter()
+    {
+        var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            .UsePassThrough();
+
+        var serviceContext = new TestServiceContext(LoggerFactory);
+
+        await using (var server = new TestServer(async context =>
+        {
+            await context.Response.BodyWriter.WriteAsync(Encoding.ASCII.GetBytes("Hello "));
+            await context.Response.BodyWriter.FlushAsync();
+            await context.Response.BodyWriter.WriteAsync(Encoding.ASCII.GetBytes("World!"));
+        }, serviceContext, listenOptions))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                await connection.Send(
+                    "GET / HTTP/1.0",
+                    "",
+                    "");
+                await connection.ReceiveEnd(
+                    "HTTP/1.1 200 OK",
+                    "Connection: close",
+                    $"Date: {serviceContext.DateHeaderValue}",
+                    "",
+                    "Hello World!");
+            }
+        }
+    }
+
+    private class RewritingConnectionMiddleware
+    {
+        private RewritingStream _rewritingStream;
+        private readonly ConnectionDelegate _next;
+
+        public RewritingConnectionMiddleware(ConnectionDelegate next)
+        {
+            _next = next;
+        }
+
+        public async Task OnConnectionAsync(ConnectionContext context)
+        {
+            var old = context.Transport;
+            var duplexPipe = new DuplexPipeStreamAdapter<RewritingStream>(context.Transport, s => new RewritingStream(s));
+            _rewritingStream = duplexPipe.Stream;
+
+            try
+            {
+                await using (duplexPipe)
                 {
-                    // FIN
-                    connection.ShutdownSend();
-                    await connection.WaitForConnectionClose();
+                    context.Transport = duplexPipe;
+                    await _next(context);
                 }
+            }
+            finally
+            {
+                context.Transport = old;
             }
         }
 
-        [Theory]
-        [MemberData(nameof(EchoAppRequestDelegates))]
-        public async Task ImmediateFinAfterThrowingClosesGracefully(RequestDelegate requestDelegate)
+        public int BytesRead => _rewritingStream.BytesRead;
+    }
+
+    private class AsyncConnectionMiddleware
+    {
+        private readonly ConnectionDelegate _next;
+
+        public AsyncConnectionMiddleware(ConnectionDelegate next)
         {
-            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
-            listenOptions.Use(next => context => throw new InvalidOperationException());
+            _next = next;
+        }
 
-            var serviceContext = new TestServiceContext(LoggerFactory);
+        public async Task OnConnectionAsync(ConnectionContext context)
+        {
+            await Task.Yield();
 
-            await using (var server = new TestServer(requestDelegate, serviceContext, listenOptions))
+            var old = context.Transport;
+            var duplexPipe = new DuplexPipeStreamAdapter<RewritingStream>(context.Transport, s => new RewritingStream(s));
+
+            try
             {
-                using (var connection = server.CreateConnection())
+                await using (duplexPipe)
                 {
-                    // FIN
-                    connection.ShutdownSend();
-                    await connection.WaitForConnectionClose();
+                    context.Transport = duplexPipe;
+                    await _next(context);
                 }
+            }
+            finally
+            {
+                context.Transport = old;
+            }
+        }
+    }
+
+    private class RewritingStream : Stream
+    {
+        private readonly Stream _innerStream;
+
+        public RewritingStream(Stream innerStream)
+        {
+            _innerStream = innerStream;
+        }
+
+        public int BytesRead { get; private set; }
+
+        public override bool CanRead => _innerStream.CanRead;
+
+        public override bool CanSeek => _innerStream.CanSeek;
+
+        public override bool CanWrite => _innerStream.CanWrite;
+
+        public override long Length => _innerStream.Length;
+
+        public override long Position
+        {
+            get
+            {
+                return _innerStream.Position;
+            }
+            set
+            {
+                _innerStream.Position = value;
             }
         }
 
-        [Theory]
-        [CollectDump]
-        [MemberData(nameof(EchoAppRequestDelegates))]
-        public async Task ImmediateShutdownAfterOnConnectionAsyncDoesNotCrash(RequestDelegate requestDelegate)
+        public override void Flush()
         {
-            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
-            listenOptions.Use(next => new AsyncConnectionMiddleware(next).OnConnectionAsync);
-
-            var serviceContext = new TestServiceContext(LoggerFactory);
-
-            ThrowOnUngracefulShutdown = false;
-
-            var stopTask = Task.CompletedTask;
-            await using (var server = new TestServer(requestDelegate, serviceContext, listenOptions))
-            using (var shutdownCts = new CancellationTokenSource(TestConstants.DefaultTimeout))
-            {
-                using (var connection = server.CreateConnection())
-                {
-                    // We assume all CI servers are really slow, so we use a 30 second default test timeout
-                    // instead of the 5 second default production timeout. If this test is still flaky,
-                    // *then* we can consider collecting and investigating memory dumps.
-                    stopTask = server.StopAsync(shutdownCts.Token);
-                }
-
-                await stopTask;
-            }
+            _innerStream.Flush();
         }
 
-        [Fact]
-        public async Task ImmediateShutdownDuringOnConnectionAsyncDoesNotCrash()
+        public override Task FlushAsync(CancellationToken cancellationToken)
         {
-            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
-            listenOptions.Use(next =>
-            {
-                return async context =>
-                {
-                    await tcs.Task;
-                    await next(context);
-                };
-            });
-
-            var serviceContext = new TestServiceContext(LoggerFactory);
-
-            await using (var server = new TestServer(TestApp.EchoApp, serviceContext, listenOptions))
-            {
-                Task stopTask;
-
-                using (var connection = server.CreateConnection())
-                {
-                    stopTask = server.StopAsync();
-
-                    tcs.TrySetResult();
-                }
-
-                await stopTask;
-            }
+            return _innerStream.FlushAsync(cancellationToken);
         }
 
-        [Theory]
-        [MemberData(nameof(EchoAppRequestDelegates))]
-        public async Task ThrowingSynchronousConnectionMiddlewareDoesNotCrashServer(RequestDelegate requestDelegate)
+        public override int Read(byte[] buffer, int offset, int count)
         {
-            var connectionId = "";
-            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
-            listenOptions.Use(next => context =>
-            {
-                connectionId = context.ConnectionId;
-                throw new InvalidOperationException();
-            });
+            var actual = _innerStream.Read(buffer, offset, count);
 
-            var serviceContext = new TestServiceContext(LoggerFactory);
+            BytesRead += actual;
 
-            await using (var server = new TestServer(requestDelegate, serviceContext, listenOptions))
-            {
-                using (var connection = server.CreateConnection())
-                {
-                    await connection.Send(
-                       "POST / HTTP/1.0",
-                       "Content-Length: 1000",
-                       "\r\n");
-
-                    await connection.WaitForConnectionClose();
-                }
-            }
-
-            Assert.Contains(LogMessages, m => m.Message.Contains("Unhandled exception while processing " + connectionId + "."));
+            return actual;
         }
 
-        [Fact]
-        public async Task CanFlushAsyncWithConnectionMiddleware()
+        public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
-                .UsePassThrough();
+            var actual = await _innerStream.ReadAsync(buffer, offset, count, cancellationToken);
 
-            var serviceContext = new TestServiceContext(LoggerFactory);
+            BytesRead += actual;
 
-            await using (var server = new TestServer(async context =>
-            {
-                await context.Response.WriteAsync("Hello ");
-                await context.Response.Body.FlushAsync();
-                await context.Response.WriteAsync("World!");
-            }, serviceContext, listenOptions))
-            {
-                using (var connection = server.CreateConnection())
-                {
-                    await connection.Send(
-                        "GET / HTTP/1.0",
-                        "",
-                        "");
-                    await connection.ReceiveEnd(
-                        "HTTP/1.1 200 OK",
-                        "Connection: close",
-                        $"Date: {serviceContext.DateHeaderValue}",
-                        "",
-                        "Hello World!");
-                }
-            }
+            return actual;
         }
 
-        [Fact]
-        public async Task CanFlushAsyncWithConnectionMiddlewarePipeWriter()
+        public override long Seek(long offset, SeekOrigin origin)
         {
-            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
-                .UsePassThrough();
-
-            var serviceContext = new TestServiceContext(LoggerFactory);
-
-            await using (var server = new TestServer(async context =>
-            {
-                await context.Response.BodyWriter.WriteAsync(Encoding.ASCII.GetBytes("Hello "));
-                await context.Response.BodyWriter.FlushAsync();
-                await context.Response.BodyWriter.WriteAsync(Encoding.ASCII.GetBytes("World!"));
-            }, serviceContext, listenOptions))
-            {
-                using (var connection = server.CreateConnection())
-                {
-                    await connection.Send(
-                        "GET / HTTP/1.0",
-                        "",
-                        "");
-                    await connection.ReceiveEnd(
-                        "HTTP/1.1 200 OK",
-                        "Connection: close",
-                        $"Date: {serviceContext.DateHeaderValue}",
-                        "",
-                        "Hello World!");
-                }
-            }
+            return _innerStream.Seek(offset, origin);
         }
 
-        private class RewritingConnectionMiddleware
+        public override void SetLength(long value)
         {
-            private RewritingStream _rewritingStream;
-            private readonly ConnectionDelegate _next;
-
-            public RewritingConnectionMiddleware(ConnectionDelegate next)
-            {
-                _next = next;
-            }
-
-            public async Task OnConnectionAsync(ConnectionContext context)
-            {
-                var old = context.Transport;
-                var duplexPipe = new DuplexPipeStreamAdapter<RewritingStream>(context.Transport, s => new RewritingStream(s));
-                _rewritingStream = duplexPipe.Stream;
-
-                try
-                {
-                    await using (duplexPipe)
-                    {
-                        context.Transport = duplexPipe;
-                        await _next(context);
-                    }
-                }
-                finally
-                {
-                    context.Transport = old;
-                }
-            }
-
-            public int BytesRead => _rewritingStream.BytesRead;
+            _innerStream.SetLength(value);
         }
 
-        private class AsyncConnectionMiddleware
+        public override void Write(byte[] buffer, int offset, int count)
         {
-            private readonly ConnectionDelegate _next;
-
-            public AsyncConnectionMiddleware(ConnectionDelegate next)
+            for (int i = 0; i < buffer.Length; i++)
             {
-                _next = next;
-            }
-
-            public async Task OnConnectionAsync(ConnectionContext context)
-            {
-                await Task.Yield();
-
-                var old = context.Transport;
-                var duplexPipe = new DuplexPipeStreamAdapter<RewritingStream>(context.Transport, s => new RewritingStream(s));
-
-                try
+                if (buffer[i] == '?')
                 {
-                    await using (duplexPipe)
-                    {
-                        context.Transport = duplexPipe;
-                        await _next(context);
-                    }
-                }
-                finally
-                {
-                    context.Transport = old;
+                    buffer[i] = (byte)'!';
                 }
             }
+
+            _innerStream.Write(buffer, offset, count);
         }
 
-        private class RewritingStream : Stream
+        public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            private readonly Stream _innerStream;
-
-            public RewritingStream(Stream innerStream)
+            for (int i = 0; i < buffer.Length; i++)
             {
-                _innerStream = innerStream;
-            }
-
-            public int BytesRead { get; private set; }
-
-            public override bool CanRead => _innerStream.CanRead;
-
-            public override bool CanSeek => _innerStream.CanSeek;
-
-            public override bool CanWrite => _innerStream.CanWrite;
-
-            public override long Length => _innerStream.Length;
-
-            public override long Position
-            {
-                get
+                if (buffer[i] == '?')
                 {
-                    return _innerStream.Position;
-                }
-                set
-                {
-                    _innerStream.Position = value;
+                    buffer[i] = (byte)'!';
                 }
             }
 
-            public override void Flush()
-            {
-                _innerStream.Flush();
-            }
-
-            public override Task FlushAsync(CancellationToken cancellationToken)
-            {
-                return _innerStream.FlushAsync(cancellationToken);
-            }
-
-            public override int Read(byte[] buffer, int offset, int count)
-            {
-                var actual = _innerStream.Read(buffer, offset, count);
-
-                BytesRead += actual;
-
-                return actual;
-            }
-
-            public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-            {
-                var actual = await _innerStream.ReadAsync(buffer, offset, count, cancellationToken);
-
-                BytesRead += actual;
-
-                return actual;
-            }
-
-            public override long Seek(long offset, SeekOrigin origin)
-            {
-                return _innerStream.Seek(offset, origin);
-            }
-
-            public override void SetLength(long value)
-            {
-                _innerStream.SetLength(value);
-            }
-
-            public override void Write(byte[] buffer, int offset, int count)
-            {
-                for (int i = 0; i < buffer.Length; i++)
-                {
-                    if (buffer[i] == '?')
-                    {
-                        buffer[i] = (byte)'!';
-                    }
-                }
-
-                _innerStream.Write(buffer, offset, count);
-            }
-
-            public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-            {
-                for (int i = 0; i < buffer.Length; i++)
-                {
-                    if (buffer[i] == '?')
-                    {
-                        buffer[i] = (byte)'!';
-                    }
-                }
-
-                return _innerStream.WriteAsync(buffer, offset, count, cancellationToken);
-            }
+            return _innerStream.WriteAsync(buffer, offset, count, cancellationToken);
         }
     }
 }

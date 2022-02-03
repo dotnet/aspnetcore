@@ -1,16 +1,15 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace RazorWebSite.Controllers
+namespace RazorWebSite.Controllers;
+
+public class ViewWithPathsController : Controller
 {
-    public class ViewWithPathsController : Controller
+    [HttpGet("/ViewWithPaths")]
+    public IActionResult Index()
     {
-        [HttpGet("/ViewWithPaths")]
-        public IActionResult Index()
-        {
-            return View();
-        }
+        return View();
     }
 }

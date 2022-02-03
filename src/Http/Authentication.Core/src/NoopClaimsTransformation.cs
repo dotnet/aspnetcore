@@ -1,24 +1,22 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Security.Claims;
-using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Authentication
+namespace Microsoft.AspNetCore.Authentication;
+
+/// <summary>
+/// Default claims transformation is a no-op.
+/// </summary>
+public class NoopClaimsTransformation : IClaimsTransformation
 {
     /// <summary>
-    /// Default claims transformation is a no-op.
+    /// Returns the principal unchanged.
     /// </summary>
-    public class NoopClaimsTransformation : IClaimsTransformation
+    /// <param name="principal">The user.</param>
+    /// <returns>The principal unchanged.</returns>
+    public virtual Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
     {
-        /// <summary>
-        /// Returns the principal unchanged.
-        /// </summary>
-        /// <param name="principal">The user.</param>
-        /// <returns>The principal unchanged.</returns>
-        public virtual Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
-        {
-            return Task.FromResult(principal);
-        }
+        return Task.FromResult(principal);
     }
 }

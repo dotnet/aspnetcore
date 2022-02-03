@@ -1,116 +1,113 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc
+namespace Microsoft.AspNetCore.Mvc;
+
+public class TypeFilterAttributeTest
 {
-    public class TypeFilterAttributeTest
+    [Fact]
+    public void CreateService_TypeActivatesImplementationType()
     {
-        [Fact]
-        public void CreateService_TypeActivatesImplementationType()
+        // Arrange
+        var value = "Some value";
+        var uri = new Uri("http://www.asp.net");
+        var serviceProvider = new ServiceCollection()
+            .AddSingleton(value)
+            .AddSingleton(uri)
+            .BuildServiceProvider();
+
+        var typeFilter = new TypeFilterAttribute(typeof(TestFilter));
+
+        // Act
+        var filter = typeFilter.CreateInstance(serviceProvider);
+
+        // Assert
+        var testFilter = Assert.IsType<TestFilter>(filter);
+        Assert.Same(value, testFilter.Value);
+        Assert.Same(uri, testFilter.Uri);
+    }
+
+    [Fact]
+    public void CreateService_UsesArguments()
+    {
+        // Arrange
+        var value = "Some value";
+        var uri = new Uri("http://www.asp.net");
+        var serviceProvider = new ServiceCollection()
+            .AddSingleton("Value in DI")
+            .AddSingleton(uri)
+            .BuildServiceProvider();
+
+        var typeFilter = new TypeFilterAttribute(typeof(TestFilter))
         {
-            // Arrange
-            var value = "Some value";
-            var uri = new Uri("http://www.asp.net");
-            var serviceProvider = new ServiceCollection()
-                .AddSingleton(value)
-                .AddSingleton(uri)
-                .BuildServiceProvider();
+            Arguments = new[] { value, }
+        };
 
-            var typeFilter = new TypeFilterAttribute(typeof(TestFilter));
+        // Act
+        var filter = typeFilter.CreateInstance(serviceProvider);
 
-            // Act
-            var filter = typeFilter.CreateInstance(serviceProvider);
+        // Assert
+        var testFilter = Assert.IsType<TestFilter>(filter);
+        Assert.Same(value, testFilter.Value);
+        Assert.Same(uri, testFilter.Uri);
+    }
 
-            // Assert
-            var testFilter = Assert.IsType<TestFilter>(filter);
-            Assert.Same(value, testFilter.Value);
-            Assert.Same(uri, testFilter.Uri);
+    [Fact]
+    public void CreateService_UnwrapsFilterFactory()
+    {
+        // Arrange
+        var value = "Some value";
+        var uri = new Uri("http://www.asp.net");
+        var serviceProvider = new ServiceCollection()
+            .AddSingleton("Value in DI")
+            .AddSingleton(uri)
+            .BuildServiceProvider();
+
+        var typeFilter = new TypeFilterAttribute(typeof(TestFilterFactory))
+        {
+            Arguments = new[] { value, }
+        };
+
+        // Act
+        var filter = typeFilter.CreateInstance(serviceProvider);
+
+        // Assert
+        var testFilter = Assert.IsType<TestFilter>(filter);
+        Assert.Same(value, testFilter.Value);
+        Assert.Same(uri, testFilter.Uri);
+    }
+
+    public class TestFilter : IFilterMetadata
+    {
+        public TestFilter(string value, Uri uri)
+        {
+            Value = value;
+            Uri = uri;
         }
 
-        [Fact]
-        public void CreateService_UsesArguments()
+        public string Value { get; }
+        public Uri Uri { get; }
+    }
+
+    public class TestFilterFactory : IFilterFactory
+    {
+        private readonly string _value;
+        private readonly Uri _uri;
+
+        public TestFilterFactory(string value, Uri uri)
         {
-            // Arrange
-            var value = "Some value";
-            var uri = new Uri("http://www.asp.net");
-            var serviceProvider = new ServiceCollection()
-                .AddSingleton("Value in DI")
-                .AddSingleton(uri)
-                .BuildServiceProvider();
-
-            var typeFilter = new TypeFilterAttribute(typeof(TestFilter))
-            {
-                Arguments = new[] { value, }
-            };
-
-            // Act
-            var filter = typeFilter.CreateInstance(serviceProvider);
-
-            // Assert
-            var testFilter = Assert.IsType<TestFilter>(filter);
-            Assert.Same(value, testFilter.Value);
-            Assert.Same(uri, testFilter.Uri);
+            _value = value;
+            _uri = uri;
         }
 
-        [Fact]
-        public void CreateService_UnwrapsFilterFactory()
+        public bool IsReusable => throw new NotImplementedException();
+
+        public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
         {
-            // Arrange
-            var value = "Some value";
-            var uri = new Uri("http://www.asp.net");
-            var serviceProvider = new ServiceCollection()
-                .AddSingleton("Value in DI")
-                .AddSingleton(uri)
-                .BuildServiceProvider();
-
-            var typeFilter = new TypeFilterAttribute(typeof(TestFilterFactory))
-            {
-                Arguments = new[] { value, }
-            };
-
-            // Act
-            var filter = typeFilter.CreateInstance(serviceProvider);
-
-            // Assert
-            var testFilter = Assert.IsType<TestFilter>(filter);
-            Assert.Same(value, testFilter.Value);
-            Assert.Same(uri, testFilter.Uri);
-        }
-
-        public class TestFilter : IFilterMetadata
-        {
-            public TestFilter(string value, Uri uri)
-            {
-                Value = value;
-                Uri = uri;
-            }
-
-            public string Value { get; }
-            public Uri Uri { get; }
-        }
-
-        public class TestFilterFactory : IFilterFactory
-        {
-            private readonly string _value;
-            private readonly Uri _uri;
-
-            public TestFilterFactory(string value, Uri uri)
-            {
-                _value = value;
-                _uri = uri;
-            }
-
-            public bool IsReusable => throw new NotImplementedException();
-
-            public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
-            {
-                return new TestFilter(_value, _uri);
-            }
+            return new TestFilter(_value, _uri);
         }
     }
 }

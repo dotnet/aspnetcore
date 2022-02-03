@@ -1,25 +1,24 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Rewrite.IISUrlRewrite;
 
-namespace Microsoft.AspNetCore.Rewrite.PatternSegments
+namespace Microsoft.AspNetCore.Rewrite.PatternSegments;
+
+internal class RewriteMapSegment : PatternSegment
 {
-    internal class RewriteMapSegment : PatternSegment
+    private readonly IISRewriteMap _rewriteMap;
+    private readonly Pattern _pattern;
+
+    public RewriteMapSegment(IISRewriteMap rewriteMap, Pattern pattern)
     {
-        private readonly IISRewriteMap _rewriteMap;
-        private readonly Pattern _pattern;
+        _rewriteMap = rewriteMap;
+        _pattern = pattern;
+    }
 
-        public RewriteMapSegment(IISRewriteMap rewriteMap, Pattern pattern)
-        {
-            _rewriteMap = rewriteMap;
-            _pattern = pattern;
-        }
-
-        public override string? Evaluate(RewriteContext context, BackReferenceCollection? ruleBackReferences, BackReferenceCollection? conditionBackReferences)
-        {
-            var key = _pattern.Evaluate(context, ruleBackReferences, conditionBackReferences).ToLowerInvariant();
-            return _rewriteMap[key];
-        }
+    public override string? Evaluate(RewriteContext context, BackReferenceCollection? ruleBackReferences, BackReferenceCollection? conditionBackReferences)
+    {
+        var key = _pattern.Evaluate(context, ruleBackReferences, conditionBackReferences).ToLowerInvariant();
+        return _rewriteMap[key];
     }
 }

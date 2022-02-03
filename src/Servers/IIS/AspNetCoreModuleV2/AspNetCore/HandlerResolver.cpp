@@ -24,11 +24,13 @@ HandlerResolver::HandlerResolver(HMODULE hModule, const IHttpServer &pServer)
       m_pServer(pServer),
       m_loadedApplicationHostingModel(HOSTING_UNKNOWN)
 {
+    m_disallowRotationOnConfigChange = false;
     InitializeSRWLock(&m_requestHandlerLoadLock);
 }
 
 HRESULT
 HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication,
+    const std::filesystem::path& shadowCopyPath,
     const ShimOptions& pConfiguration,
     std::unique_ptr<ApplicationFactory>& pApplicationFactory,
     ErrorContext& errorContext)
@@ -62,7 +64,7 @@ HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication
             RETURN_IF_FAILED(HostFxrResolutionResult::Create(
                 L"",
                 pConfiguration.QueryProcessPath(),
-                pApplication.GetApplicationPhysicalPath(),
+                shadowCopyPath.empty() ? pApplication.GetApplicationPhysicalPath() : shadowCopyPath,
                 pConfiguration.QueryArguments(),
                 errorContext,
                 options));
@@ -125,7 +127,7 @@ HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication
 }
 
 HRESULT
-HandlerResolver::GetApplicationFactory(const IHttpApplication& pApplication, std::unique_ptr<ApplicationFactory>& pApplicationFactory, const ShimOptions& options, ErrorContext& errorContext)
+HandlerResolver::GetApplicationFactory(const IHttpApplication& pApplication, const std::filesystem::path& shadowCopyPath, std::unique_ptr<ApplicationFactory>& pApplicationFactory, const ShimOptions& options, ErrorContext& errorContext)
 {
     SRWExclusiveLock lock(m_requestHandlerLoadLock);
     if (m_loadedApplicationHostingModel != HOSTING_UNKNOWN)
@@ -168,7 +170,9 @@ HandlerResolver::GetApplicationFactory(const IHttpApplication& pApplication, std
 
     m_loadedApplicationHostingModel = options.QueryHostingModel();
     m_loadedApplicationId = pApplication.GetApplicationId();
-    RETURN_IF_FAILED(LoadRequestHandlerAssembly(pApplication, options, pApplicationFactory, errorContext));
+    m_disallowRotationOnConfigChange = options.QueryDisallowRotationOnConfigChange();
+
+    RETURN_IF_FAILED(LoadRequestHandlerAssembly(pApplication, shadowCopyPath, options, pApplicationFactory, errorContext));
 
     return S_OK;
 }
@@ -179,6 +183,18 @@ void HandlerResolver::ResetHostingModel()
 
     m_loadedApplicationHostingModel = APP_HOSTING_MODEL::HOSTING_UNKNOWN;
     m_loadedApplicationId.resize(0);
+}
+
+APP_HOSTING_MODEL HandlerResolver::GetHostingModel()
+{
+    SRWExclusiveLock lock(m_requestHandlerLoadLock);
+
+    return m_loadedApplicationHostingModel;
+}
+
+bool HandlerResolver::GetDisallowRotationOnConfigChange()
+{
+    return m_disallowRotationOnConfigChange;
 }
 
 HRESULT

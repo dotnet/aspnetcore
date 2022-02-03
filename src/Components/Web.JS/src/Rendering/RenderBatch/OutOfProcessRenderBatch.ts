@@ -1,4 +1,7 @@
-import { RenderBatch, ArrayRange, RenderTreeDiff, ArrayValues, RenderTreeEdit, EditType, FrameType, RenderTreeFrame, RenderTreeDiffReader, RenderTreeFrameReader, RenderTreeEditReader, ArrayRangeReader, ArrayBuilderSegmentReader, ArrayBuilderSegment } from './RenderBatch';
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+import { RenderBatch, ArrayRange, RenderTreeDiff, ArrayValues, RenderTreeEdit, RenderTreeFrame, RenderTreeDiffReader, RenderTreeFrameReader, RenderTreeEditReader, ArrayRangeReader, ArrayBuilderSegmentReader, ArrayBuilderSegment } from './RenderBatch';
 import { decodeUtf8 } from '../../Utf8Decoder';
 import { readInt32LE, readUint64LE, readLEB128, numLEB128Bytes } from '../../BinaryDecoder';
 
@@ -212,7 +215,7 @@ class OutOfProcessArrayBuilderSegmentReader implements ArrayBuilderSegmentReader
   constructor(private batchDataUint8: Uint8Array) {
   }
 
-  offset<T>(arrayBuilderSegment: ArrayBuilderSegment<T>) {
+  offset<T>(_arrayBuilderSegment: ArrayBuilderSegment<T>): number {
     // Not used by the out-of-process representation of RenderBatch data.
     // This only exists on the ArrayBuilderSegmentReader for the shared-memory representation.
     return 0;

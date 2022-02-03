@@ -1,28 +1,25 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
+namespace Microsoft.AspNetCore.Mvc;
 
-namespace Microsoft.AspNetCore.Mvc
+/// <summary>
+/// Specifies the name of an action.
+/// </summary>
+[AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
+public sealed class ActionNameAttribute : Attribute
 {
     /// <summary>
-    /// Specifies the name of an action.
+    /// Initializes a new <see cref="ActionNameAttribute"/> instance.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-    public sealed class ActionNameAttribute : Attribute
+    /// <param name="name">The name of the action.</param>
+    public ActionNameAttribute(string name)
     {
-        /// <summary>
-        /// Initializes a new <see cref="ActionNameAttribute"/> instance.
-        /// </summary>
-        /// <param name="name">The name of the action.</param>
-        public ActionNameAttribute(string name)
-        {
-            Name = name;
-        }
-
-        /// <summary>
-        /// Gets the name of the action.
-        /// </summary>
-        public string Name { get; }
+        Name = name;
     }
+
+    /// <summary>
+    /// Gets the name of the action.
+    /// </summary>
+    public string Name { get; }
 }

@@ -1,66 +1,61 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using Xunit;
+namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
-namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
+public class ModelValidatorProviderExtensionsTest
 {
-    public class ModelValidatorProviderExtensionsTest
+    [Fact]
+    public void RemoveType_RemovesAllOfType()
     {
-        [Fact]
-        public void RemoveType_RemovesAllOfType()
-        {
-            // Arrange
-            var list = new List<IModelValidatorProvider>
+        // Arrange
+        var list = new List<IModelValidatorProvider>
             {
                 new FooModelValidatorProvider(),
                 new BarModelValidatorProvider(),
                 new FooModelValidatorProvider()
             };
 
-            // Act
-            list.RemoveType(typeof(FooModelValidatorProvider));
+        // Act
+        list.RemoveType(typeof(FooModelValidatorProvider));
 
-            // Assert
-            var provider = Assert.Single(list);
-            Assert.IsType<BarModelValidatorProvider>(provider);
-        }
+        // Assert
+        var provider = Assert.Single(list);
+        Assert.IsType<BarModelValidatorProvider>(provider);
+    }
 
-        [Fact]
-        public void GenericRemoveType_RemovesAllOfType()
-        {
-            // Arrange
-            var list = new List<IModelValidatorProvider>
+    [Fact]
+    public void GenericRemoveType_RemovesAllOfType()
+    {
+        // Arrange
+        var list = new List<IModelValidatorProvider>
             {
                 new FooModelValidatorProvider(),
                 new BarModelValidatorProvider(),
                 new FooModelValidatorProvider()
             };
 
-            // Act
-            list.RemoveType<FooModelValidatorProvider>();
+        // Act
+        list.RemoveType<FooModelValidatorProvider>();
 
-            // Assert
-            var provider = Assert.Single(list);
-            Assert.IsType<BarModelValidatorProvider>(provider);
-        }
+        // Assert
+        var provider = Assert.Single(list);
+        Assert.IsType<BarModelValidatorProvider>(provider);
+    }
 
-        private class FooModelValidatorProvider : IModelValidatorProvider
+    private class FooModelValidatorProvider : IModelValidatorProvider
+    {
+        public void CreateValidators(ModelValidatorProviderContext context)
         {
-            public void CreateValidators(ModelValidatorProviderContext context)
-            {
-                throw new NotImplementedException();
-            }
+            throw new NotImplementedException();
         }
+    }
 
-        private class BarModelValidatorProvider : IModelValidatorProvider
+    private class BarModelValidatorProvider : IModelValidatorProvider
+    {
+        public void CreateValidators(ModelValidatorProviderContext context)
         {
-            public void CreateValidators(ModelValidatorProviderContext context)
-            {
-                throw new NotImplementedException();
-            }
+            throw new NotImplementedException();
         }
     }
 }

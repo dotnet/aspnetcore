@@ -1,10 +1,8 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
-using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -14,43 +12,42 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Net.Http.Headers;
 using Moq;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc
+namespace Microsoft.AspNetCore.Mvc;
+
+public class ContentResultTest
 {
-    public class ContentResultTest
+    private static readonly int DefaultCharacterChunkSize =
+        MemoryPoolHttpResponseStreamWriterFactory.DefaultBufferSize;
+
+    [Fact]
+    public async Task ContentResult_ExecuteResultAsync_Response_NullContent_SetsContentTypeAndEncoding()
     {
-        private static readonly int DefaultCharacterChunkSize =
-            MemoryPoolHttpResponseStreamWriterFactory.DefaultBufferSize;
-
-        [Fact]
-        public async Task ContentResult_Response_NullContent_SetsContentTypeAndEncoding()
+        // Arrange
+        var contentResult = new ContentResult
         {
-            // Arrange
-            var contentResult = new ContentResult
+            Content = null,
+            ContentType = new MediaTypeHeaderValue("text/plain")
             {
-                Content = null,
-                ContentType = new MediaTypeHeaderValue("text/plain")
-                {
-                    Encoding = Encoding.Unicode
-                }.ToString()
-            };
-            var httpContext = GetHttpContext();
-            var actionContext = GetActionContext(httpContext);
+                Encoding = Encoding.Unicode
+            }.ToString()
+        };
+        var httpContext = GetHttpContext();
+        var actionContext = GetActionContext(httpContext);
 
-            // Act
-            await contentResult.ExecuteResultAsync(actionContext);
+        // Act
+        await contentResult.ExecuteResultAsync(actionContext);
 
-            // Assert
-            MediaTypeAssert.Equal("text/plain; charset=utf-16", httpContext.Response.ContentType);
-        }
+        // Assert
+        MediaTypeAssert.Equal("text/plain; charset=utf-16", httpContext.Response.ContentType);
+    }
 
-        public static TheoryData<MediaTypeHeaderValue, string, string, string, byte[]> ContentResultContentTypeData
+    public static TheoryData<MediaTypeHeaderValue, string, string, string, byte[]> ContentResultContentTypeData
+    {
+        get
         {
-            get
-            {
-                // contentType, content, responseContentType, expectedContentType, expectedData
-                return new TheoryData<MediaTypeHeaderValue, string, string, string, byte[]>
+            // contentType, content, responseContentType, expectedContentType, expectedData
+            return new TheoryData<MediaTypeHeaderValue, string, string, string, byte[]>
                 {
                     {
                         null,
@@ -109,46 +106,46 @@ namespace Microsoft.AspNetCore.Mvc
                         new byte[] { 97, 98, 99, 100 }
                     },
                 };
-            }
         }
+    }
 
-        [Theory]
-        [MemberData(nameof(ContentResultContentTypeData))]
-        public async Task ContentResult_ExecuteResultAsync_SetContentTypeAndEncoding_OnResponse(
-            MediaTypeHeaderValue contentType,
-            string content,
-            string responseContentType,
-            string expectedContentType,
-            byte[] expectedContentData)
+    [Theory]
+    [MemberData(nameof(ContentResultContentTypeData))]
+    public async Task ContentResult_ExecuteResultAsync_SetContentTypeAndEncoding_OnResponse(
+        MediaTypeHeaderValue contentType,
+        string content,
+        string responseContentType,
+        string expectedContentType,
+        byte[] expectedContentData)
+    {
+        // Arrange
+        var contentResult = new ContentResult
         {
-            // Arrange
-            var contentResult = new ContentResult
-            {
-                Content = content,
-                ContentType = contentType?.ToString()
-            };
-            var httpContext = GetHttpContext();
-            var memoryStream = new MemoryStream();
-            httpContext.Response.Body = memoryStream;
-            httpContext.Response.ContentType = responseContentType;
-            var actionContext = GetActionContext(httpContext);
+            Content = content,
+            ContentType = contentType?.ToString()
+        };
+        var httpContext = GetHttpContext();
+        var memoryStream = new MemoryStream();
+        httpContext.Response.Body = memoryStream;
+        httpContext.Response.ContentType = responseContentType;
+        var actionContext = GetActionContext(httpContext);
 
-            // Act
-            await contentResult.ExecuteResultAsync(actionContext);
+        // Act
+        await contentResult.ExecuteResultAsync(actionContext);
 
-            // Assert
-            var finalResponseContentType = httpContext.Response.ContentType;
-            Assert.Equal(expectedContentType, finalResponseContentType);
-            Assert.Equal(expectedContentData, memoryStream.ToArray());
-            Assert.Equal(expectedContentData.Length, httpContext.Response.ContentLength);
-        }
+        // Assert
+        var finalResponseContentType = httpContext.Response.ContentType;
+        Assert.Equal(expectedContentType, finalResponseContentType);
+        Assert.Equal(expectedContentData, memoryStream.ToArray());
+        Assert.Equal(expectedContentData.Length, httpContext.Response.ContentLength);
+    }
 
-        public static TheoryData<string, string> ContentResult_WritesDataCorrectly_ForDifferentContentSizesData
+    public static TheoryData<string, string> ContentResult_WritesDataCorrectly_ForDifferentContentSizesData
+    {
+        get
         {
-            get
-            {
-                // content, contentType
-                return new TheoryData<string, string>
+            // content, contentType
+            return new TheoryData<string, string>
                 {
                     {  string.Empty, "text/plain; charset=utf-8" },
                     {  new string('a', DefaultCharacterChunkSize), "text/plain; charset=utf-8" },
@@ -217,70 +214,70 @@ namespace Microsoft.AspNetCore.Mvc
                     {  new string('色', (DefaultCharacterChunkSize * 3) + 2), "text/plain; charset=utf-32" },
                     {  new string('色', (DefaultCharacterChunkSize * 3) + 3), "text/plain; charset=utf-32" },
                 };
-            }
         }
+    }
 
-        [Theory]
-        [MemberData(nameof(ContentResult_WritesDataCorrectly_ForDifferentContentSizesData))]
-        public async Task ContentResult_WritesDataCorrectly_ForDifferentContentSizes(string content, string contentType)
+    [Theory]
+    [MemberData(nameof(ContentResult_WritesDataCorrectly_ForDifferentContentSizesData))]
+    public async Task ContentResult_WritesDataCorrectly_ForDifferentContentSizes(string content, string contentType)
+    {
+        // Arrange
+        var contentResult = new ContentResult
         {
-            // Arrange
-            var contentResult = new ContentResult
-            {
-                Content = content,
-                ContentType = contentType
-            };
-            var httpContext = GetHttpContext();
-            var memoryStream = new MemoryStream();
-            httpContext.Response.Body = memoryStream;
-            var actionContext = GetActionContext(httpContext);
-            var encoding = MediaTypeHeaderValue.Parse(contentType).Encoding;
+            Content = content,
+            ContentType = contentType
+        };
+        var httpContext = GetHttpContext();
+        var memoryStream = new MemoryStream();
+        httpContext.Response.Body = memoryStream;
+        var actionContext = GetActionContext(httpContext);
+        var encoding = MediaTypeHeaderValue.Parse(contentType).Encoding;
 
-            // Act
-            await contentResult.ExecuteResultAsync(actionContext);
+        // Act
+        await contentResult.ExecuteResultAsync(actionContext);
 
-            // Assert
-            memoryStream.Seek(0, SeekOrigin.Begin);
-            var streamReader = new StreamReader(memoryStream, encoding);
-            var actualContent = await streamReader.ReadToEndAsync();
-            Assert.Equal(content, actualContent);
-        }
+        // Assert
+        memoryStream.Seek(0, SeekOrigin.Begin);
+        var streamReader = new StreamReader(memoryStream, encoding);
+        var actualContent = await streamReader.ReadToEndAsync();
+        Assert.Equal(content, actualContent);
+    }
 
-        private static ActionContext GetActionContext(HttpContext httpContext)
-        {
-            var routeData = new RouteData();
-            routeData.Routers.Add(Mock.Of<IRouter>());
+    private static ActionContext GetActionContext(HttpContext httpContext)
+    {
+        var routeData = new RouteData();
+        routeData.Routers.Add(Mock.Of<IRouter>());
 
-            return new ActionContext(httpContext,
-                                    routeData,
-                                    new ActionDescriptor());
-        }
+        return new ActionContext(httpContext,
+                                routeData,
+                                new ActionDescriptor());
+    }
 
-        private static IServiceCollection CreateServices()
-        {
-            // An array pool could return a buffer which is greater or equal to the size of the default character
-            // chunk size. Since the tests here depend on a specific character buffer size to test boundary conditions,
-            // make sure to only return a buffer of that size.
-            var charArrayPool = new Mock<ArrayPool<char>>();
-            charArrayPool
-                .Setup(ap => ap.Rent(DefaultCharacterChunkSize))
-                .Returns(new char[DefaultCharacterChunkSize]);
+    private static IServiceCollection CreateServices()
+    {
+        // An array pool could return a buffer which is greater or equal to the size of the default character
+        // chunk size. Since the tests here depend on a specific character buffer size to test boundary conditions,
+        // make sure to only return a buffer of that size.
+        var charArrayPool = new Mock<ArrayPool<char>>();
+        charArrayPool
+            .Setup(ap => ap.Rent(DefaultCharacterChunkSize))
+            .Returns(new char[DefaultCharacterChunkSize]);
 
-            var services = new ServiceCollection();
-            services.AddSingleton<IActionResultExecutor<ContentResult>>(new ContentResultExecutor(
-                new Logger<ContentResultExecutor>(NullLoggerFactory.Instance),
-                new MemoryPoolHttpResponseStreamWriterFactory(ArrayPool<byte>.Shared, charArrayPool.Object)));
-            return services;
-        }
+        var services = new ServiceCollection();
+        services.AddSingleton<IActionResultExecutor<ContentResult>>(new ContentResultExecutor(
+            new Logger<ContentResultExecutor>(NullLoggerFactory.Instance),
+            new MemoryPoolHttpResponseStreamWriterFactory(ArrayPool<byte>.Shared, charArrayPool.Object)));
+        services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+        return services;
+    }
 
-        private static HttpContext GetHttpContext()
-        {
-            var services = CreateServices();
+    private static HttpContext GetHttpContext()
+    {
+        var services = CreateServices();
 
-            var httpContext = new DefaultHttpContext();
-            httpContext.RequestServices = services.BuildServiceProvider();
+        var httpContext = new DefaultHttpContext();
+        httpContext.RequestServices = services.BuildServiceProvider();
 
-            return httpContext;
-        }
+        return httpContext;
     }
 }

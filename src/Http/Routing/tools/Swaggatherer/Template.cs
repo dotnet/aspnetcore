@@ -1,72 +1,72 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 
-namespace Swaggatherer
+namespace Swaggatherer;
+
+internal static class Template
 {
-    internal static class Template
+    public static string Execute(IReadOnlyList<RouteEntry> entries)
     {
-        public static string Execute(IReadOnlyList<RouteEntry> entries)
+        var controllerCount = 0;
+        var templatesVisited = new Dictionary<string, (int ControllerIndex, int ActionIndex)>(
+            StringComparer.OrdinalIgnoreCase);
+
+        var setupEndpointsLines = new List<string>();
+        for (var i = 0; i < entries.Count; i++)
         {
-            var controllerCount = 0;
-            var templatesVisited = new Dictionary<string, (int ControllerIndex, int ActionIndex)>(
-                StringComparer.OrdinalIgnoreCase);
+            var entry = entries[i];
 
-            var setupEndpointsLines = new List<string>();
-            for (var i = 0; i < entries.Count; i++)
+            // In attribute routing, same template is used for all actions within that controller. The following
+            // simulates that where we only increment the controller count when a new endpoint for a new template
+            // is being created.
+            var template = entry.Template.TemplateText;
+            if (!templatesVisited.TryGetValue(template, out var visitedTemplateInfo))
             {
-                var entry = entries[i];
-
-                // In attribute routing, same template is used for all actions within that controller. The following
-                // simulates that where we only increment the controller count when a new endpoint for a new template
-                // is being created.
-                var template = entry.Template.TemplateText;
-                if (!templatesVisited.TryGetValue(template, out var visitedTemplateInfo))
-                {
-                    controllerCount++;
-                    visitedTemplateInfo = (controllerCount, 0);
-                }
-
-                // Increment the action count within a controller template
-                visitedTemplateInfo.ActionIndex++;
-                templatesVisited[template] = visitedTemplateInfo;
-
-                var controllerName = $"Controller{visitedTemplateInfo.ControllerIndex}";
-                var actionName = $"Action{visitedTemplateInfo.ActionIndex}";
-
-                var httpMethodText = entry.Method == null ? "httpMethod: null" : $"\"{entry.Method.ToUpperInvariant()}\"";
-                setupEndpointsLines.Add($"            Endpoints[{i}] = CreateEndpoint(\"{template}\", \"{controllerName}\", \"{actionName}\", {httpMethodText});");
+                controllerCount++;
+                visitedTemplateInfo = (controllerCount, 0);
             }
 
-            var setupRequestsLines = new List<string>();
-            for (var i = 0; i < entries.Count; i++)
+            // Increment the action count within a controller template
+            visitedTemplateInfo.ActionIndex++;
+            templatesVisited[template] = visitedTemplateInfo;
+
+            var controllerName = $"Controller{visitedTemplateInfo.ControllerIndex}";
+            var actionName = $"Action{visitedTemplateInfo.ActionIndex}";
+
+            var httpMethodText = entry.Method == null ? "httpMethod: null" : $"\"{entry.Method.ToUpperInvariant()}\"";
+            setupEndpointsLines.Add($"            Endpoints[{i}] = CreateEndpoint(\"{template}\", \"{controllerName}\", \"{actionName}\", {httpMethodText});");
+        }
+
+        var setupRequestsLines = new List<string>();
+        for (var i = 0; i < entries.Count; i++)
+        {
+            var entry = entries[i];
+            setupRequestsLines.Add($"            Requests[{i}] = new DefaultHttpContext();");
+            setupRequestsLines.Add($"            Requests[{i}].RequestServices = CreateServices();");
+
+            if (entry.Method != null)
             {
-                var entry = entries[i];
-                setupRequestsLines.Add($"            Requests[{i}] = new DefaultHttpContext();");
-                setupRequestsLines.Add($"            Requests[{i}].RequestServices = CreateServices();");
-
-                if (entry.Method != null)
-                {
-                    setupRequestsLines.Add($"            Requests[{i}].Request.Method = HttpMethods.GetCanonicalizedValue({entries[i].Method});");
-                }
-
-                setupRequestsLines.Add($"            Requests[{i}].Request.Path = \"{entries[i].RequestUrl}\";");
+                setupRequestsLines.Add($"            Requests[{i}].Request.Method = HttpMethods.GetCanonicalizedValue({entries[i].Method});");
             }
 
-            var setupMatcherLines = new List<string>();
-            for (var i = 0; i < entries.Count; i++)
-            {
-                setupMatcherLines.Add($"            builder.AddEndpoint(Endpoints[{i}]);");
-            }
+            setupRequestsLines.Add($"            Requests[{i}].Request.Path = \"{entries[i].RequestUrl}\";");
+        }
 
-            return string.Format(
-                CultureInfo.InvariantCulture,
-                @"
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+        var setupMatcherLines = new List<string>();
+        for (var i = 0; i < entries.Count; i++)
+        {
+            setupMatcherLines.Add($"            builder.AddEndpoint(Endpoints[{i}]);");
+        }
+
+        return string.Format(
+            CultureInfo.InvariantCulture,
+            @"
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
@@ -129,10 +129,9 @@ namespace Microsoft.AspNetCore.Routing
         }}
     }}
 }}",
-    string.Join(Environment.NewLine, setupEndpointsLines),
-    string.Join(Environment.NewLine, setupRequestsLines),
-    string.Join(Environment.NewLine, setupMatcherLines),
-    entries.Count);
-        }
+string.Join(Environment.NewLine, setupEndpointsLines),
+string.Join(Environment.NewLine, setupRequestsLines),
+string.Join(Environment.NewLine, setupMatcherLines),
+entries.Count);
     }
 }

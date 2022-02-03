@@ -1,29 +1,28 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 
-namespace Microsoft.AspNetCore.Cryptography.Cng
+namespace Microsoft.AspNetCore.Cryptography.Cng;
+
+/// <summary>
+/// Wraps utility BCRYPT APIs that don't work directly with handles.
+/// </summary>
+internal static unsafe class BCryptUtil
 {
     /// <summary>
-    /// Wraps utility BCRYPT APIs that don't work directly with handles.
+    /// Fills a buffer with cryptographically secure random data.
     /// </summary>
-    internal unsafe static class BCryptUtil
+    public static void GenRandom(byte* pbBuffer, uint cbBuffer)
     {
-        /// <summary>
-        /// Fills a buffer with cryptographically secure random data.
-        /// </summary>
-        public static void GenRandom(byte* pbBuffer, uint cbBuffer)
+        if (cbBuffer != 0)
         {
-            if (cbBuffer != 0)
-            {
-                int ntstatus = UnsafeNativeMethods.BCryptGenRandom(
-                    hAlgorithm: IntPtr.Zero,
-                    pbBuffer: pbBuffer,
-                    cbBuffer: cbBuffer,
-                    dwFlags: BCryptGenRandomFlags.BCRYPT_USE_SYSTEM_PREFERRED_RNG);
-                UnsafeNativeMethods.ThrowExceptionForBCryptStatus(ntstatus);
-            }
+            int ntstatus = UnsafeNativeMethods.BCryptGenRandom(
+                hAlgorithm: IntPtr.Zero,
+                pbBuffer: pbBuffer,
+                cbBuffer: cbBuffer,
+                dwFlags: BCryptGenRandomFlags.BCRYPT_USE_SYSTEM_PREFERRED_RNG);
+            UnsafeNativeMethods.ThrowExceptionForBCryptStatus(ntstatus);
         }
     }
 }

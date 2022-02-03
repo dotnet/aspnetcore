@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,35 +9,34 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration
+namespace Microsoft.AspNetCore.Server.IISIntegration;
+
+public class IISExtensionTests
 {
-    public class IISExtensionTests
+    [Fact]
+    public async Task CallingUseIISIntegrationMultipleTimesWorks()
     {
-        [Fact]
-        public async Task CallingUseIISIntegrationMultipleTimesWorks()
-        {
-            using var host = new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
-                {
-                    webHostBuilder
-                        .UseSetting("TOKEN", "TestToken")
-                        .UseSetting("PORT", "12345")
-                        .UseSetting("APPL_PATH", "/")
-                        .UseIISIntegration()
-                        .UseIISIntegration()
-                        .Configure(app => { })
-                        .UseTestServer();
-                })
-                .Build();
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseSetting("TOKEN", "TestToken")
+                    .UseSetting("PORT", "12345")
+                    .UseSetting("APPL_PATH", "/")
+                    .UseIISIntegration()
+                    .UseIISIntegration()
+                    .Configure(app => { })
+                    .UseTestServer();
+            })
+            .Build();
 
-            var server = host.GetTestServer();
+        var server = host.GetTestServer();
 
-            await host.StartAsync();
+        await host.StartAsync();
 
-            var filters = server.Services.GetServices<IStartupFilter>()
-                .OfType<IISSetupFilter>();
+        var filters = server.Services.GetServices<IStartupFilter>()
+            .OfType<IISSetupFilter>();
 
-            Assert.Single(filters);
-        }
+        Assert.Single(filters);
     }
 }

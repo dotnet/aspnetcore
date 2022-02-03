@@ -1,19 +1,18 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
 
-namespace Microsoft.AspNetCore.Mvc.Infrastructure
+namespace Microsoft.AspNetCore.Mvc.Infrastructure;
+
+/// <summary>
+/// Defines the contract to convert a type to an <see cref="IActionResult"/> during action invocation.
+/// </summary>
+public interface IConvertToActionResult
 {
     /// <summary>
-    /// Defines the contract to convert a type to an <see cref="IActionResult"/> during action invocation.
+    /// Converts the current instance to an instance of <see cref="IActionResult"/>.
     /// </summary>
-    public interface IConvertToActionResult
-    {
-        /// <summary>
-        /// Converts the current instance to an instance of <see cref="IActionResult"/>.
-        /// </summary>
-        /// <returns>The converted <see cref="IActionResult"/>.</returns>
-        IActionResult Convert();
-    }
+    /// <returns>The converted <see cref="IActionResult"/>.</returns>
+    IActionResult Convert();
 }

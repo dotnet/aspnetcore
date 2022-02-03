@@ -1,77 +1,73 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
-using System.Collections.Generic;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Features;
 
-namespace SignalRSamples.ConnectionHandlers
+namespace SignalRSamples.ConnectionHandlers;
+
+public class MessagesConnectionHandler : ConnectionHandler
 {
-    public class MessagesConnectionHandler : ConnectionHandler
+    private ConnectionList Connections { get; } = new ConnectionList();
+
+    public override async Task OnConnectedAsync(ConnectionContext connection)
     {
-        private ConnectionList Connections { get; } = new ConnectionList();
+        Connections.Add(connection);
 
-        public override async Task OnConnectedAsync(ConnectionContext connection)
+        var transportType = connection.Features.Get<IHttpTransportFeature>()?.TransportType;
+
+        await Broadcast($"{connection.ConnectionId} connected ({transportType})");
+
+        try
         {
-            Connections.Add(connection);
-
-            var transportType = connection.Features.Get<IHttpTransportFeature>()?.TransportType;
-
-            await Broadcast($"{connection.ConnectionId} connected ({transportType})");
-
-            try
+            while (true)
             {
-                while (true)
-                {
-                    var result = await connection.Transport.Input.ReadAsync();
-                    var buffer = result.Buffer;
+                var result = await connection.Transport.Input.ReadAsync();
+                var buffer = result.Buffer;
 
-                    try
+                try
+                {
+                    if (!buffer.IsEmpty)
                     {
-                        if (!buffer.IsEmpty)
-                        {
-                            // We can avoid the copy here but we'll deal with that later
-                            var text = Encoding.UTF8.GetString(buffer.ToArray());
-                            text = $"{connection.ConnectionId}: {text}";
-                            await Broadcast(Encoding.UTF8.GetBytes(text));
-                        }
-                        else if (result.IsCompleted)
-                        {
-                            break;
-                        }
+                        // We can avoid the copy here but we'll deal with that later
+                        var text = Encoding.UTF8.GetString(buffer.ToArray());
+                        text = $"{connection.ConnectionId}: {text}";
+                        await Broadcast(Encoding.UTF8.GetBytes(text));
                     }
-                    finally
+                    else if (result.IsCompleted)
                     {
-                        connection.Transport.Input.AdvanceTo(buffer.End);
+                        break;
                     }
                 }
-            }
-            finally
-            {
-                Connections.Remove(connection);
-
-                await Broadcast($"{connection.ConnectionId} disconnected ({transportType})");
+                finally
+                {
+                    connection.Transport.Input.AdvanceTo(buffer.End);
+                }
             }
         }
-
-        private Task Broadcast(string text)
+        finally
         {
-            return Broadcast(Encoding.UTF8.GetBytes(text));
-        }
+            Connections.Remove(connection);
 
-        private Task Broadcast(byte[] payload)
+            await Broadcast($"{connection.ConnectionId} disconnected ({transportType})");
+        }
+    }
+
+    private Task Broadcast(string text)
+    {
+        return Broadcast(Encoding.UTF8.GetBytes(text));
+    }
+
+    private Task Broadcast(byte[] payload)
+    {
+        var tasks = new List<Task>(Connections.Count);
+        foreach (var c in Connections)
         {
-            var tasks = new List<Task>(Connections.Count);
-            foreach (var c in Connections)
-            {
-                tasks.Add(c.Transport.Output.WriteAsync(payload).AsTask());
-            }
-
-            return Task.WhenAll(tasks);
+            tasks.Add(c.Transport.Output.WriteAsync(payload).AsTask());
         }
+
+        return Task.WhenAll(tasks);
     }
 }

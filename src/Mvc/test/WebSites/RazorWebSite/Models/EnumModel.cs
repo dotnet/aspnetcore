@@ -1,20 +1,19 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
 
-namespace RazorWebSite.Models
-{
-    public enum ModelEnum
-    {
-        [Display(Name = "FirstOptionDisplay")]
-        FirstOption,
-        SecondOptions
-    }
+namespace RazorWebSite.Models;
 
-    public class EnumModel
-    {
-        [Display(Name = "ModelEnum")]
-        public ModelEnum Id { get; set; }
-    }
+public enum ModelEnum
+{
+    [Display(Name = "FirstOptionDisplay")]
+    FirstOption,
+    SecondOptions
+}
+
+public class EnumModel
+{
+    [Display(Name = "ModelEnum")]
+    public ModelEnum Id { get; set; }
 }

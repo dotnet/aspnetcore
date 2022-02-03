@@ -1,9 +1,0 @@
-Source Location: (56:3,1 [37] x:\dir\subdir\Test\TestComponent.cshtml)
-|
-    Person person = new Person();
-|
-Generated Location: (1168:31,1 [37] )
-|
-    Person person = new Person();
-|
-

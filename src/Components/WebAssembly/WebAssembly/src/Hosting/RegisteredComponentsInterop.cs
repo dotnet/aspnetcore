@@ -1,22 +1,21 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
+namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+
+internal class RegisteredComponentsInterop
 {
-    internal class RegisteredComponentsInterop
-    {
-        private static readonly string Prefix = "Blazor._internal.registeredComponents.";
+    private const string Prefix = "Blazor._internal.registeredComponents.";
 
-        public static readonly string GetRegisteredComponentsCount = Prefix + "getRegisteredComponentsCount";
+    public const string GetRegisteredComponentsCount = Prefix + "getRegisteredComponentsCount";
 
-        public static readonly string GetId = Prefix + "getId";
+    public const string GetId = Prefix + "getId";
 
-        public static readonly string GetAssembly = Prefix + "getAssembly";
+    public const string GetAssembly = Prefix + "getAssembly";
 
-        public static readonly string GetTypeName = Prefix + "getTypeName";
+    public const string GetTypeName = Prefix + "getTypeName";
 
-        public static readonly string GetParameterDefinitions = Prefix + "getParameterDefinitions";
+    public const string GetParameterDefinitions = Prefix + "getParameterDefinitions";
 
-        public static readonly string GetParameterValues = Prefix + "getParameterValues";
-    }
+    public const string GetParameterValues = Prefix + "getParameterValues";
 }

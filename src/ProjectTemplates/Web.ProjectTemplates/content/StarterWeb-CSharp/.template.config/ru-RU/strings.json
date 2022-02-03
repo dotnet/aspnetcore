@@ -1,7 +1,7 @@
 {
   "version": "1.0.0.0",
   "strings": {
-    "name": "ASP.NET Core Web App (Model-View-Controller)",
+    "name": "Веб-приложение ASP.NET Core (модель-представление-контроллер)",
     "description": "Шаблон проекта для создания приложения ASP.NET Core с образцом представлений MVC и контроллеров ASP.NET Core. Этот шаблон можно также использовать для служб HTTP RESTful."
   }
 }

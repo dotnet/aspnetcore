@@ -1,33 +1,30 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.Extensions.DependencyInjection;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Http.Tests
+namespace Microsoft.AspNetCore.Http.Tests;
+
+public class HttpServiceCollectionExtensionsTests
 {
-    public class HttpServiceCollectionExtensionsTests
+    [Fact]
+    public void AddHttpContextAccessor_AddsWithCorrectLifetime()
     {
-        [Fact]
-        public void AddHttpContextAccessor_AddsWithCorrectLifetime()
-        {
-            // Arrange
-            var services = new ServiceCollection();
+        // Arrange
+        var services = new ServiceCollection();
 
-            // Act
-            services.AddHttpContextAccessor();
+        // Act
+        services.AddHttpContextAccessor();
 
-            // Assert
-            var descriptor = services[0];
-            Assert.Equal(ServiceLifetime.Singleton, descriptor.Lifetime);
-            Assert.Equal(typeof(HttpContextAccessor), descriptor.ImplementationType);
-        }
+        // Assert
+        var descriptor = services[0];
+        Assert.Equal(ServiceLifetime.Singleton, descriptor.Lifetime);
+        Assert.Equal(typeof(HttpContextAccessor), descriptor.ImplementationType);
+    }
 
-        [Fact]
-        public void AddHttpContextAccessor_ThrowsWithoutServices()
-        {
-            Assert.Throws<ArgumentNullException>("services", () => HttpServiceCollectionExtensions.AddHttpContextAccessor(null));
-        }
+    [Fact]
+    public void AddHttpContextAccessor_ThrowsWithoutServices()
+    {
+        Assert.Throws<ArgumentNullException>("services", () => HttpServiceCollectionExtensions.AddHttpContextAccessor(null));
     }
 }

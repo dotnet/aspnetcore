@@ -1,142 +1,46 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
+namespace Microsoft.Extensions.Logging;
 
-namespace Microsoft.Extensions.Logging
+internal static partial class LoggingExtensions
 {
-    internal static class LoggingExtensions
-    {
-        private static Action<ILogger, Exception?> _errorClosingTheSession;
-        private static Action<ILogger, string, Exception?> _accessingExpiredSession;
-        private static Action<ILogger, string, string, Exception?> _sessionStarted;
-        private static Action<ILogger, string, string, int, Exception?> _sessionLoaded;
-        private static Action<ILogger, string, string, int, Exception?> _sessionStored;
-        private static Action<ILogger, string, Exception?> _sessionCacheReadException;
-        private static Action<ILogger, Exception?> _errorUnprotectingCookie;
-        private static Action<ILogger, Exception?> _sessionLoadingTimeout;
-        private static Action<ILogger, Exception?> _sessionCommitTimeout;
-        private static Action<ILogger, Exception?> _sessionCommitCanceled;
-        private static Action<ILogger, Exception?> _sessionRefreshTimeout;
-        private static Action<ILogger, Exception?> _sessionRefreshCanceled;
-        private static Action<ILogger, Exception?> _sessionNotAvailable;
+    [LoggerMessage(1, LogLevel.Error, "Error closing the session.", EventName = "ErrorClosingTheSession")]
+    public static partial void ErrorClosingTheSession(this ILogger logger, Exception exception);
 
-        static LoggingExtensions()
-        {
-            _errorClosingTheSession = LoggerMessage.Define(
-                eventId: new EventId(1, "ErrorClosingTheSession"),
-                logLevel: LogLevel.Error,
-                formatString: "Error closing the session.");
-            _accessingExpiredSession = LoggerMessage.Define<string>(
-                eventId: new EventId(2, "AccessingExpiredSession"),
-                logLevel: LogLevel.Information,
-                formatString: "Accessing expired session, Key:{sessionKey}");
-            _sessionStarted = LoggerMessage.Define<string, string>(
-                eventId: new EventId(3, "SessionStarted"),
-                logLevel: LogLevel.Information,
-                formatString: "Session started; Key:{sessionKey}, Id:{sessionId}");
-            _sessionLoaded = LoggerMessage.Define<string, string, int>(
-                eventId: new EventId(4, "SessionLoaded"),
-                logLevel: LogLevel.Debug,
-                formatString: "Session loaded; Key:{sessionKey}, Id:{sessionId}, Count:{count}");
-            _sessionStored = LoggerMessage.Define<string, string, int>(
-                eventId: new EventId(5, "SessionStored"),
-                logLevel: LogLevel.Debug,
-                formatString: "Session stored; Key:{sessionKey}, Id:{sessionId}, Count:{count}");
-            _sessionCacheReadException = LoggerMessage.Define<string>(
-                eventId: new EventId(6, "SessionCacheReadException"),
-                logLevel: LogLevel.Error,
-                formatString: "Session cache read exception, Key:{sessionKey}");
-            _errorUnprotectingCookie = LoggerMessage.Define(
-                eventId: new EventId(7, "ErrorUnprotectingCookie"),
-                logLevel: LogLevel.Warning,
-                formatString: "Error unprotecting the session cookie.");
-            _sessionLoadingTimeout = LoggerMessage.Define(
-                eventId: new EventId(8, "SessionLoadingTimeout"),
-                logLevel: LogLevel.Warning,
-                formatString: "Loading the session timed out.");
-            _sessionCommitTimeout = LoggerMessage.Define(
-                eventId: new EventId(9, "SessionCommitTimeout"),
-                logLevel: LogLevel.Warning,
-                formatString: "Committing the session timed out.");
-            _sessionCommitCanceled = LoggerMessage.Define(
-                eventId: new EventId(10, "SessionCommitCanceled"),
-                logLevel: LogLevel.Information,
-                formatString: "Committing the session was canceled.");
-            _sessionRefreshTimeout = LoggerMessage.Define(
-                eventId: new EventId(11, "SessionRefreshTimeout"),
-                logLevel: LogLevel.Warning,
-                formatString: "Refreshing the session timed out.");
-            _sessionRefreshCanceled = LoggerMessage.Define(
-                eventId: new EventId(12, "SessionRefreshCanceled"),
-                logLevel: LogLevel.Information,
-                formatString: "Refreshing the session was canceled.");
-            _sessionNotAvailable = LoggerMessage.Define(
-                eventId: new EventId(13, "SessionCommitNotAvailable"),
-                logLevel: LogLevel.Information,
-                formatString: "Session cannot be committed since it is unavailable.");
-        }
+    [LoggerMessage(2, LogLevel.Information, "Accessing expired session, Key:{sessionKey}", EventName = "AccessingExpiredSession")]
+    public static partial void AccessingExpiredSession(this ILogger logger, string sessionKey);
 
-        public static void ErrorClosingTheSession(this ILogger logger, Exception exception)
-        {
-            _errorClosingTheSession(logger, exception);
-        }
+    [LoggerMessage(3, LogLevel.Information, "Session started; Key:{sessionKey}, Id:{sessionId}", EventName = "SessionStarted", SkipEnabledCheck = true)]
+    public static partial void SessionStarted(this ILogger logger, string sessionKey, string sessionId);
 
-        public static void AccessingExpiredSession(this ILogger logger, string sessionKey)
-        {
-            _accessingExpiredSession(logger, sessionKey, null);
-        }
+    [LoggerMessage(4, LogLevel.Debug, "Session loaded; Key:{sessionKey}, Id:{sessionId}, Count:{count}", EventName = "SessionLoaded", SkipEnabledCheck = true)]
+    public static partial void SessionLoaded(this ILogger logger, string sessionKey, string sessionId, int count);
 
-        public static void SessionStarted(this ILogger logger, string sessionKey, string sessionId)
-        {
-            _sessionStarted(logger, sessionKey, sessionId, null);
-        }
+    [LoggerMessage(5, LogLevel.Debug, "Session stored; Key:{sessionKey}, Id:{sessionId}, Count:{count}", EventName = "SessionStored")]
+    public static partial void SessionStored(this ILogger logger, string sessionKey, string sessionId, int count);
 
-        public static void SessionLoaded(this ILogger logger, string sessionKey, string sessionId, int count)
-        {
-            _sessionLoaded(logger, sessionKey, sessionId, count, null);
-        }
+    [LoggerMessage(6, LogLevel.Error, "Session cache read exception, Key:{sessionKey}", EventName = "SessionCacheReadException", SkipEnabledCheck = true)]
+    public static partial void SessionCacheReadException(this ILogger logger, string sessionKey, Exception exception);
 
-        public static void SessionStored(this ILogger logger, string sessionKey, string sessionId, int count)
-        {
-            _sessionStored(logger, sessionKey, sessionId, count, null);
-        }
+    [LoggerMessage(7, LogLevel.Warning, "Error unprotecting the session cookie.", EventName = "ErrorUnprotectingCookie")]
+    public static partial void ErrorUnprotectingSessionCookie(this ILogger logger, Exception exception);
 
-        public static void SessionCacheReadException(this ILogger logger, string sessionKey, Exception exception)
-        {
-            _sessionCacheReadException(logger, sessionKey, exception);
-        }
+    [LoggerMessage(8, LogLevel.Warning, "Loading the session timed out.", EventName = "SessionLoadingTimeout")]
+    public static partial void SessionLoadingTimeout(this ILogger logger);
 
-        public static void ErrorUnprotectingSessionCookie(this ILogger logger, Exception exception)
-        {
-            _errorUnprotectingCookie(logger, exception);
-        }
+    [LoggerMessage(9, LogLevel.Warning, "Committing the session timed out.", EventName = "SessionCommitTimeout")]
+    public static partial void SessionCommitTimeout(this ILogger logger);
 
-        public static void SessionLoadingTimeout(this ILogger logger)
-        {
-            _sessionLoadingTimeout(logger, null);
-        }
+    [LoggerMessage(10, LogLevel.Information, "Committing the session was canceled.", EventName = "SessionCommitCanceled")]
+    public static partial void SessionCommitCanceled(this ILogger logger);
 
-        public static void SessionCommitTimeout(this ILogger logger)
-        {
-            _sessionCommitTimeout(logger, null);
-        }
+    [LoggerMessage(11, LogLevel.Warning, "Refreshing the session timed out.", EventName = "SessionRefreshTimeout")]
+    public static partial void SessionRefreshTimeout(this ILogger logger);
 
-        public static void SessionCommitCanceled(this ILogger logger)
-        {
-            _sessionCommitCanceled(logger, null);
-        }
+    [LoggerMessage(12, LogLevel.Information, "Refreshing the session was canceled.", EventName = "SessionRefreshCanceled")]
+    public static partial void SessionRefreshCanceled(this ILogger logger);
 
-        public static void SessionRefreshTimeout(this ILogger logger)
-        {
-            _sessionRefreshTimeout(logger, null);
-        }
-
-        public static void SessionRefreshCanceled(this ILogger logger)
-        {
-            _sessionRefreshCanceled(logger, null);
-        }
-
-        public static void SessionNotAvailable(this ILogger logger) => _sessionNotAvailable(logger, null);
-    }
+    [LoggerMessage(13, LogLevel.Information, "Session cannot be committed since it is unavailable.", EventName = "SessionCommitNotAvailable")]
+    public static partial void SessionNotAvailable(this ILogger logger);
 }

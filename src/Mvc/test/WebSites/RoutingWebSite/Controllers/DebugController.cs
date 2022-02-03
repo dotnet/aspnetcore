@@ -1,31 +1,28 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Internal;
 
-namespace RoutingWebSite
+namespace RoutingWebSite;
+
+// This controller is reachable via traditional routing.
+public class DebugController : Controller
 {
-    // This controller is reachable via traditional routing.
-    public class DebugController : Controller
+    private readonly DfaGraphWriter _graphWriter;
+    private readonly EndpointDataSource _endpointDataSource;
+
+    public DebugController(DfaGraphWriter graphWriter, EndpointDataSource endpointDataSource)
     {
-        private readonly DfaGraphWriter _graphWriter;
-        private readonly EndpointDataSource _endpointDataSource;
+        _graphWriter = graphWriter;
+        _endpointDataSource = endpointDataSource;
+    }
 
-        public DebugController(DfaGraphWriter graphWriter, EndpointDataSource endpointDataSource)
-        {
-            _graphWriter = graphWriter;
-            _endpointDataSource = endpointDataSource;
-        }
+    public IActionResult Graph()
+    {
+        var sw = new StringWriter();
+        _graphWriter.Write(_endpointDataSource, sw);
 
-        public IActionResult Graph()
-        {
-            var sw = new StringWriter();
-            _graphWriter.Write(_endpointDataSource, sw);
-
-            return Content(sw.ToString());
-        }
+        return Content(sw.ToString());
     }
 }

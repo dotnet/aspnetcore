@@ -1,92 +1,73 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
 
-using System.IO;
-using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.StaticWebAssets;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.FileProviders;
 
-namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
+namespace Microsoft.AspNetCore.Hosting.StaticWebAssets;
+
+/// <summary>
+/// Loader for static web assets
+/// </summary>
+public class StaticWebAssetsLoader
 {
     /// <summary>
-    /// Loader for static web assets
+    /// Configure the <see cref="IWebHostEnvironment"/> to use static web assets.
     /// </summary>
-    public class StaticWebAssetsLoader
+    /// <param name="environment">The application <see cref="IWebHostEnvironment"/>.</param>
+    /// <param name="configuration">The host <see cref="IConfiguration"/>.</param>
+    public static void UseStaticWebAssets(IWebHostEnvironment environment, IConfiguration configuration)
     {
-        internal const string StaticWebAssetsManifestName = "Microsoft.AspNetCore.StaticWebAssets.xml";
-
-        /// <summary>
-        /// Configure the <see cref="IWebHostEnvironment"/> to use static web assets.
-        /// </summary>
-        /// <param name="environment">The application <see cref="IWebHostEnvironment"/>.</param>
-        /// <param name="configuration">The host <see cref="IConfiguration"/>.</param>
-        public static void UseStaticWebAssets(IWebHostEnvironment environment, IConfiguration configuration)
+        var manifest = ResolveManifest(environment, configuration);
+        if (manifest != null)
         {
-            using var manifest = ResolveManifest(environment, configuration);
-            if (manifest != null)
+            using (manifest)
             {
                 UseStaticWebAssetsCore(environment, manifest);
             }
         }
+    }
 
-        internal static void UseStaticWebAssetsCore(IWebHostEnvironment environment, Stream manifest)
+    internal static void UseStaticWebAssetsCore(IWebHostEnvironment environment, Stream manifest)
+    {
+        var staticWebAssetManifest = ManifestStaticWebAssetFileProvider.StaticWebAssetManifest.Parse(manifest);
+        var provider = new ManifestStaticWebAssetFileProvider(
+            staticWebAssetManifest,
+            (contentRoot) => new PhysicalFileProvider(contentRoot));
+
+        environment.WebRootFileProvider = new CompositeFileProvider(new[] { provider, environment.WebRootFileProvider });
+    }
+
+    internal static Stream? ResolveManifest(IWebHostEnvironment environment, IConfiguration configuration)
+    {
+        try
         {
-            var webRootFileProvider = environment.WebRootFileProvider;
-
-            var additionalFiles = StaticWebAssetsReader.Parse(manifest)
-                .Select(cr => new StaticWebAssetsFileProvider(cr.BasePath, cr.Path))
-                .OfType<IFileProvider>() // Upcast so we can insert on the resulting list.
-                .ToList();
-
-            if (additionalFiles.Count == 0)
+            var candidate = configuration.GetValue<string>(WebHostDefaults.StaticWebAssetsKey) ?? ResolveRelativeToAssembly(environment);
+            if (candidate != null && File.Exists(candidate))
             {
-                return;
+                return File.OpenRead(candidate);
             }
-            else
-            {
-                additionalFiles.Insert(0, webRootFileProvider);
-                environment.WebRootFileProvider = new CompositeFileProvider(additionalFiles);
-            }
+
+            // A missing manifest might simply mean that the feature is not enabled, so we simply
+            // return early. Misconfigurations will be uncommon given that the entire process is automated
+            // at build time.
+            return default;
         }
-
-        internal static Stream? ResolveManifest(IWebHostEnvironment environment, IConfiguration configuration)
+        catch
         {
-            try
-            {
-                var manifestPath = configuration.GetValue<string>(WebHostDefaults.StaticWebAssetsKey);
-                var filePath = manifestPath ?? ResolveRelativeToAssembly(environment);
-
-                if (filePath != null && File.Exists(filePath))
-                {
-                    return File.OpenRead(filePath);
-                }
-                else
-                {
-                    // A missing manifest might simply mean that the feature is not enabled, so we simply
-                    // return early. Misconfigurations will be uncommon given that the entire process is automated
-                    // at build time.
-                    return null;
-                }
-            }
-            catch
-            {
-                return null;
-            }
+            return default;
         }
+    }
 
-        private static string? ResolveRelativeToAssembly(IWebHostEnvironment environment)
-        {
-            var assembly = Assembly.Load(environment.ApplicationName);
-            if (string.IsNullOrEmpty(assembly.Location))
-            {
-                return null;
-            }
-
-            return Path.Combine(Path.GetDirectoryName(assembly.Location)!, $"{environment.ApplicationName}.StaticWebAssets.xml");
-        }
+    private static string ResolveRelativeToAssembly(IWebHostEnvironment environment)
+    {
+        var assembly = Assembly.Load(environment.ApplicationName);
+        var basePath = string.IsNullOrEmpty(assembly.Location) ? AppContext.BaseDirectory : Path.GetDirectoryName(assembly.Location);
+        return Path.Combine(basePath!, $"{environment.ApplicationName}.staticwebassets.runtime.json");
     }
 }
 #nullable restore

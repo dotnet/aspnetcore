@@ -1,69 +1,65 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using Xunit;
+namespace Microsoft.AspNetCore.Cors.Infrastructure;
 
-namespace Microsoft.AspNetCore.Cors.Infrastructure
+public class CorsResultTest
 {
-    public class CorsResultTest
+    [Fact]
+    public void Default_Constructor()
     {
-        [Fact]
-        public void Default_Constructor()
+        // Arrange & Act
+        var result = new CorsResult();
+
+        // Assert
+        Assert.Empty(result.AllowedHeaders);
+        Assert.Empty(result.AllowedExposedHeaders);
+        Assert.Empty(result.AllowedMethods);
+        Assert.False(result.SupportsCredentials);
+        Assert.Null(result.AllowedOrigin);
+        Assert.Null(result.PreflightMaxAge);
+    }
+
+    [Fact]
+    public void SettingNegativePreflightMaxAge_Throws()
+    {
+        // Arrange
+        var result = new CorsResult();
+
+        // Act
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
         {
-            // Arrange & Act
-            var result = new CorsResult();
+            result.PreflightMaxAge = TimeSpan.FromSeconds(-1);
+        });
 
-            // Assert
-            Assert.Empty(result.AllowedHeaders);
-            Assert.Empty(result.AllowedExposedHeaders);
-            Assert.Empty(result.AllowedMethods);
-            Assert.False(result.SupportsCredentials);
-            Assert.Null(result.AllowedOrigin);
-            Assert.Null(result.PreflightMaxAge);
-        }
+        // Assert
+        Assert.Equal(
+            $"PreflightMaxAge must be greater than or equal to 0. (Parameter 'value')",
+            exception.Message);
+    }
 
-        [Fact]
-        public void SettingNegativePreflightMaxAge_Throws()
+    [Fact]
+    public void ToString_ReturnsThePropertyValues()
+    {
+        // Arrange
+        var corsResult = new CorsResult
         {
-            // Arrange
-            var result = new CorsResult();
+            SupportsCredentials = true,
+            PreflightMaxAge = TimeSpan.FromSeconds(30),
+            AllowedOrigin = "*"
+        };
+        corsResult.AllowedExposedHeaders.Add("foo");
+        corsResult.AllowedHeaders.Add("bar");
+        corsResult.AllowedHeaders.Add("baz");
+        corsResult.AllowedMethods.Add("GET");
 
-            // Act
-            var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
-            {
-                result.PreflightMaxAge = TimeSpan.FromSeconds(-1);
-            });
+        // Act
+        var result = corsResult.ToString();
 
-            // Assert
-            Assert.Equal(
-                $"PreflightMaxAge must be greater than or equal to 0. (Parameter 'value')",
-                exception.Message);
-        }
-
-        [Fact]
-        public void ToString_ReturnsThePropertyValues()
-        {
-            // Arrange
-            var corsResult = new CorsResult
-            {
-                SupportsCredentials = true,
-                PreflightMaxAge = TimeSpan.FromSeconds(30),
-                AllowedOrigin = "*"
-            };
-            corsResult.AllowedExposedHeaders.Add("foo");
-            corsResult.AllowedHeaders.Add("bar");
-            corsResult.AllowedHeaders.Add("baz");
-            corsResult.AllowedMethods.Add("GET");
-
-            // Act
-            var result = corsResult.ToString();
-
-            // Assert
-            Assert.Equal(
-                @"AllowCredentials: True, PreflightMaxAge: 30, AllowOrigin: *," +
-                " AllowExposedHeaders: {foo}, AllowHeaders: {bar,baz}, AllowMethods: {GET}",
-                result);
-        }
+        // Assert
+        Assert.Equal(
+            @"AllowCredentials: True, PreflightMaxAge: 30, AllowOrigin: *," +
+            " AllowExposedHeaders: {foo}, AllowHeaders: {bar,baz}, AllowMethods: {GET}",
+            result);
     }
 }

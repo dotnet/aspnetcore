@@ -1,13 +1,12 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Routing.Matching
+namespace Microsoft.AspNetCore.Routing.Matching;
+
+public class SingleEntryAsciiJumpTableTest : SingleEntryJumpTableTestBase
 {
-    public class SingleEntryAsciiJumpTableTest : SingleEntryJumpTableTestBase
+    private protected override JumpTable CreateJumpTable(int defaultDestination, int exitDestination, string text, int destination)
     {
-        private protected override JumpTable CreateJumpTable(int defaultDestination, int exitDestination, string text, int destination)
-        {
-            return new SingleEntryAsciiJumpTable(defaultDestination, exitDestination, text, destination);
-        }
+        return new SingleEntryAsciiJumpTable(defaultDestination, exitDestination, text, destination);
     }
 }

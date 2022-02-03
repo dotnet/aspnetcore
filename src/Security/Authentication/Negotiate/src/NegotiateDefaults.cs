@@ -1,16 +1,15 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Authentication.Negotiate
+namespace Microsoft.AspNetCore.Authentication.Negotiate;
+
+/// <summary>
+/// Default values used by Negotiate authentication.
+/// </summary>
+public static class NegotiateDefaults
 {
     /// <summary>
-    /// Default values used by Negotiate authentication.
+    /// Default value for AuthenticationScheme used to identify the Negotiate auth handler.
     /// </summary>
-    public static class NegotiateDefaults
-    {
-        /// <summary>
-        /// Default value for AuthenticationScheme used to identify the Negotiate auth handler.
-        /// </summary>
-        public const string AuthenticationScheme = "Negotiate";
-    }
+    public const string AuthenticationScheme = "Negotiate";
 }

@@ -1,0 +1,37 @@
+﻿@page "/WithQueryParameters/{firstName}/{OptionalLastName?}"
+<strong id="test-info">Hello @FirstName @OptionalLastName.</strong>
+<p>IntValue: <strong id="value-QueryInt">@IntValue</strong></p>
+<p>NullableDateTimeValue: <strong id="value-NullableDateTimeValue">@NullableDateTimeValue?.ToString("hh:mm:ss on yyyy-MM-dd")</strong></p>
+<p>NullableDateOnlyValue: <strong id="value-NullableDateOnlyValue">@NullableDateOnlyValue?.ToString("yyyy-MM-dd")</strong></p>
+<p>NullableTimeOnlyValue: <strong id="value-NullableTimeOnlyValue">@NullableTimeOnlyValue?.ToString("hh:mm:ss")</strong></p>
+<p>StringValue: <strong id="value-StringValue">@StringValue</strong></p>
+<p>LongValues: <strong id="value-LongValues">@LongValues.Length values (@string.Join(", ", LongValues.Select(x => x.ToString()).ToArray()))</strong></p>
+
+<p>Instance ID: <strong id="instance-id">@instanceId</strong></p>
+
+<p>
+    Links:
+    <a href="WithQueryParameters/@FirstName?intvalue=123">With IntValue</a> |
+    <a href="WithQueryParameters/@FirstName?l=50&l=100&l=-20&intvalue=123">With IntValue and LongValues</a> |
+</p>
+
+@code
+{
+    private string instanceId = Guid.NewGuid().ToString();
+
+    [Parameter] public string FirstName { get; set; }
+
+    [Parameter] public string OptionalLastName { get ; set; }
+
+    [Parameter, SupplyParameterFromQuery] public int IntValue { get ; set; }
+
+    [Parameter, SupplyParameterFromQuery] public DateTime? NullableDateTimeValue { get ; set; }
+
+    [Parameter, SupplyParameterFromQuery] public DateOnly? NullableDateOnlyValue { get ; set; }
+
+    [Parameter, SupplyParameterFromQuery] public TimeOnly? NullableTimeOnlyValue { get ; set; }
+
+    [Parameter, SupplyParameterFromQuery] public string StringValue { get ; set; }
+
+    [Parameter, SupplyParameterFromQuery(Name = "l")] public long[] LongValues { get ; set; }
+}

@@ -1,69 +1,79 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
+
+internal partial class Http2Stream : IHttp2StreamIdFeature,
+                                     IHttpMinRequestBodyDataRateFeature,
+                                     IHttpResetFeature,
+                                     IHttpResponseTrailersFeature,
+                                     IPersistentStateFeature
 {
-    internal partial class Http2Stream : IHttp2StreamIdFeature,
-                                         IHttpMinRequestBodyDataRateFeature,
-                                         IHttpResetFeature,
-                                         IHttpResponseTrailersFeature
+    private IHeaderDictionary? _userTrailers;
 
+    // Persistent state collection is not reset with a stream by design.
+    private IDictionary<object, object?>? _persistentState;
+
+    IHeaderDictionary IHttpResponseTrailersFeature.Trailers
     {
-        private IHeaderDictionary? _userTrailers;
-
-        IHeaderDictionary IHttpResponseTrailersFeature.Trailers
+        get
         {
-            get
+            if (ResponseTrailers == null)
             {
-                if (ResponseTrailers == null)
+                ResponseTrailers = new HttpResponseTrailers(ServerOptions.ResponseHeaderEncodingSelector);
+                if (HasResponseCompleted)
                 {
-                    ResponseTrailers = new HttpResponseTrailers();
-                    if (HasResponseCompleted)
-                    {
-                        ResponseTrailers.SetReadOnly();
-                    }
+                    ResponseTrailers.SetReadOnly();
                 }
-                return _userTrailers ?? ResponseTrailers;
             }
-            set
-            {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
-
-                _userTrailers = value;
-            }
+            return _userTrailers ?? ResponseTrailers;
         }
-
-        int IHttp2StreamIdFeature.StreamId => _context.StreamId;
-
-        MinDataRate? IHttpMinRequestBodyDataRateFeature.MinDataRate
+        set
         {
-            get => throw new NotSupportedException(CoreStrings.HttpMinDataRateNotSupported);
-            set 
+            if (value == null)
             {
-                if (value != null)
-                {
-                    throw new NotSupportedException(CoreStrings.HttpMinDataRateNotSupported);
-                }
-
-                MinRequestBodyDataRate = value;
+                throw new ArgumentNullException(nameof(value));
             }
-        }
 
-        void IHttpResetFeature.Reset(int errorCode)
+            _userTrailers = value;
+        }
+    }
+
+    int IHttp2StreamIdFeature.StreamId => _context.StreamId;
+
+    MinDataRate? IHttpMinRequestBodyDataRateFeature.MinDataRate
+    {
+        get => throw new NotSupportedException(CoreStrings.HttpMinDataRateNotSupported);
+        set
         {
-            var abortReason = new ConnectionAbortedException(CoreStrings.FormatHttp2StreamResetByApplication((Http2ErrorCode)errorCode));
-            ApplicationAbort(abortReason, (Http2ErrorCode)errorCode);
+            if (value != null)
+            {
+                throw new NotSupportedException(CoreStrings.HttpMinDataRateNotSupported);
+            }
+
+            MinRequestBodyDataRate = value;
+        }
+    }
+
+    void IHttpResetFeature.Reset(int errorCode)
+    {
+        var abortReason = new ConnectionAbortedException(CoreStrings.FormatHttp2StreamResetByApplication((Http2ErrorCode)errorCode));
+        ApplicationAbort(abortReason, (Http2ErrorCode)errorCode);
+    }
+
+    IDictionary<object, object?> IPersistentStateFeature.State
+    {
+        get
+        {
+            // Lazily allocate persistent state
+            return _persistentState ?? (_persistentState = new ConnectionItems());
         }
     }
 }

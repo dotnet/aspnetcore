@@ -1,47 +1,32 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Threading;
 using Microsoft.AspNetCore.Internal;
 
-namespace Microsoft.AspNetCore.SignalR.Tests
+namespace Microsoft.AspNetCore.SignalR.Tests;
+
+public class MockSystemClock : ISystemClock
 {
-    public class MockSystemClock : ISystemClock
+    private long _nowTicks;
+
+    public MockSystemClock()
     {
-        private static Random _random = new Random();
+        // Use a random DateTimeOffset to ensure tests that incorrectly use the current DateTimeOffset fail always instead of only rarely.
+        // Pick a date between the min DateTimeOffset and a day before the max DateTimeOffset so there's room to advance the clock.
+        _nowTicks = NextLong(0, long.MaxValue - (long)TimeSpan.FromDays(1).TotalMilliseconds);
+    }
 
-        private long _utcNowTicks;
-
-        public MockSystemClock()
+    public long CurrentTicks
+    {
+        get => _nowTicks;
+        set
         {
-            // Use a random DateTimeOffset to ensure tests that incorrectly use the current DateTimeOffset fail always instead of only rarely.
-            // Pick a date between the min DateTimeOffset and a day before the max DateTimeOffset so there's room to advance the clock.
-            _utcNowTicks = NextLong(DateTimeOffset.MinValue.Ticks, DateTimeOffset.MaxValue.Ticks - TimeSpan.FromDays(1).Ticks);
+            Interlocked.Exchange(ref _nowTicks, value);
         }
+    }
 
-        public DateTimeOffset UtcNow
-        {
-            get
-            {
-                UtcNowCalled++;
-                return new DateTimeOffset(Interlocked.Read(ref _utcNowTicks), TimeSpan.Zero);
-            }
-            set
-            {
-                Interlocked.Exchange(ref _utcNowTicks, value.Ticks);
-            }
-        }
-
-        public long UtcNowTicks => UtcNow.Ticks;
-
-        public DateTimeOffset UtcNowUnsynchronized => UtcNow;
-
-        public int UtcNowCalled { get; private set; }
-
-        private long NextLong(long minValue, long maxValue)
-        {
-            return (long)(_random.NextDouble() * (maxValue - minValue) + minValue);
-        }
+    private long NextLong(long minValue, long maxValue)
+    {
+        return (long)(Random.Shared.NextDouble() * (maxValue - minValue) + minValue);
     }
 }

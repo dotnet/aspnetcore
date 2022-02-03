@@ -1,36 +1,33 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using Xunit;
+namespace Microsoft.AspNetCore.Routing.Matching;
 
-namespace Microsoft.AspNetCore.Routing.Matching
+public class ZeroEntryJumpTableTest
 {
-    public class ZeroEntryJumpTableTest
+    [Fact]
+    public void GetDestination_ZeroLengthSegment_JumpsToExit()
     {
-        [Fact]
-        public void GetDestination_ZeroLengthSegment_JumpsToExit()
-        {
-            // Arrange
-            var table = new ZeroEntryJumpTable(0, 1);
+        // Arrange
+        var table = new ZeroEntryJumpTable(0, 1);
 
-            // Act
-            var result = table.GetDestination("ignored", new PathSegment(0, 0));
+        // Act
+        var result = table.GetDestination("ignored", new PathSegment(0, 0));
 
-            // Assert
-            Assert.Equal(1, result);
-        }
+        // Assert
+        Assert.Equal(1, result);
+    }
 
-        [Fact]
-        public void GetDestination_SegmentWithLength_JumpsToDefault()
-        {
-            // Arrange
-            var table = new ZeroEntryJumpTable(0, 1);
+    [Fact]
+    public void GetDestination_SegmentWithLength_JumpsToDefault()
+    {
+        // Arrange
+        var table = new ZeroEntryJumpTable(0, 1);
 
-            // Act
-            var result = table.GetDestination("ignored", new PathSegment(0, 1));
+        // Act
+        var result = table.GetDestination("ignored", new PathSegment(0, 1));
 
-            // Assert
-            Assert.Equal(0, result);
-        }
+        // Assert
+        Assert.Equal(0, result);
     }
 }

@@ -1,36 +1,29 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Net.Http.Headers;
+namespace BasicWebSite;
 
-namespace BasicWebSite
+// Initializes a scoped-service with a request Id from a header
+public class RequestIdMiddleware
 {
-    // Initializes a scoped-service with a request Id from a header
-    public class RequestIdMiddleware
+    private readonly RequestDelegate _next;
+
+    public RequestIdMiddleware(RequestDelegate next)
     {
-        private readonly RequestDelegate _next;
+        _next = next;
+    }
 
-        public RequestIdMiddleware(RequestDelegate next)
+    public Task Invoke(HttpContext context)
+    {
+        var requestIdService = context.RequestServices.GetService<RequestIdService>();
+        if (requestIdService.RequestId != null)
         {
-            _next = next;
+            throw new InvalidOperationException("RequestId should be null here");
         }
 
-        public Task Invoke(HttpContext context)
-        {
-            var requestIdService = context.RequestServices.GetService<RequestIdService>();
-            if (requestIdService.RequestId != null)
-            {
-                throw new InvalidOperationException("RequestId should be null here");
-            }
+        var requestId = context.Request.Headers.RequestId;
+        requestIdService.RequestId = requestId;
 
-            var requestId = context.Request.Headers[HeaderNames.RequestId];
-            requestIdService.RequestId = requestId;
-
-            return _next(context);
-        }
+        return _next(context);
     }
 }

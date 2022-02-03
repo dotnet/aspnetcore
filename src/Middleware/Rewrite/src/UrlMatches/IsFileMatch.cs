@@ -1,19 +1,18 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Rewrite.UrlMatches
+namespace Microsoft.AspNetCore.Rewrite.UrlMatches;
+
+internal class IsFileMatch : UrlMatch
 {
-    internal class IsFileMatch : UrlMatch
+    public IsFileMatch(bool negate)
     {
-        public IsFileMatch(bool negate)
-        {
-            Negate = negate;
-        }
+        Negate = negate;
+    }
 
-        public override MatchResults Evaluate(string pattern, RewriteContext context)
-        {
-            var res = context.StaticFileProvider.GetFileInfo(pattern).Exists;
-            return new MatchResults(success: res != Negate);
-        }
+    public override MatchResults Evaluate(string pattern, RewriteContext context)
+    {
+        var res = context.StaticFileProvider.GetFileInfo(pattern).Exists;
+        return new MatchResults(success: res != Negate);
     }
 }

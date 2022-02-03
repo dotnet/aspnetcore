@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
 using System.Net.Http;
@@ -7,38 +7,37 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Xunit;
 
-namespace AuthSamples.FunctionalTests
+namespace AuthSamples.FunctionalTests;
+
+public class IdentityExternalClaimsTests : IClassFixture<WebApplicationFactory<Identity.ExternalClaims.Startup>>
 {
-    public class IdentityExternalClaimsTests : IClassFixture<WebApplicationFactory<Identity.ExternalClaims.Startup>>
+    public IdentityExternalClaimsTests(WebApplicationFactory<Identity.ExternalClaims.Startup> fixture)
     {
-        public IdentityExternalClaimsTests(WebApplicationFactory<Identity.ExternalClaims.Startup> fixture)
-        {
-            Client = fixture.CreateDefaultClient();
-        }
+        Client = fixture.CreateDefaultClient();
+    }
 
-        public HttpClient Client { get; }
+    public HttpClient Client { get; }
 
-        [Fact]
-        public async Task DefaultReturns200()
-        {
-            // Arrange & Act
-            var response = await Client.GetAsync("/");
-            var content = await response.Content.ReadAsStringAsync();
+    [Fact]
+    public async Task DefaultReturns200()
+    {
+        // Arrange & Act
+        var response = await Client.GetAsync("/");
+        var content = await response.Content.ReadAsStringAsync();
 
-            // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        }
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/8387")]
-        public async Task MyClaimsRedirectsToLoginPageWhenNotLoggedIn()
-        {
-            // Arrange & Act
-            var response = await Client.GetAsync("/MyClaims");
-            var content = await response.Content.ReadAsStringAsync();
+    [Fact]
+    public async Task MyClaimsRedirectsToLoginPageWhenNotLoggedIn()
+    {
+        // Arrange & Act
+        var response = await Client.GetAsync("/MyClaims");
+        var content = await response.Content.ReadAsStringAsync();
 
-            // Assert
-            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
-            Assert.Equal("http://localhost/Account/Login?ReturnUrl=%2FMyClaims", response.Headers.Location.ToString());
-        }
+        // Assert
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        Assert.Equal("http://localhost/Account/Login?ReturnUrl=%2FMyClaims", response.Headers.Location.ToString());
     }
 }

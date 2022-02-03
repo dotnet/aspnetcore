@@ -1,36 +1,34 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc
+namespace Microsoft.AspNetCore.Mvc;
+
+public class UnprocessableEntityObjectResultTests
 {
-    public class UnprocessableEntityObjectResultTests
+    [Fact]
+    public void UnprocessableEntityObjectResult_SetsStatusCodeAndValue()
     {
-        [Fact]
-        public void UnprocessableEntityObjectResult_SetsStatusCodeAndValue()
-        {
-            // Arrange & Act
-            var obj = new object();
-            var result = new UnprocessableEntityObjectResult(obj);
+        // Arrange & Act
+        var obj = new object();
+        var result = new UnprocessableEntityObjectResult(obj);
 
-            // Assert
-            Assert.Equal(StatusCodes.Status422UnprocessableEntity, result.StatusCode);
-            Assert.Equal(obj, result.Value);
-        }
+        // Assert
+        Assert.Equal(StatusCodes.Status422UnprocessableEntity, result.StatusCode);
+        Assert.Equal(obj, result.Value);
+    }
 
-        [Fact]
-        public void UnprocessableEntityObjectResult_ModelState_SetsStatusCodeAndValue()
-        {
-            // Arrange & Act
-            var result = new UnprocessableEntityObjectResult(new ModelStateDictionary());
+    [Fact]
+    public void UnprocessableEntityObjectResult_ModelState_SetsStatusCodeAndValue()
+    {
+        // Arrange & Act
+        var result = new UnprocessableEntityObjectResult(new ModelStateDictionary());
 
-            // Assert
-            Assert.Equal(StatusCodes.Status422UnprocessableEntity, result.StatusCode);
-            var errors = Assert.IsType<SerializableError>(result.Value);
-            Assert.Empty(errors);
-        }
+        // Assert
+        Assert.Equal(StatusCodes.Status422UnprocessableEntity, result.StatusCode);
+        var errors = Assert.IsType<SerializableError>(result.Value);
+        Assert.Empty(errors);
     }
 }

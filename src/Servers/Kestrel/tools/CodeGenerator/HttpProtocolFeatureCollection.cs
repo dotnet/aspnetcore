@@ -1,92 +1,99 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
 
-namespace CodeGenerator
+namespace CodeGenerator;
+
+public class HttpProtocolFeatureCollection
 {
-    public class HttpProtocolFeatureCollection
+    public static string GenerateFile()
     {
-        public static string GenerateFile()
+        var alwaysFeatures = new[]
         {
-            var alwaysFeatures = new[]
-            {
                 "IHttpRequestFeature",
-                "IHttpRequestBodyDetectionFeature",
                 "IHttpResponseFeature",
                 "IHttpResponseBodyFeature",
-                "IRequestBodyPipeFeature",
-                "IHttpRequestIdentifierFeature",
-                "IServiceProvidersFeature",
-                "IHttpRequestLifetimeFeature",
-                "IHttpConnectionFeature",
                 "IRouteValuesFeature",
-                "IEndpointFeature"
+                "IEndpointFeature",
+                "IServiceProvidersFeature",
+                "IHttpActivityFeature"
             };
 
-            var commonFeatures = new[]
-            {
-                "IHttpAuthenticationFeature",
-                "IHttpRequestTrailersFeature",
-                "IQueryFeature",
-                "IFormFeature",
-            };
-
-            var sometimesFeatures = new[]
-            {
-                "IHttpUpgradeFeature",
-                "IHttp2StreamIdFeature",
-                "IHttpResponseTrailersFeature",
-                "IResponseCookiesFeature",
+        var commonFeatures = new[]
+        {
                 "IItemsFeature",
-                "ITlsConnectionFeature",
-                "IHttpWebSocketFeature",
+                "IQueryFeature",
+                "IRequestBodyPipeFeature",
+                "IFormFeature",
+                "IHttpAuthenticationFeature",
+                "IHttpRequestIdentifierFeature",
+            };
+
+        var sometimesFeatures = new[]
+        {
+                "IHttpConnectionFeature",
                 "ISessionFeature",
+                "IResponseCookiesFeature",
+                "IHttpRequestTrailersFeature",
+                "IHttpResponseTrailersFeature",
+                "ITlsConnectionFeature",
+                "IHttpUpgradeFeature",
+                "IHttpWebSocketFeature",
+                "IBadRequestExceptionFeature"
+            };
+        var maybeFeatures = new[]
+        {
+                "IHttp2StreamIdFeature",
+                "IHttpRequestLifetimeFeature",
                 "IHttpMaxRequestBodySizeFeature",
                 "IHttpMinRequestBodyDataRateFeature",
                 "IHttpMinResponseDataRateFeature",
                 "IHttpBodyControlFeature",
-                "IHttpResetFeature"
+                "IHttpRequestBodyDetectionFeature",
+                "IHttpResetFeature",
+                "IPersistentStateFeature"
             };
 
-            var allFeatures = alwaysFeatures
-                .Concat(commonFeatures)
-                .Concat(sometimesFeatures)
-                .ToArray();
+        var allFeatures = alwaysFeatures
+            .Concat(commonFeatures)
+            .Concat(sometimesFeatures)
+            .Concat(maybeFeatures)
+            .ToArray();
 
-            // NOTE: This list MUST always match the set of feature interfaces implemented by HttpProtocol.
-            // See also: src/Kestrel.Core/Internal/Http/HttpProtocol.FeatureCollection.cs
-            var implementedFeatures = new[]
-            {
+        // NOTE: This list MUST always match the set of feature interfaces implemented by HttpProtocol.
+        // See also: src/Kestrel.Core/Internal/Http/HttpProtocol.FeatureCollection.cs
+        var implementedFeatures = new[]
+        {
                 "IHttpRequestFeature",
-                "IHttpRequestBodyDetectionFeature",
                 "IHttpResponseFeature",
                 "IHttpResponseBodyFeature",
-                "IRequestBodyPipeFeature",
-                "IHttpUpgradeFeature",
-                "IHttpRequestIdentifierFeature",
-                "IHttpRequestLifetimeFeature",
-                "IHttpRequestTrailersFeature",
-                "IHttpConnectionFeature",
-                "IHttpMaxRequestBodySizeFeature",
-                "IHttpMinRequestBodyDataRateFeature",
-                "IHttpBodyControlFeature",
                 "IRouteValuesFeature",
-                "IEndpointFeature"
+                "IEndpointFeature",
+                "IHttpRequestIdentifierFeature",
+                "IHttpRequestTrailersFeature",
+                "IHttpUpgradeFeature",
+                "IRequestBodyPipeFeature",
+                "IHttpConnectionFeature",
+                "IHttpRequestLifetimeFeature",
+                "IHttpBodyControlFeature",
+                "IHttpMaxRequestBodySizeFeature",
+                "IHttpRequestBodyDetectionFeature",
+                "IBadRequestExceptionFeature"
             };
-            
-            var usings = $@"
+
+        var usings = $@"
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;";
 
-            return FeatureCollectionGenerator.GenerateFile(
-                namespaceName: "Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http",
-                className: "HttpProtocol",
-                allFeatures: allFeatures,
-                implementedFeatures: implementedFeatures,
-                extraUsings: usings,
-                fallbackFeatures: "ConnectionFeatures");
-        }
+        return FeatureCollectionGenerator.GenerateFile(
+            namespaceName: "Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http",
+            className: "HttpProtocol",
+            allFeatures: allFeatures,
+            implementedFeatures: implementedFeatures,
+            extraUsings: usings,
+            fallbackFeatures: "ConnectionFeatures");
     }
 }

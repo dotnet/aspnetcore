@@ -1,54 +1,46 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Reflection.Emit;
-using Xunit;
+namespace Microsoft.AspNetCore.Mvc.ApplicationParts;
 
-namespace Microsoft.AspNetCore.Mvc.ApplicationParts
+public class AssemblyPartTest
 {
-    public class AssemblyPartTest
+    [Fact]
+    public void AssemblyPart_Name_ReturnsAssemblyName()
     {
-        [Fact]
-        public void AssemblyPart_Name_ReturnsAssemblyName()
-        {
-            // Arrange
-            var part = new AssemblyPart(typeof(AssemblyPartTest).Assembly);
+        // Arrange
+        var part = new AssemblyPart(typeof(AssemblyPartTest).Assembly);
 
-            // Act
-            var name = part.Name;
+        // Act
+        var name = part.Name;
 
-            // Assert
-            Assert.Equal("Microsoft.AspNetCore.Mvc.Core.Test", name);
-        }
+        // Assert
+        Assert.Equal("Microsoft.AspNetCore.Mvc.Core.Test", name);
+    }
 
-        [Fact]
-        public void AssemblyPart_Types_ReturnsDefinedTypes()
-        {
-            // Arrange
-            var assembly = typeof(AssemblyPartTest).Assembly;
-            var part = new AssemblyPart(assembly);
+    [Fact]
+    public void AssemblyPart_Types_ReturnsDefinedTypes()
+    {
+        // Arrange
+        var assembly = typeof(AssemblyPartTest).Assembly;
+        var part = new AssemblyPart(assembly);
 
-            // Act
-            var types = part.Types;
+        // Act
+        var types = part.Types;
 
-            // Assert
-            Assert.Equal(assembly.DefinedTypes, types);
-            Assert.NotSame(assembly.DefinedTypes, types);
-        }
+        // Assert
+        Assert.Equal(assembly.DefinedTypes, types);
+        Assert.NotSame(assembly.DefinedTypes, types);
+    }
 
-        [Fact]
-        public void AssemblyPart_Assembly_ReturnsAssembly()
-        {
-            // Arrange
-            var assembly = typeof(AssemblyPartTest).Assembly;
-            var part = new AssemblyPart(assembly);
+    [Fact]
+    public void AssemblyPart_Assembly_ReturnsAssembly()
+    {
+        // Arrange
+        var assembly = typeof(AssemblyPartTest).Assembly;
+        var part = new AssemblyPart(assembly);
 
-            // Act & Assert
-            Assert.Equal(part.Assembly, assembly);
-        }
+        // Act & Assert
+        Assert.Equal(part.Assembly, assembly);
     }
 }

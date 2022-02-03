@@ -1,13 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
-
   <Import Project="..\..\..\..\build\testsite.props" />
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <AssemblyName>InProcessWebSite</AssemblyName>
-    <TestAssetOutputName>InProcessNewShimWebSite</TestAssetOutputName>
     <DefineConstants>FORWARDCOMPAT</DefineConstants>
     <CompileUsingReferenceAssemblies>false</CompileUsingReferenceAssemblies>
+    <ImplicitUsings>disable</ImplicitUsings>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
@@ -19,8 +18,8 @@
     <Compile Include="..\shared\**\*.cs" />
     <Compile Include="..\InProcessWebSite\*.cs" />
     <Compile Include="..\InProcessWebSite\Properties\*.cs" />
-    <None Include="..\InProcessWebSite\wwwroot\**" CopyToOutputDirectory="Always" LinkBase="wwwroot/"/>
-    <None Include="..\InProcessWebSite\web.config" CopyToOutputDirectory="Always" />
+    <None Include="..\InProcessWebSite\wwwroot\**" CopyToOutputDirectory="PreserveNewest" LinkBase="wwwroot/"/>
+    <None Include="..\InProcessWebSite\web.config" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
@@ -55,7 +54,9 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.2.0" >
       <AllowExplicitReference>true</AllowExplicitReference>
     </PackageReference>
+    <PackageReference Include="System.Text.Encodings.Web" Version="4.5.1" >
+      <AllowExplicitReference>true</AllowExplicitReference>
+    </PackageReference>
     <Reference Include="xunit.assert" />
   </ItemGroup>
-
 </Project>

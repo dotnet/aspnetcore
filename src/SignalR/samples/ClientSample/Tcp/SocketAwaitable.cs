@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO.Pipelines;
@@ -8,64 +11,63 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ClientSample
+namespace ClientSample;
+
+public class SocketAwaitable : ICriticalNotifyCompletion
 {
-    public class SocketAwaitable : ICriticalNotifyCompletion
+    private static readonly Action _callbackCompleted = () => { };
+
+    private readonly PipeScheduler _ioScheduler;
+
+    private Action _callback;
+    private int _bytesTransferred;
+    private SocketError _error;
+
+    public SocketAwaitable(PipeScheduler ioScheduler)
     {
-        private static readonly Action _callbackCompleted = () => { };
+        _ioScheduler = ioScheduler;
+    }
 
-        private readonly PipeScheduler _ioScheduler;
+    public SocketAwaitable GetAwaiter() => this;
+    public bool IsCompleted => ReferenceEquals(_callback, _callbackCompleted);
 
-        private Action _callback;
-        private int _bytesTransferred;
-        private SocketError _error;
+    public int GetResult()
+    {
+        Debug.Assert(ReferenceEquals(_callback, _callbackCompleted));
 
-        public SocketAwaitable(PipeScheduler ioScheduler)
+        _callback = null;
+
+        if (_error != SocketError.Success)
         {
-            _ioScheduler = ioScheduler;
+            throw new SocketException((int)_error);
         }
 
-        public SocketAwaitable GetAwaiter() => this;
-        public bool IsCompleted => ReferenceEquals(_callback, _callbackCompleted);
+        return _bytesTransferred;
+    }
 
-        public int GetResult()
+    public void OnCompleted(Action continuation)
+    {
+        if (ReferenceEquals(_callback, _callbackCompleted) ||
+            ReferenceEquals(Interlocked.CompareExchange(ref _callback, continuation, null), _callbackCompleted))
         {
-            Debug.Assert(ReferenceEquals(_callback, _callbackCompleted));
-
-            _callback = null;
-
-            if (_error != SocketError.Success)
-            {
-                throw new SocketException((int)_error);
-            }
-
-            return _bytesTransferred;
+            Task.Run(continuation);
         }
+    }
 
-        public void OnCompleted(Action continuation)
+    public void UnsafeOnCompleted(Action continuation)
+    {
+        OnCompleted(continuation);
+    }
+
+    public void Complete(int bytesTransferred, SocketError socketError)
+    {
+        _error = socketError;
+        _bytesTransferred = bytesTransferred;
+        var continuation = Interlocked.Exchange(ref _callback, _callbackCompleted);
+
+        if (continuation != null)
         {
-            if (ReferenceEquals(_callback, _callbackCompleted) ||
-                ReferenceEquals(Interlocked.CompareExchange(ref _callback, continuation, null), _callbackCompleted))
-            {
-                Task.Run(continuation);
-            }
-        }
-
-        public void UnsafeOnCompleted(Action continuation)
-        {
-            OnCompleted(continuation);
-        }
-
-        public void Complete(int bytesTransferred, SocketError socketError)
-        {
-            _error = socketError;
-            _bytesTransferred = bytesTransferred;
-            var continuation = Interlocked.Exchange(ref _callback, _callbackCompleted);
-
-            if (continuation != null)
-            {
-                _ioScheduler.Schedule(state => ((Action)state)(), continuation);
-            }
+            _ioScheduler.Schedule(state => ((Action)state)(), continuation);
         }
     }
 }

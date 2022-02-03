@@ -1,2 +1,5 @@
-<!-- Intentionally breaks the inheritance chain so submodules do not inherit build settings from this repo. -->
+<!--
+  For everything but Microsoft.DotNet.Web.Spa.ProjectTemplates (which bypasses this file), intentionally break
+  the inheritance chain so submodules do not inherit build settings from this repo.
+-->
 <Project />

@@ -1,16 +1,16 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 import { AbortError, HttpError, TimeoutError } from "./Errors";
 import { HttpClient, HttpRequest, HttpResponse } from "./HttpClient";
 import { ILogger, LogLevel } from "./ILogger";
 
 export class XhrHttpClient extends HttpClient {
-    private readonly logger: ILogger;
+    private readonly _logger: ILogger;
 
     public constructor(logger: ILogger) {
         super();
-        this.logger = logger;
+        this._logger = logger;
     }
 
     /** @inheritDoc */
@@ -67,17 +67,17 @@ export class XhrHttpClient extends HttpClient {
                 if (xhr.status >= 200 && xhr.status < 300) {
                     resolve(new HttpResponse(xhr.status, xhr.statusText, xhr.response || xhr.responseText));
                 } else {
-                    reject(new HttpError(xhr.statusText, xhr.status));
+                    reject(new HttpError(xhr.response || xhr.responseText || xhr.statusText, xhr.status));
                 }
             };
 
             xhr.onerror = () => {
-                this.logger.log(LogLevel.Warning, `Error from HTTP request. ${xhr.status}: ${xhr.statusText}.`);
+                this._logger.log(LogLevel.Warning, `Error from HTTP request. ${xhr.status}: ${xhr.statusText}.`);
                 reject(new HttpError(xhr.statusText, xhr.status));
             };
 
             xhr.ontimeout = () => {
-                this.logger.log(LogLevel.Warning, `Timeout from HTTP request.`);
+                this._logger.log(LogLevel.Warning, `Timeout from HTTP request.`);
                 reject(new TimeoutError());
             };
 

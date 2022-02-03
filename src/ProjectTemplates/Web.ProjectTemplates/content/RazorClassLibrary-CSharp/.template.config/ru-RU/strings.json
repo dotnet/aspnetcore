@@ -1,7 +1,7 @@
 {
   "version": "1.0.0.0",
   "strings": {
-    "name": "Razor Class Library",
+    "name": "Библиотека классов Razor",
     "description": "Шаблон проекта для создания библиотеки классов Razor.",
     "parameter.SupportPagesAndViews.name": "_Представления и страницы поддержки"
   }

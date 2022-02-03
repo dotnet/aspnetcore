@@ -1,1 +1,0 @@
-x:\dir\subdir\Test\TestComponent.cshtml(4,1): Error RZ9985: Multiple components use the tag 'SomeComponent'. Components: Test2.SomeComponent, Test3.SomeComponent

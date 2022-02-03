@@ -1,28 +1,23 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
+namespace BasicWebSite;
 
-namespace BasicWebSite
+public class StartupWithNewtonsoftJson
 {
-    public class StartupWithNewtonsoftJson
+    public void ConfigureServices(IServiceCollection services)
     {
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services
-                .AddMvc()
-                .AddNewtonsoftJson();
-        }
+        services
+            .AddMvc()
+            .AddNewtonsoftJson();
+    }
 
-        public void Configure(IApplicationBuilder app)
-        {
-            app.UseDeveloperExceptionPage();
+    public void Configure(IApplicationBuilder app)
+    {
+        app.UseDeveloperExceptionPage();
 
-            app.UseRouting();
+        app.UseRouting();
 
-            app.UseEndpoints((endpoints) => endpoints.MapDefaultControllerRoute());
-        }
+        app.UseEndpoints((endpoints) => endpoints.MapDefaultControllerRoute());
     }
 }

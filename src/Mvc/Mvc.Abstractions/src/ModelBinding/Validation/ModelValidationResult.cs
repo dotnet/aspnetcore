@@ -1,32 +1,31 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
+namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+
+/// <summary>
+/// The result of model validation.
+/// </summary>
+public class ModelValidationResult
 {
     /// <summary>
-    /// The result of model validation.
+    /// Initializes a new instance of <see cref="ModelValidationResult"/>.
     /// </summary>
-    public class ModelValidationResult
+    /// <param name="memberName">The name of the entry on which validation was performed.</param>
+    /// <param name="message">The validation message.</param>
+    public ModelValidationResult(string? memberName, string? message)
     {
-        /// <summary>
-        /// Initializes a new instance of <see cref="ModelValidationResult"/>.
-        /// </summary>
-        /// <param name="memberName">The name of the entry on which validation was performed.</param>
-        /// <param name="message">The validation message.</param>
-        public ModelValidationResult(string memberName, string message)
-        {
-            MemberName = memberName ?? string.Empty;
-            Message = message ?? string.Empty;
-        }
-
-        /// <summary>
-        /// Gets the name of the entry on which validation was performed.
-        /// </summary>
-        public string MemberName { get; }
-
-        /// <summary>
-        /// Gets the validation message.
-        /// </summary>
-        public string Message { get; }
+        MemberName = memberName ?? string.Empty;
+        Message = message ?? string.Empty;
     }
+
+    /// <summary>
+    /// Gets the name of the entry on which validation was performed.
+    /// </summary>
+    public string MemberName { get; }
+
+    /// <summary>
+    /// Gets the validation message.
+    /// </summary>
+    public string Message { get; }
 }

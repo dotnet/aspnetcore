@@ -1,87 +1,85 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.ModelBinding
+namespace Microsoft.AspNetCore.Mvc.ModelBinding;
+
+public class ElementalValueProviderTest
 {
-    public class ElementalValueProviderTest
+    [Theory]
+    [InlineData("MyProperty", "MyProperty")]
+    [InlineData("MyProperty.SubProperty", "MyProperty")]
+    [InlineData("MyProperty[0]", "MyProperty")]
+    public void ContainsPrefix_ReturnsTrue_IfElementNameStartsWithPrefix(
+        string elementName,
+        string prefix)
     {
-        [Theory]
-        [InlineData("MyProperty", "MyProperty")]
-        [InlineData("MyProperty.SubProperty", "MyProperty")]
-        [InlineData("MyProperty[0]", "MyProperty")]
-        public void ContainsPrefix_ReturnsTrue_IfElementNameStartsWithPrefix(
-            string elementName,
-            string prefix)
-        {
-            // Arrange
-            var culture = new CultureInfo("en-US");
-            var elementalValueProvider = new ElementalValueProvider(
-                elementName,
-                "hi",
-                culture);
+        // Arrange
+        var culture = new CultureInfo("en-US");
+        var elementalValueProvider = new ElementalValueProvider(
+            elementName,
+            "hi",
+            culture);
 
-            // Act
-            var containsPrefix = elementalValueProvider.ContainsPrefix(prefix);
+        // Act
+        var containsPrefix = elementalValueProvider.ContainsPrefix(prefix);
 
-            // Assert
-            Assert.True(containsPrefix);
-        }
+        // Assert
+        Assert.True(containsPrefix);
+    }
 
-        [Theory]
-        [InlineData("MyProperty", "MyProperty1")]
-        [InlineData("MyPropertyTest", "MyProperty")]
-        [InlineData("Random", "MyProperty")]
-        public void ContainsPrefix_ReturnsFalse_IfElementCannotSpecifyValuesForPrefix(
-            string elementName,
-            string prefix)
-        {
-            // Arrange
-            var culture = new CultureInfo("en-US");
-            var elementalValueProvider = new ElementalValueProvider(
-                elementName,
-                "hi",
-                culture);
+    [Theory]
+    [InlineData("MyProperty", "MyProperty1")]
+    [InlineData("MyPropertyTest", "MyProperty")]
+    [InlineData("Random", "MyProperty")]
+    public void ContainsPrefix_ReturnsFalse_IfElementCannotSpecifyValuesForPrefix(
+        string elementName,
+        string prefix)
+    {
+        // Arrange
+        var culture = new CultureInfo("en-US");
+        var elementalValueProvider = new ElementalValueProvider(
+            elementName,
+            "hi",
+            culture);
 
-            // Act
-            var containsPrefix = elementalValueProvider.ContainsPrefix(prefix);
+        // Act
+        var containsPrefix = elementalValueProvider.ContainsPrefix(prefix);
 
-            // Assert
-            Assert.False(containsPrefix);
-        }
+        // Assert
+        Assert.False(containsPrefix);
+    }
 
-        [Fact]
-        public void GetValue_NameDoesNotMatch_ReturnsEmptyResult()
-        {
-            // Arrange
-            var culture = new CultureInfo("fr-FR");
-            var valueProvider = new ElementalValueProvider("foo", "hi", culture);
+    [Fact]
+    public void GetValue_NameDoesNotMatch_ReturnsEmptyResult()
+    {
+        // Arrange
+        var culture = new CultureInfo("fr-FR");
+        var valueProvider = new ElementalValueProvider("foo", "hi", culture);
 
-            // Act
-            var result = valueProvider.GetValue("bar");
+        // Act
+        var result = valueProvider.GetValue("bar");
 
-            // Assert
-            Assert.Equal(ValueProviderResult.None, result);
-        }
+        // Assert
+        Assert.Equal(ValueProviderResult.None, result);
+    }
 
-        [Theory]
-        [InlineData("foo")]
-        [InlineData("FOO")]
-        [InlineData("FoO")]
-        public void GetValue_NameMatches_ReturnsValueProviderResult(string name)
-        {
-            // Arrange
-            var culture = new CultureInfo("fr-FR");
-            var valueProvider = new ElementalValueProvider("foo", "hi", culture);
+    [Theory]
+    [InlineData("foo")]
+    [InlineData("FOO")]
+    [InlineData("FoO")]
+    public void GetValue_NameMatches_ReturnsValueProviderResult(string name)
+    {
+        // Arrange
+        var culture = new CultureInfo("fr-FR");
+        var valueProvider = new ElementalValueProvider("foo", "hi", culture);
 
-            // Act
-            var result =  valueProvider.GetValue(name);
+        // Act
+        var result = valueProvider.GetValue(name);
 
-            // Assert
-            Assert.Equal("hi", (string)result);
-            Assert.Equal(culture, result.Culture);
-        }
+        // Assert
+        Assert.Equal("hi", (string)result);
+        Assert.Equal(culture, result.Culture);
     }
 }

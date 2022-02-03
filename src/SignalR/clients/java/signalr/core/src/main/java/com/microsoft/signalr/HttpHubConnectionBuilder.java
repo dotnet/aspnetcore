@@ -1,12 +1,12 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 package com.microsoft.signalr;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import io.reactivex.Single;
+import io.reactivex.rxjava3.core.Single;
 import okhttp3.OkHttpClient;
 
 /**
@@ -55,7 +55,7 @@ public class HttpHubConnectionBuilder {
         this.httpClient = httpClient;
         return this;
     }
-    
+
     /**
      * Sets the {@link HubProtocol} to be used by the {@link HubConnection}.
      *
@@ -69,7 +69,8 @@ public class HttpHubConnectionBuilder {
 
     /**
      * Indicates to the {@link HubConnection} that it should skip the negotiate process.
-     * Note: This option only works with the Websockets transport and the Azure SignalR Service require the negotiate step.
+     * Note: This option only works with the {@link TransportEnum#WEBSOCKETS} transport selected via {@link #withTransport(TransportEnum) withTransport},
+     * additionally the Azure SignalR Service requires the negotiate step so this will fail when using the Azure SignalR Service.
      *
      * @param skipNegotiate Boolean indicating if the {@link HubConnection} should skip the negotiate step.
      * @return This instance of the HttpHubConnectionBuilder.

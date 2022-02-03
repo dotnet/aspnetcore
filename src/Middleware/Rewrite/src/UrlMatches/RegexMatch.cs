@@ -1,24 +1,23 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.RegularExpressions;
 
-namespace Microsoft.AspNetCore.Rewrite.UrlMatches
+namespace Microsoft.AspNetCore.Rewrite.UrlMatches;
+
+internal class RegexMatch : UrlMatch
 {
-    internal class RegexMatch : UrlMatch
+    private readonly Regex _match;
+
+    public RegexMatch(Regex match, bool negate)
     {
-        private readonly Regex _match;
+        _match = match;
+        Negate = negate;
+    }
 
-        public RegexMatch(Regex match, bool negate)
-        {
-            _match = match;
-            Negate = negate;
-        }
-
-        public override MatchResults Evaluate(string pattern, RewriteContext context)
-        {
-            var res = _match.Match(pattern);
-            return new MatchResults(success: res.Success != Negate, new BackReferenceCollection(res.Groups));
-        }
+    public override MatchResults Evaluate(string pattern, RewriteContext context)
+    {
+        var res = _match.Match(pattern);
+        return new MatchResults(success: res.Success != Negate, new BackReferenceCollection(res.Groups));
     }
 }

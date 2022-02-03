@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics;
@@ -7,84 +7,83 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
+namespace Microsoft.AspNetCore.Http.Connections.Client.Internal;
+
+internal static class Constants
 {
-    internal static class Constants
+    public static readonly string UserAgent = OperatingSystem.IsBrowser() ? "X-SignalR-User-Agent" : "User-Agent";
+    public static readonly string UserAgentHeader = GetUserAgentHeader();
+
+    private static string GetUserAgentHeader()
     {
-        public const string UserAgent = "User-Agent";
-        public static readonly string UserAgentHeader;
+        var assemblyVersion = typeof(Constants)
+            .Assembly
+            .GetCustomAttributes<AssemblyInformationalVersionAttribute>()
+            .FirstOrDefault();
 
-        static Constants()
+        Debug.Assert(assemblyVersion != null);
+
+        var runtime = ".NET";
+        var runtimeVersion = RuntimeInformation.FrameworkDescription;
+
+        return ConstructUserAgent(typeof(Constants).Assembly.GetName().Version!, assemblyVersion.InformationalVersion, GetOS(), runtime, runtimeVersion);
+    }
+
+    private static string GetOS()
+    {
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            var assemblyVersion = typeof(Constants)
-                .Assembly
-                .GetCustomAttributes<AssemblyInformationalVersionAttribute>()
-                .FirstOrDefault();
+            return "Windows NT";
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            return "macOS";
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            return "Linux";
+        }
+        else
+        {
+            return "";
+        }
+    }
 
-            Debug.Assert(assemblyVersion != null);
+    public static string ConstructUserAgent(Version version, string detailedVersion, string os, string runtime, string runtimeVersion)
+    {
+        var userAgent = $"Microsoft SignalR/{version.Major}.{version.Minor} (";
 
-            var runtime = ".NET";
-            var runtimeVersion = RuntimeInformation.FrameworkDescription;
-
-            UserAgentHeader = ConstructUserAgent(typeof(Constants).Assembly.GetName().Version, assemblyVersion?.InformationalVersion, GetOS(), runtime, runtimeVersion);
+        if (!string.IsNullOrEmpty(detailedVersion))
+        {
+            userAgent += $"{detailedVersion}";
+        }
+        else
+        {
+            userAgent += "Unknown Version";
         }
 
-        private static string GetOS()
+        if (!string.IsNullOrEmpty(os))
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                return "Windows NT";
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                return "macOS";
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                return "Linux";
-            }
-            else
-            {
-                return "";
-            }
+            userAgent += $"; {os}";
+        }
+        else
+        {
+            userAgent += "; Unknown OS";
         }
 
-        public static string ConstructUserAgent(Version version, string detailedVersion, string os, string runtime, string runtimeVersion)
+        userAgent += $"; {runtime}";
+
+        if (!string.IsNullOrEmpty(runtimeVersion))
         {
-            var userAgent = $"Microsoft SignalR/{version.Major}.{version.Minor} (";
-
-            if (!string.IsNullOrEmpty(detailedVersion))
-            {
-                userAgent += $"{detailedVersion}";
-            }
-            else
-            {
-                userAgent += "Unknown Version";
-            }
-
-            if (!string.IsNullOrEmpty(os))
-            {
-                userAgent += $"; {os}";
-            }
-            else
-            {
-                userAgent += "; Unknown OS";
-            }
-
-            userAgent += $"; {runtime}";
-
-            if (!string.IsNullOrEmpty(runtimeVersion))
-            {
-                userAgent += $"; {runtimeVersion}";
-            }
-            else
-            {
-                userAgent += "; Unknown Runtime Version";
-            }
-
-            userAgent += ")";
-
-            return userAgent;
+            userAgent += $"; {runtimeVersion}";
         }
+        else
+        {
+            userAgent += "; Unknown Runtime Version";
+        }
+
+        userAgent += ")";
+
+        return userAgent;
     }
 }

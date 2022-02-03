@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <PackageTags>aspnetcore;testing</PackageTags>
+    <IsShippingPackage>false</IsShippingPackage>
+    <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
+    <IsTestAssetProject>true</IsTestAssetProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Playwright" Condition="'$(IsPlaywrightAvailable)' == 'true'" />
+    <Reference Include="Microsoft.Playwright" ExcludeAssets="build" Condition="'$(IsPlaywrightAvailable)' != 'true'" />
+    <Reference Include="Microsoft.AspNetCore.Testing" />
+  </ItemGroup>
+
+</Project>

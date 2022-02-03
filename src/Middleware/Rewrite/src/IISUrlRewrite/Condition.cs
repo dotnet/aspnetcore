@@ -1,23 +1,22 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Rewrite.IISUrlRewrite
+namespace Microsoft.AspNetCore.Rewrite.IISUrlRewrite;
+
+internal class Condition
 {
-    internal class Condition
+    public Condition(Pattern input, UrlMatch match)
     {
-        public Condition(Pattern input, UrlMatch match)
-        {
-            Input = input;
-            Match = match;
-        }
+        Input = input;
+        Match = match;
+    }
 
-        public Pattern Input { get; }
-        public UrlMatch Match { get; }
+    public Pattern Input { get; }
+    public UrlMatch Match { get; }
 
-        public MatchResults Evaluate(RewriteContext context, BackReferenceCollection? ruleBackReferences, BackReferenceCollection? conditionBackReferences)
-        {
-            var pattern = Input.Evaluate(context, ruleBackReferences, conditionBackReferences);
-            return Match.Evaluate(pattern, context);
-        }
+    public MatchResults Evaluate(RewriteContext context, BackReferenceCollection? ruleBackReferences, BackReferenceCollection? conditionBackReferences)
+    {
+        var pattern = Input.Evaluate(context, ruleBackReferences, conditionBackReferences);
+        return Match.Evaluate(pattern, context);
     }
 }

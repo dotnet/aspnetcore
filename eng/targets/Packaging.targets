@@ -1,7 +1,8 @@
 <Project>
 
   <Target Name="EnsureBaselineIsUpdated"
-          Condition=" '$(IsServicingBuild)' == 'true' AND
+          Condition=" '$(ValidateBaseline)' == 'true' AND
+              '$(IsServicingBuild)' == 'true' AND
               '$(AspNetCoreBaselineVersion)' != '$(PreviousAspNetCoreReleaseVersion)' AND
               '$(MSBuildProjectName)' != 'BaselineGenerator' AND
               '$(MSBuildProjectName)' != 'RepoTasks' "
@@ -24,11 +25,11 @@
   </Target>
 
   <PropertyGroup>
-    <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);_AppendRepostoryUrlToPackageDescription</GenerateNuspecDependsOn>
+    <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);_AppendRepositoryUrlToPackageDescription</GenerateNuspecDependsOn>
   </PropertyGroup>
 
-  <Target Name="_AppendRepostoryUrlToPackageDescription"
-    DependsOnTargets="InitializeSourceControlInformation">
+  <Target Name="_AppendRepositoryUrlToPackageDescription"
+      DependsOnTargets="InitializeSourceControlInformation">
     <PropertyGroup Condition="'$(RepositoryUrl)' != '' AND '$(SourceRevisionId)' != ''">
       <PackageDescription>$(PackageDescription)
 

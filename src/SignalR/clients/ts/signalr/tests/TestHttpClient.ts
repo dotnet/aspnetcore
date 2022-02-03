@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 import { HttpClient, HttpRequest, HttpResponse } from "../src/HttpClient";
 
@@ -7,20 +7,20 @@ export type TestHttpHandlerResult = string | HttpResponse | any;
 export type TestHttpHandler = (request: HttpRequest, next?: (request: HttpRequest) => Promise<HttpResponse>) => Promise<TestHttpHandlerResult> | TestHttpHandlerResult;
 
 export class TestHttpClient extends HttpClient {
-    private handler: (request: HttpRequest) => Promise<HttpResponse>;
+    private _handler: (request: HttpRequest) => Promise<HttpResponse>;
     public sentRequests: HttpRequest[];
 
     constructor() {
         super();
         this.sentRequests = [];
-        this.handler = (request: HttpRequest) =>
+        this._handler = (request: HttpRequest) =>
             Promise.reject(`Request has no handler: ${request.method} ${request.url}`);
 
     }
 
     public send(request: HttpRequest): Promise<HttpResponse> {
         this.sentRequests.push(request);
-        return this.handler(request);
+        return this._handler(request);
     }
 
     public on(handler: TestHttpHandler): TestHttpClient;
@@ -47,7 +47,7 @@ export class TestHttpClient extends HttpClient {
             throw new Error("Missing required argument: 'handler'");
         }
 
-        const oldHandler = this.handler;
+        const oldHandler = this._handler;
         const newHandler = async (request: HttpRequest) => {
             if (matches(method, request.method!) && matches(url, request.url!)) {
                 const promise = handler!(request, oldHandler);
@@ -73,7 +73,7 @@ export class TestHttpClient extends HttpClient {
                 return await oldHandler(request);
             }
         };
-        this.handler = newHandler;
+        this._handler = newHandler;
 
         return this;
     }

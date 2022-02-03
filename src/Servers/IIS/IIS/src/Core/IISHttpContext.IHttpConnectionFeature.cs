@@ -1,108 +1,107 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Net;
 using Microsoft.AspNetCore.Http.Features;
 
-namespace Microsoft.AspNetCore.Server.IIS.Core
+namespace Microsoft.AspNetCore.Server.IIS.Core;
+
+internal partial class IISHttpContext : IHttpConnectionFeature
 {
-    internal partial class IISHttpContext : IHttpConnectionFeature
+    IPAddress? IHttpConnectionFeature.RemoteIpAddress
     {
-        IPAddress? IHttpConnectionFeature.RemoteIpAddress
+        get
         {
-            get
+            if (RemoteIpAddress == null)
             {
-                if (RemoteIpAddress == null)
-                {
-                    InitializeRemoteEndpoint();
-                }
-
-                return RemoteIpAddress;
+                InitializeRemoteEndpoint();
             }
-            set => RemoteIpAddress = value;
-        }
 
-        IPAddress? IHttpConnectionFeature.LocalIpAddress
+            return RemoteIpAddress;
+        }
+        set => RemoteIpAddress = value;
+    }
+
+    IPAddress? IHttpConnectionFeature.LocalIpAddress
+    {
+        get
         {
-            get
+            if (LocalIpAddress == null)
             {
-                if (LocalIpAddress == null)
-                {
-                    InitializeLocalEndpoint();
-                }
-                return LocalIpAddress;
+                InitializeLocalEndpoint();
             }
-            set => LocalIpAddress = value;
+            return LocalIpAddress;
         }
+        set => LocalIpAddress = value;
+    }
 
-        int IHttpConnectionFeature.RemotePort
+    int IHttpConnectionFeature.RemotePort
+    {
+        get
         {
-            get
+            if (RemoteIpAddress == null)
             {
-                if (RemoteIpAddress == null)
-                {
-                    InitializeRemoteEndpoint();
-                }
-
-                return RemotePort;
+                InitializeRemoteEndpoint();
             }
-            set => RemotePort = value;
-        }
 
-        int IHttpConnectionFeature.LocalPort
+            return RemotePort;
+        }
+        set => RemotePort = value;
+    }
+
+    int IHttpConnectionFeature.LocalPort
+    {
+        get
         {
-            get
+            if (LocalIpAddress == null)
             {
-                if (LocalIpAddress == null)
-                {
-                    InitializeLocalEndpoint();
-                }
-
-                return LocalPort;
+                InitializeLocalEndpoint();
             }
-            set => LocalPort = value;
-        }
 
-        string IHttpConnectionFeature.ConnectionId
+            return LocalPort;
+        }
+        set => LocalPort = value;
+    }
+
+    string IHttpConnectionFeature.ConnectionId
+    {
+        get
         {
-            get
+            if (RequestConnectionId == null)
             {
-                if (RequestConnectionId == null)
-                {
-                    InitializeConnectionId();
-                }
-
-                return RequestConnectionId;
+                InitializeConnectionId();
             }
-            set => RequestConnectionId = value;
-        }
 
-        private void InitializeLocalEndpoint()
-        {
-            var localEndPoint = GetLocalEndPoint();
-            if (localEndPoint != null)
-            {
-                LocalIpAddress = localEndPoint.GetIPAddress();
-                LocalPort = localEndPoint.GetPort();
-            }
+            return RequestConnectionId;
         }
+        set => RequestConnectionId = value;
+    }
 
-        private void InitializeRemoteEndpoint()
+    private void InitializeLocalEndpoint()
+    {
+        var localEndPoint = GetLocalEndPoint();
+        if (localEndPoint != null)
         {
-            var remoteEndPoint = GetRemoteEndPoint();
-            if (remoteEndPoint != null)
-            {
-                RemoteIpAddress = remoteEndPoint.GetIPAddress();
-                RemotePort = remoteEndPoint.GetPort();
-            }
+            LocalIpAddress = localEndPoint.GetIPAddress();
+            LocalPort = localEndPoint.GetPort();
         }
+    }
 
-        [MemberNotNull(nameof(RequestConnectionId))]
-        private void InitializeConnectionId()
+    private void InitializeRemoteEndpoint()
+    {
+        var remoteEndPoint = GetRemoteEndPoint();
+        if (remoteEndPoint != null)
         {
-            RequestConnectionId = ConnectionId.ToString(CultureInfo.InvariantCulture);
+            RemoteIpAddress = remoteEndPoint.GetIPAddress();
+            RemotePort = remoteEndPoint.GetPort();
         }
+    }
+
+    [MemberNotNull(nameof(RequestConnectionId))]
+    private void InitializeConnectionId()
+    {
+        RequestConnectionId = ConnectionId.ToString(CultureInfo.InvariantCulture);
     }
 }

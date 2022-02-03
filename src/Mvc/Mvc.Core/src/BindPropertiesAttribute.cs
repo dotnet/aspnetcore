@@ -1,23 +1,20 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
+namespace Microsoft.AspNetCore.Mvc;
 
-namespace Microsoft.AspNetCore.Mvc
+/// <summary>
+/// An attribute that enables binding for all properties the decorated controller or Razor Page model defines.
+/// </summary>
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
+public class BindPropertiesAttribute : Attribute
 {
     /// <summary>
-    /// An attribute that enables binding for all properties the decorated controller or Razor Page model defines.
+    /// When <c>true</c>, allows properties to be bound on GET requests. When <c>false</c>, properties
+    /// do not get model bound or validated on GET requests.
+    /// <para>
+    /// Defaults to <c>false</c>.
+    /// </para>
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
-    public class BindPropertiesAttribute : Attribute
-    {
-        /// <summary>
-        /// When <c>true</c>, allows properties to be bound on GET requests. When <c>false</c>, properties
-        /// do not get model bound or validated on GET requests.
-        /// <para>
-        /// Defaults to <c>false</c>.
-        /// </para>
-        /// </summary>
-        public bool SupportsGet { get; set; }
-    }
+    public bool SupportsGet { get; set; }
 }

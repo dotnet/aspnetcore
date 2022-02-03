@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
@@ -39,13 +39,14 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <!-- Setting this suppresses getting documentation .xml files in the shared runtime output. -->
     <AllowedReferenceRelatedFileExtensions>.pdb</AllowedReferenceRelatedFileExtensions>
 
-    <!-- Pack .map files in symbols package (native symbols for Linux) -->
-    <AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder>$(AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder);.map</AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder>
+    <!-- Pack .ni.r2rmap files in symbols package (native symbols for Linux) -->
+    <AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder>$(AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder);.r2rmap</AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder>
 
-    <!-- Optimize the framework using the crossgen tool -->
+    <!-- Optimize the framework using the crossgen2 tool. Crossgen2 is not currently supported on s390x. -->
+    <CrossgenOutput Condition=" '$(TargetArchitecture)' == 's390x' ">false</CrossgenOutput>
     <CrossgenOutput Condition=" '$(CrossgenOutput)' == '' AND '$(Configuration)' != 'Debug' ">true</CrossgenOutput>
 
-    <!-- Produce crossgen profiling symbols (.ni.pdb or .map files). -->
+    <!-- Produce crossgen2 profiling symbols (.ni.pdb or .r2rmap files). -->
     <GenerateCrossgenProfilingSymbols>true</GenerateCrossgenProfilingSymbols>
     <GenerateCrossgenProfilingSymbols Condition=" '$(CrossgenOutput)' != 'true' OR '$(TargetOsName)' == 'osx' ">false</GenerateCrossgenProfilingSymbols>
 
@@ -80,33 +81,33 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <!-- This project should not be referenced via the `<Reference>` implementation. -->
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
 
-    <!-- Properties related to crossgen -->
+    <!-- Properties related to crossgen2 -->
     <CrossGenSymbolsType>PerfMap</CrossGenSymbolsType>
     <CrossGenSymbolsType Condition="'$(TargetOsName)' == 'win'">PDB</CrossGenSymbolsType>
 
+    <!--
+      hostfxr and hostpolicy libraries are named libhostfxr.so and libhostpolicy.so in non-Windows
+      microsoft.netcore.app.runtime packages.
+    -->
     <LibPrefix Condition=" '$(TargetOsName)' != 'win' ">lib</LibPrefix>
-    <LibExtension>.so</LibExtension>
-    <LibExtension Condition=" '$(TargetOsName)' == 'win' ">.dll</LibExtension>
-    <LibExtension Condition=" '$(TargetOsName)' == 'osx' ">.dylib</LibExtension>
-    <ExeExtension Condition=" '$(TargetOsName)' == 'win' ">.exe</ExeExtension>
-    <!-- 3B = semicolon in ASCII -->
-    <PathSeparator Condition="'$(PathSeparator)' == ''">:</PathSeparator>
-    <PathSeparator Condition=" '$(TargetOsName)' == 'win' ">%3B</PathSeparator>
 
-    <CrossCompileDirectory Condition=" '$(TargetRuntimeIdentifier)' == 'linux-arm' OR '$(TargetRuntimeIdentifier)' == 'linux-musl-arm'">x64_arm</CrossCompileDirectory>
-    <CrossCompileDirectory Condition=" '$(TargetArchitecture)' == 'arm64' AND '$(BuildArchitecture)' != 'arm64' ">x64_arm64</CrossCompileDirectory>
-    <CrossCompileDirectory Condition=" '$(TargetRuntimeIdentifier)' == 'win-arm' ">x86_arm</CrossCompileDirectory>
-
-    <!-- Crossgen executable name -->
-    <CrossgenToolFileName>crossgen</CrossgenToolFileName>
-    <CrossgenToolFileName Condition=" '$(TargetOsName)' == 'win' ">$(CrossgenToolFileName).exe</CrossgenToolFileName>
-    <!-- Default crossgen executable relative path -->
-    <CrossgenToolPackagePath>$(CrossgenToolFileName)</CrossgenToolPackagePath>
-    <!-- Disambiguated RID-specific crossgen executable relative path -->
-    <CrossgenToolPackagePath Condition=" '$(CrossCompileDirectory)' != '' ">$(CrossCompileDirectory)\$(CrossgenToolPackagePath)</CrossgenToolPackagePath>
+    <!-- crossgen2 executable name -->
+    <Crossgen2ToolFileName>crossgen2</Crossgen2ToolFileName>
+    <Crossgen2ToolFileName Condition=" '$(TargetOsName)' == 'win' ">$(Crossgen2ToolFileName).exe</Crossgen2ToolFileName>
 
     <!-- E.g. "PkgMicrosoft_NETCore_App_Runtime_win-x64" (set in obj/Microsoft.AspNetCore.App.Runtime.csproj.nuget.g.props). -->
     <RuntimePackageRootVariableName>PkgMicrosoft_NETCore_App_Runtime_$(RuntimeIdentifier)</RuntimePackageRootVariableName>
+
+    <!--
+      Determine the crossgen2 package path property name. Special case linux-musl-arm and linux-musl-arm64 because they
+      are built on an Ubuntu container with cross compilation tools. linux-musl-x64 is built in an alpine container.
+      Special case the crossgen2 package reference on Windows to avoid the x86 package when building in Visual Studio.
+    -->
+    <BuildOsName>$(TargetOsName)</BuildOsName>
+    <BuildOsName Condition="'$(TargetOsName)' == 'linux-musl' and '$(TargetArchitecture)'!='x64'">linux</BuildOsName>
+    <Crossgen2BuildArchitecture Condition=" '$(BuildOsName)' == 'win' ">x64</Crossgen2BuildArchitecture>
+    <Crossgen2BuildArchitecture Condition=" '$(Crossgen2BuildArchitecture)' == '' ">$(BuildArchitecture)</Crossgen2BuildArchitecture>
+    <Crossgen2PackageRootVariableName>PkgMicrosoft_NETCore_App_Crossgen2_$(BuildOsName)-$(Crossgen2BuildArchitecture)</Crossgen2PackageRootVariableName>
 
     <AssetTargetFallback>$(AssetTargetFallback);native,Version=0.0</AssetTargetFallback>
 
@@ -120,12 +121,23 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <IncludeAssets>Runtime;Native</IncludeAssets>
     </Reference>
 
-    <Reference Include="Microsoft.NETCore.App.Runtime.$(RuntimeIdentifier)"
+    <Reference Condition="'$(CrossgenOutput)' == 'true'"
+        Include="Microsoft.NETCore.App.Runtime.$(RuntimeIdentifier)"
         ExcludeAssets="All"
         PrivateAssets="All"
         GeneratePathProperty="true" />
 
-    <ProjectReference Condition=" '$(BuildIisNativeProjects)' == 'true' AND $(BuildNative) "
+    <!--
+      This package contains the crossgen2 tool. Unfortunately, it doesn't make the tool easy to use.
+      $(GeneratePathProperty) and hacks in the _ExpandRuntimePackageRoot target work around the gaps.
+    -->
+    <Reference Condition="'$(CrossgenOutput)' == 'true'"
+        Include="Microsoft.NETCore.App.Crossgen2.$(BuildOsName)-$(Crossgen2BuildArchitecture)"
+        ExcludeAssets="All"
+        PrivateAssets="All"
+        GeneratePathProperty="true" />
+
+    <ProjectReference Condition=" '$(UseIisNativeAssets)' == 'true' AND $(BuildNative) "
         Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj">
       <SetPlatform>Platform=$(NativePlatform)</SetPlatform>
       <!-- Custom attribute used to distinguish managed from native references. -->
@@ -136,7 +148,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <Targets>Build;GetTargetPath</Targets>
     </ProjectReference>
 
-    <_ResolvedNativeProjectReferencePaths Condition=" '$(BuildIisNativeProjects)' == 'true' AND !$(BuildNative) "
+    <_ResolvedNativeProjectReferencePaths Condition=" '$(UseIisNativeAssets)' == 'true' AND !$(BuildNative) "
         Include="$(ArtifactsBinDir)InProcessRequestHandler\$(NativePlatform)\$(Configuration)\aspnetcorev2_inprocess.dll">
       <IsNativeImage>true</IsNativeImage>
     </_ResolvedNativeProjectReferencePaths>
@@ -154,8 +166,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <RedistLayoutTargetDir>$(RedistSharedFrameworkLayoutRoot)$(SharedRuntimeSubPath)</RedistLayoutTargetDir>
     <LocalInstallationOutputPath>$(LocalDotNetRoot)$(SharedRuntimeSubPath)</LocalInstallationOutputPath>
 
-    <FrameworkListFileName>RuntimeList.xml</FrameworkListFileName>
-    <FrameworkListOutputPath>$(ArtifactsObjDir)$(FrameworkListFileName)</FrameworkListOutputPath>
+    <RuntimeListFileName>RuntimeList.xml</RuntimeListFileName>
+    <RuntimeListOutputPath>$(BaseIntermediateOutputPath)$(RuntimeListFileName)</RuntimeListOutputPath>
 
     <InternalArchiveOutputFileName>$(InternalInstallerBaseName)-$(PackageVersion)-$(TargetRuntimeIdentifier)$(ArchiveExtension)</InternalArchiveOutputFileName>
     <InternalArchiveOutputPath>$(InstallersOutputPath)$(InternalArchiveOutputFileName)</InternalArchiveOutputPath>
@@ -173,10 +185,14 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     </ResolveReferencesDependsOn>
     <CoreBuildDependsOn>
       $(CoreBuildDependsOn);
+      Crossgen;
       GenerateSharedFxDepsFile;
       GenerateSharedFxVersionsFiles;
-      Crossgen;
-      IncludeFrameworkListFile;
+      _ResolveNativePackContent;
+      _IncludeVersionFile;
+      _ResolveInitialSharedFrameworkContent;
+      _GenerateRuntimeListFile;
+      _ResolveRuntimePackContent;
       _ResolveSharedFrameworkContent;
       _InstallFrameworkIntoLocalDotNet;
       _DownloadAndExtractDotNetRuntime;
@@ -185,6 +201,15 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       _CreateInternalSharedFxArchive;
       _CreateRedistSharedFxArchive;
     </CoreBuildDependsOn>
+    <!-- If Build won't run in the GenerateNuspec context, need to update Content, None and _PackageFiles. -->
+    <GenerateNuspecDependsOn Condition=" '$(NoBuild)' == 'true' AND '$(GeneratePackageOnBuild)' != 'true' ">
+      _ResolveNativePackContent;
+      _IncludeVersionFile;
+      $(GenerateNuspecDependsOn);
+      _ResolveInitialSharedFrameworkContent;
+      _ResolveRuntimePackContent;
+      _ResolveSharedFrameworkContent;
+    </GenerateNuspecDependsOn>
     <CrossGenDependsOn>
       ResolveReferences;
     </CrossGenDependsOn>
@@ -192,6 +217,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       $(CrossGenDependsOn);
       _BatchCrossGenAssemblies;
     </CrossGenDependsOn>
+    <!-- _GetBuildOutputFilesWithTfm executes in a separate context from Build, GenerateNuspec, and so on. -->
     <TargetsForTfmSpecificBuildOutput>
       $(TargetsForTfmSpecificBuildOutput);
       _ResolveRuntimePackBuildOutput
@@ -221,7 +247,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
   <Target Name="_WarnAboutUnbuiltNativeDependencies"
           BeforeTargets="Build"
-          Condition=" '$(BuildIisNativeProjects)' == 'true' AND !$(BuildNative) AND
+          Condition=" '$(UseIisNativeAssets)' == 'true' AND !$(BuildNative) AND
               !EXISTS('$(ArtifactsBinDir)InProcessRequestHandler\$(NativePlatform)\$(Configuration)\aspnetcorev2_inprocess.dll') ">
     <Warning Text="This project has native dependencies which were not built. Without this, tests may not function correctly. Run `build.cmd -BuildNative -BuildManaged` to build both C# and C++." />
   </Target>
@@ -233,13 +259,9 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     </ItemGroup>
   </Target>
 
-  <Target Name="GenerateSharedFxDepsFile"
-          DependsOnTargets="ResolveReferences;CrossGen"
-          Inputs="@(ReferenceCopyLocalPaths);$(_RepoTaskAssembly);$(ProjectAssetsFile);$(MSBuildAllProjects)"
-          Outputs="$(ProjectDepsFilePath)">
-
+  <Target Name="GenerateSharedFxDepsFile" DependsOnTargets="ResolveReferences">
     <ItemGroup>
-      <_RuntimeReference Include="@(ReferenceCopyLocalPaths)" Condition="'%(ReferenceCopyLocalPaths.Extension)' != '.pdb' AND '%(ReferenceCopyLocalPaths.Extension)' != '.map'" />
+      <_RuntimeReference Include="@(ReferenceCopyLocalPaths)" Condition="'%(ReferenceCopyLocalPaths.Extension)' != '.pdb' AND '%(ReferenceCopyLocalPaths.Extension)' != '.r2rmap'" />
     </ItemGroup>
 
     <RepoTasks.GenerateSharedFrameworkDepsFile
@@ -280,14 +302,14 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   </Target>
 
   <!-- This target resolves files into the BuiltProjectOutputGroupOutput which NuGet uses to generate the package files. -->
-  <Target Name="_ResolveRuntimePackBuildOutput" DependsOnTargets="ResolveReferences;Crossgen">
+  <Target Name="_ResolveRuntimePackBuildOutput" DependsOnTargets="ResolveReferences">
     <ItemGroup>
       <BuildOutputFiles Include="$(ProjectDepsFilePath)" />
       <BuildOutputFiles Include="@(ReferenceCopyLocalPaths)" Condition=" '%(ReferenceCopyLocalPaths.IsNativeImage)' != 'true' " />
       <!-- Include all .pdbs in build output. Some .pdb files are part of ReferenceCopyLocalPaths, but this can change when running /t:Pack /p:NoBuild=true. -->
       <BuildOutputFiles Include="$(TargetDir)*.pdb" Exclude="@(ReferenceCopyLocalPaths)" />
-      <!-- Crossgen symbols for Linux include a GUID in the file name which cannot be predicted. -->
-      <BuildOutputFiles Include="$(TargetDir)*.map" Condition="'$(CrossGenSymbolsType)' == 'PerfMap'" />
+      <!-- crossgen2 symbols for Linux include a GUID in the file name which cannot be predicted. -->
+      <BuildOutputFiles Include="$(TargetDir)*.r2rmap" Condition="'$(CrossGenSymbolsType)' == 'PerfMap'" />
 
       <!-- Strip duplicate Files by checking for distinct %(FileName)%(Extension) -->
       <OutputFileNames Include="%(BuildOutputFiles.FileName)%(BuildOutputFiles.Extension)">
@@ -295,15 +317,13 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       </OutputFileNames>
       <DistinctOutputFileNames Include="@(OutputFileNames->Distinct())"></DistinctOutputFileNames>
 
-      <!--BuiltProjectOutputGroupOuput is the item actually used by Nuget -->
+      <!--BuiltProjectOutputGroupOutput is the item actually used by Nuget -->
       <BuiltProjectOutputGroupOutput Include="%(DistinctOutputFileNames.ItemPath)" />
       <NuGetPackInput Include="@(BuiltProjectOutputGroupOutput)" />
     </ItemGroup>
   </Target>
 
-  <Target Name="_ResolveNativePackContent"
-          BeforeTargets="_GetPackageFiles;GenerateNuspec"
-          DependsOnTargets="ResolveReferences">
+  <Target Name="_ResolveNativePackContent" DependsOnTargets="ResolveReferences">
     <ItemGroup>
       <!-- Native files are included in _PackageFile instead because they belong in a separate package folder. -->
       <Content Include="@(ReferenceCopyLocalPaths)" PackagePath="$(NativeAssetsPackagePath)"
@@ -311,9 +331,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     </ItemGroup>
   </Target>
 
-  <Target Name="_ResolveRuntimePackContent"
-          BeforeTargets="_GetPackageFiles"
-          DependsOnTargets="GenerateSharedFxDepsFile">
+  <Target Name="_ResolveRuntimePackContent">
     <ItemGroup>
       <RuntimePackContent Include="$(PlatformManifestOutputPath)" PackagePath="$(ManifestsPackagePath)" />
     </ItemGroup>
@@ -329,30 +347,28 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <CrossgenPlatformAssembliesDir>$(IntermediateOutputPath)platformAssemblies\</CrossgenPlatformAssembliesDir>
   </PropertyGroup>
 
-  <ItemGroup>
-    <CreateDirectory Include="$(CrossgenToolDir)" />
-    <CreateDirectory Include="$(CrossgenPlatformAssembliesDir)" />
-    <CreateDirectory Include="$(SharedFxLayoutTargetDir)" />
-    <CreateDirectory Include="$(RedistLayoutTargetDir)" />
-    <CreateDirectory Include="$(LocalInstallationOutputPath)" />
-  </ItemGroup>
-
   <Target Name="Crossgen" DependsOnTargets="$(CrossgenDependsOn)" />
 
   <Target Name="_ExpandRuntimePackageRoot">
     <!--
-      Use an item group for expansion of $($(RuntimePackageRootVariableName)) (an illegal MSBuild expression)
-      i.e. the prop value's value.
+      Use an item group for expansion of $($(RuntimePackageRootVariableName)) and $($(Crossgen2PackageRootMapping))
+      (both illegal MSBuild expressions) i.e. the prop value's value.
     -->
     <ItemGroup>
       <RuntimePackageRootMapping Include="$(RuntimePackageRootVariableName)" />
       <RuntimePackageRootMapping>
         <RuntimePackageRoot>$(%(Identity))</RuntimePackageRoot>
       </RuntimePackageRootMapping>
+      <Crossgen2PackageRootMapping Include="$(Crossgen2PackageRootVariableName)" />
+      <Crossgen2PackageRootMapping>
+        <Crossgen2PackageRoot>$(%(Identity))</Crossgen2PackageRoot>
+      </Crossgen2PackageRootMapping>
     </ItemGroup>
     <PropertyGroup>
       <RuntimePackageRoot>@(RuntimePackageRootMapping->'%(RuntimePackageRoot)')</RuntimePackageRoot>
       <RuntimePackageRoot>$([MSBuild]::EnsureTrailingSlash('$(RuntimePackageRoot)'))</RuntimePackageRoot>
+      <Crossgen2PackageRoot>@(Crossgen2PackageRootMapping->'%(Crossgen2PackageRoot)')</Crossgen2PackageRoot>
+      <Crossgen2PackageRoot>$([MSBuild]::EnsureTrailingSlash('$(Crossgen2PackageRoot)'))</Crossgen2PackageRoot>
     </PropertyGroup>
   </Target>
 
@@ -360,13 +376,14 @@ This package is an internal implementation of the .NET Core SDK and is not meant
           Condition="'$(CrossgenOutput)' == 'true'"
           DependsOnTargets="_ExpandRuntimePackageRoot">
     <!-- The output directories of assemblies built in this repo contain a mix of ref and impl assemblies. Copy impl assemblies to a separate directory. -->
+    <RemoveDir Directories="$(CrossgenPlatformAssembliesDir)" />
     <Copy SourceFiles="@(ReferenceCopyLocalPaths)" DestinationFolder="$(CrossgenPlatformAssembliesDir)" Condition="'%(ReferenceCopyLocalPaths.ProjectPath)' != ''"/>
 
-    <!-- Resolve list of assemblies to crossgen -->
+    <!-- Resolve list of assemblies to crossgen2 -->
     <ItemGroup>
       <IntermediateCrossgenAssembly Include="@(ReferenceCopyLocalPaths)" Condition=" '%(ReferenceCopyLocalPaths.IsNativeImage)' != 'true' AND '%(ReferenceCopyLocalPaths.Extension)' != '.pdb'" />
 
-      <!-- These are the paths used by crossgen to find assemblies that are expected to exist at runtime in the shared frameworks. -->
+      <!-- These are the paths used by crossgen2 to find assemblies that are expected to exist at runtime in the shared frameworks. -->
       <_PlatformAssemblyPaths Include="$(CrossgenToolDir)" />
       <!-- Include the directories of the assemblies not built in this repo. These contain only implementation assemblies. -->
       <_PlatformAssemblyPaths Include="@(ReferenceCopyLocalPaths->'%(RootDir)%(Directory)')" Condition="'%(ReferenceCopyLocalPaths.ProjectPath)' == ''"/>
@@ -375,54 +392,65 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
       <ReferenceCopyLocalPaths Remove="@(IntermediateCrossgenAssembly)" />
       <ReferenceCopyLocalPaths Include="@(IntermediateCrossgenAssembly->'$(TargetDir)%(FileName)%(Extension)')" />
+
+      <_DistinctPlatformAssemblyPaths Include="@(_PlatformAssemblyPaths->Distinct())"/>
+      <_DistinctPlatformAssemblyPaths>
+        <CommandLineOption>-r:%(Identity)*.dll</CommandLineOption>
+      </_DistinctPlatformAssemblyPaths>
+
+      <Crossgen2PlatformAssemblyPaths Include="@(_DistinctPlatformAssemblyPaths->'%(CommandLineOption)')" />
     </ItemGroup>
 
     <PropertyGroup>
-      <CrossgenToolPath>$([System.IO.Path]::Combine('$(RuntimePackageRoot)', 'tools', '$(CrossgenToolPackagePath)'))</CrossgenToolPath>
+      <CrossgenToolPath>$([System.IO.Path]::Combine('$(Crossgen2PackageRoot)', 'tools', '$(Crossgen2ToolFileName)'))</CrossgenToolPath>
       <CrossgenSymbolsTargetDir>$(TargetDir)</CrossgenSymbolsTargetDir>
-      <CrossgenPlatformAssemblyPaths>@(_PlatformAssemblyPaths->Distinct(), '$(PathSeparator)')</CrossgenPlatformAssemblyPaths>
 
       <!-- Escaping (double backslash at end) required due to the way batch processes backslashes. -->
       <CrossgenSymbolsTargetDir Condition="HasTrailingSlash($(CrossgenSymbolsTargetDir)) AND '$(OS)' == 'Windows_NT'">$(TargetDir)\</CrossgenSymbolsTargetDir>
-      <CrossgenPlatformAssemblyPaths Condition="HasTrailingSlash($(CrossgenPlatformAssemblyPaths)) AND '$(OS)' == 'Windows_NT'">$(CrossgenPlatformAssemblyPaths)\</CrossgenPlatformAssemblyPaths>
     </PropertyGroup>
 
+    <RemoveDir Directories="$(CrossgenToolDir)" />
     <WriteLinesToFile
-        Lines="-platform_assemblies_paths &quot;$(CrossgenPlatformAssemblyPaths)&quot;"
-        File="$(CrossgenToolDir)PlatformAssembliesPaths.rsp"
+        Lines="@(Crossgen2PlatformAssemblyPaths)"
+        File="$(CrossgenToolDir)PlatformAssembliesPathsCrossgen2.rsp"
         Overwrite="true" />
 
     <ItemGroup>
       <RuntimePackageFiles Include="$(RuntimePackageRoot)runtimes\**\*" />
     </ItemGroup>
 
-    <Error Text="Could not find crossgen $(CrossgenToolPath)" Condition=" ! Exists($(CrossgenToolPath))" />
+    <Error Text="Could not find crossgen2 $(CrossgenToolPath)" Condition=" ! Exists($(CrossgenToolPath))" />
 
-    <!-- Create tool directory with crossgen executable and runtime assemblies -->
-    <Copy SourceFiles="@(RuntimePackageFiles);$(CrossgenToolPath)" DestinationFolder="$(CrossGenToolDir)"/>
-    <Exec Command="chmod +x &quot;$(CrossGenToolDir)$(CrossgenToolFileName)&quot;" Condition="'$(OS)' != 'Windows_NT'" />
+    <!-- Create tool directory with runtime assemblies -->
+    <Copy SourceFiles="@(RuntimePackageFiles)" DestinationFolder="$(CrossGenToolDir)"/>
   </Target>
 
+  <!-- Target executes once per @(IntermediateCrossgenAssembly) item. -->
   <Target Name="_BatchCrossGenAssemblies"
     DependsOnTargets="_ExpandRuntimePackageRoot"
     Inputs="@(IntermediateCrossgenAssembly)"
     Outputs="@(IntermediateCrossgenAssembly->'$(TargetDir)%(FileName)%(Extension)')">
     <PropertyGroup>
-      <!-- Pick the right coreclr jit based on whether we are cross-compiling or not. -->
-      <CoreCLRJitPath
-          Condition="'$(CrossCompileDirectory)' == ''">$(RuntimePackageRoot)runtimes\$(RuntimeIdentifier)\native\$(LibPrefix)clrjit$(LibExtension)</CoreCLRJitPath>
-      <CoreCLRJitPath
-          Condition="'$(CrossCompileDirectory)' != ''">$(RuntimePackageRoot)runtimes\$(CrossCompileDirectory)\native\$(LibPrefix)clrjit$(LibExtension)</CoreCLRJitPath>
+      <!--
+        Handle different names for the target OS on the crossgen2 command line. This often matches neither
+        $(TargetOsName) nor $(BuildOsName).
+      -->
+      <Crossgen2TargetOs>$(TargetOsName)</Crossgen2TargetOs>
+      <Crossgen2TargetOs Condition="'$(TargetOsName)' == 'win'">windows</Crossgen2TargetOs>
+      <Crossgen2TargetOs Condition="'$(TargetOsName)' == 'linux-musl'">linux</Crossgen2TargetOs>
+
+      <!-- Compose the crossgen2 command line. -->
+      <Crossgen2Args>--targetarch:$(TargetArchitecture)</Crossgen2Args>
+      <Crossgen2Args>$(Crossgen2Args) --targetos:$(Crossgen2TargetOs)</Crossgen2Args>
+      <Crossgen2Args>$(Crossgen2Args) -O</Crossgen2Args>
+      <Crossgen2Args>$(Crossgen2Args) @&quot;$(CrossgenToolDir)PlatformAssembliesPathsCrossgen2.rsp&quot;</Crossgen2Args>
+      <Crossgen2Args Condition="Exists('$(RuntimePackageRoot)tools\StandardOptimizationData.mibc')">$(Crossgen2Args) &quot;-m:$(RuntimePackageRoot)tools\StandardOptimizationData.mibc&quot;</Crossgen2Args>
+      <Crossgen2Args Condition="'$(GenerateCrossgenProfilingSymbols)' == 'true' and '$(TargetOsName)' == 'win'">$(Crossgen2Args) --pdb --pdb-path:&quot;$(CrossgenSymbolsTargetDir)&quot;</Crossgen2Args>
+      <Crossgen2Args Condition="'$(GenerateCrossgenProfilingSymbols)' == 'true' and '$(TargetOsName)' != 'win'">$(Crossgen2Args) --perfmap --perfmap-format-version:1 --perfmap-path:&quot;$(CrossgenSymbolsTargetDir)&quot;</Crossgen2Args>
     </PropertyGroup>
 
-    <Exec Command="&quot;$(CrossgenToolDir)$(CrossgenToolFileName)&quot; -nologo -readytorun -in &quot;%(IntermediateCrossgenAssembly.Identity)&quot; -out &quot;$(TargetDir)%(FileName)%(Extension)&quot; -jitpath &quot;$(CoreCLRJitPath)&quot; &quot;@$(CrossgenToolDir)PlatformAssembliesPaths.rsp&quot;"
-          EnvironmentVariables="COMPlus_PartialNGen=0"
-          IgnoreStandardErrorWarningFormat="true"
-          StandardOutputImportance="High" />
-
-    <Exec Condition=" '$(GenerateCrossgenProfilingSymbols)' == 'true' "
-          Command="&quot;$(CrossgenToolDir)$(CrossgenToolFileName)&quot; -nologo -readytorun -in &quot;$(TargetDir)%(IntermediateCrossgenAssembly.FileName)%(Extension)&quot; -Create$(CrossGenSymbolsType) &quot;$(CrossgenSymbolsTargetDir)&quot; &quot;@$(CrossgenToolDir)PlatformAssembliesPaths.rsp&quot;"
-          EnvironmentVariables="COMPlus_PartialNGen=0"
+    <!-- All metadata in batched task comes from current @(IntermediateCrossgenAssembly) item. -->
+    <Exec Command="&quot;$(CrossgenToolPath)&quot; $(Crossgen2Args) -o:&quot;$(TargetDir)%(FileName)%(Extension)&quot; &quot;%(IntermediateCrossgenAssembly.Identity)&quot;"
           IgnoreStandardErrorWarningFormat="true"
           StandardOutputImportance="High" />
   </Target>
@@ -438,6 +466,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       PrivateUri="$(DotNetRuntimePrivateDownloadUrl)"
       PrivateUriSuffix="$(DotNetAssetRootAccessTokenSuffix)"
       DestinationPath="$(DotNetRuntimeArchive)" />
+    <RemoveDir Directories="$(RedistSharedFrameworkLayoutRoot)" />
+    <MakeDir Directories="$(RedistSharedFrameworkLayoutRoot)" />
 
     <!-- Extract the dotnet-runtime archive -->
     <Exec Condition="'$(ArchiveExtension)' == '.tar.gz'"
@@ -449,48 +479,87 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       OverwriteReadOnlyFiles="true" />
   </Target>
 
-  <Target Name="_ResolveSharedFrameworkContent" DependsOnTargets="ResolveReferences;Crossgen">
+  <Target Name="_ResolveInitialSharedFrameworkContent" DependsOnTargets="ResolveReferences">
     <ItemGroup>
-      <SharedFxContent Include="$(DotVersionFileIntermediateOutputPath)" />
-      <SharedFxContent Include="$(ProjectDepsFilePath)" />
-      <SharedFxContent Include="$(ProjectRuntimeConfigFilePath)" />
-      <SharedFxContent Include="@(ReferenceCopyLocalPaths)" Condition="'%(Extension)' != '.pdb'" />
-      <SharedFxContent Include="$(RepoRoot)THIRD-PARTY-NOTICES.txt" />
+      <_InitialSharedFxContent Include="$(DotVersionFileIntermediateOutputPath)" />
+      <_InitialSharedFxContent Include="$(ProjectDepsFilePath)" />
+      <_InitialSharedFxContent Include="$(ProjectRuntimeConfigFilePath)" />
+      <_InitialSharedFxContent Include="@(ReferenceCopyLocalPaths)" Condition="'%(Extension)' != '.pdb'" />
+      <_InitialSharedFxContent Include="$(RepoRoot)THIRD-PARTY-NOTICES.txt" />
+    </ItemGroup>
+    <ItemGroup>
+      <_InitialSharedFxContent Condition="'%(_InitialSharedFxContent.Extension)' == '.dll'">
+        <PackagePath Condition="'%(_InitialSharedFxContent.IsNativeImage)' == 'true'">$(NativeAssetsPackagePath)</PackagePath>
+        <PackagePath Condition="'%(_InitialSharedFxContent.IsNativeImage)' != 'true'">$(ManagedAssetsPackagePath)</PackagePath>
+      </_InitialSharedFxContent>
     </ItemGroup>
   </Target>
 
-  <!-- Written to take advantage of target batching in MSBuild. -->
+  <Target Name="_ResolveSharedFrameworkContent">
+    <ItemGroup>
+      <SharedFxContent Include="@(_InitialSharedFxContent)" />
+
+      <!-- We only need RuntimeList.xml in the .nupkg, so we intentionally do not include it in the archives -->
+      <_PackageFiles Include="$(RuntimeListOutputPath)" PackagePath="$(ManifestsPackagePath)" />
+      <_PackageFiles Include="@(RuntimePackContent)" />
+    </ItemGroup>
+  </Target>
+
+  <!--
+    Cannot use RemoveDir task because _BatchCopyToSharedFrameworkLayout may only copy a subset of the files to the
+    layout directory. Instead, remove any files that shouldn't exist.
+  -->
+  <Target Name="_CleanLayout" BeforeTargets="_BatchCopyToSharedFrameworkLayout">
+    <ItemGroup>
+      <_ExtraLayoutFiles Include="$(SharedFxLayoutTargetDir)**\*.*"
+          Exclude="@(RefPackContent->'$(SharedFxLayoutTargetDir)%(FileName)%(Extension)')" />
+    </ItemGroup>
+    <Delete Files="@(_ExtraLayoutFiles)" />
+  </Target>
+
   <Target Name="_BatchCopyToSharedFrameworkLayout"
-          DependsOnTargets="_ResolveSharedFrameworkContent"
           Inputs="@(SharedFxContent)"
           Outputs="@(SharedFxContent->'$(SharedFxLayoutTargetDir)%(FileName)%(Extension)')">
-
     <Copy SourceFiles="@(SharedFxContent)"
           DestinationFiles="@(SharedFxContent->'$(SharedFxLayoutTargetDir)%(FileName)%(Extension)')"
           UseHardlinksIfPossible="true" />
     <Message Importance="High" Text="$(MSbuildProjectFile) -> $(SharedFxLayoutTargetDir)" />
   </Target>
 
-  <!-- Written to take advantage of target batching in MSBuild. -->
+  <Target Name="_CleanRedist" BeforeTargets="_BatchCopyToRedistLayout">
+    <ItemGroup>
+      <_ExtraRedistFiles Include="$(RedistLayoutTargetDir)**\*.*"
+          Exclude="@(RefPackContent->'$(RedistLayoutTargetDir)%(FileName)%(Extension)')" />
+    </ItemGroup>
+    <Delete Files="@(_ExtraRedistFiles)" />
+  </Target>
+
   <Target Name="_BatchCopyToRedistLayout"
-          DependsOnTargets="_ResolveSharedFrameworkContent"
           Inputs="@(SharedFxContent)"
           Outputs="@(SharedFxContent->'$(RedistLayoutTargetDir)%(FileName)%(Extension)')">
-
     <Copy SourceFiles="@(SharedFxContent)"
           DestinationFiles="@(SharedFxContent->'$(RedistLayoutTargetDir)%(FileName)%(Extension)')"
           UseHardlinksIfPossible="true" />
     <Message Importance="High" Text="$(MSbuildProjectFile) -> $(RedistLayoutTargetDir)" />
   </Target>
 
-  <!-- Required to workaround https://github.com/dotnet/core-setup/issues/4809. This copies the shared framework into the $reporoot/.dotnet folder so tests can run against the shared framework. -->
-  <!-- This workaround is not needed in source build -->
+  <Target Name="_CleanLocalDotNet" BeforeTargets="_InstallFrameworkIntoLocalDotNet">
+    <ItemGroup>
+      <_ExtraDotNetFiles Include="$(LocalInstallationOutputPath)**\*.*"
+          Exclude="@(RefPackContent->'$(LocalInstallationOutputPath)%(FileName)%(Extension)')" />
+    </ItemGroup>
+    <Delete Files="@(_ExtraDotNetFiles)" />
+  </Target>
+
+  <!--
+    Required to workaround https://github.com/dotnet/core-setup/issues/4809. This copies the shared framework
+    into the $reporoot/.dotnet folder so tests can run against the shared framework. This workaround is not
+    needed in source build.
+  -->
   <Target Name="_InstallFrameworkIntoLocalDotNet"
-          DependsOnTargets="_ResolveSharedFrameworkContent"
           Condition="'$(DotNetBuildFromSource)' != 'true'"
           Inputs="@(SharedFxContent)"
           Outputs="@(SharedFxContent->'$(LocalInstallationOutputPath)%(FileName)%(Extension)')">
-
     <Copy SourceFiles="@(SharedFxContent)"
           DestinationFiles="@(SharedFxContent->'$(LocalInstallationOutputPath)%(FileName)%(Extension)')"
           UseHardlinksIfPossible="true" />
@@ -498,7 +567,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   </Target>
 
   <Target Name="_CreateInternalSharedFxArchive"
-          DependsOnTargets="_BatchCopyToSharedFrameworkLayout"
           Inputs="@(SharedFxContent)"
           Outputs="$(InternalArchiveOutputPath)">
     <ZipDirectory
@@ -515,7 +583,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
   <!-- Redist tarball including the dotnet-runtime is not needed in source build -->
   <Target Name="_CreateRedistSharedFxArchive"
-          DependsOnTargets="_DownloadAndExtractDotNetRuntime;_BatchCopyToRedistLayout"
           Condition="'$(DotNetBuildFromSource)' != 'true'"
           Inputs="@(SharedFxContent)"
           Outputs="$(RedistArchiveOutputPath)">
@@ -531,37 +598,16 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       Condition="'$(ArchiveExtension)' == '.tar.gz'" />
   </Target>
 
-  <Target Name="IncludeFrameworkListFile"
-          DependsOnTargets="_ResolveSharedFrameworkContent"
-          BeforeTargets="_GetPackageFiles"
-          Condition="'$(ManifestsPackagePath)' != ''">
-
-    <ItemGroup>
-      <SharedFxContent Condition="'%(SharedFxContent.Extension)' == '.dll'">
-        <PackagePath Condition="'%(SharedFxContent.IsNativeImage)' == 'true'">$(NativeAssetsPackagePath)</PackagePath>
-        <PackagePath Condition="'%(SharedFxContent.IsNativeImage)' != 'true'">$(ManagedAssetsPackagePath)</PackagePath>
-      </SharedFxContent>
-    </ItemGroup>
-
+  <Target Name="_GenerateRuntimeListFile">
     <RepoTasks.CreateFrameworkListFile
-      Files="@(SharedFxContent)"
-      TargetFile="$(FrameworkListOutputPath)"
+      Files="@(_InitialSharedFxContent)"
+      TargetFile="$(RuntimeListOutputPath)"
       RootAttributes="@(FrameworkListRootAttributes)" />
-
-    <ItemGroup>
-      <!-- We only need RuntimeList.xml in the .nupkg, so we intentionally do not include it in the archives -->
-      <_PackageFiles Include="$(FrameworkListOutputPath)" PackagePath="$(ManifestsPackagePath)" />
-      <_PackageFiles Include="@(RuntimePackContent)" />
-    </ItemGroup>
   </Target>
 
-  <Target Name="IncludeVersionFile"
-          DependsOnTargets="GenerateSharedFxVersionsFiles"
-          BeforeTargets="_GetPackageFiles">
-
+  <Target Name="_IncludeVersionFile">
     <ItemGroup>
       <None Include="$(VersionTxtFileIntermediateOutputPath)" Pack="true" PackagePath="." />
     </ItemGroup>
   </Target>
-
 </Project>

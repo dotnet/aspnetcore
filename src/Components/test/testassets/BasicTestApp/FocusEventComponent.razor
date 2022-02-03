@@ -2,8 +2,8 @@
 
 <h2>Focus and activation</h2>
 
-<p @onfocusin="OnFocusIn" @onfocusout="OnFocusOut">
-    Input: <input id="input" type="text" @onfocus="OnFocus" @onblur="OnBlur"/>
+<p @onfocusin="OnFocusEvent" @onfocusout="OnFocusEvent">
+    Input: <input id="input" type="text" @onfocus="OnFocusEvent" @onblur="OnFocusEvent" />
 </p>
 <p>
     Output: <span id="output">@message</span>
@@ -13,39 +13,43 @@
 </p>
 
 <p>
+    A button that disappears when clicked:
+    @if (showButtonThatDisappearsWhenClicked)
+    {
+        <button id="button-that-disappears" @onfocusout="DisappearingButtonFocusOut" @onclick="MakeButtonDisappear">
+            Click me
+        </button>
+    }
+
+    Received focus out: <strong id="button-received-focus-out">@buttonReceivedFocusOut</strong>
+</p>
+
+<p>
     Another input (to distract you) <input id="other" />
 </p>
 
 @code {
-
+    bool showButtonThatDisappearsWhenClicked = true;
+    bool buttonReceivedFocusOut;
     string message;
 
-    void OnFocus(FocusEventArgs e)
+    void OnFocusEvent(FocusEventArgs e)
     {
-        message += "onfocus,";
-        StateHasChanged();
-    }
-
-    void OnBlur(FocusEventArgs e)
-    {
-        message += "onblur,";
-        StateHasChanged();
-    }
-
-    void OnFocusIn(FocusEventArgs e)
-    {
-        message += "onfocusin,";
-        StateHasChanged();
-    }
-
-    void OnFocusOut(FocusEventArgs e)
-    {
-        message += "onfocusout,";
-        StateHasChanged();
+        message += $"{e.Type},";
     }
 
     void Clear()
     {
         message = string.Empty;
+    }
+
+    void MakeButtonDisappear()
+    {
+        showButtonThatDisappearsWhenClicked = false;
+    }
+
+    void DisappearingButtonFocusOut()
+    {
+        buttonReceivedFocusOut = true;
     }
 }

@@ -7,7 +7,8 @@
         Output: <span id="output">@message</span>
     </p>
     <p>
-        <button @ontouchstart=OnTouch
+        <button id="touch_input"
+                @ontouchstart=OnTouch
                 @ontouchcancel=OnTouch
                 @ontouchenter=OnTouch
                 @ontouchleave=OnTouch
@@ -27,7 +28,7 @@
 
     void OnTouch(TouchEventArgs e)
     {
-        message += e.Type;
+        message += $"{e.Type},";
         Console.WriteLine(JsonSerializer.Serialize(e));
         StateHasChanged();
     }

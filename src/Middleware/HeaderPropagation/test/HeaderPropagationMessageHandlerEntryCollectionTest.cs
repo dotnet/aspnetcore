@@ -1,34 +1,31 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using Xunit;
+namespace Microsoft.AspNetCore.HeaderPropagation.Tests;
 
-namespace Microsoft.AspNetCore.HeaderPropagation.Tests
+public class HeaderPropagationMessageHandlerEntryCollectionTest
 {
-    public class HeaderPropagationMessageHandlerEntryCollectionTest
+    [Fact]
+    public void Add_SingleValue_UseValueForBothProperties()
     {
-        [Fact]
-        public void Add_SingleValue_UseValueForBothProperties()
-        {
-            var collection = new HeaderPropagationMessageHandlerEntryCollection();
-            collection.Add("foo");
+        var collection = new HeaderPropagationMessageHandlerEntryCollection();
+        collection.Add("foo");
 
-            Assert.Single(collection);
-            var entry = collection[0];
-            Assert.Equal("foo", entry.CapturedHeaderName);
-            Assert.Equal("foo", entry.OutboundHeaderName);
-        }
+        Assert.Single(collection);
+        var entry = collection[0];
+        Assert.Equal("foo", entry.CapturedHeaderName);
+        Assert.Equal("foo", entry.OutboundHeaderName);
+    }
 
-        [Fact]
-        public void Add_BothValues_UseCorrectValues()
-        {
-            var collection = new HeaderPropagationMessageHandlerEntryCollection();
-            collection.Add("foo", "bar");
+    [Fact]
+    public void Add_BothValues_UseCorrectValues()
+    {
+        var collection = new HeaderPropagationMessageHandlerEntryCollection();
+        collection.Add("foo", "bar");
 
-            Assert.Single(collection);
-            var entry = collection[0];
-            Assert.Equal("foo", entry.CapturedHeaderName);
-            Assert.Equal("bar", entry.OutboundHeaderName);
-        }
+        Assert.Single(collection);
+        var entry = collection[0];
+        Assert.Equal("foo", entry.CapturedHeaderName);
+        Assert.Equal("bar", entry.OutboundHeaderName);
     }
 }

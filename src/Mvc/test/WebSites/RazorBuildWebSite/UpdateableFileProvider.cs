@@ -1,22 +1,18 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.IO;
 using System.Text;
-using System.Threading;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
 
-namespace RazorBuildWebSite
-{
-    public class UpdateableFileProvider : IFileProvider
-    {
-        public CancellationTokenSource _pagesTokenSource = new CancellationTokenSource();
+namespace RazorBuildWebSite;
 
-        private readonly Dictionary<string, TestFileInfo> _content = new Dictionary<string, TestFileInfo>()
+public class UpdateableFileProvider : IFileProvider
+{
+    public CancellationTokenSource _pagesTokenSource = new CancellationTokenSource();
+
+    private readonly Dictionary<string, TestFileInfo> _content = new Dictionary<string, TestFileInfo>()
         {
             {
                 "/Views/UpdateableViews/_ViewImports.cshtml",
@@ -32,97 +28,96 @@ namespace RazorBuildWebSite
             },
         };
 
-        public IDirectoryContents GetDirectoryContents(string subpath)
+    public IDirectoryContents GetDirectoryContents(string subpath)
+    {
+        if (subpath == "/Pages")
         {
-            if (subpath == "/Pages")
-            {
-                return new PagesDirectoryContents();
-            }
-
-            return new NotFoundDirectoryContents();
+            return new PagesDirectoryContents();
         }
 
-        public void UpdateContent(string subpath, string content)
+        return new NotFoundDirectoryContents();
+    }
+
+    public void UpdateContent(string subpath, string content)
+    {
+        var old = _content[subpath];
+        old.TokenSource.Cancel();
+        _content[subpath] = new TestFileInfo(content);
+    }
+
+    public void CancelRazorPages()
+    {
+        var oldToken = _pagesTokenSource;
+        _pagesTokenSource = new CancellationTokenSource();
+        oldToken.Cancel();
+    }
+
+    public IFileInfo GetFileInfo(string subpath)
+    {
+        if (!_content.TryGetValue(subpath, out var fileInfo))
         {
-            var old = _content[subpath];
-            old.TokenSource.Cancel();
-            _content[subpath] = new TestFileInfo(content);
+            fileInfo = new TestFileInfo(null);
         }
 
-        public void CancelRazorPages()
+        return fileInfo;
+    }
+
+    public IChangeToken Watch(string filter)
+    {
+        if (filter == "/Pages/**/*.cshtml")
         {
-            var oldToken = _pagesTokenSource;
-            _pagesTokenSource = new CancellationTokenSource();
-            oldToken.Cancel();
+            return new CancellationChangeToken(_pagesTokenSource.Token);
         }
 
-        public IFileInfo GetFileInfo(string subpath)
+        if (_content.TryGetValue(filter, out var fileInfo))
         {
-            if (!_content.TryGetValue(subpath, out var fileInfo))
-            {
-                fileInfo = new TestFileInfo(null);
-            }
-
-            return fileInfo;
+            return fileInfo.ChangeToken;
         }
 
-        public IChangeToken Watch(string filter)
+        return NullChangeToken.Singleton;
+    }
+
+    private class TestFileInfo : IFileInfo
+    {
+        private readonly string _content;
+
+        public TestFileInfo(string content)
         {
-            if (filter == "/Pages/**/*.cshtml")
-            {
-                return new CancellationChangeToken(_pagesTokenSource.Token);
-            }
-
-            if (_content.TryGetValue(filter, out var fileInfo))
-            {
-                return fileInfo.ChangeToken;
-            }
-
-            return NullChangeToken.Singleton;
+            _content = content;
+            ChangeToken = new CancellationChangeToken(TokenSource.Token);
+            Exists = _content != null;
         }
 
-        private class TestFileInfo : IFileInfo
+        public bool Exists { get; }
+        public bool IsDirectory => false;
+        public DateTimeOffset LastModified => DateTimeOffset.MinValue;
+        public long Length => -1;
+        public string Name { get; set; }
+        public string PhysicalPath => null;
+        public CancellationTokenSource TokenSource { get; } = new CancellationTokenSource();
+        public CancellationChangeToken ChangeToken { get; }
+
+        public Stream CreateReadStream()
         {
-            private readonly string _content;
+            return new MemoryStream(Encoding.UTF8.GetBytes(_content));
+        }
+    }
 
-            public TestFileInfo(string content)
+    private class PagesDirectoryContents : IDirectoryContents
+    {
+        public bool Exists => true;
+
+        public IEnumerator<IFileInfo> GetEnumerator()
+        {
+            var file = new TestFileInfo("@page" + Environment.NewLine + "Original content")
             {
-                _content = content;
-                ChangeToken = new CancellationChangeToken(TokenSource.Token);
-                Exists = _content != null;
-            }
+                Name = "UpdateablePage.cshtml"
+            };
 
-            public bool Exists { get; }
-            public bool IsDirectory => false;
-            public DateTimeOffset LastModified => DateTimeOffset.MinValue;
-            public long Length => -1;
-            public string Name { get; set; }
-            public string PhysicalPath => null;
-            public CancellationTokenSource TokenSource { get; } = new CancellationTokenSource();
-            public CancellationChangeToken ChangeToken { get; }
-
-            public Stream CreateReadStream()
-            {
-                return new MemoryStream(Encoding.UTF8.GetBytes(_content));
-            }
+            var files = new List<IFileInfo> { file };
+            return files.GetEnumerator();
         }
 
-        private class PagesDirectoryContents : IDirectoryContents
-        {
-            public bool Exists => true;
-
-            public IEnumerator<IFileInfo> GetEnumerator()
-            {
-                var file = new TestFileInfo("@page" + Environment.NewLine + "Original content")
-                {
-                    Name = "UpdateablePage.cshtml"
-                };
-
-                var files = new List<IFileInfo> {  file };
-                return files.GetEnumerator();
-            }
-
-            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

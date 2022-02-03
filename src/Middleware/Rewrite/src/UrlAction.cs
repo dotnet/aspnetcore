@@ -1,12 +1,11 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Rewrite
+namespace Microsoft.AspNetCore.Rewrite;
+
+internal abstract class UrlAction
 {
-    internal abstract class UrlAction
-    {
-        protected Pattern? Url { get; set; }
+    protected Pattern? Url { get; set; }
 
-        public abstract void ApplyAction(RewriteContext context, BackReferenceCollection? ruleBackReferences, BackReferenceCollection? conditionBackReferences);
-    }
+    public abstract void ApplyAction(RewriteContext context, BackReferenceCollection? ruleBackReferences, BackReferenceCollection? conditionBackReferences);
 }

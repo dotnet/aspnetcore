@@ -16,7 +16,11 @@
 
   <ItemGroup>
     <ProjectReference Include="$(RepoRoot)src\Servers\IIS\IntegrationTesting.IIS\src\Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj" />
-    <ProjectReference Include="$(RepoRoot)src\Servers\testassets\ServerComparison.TestSites\ServerComparison.TestSites.csproj" ReferenceOutputAssemblies="false" />
+    <ProjectReference Include="$(RepoRoot)src\Servers\testassets\ServerComparison.TestSites\ServerComparison.TestSites.csproj"
+      Private="false"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true" />
+
     <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="Microsoft.Net.Http.Headers" />
     <Reference Include="Serilog.Extensions.Logging" />

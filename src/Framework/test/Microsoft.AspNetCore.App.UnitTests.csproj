@@ -4,7 +4,7 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <RootNamespace>Microsoft.AspNetCore</RootNamespace>
     <VerifyAncmBinary Condition="'$(TargetOsName)' == 'win' AND '$(TargetArchitecture)' != 'arm'">true</VerifyAncmBinary>
-    <TestDependsOnAspNetRuntime>true</TestDependsOnAspNetRuntime>
+    <TestDependsOnAspNetPackages>true</TestDependsOnAspNetPackages>
     <SkipHelixArm>true</SkipHelixArm>
   </PropertyGroup>
 
@@ -56,10 +56,6 @@
       <_Parameter2>$(TargetingPackLayoutRoot)</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
-      <_Parameter1>IsTargetingPackBuilding</_Parameter1>
-      <_Parameter2>$(IsTargetingPackBuilding)</_Parameter2>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
       <_Parameter1>VerifyAncmBinary</_Parameter1>
       <_Parameter2>$(VerifyAncmBinary)</_Parameter2>
     </AssemblyAttribute>
@@ -71,23 +67,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj"
-        Condition=" $(IsTargetingPackBuilding) ">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
-    </ProjectReference>
-    <ProjectReference Include="..\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
-        Condition=" !$(IsTargetingPackBuilding) ">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
-    </ProjectReference>
+    <ProjectReference Include="$(RepoRoot)\src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj"
+      Private="false"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
 
   <Target Name="GenerateTestData" BeforeTargets="GetAssemblyAttributes" DependsOnTargets="InitializeSourceControlInformation">
     <!-- Use the ref pack logic to compute the list of expected targeting pack content -->
     <MSBuild Projects="$(RepoRoot)src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj"
-        Targets="_ResolveTargetingPackContent"
-        SkipNonexistentProjects="false">
+        Targets="ResolveTargetingPackContent">
       <Output TaskParameter="TargetOutputs" ItemName="_TargetingPackDependencies" />
     </MSBuild>
 

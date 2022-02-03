@@ -1,138 +1,133 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+
+/// <summary>
+/// Default HttpRequest PipeReader implementation to be used by Kestrel.
+/// </summary>
+internal sealed class HttpRequestPipeReader : PipeReader
 {
-    /// <summary>
-    /// Default HttpRequest PipeReader implementation to be used by Kestrel.
-    /// </summary>
-    internal sealed class HttpRequestPipeReader : PipeReader
+    private MessageBody? _body;
+    private HttpStreamState _state;
+    private ExceptionDispatchInfo? _error;
+
+    public HttpRequestPipeReader()
     {
-        private MessageBody? _body;
-        private HttpStreamState _state;
-        private ExceptionDispatchInfo? _error;
+        _state = HttpStreamState.Closed;
+    }
 
-        public HttpRequestPipeReader()
+    public override void AdvanceTo(SequencePosition consumed)
+    {
+        ValidateState();
+
+        _body!.AdvanceTo(consumed);
+    }
+
+    public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
+    {
+        ValidateState();
+
+        _body!.AdvanceTo(consumed, examined);
+    }
+
+    public override void CancelPendingRead()
+    {
+        ValidateState();
+
+        _body!.CancelPendingRead();
+    }
+
+    public override void Complete(Exception? exception = null)
+    {
+        ValidateState();
+
+        _body!.Complete(exception);
+    }
+
+    public override ValueTask CompleteAsync(Exception? exception = null)
+    {
+        ValidateState();
+
+        return _body!.CompleteAsync(exception);
+    }
+
+    public override ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
+    {
+        ValidateState(cancellationToken);
+
+        return _body!.ReadAsync(cancellationToken);
+    }
+
+    public override bool TryRead(out ReadResult result)
+    {
+        ValidateState();
+
+        return _body!.TryRead(out result);
+    }
+
+    public void StartAcceptingReads(MessageBody body)
+    {
+        // Only start if not aborted
+        if (_state == HttpStreamState.Closed)
         {
-            _state = HttpStreamState.Closed;
+            _state = HttpStreamState.Open;
+            _body = body;
         }
+    }
 
-        public override void AdvanceTo(SequencePosition consumed)
+    public void StopAcceptingReads()
+    {
+        // Can't use dispose (or close) as can be disposed too early by user code
+        // As exampled in EngineTests.ZeroContentLengthNotSetAutomaticallyForCertainStatusCodes
+        _state = HttpStreamState.Closed;
+        _body = null;
+    }
+
+    public void Abort(Exception? error = null)
+    {
+        // If the request is aborted, we throw a TaskCanceledException instead,
+        // unless error is not null, in which case we throw it.
+
+        if (error is not null)
         {
-            ValidateState();
-
-            _body!.AdvanceTo(consumed);
+            _error ??= ExceptionDispatchInfo.Capture(error);
         }
-
-        public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
+        else
         {
-            ValidateState();
-
-            _body!.AdvanceTo(consumed, examined);
+            // Do not change state if there is an error because we don't want to throw a TaskCanceledException
+            // and we do not want to introduce any memory barriers at this layer. This is just for reporting errors
+            // early when we know the transport will fail.
+            _state = HttpStreamState.Aborted;
         }
+    }
 
-        public override void CancelPendingRead()
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ValidateState(CancellationToken cancellationToken = default)
+    {
+        switch (_state)
         {
-            ValidateState();
-
-            _body!.CancelPendingRead();
-        }
-
-        public override void Complete(Exception? exception = null)
-        {
-            ValidateState();
-
-            _body!.Complete(exception);
-        }
-
-        public override ValueTask CompleteAsync(Exception? exception = null)
-        {
-            ValidateState();
-
-            return _body!.CompleteAsync(exception);
-        }
-
-        public override ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
-        {
-            ValidateState(cancellationToken);
-
-            return _body!.ReadAsync(cancellationToken);
-        }
-
-        public override bool TryRead(out ReadResult result)
-        {
-            ValidateState();
-
-            return _body!.TryRead(out result);
-        }
-
-        public void StartAcceptingReads(MessageBody body)
-        {
-            // Only start if not aborted
-            if (_state == HttpStreamState.Closed)
-            {
-                _state = HttpStreamState.Open;
-                _body = body;
-            }
-        }
-
-        public void StopAcceptingReads()
-        {
-            // Can't use dispose (or close) as can be disposed too early by user code
-            // As exampled in EngineTests.ZeroContentLengthNotSetAutomaticallyForCertainStatusCodes
-            _state = HttpStreamState.Closed;
-            _body = null;
-        }
-
-        public void Abort(Exception? error = null)
-        {
-            // We don't want to throw an ODE until the app func actually completes.
-            // If the request is aborted, we throw a TaskCanceledException instead,
-            // unless error is not null, in which case we throw it.
-            if (_state != HttpStreamState.Closed)
-            {
-                _state = HttpStreamState.Aborted;
-
-                if (error is object && _error is null)
-                {
-                    _error = ExceptionDispatchInfo.Capture(error);
-                }
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void ValidateState(CancellationToken cancellationToken = default)
-        {
-            var state = _state;
-            if (state == HttpStreamState.Open)
-            {
+            case HttpStreamState.Open:
                 cancellationToken.ThrowIfCancellationRequested();
-            }
-            else if (state == HttpStreamState.Closed)
-            {
+                break;
+            case HttpStreamState.Closed:
                 ThrowObjectDisposedException();
-            }
-            else
-            {
-                if (_error is object)
-                {
-                    _error.Throw();
-                }
-                else
-                {
-                    ThrowTaskCanceledException();
-                }
-            }
-
-            static void ThrowObjectDisposedException() => throw new ObjectDisposedException(nameof(HttpRequestStream));
-            static void ThrowTaskCanceledException() => throw new TaskCanceledException();
+                break;
+            case HttpStreamState.Aborted:
+                ThrowTaskCanceledException();
+                break;
         }
+
+        // Abort errors are always terminal. We don't use _state to see if there is an error
+        // because we don't want to be forced to synchronize. This is best effort. The transport should
+        // report the same error we aborted it with if the read gets that far.
+        _error?.Throw();
+
+        static void ThrowObjectDisposedException() => throw new ObjectDisposedException(nameof(HttpRequestStream));
+        static void ThrowTaskCanceledException() => throw new TaskCanceledException();
     }
 }

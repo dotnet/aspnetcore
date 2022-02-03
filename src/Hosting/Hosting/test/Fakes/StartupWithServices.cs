@@ -1,23 +1,22 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Builder;
 
-namespace Microsoft.AspNetCore.Hosting.Fakes
+namespace Microsoft.AspNetCore.Hosting.Fakes;
+
+public class StartupWithServices
 {
-    public class StartupWithServices
+    private readonly IFakeStartupCallback _fakeStartupCallback;
+
+    public StartupWithServices(IFakeStartupCallback fakeStartupCallback)
     {
-        private readonly IFakeStartupCallback _fakeStartupCallback;
+        _fakeStartupCallback = fakeStartupCallback;
+    }
 
-        public StartupWithServices(IFakeStartupCallback fakeStartupCallback)
-        {
-            _fakeStartupCallback = fakeStartupCallback;
-        }
-
-        public void Configure(IApplicationBuilder builder, IFakeStartupCallback fakeStartupCallback2)
-        {
-            _fakeStartupCallback.ConfigurationMethodCalled(this);
-            fakeStartupCallback2.ConfigurationMethodCalled(this);
-        }
+    public void Configure(IApplicationBuilder builder, IFakeStartupCallback fakeStartupCallback2)
+    {
+        _fakeStartupCallback.ConfigurationMethodCalled(this);
+        fakeStartupCallback2.ConfigurationMethodCalled(this);
     }
 }

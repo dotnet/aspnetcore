@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
+#nullable disable warnings
+
 using System.Globalization;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -9,214 +10,148 @@ using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Mvc.RazorPages
+namespace Microsoft.AspNetCore.Mvc.RazorPages;
+
+internal static partial class PageLoggerExtensions
 {
-    internal static class PageLoggerExtensions
+    public const string PageFilter = "Page Filter";
+
+    [LoggerMessage(101, LogLevel.Debug, "Executing page model factory for page {Page} ({AssemblyName})", EventName = "ExecutingModelFactory", SkipEnabledCheck = true)]
+    private static partial void ExecutingPageModelFactory(this ILogger logger, string page, string assemblyName);
+
+    public static void ExecutingPageModelFactory(this ILogger logger, PageContext context)
     {
-        public const string PageFilter = "Page Filter";
-
-        private static readonly Action<ILogger, string, string, Exception> _pageModelFactoryExecuting;
-        private static readonly Action<ILogger, string, string, Exception> _pageModelFactoryExecuted;
-        private static readonly Action<ILogger, string, string, Exception> _pageFactoryExecuting;
-        private static readonly Action<ILogger, string, string, Exception> _pageFactoryExecuted;
-        private static readonly Action<ILogger, string, ModelValidationState, Exception> _handlerMethodExecuting;
-        private static readonly Action<ILogger, ModelValidationState, Exception> _implicitHandlerMethodExecuting;
-        private static readonly Action<ILogger, string, string[], Exception> _handlerMethodExecutingWithArguments;
-        private static readonly Action<ILogger, string, string, Exception> _handlerMethodExecuted;
-        private static readonly Action<ILogger, string, Exception> _implicitHandlerMethodExecuted;
-        private static readonly Action<ILogger, object, Exception> _pageFilterShortCircuit;
-        private static readonly Action<ILogger, Type, Exception> _notMostEffectiveFilter;
-        private static readonly Action<ILogger, string, string, string, Exception> _beforeExecutingMethodOnFilter;
-        private static readonly Action<ILogger, string, string, string, Exception> _afterExecutingMethodOnFilter;
-
-        static PageLoggerExtensions()
+        if (!logger.IsEnabled(LogLevel.Debug))
         {
-            // These numbers start at 101 intentionally to avoid conflict with the IDs used by ResourceInvoker.
-
-            _pageModelFactoryExecuting = LoggerMessage.Define<string, string>(
-                LogLevel.Debug,
-                new EventId(101, "ExecutingModelFactory"),
-               "Executing page model factory for page {Page} ({AssemblyName})");
-
-            _pageModelFactoryExecuted = LoggerMessage.Define<string, string>(
-                LogLevel.Debug,
-                new EventId(102, "ExecutedModelFactory"),
-                "Executed page model factory for page {Page} ({AssemblyName})");
-
-            _pageFactoryExecuting = LoggerMessage.Define<string, string>(
-                LogLevel.Debug,
-                new EventId(101, "ExecutingPageFactory"),
-               "Executing page factory for page {Page} ({AssemblyName})");
-
-            _pageFactoryExecuted = LoggerMessage.Define<string, string>(
-                LogLevel.Debug,
-                new EventId(102, "ExecutedPageFactory"),
-                "Executed page factory for page {Page} ({AssemblyName})");
-
-            _handlerMethodExecuting = LoggerMessage.Define<string, ModelValidationState>(
-                LogLevel.Information,
-                new EventId(101, "ExecutingHandlerMethod"),
-                "Executing handler method {HandlerName} - ModelState is {ValidationState}");
-
-            _handlerMethodExecutingWithArguments = LoggerMessage.Define<string, string[]>(
-                LogLevel.Trace,
-                new EventId(103, "HandlerMethodExecutingWithArguments"),
-                "Executing handler method {HandlerName} with arguments ({Arguments})");
-
-            _handlerMethodExecuted = LoggerMessage.Define<string, string>(
-                LogLevel.Information,
-                new EventId(102, "ExecutedHandlerMethod"),
-                "Executed handler method {HandlerName}, returned result {ActionResult}.");
-
-            _implicitHandlerMethodExecuting = LoggerMessage.Define<ModelValidationState>(
-                LogLevel.Information,
-                new EventId(103, "ExecutingImplicitHandlerMethod"),
-                "Executing an implicit handler method - ModelState is {ValidationState}");
-
-            _implicitHandlerMethodExecuted = LoggerMessage.Define<string>(
-                LogLevel.Information,
-                new EventId(104, "ExecutedImplicitHandlerMethod"),
-                "Executed an implicit handler method, returned result {ActionResult}.");
-
-            _pageFilterShortCircuit = LoggerMessage.Define<object>(
-               LogLevel.Debug,
-                new EventId(3, "PageFilterShortCircuited"),
-               "Request was short circuited at page filter '{PageFilter}'.");
-
-            _notMostEffectiveFilter = LoggerMessage.Define<Type>(
-               LogLevel.Debug,
-                new EventId(1, "NotMostEffectiveFilter"),
-               "Skipping the execution of current filter as its not the most effective filter implementing the policy {FilterPolicy}.");
-
-            _beforeExecutingMethodOnFilter = LoggerMessage.Define<string, string, string>(
-                LogLevel.Trace,
-                new EventId(1, "BeforeExecutingMethodOnFilter"),
-                "{FilterType}: Before executing {Method} on filter {Filter}.");
-
-            _afterExecutingMethodOnFilter = LoggerMessage.Define<string, string, string>(
-                LogLevel.Trace,
-                new EventId(2, "AfterExecutingMethodOnFilter"),
-                "{FilterType}: After executing {Method} on filter {Filter}.");
+            return;
         }
 
-        public static void ExecutingPageModelFactory(this ILogger logger, PageContext context)
-        {
-            if (!logger.IsEnabled(LogLevel.Debug))
-            {
-                return;
-            }
+        var pageType = context.ActionDescriptor.PageTypeInfo.AsType();
+        var pageName = TypeNameHelper.GetTypeDisplayName(pageType);
+        ExecutingPageModelFactory(logger, pageName, pageType.Assembly.GetName().Name);
+    }
 
-            var pageType = context.ActionDescriptor.PageTypeInfo.AsType();
-            var pageName = TypeNameHelper.GetTypeDisplayName(pageType);
-            _pageModelFactoryExecuting(logger, pageName, pageType.Assembly.GetName().Name, null);
+    [LoggerMessage(102, LogLevel.Debug, "Executed page model factory for page {Page} ({AssemblyName})", EventName = "ExecutedModelFactory", SkipEnabledCheck = true)]
+    private static partial void ExecutedPageModelFactory(this ILogger logger, string page, string assemblyName);
+
+    public static void ExecutedPageModelFactory(this ILogger logger, PageContext context)
+    {
+        if (!logger.IsEnabled(LogLevel.Debug))
+        {
+            return;
         }
 
-        public static void ExecutedPageModelFactory(this ILogger logger, PageContext context)
-        {
-            if (!logger.IsEnabled(LogLevel.Debug))
-            {
-                return;
-            }
+        var pageType = context.ActionDescriptor.PageTypeInfo.AsType();
+        var pageName = TypeNameHelper.GetTypeDisplayName(pageType);
+        ExecutedPageModelFactory(logger, pageName, pageType.Assembly.GetName().Name);
+    }
 
-            var pageType = context.ActionDescriptor.PageTypeInfo.AsType();
-            var pageName = TypeNameHelper.GetTypeDisplayName(pageType);
-            _pageModelFactoryExecuted(logger, pageName, pageType.Assembly.GetName().Name, null);
+    [LoggerMessage(103, LogLevel.Debug, "Executing page factory for page {Page} ({AssemblyName})", EventName = "ExecutingPageFactory", SkipEnabledCheck = true)]
+    private static partial void ExecutingPageFactory(this ILogger logger, string page, string assemblyName);
+
+    public static void ExecutingPageFactory(this ILogger logger, PageContext context)
+    {
+        if (!logger.IsEnabled(LogLevel.Debug))
+        {
+            return;
         }
 
-        public static void ExecutingPageFactory(this ILogger logger, PageContext context)
-        {
-            if (!logger.IsEnabled(LogLevel.Debug))
-            {
-                return;
-            }
+        var pageType = context.ActionDescriptor.PageTypeInfo.AsType();
+        var pageName = TypeNameHelper.GetTypeDisplayName(pageType);
+        ExecutingPageFactory(logger, pageName, pageType.Assembly.GetName().Name);
+    }
 
-            var pageType = context.ActionDescriptor.PageTypeInfo.AsType();
-            var pageName = TypeNameHelper.GetTypeDisplayName(pageType);
-            _pageFactoryExecuting(logger, pageName, pageType.Assembly.GetName().Name, null);
+    [LoggerMessage(104, LogLevel.Debug, "Executed page factory for page {Page} ({AssemblyName})", EventName = "ExecutedPageFactory", SkipEnabledCheck = true)]
+    private static partial void ExecutedPageFactory(this ILogger logger, string page, string assemblyName);
+
+    public static void ExecutedPageFactory(this ILogger logger, PageContext context)
+    {
+        if (!logger.IsEnabled(LogLevel.Debug))
+        {
+            return;
         }
 
-        public static void ExecutedPageFactory(this ILogger logger, PageContext context)
+        var pageType = context.ActionDescriptor.PageTypeInfo.AsType();
+        var pageName = TypeNameHelper.GetTypeDisplayName(pageType);
+        ExecutedPageFactory(logger, pageName, pageType.Assembly.GetName().Name);
+    }
+
+    [LoggerMessage(105, LogLevel.Information, "Executing handler method {HandlerName} - ModelState is {ValidationState}", EventName = "ExecutingHandlerMethod", SkipEnabledCheck = true)]
+    private static partial void ExecutingHandlerMethod(this ILogger logger, string handlerName, ModelValidationState validationState);
+
+    [LoggerMessage(106, LogLevel.Trace, "Executing handler method {HandlerName} with arguments ({Arguments})", EventName = "HandlerMethodExecutingWithArguments", SkipEnabledCheck = true)]
+    private static partial void ExecutingHandlerMethodWithArguments(this ILogger logger, string handlerName, string[] arguments);
+
+    public static void ExecutingHandlerMethod(this ILogger logger, PageContext context, HandlerMethodDescriptor handler, object?[]? arguments)
+    {
+        if (logger.IsEnabled(LogLevel.Information))
         {
-            if (!logger.IsEnabled(LogLevel.Debug))
+            var declaringTypeName = TypeNameHelper.GetTypeDisplayName(handler.MethodInfo.DeclaringType);
+            var handlerName = declaringTypeName + "." + handler.MethodInfo.Name;
+
+            var validationState = context.ModelState.ValidationState;
+            ExecutingHandlerMethod(logger, handlerName, validationState);
+
+            if (arguments != null && logger.IsEnabled(LogLevel.Trace))
             {
-                return;
-            }
-
-            var pageType = context.ActionDescriptor.PageTypeInfo.AsType();
-            var pageName = TypeNameHelper.GetTypeDisplayName(pageType);
-            _pageFactoryExecuted(logger, pageName, pageType.Assembly.GetName().Name, null);
-        }
-
-        public static void ExecutingHandlerMethod(this ILogger logger, PageContext context, HandlerMethodDescriptor handler, object[] arguments)
-        {
-            if (logger.IsEnabled(LogLevel.Information))
-            {
-                var declaringTypeName = TypeNameHelper.GetTypeDisplayName(handler.MethodInfo.DeclaringType);
-                var handlerName = declaringTypeName + "." + handler.MethodInfo.Name;
-
-                var validationState = context.ModelState.ValidationState;
-                _handlerMethodExecuting(logger, handlerName, validationState, null);
-
-                if (arguments != null && logger.IsEnabled(LogLevel.Trace))
+                var convertedArguments = new string[arguments.Length];
+                for (var i = 0; i < arguments.Length; i++)
                 {
-                    var convertedArguments = new string[arguments.Length];
-                    for (var i = 0; i < arguments.Length; i++)
-                    {
-                        convertedArguments[i] = Convert.ToString(arguments[i], CultureInfo.InvariantCulture);
-                    }
-
-                    _handlerMethodExecutingWithArguments(logger, handlerName, convertedArguments, null);
+                    convertedArguments[i] = Convert.ToString(arguments[i], CultureInfo.InvariantCulture);
                 }
+
+                ExecutingHandlerMethodWithArguments(logger, handlerName, convertedArguments);
             }
-        }
-
-        public static void ExecutingImplicitHandlerMethod(this ILogger logger, PageContext context)
-        {
-            if (logger.IsEnabled(LogLevel.Information))
-            {
-                var validationState = context.ModelState.ValidationState;
-
-                _implicitHandlerMethodExecuting(logger, validationState, null);
-            }
-        }
-
-        public static void ExecutedHandlerMethod(this ILogger logger, PageContext context, HandlerMethodDescriptor handler, IActionResult result)
-        {
-            if (logger.IsEnabled(LogLevel.Information))
-            {
-                var handlerName = handler.MethodInfo.Name;
-                _handlerMethodExecuted(logger, handlerName, Convert.ToString(result, CultureInfo.InvariantCulture), null);
-            }
-        }
-
-        public static void ExecutedImplicitHandlerMethod(this ILogger logger, IActionResult result)
-        {
-            if (logger.IsEnabled(LogLevel.Information))
-            {
-                _implicitHandlerMethodExecuted(logger, Convert.ToString(result, CultureInfo.InvariantCulture), null);
-            }
-        }
-
-        public static void BeforeExecutingMethodOnFilter(this ILogger logger, string filterType, string methodName, IFilterMetadata filter)
-        {
-            _beforeExecutingMethodOnFilter(logger, filterType, methodName, filter.GetType().ToString(), null);
-        }
-
-        public static void AfterExecutingMethodOnFilter(this ILogger logger, string filterType, string methodName, IFilterMetadata filter)
-        {
-            _afterExecutingMethodOnFilter(logger, filterType, methodName, filter.GetType().ToString(), null);
-        }
-
-        public static void PageFilterShortCircuited(
-            this ILogger logger,
-            IFilterMetadata filter)
-        {
-            _pageFilterShortCircuit(logger, filter, null);
-        }
-
-        public static void NotMostEffectiveFilter(this ILogger logger, Type policyType)
-        {
-            _notMostEffectiveFilter(logger, policyType, null);
         }
     }
+
+    [LoggerMessage(107, LogLevel.Information, "Executing an implicit handler method - ModelState is {ValidationState}", EventName = "ExecutingImplicitHandlerMethod", SkipEnabledCheck = true)]
+    public static partial void ExecutingImplicitHandlerMethod(this ILogger logger, ModelValidationState validationState);
+
+    public static void ExecutingImplicitHandlerMethod(this ILogger logger, PageContext context)
+    {
+        if (logger.IsEnabled(LogLevel.Information))
+        {
+            var validationState = context.ModelState.ValidationState;
+
+            ExecutingImplicitHandlerMethod(logger, validationState);
+        }
+    }
+
+    [LoggerMessage(108, LogLevel.Information, "Executed handler method {HandlerName}, returned result {ActionResult}.", EventName = "ExecutedHandlerMethod")]
+    public static partial void ExecutedHandlerMethod(this ILogger logger, string handlerName, string? actionResult);
+
+    public static void ExecutedHandlerMethod(this ILogger logger, PageContext context, HandlerMethodDescriptor handler, IActionResult? result)
+    {
+        if (logger.IsEnabled(LogLevel.Information))
+        {
+            var handlerName = handler.MethodInfo.Name;
+            ExecutedHandlerMethod(logger, handlerName, Convert.ToString(result, CultureInfo.InvariantCulture));
+        }
+    }
+
+    [LoggerMessage(109, LogLevel.Information, "Executed an implicit handler method, returned result {ActionResult}.", EventName = "ExecutedImplicitHandlerMethod", SkipEnabledCheck = true)]
+    public static partial void ExecutedImplicitHandlerMethod(this ILogger logger, string actionResult);
+
+    public static void ExecutedImplicitHandlerMethod(this ILogger logger, IActionResult result)
+    {
+        if (logger.IsEnabled(LogLevel.Information))
+        {
+            ExecutedImplicitHandlerMethod(logger, Convert.ToString(result, CultureInfo.InvariantCulture));
+        }
+    }
+
+    [LoggerMessage(1, LogLevel.Trace, "{FilterType}: Before executing {Method} on filter {Filter}.", EventName = "BeforeExecutingMethodOnFilter")]
+    public static partial void BeforeExecutingMethodOnFilter(this ILogger logger, string filterType, string method, IFilterMetadata filter);
+
+    [LoggerMessage(2, LogLevel.Trace, "{FilterType}: After executing {Method} on filter {Filter}.", EventName = "AfterExecutingMethodOnFilter")]
+    public static partial void AfterExecutingMethodOnFilter(this ILogger logger, string filterType, string method, IFilterMetadata filter);
+
+    [LoggerMessage(3, LogLevel.Debug, "Request was short circuited at page filter '{PageFilter}'.", EventName = "PageFilterShortCircuited")]
+    public static partial void PageFilterShortCircuited(
+        this ILogger logger,
+        IFilterMetadata pageFilter);
+
+    [LoggerMessage(4, LogLevel.Debug, "Skipping the execution of current filter as its not the most effective filter implementing the policy {FilterPolicy}.", EventName = "NotMostEffectiveFilter")]
+    public static partial void NotMostEffectiveFilter(this ILogger logger, Type filterPolicy);
 }

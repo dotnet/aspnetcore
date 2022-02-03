@@ -1,45 +1,44 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text;
 
-namespace Microsoft.Extensions.ObjectPool
+namespace Microsoft.Extensions.ObjectPool;
+
+/// <summary>
+/// A policy for pooling <see cref="StringBuilder"/> instances.
+/// </summary>
+public class StringBuilderPooledObjectPolicy : PooledObjectPolicy<StringBuilder>
 {
     /// <summary>
-    /// A policy for pooling <see cref="StringBuilder"/> instances.
+    /// Gets or sets the initial capacity of pooled <see cref="StringBuilder"/> instances.
     /// </summary>
-    public class StringBuilderPooledObjectPolicy : PooledObjectPolicy<StringBuilder>
+    /// <value>Defaults to <c>100</c>.</value>
+    public int InitialCapacity { get; set; } = 100;
+
+    /// <summary>
+    /// Gets or sets the maximum value for <see cref="StringBuilder.Capacity"/> that is allowed to be
+    /// retained, when <see cref="Return(StringBuilder)"/> is invoked.
+    /// </summary>
+    /// <value>Defaults to <c>4096</c>.</value>
+    public int MaximumRetainedCapacity { get; set; } = 4 * 1024;
+
+    /// <inheritdoc />
+    public override StringBuilder Create()
     {
-        /// <summary>
-        /// Gets or sets the initial capacity of pooled <see cref="StringBuilder"/> instances.
-        /// </summary>
-        /// <value>Defaults to <c>100</c>.</value>
-        public int InitialCapacity { get; set; } = 100;
+        return new StringBuilder(InitialCapacity);
+    }
 
-        /// <summary>
-        /// Gets or sets the maximum value for <see cref="StringBuilder.Capacity"/> that is allowed to be
-        /// retained, when <see cref="Return(StringBuilder)"/> is invoked.
-        /// </summary>
-        /// <value>Defaults to <c>4096</c>.</value>
-        public int MaximumRetainedCapacity { get; set; } = 4 * 1024;
-
-        /// <inheritdoc />
-        public override StringBuilder Create()
+    /// <inheritdoc />
+    public override bool Return(StringBuilder obj)
+    {
+        if (obj.Capacity > MaximumRetainedCapacity)
         {
-            return new StringBuilder(InitialCapacity);
+            // Too big. Discard this one.
+            return false;
         }
 
-        /// <inheritdoc />
-        public override bool Return(StringBuilder obj)
-        {
-            if (obj.Capacity > MaximumRetainedCapacity)
-            {
-                // Too big. Discard this one.
-                return false;
-            }
-
-            obj.Clear();
-            return true;
-        }
+        obj.Clear();
+        return true;
     }
 }

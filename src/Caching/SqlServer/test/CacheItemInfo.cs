@@ -1,21 +1,19 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
 
 using System;
 
-namespace Microsoft.Extensions.Caching.SqlServer
+namespace Microsoft.Extensions.Caching.SqlServer;
+
+public class CacheItemInfo
 {
-    public class CacheItemInfo
-    {
-        public string Id { get; set; }
+    public string Id { get; set; }
 
-        public byte[] Value { get; set; }
+    public byte[] Value { get; set; }
 
-        public DateTimeOffset ExpiresAtTime { get; set; }
+    public DateTimeOffset ExpiresAtTime { get; set; }
 
-        public TimeSpan? SlidingExpirationInSeconds { get; set; }
+    public TimeSpan? SlidingExpirationInSeconds { get; set; }
 
-        public DateTimeOffset? AbsoluteExpiration { get; set; }
-    }
+    public DateTimeOffset? AbsoluteExpiration { get; set; }
 }

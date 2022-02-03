@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 export const Virtualize = {
   init,
   dispose,
@@ -26,6 +29,13 @@ function init(dotNetHelper: any, spacerBefore: HTMLElement, spacerAfter: HTMLEle
   const scrollContainer = findClosestScrollContainer(spacerBefore);
   (scrollContainer || document.documentElement).style.overflowAnchor = 'none';
 
+  const rangeBetweenSpacers = document.createRange();
+
+  if (isValidTableElement(spacerAfter.parentElement)) {
+    spacerBefore.style.display = 'table-row';
+    spacerAfter.style.display = 'table-row';
+  }
+
   const intersectionObserver = new IntersectionObserver(intersectionCallback, {
     root: scrollContainer,
     rootMargin: `${rootMargin}px`,
@@ -47,12 +57,19 @@ function init(dotNetHelper: any, spacerBefore: HTMLElement, spacerAfter: HTMLEle
     // Without the use of thresholds, IntersectionObserver only detects binary changes in visibility,
     // so if a spacer gets resized but remains visible, no additional callbacks will occur. By unobserving
     // and reobserving spacers when they get resized, the intersection callback will re-run if they remain visible.
-    const mutationObserver = new MutationObserver((): void => {
+    const observerOptions = { attributes: true };
+    const mutationObserver = new MutationObserver((mutations: MutationRecord[], observer: MutationObserver): void => {
+      if (isValidTableElement(spacer.parentElement)) {
+        observer.disconnect();
+        spacer.style.display = 'table-row';
+        observer.observe(spacer, observerOptions);
+      }
+
       intersectionObserver.unobserve(spacer);
       intersectionObserver.observe(spacer);
     });
 
-    mutationObserver.observe(spacer, { attributes: true });
+    mutationObserver.observe(spacer, observerOptions);
 
     return mutationObserver;
   }
@@ -63,9 +80,14 @@ function init(dotNetHelper: any, spacerBefore: HTMLElement, spacerAfter: HTMLEle
         return;
       }
 
-      const spacerBeforeRect = spacerBefore.getBoundingClientRect();
-      const spacerAfterRect = spacerAfter.getBoundingClientRect();
-      const spacerSeparation = spacerAfterRect.top - spacerBeforeRect.bottom;
+      // To compute the ItemSize, work out the separation between the two spacers. We can't just measure an individual element
+      // because each conceptual item could be made from multiple elements. Using getBoundingClientRect allows for the size to be
+      // a fractional value. It's important not to add or subtract any such fractional values (e.g., to subtract the 'top' of
+      // one item from the 'bottom' of another to get the distance between them) because floating point errors would cause
+      // scrolling glitches.
+      rangeBetweenSpacers.setStartAfter(spacerBefore);
+      rangeBetweenSpacers.setEndBefore(spacerAfter);
+      const spacerSeparation = rangeBetweenSpacers.getBoundingClientRect().height;
       const containerSize = entry.rootBounds?.height;
 
       if (entry.target === spacerBefore) {
@@ -77,6 +99,15 @@ function init(dotNetHelper: any, spacerBefore: HTMLElement, spacerAfter: HTMLEle
         dotNetHelper.invokeMethodAsync('OnSpacerAfterVisible', entry.boundingClientRect.bottom - entry.intersectionRect.bottom, spacerSeparation, containerSize);
       }
     });
+  }
+
+  function isValidTableElement(element: HTMLElement | null): boolean {
+    if (element === null) {
+      return false;
+    }
+
+    return ((element instanceof HTMLTableElement && element.style.display === '') || element.style.display === 'table')
+      || ((element instanceof HTMLTableSectionElement && element.style.display === '') || element.style.display === 'table-row-group');
   }
 }
 

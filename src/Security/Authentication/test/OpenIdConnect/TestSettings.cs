@@ -1,350 +1,342 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Text;
 using System.Text.Encodings.Web;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
+namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect;
+
+/// <summary>
+/// This helper class is used to check that query string parameters are as expected.
+/// </summary>
+internal class TestSettings
 {
-    /// <summary>
-    /// This helper class is used to check that query string parameters are as expected.
-    /// </summary>
-    internal class TestSettings
+    private readonly Action<OpenIdConnectOptions> _configureOptions;
+    private OpenIdConnectOptions _options;
+
+    public TestSettings() : this(configure: null)
     {
-        private readonly Action<OpenIdConnectOptions> _configureOptions;
-        private OpenIdConnectOptions _options;
+    }
 
-        public TestSettings() : this(configure: null)
+    public TestSettings(Action<OpenIdConnectOptions> configure)
+    {
+        _configureOptions = o =>
         {
+            configure?.Invoke(o);
+            _options = o;
+            _options.BackchannelHttpHandler = new MockBackchannel();
+        };
+    }
+
+    public UrlEncoder Encoder => UrlEncoder.Default;
+
+    public string ExpectedState { get; set; }
+
+    public TestServer CreateTestServer(AuthenticationProperties properties = null, Func<HttpContext, Task> handler = null) => TestServerBuilder.CreateServer(_configureOptions, handler: handler, properties: properties);
+
+    public IDictionary<string, string> ValidateChallengeFormPost(string responseBody, params string[] parametersToValidate)
+    {
+        IDictionary<string, string> formInputs = null;
+        var errors = new List<string>();
+        var xdoc = XDocument.Parse(responseBody.Replace("doctype", "DOCTYPE"));
+        var forms = xdoc.Descendants("form");
+        if (forms.Count() != 1)
+        {
+            errors.Add("Only one form element is expected in response body.");
+        }
+        else
+        {
+            formInputs = forms.Single()
+                              .Elements("input")
+                              .ToDictionary(elem => elem.Attribute("name").Value,
+                                            elem => elem.Attribute("value").Value);
+
+            ValidateParameters(formInputs, parametersToValidate, errors, htmlEncoded: false);
         }
 
-        public TestSettings(Action<OpenIdConnectOptions> configure)
+        if (errors.Any())
         {
-            _configureOptions = o =>
+            var buf = new StringBuilder();
+            buf.AppendLine("The challenge form post is not valid.");
+            // buf.AppendLine();
+
+            foreach (var error in errors)
             {
-                configure?.Invoke(o);
-                _options = o;
-                _options.BackchannelHttpHandler = new MockBackchannel();
-            };
+                buf.AppendLine(error);
+            }
+
+            Debug.WriteLine(buf.ToString());
+            Assert.True(false, buf.ToString());
         }
 
-        public UrlEncoder Encoder => UrlEncoder.Default;
+        return formInputs;
+    }
 
-        public string ExpectedState { get; set; }
-
-        public TestServer CreateTestServer(AuthenticationProperties properties = null, Func<HttpContext, Task> handler = null) => TestServerBuilder.CreateServer(_configureOptions, handler: handler, properties: properties);
-
-        public IDictionary<string, string> ValidateChallengeFormPost(string responseBody, params string[] parametersToValidate)
+    public IDictionary<string, string> ValidateSignoutFormPost(TestTransaction transaction, params string[] parametersToValidate)
+    {
+        IDictionary<string, string> formInputs = null;
+        var errors = new List<string>();
+        var xdoc = XDocument.Parse(transaction.ResponseText.Replace("doctype", "DOCTYPE"));
+        var forms = xdoc.Descendants("form");
+        if (forms.Count() != 1)
         {
-            IDictionary<string, string> formInputs = null;
-            var errors = new List<string>();
-            var xdoc = XDocument.Parse(responseBody.Replace("doctype", "DOCTYPE"));
-            var forms = xdoc.Descendants("form");
-            if (forms.Count() != 1)
-            {
-                errors.Add("Only one form element is expected in response body.");
-            }
-            else
-            {
-                formInputs = forms.Single()
-                                  .Elements("input")
-                                  .ToDictionary(elem => elem.Attribute("name").Value,
-                                                elem => elem.Attribute("value").Value);
+            errors.Add("Only one form element is expected in response body.");
+        }
+        else
+        {
+            formInputs = forms.Single()
+                              .Elements("input")
+                              .ToDictionary(elem => elem.Attribute("name").Value,
+                                            elem => elem.Attribute("value").Value);
 
-                ValidateParameters(formInputs, parametersToValidate, errors, htmlEncoded: false);
-            }
-
-            if (errors.Any())
-            {
-                var buf = new StringBuilder();
-                buf.AppendLine($"The challenge form post is not valid.");
-                // buf.AppendLine();
-
-                foreach (var error in errors)
-                {
-                    buf.AppendLine(error);
-                }
-
-                Debug.WriteLine(buf.ToString());
-                Assert.True(false, buf.ToString());
-            }
-
-            return formInputs;
+            ValidateParameters(formInputs, parametersToValidate, errors, htmlEncoded: false);
         }
 
-        public IDictionary<string, string> ValidateSignoutFormPost(TestTransaction transaction, params string[] parametersToValidate)
+        if (errors.Any())
         {
-            IDictionary<string, string> formInputs = null;
-            var errors = new List<string>();
-            var xdoc = XDocument.Parse(transaction.ResponseText.Replace("doctype", "DOCTYPE"));
-            var forms = xdoc.Descendants("form");
-            if (forms.Count() != 1)
-            {
-                errors.Add("Only one form element is expected in response body.");
-            }
-            else
-            {
-                formInputs = forms.Single()
-                                  .Elements("input")
-                                  .ToDictionary(elem => elem.Attribute("name").Value,
-                                                elem => elem.Attribute("value").Value);
+            var buf = new StringBuilder();
+            buf.AppendLine("The signout form post is not valid.");
+            // buf.AppendLine();
 
-                ValidateParameters(formInputs, parametersToValidate, errors, htmlEncoded: false);
+            foreach (var error in errors)
+            {
+                buf.AppendLine(error);
             }
 
-            if (errors.Any())
-            {
-                var buf = new StringBuilder();
-                buf.AppendLine($"The signout form post is not valid.");
-                // buf.AppendLine();
-
-                foreach (var error in errors)
-                {
-                    buf.AppendLine(error);
-                }
-
-                Debug.WriteLine(buf.ToString());
-                Assert.True(false, buf.ToString());
-            }
-
-            return formInputs;
+            Debug.WriteLine(buf.ToString());
+            Assert.True(false, buf.ToString());
         }
 
-        public IDictionary<string, string> ValidateChallengeRedirect(Uri redirectUri, params string[] parametersToValidate) =>
-            ValidateRedirectCore(redirectUri, OpenIdConnectRequestType.Authentication, parametersToValidate);
+        return formInputs;
+    }
 
-        public IDictionary<string, string> ValidateSignoutRedirect(Uri redirectUri, params string[] parametersToValidate) =>
-            ValidateRedirectCore(redirectUri, OpenIdConnectRequestType.Logout, parametersToValidate);
+    public IDictionary<string, string> ValidateChallengeRedirect(Uri redirectUri, params string[] parametersToValidate) =>
+        ValidateRedirectCore(redirectUri, OpenIdConnectRequestType.Authentication, parametersToValidate);
 
-        private IDictionary<string, string> ValidateRedirectCore(Uri redirectUri, OpenIdConnectRequestType requestType, string[] parametersToValidate)
+    public IDictionary<string, string> ValidateSignoutRedirect(Uri redirectUri, params string[] parametersToValidate) =>
+        ValidateRedirectCore(redirectUri, OpenIdConnectRequestType.Logout, parametersToValidate);
+
+    private IDictionary<string, string> ValidateRedirectCore(Uri redirectUri, OpenIdConnectRequestType requestType, string[] parametersToValidate)
+    {
+        var errors = new List<string>();
+
+        // Validate the authority
+        ValidateExpectedAuthority(redirectUri.AbsoluteUri, errors, requestType);
+
+        // Convert query to dictionary
+        var queryDict = string.IsNullOrEmpty(redirectUri.Query) ?
+            new Dictionary<string, string>() :
+            redirectUri.Query.TrimStart('?').Split('&').Select(part => part.Split('=')).ToDictionary(parts => parts[0], parts => parts[1]);
+
+        // Validate the query string parameters
+        ValidateParameters(queryDict, parametersToValidate, errors, htmlEncoded: true);
+
+        if (errors.Any())
         {
-            var errors = new List<string>();
+            var buf = new StringBuilder();
+            buf.AppendLine("The redirect uri is not valid.");
+            buf.AppendLine(redirectUri.AbsoluteUri);
 
-            // Validate the authority
-            ValidateExpectedAuthority(redirectUri.AbsoluteUri, errors, requestType);
-
-            // Convert query to dictionary
-            var queryDict = string.IsNullOrEmpty(redirectUri.Query) ?
-                new Dictionary<string, string>() :
-                redirectUri.Query.TrimStart('?').Split('&').Select(part => part.Split('=')).ToDictionary(parts => parts[0], parts => parts[1]);
-
-            // Validate the query string parameters
-            ValidateParameters(queryDict, parametersToValidate, errors, htmlEncoded: true);
-
-            if (errors.Any())
+            foreach (var error in errors)
             {
-                var buf = new StringBuilder();
-                buf.AppendLine($"The redirect uri is not valid.");
-                buf.AppendLine(redirectUri.AbsoluteUri);
-
-                foreach (var error in errors)
-                {
-                    buf.AppendLine(error);
-                }
-
-                Debug.WriteLine(buf.ToString());
-                Assert.True(false, buf.ToString());
+                buf.AppendLine(error);
             }
 
-            return queryDict;
+            Debug.WriteLine(buf.ToString());
+            Assert.True(false, buf.ToString());
         }
 
-        private void ValidateParameters(
-            IDictionary<string, string> actualValues,
-            IEnumerable<string> parametersToValidate,
-            ICollection<string> errors,
-            bool htmlEncoded)
-        {
-            foreach (var paramToValidate in parametersToValidate)
-            {
-                switch (paramToValidate)
-                {
-                    case OpenIdConnectParameterNames.ClientId:
-                        ValidateClientId(actualValues, errors, htmlEncoded);
-                        break;
-                    case OpenIdConnectParameterNames.ResponseType:
-                        ValidateResponseType(actualValues, errors, htmlEncoded);
-                        break;
-                    case OpenIdConnectParameterNames.ResponseMode:
-                        ValidateResponseMode(actualValues, errors, htmlEncoded);
-                        break;
-                    case OpenIdConnectParameterNames.Scope:
-                        ValidateScope(actualValues, errors, htmlEncoded);
-                        break;
-                    case OpenIdConnectParameterNames.RedirectUri:
-                        ValidateRedirectUri(actualValues, errors, htmlEncoded);
-                        break;
-                    case OpenIdConnectParameterNames.Resource:
-                        ValidateResource(actualValues, errors, htmlEncoded);
-                        break;
-                    case OpenIdConnectParameterNames.State:
-                        ValidateState(actualValues, errors, htmlEncoded);
-                        break;
-                    case OpenIdConnectParameterNames.SkuTelemetry:
-                        ValidateSkuTelemetry(actualValues, errors);
-                        break;
-                    case OpenIdConnectParameterNames.VersionTelemetry:
-                        ValidateVersionTelemetry(actualValues, errors, htmlEncoded);
-                        break;
-                    case OpenIdConnectParameterNames.PostLogoutRedirectUri:
-                        ValidatePostLogoutRedirectUri(actualValues, errors, htmlEncoded);
-                        break;
-                    case OpenIdConnectParameterNames.MaxAge:
-                        ValidateMaxAge(actualValues, errors, htmlEncoded);
-                        break;
-                    case OpenIdConnectParameterNames.Prompt:
-                        ValidatePrompt(actualValues, errors, htmlEncoded);
-                        break;
-                    default:
-                        throw new InvalidOperationException($"Unknown parameter \"{paramToValidate}\".");
-                }
-            }
-        }
+        return queryDict;
+    }
 
-        private void ValidateExpectedAuthority(string absoluteUri, ICollection<string> errors, OpenIdConnectRequestType requestType)
+    private void ValidateParameters(
+        IDictionary<string, string> actualValues,
+        IEnumerable<string> parametersToValidate,
+        ICollection<string> errors,
+        bool htmlEncoded)
+    {
+        foreach (var paramToValidate in parametersToValidate)
         {
-            string expectedAuthority;
-            switch (requestType)
+            switch (paramToValidate)
             {
-                case OpenIdConnectRequestType.Token:
-                    expectedAuthority = _options.Configuration?.TokenEndpoint ?? _options.Authority + @"/oauth2/token";
+                case OpenIdConnectParameterNames.ClientId:
+                    ValidateClientId(actualValues, errors, htmlEncoded);
                     break;
-                case OpenIdConnectRequestType.Logout:
-                    expectedAuthority = _options.Configuration?.EndSessionEndpoint ?? _options.Authority + @"/oauth2/logout";
+                case OpenIdConnectParameterNames.ResponseType:
+                    ValidateResponseType(actualValues, errors, htmlEncoded);
+                    break;
+                case OpenIdConnectParameterNames.ResponseMode:
+                    ValidateResponseMode(actualValues, errors, htmlEncoded);
+                    break;
+                case OpenIdConnectParameterNames.Scope:
+                    ValidateScope(actualValues, errors, htmlEncoded);
+                    break;
+                case OpenIdConnectParameterNames.RedirectUri:
+                    ValidateRedirectUri(actualValues, errors, htmlEncoded);
+                    break;
+                case OpenIdConnectParameterNames.Resource:
+                    ValidateResource(actualValues, errors, htmlEncoded);
+                    break;
+                case OpenIdConnectParameterNames.State:
+                    ValidateState(actualValues, errors, htmlEncoded);
+                    break;
+                case OpenIdConnectParameterNames.SkuTelemetry:
+                    ValidateSkuTelemetry(actualValues, errors);
+                    break;
+                case OpenIdConnectParameterNames.VersionTelemetry:
+                    ValidateVersionTelemetry(actualValues, errors, htmlEncoded);
+                    break;
+                case OpenIdConnectParameterNames.PostLogoutRedirectUri:
+                    ValidatePostLogoutRedirectUri(actualValues, errors, htmlEncoded);
+                    break;
+                case OpenIdConnectParameterNames.MaxAge:
+                    ValidateMaxAge(actualValues, errors, htmlEncoded);
+                    break;
+                case OpenIdConnectParameterNames.Prompt:
+                    ValidatePrompt(actualValues, errors, htmlEncoded);
                     break;
                 default:
-                    expectedAuthority = _options.Configuration?.AuthorizationEndpoint ?? _options.Authority + @"/oauth2/authorize";
-                    break;
-            }
-
-            if (!absoluteUri.StartsWith(expectedAuthority, StringComparison.Ordinal))
-            {
-                errors.Add($"ExpectedAuthority: {expectedAuthority}");
+                    throw new InvalidOperationException($"Unknown parameter \"{paramToValidate}\".");
             }
         }
+    }
 
-        private void ValidateClientId(IDictionary<string, string> actualParams, ICollection<string> errors, bool htmlEncoded) =>
-            ValidateParameter(OpenIdConnectParameterNames.ClientId, _options.ClientId, actualParams, errors, htmlEncoded);
-
-        private void ValidateResponseType(IDictionary<string, string> actualParams, ICollection<string> errors, bool htmlEncoded) =>
-            ValidateParameter(OpenIdConnectParameterNames.ResponseType, _options.ResponseType, actualParams, errors, htmlEncoded);
-
-        private void ValidateResponseMode(IDictionary<string, string> actualParams, ICollection<string> errors, bool htmlEncoded) =>
-            ValidateParameter(OpenIdConnectParameterNames.ResponseMode, _options.ResponseMode, actualParams, errors, htmlEncoded);
-
-        private void ValidateScope(IDictionary<string, string> actualParams, ICollection<string> errors, bool htmlEncoded) =>
-            ValidateParameter(OpenIdConnectParameterNames.Scope, string.Join(" ", _options.Scope), actualParams, errors, htmlEncoded);
-
-        private void ValidateRedirectUri(IDictionary<string, string> actualParams, ICollection<string> errors, bool htmlEncoded) =>
-            ValidateParameter(OpenIdConnectParameterNames.RedirectUri, TestServerBuilder.TestHost + _options.CallbackPath, actualParams, errors, htmlEncoded);
-
-        private void ValidateResource(IDictionary<string, string> actualParams, ICollection<string> errors, bool htmlEncoded) =>
-            ValidateParameter(OpenIdConnectParameterNames.RedirectUri, _options.Resource, actualParams, errors, htmlEncoded);
-
-        private void ValidateState(IDictionary<string, string> actualParams, ICollection<string> errors, bool htmlEncoded) =>
-            ValidateParameter(OpenIdConnectParameterNames.State, ExpectedState, actualParams, errors, htmlEncoded);
-
-        private static void ValidateSkuTelemetry(IDictionary<string, string> actualParams, ICollection<string> errors)
+    private void ValidateExpectedAuthority(string absoluteUri, ICollection<string> errors, OpenIdConnectRequestType requestType)
+    {
+        string expectedAuthority;
+        switch (requestType)
         {
-            if (!actualParams.ContainsKey(OpenIdConnectParameterNames.SkuTelemetry))
-            {
-                errors.Add($"Parameter {OpenIdConnectParameterNames.SkuTelemetry} is missing");
-            }
+            case OpenIdConnectRequestType.Token:
+                expectedAuthority = _options.Configuration?.TokenEndpoint ?? _options.Authority + @"/oauth2/token";
+                break;
+            case OpenIdConnectRequestType.Logout:
+                expectedAuthority = _options.Configuration?.EndSessionEndpoint ?? _options.Authority + @"/oauth2/logout";
+                break;
+            default:
+                expectedAuthority = _options.Configuration?.AuthorizationEndpoint ?? _options.Authority + @"/oauth2/authorize";
+                break;
         }
 
-        private void ValidateVersionTelemetry(IDictionary<string, string> actualParams, ICollection<string> errors, bool htmlEncoded) =>
-            ValidateParameter(OpenIdConnectParameterNames.VersionTelemetry, typeof(OpenIdConnectMessage).GetTypeInfo().Assembly.GetName().Version.ToString(), actualParams, errors, htmlEncoded);
-
-        private void ValidatePostLogoutRedirectUri(IDictionary<string, string> actualParams, ICollection<string> errors, bool htmlEncoded) =>
-            ValidateParameter(OpenIdConnectParameterNames.PostLogoutRedirectUri, "https://example.com/signout-callback-oidc", actualParams, errors, htmlEncoded);
-
-        private void ValidateMaxAge(IDictionary<string, string> actualQuery, ICollection<string> errors, bool htmlEncoded)
+        if (!absoluteUri.StartsWith(expectedAuthority, StringComparison.Ordinal))
         {
-            if(_options.MaxAge.HasValue)
+            errors.Add($"ExpectedAuthority: {expectedAuthority}");
+        }
+    }
+
+    private void ValidateClientId(IDictionary<string, string> actualParams, ICollection<string> errors, bool htmlEncoded) =>
+        ValidateParameter(OpenIdConnectParameterNames.ClientId, _options.ClientId, actualParams, errors, htmlEncoded);
+
+    private void ValidateResponseType(IDictionary<string, string> actualParams, ICollection<string> errors, bool htmlEncoded) =>
+        ValidateParameter(OpenIdConnectParameterNames.ResponseType, _options.ResponseType, actualParams, errors, htmlEncoded);
+
+    private void ValidateResponseMode(IDictionary<string, string> actualParams, ICollection<string> errors, bool htmlEncoded) =>
+        ValidateParameter(OpenIdConnectParameterNames.ResponseMode, _options.ResponseMode, actualParams, errors, htmlEncoded);
+
+    private void ValidateScope(IDictionary<string, string> actualParams, ICollection<string> errors, bool htmlEncoded) =>
+        ValidateParameter(OpenIdConnectParameterNames.Scope, string.Join(" ", _options.Scope), actualParams, errors, htmlEncoded);
+
+    private void ValidateRedirectUri(IDictionary<string, string> actualParams, ICollection<string> errors, bool htmlEncoded) =>
+        ValidateParameter(OpenIdConnectParameterNames.RedirectUri, TestServerBuilder.TestHost + _options.CallbackPath, actualParams, errors, htmlEncoded);
+
+    private void ValidateResource(IDictionary<string, string> actualParams, ICollection<string> errors, bool htmlEncoded) =>
+        ValidateParameter(OpenIdConnectParameterNames.RedirectUri, _options.Resource, actualParams, errors, htmlEncoded);
+
+    private void ValidateState(IDictionary<string, string> actualParams, ICollection<string> errors, bool htmlEncoded) =>
+        ValidateParameter(OpenIdConnectParameterNames.State, ExpectedState, actualParams, errors, htmlEncoded);
+
+    private static void ValidateSkuTelemetry(IDictionary<string, string> actualParams, ICollection<string> errors)
+    {
+        if (!actualParams.ContainsKey(OpenIdConnectParameterNames.SkuTelemetry))
+        {
+            errors.Add($"Parameter {OpenIdConnectParameterNames.SkuTelemetry} is missing");
+        }
+    }
+
+    private void ValidateVersionTelemetry(IDictionary<string, string> actualParams, ICollection<string> errors, bool htmlEncoded) =>
+        ValidateParameter(OpenIdConnectParameterNames.VersionTelemetry, typeof(OpenIdConnectMessage).GetTypeInfo().Assembly.GetName().Version.ToString(), actualParams, errors, htmlEncoded);
+
+    private void ValidatePostLogoutRedirectUri(IDictionary<string, string> actualParams, ICollection<string> errors, bool htmlEncoded) =>
+        ValidateParameter(OpenIdConnectParameterNames.PostLogoutRedirectUri, "https://example.com/signout-callback-oidc", actualParams, errors, htmlEncoded);
+
+    private void ValidateMaxAge(IDictionary<string, string> actualQuery, ICollection<string> errors, bool htmlEncoded)
+    {
+        if (_options.MaxAge.HasValue)
+        {
+            Assert.Equal(TimeSpan.FromMinutes(20), _options.MaxAge.Value);
+            string expectedMaxAge = "1200";
+            ValidateParameter(OpenIdConnectParameterNames.MaxAge, expectedMaxAge, actualQuery, errors, htmlEncoded);
+        }
+        else if (actualQuery.ContainsKey(OpenIdConnectParameterNames.MaxAge))
+        {
+            errors.Add($"Parameter {OpenIdConnectParameterNames.MaxAge} is present but it should be absent");
+        }
+    }
+
+    private void ValidatePrompt(IDictionary<string, string> actualParams, ICollection<string> errors, bool htmlEncoded) =>
+        ValidateParameter(OpenIdConnectParameterNames.Prompt, _options.Prompt, actualParams, errors, htmlEncoded);
+
+    private void ValidateParameter(
+        string parameterName,
+        string expectedValue,
+        IDictionary<string, string> actualParams,
+        ICollection<string> errors,
+        bool htmlEncoded)
+    {
+        string actualValue;
+        if (actualParams.TryGetValue(parameterName, out actualValue))
+        {
+            if (htmlEncoded)
             {
-                Assert.Equal(TimeSpan.FromMinutes(20), _options.MaxAge.Value);
-                string expectedMaxAge = "1200";
-                ValidateParameter(OpenIdConnectParameterNames.MaxAge, expectedMaxAge, actualQuery, errors, htmlEncoded);
+                expectedValue = Encoder.Encode(expectedValue);
             }
-            else if(actualQuery.ContainsKey(OpenIdConnectParameterNames.MaxAge))
+
+            if (actualValue != expectedValue)
             {
-                errors.Add($"Parameter {OpenIdConnectParameterNames.MaxAge} is present but it should be absent");
+                errors.Add($"Parameter {parameterName}'s expected value is '{expectedValue}' but its actual value is '{actualValue}'");
             }
         }
-
-        private void ValidatePrompt(IDictionary<string, string> actualParams, ICollection<string> errors, bool htmlEncoded) =>
-            ValidateParameter(OpenIdConnectParameterNames.Prompt, _options.Prompt, actualParams, errors, htmlEncoded);
-
-        private void ValidateParameter(
-            string parameterName,
-            string expectedValue,
-            IDictionary<string, string> actualParams,
-            ICollection<string> errors,
-            bool htmlEncoded)
+        else
         {
-            string actualValue;
-            if (actualParams.TryGetValue(parameterName, out actualValue))
-            {
-                if (htmlEncoded)
-                {
-                    expectedValue = Encoder.Encode(expectedValue);
-                }
+            errors.Add($"Parameter {parameterName} is missing");
+        }
+    }
 
-                if (actualValue != expectedValue)
-                {
-                    errors.Add($"Parameter {parameterName}'s expected value is '{expectedValue}' but its actual value is '{actualValue}'");
-                }
-            }
-            else
+    private class MockBackchannel : HttpMessageHandler
+    {
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            if (request.RequestUri.AbsoluteUri.Equals("https://login.microsoftonline.com/common/.well-known/openid-configuration"))
             {
-                errors.Add($"Parameter {parameterName} is missing");
+                return await ReturnResource("wellknownconfig.json");
             }
+            if (request.RequestUri.AbsoluteUri.Equals("https://login.microsoftonline.com/common/discovery/keys"))
+            {
+                return await ReturnResource("wellknownkeys.json");
+            }
+
+            throw new NotImplementedException();
         }
 
-        private class MockBackchannel : HttpMessageHandler
+        private async Task<HttpResponseMessage> ReturnResource(string resource)
         {
-            protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            var resourceName = "Microsoft.AspNetCore.Authentication.Test.OpenIdConnect." + resource;
+            using (var stream = typeof(MockBackchannel).Assembly.GetManifestResourceStream(resourceName))
+            using (var reader = new StreamReader(stream))
             {
-                if (request.RequestUri.AbsoluteUri.Equals("https://login.microsoftonline.com/common/.well-known/openid-configuration"))
+                var body = await reader.ReadToEndAsync();
+                var content = new StringContent(body, Encoding.UTF8, "application/json");
+                return new HttpResponseMessage()
                 {
-                    return await ReturnResource("wellknownconfig.json");
-                }
-                if (request.RequestUri.AbsoluteUri.Equals("https://login.microsoftonline.com/common/discovery/keys"))
-                {
-                    return await ReturnResource("wellknownkeys.json");
-                }
-
-                throw new NotImplementedException();
-            }
-
-            private async Task<HttpResponseMessage> ReturnResource(string resource)
-            {
-                var resourceName = "Microsoft.AspNetCore.Authentication.Test.OpenIdConnect." + resource;
-                using (var stream = typeof(MockBackchannel).Assembly.GetManifestResourceStream(resourceName))
-                using (var reader = new StreamReader(stream))
-                {
-                    var body = await reader.ReadToEndAsync();
-                    var content = new StringContent(body, Encoding.UTF8, "application/json");
-                    return new HttpResponseMessage()
-                    {
-                        Content = content,
-                    };
-                }
+                    Content = content,
+                };
             }
         }
     }

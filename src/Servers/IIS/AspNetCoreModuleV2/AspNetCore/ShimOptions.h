@@ -65,6 +65,30 @@ public:
         return m_fShowDetailedErrors;
     }
 
+    bool
+    QueryShadowCopyEnabled() const noexcept
+    {
+        return m_fexperimentalEnableShadowCopying;
+    }
+
+    bool
+    QueryCleanShadowCopyDirectory() const noexcept
+    {
+        return m_fCleanShadowCopyDirectory;
+    }
+
+    const std::wstring&
+    QueryShadowCopyDirectory() const noexcept
+    {
+        return m_strShadowCopyingDirectory;
+    }
+
+    bool
+    QueryDisallowRotationOnConfigChange() const noexcept
+    {
+        return m_fDisallowRotationOnConfigChange;
+    }
+
     ShimOptions(const ConfigurationSource &configurationSource);
 
 private:
@@ -76,4 +100,8 @@ private:
     bool                           m_fStdoutLogEnabled;
     bool                           m_fDisableStartupPage;
     bool                           m_fShowDetailedErrors;
+    bool                           m_fexperimentalEnableShadowCopying;
+    bool                           m_fCleanShadowCopyDirectory;
+    bool                           m_fDisallowRotationOnConfigChange;
+    std::wstring                   m_strShadowCopyingDirectory;
 };

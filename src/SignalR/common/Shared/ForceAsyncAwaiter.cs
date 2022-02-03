@@ -1,76 +1,75 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Runtime.CompilerServices;
 
-namespace System.Threading.Tasks
+namespace System.Threading.Tasks;
+
+internal static class ForceAsyncTaskExtensions
 {
-    internal static class ForceAsyncTaskExtensions
+    /// <summary>
+    /// Returns an awaitable/awaiter that will ensure the continuation is executed
+    /// asynchronously on the thread pool, even if the task is already completed
+    /// by the time the await occurs.  Effectively, it is equivalent to awaiting
+    /// with ConfigureAwait(false) and then queuing the continuation with Task.Run,
+    /// but it avoids the extra hop if the continuation already executed asynchronously.
+    /// </summary>
+    public static ForceAsyncAwaiter ForceAsync(this Task task)
     {
-        /// <summary>
-        /// Returns an awaitable/awaiter that will ensure the continuation is executed
-        /// asynchronously on the thread pool, even if the task is already completed
-        /// by the time the await occurs.  Effectively, it is equivalent to awaiting
-        /// with ConfigureAwait(false) and then queuing the continuation with Task.Run,
-        /// but it avoids the extra hop if the continuation already executed asynchronously.
-        /// </summary>
-        public static ForceAsyncAwaiter ForceAsync(this Task task)
-        {
-            return new ForceAsyncAwaiter(task);
-        }
-
-        public static ForceAsyncAwaiter<T> ForceAsync<T>(this Task<T> task)
-        {
-            return new ForceAsyncAwaiter<T>(task);
-        }
+        return new ForceAsyncAwaiter(task);
     }
 
-    internal readonly struct ForceAsyncAwaiter : ICriticalNotifyCompletion
+    public static ForceAsyncAwaiter<T> ForceAsync<T>(this Task<T> task)
     {
-        private readonly Task _task;
+        return new ForceAsyncAwaiter<T>(task);
+    }
+}
 
-        internal ForceAsyncAwaiter(Task task) { _task = task; }
+internal readonly struct ForceAsyncAwaiter : ICriticalNotifyCompletion
+{
+    private readonly Task _task;
 
-        public ForceAsyncAwaiter GetAwaiter() { return this; }
+    internal ForceAsyncAwaiter(Task task) { _task = task; }
 
-        // The purpose of this type is to always force a continuation
-        public bool IsCompleted => false;
+    public ForceAsyncAwaiter GetAwaiter() { return this; }
 
-        public void GetResult() { _task.GetAwaiter().GetResult(); }
+    // The purpose of this type is to always force a continuation
+    public bool IsCompleted => false;
 
-        public void OnCompleted(Action action)
-        {
-            _task.ConfigureAwait(false).GetAwaiter().OnCompleted(action);
-        }
+    public void GetResult() { _task.GetAwaiter().GetResult(); }
 
-        public void UnsafeOnCompleted(Action action)
-        {
-            _task.ConfigureAwait(false).GetAwaiter().UnsafeOnCompleted(action);
-        }
+    public void OnCompleted(Action action)
+    {
+        _task.ConfigureAwait(false).GetAwaiter().OnCompleted(action);
     }
 
-    internal readonly struct ForceAsyncAwaiter<T> : ICriticalNotifyCompletion
+    public void UnsafeOnCompleted(Action action)
     {
-        private readonly Task<T> _task;
+        _task.ConfigureAwait(false).GetAwaiter().UnsafeOnCompleted(action);
+    }
+}
 
-        internal ForceAsyncAwaiter(Task<T> task) { _task = task; }
+internal readonly struct ForceAsyncAwaiter<T> : ICriticalNotifyCompletion
+{
+    private readonly Task<T> _task;
 
-        public ForceAsyncAwaiter<T> GetAwaiter() { return this; }
+    internal ForceAsyncAwaiter(Task<T> task) { _task = task; }
 
-        // The purpose of this type is to always force a continuation
-        public bool IsCompleted => false;
+    public ForceAsyncAwaiter<T> GetAwaiter() { return this; }
 
-        public T GetResult() { return _task.GetAwaiter().GetResult(); }
+    // The purpose of this type is to always force a continuation
+    public bool IsCompleted => false;
 
-        public void OnCompleted(Action action)
-        {
-            _task.ConfigureAwait(false).GetAwaiter().OnCompleted(action);
-        }
+    public T GetResult() { return _task.GetAwaiter().GetResult(); }
 
-        public void UnsafeOnCompleted(Action action)
-        {
-            _task.ConfigureAwait(false).GetAwaiter().UnsafeOnCompleted(action);
-        }
+    public void OnCompleted(Action action)
+    {
+        _task.ConfigureAwait(false).GetAwaiter().OnCompleted(action);
+    }
+
+    public void UnsafeOnCompleted(Action action)
+    {
+        _task.ConfigureAwait(false).GetAwaiter().UnsafeOnCompleted(action);
     }
 }

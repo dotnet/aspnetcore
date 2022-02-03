@@ -1,21 +1,20 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-namespace Microsoft.AspNetCore.Mvc
-{
-    /// <summary>
-    /// Specifies that a parameter or property should be bound using the request headers.
-    /// </summary>
-    [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-    public class FromHeaderAttribute : Attribute, IBindingSourceMetadata, IModelNameProvider
-    {
-        /// <inheritdoc />
-        public BindingSource BindingSource => BindingSource.Header;
+namespace Microsoft.AspNetCore.Mvc;
 
-        /// <inheritdoc />
-        public string Name { get; set; }
-    }
+/// <summary>
+/// Specifies that a parameter or property should be bound using the request headers.
+/// </summary>
+[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
+public class FromHeaderAttribute : Attribute, IBindingSourceMetadata, IModelNameProvider, IFromHeaderMetadata
+{
+    /// <inheritdoc />
+    public BindingSource BindingSource => BindingSource.Header;
+
+    /// <inheritdoc />
+    public string? Name { get; set; }
 }

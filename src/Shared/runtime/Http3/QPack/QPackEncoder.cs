@@ -9,10 +9,8 @@ using System.Text;
 
 namespace System.Net.Http.QPack
 {
-    internal class QPackEncoder
+    internal static class QPackEncoder
     {
-        private IEnumerator<KeyValuePair<string, string>>? _enumerator;
-
         // https://tools.ietf.org/html/draft-ietf-quic-qpack-11#section-4.5.2
         //   0   1   2   3   4   5   6   7
         // +---+---+---+---+---+---+---+---+
@@ -319,7 +317,7 @@ namespace System.Net.Http.QPack
 
                 if (ch > 127)
                 {
-                    throw new QPackEncodingException("ASCII header value.");
+                    throw new QPackEncodingException(SR.net_http_request_invalid_char_encoding);
                 }
 
                 buffer[i] = (byte)ch;
@@ -402,93 +400,6 @@ namespace System.Net.Http.QPack
             bytesWritten += length;
 
             return true;
-        }
-
-        public bool BeginEncode(IEnumerable<KeyValuePair<string, string>> headers, Span<byte> buffer, out int length)
-        {
-            _enumerator = headers.GetEnumerator();
-
-            bool hasValue = _enumerator.MoveNext();
-            Debug.Assert(hasValue == true);
-
-            buffer[0] = 0;
-            buffer[1] = 0;
-
-            bool doneEncode = Encode(buffer.Slice(2), out length);
-
-            // Add two for the first two bytes.
-            length += 2;
-            return doneEncode;
-        }
-
-        public bool BeginEncode(int statusCode, IEnumerable<KeyValuePair<string, string>> headers, Span<byte> buffer, out int length)
-        {
-            _enumerator = headers.GetEnumerator();
-
-            bool hasValue = _enumerator.MoveNext();
-            Debug.Assert(hasValue == true);
-
-            // https://quicwg.org/base-drafts/draft-ietf-quic-qpack.html#header-prefix
-            buffer[0] = 0;
-            buffer[1] = 0;
-
-            int statusCodeLength = EncodeStatusCode(statusCode, buffer.Slice(2));
-            bool done = Encode(buffer.Slice(statusCodeLength + 2), throwIfNoneEncoded: false, out int headersLength);
-            length = statusCodeLength + headersLength + 2;
-
-            return done;
-        }
-
-        public bool Encode(Span<byte> buffer, out int length)
-        {
-            return Encode(buffer, throwIfNoneEncoded: true, out length);
-        }
-
-        private bool Encode(Span<byte> buffer, bool throwIfNoneEncoded, out int length)
-        {
-            length = 0;
-
-            do
-            {
-                if (!EncodeLiteralHeaderFieldWithoutNameReference(_enumerator!.Current.Key, _enumerator.Current.Value, buffer.Slice(length), out int headerLength))
-                {
-                    if (length == 0 && throwIfNoneEncoded)
-                    {
-                        throw new QPackEncodingException("TODO sync with corefx" /* CoreStrings.HPackErrorNotEnoughBuffer */);
-                    }
-                    return false;
-                }
-
-                length += headerLength;
-            } while (_enumerator.MoveNext());
-
-            return true;
-        }
-
-        // TODO: use H3StaticTable?
-        private int EncodeStatusCode(int statusCode, Span<byte> buffer)
-        {
-            switch (statusCode)
-            {
-                case 200:
-                case 204:
-                case 206:
-                case 304:
-                case 400:
-                case 404:
-                case 500:
-                    EncodeStaticIndexedHeaderField(H3StaticTable.StatusIndex[statusCode], buffer, out var bytesWritten);
-                    return bytesWritten;
-                default:
-                    // Send as Literal Header Field Without Indexing - Indexed Name
-                    buffer[0] = 0x08;
-
-                    ReadOnlySpan<byte> statusBytes = StatusCodes.ToStatusBytes(statusCode);
-                    buffer[1] = (byte)statusBytes.Length;
-                    statusBytes.CopyTo(buffer.Slice(2));
-
-                    return 2 + statusBytes.Length;
-            }
         }
     }
 }

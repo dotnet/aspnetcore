@@ -1,80 +1,77 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
 
-using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Routing
+namespace Microsoft.AspNetCore.Routing;
+
+/// <summary>
+/// Provides support for specifying routes in an application.
+/// </summary>
+public class RouteBuilder : IRouteBuilder
 {
     /// <summary>
-    /// Provides support for specifying routes in an application.
+    /// Constructs a new <see cref="RouteBuilder"/> instance given an <paramref name="applicationBuilder"/>.
     /// </summary>
-    public class RouteBuilder : IRouteBuilder
+    /// <param name="applicationBuilder">An <see cref="IApplicationBuilder"/> instance.</param>
+    public RouteBuilder(IApplicationBuilder applicationBuilder)
+        : this(applicationBuilder, defaultHandler: null)
     {
-        /// <summary>
-        /// Constructs a new <see cref="RouteBuilder"/> instance given an <paramref name="applicationBuilder"/>.
-        /// </summary>
-        /// <param name="applicationBuilder">An <see cref="IApplicationBuilder"/> instance.</param>
-        public RouteBuilder(IApplicationBuilder applicationBuilder)
-            : this(applicationBuilder, defaultHandler: null)
+    }
+
+    /// <summary>
+    /// Constructs a new <see cref="RouteBuilder"/> instance given an <paramref name="applicationBuilder"/>
+    /// and <paramref name="defaultHandler"/>.
+    /// </summary>
+    /// <param name="applicationBuilder">An <see cref="IApplicationBuilder"/> instance.</param>
+    /// <param name="defaultHandler">The default <see cref="IRouter"/> used if a new route is added without a handler.</param>
+    public RouteBuilder(IApplicationBuilder applicationBuilder, IRouter? defaultHandler)
+    {
+        if (applicationBuilder == null)
         {
+            throw new ArgumentNullException(nameof(applicationBuilder));
         }
 
-        /// <summary>
-        /// Constructs a new <see cref="RouteBuilder"/> instance given an <paramref name="applicationBuilder"/>
-        /// and <paramref name="defaultHandler"/>.
-        /// </summary>
-        /// <param name="applicationBuilder">An <see cref="IApplicationBuilder"/> instance.</param>
-        /// <param name="defaultHandler">The default <see cref="IRouter"/> used if a new route is added without a handler.</param>
-        public RouteBuilder(IApplicationBuilder applicationBuilder, IRouter? defaultHandler)
+        if (applicationBuilder.ApplicationServices.GetService(typeof(RoutingMarkerService)) == null)
         {
-            if (applicationBuilder == null)
-            {
-                throw new ArgumentNullException(nameof(applicationBuilder));
-            }
-
-            if (applicationBuilder.ApplicationServices.GetService(typeof(RoutingMarkerService)) == null)
-            {
-                throw new InvalidOperationException(Resources.FormatUnableToFindServices(
-                    nameof(IServiceCollection),
-                    nameof(RoutingServiceCollectionExtensions.AddRouting),
-                    "ConfigureServices(...)"));
-            }
-
-            ApplicationBuilder = applicationBuilder;
-            DefaultHandler = defaultHandler;
-            ServiceProvider = applicationBuilder.ApplicationServices;
-
-            Routes = new List<IRouter>();
+            throw new InvalidOperationException(Resources.FormatUnableToFindServices(
+                nameof(IServiceCollection),
+                nameof(RoutingServiceCollectionExtensions.AddRouting),
+                "ConfigureServices(...)"));
         }
 
-        /// <inheritdoc />
-        public IApplicationBuilder ApplicationBuilder { get; }
+        ApplicationBuilder = applicationBuilder;
+        DefaultHandler = defaultHandler;
+        ServiceProvider = applicationBuilder.ApplicationServices;
 
-        /// <inheritdoc />
-        public IRouter? DefaultHandler { get; set; }
+        Routes = new List<IRouter>();
+    }
 
-        /// <inheritdoc />
-        public IServiceProvider ServiceProvider { get; }
+    /// <inheritdoc />
+    public IApplicationBuilder ApplicationBuilder { get; }
 
-        /// <inheritdoc />
-        public IList<IRouter> Routes { get; }
+    /// <inheritdoc />
+    public IRouter? DefaultHandler { get; set; }
 
-        /// <inheritdoc />
-        public IRouter Build()
+    /// <inheritdoc />
+    public IServiceProvider ServiceProvider { get; }
+
+    /// <inheritdoc />
+    public IList<IRouter> Routes { get; }
+
+    /// <inheritdoc />
+    public IRouter Build()
+    {
+        var routeCollection = new RouteCollection();
+
+        foreach (var route in Routes)
         {
-            var routeCollection = new RouteCollection();
-
-            foreach (var route in Routes)
-            {
-                routeCollection.Add(route);
-            }
-
-            return routeCollection;
+            routeCollection.Add(route);
         }
+
+        return routeCollection;
     }
 }

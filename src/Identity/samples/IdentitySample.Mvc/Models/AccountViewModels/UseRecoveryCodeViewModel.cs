@@ -1,12 +1,14 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace IdentitySample.Models.AccountViewModels
+using System.ComponentModel.DataAnnotations;
+
+namespace IdentitySample.Models.AccountViewModels;
+
+public class UseRecoveryCodeViewModel
 {
-    public class UseRecoveryCodeViewModel
-    {
-        [Required]
-        public string Code { get; set; }
+    [Required]
+    public string Code { get; set; }
 
-        public string ReturnUrl { get; set; }
-    }
+    public string ReturnUrl { get; set; }
 }

@@ -1,1 +1,0 @@
-(1,7): Error RZ1034: Found a malformed 'p' tag helper. Tag helpers must have a start and end tag or be self closing.

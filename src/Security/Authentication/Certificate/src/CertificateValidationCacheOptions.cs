@@ -1,28 +1,25 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
+namespace Microsoft.AspNetCore.Authentication.Certificate;
 
-namespace Microsoft.AspNetCore.Authentication.Certificate
+/// <summary>
+/// Configuration options for <see cref="CertificateValidationCache"/>
+/// </summary>
+public class CertificateValidationCacheOptions
 {
     /// <summary>
-    /// Configuration options for <see cref="CertificateValidationCache"/>
+    /// Gets or sets the expiration that should be used for entries in the MemoryCache.
+    /// This is a sliding expiration that will extend each time the certificate is used, so long as the certificate is valid (see X509Certificate2.NotAfter).
     /// </summary>
-    public class CertificateValidationCacheOptions
-    {
-        /// <summary>
-        /// Gets or sets the expiration that should be used for entries in the MemoryCache.
-        /// This is a sliding expiration that will extend each time the certificate is used, so long as the certificate is valid (see X509Certificate2.NotAfter).
-        /// </summary>
-        /// <value>Defaults to 2 minutes.</value>
-        public TimeSpan CacheEntryExpiration { get; set; } = TimeSpan.FromMinutes(2);
+    /// <value>Defaults to 2 minutes.</value>
+    public TimeSpan CacheEntryExpiration { get; set; } = TimeSpan.FromMinutes(2);
 
-        /// <summary>
-        /// Gets or sets the maximum number of validated certificate results that are allowed to cached.
-        /// </summary>
-        /// <value>
-        /// Defaults to 1024.
-        /// </value>
-        public int CacheSize { get; set; } = 1024;
-    }
+    /// <summary>
+    /// Gets or sets the maximum number of validated certificate results that are allowed to cached.
+    /// </summary>
+    /// <value>
+    /// Defaults to 1024.
+    /// </value>
+    public int CacheSize { get; set; } = 1024;
 }

@@ -77,3 +77,10 @@ gradlew eol=lf
 ###############################################################################
 jquery*.js eol=lf
 jquery*.map eol=lf
+
+###############################################################################
+# Make sure bootstrap files always have LF as line endings (to pass SRI checks)
+###############################################################################
+bootstrap*.js eol=lf
+bootstrap*.map eol=lf
+bootstrap*.css eol=lf

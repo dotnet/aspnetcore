@@ -1,2 +1,3 @@
 #nullable enable
-*REMOVED*Microsoft.AspNetCore.SignalR.HubInvocationContext.HubInvocationContext(Microsoft.AspNetCore.SignalR.HubCallerContext! context, string! hubMethodName, object?[]! hubMethodArguments) -> void
+Microsoft.AspNetCore.SignalR.HubOptions.DisableImplicitFromServiceParameters.get -> bool
+Microsoft.AspNetCore.SignalR.HubOptions.DisableImplicitFromServiceParameters.set -> void

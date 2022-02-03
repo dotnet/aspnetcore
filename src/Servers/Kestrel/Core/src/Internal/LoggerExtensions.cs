@@ -1,77 +1,40 @@
-// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
+
+internal static partial class LoggerExtensions
 {
-    internal static class LoggerExtensions
-    {
-        // Category: DefaultHttpsProvider
-        private static readonly Action<ILogger, string, string, Exception?> _locatedDevelopmentCertificate =
-            LoggerMessage.Define<string, string>(
-                LogLevel.Debug,
-                new EventId(0, "LocatedDevelopmentCertificate"),
-                "Using development certificate: {certificateSubjectName} (Thumbprint: {certificateThumbprint})");
+    private const string BadDeveloperCertificateStateMessage = "The ASP.NET Core developer certificate is in an invalid state. To fix this issue, run the following commands " +
+        "'dotnet dev-certs https --clean' and 'dotnet dev-certs https' to remove all existing ASP.NET Core development certificates and create a new untrusted developer certificate. " +
+        "On macOS or Windows, use 'dotnet dev-certs https --trust' to trust the new certificate.";
 
-        private static readonly Action<ILogger, Exception?> _unableToLocateDevelopmentCertificate =
-            LoggerMessage.Define(
-                LogLevel.Debug,
-                new EventId(1, "UnableToLocateDevelopmentCertificate"),
-                "Unable to locate an appropriate development https certificate.");
+    [LoggerMessage(0, LogLevel.Debug, "Using development certificate: {certificateSubjectName} (Thumbprint: {certificateThumbprint})", EventName = "LocatedDevelopmentCertificate")]
+    private static partial void LocatedDevelopmentCertificate(this ILogger<KestrelServer> logger, string certificateSubjectName, string certificateThumbprint);
 
-        private static readonly Action<ILogger, string, Exception?> _failedToLocateDevelopmentCertificateFile =
-            LoggerMessage.Define<string>(
-                LogLevel.Debug,
-                new EventId(2, "FailedToLocateDevelopmentCertificateFile"),
-                "Failed to locate the development https certificate at '{certificatePath}'.");
+    public static void LocatedDevelopmentCertificate(this ILogger<KestrelServer> logger, X509Certificate2 certificate) => LocatedDevelopmentCertificate(logger, certificate.Subject, certificate.Thumbprint);
 
-        private static readonly Action<ILogger, string, Exception?> _failedToLoadDevelopmentCertificate =
-            LoggerMessage.Define<string>(
-                LogLevel.Debug,
-                new EventId(3, "FailedToLoadDevelopmentCertificate"),
-                "Failed to load the development https certificate at '{certificatePath}'.");
+    [LoggerMessage(1, LogLevel.Debug, "Unable to locate an appropriate development https certificate.", EventName = "UnableToLocateDevelopmentCertificate")]
+    public static partial void UnableToLocateDevelopmentCertificate(this ILogger<KestrelServer> logger);
 
-        private static readonly Action<ILogger, Exception?> _badDeveloperCertificateState =
-            LoggerMessage.Define(
-                LogLevel.Error,
-                new EventId(4, "BadDeveloperCertificateState"),
-                CoreStrings.BadDeveloperCertificateState);
+    [LoggerMessage(2, LogLevel.Debug, "Failed to locate the development https certificate at '{certificatePath}'.", EventName = "FailedToLocateDevelopmentCertificateFile")]
+    public static partial void FailedToLocateDevelopmentCertificateFile(this ILogger<KestrelServer> logger, string certificatePath);
 
-        private static readonly Action<ILogger, string, Exception?> _developerCertificateFirstRun =
-            LoggerMessage.Define<string>(
-                LogLevel.Warning,
-                new EventId(5, "DeveloperCertificateFirstRun"),
-                "{Message}");
+    [LoggerMessage(3, LogLevel.Debug, "Failed to load the development https certificate at '{certificatePath}'.", EventName = "FailedToLoadDevelopmentCertificate")]
+    public static partial void FailedToLoadDevelopmentCertificate(this ILogger<KestrelServer> logger, string certificatePath);
 
-        private static readonly Action<ILogger, string, Exception?> _failedToLoadCertificate =
-            LoggerMessage.Define<string>(
-                LogLevel.Error,
-                new EventId(6, "MissingOrInvalidCertificateFile"),
-                "The certificate file at '{CertificateFilePath}' can not be found, contains malformed data or does not contain a certificate.");
+    [LoggerMessage(4, LogLevel.Error, BadDeveloperCertificateStateMessage, EventName = "BadDeveloperCertificateState")]
+    public static partial void BadDeveloperCertificateState(this ILogger<KestrelServer> logger);
 
-        private static readonly Action<ILogger, string, Exception?> _failedToLoadCertificateKey =
-            LoggerMessage.Define<string>(
-            LogLevel.Error,
-            new EventId(7, "MissingOrInvalidCertificateKeyFile"),
-            "The certificate key file at '{CertificateKeyFilePath}' can not be found, contains malformed data or does not contain a PEM encoded key in PKCS8 format.");
+    [LoggerMessage(5, LogLevel.Warning, "{Message}", EventName = "DeveloperCertificateFirstRun")]
+    public static partial void DeveloperCertificateFirstRun(this ILogger<KestrelServer> logger, string message);
 
-        public static void LocatedDevelopmentCertificate(this ILogger<KestrelServer> logger, X509Certificate2 certificate) => _locatedDevelopmentCertificate(logger, certificate.Subject, certificate.Thumbprint, null);
+    [LoggerMessage(6, LogLevel.Error, "The certificate file at '{CertificateFilePath}' can not be found, contains malformed data or does not contain a certificate.", EventName = "MissingOrInvalidCertificateFile")]
+    public static partial void FailedToLoadCertificate(this ILogger<KestrelServer> logger, string certificateFilePath);
 
-        public static void UnableToLocateDevelopmentCertificate(this ILogger<KestrelServer> logger) => _unableToLocateDevelopmentCertificate(logger, null);
-
-        public static void FailedToLocateDevelopmentCertificateFile(this ILogger<KestrelServer> logger, string certificatePath) => _failedToLocateDevelopmentCertificateFile(logger, certificatePath, null);
-
-        public static void FailedToLoadDevelopmentCertificate(this ILogger<KestrelServer> logger, string certificatePath) => _failedToLoadDevelopmentCertificate(logger, certificatePath, null);
-
-        public static void BadDeveloperCertificateState(this ILogger<KestrelServer> logger) => _badDeveloperCertificateState(logger, null);
-
-        public static void DeveloperCertificateFirstRun(this ILogger<KestrelServer> logger, string message) => _developerCertificateFirstRun(logger, message, null);
-
-        public static void FailedToLoadCertificate(this ILogger<KestrelServer> logger, string certificatePath) => _failedToLoadCertificate(logger, certificatePath, null);
-
-        public static void FailedToLoadCertificateKey(this ILogger<KestrelServer> logger, string certificateKeyPath) => _failedToLoadCertificateKey(logger, certificateKeyPath, null);
-    }
+    [LoggerMessage(7, LogLevel.Error, "The certificate key file at '{CertificateKeyFilePath}' can not be found, contains malformed data or does not contain a PEM encoded key in PKCS8 format.", EventName = "MissingOrInvalidCertificateKeyFile")]
+    public static partial void FailedToLoadCertificateKey(this ILogger<KestrelServer> logger, string certificateKeyFilePath);
 }

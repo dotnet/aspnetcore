@@ -168,12 +168,6 @@
     <input id="textbox-datetime-format-mirror" @bind="textboxDateTimeFormatValue" readonly />
 </p>
 <p>
-    DateTime (format):
-    <input id="textbox-datetime-format-invalid" @bind="textboxDateTimeFormatValue" type="text" @bind:format="MM-dd" />
-    <span id="textbox-datetime-format-invalid-value">@textboxDateTimeFormatValue</span>
-    <input id="textbox-datetime-format-invalid-mirror" @bind="textboxDateTimeFormatValue" readonly />
-</p>
-<p>
     DateTime (format / invalid value):
     <input id="textbox-datetime-format-invalid" @bind-value="textboxDateTimeFormatInvalidValue" type="text" @bind-value:format="MM-dd" />
     <span id="textbox-datetime-format-invalid-value">@textboxDateTimeFormatInvalidValue</span>
@@ -202,6 +196,78 @@
     <input id="textbox-nullable-datetimeoffset-format-invalid" @bind="textboxNullableDateTimeOffsetFormatInvalidValue" type="text" @bind:format="MM-dd" />
     <span id="textbox-nullable-datetimeoffset-format-invalid-value">@textboxNullableDateTimeOffsetFormatInvalidValue</span>
     <input id="textbox-nullable-datetimeoffset-format-invalid-mirror" @bind="textboxNullableDateTimeOffsetFormatInvalidValue" readonly />
+</p>
+<p>
+    DateOnly
+    <input id="textbox-dateonly" @bind="textboxDateOnlyValue" type="text" />
+    <span id="textbox-dateonly-value">@textboxDateOnlyValue</span>
+    <input id="textbox-dateonly-mirror" @bind="textboxDateOnlyValue" readonly />
+</p>
+<p>
+    Nullable DateOnly
+    <input id="textbox-nullable-dateonly" @bind="textboxNullableDateOnlyValue" type="text" />
+    <span id="textbox-nullable-dateonly-value">@textboxNullableDateOnlyValue</span>
+    <input id="textbox-nullable-dateonly-mirror" @bind="textboxNullableDateOnlyValue" readonly />
+</p>
+<p>
+    Nullable DateOnly (invalid input):
+    <input id="textbox-nullable-dateonly-invalid" @bind="textboxNullableDateOnlyInvalidValue" type="text" />
+    <span id="textbox-nullable-dateonly-invalid-value">@textboxNullableDateOnlyInvalidValue</span>
+    <input id="textbox-nullable-dateonly-invalid-mirror" @bind="textboxNullableDateOnlyInvalidValue" readonly />
+</p>
+<p>
+    DateOnly (format):
+    <input id="textbox-dateonly-format" @bind-value="textboxDateOnlyFormatValue" type="text" @bind-value:format="MM-dd" />
+    <span id="textbox-dateonly-format-value">@textboxDateOnlyFormatValue</span>
+    <input id="textbox-dateonly-format-mirror" @bind="textboxDateOnlyFormatValue" readonly />
+</p>
+<p>
+    DateOnly (format / invalid value):
+    <input id="textbox-dateonly-format-invalid" @bind-value="textboxDateOnlyFormatInvalidValue" type="text" @bind-value:format="MM-dd" />
+    <span id="textbox-dateonly-format-invalid-value">@textboxDateOnlyFormatInvalidValue</span>
+    <input id="textbox-dateonly-format-invalid-mirror" @bind="textboxDateOnlyFormatInvalidValue" readonly />
+</p>
+<p>
+    Nullable DateOnly (format):
+    <input id="textbox-nullable-dateonly-format" @bind="textboxNullableDateOnlyFormatValue" type="text" @bind:format="MM-dd" />
+    <span id="textbox-nullable-dateonly-format-value">@textboxNullableDateOnlyFormatValue</span>
+    <input id="textbox-nullable-dateonly-format-mirror" @bind="textboxNullableDateOnlyFormatValue" readonly />
+</p>
+<p>
+    TimeOnly
+    <input id="textbox-timeonly" @bind="textboxTimeOnlyValue" type="text" />
+    <span id="textbox-timeonly-value">@textboxTimeOnlyValue</span>
+    <input id="textbox-timeonly-mirror" @bind="textboxTimeOnlyValue" readonly />
+</p>
+<p>
+    Nullable TimeOnly
+    <input id="textbox-nullable-timeonly" @bind="textboxNullableTimeOnlyValue" type="text" />
+    <span id="textbox-nullable-timeonly-value">@textboxNullableTimeOnlyValue</span>
+    <input id="textbox-nullable-timeonly-mirror" @bind="textboxNullableTimeOnlyValue" readonly />
+</p>
+<p>
+    Nullable TimeOnly (invalid input):
+    <input id="textbox-nullable-timeonly-invalid" @bind="textboxNullableTimeOnlyInvalidValue" type="text" />
+    <span id="textbox-nullable-timeonly-invalid-value">@textboxNullableTimeOnlyInvalidValue</span>
+    <input id="textbox-nullable-timeonly-invalid-mirror" @bind="textboxNullableTimeOnlyInvalidValue" readonly />
+</p>
+<p>
+    TimeOnly (format):
+    <input id="textbox-timeonly-format" @bind-value="textboxTimeOnlyFormatValue" type="text" @bind-value:format="HH:mm:ss" />
+    <span id="textbox-timeonly-format-value">@textboxTimeOnlyFormatValue</span>
+    <input id="textbox-timeonly-format-mirror" @bind="textboxTimeOnlyFormatValue" readonly />
+</p>
+<p>
+    TimeOnly (format / invalid value):
+    <input id="textbox-timeonly-format-invalid" @bind-value="textboxTimeOnlyFormatInvalidValue" type="text" @bind-value:format="HH:mm:ss" />
+    <span id="textbox-timeonly-format-invalid-value">@textboxTimeOnlyFormatInvalidValue</span>
+    <input id="textbox-timeonly-format-invalid-mirror" @bind="textboxTimeOnlyFormatInvalidValue" readonly />
+</p>
+<p>
+    Nullable TimeOnly (format):
+    <input id="textbox-nullable-timeonly-format" @bind="textboxNullableTimeOnlyFormatValue" type="text" @bind:format="HH:mm:ss" />
+    <span id="textbox-nullable-timeonly-format-value">@textboxNullableTimeOnlyFormatValue</span>
+    <input id="textbox-nullable-timeonly-format-mirror" @bind="textboxNullableTimeOnlyFormatValue" readonly />
 </p>
 
 <h2>Text Area</h2>
@@ -284,6 +350,30 @@
     <span id="datetime-local-textbox-nullable-datetime-value">@dateTimeLocalTextboxNullableDateTimeValue</span>
     <input id="datetime-local-textbox-nullable-datetime-mirror" @bind="dateTimeLocalTextboxNullableDateTimeValue" readonly />
 </p>
+<p>
+    DateOnly:
+    <input id="datetime-local-textbox-dateonly" @bind="dateTimeLocalTextboxDateOnlyValue" type="datetime-local" />
+    <span id="datetime-local-textbox-dateonly-value">@dateTimeLocalTextboxDateOnlyValue</span>
+    <input id="datetime-local-textbox-dateonly-mirror" @bind="dateTimeLocalTextboxDateOnlyValue" readonly />
+</p>
+<p>
+    Nullable DateOnly:
+    <input id="datetime-local-textbox-nullable-dateonly" @bind="dateTimeLocalTextboxNullableDateOnlyValue" type="datetime-local" />
+    <span id="datetime-local-textbox-nullable-dateonly-value">@dateTimeLocalTextboxNullableDateOnlyValue</span>
+    <input id="datetime-local-textbox-nullable-dateonly-mirror" @bind="dateTimeLocalTextboxNullableDateOnlyValue" readonly />
+</p>
+<p>
+    TimeOnly:
+    <input id="datetime-local-textbox-timeonly" @bind="dateTimeLocalTextboxTimeOnlyValue" type="datetime-local" />
+    <span id="datetime-local-textbox-timeonly-value">@dateTimeLocalTextboxTimeOnlyValue</span>
+    <input id="datetime-local-textbox-timeonly-mirror" @bind="dateTimeLocalTextboxTimeOnlyValue" readonly />
+</p>
+<p>
+    Nullable TimeOnly:
+    <input id="datetime-local-textbox-nullable-timeonly" @bind="dateTimeLocalTextboxNullableTimeOnlyValue" type="datetime-local" />
+    <span id="datetime-local-textbox-nullable-timeonly-value">@dateTimeLocalTextboxNullableTimeOnlyValue</span>
+    <input id="datetime-local-textbox-nullable-timeonly-mirror" @bind="dateTimeLocalTextboxNullableTimeOnlyValue" readonly />
+</p>
 
 <h3>month</h3>
 <p>
@@ -297,6 +387,18 @@
     <input id="month-textbox-nullable-datetime" @bind-value="monthTextboxNullableDateTimeValue" type="month" />
     <span id="month-textbox-nullable-datetime-value">@monthTextboxNullableDateTimeValue</span>
     <input id="month-textbox-nullable-datetime-mirror" @bind="monthTextboxNullableDateTimeValue" readonly />
+</p>
+<p>
+    DateOnly:
+    <input id="month-textbox-dateonly" @bind="monthTextboxDateOnlyValue" type="month" />
+    <span id="month-textbox-dateonly-value">@monthTextboxDateOnlyValue</span>
+    <input id="month-textbox-dateonly-mirror" @bind="monthTextboxDateOnlyValue" readonly />
+</p>
+<p>
+    Nullable DateOnly:
+    <input id="month-textbox-nullable-dateonly" @bind="monthTextboxNullableDateOnlyValue" type="month" />
+    <span id="month-textbox-nullable-dateonly-value">@monthTextboxNullableDateOnlyValue</span>
+    <input id="month-textbox-nullable-dateonly-mirror" @bind="monthTextboxNullableDateOnlyValue" readonly />
 </p>
 
 <h3>time</h3>
@@ -312,6 +414,18 @@
     <span id="time-textbox-nullable-datetime-value">@timeTextboxNullableDateTimeValue</span>
     <input id="time-textbox-nullable-datetime-mirror" @bind="timeTextboxNullableDateTimeValue" readonly />
 </p>
+<p>
+    TimeOnly:
+    <input id="time-textbox-timeonly" @bind="timeTextboxTimeOnlyValue" type="time" />
+    <span id="time-textbox-timeonly-value">@timeTextboxTimeOnlyValue</span>
+    <input id="time-textbox-timeonly-mirror" @bind="timeTextboxTimeOnlyValue" readonly />
+</p>
+<p>
+    Nullable TimeOnly:
+    <input id="time-textbox-nullable-timeonly" @bind-value="timeTextboxNullableTimeOnlyValue" type="time" />
+    <span id="time-textbox-nullable-timeonly-value">@timeTextboxNullableTimeOnlyValue</span>
+    <input id="time-textbox-nullable-timeonly-mirror" @bind="timeTextboxNullableTimeOnlyValue" readonly />
+</p>
 
 <h3>time with step (supports seconds)</h3>
 <p>
@@ -325,6 +439,18 @@
     <input id="time-step-textbox-nullable-datetime" @bind-value="timeStepTextboxNullableDateTimeValue" type="time" step="1" />
     <span id="time-step-textbox-nullable-datetime-value">@timeStepTextboxNullableDateTimeValue</span>
     <input id="time-step-textbox-nullable-datetime-mirror" @bind="timeStepTextboxNullableDateTimeValue" readonly />
+</p>
+<p>
+    TimeOnly:
+    <input id="time-step-textbox-timeonly" @bind="timeStepTextboxTimeOnlyValue" type="time" step="1" />
+    <span id="time-step-textbox-timeonly-value">@timeStepTextboxTimeOnlyValue.ToLongTimeString()</span>
+    <input id="time-step-textbox-timeonly-mirror" @bind="timeStepTextboxTimeOnlyValue" @bind:format="HH:mm:ss" readonly />
+</p>
+<p>
+    Nullable TimeOnly:
+    <input id="time-step-textbox-nullable-timeonly" @bind-value="timeStepTextboxNullableTimeOnlyValue" type="time" step="1" />
+    <span id="time-step-textbox-nullable-timeonly-value">@timeStepTextboxNullableTimeOnlyValue?.ToLongTimeString()</span>
+    <input id="time-step-textbox-nullable-timeonly-mirror" @bind="timeStepTextboxNullableTimeOnlyValue" @bind:format="HH:mm:ss" readonly />
 </p>
 
 @code {
@@ -383,6 +509,34 @@
 
     DateTime timeStepTextboxDateTimeValue = DateTime.Now.Date.Add(new TimeSpan(8, 5, 30));
     DateTime? timeStepTextboxNullableDateTimeValue = null;
+
+    DateOnly textboxDateOnlyValue = new DateOnly(1985, 3, 4);
+    DateOnly? textboxNullableDateOnlyValue = null;
+    DateOnly? textboxNullableDateOnlyInvalidValue = null;
+    DateOnly textboxDateOnlyFormatValue = new DateOnly(1985, 3, 4);
+    DateOnly textboxDateOnlyFormatInvalidValue = new DateOnly(1985, 3, 4);
+    DateOnly? textboxNullableDateOnlyFormatValue = null;
+
+    DateOnly dateTimeLocalTextboxDateOnlyValue = new DateOnly(1985, 3, 4);
+    DateOnly? dateTimeLocalTextboxNullableDateOnlyValue = null;
+
+    DateOnly monthTextboxDateOnlyValue = new DateOnly(1985, 3, 4);
+    DateOnly? monthTextboxNullableDateOnlyValue = null;
+
+    TimeOnly textboxTimeOnlyValue = new TimeOnly(8, 5);
+    TimeOnly? textboxNullableTimeOnlyValue = null;
+    TimeOnly? textboxNullableTimeOnlyInvalidValue = null;
+    TimeOnly textboxTimeOnlyFormatValue = new TimeOnly(8, 5);
+    TimeOnly textboxTimeOnlyFormatInvalidValue = new TimeOnly(8, 5);
+    TimeOnly? textboxNullableTimeOnlyFormatValue = null;
+
+    TimeOnly dateTimeLocalTextboxTimeOnlyValue = new TimeOnly(8, 5);
+    TimeOnly? dateTimeLocalTextboxNullableTimeOnlyValue = null;
+
+    TimeOnly timeTextboxTimeOnlyValue = new TimeOnly(8, 5);
+    TimeOnly? timeTextboxNullableTimeOnlyValue = null;
+    TimeOnly timeStepTextboxTimeOnlyValue = new TimeOnly(8, 5, 30);
+    TimeOnly? timeStepTextboxNullableTimeOnlyValue = null;
 
     bool includeFourthOption = false;
     enum SelectableValue { First, Second, Third, Fourth, Fifth, Sixth }

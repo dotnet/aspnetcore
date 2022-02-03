@@ -1,0 +1,162 @@
+﻿@using BasicTestApp.CustomEventTypesNamespace
+@using Microsoft.JSInterop
+@inject IJSRuntime JS
+
+<h3 id="event-custom-args">Custom event types</h3>
+
+<p>This component exercises various scenarios around custom event types and arguments.</p>
+
+<div id="test-event-target" style="border: 1px solid black; background: silver; padding: 1em; margin-bottom: 1em;"
+     @onkeydown="@(e => { LogMessage("Received native keydown event"); })"
+     @ontestevent="@HandleTestEvent"
+     @onkeydown.testvariant="@HandleCustomKeyDown"
+     @onkeydown.yetanother="@HandleYetAnotherKeyboardEvent"
+     @oncustommouseover="@(e => { LogMessage("Received custom mouseover event"); })"
+     @onsendjsobject="HandleEventWithCustomSerializedData">
+    Event target
+    <div id="test-event-target-child" style="background: #afa; padding: 1em;">
+        Child
+        <p @onkeydown.testvariant:preventDefault="@customKeyDownPreventDefault"
+           @onkeydown.testvariant:stopPropagation="@customKeyDownStopPropagation">
+            <input placeholder="Type into me" />
+        </p>
+    </div>
+</div>
+
+<p>
+    <button id="trigger-testevent-directly"
+            onclick="document.getElementById('test-event-target-child').dispatchEvent(new CustomEvent('testevent', { bubbles: true }))">
+        Trigger testevent directly
+    </button>
+
+    <button id="register-testevent-with-no-createventargs"
+            onclick="Blazor.registerCustomEventType('testevent', {})">
+        Register testevent with no createventargs
+    </button>
+
+    <button id="register-testevent-with-createventargs-that-returns-null"
+            onclick="Blazor.registerCustomEventType('testevent', { createEventArgs: e => null })">
+        Register testevent with createventargs that returns null
+    </button>
+
+    <button id="register-testevent-with-createventargs-that-supplies-args"
+            onclick="Blazor.registerCustomEventType('testevent', { createEventArgs: e => ({ myProp: `Native event target ID=${e.target.id}` }) })">
+        Register testevent with createventargs that supplies args
+    </button>
+</p>
+
+<p>
+    <button id="register-custom-keydown"
+            onclick="Blazor.registerCustomEventType('keydown.testvariant', { browserEventName: 'keydown', createEventArgs: event => ({ customKeyInfo: event.key }) })">
+        Register custom keydown event
+    </button>
+
+    <button id="register-yet-another-keydown"
+            onclick="Blazor.registerCustomEventType('keydown.yetanother', { browserEventName: 'keydown', createEventArgs: event => ({ youPressed: event.key }) })">
+        Register yet another custom keyboard event
+    </button>
+
+    <button id="register-custom-mouseover"
+            onclick="Blazor.registerCustomEventType('custommouseover', { browserEventName: 'mouseover' })">
+        Register custom mouseover event (which has no corresponding native listener)
+    </button>
+</p>
+
+<p>
+    This covers sending JS object references, .NET object references, and byte arrays:
+
+    <button id="register-sendjsobject" onclick="registerEventWithCustomSerialization()">
+        Register custom event that sends custom-serialized data
+    </button>
+
+    <button id="trigger-sendjsobject-event-directly" onclick="triggerEventWithCustomSerialization()">
+        Trigger event that sends custom-serialized data
+    </button>
+</p>
+
+<p>
+    <label>
+        <input type="checkbox" id="custom-keydown-prevent-default" @bind="customKeyDownPreventDefault" />
+        Custom keydown: prevent default
+    </label>
+</p>
+
+<p>
+    <label>
+        <input type="checkbox" id="custom-keydown-stop-propagation" @bind="customKeyDownStopPropagation" />
+        Custom keydown: stop propagation
+    </label>
+</p>
+
+<h3>Event log</h3>
+
+<textarea id="test-log" readonly @bind="logValue" cols="100" rows="10"></textarea>
+<button id="clear-log" @onclick="@(() => { logValue = string.Empty; })">Clear log</button>
+
+<script suppress-error="BL9992">
+    let customEventArgDotNetObjectReference;
+
+    function setDotNetObjectReferenceForEventArgs(value) {
+        customEventArgDotNetObjectReference = value;
+    }
+
+    function registerEventWithCustomSerialization() {
+        Blazor.registerCustomEventType('sendjsobject', { createEventArgs: event => event.detail });
+    }
+
+    function triggerEventWithCustomSerialization() {
+        document.getElementById('test-event-target-child').dispatchEvent(new CustomEvent('sendjsobject', {
+            bubbles: true,
+            detail: {
+                jsObject: DotNet.createJSObjectReference({ getMyValue: () => 'Hello!' }),
+                dotNetObject: customEventArgDotNetObjectReference,
+                byteArray: new Uint8Array([ 1, 1, 2, 3, 5, 8, 13 ])
+            }
+        }));
+    }
+</script>
+
+@code {
+    string logValue = string.Empty;
+    bool customKeyDownPreventDefault;
+    bool customKeyDownStopPropagation;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var value = new DotNetType("This is correct");
+            await JS.InvokeVoidAsync("setDotNetObjectReferenceForEventArgs", DotNetObjectReference.Create(value));
+        }
+    }
+
+    void LogMessage(string message)
+    {
+        logValue += message + Environment.NewLine;
+    }
+
+    void HandleTestEvent(TestEventArgs eventArgs)
+    {
+        var args = eventArgs == null ? "null" : $"{{ MyProp={eventArgs.MyProp ?? "null"} }}";
+        LogMessage($"Received testevent with args '{args}'");
+    }
+
+    void HandleCustomKeyDown(TestKeyDownEventArgs eventArgs)
+    {
+        LogMessage($"You pressed: {eventArgs.CustomKeyInfo}");
+    }
+
+    void HandleYetAnotherKeyboardEvent(YetAnotherCustomKeyboardEventArgs eventArgs)
+    {
+        LogMessage($"Yet another aliased event received: {eventArgs.YouPressed}");
+    }
+
+    async Task HandleEventWithCustomSerializedData(EventWithCustomSerializedDataEventArgs eventArgs)
+    {
+        LogMessage($"Received DotNetObject with property: {eventArgs.DotNetObject.Value.Property}");
+        LogMessage($"Received byte array of length {eventArgs.ByteArray.Length} and first entry {eventArgs.ByteArray[0]}");
+
+        var innerValue = await eventArgs.JsObject.InvokeAsync<string>("getMyValue", null);
+        LogMessage($"Event with IJSObjectReference received: {innerValue}");
+    }
+}

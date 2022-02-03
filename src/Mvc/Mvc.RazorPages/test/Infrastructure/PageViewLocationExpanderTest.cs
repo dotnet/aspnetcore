@@ -1,175 +1,172 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Razor;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
+namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
+
+public class PageViewLocationExpanderTest
 {
-    public class PageViewLocationExpanderTest
+    [Fact]
+    public void PopulateValues_DoesNothing()
     {
-        [Fact]
-        public void PopulateValues_DoesNothing()
+        // Arrange
+        var context = CreateContext();
+
+        var expander = new PageViewLocationExpander();
+
+        // Act
+        expander.PopulateValues(context);
+
+        // Assert
+        Assert.Empty(context.Values);
+    }
+
+    [Fact]
+    public void ExpandLocations_NoOp_ForNonPage()
+    {
+        // Arrange
+        var context = CreateContext(pageName: null);
+        var locations = new string[]
         {
-            // Arrange
-            var context = CreateContext();
-
-            var expander = new PageViewLocationExpander();
-
-            // Act
-            expander.PopulateValues(context);
-
-            // Assert
-            Assert.Empty(context.Values);
-        }
-
-        [Fact]
-        public void ExpandLocations_NoOp_ForNonPage()
-        {
-            // Arrange
-            var context = CreateContext(pageName: null);
-            var locations = new string[]
-            {
                 "/ignore-me",
-            };
+        };
 
-            var expander = new PageViewLocationExpander();
+        var expander = new PageViewLocationExpander();
 
-            // Act
-            var actual = expander.ExpandViewLocations(context, locations);
+        // Act
+        var actual = expander.ExpandViewLocations(context, locations);
 
-            // Assert
-            Assert.Equal(locations, actual);
-        }
+        // Assert
+        Assert.Equal(locations, actual);
+    }
 
-        [Fact]
-        public void ExpandLocations_NoOp_ForNonPageWithPageName()
+    [Fact]
+    public void ExpandLocations_NoOp_ForNonPageWithPageName()
+    {
+        // Verifies the fix for https://github.com/aspnet/Mvc/issues/6660. This ensures that when PageViewLocationExpander is called
+        // from a non-Razor Page with a route value for "
+        // Arrange
+        var context = CreateContext(pageName: "test");
+        context.ActionContext.ActionDescriptor = new ControllerActionDescriptor();
+        var locations = new string[]
         {
-            // Verifies the fix for https://github.com/aspnet/Mvc/issues/6660. This ensures that when PageViewLocationExpander is called
-            // from a non-Razor Page with a route value for "
-            // Arrange
-            var context = CreateContext(pageName: "test");
-            context.ActionContext.ActionDescriptor = new ControllerActionDescriptor();
-            var locations = new string[]
-            {
                 "/ignore-me",
-            };
+        };
 
-            var expander = new PageViewLocationExpander();
+        var expander = new PageViewLocationExpander();
 
-            // Act
-            var actual = expander.ExpandViewLocations(context, locations);
+        // Act
+        var actual = expander.ExpandViewLocations(context, locations);
 
-            // Assert
-            Assert.Equal(locations, actual);
-        }
+        // Assert
+        Assert.Equal(locations, actual);
+    }
 
-        [Fact]
-        public void ExpandLocations_NoOp_WhenLocationDoesNotContainPageToken()
+    [Fact]
+    public void ExpandLocations_NoOp_WhenLocationDoesNotContainPageToken()
+    {
+        // Arrange
+        var context = CreateContext(pageName: null);
+        var locations = new string[]
         {
-            // Arrange
-            var context = CreateContext(pageName: null);
-            var locations = new string[]
-            {
                 "/ignore-me",
-            };
+        };
 
-            var expander = new PageViewLocationExpander();
+        var expander = new PageViewLocationExpander();
 
-            // Act
-            var actual = expander.ExpandViewLocations(context, locations);
+        // Act
+        var actual = expander.ExpandViewLocations(context, locations);
 
-            // Assert
-            Assert.Equal(locations, actual);
-        }
+        // Assert
+        Assert.Equal(locations, actual);
+    }
 
-        [Theory]
-        [InlineData("/Index", new string[] { "/{0}.cshtml" })]
-        [InlineData("/Edit", new string[] { "/{0}.cshtml" })]
-        [InlineData("/Customers/Add", new string[] { "/Customers/{0}.cshtml", "/{0}.cshtml" })]
-        public void ExpandLocations_ExpandsDirectories_WhenLocationContainsPage(
-            string pageName,
-            string[] expected)
+    [Theory]
+    [InlineData("/Index", new string[] { "/{0}.cshtml" })]
+    [InlineData("/Edit", new string[] { "/{0}.cshtml" })]
+    [InlineData("/Customers/Add", new string[] { "/Customers/{0}.cshtml", "/{0}.cshtml" })]
+    public void ExpandLocations_ExpandsDirectories_WhenLocationContainsPage(
+        string pageName,
+        string[] expected)
+    {
+        // Arrange
+        var context = CreateContext(pageName: pageName);
+
+        var locations = new string[]
         {
-            // Arrange
-            var context = CreateContext(pageName: pageName);
-
-            var locations = new string[]
-            {
                 "/{1}/{0}.cshtml",
-            };
+        };
 
-            var expander = new PageViewLocationExpander();
+        var expander = new PageViewLocationExpander();
 
-            // Act
-            var actual = expander.ExpandViewLocations(context, locations);
+        // Act
+        var actual = expander.ExpandViewLocations(context, locations);
 
-            // Assert
-            Assert.Equal(expected, actual.ToArray());
-        }
+        // Assert
+        Assert.Equal(expected, actual.ToArray());
+    }
 
-        [Fact]
-        public void ExpandLocations_ExpandsDirectories_MultipleLocations()
+    [Fact]
+    public void ExpandLocations_ExpandsDirectories_MultipleLocations()
+    {
+        // Arrange
+        var context = CreateContext(pageName: "/Customers/Edit");
+
+        var locations = new string[]
         {
-            // Arrange
-            var context = CreateContext(pageName: "/Customers/Edit");
-
-            var locations = new string[]
-            {
                 "/Pages/{1}/{0}.cshtml",
                 "/More/Paths/{1}/{0}.cshtml",
                 "/Views/Shared/{0}.cshtml",
-            };
+        };
 
-            var expected = new string[]
-            {
+        var expected = new string[]
+        {
                 "/Pages/Customers/{0}.cshtml",
                 "/Pages/{0}.cshtml",
                 "/More/Paths/Customers/{0}.cshtml",
                 "/More/Paths/{0}.cshtml",
                 "/Views/Shared/{0}.cshtml",
-            };
+        };
 
-            var expander = new PageViewLocationExpander();
+        var expander = new PageViewLocationExpander();
 
-            // Act
-            var actual = expander.ExpandViewLocations(context, locations);
+        // Act
+        var actual = expander.ExpandViewLocations(context, locations);
 
-            // Assert
-            Assert.Equal(expected, actual.ToArray());
-        }
+        // Assert
+        Assert.Equal(expected, actual.ToArray());
+    }
 
-        [Theory]
-        [InlineData("/Index", new [] { "/Areas/{2}/Pages/{0}.cshtml" })]
-        [InlineData("/Manage/User", new [] { "/Areas/{2}/Pages/Manage/{0}.cshtml", "/Areas/{2}/Pages/{0}.cshtml" })]
-        public void ExpandLocations_ExpandsAreaPaths(string pageName, string[] expected)
+    [Theory]
+    [InlineData("/Index", new[] { "/Areas/{2}/Pages/{0}.cshtml" })]
+    [InlineData("/Manage/User", new[] { "/Areas/{2}/Pages/Manage/{0}.cshtml", "/Areas/{2}/Pages/{0}.cshtml" })]
+    public void ExpandLocations_ExpandsAreaPaths(string pageName, string[] expected)
+    {
+        // Arrange
+        var context = CreateContext(pageName: pageName);
+        var locations = new[]
         {
-            // Arrange
-            var context = CreateContext(pageName: pageName);
-            var locations = new[]
-            {
                 "/Areas/{2}/Pages/{1}/{0}.cshtml",
             };
 
-            var expander = new PageViewLocationExpander();
+        var expander = new PageViewLocationExpander();
 
-            // Act
-            var actual = expander.ExpandViewLocations(context, locations);
+        // Act
+        var actual = expander.ExpandViewLocations(context, locations);
 
-            // Assert
-            Assert.Equal(expected, actual.ToArray());
-        }
+        // Assert
+        Assert.Equal(expected, actual.ToArray());
+    }
 
-        [Fact]
-        public void ExpandLocations_ExpandsAreaPaths_MultipleLocations()
+    [Fact]
+    public void ExpandLocations_ExpandsAreaPaths_MultipleLocations()
+    {
+        // Arrange
+        var context = CreateContext(pageName: "/Customers/Edit");
+        var locations = new[]
         {
-            // Arrange
-            var context = CreateContext(pageName: "/Customers/Edit");
-            var locations = new[]
-            {
                 "/Areas/{2}/Pages/{1}/{0}.cshtml",
                 "/Areas/{2}/Pages/Shared/{0}.cshtml",
                 "/Areas/{2}/Views/Shared/{0}.cshtml",
@@ -179,8 +176,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 "/Pages/Shared/{0}.cshtml",
             };
 
-            var expected = new[]
-            {
+        var expected = new[]
+        {
                 "/Areas/{2}/Pages/Customers/{0}.cshtml",
                 "/Areas/{2}/Pages/{0}.cshtml",
                 "/Areas/{2}/Pages/Shared/{0}.cshtml",
@@ -192,32 +189,31 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 "/Pages/Shared/{0}.cshtml",
             };
 
-            var expander = new PageViewLocationExpander();
+        var expander = new PageViewLocationExpander();
 
-            // Act
-            var actual = expander.ExpandViewLocations(context, locations);
+        // Act
+        var actual = expander.ExpandViewLocations(context, locations);
 
-            // Assert
-            Assert.Equal(expected, actual.ToArray());
-        }
+        // Assert
+        Assert.Equal(expected, actual.ToArray());
+    }
 
-        private ViewLocationExpanderContext CreateContext(string viewName = "_LoginPartial.cshtml", string pageName = null)
+    private ViewLocationExpanderContext CreateContext(string viewName = "_LoginPartial.cshtml", string pageName = null)
+    {
+        var actionContext = new ActionContext
         {
-            var actionContext = new ActionContext
-            {
-                ActionDescriptor = new PageActionDescriptor(),
-            };
+            ActionDescriptor = new PageActionDescriptor(),
+        };
 
-            return new ViewLocationExpanderContext(
-                actionContext,
-                viewName,
-                controllerName: null,
-                areaName: null,
-                pageName: pageName,
-                isMainPage: true)
-            {
-                Values = new Dictionary<string, string>(),
-            };
-        }
+        return new ViewLocationExpanderContext(
+            actionContext,
+            viewName,
+            controllerName: null,
+            areaName: null,
+            pageName: pageName,
+            isMainPage: true)
+        {
+            Values = new Dictionary<string, string>(),
+        };
     }
 }

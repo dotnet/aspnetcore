@@ -1,5 +1,9 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 import { ReconnectDisplay } from './ReconnectDisplay';
 import { Logger, LogLevel } from '../Logging/Logger';
+import { Blazor } from '../../GlobalExports';
 
 export class DefaultReconnectDisplay implements ReconnectDisplay {
   modal: HTMLDivElement;
@@ -8,7 +12,7 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
 
   button: HTMLButtonElement;
 
-  addedToDom: boolean = false;
+  addedToDom = false;
 
   reloadParagraph: HTMLParagraphElement;
 
@@ -36,12 +40,28 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
     ];
 
     this.modal.style.cssText = modalStyles.join(';');
-    this.modal.innerHTML = '<h5 style="margin-top: 20px"></h5><button style="margin:5px auto 5px">Retry</button><p>Alternatively, <a href>reload</a></p>';
-    this.message = this.modal.querySelector('h5')!;
-    this.button = this.modal.querySelector('button')!;
-    this.reloadParagraph = this.modal.querySelector('p')!;
+
+    this.message = this.document.createElement('h5') as HTMLHeadingElement;
+    this.message.style.cssText = 'margin-top: 20px';
+
+    this.button = this.document.createElement('button') as HTMLButtonElement;
+    this.button.style.cssText = 'margin:5px auto 5px';
+    this.button.textContent = 'Retry';
+
+    const link = this.document.createElement('a');
+    link.addEventListener('click', () => location.reload());
+    link.textContent = 'reload';
+
+    this.reloadParagraph = this.document.createElement('p') as HTMLParagraphElement;
+    this.reloadParagraph.textContent = 'Alternatively, ';
+    this.reloadParagraph.appendChild(link);
+
+    this.modal.appendChild(this.message);
+    this.modal.appendChild(this.button);
+    this.modal.appendChild(this.reloadParagraph);
+
     this.loader = this.getLoader();
-    
+
     this.message.after(this.loader);
 
     this.button.addEventListener('click', async () => {
@@ -52,17 +72,16 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
         // - true to mean success
         // - false to mean we reached the server, but it rejected the connection (e.g., unknown circuit ID)
         // - exception to mean we didn't reach the server (this can be sync or async)
-        const successful = await window['Blazor'].reconnect();
+        const successful = await Blazor.reconnect!();
         if (!successful) {
           this.rejected();
         }
-      } catch (err) {
+      } catch (err: unknown) {
         // We got an exception, server is currently unavailable
-        this.logger.log(LogLevel.Error, err);
+        this.logger.log(LogLevel.Error, err as Error);
         this.failed();
       }
     });
-    this.reloadParagraph.querySelector('a')!.addEventListener('click', () => location.reload());
   }
 
   show(): void {
@@ -97,16 +116,34 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
     this.button.style.display = 'block';
     this.reloadParagraph.style.display = 'none';
     this.loader.style.display = 'none';
-    this.message.innerHTML = 'Reconnection failed. Try <a href>reloading</a> the page if you\'re unable to reconnect.';
-    this.message.querySelector('a')!.addEventListener('click', () => location.reload());
+
+    const errorDescription = this.document.createTextNode('Reconnection failed. Try ');
+
+    const link = this.document.createElement('a');
+    link.textContent = 'reloading';
+    link.setAttribute('href', '');
+    link.addEventListener('click', () => location.reload());
+
+    const errorInstructions = this.document.createTextNode(' the page if you\'re unable to reconnect.');
+
+    this.message.replaceChildren(errorDescription, link, errorInstructions);
   }
 
   rejected(): void {
     this.button.style.display = 'none';
     this.reloadParagraph.style.display = 'none';
     this.loader.style.display = 'none';
-    this.message.innerHTML = 'Could not reconnect to the server. <a href>Reload</a> the page to restore functionality.';
-    this.message.querySelector('a')!.addEventListener('click', () => location.reload());
+
+    const errorDescription = this.document.createTextNode('Could not reconnect to the server. ');
+
+    const link = this.document.createElement('a');
+    link.textContent = 'Reload';
+    link.setAttribute('href', '');
+    link.addEventListener('click', () => location.reload());
+
+    const errorInstructions = this.document.createTextNode(' the page to restore functionality.');
+
+    this.message.replaceChildren(errorDescription, link, errorInstructions);
   }
 
   private getLoader(): HTMLDivElement {
@@ -118,16 +155,13 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
       'border-radius: 50%',
       'width: 2em',
       'height: 2em',
-      'display: inline-block'
+      'display: inline-block',
     ];
 
     loader.style.cssText = loaderStyles.join(';');
-    loader.animate([
-      { transform: 'rotate(0deg)' },
-      { transform: 'rotate(360deg)' }
-    ], { 
+    loader.animate([{ transform: 'rotate(0deg)' }, { transform: 'rotate(360deg)' }], {
       duration: 2000,
-      iterations: Infinity
+      iterations: Infinity,
     });
 
     return loader;

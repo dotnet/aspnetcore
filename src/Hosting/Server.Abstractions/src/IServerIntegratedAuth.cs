@@ -1,21 +1,20 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Hosting.Server
+namespace Microsoft.AspNetCore.Hosting.Server;
+
+/// <summary>
+/// Used by servers to advertise if they support integrated Windows authentication, if it's enabled, and it's scheme.
+/// </summary>
+public interface IServerIntegratedAuth
 {
     /// <summary>
-    /// Used by servers to advertise if they support integrated Windows authentication, if it's enabled, and it's scheme.
+    /// Indicates if integrated Windows authentication is enabled for the current application instance.
     /// </summary>
-    public interface IServerIntegratedAuth
-    {
-        /// <summary>
-        /// Indicates if integrated Windows authentication is enabled for the current application instance.
-        /// </summary>
-        bool IsEnabled { get; }
+    bool IsEnabled { get; }
 
-        /// <summary>
-        /// The name of the authentication scheme for the server authentication handler.
-        /// </summary>
-        string AuthenticationScheme { get; }
-    }
+    /// <summary>
+    /// The name of the authentication scheme for the server authentication handler.
+    /// </summary>
+    string AuthenticationScheme { get; }
 }

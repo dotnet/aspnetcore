@@ -12,6 +12,8 @@ Microsoft.Extensions.Diagnostics.HealthChecks.IHealthChecksBuilder
     <PackageTags>diagnostics;healthchecks</PackageTags>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <Nullable>enable</Nullable>
+    <!-- workaround https://github.com/dotnet/roslyn/issues/52527 -->
+    <NoWarn>$(NoWarn);SYSLIB1006</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

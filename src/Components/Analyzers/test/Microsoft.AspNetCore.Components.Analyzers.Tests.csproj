@@ -4,6 +4,7 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <BaseOutputPath />
+    <NoWarn>$(NoWarn);IDE0055;IDE0161</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

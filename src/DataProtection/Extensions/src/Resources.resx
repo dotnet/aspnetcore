@@ -118,12 +118,12 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="CryptCommon_GenericError" xml:space="preserve">
-    <value>An error occurred during a cryptographic operation.</value>
+    <value>An error occurred during a cryptographic operation. For more information go to http://aka.ms/dataprotectionwarning</value>
   </data>
   <data name="TimeLimitedDataProtector_PayloadExpired" xml:space="preserve">
-    <value>The payload expired at {0}.</value>
+    <value>The payload expired at {0}. For more information go to http://aka.ms/dataprotectionwarning</value>
   </data>
   <data name="TimeLimitedDataProtector_PayloadInvalid" xml:space="preserve">
-    <value>The payload is invalid.</value>
+    <value>The payload is invalid. For more information go to http://aka.ms/dataprotectionwarning</value>
   </data>
 </root>

@@ -7,16 +7,16 @@
    </PropertyGroup>
 
   <ItemGroup>
-    <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
-    <Compile Remove="TestFiles\TagHelpersInCodeBlocksAnalyzerTest\*.*" />
-    <Content Include="TestFiles\**\*.*" CopyToPublishDirectory="PreserveNewest" />
+    <Compile Include="$(SharedSourceRoot)AnalyzerTesting\TestReferences.cs" LinkBase="AnalyzerTesting" />
+    <Compile Include="$(SharedSourceRoot)AnalyzerTesting\TestCompilation.cs" LinkBase="AnalyzerTesting" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Mvc.Analyzers\src\Microsoft.AspNetCore.Mvc.Analyzers.csproj" />
-    <ProjectReference Include="$(RepoRoot)src\Analyzers\Microsoft.AspNetCore.Analyzer.Testing\src\Microsoft.AspNetCore.Analyzer.Testing.csproj" />
+    <Reference Include="Microsoft.Extensions.DependencyModel" />
     <Reference Include="Microsoft.AspNetCore.Mvc" />
     <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
+    <Reference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing.XUnit" />
   </ItemGroup>
 
 </Project>

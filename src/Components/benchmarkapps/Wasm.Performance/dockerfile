@@ -1,10 +1,10 @@
-FROM mcr.microsoft.com/dotnet/sdk:5.0.102-ca-patch-buster-slim AS build
+FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
 
 ENV StressRunDuration=0
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Setup for nodejs
-RUN curl -sL https://deb.nodesource.com/setup_13.x | bash -
+RUN curl -sL https://deb.nodesource.com/setup_16.x | bash -
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \

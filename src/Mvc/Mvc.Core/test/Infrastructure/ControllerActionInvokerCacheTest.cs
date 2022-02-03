@@ -1,7 +1,6 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -13,117 +12,115 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.Infrastructure
+namespace Microsoft.AspNetCore.Mvc.Infrastructure;
+
+public class ControllerActionInvokerCacheTest
 {
-    public class ControllerActionInvokerCacheTest
+    [Fact]
+    public void GetControllerActionMethodExecutor_CachesFilters()
     {
-        [Fact]
-        public void GetControllerActionMethodExecutor_CachesFilters()
-        {
-            // Arrange
-            var filter = new TestFilter();
-            var controllerContext = CreateControllerContext(new[]
-                {
+        // Arrange
+        var filter = new TestFilter();
+        var controllerContext = CreateControllerContext(new[]
+            {
                     new FilterDescriptor(filter, FilterScope.Action)
                 });
-            var controllerActionInvokerCache = CreateControllerActionInvokerCache(
-                new[] { new DefaultFilterProvider() });
+        var controllerActionInvokerCache = CreateControllerActionInvokerCache(
+            new[] { new DefaultFilterProvider() });
 
-            // Act
-            var (cacheEntry, filters) = controllerActionInvokerCache.GetCachedResult(controllerContext);
-            var (cacheEntry2, filters2) = controllerActionInvokerCache.GetCachedResult(controllerContext);
+        // Act
+        var (cacheEntry, filters) = controllerActionInvokerCache.GetCachedResult(controllerContext);
+        var (cacheEntry2, filters2) = controllerActionInvokerCache.GetCachedResult(controllerContext);
 
-            // Assert
-            Assert.Equal(filters, filters2);
-        }
+        // Assert
+        Assert.Equal(filters, filters2);
+    }
 
-        [Fact]
-        public void GetControllerActionMethodExecutor_CachesEntry()
-        {
-            // Arrange
-            var filter = new TestFilter();
-            var controllerContext = CreateControllerContext(new[]
-                {
+    [Fact]
+    public void GetControllerActionMethodExecutor_CachesEntry()
+    {
+        // Arrange
+        var filter = new TestFilter();
+        var controllerContext = CreateControllerContext(new[]
+            {
                     new FilterDescriptor(filter, FilterScope.Action)
                 });
-            var controllerActionInvokerCache = CreateControllerActionInvokerCache(
-                new[] { new DefaultFilterProvider() });
+        var controllerActionInvokerCache = CreateControllerActionInvokerCache(
+            new[] { new DefaultFilterProvider() });
 
-            // Act
-            var (cacheEntry, filters) = controllerActionInvokerCache.GetCachedResult(controllerContext);
-            var (cacheEntry2, filters2) = controllerActionInvokerCache.GetCachedResult(controllerContext);
+        // Act
+        var (cacheEntry, filters) = controllerActionInvokerCache.GetCachedResult(controllerContext);
+        var (cacheEntry2, filters2) = controllerActionInvokerCache.GetCachedResult(controllerContext);
 
-            // Assert
-            Assert.Same(cacheEntry, cacheEntry2);
+        // Assert
+        Assert.Same(cacheEntry, cacheEntry2);
+    }
+
+    private class TestFilter : IFilterMetadata
+    {
+        public TestFilter()
+        {
         }
 
-        private class TestFilter : IFilterMetadata
+        public TestFilter(string data)
         {
-            public TestFilter()
-            {
-            }
-
-            public TestFilter(string data)
-            {
-                Data = data;
-            }
-
-            public string Data { get; }
+            Data = data;
         }
 
-        private class TestController
+        public string Data { get; }
+    }
+
+    private class TestController
+    {
+        public void Index()
         {
-            public void Index()
-            {
-            }
+        }
+    }
+
+    private class CustomActionDescriptorCollectionProvider : IActionDescriptorCollectionProvider
+    {
+        public CustomActionDescriptorCollectionProvider(ControllerActionDescriptor[] actionDescriptors)
+        {
+            ActionDescriptors = new ActionDescriptorCollection(actionDescriptors, version: 1);
         }
 
-        private class CustomActionDescriptorCollectionProvider : IActionDescriptorCollectionProvider
-        {
-            public CustomActionDescriptorCollectionProvider(ControllerActionDescriptor[] actionDescriptors)
-            {
-                ActionDescriptors = new ActionDescriptorCollection(actionDescriptors, version: 1);
-            }
+        public ActionDescriptorCollection ActionDescriptors { get; }
+    }
 
-            public ActionDescriptorCollection ActionDescriptors { get; }
-        }
+    private static ControllerActionInvokerCache CreateControllerActionInvokerCache(
+        IFilterProvider[] filterProviders)
+    {
+        var modelMetadataProvider = new EmptyModelMetadataProvider();
+        var modelBinderFactory = TestModelBinderFactory.CreateDefault();
+        var mvcOptions = Options.Create(new MvcOptions());
 
-        private static ControllerActionInvokerCache CreateControllerActionInvokerCache(
-            IFilterProvider[] filterProviders)
-        {
-            var modelMetadataProvider = new EmptyModelMetadataProvider();
-            var modelBinderFactory = TestModelBinderFactory.CreateDefault();
-            var mvcOptions = Options.Create(new MvcOptions());
-
-            return new ControllerActionInvokerCache(
-                new ParameterBinder(
-                    modelMetadataProvider,
-                    modelBinderFactory,
-                    Mock.Of<IObjectModelValidator>(),
-                    mvcOptions,
-                    NullLoggerFactory.Instance),
-                modelBinderFactory,
+        return new ControllerActionInvokerCache(
+            new ParameterBinder(
                 modelMetadataProvider,
-                filterProviders,
-                Mock.Of<IControllerFactoryProvider>(),
-                mvcOptions);
-        }
+                modelBinderFactory,
+                Mock.Of<IObjectModelValidator>(),
+                mvcOptions,
+                NullLoggerFactory.Instance),
+            modelBinderFactory,
+            modelMetadataProvider,
+            filterProviders,
+            Mock.Of<IControllerFactoryProvider>(),
+            mvcOptions);
+    }
 
-        private static ControllerContext CreateControllerContext(FilterDescriptor[] filterDescriptors)
+    private static ControllerContext CreateControllerContext(FilterDescriptor[] filterDescriptors)
+    {
+        var actionDescriptor = new ControllerActionDescriptor()
         {
-            var actionDescriptor = new ControllerActionDescriptor()
-            {
-                FilterDescriptors = filterDescriptors,
-                MethodInfo = typeof(TestController).GetMethod(nameof(TestController.Index)),
-                ControllerTypeInfo = typeof(TestController).GetTypeInfo(),
-                Parameters = new List<ParameterDescriptor>(),
-                BoundProperties = new List<ParameterDescriptor>(),
-            };
+            FilterDescriptors = filterDescriptors,
+            MethodInfo = typeof(TestController).GetMethod(nameof(TestController.Index)),
+            ControllerTypeInfo = typeof(TestController).GetTypeInfo(),
+            Parameters = new List<ParameterDescriptor>(),
+            BoundProperties = new List<ParameterDescriptor>(),
+        };
 
-            var actionContext = new ActionContext(new DefaultHttpContext(), new RouteData(), actionDescriptor);
-            return new ControllerContext(actionContext);
-        }
+        var actionContext = new ActionContext(new DefaultHttpContext(), new RouteData(), actionDescriptor);
+        return new ControllerContext(actionContext);
     }
 }

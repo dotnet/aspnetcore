@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 import { PromiseSource } from "./Utils";
 
@@ -17,9 +17,8 @@ export class TestWebSocket {
 
     public static webSocketSet: PromiseSource;
     public static webSocket: TestWebSocket;
-    public receivedData: Array<(string | ArrayBuffer | Blob | ArrayBufferView)>;
+    public receivedData: (string | ArrayBuffer | Blob | ArrayBufferView)[];
 
-    // tslint:disable-next-line:variable-name
     private _onopen?: (this: WebSocket, evt: Event) => any;
     public openSet: PromiseSource = new PromiseSource();
     public set onopen(value: (this: WebSocket, evt: Event) => any) {
@@ -34,7 +33,6 @@ export class TestWebSocket {
         };
     }
 
-    // tslint:disable-next-line:variable-name
     private _onclose?: (this: WebSocket, evt: Event) => any;
     public closeSet: PromiseSource = new PromiseSource();
     public set onclose(value: (this: WebSocket, evt: Event) => any) {
@@ -68,12 +66,12 @@ export class TestWebSocket {
 
     public addEventListener<K extends "close" | "error" | "message" | "open">(type: K, listener: (this: WebSocket, ev: WebSocketEventMap[K]) => any, options?: boolean | AddEventListenerOptions | undefined): void;
     public addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions | undefined): void;
-    public addEventListener(type: any, listener: any, options?: any) {
+    public addEventListener(type: any, listener: any, options?: any): void {
         throw new Error("Method not implemented.");
     }
     public removeEventListener<K extends "close" | "error" | "message" | "open">(type: K, listener: (this: WebSocket, ev: WebSocketEventMap[K]) => any, options?: boolean | EventListenerOptions | undefined): void;
     public removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions | undefined): void;
-    public removeEventListener(type: any, listener: any, options?: any) {
+    public removeEventListener(type: any, listener: any, options?: any): void {
         throw new Error("Method not implemented.");
     }
     public dispatchEvent(evt: Event): boolean {
@@ -103,7 +101,12 @@ export class TestWebSocket {
     public static readonly OPEN: number = 4;
 }
 
-export class TestEvent {
+export class TestEvent implements Event {
+    public composed: boolean = false;
+    public composedPath(): EventTarget[];
+    public composedPath(): any[] {
+        throw new Error("Method not implemented.");
+    }
     public bubbles: boolean = false;
     public cancelBubble: boolean = false;
     public cancelable: boolean = false;
@@ -181,7 +184,66 @@ export class TestErrorEvent {
     public NONE: number = 0;
 }
 
-export class TestCloseEvent {
+export class TestCloseEvent implements Event {
+    public composed: boolean = false;
+    public composedPath(): EventTarget[];
+    public composedPath(): any[] {
+        throw new Error("Method not implemented.");
+    }
+    public code: number = 0;
+    public reason: string = "";
+    public wasClean: boolean = false;
+    public initCloseEvent(typeArg: string, canBubbleArg: boolean, cancelableArg: boolean, wasCleanArg: boolean, codeArg: number, reasonArg: string): void {
+        throw new Error("Method not implemented.");
+    }
+    public bubbles: boolean = false;
+    public cancelBubble: boolean = false;
+    public cancelable: boolean = false;
+    public currentTarget!: EventTarget;
+    public defaultPrevented: boolean = false;
+    public eventPhase: number = 0;
+    public isTrusted: boolean = false;
+    public returnValue: boolean = false;
+    public scoped: boolean = false;
+    public srcElement!: Element | null;
+    public target!: EventTarget;
+    public timeStamp: number = 0;
+    public type: string = "";
+    public deepPath(): EventTarget[] {
+        throw new Error("Method not implemented.");
+    }
+    public initEvent(type: string, bubbles?: boolean | undefined, cancelable?: boolean | undefined): void {
+        throw new Error("Method not implemented.");
+    }
+    public preventDefault(): void {
+        throw new Error("Method not implemented.");
+    }
+    public stopImmediatePropagation(): void {
+        throw new Error("Method not implemented.");
+    }
+    public stopPropagation(): void {
+        throw new Error("Method not implemented.");
+    }
+    public AT_TARGET: number = 0;
+    public BUBBLING_PHASE: number = 0;
+    public CAPTURING_PHASE: number = 0;
+    public NONE: number = 0;
+}
+
+export class TestMessageEvent implements MessageEvent {
+    constructor(data: any) {
+        this.data = data;
+    }
+    public data: any;
+    public lastEventId: string = "";
+    public origin: string = "";
+    public ports: readonly MessagePort[] = [];
+    public source: MessagePort | Window | ServiceWorker | null = null;
+    public composed: boolean = false;
+    public composedPath(): EventTarget[];
+    public composedPath(): any[] {
+        throw new Error("Method not implemented.");
+    }
     public code: number = 0;
     public reason: string = "";
     public wasClean: boolean = false;

@@ -1,49 +1,48 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace FormatterWebSite.Controllers
+namespace FormatterWebSite.Controllers;
+
+public class DoNotRespectBrowserAcceptHeaderController : Controller
 {
-    public class DoNotRespectBrowserAcceptHeaderController : Controller
+    [HttpGet]
+    public Employee EmployeeInfo()
     {
-        [HttpGet]
-        public Employee EmployeeInfo()
+        return new Employee()
         {
-            return new Employee()
-            {
-                Id = 10,
-                Name = "John"
-            };
+            Id = 10,
+            Name = "John"
+        };
+    }
+
+    [HttpGet]
+    [Produces("application/xml")]
+    public Employee EmployeeInfoWithProduces()
+    {
+        return new Employee()
+        {
+            Id = 20,
+            Name = "Mike"
+        };
+    }
+
+    [HttpPost]
+    public IActionResult CreateEmployee([FromBody] Employee employee)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
         }
 
-        [HttpGet]
-        [Produces("application/xml")]
-        public Employee EmployeeInfoWithProduces()
-        {
-            return new Employee()
-            {
-                Id = 20,
-                Name = "Mike"
-            };
-        }
+        return new ObjectResult(employee);
+    }
 
-        [HttpPost]
-        public IActionResult CreateEmployee([FromBody]Employee employee)
-        {
-            if(!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+    public class Employee
+    {
+        public int Id { get; set; }
 
-            return new ObjectResult(employee);
-        }
-
-        public class Employee
-        {
-            public int Id { get; set; }
-
-            public string Name { get; set; }
-        }
+        public string Name { get; set; }
     }
 }

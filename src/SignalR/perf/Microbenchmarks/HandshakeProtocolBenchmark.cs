@@ -1,198 +1,197 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
 using System.Text;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 
-namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
+namespace Microsoft.AspNetCore.SignalR.Microbenchmarks;
+
+public class HandshakeProtocolBenchmark
 {
-    public class HandshakeProtocolBenchmark
+    ReadOnlySequence<byte> _requestMessage1;
+    ReadOnlySequence<byte> _requestMessage2;
+    ReadOnlySequence<byte> _requestMessage3;
+    ReadOnlySequence<byte> _requestMessage4;
+    ReadOnlySequence<byte> _requestMessage5;
+
+    ReadOnlySequence<byte> _responseMessage1;
+    ReadOnlySequence<byte> _responseMessage2;
+    ReadOnlySequence<byte> _responseMessage3;
+    ReadOnlySequence<byte> _responseMessage4;
+    ReadOnlySequence<byte> _responseMessage5;
+    ReadOnlySequence<byte> _responseMessage6;
+
+    [GlobalSetup]
+    public void GlobalSetup()
     {
-        ReadOnlySequence<byte> _requestMessage1;
-        ReadOnlySequence<byte> _requestMessage2;
-        ReadOnlySequence<byte> _requestMessage3;
-        ReadOnlySequence<byte> _requestMessage4;
-        ReadOnlySequence<byte> _requestMessage5;
+        _requestMessage1 = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("{\"protocol\":\"dummy\",\"version\":1}\u001e"));
+        _requestMessage2 = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("{\"protocol\":\"\",\"version\":10}\u001e"));
+        _requestMessage3 = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("{\"protocol\":\"\",\"version\":10,\"unknown\":null}\u001e"));
+        _requestMessage4 = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("42"));
+        _requestMessage5 = ReadOnlySequenceFactory.CreateSegments(Encoding.UTF8.GetBytes("{\"protocol\":\"dummy\",\"ver"), Encoding.UTF8.GetBytes("sion\":1}\u001e"));
 
-        ReadOnlySequence<byte> _responseMessage1;
-        ReadOnlySequence<byte> _responseMessage2;
-        ReadOnlySequence<byte> _responseMessage3;
-        ReadOnlySequence<byte> _responseMessage4;
-        ReadOnlySequence<byte> _responseMessage5;
-        ReadOnlySequence<byte> _responseMessage6;
+        _responseMessage1 = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("{\"error\":\"dummy\"}\u001e"));
+        _responseMessage2 = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("{\"error\":\"\"}\u001e"));
+        _responseMessage3 = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("{}\u001e"));
+        _responseMessage4 = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("{\"unknown\":null}\u001e"));
+        _responseMessage5 = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("{\"error\":\"\",\"minorVersion\":34}\u001e"));
+        _responseMessage6 = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("{\"error\":\"flump flump flump\",\"minorVersion\":112}\u001e"));
+    }
 
-        [GlobalSetup]
-        public void GlobalSetup()
+    [Benchmark]
+    public void HandShakeWriteResponseEmpty_MemoryBufferWriter()
+    {
+        var writer = MemoryBufferWriter.Get();
+        try
         {
-            _requestMessage1 = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("{\"protocol\":\"dummy\",\"version\":1}\u001e"));
-            _requestMessage2 = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("{\"protocol\":\"\",\"version\":10}\u001e"));
-            _requestMessage3 = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("{\"protocol\":\"\",\"version\":10,\"unknown\":null}\u001e"));
-            _requestMessage4 = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("42"));
-            _requestMessage5 = ReadOnlySequenceFactory.CreateSegments(Encoding.UTF8.GetBytes("{\"protocol\":\"dummy\",\"ver"), Encoding.UTF8.GetBytes("sion\":1}\u001e"));
-
-            _responseMessage1 = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("{\"error\":\"dummy\"}\u001e"));
-            _responseMessage2 = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("{\"error\":\"\"}\u001e"));
-            _responseMessage3 = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("{}\u001e"));
-            _responseMessage4 = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("{\"unknown\":null}\u001e"));
-            _responseMessage5 = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("{\"error\":\"\",\"minorVersion\":34}\u001e"));
-            _responseMessage6 = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("{\"error\":\"flump flump flump\",\"minorVersion\":112}\u001e"));
+            HandshakeProtocol.WriteResponseMessage(HandshakeResponseMessage.Empty, writer);
         }
-
-        [Benchmark]
-        public void HandShakeWriteResponseEmpty_MemoryBufferWriter()
+        finally
         {
-            var writer = MemoryBufferWriter.Get();
-            try
-            {
-                HandshakeProtocol.WriteResponseMessage(HandshakeResponseMessage.Empty, writer);
-            }
-            finally
-            {
-                MemoryBufferWriter.Return(writer);
-            }
+            MemoryBufferWriter.Return(writer);
         }
+    }
 
-        [Benchmark]
-        public void HandShakeWriteResponse_MemoryBufferWriter()
+    [Benchmark]
+    public void HandShakeWriteResponse_MemoryBufferWriter()
+    {
+        ReadOnlyMemory<byte> result;
+        var memoryBufferWriter = MemoryBufferWriter.Get();
+        try
         {
-            ReadOnlyMemory<byte> result;
-            var memoryBufferWriter = MemoryBufferWriter.Get();
-            try
-            {
-                HandshakeProtocol.WriteResponseMessage(HandshakeResponseMessage.Empty, memoryBufferWriter);
-                result = memoryBufferWriter.ToArray();
-            }
-            finally
-            {
-                MemoryBufferWriter.Return(memoryBufferWriter);
-            }
+            HandshakeProtocol.WriteResponseMessage(HandshakeResponseMessage.Empty, memoryBufferWriter);
+            result = memoryBufferWriter.ToArray();
         }
-
-        [Benchmark]
-        public void HandShakeWriteRequest_MemoryBufferWriter()
+        finally
         {
-            var memoryBufferWriter = MemoryBufferWriter.Get();
-            try
-            {
-                HandshakeProtocol.WriteRequestMessage(new HandshakeRequestMessage("json", 1), memoryBufferWriter);
-            }
-            finally
-            {
-                MemoryBufferWriter.Return(memoryBufferWriter);
-            }
+            MemoryBufferWriter.Return(memoryBufferWriter);
         }
+    }
 
-        [Benchmark]
-        public void ParsingHandshakeRequestMessage_ValidMessage1() {
-            var message = _requestMessage1;
-            if (!HandshakeProtocol.TryParseRequestMessage(ref message, out var deserializedMessage))
-            {
-                throw new Exception();
-            }
-        }
-
-        [Benchmark]
-        public void ParsingHandshakeRequestMessage_ValidMessage2()
+    [Benchmark]
+    public void HandShakeWriteRequest_MemoryBufferWriter()
+    {
+        var memoryBufferWriter = MemoryBufferWriter.Get();
+        try
         {
-            var message = _requestMessage2;
-            if (!HandshakeProtocol.TryParseRequestMessage(ref message, out var deserializedMessage))
-            {
-                throw new Exception();
-            }
+            HandshakeProtocol.WriteRequestMessage(new HandshakeRequestMessage("json", 1), memoryBufferWriter);
         }
-
-        [Benchmark]
-        public void ParsingHandshakeRequestMessage_ValidMessage3()
+        finally
         {
-            var message = _requestMessage3;
-            if (!HandshakeProtocol.TryParseRequestMessage(ref message, out var deserializedMessage))
-            {
-                throw new Exception();
-            }
+            MemoryBufferWriter.Return(memoryBufferWriter);
         }
+    }
 
-        [Benchmark]
-        public void ParsingHandshakeRequestMessage_NotComplete1()
+    [Benchmark]
+    public void ParsingHandshakeRequestMessage_ValidMessage1()
+    {
+        var message = _requestMessage1;
+        if (!HandshakeProtocol.TryParseRequestMessage(ref message, out var deserializedMessage))
         {
-            var message = _requestMessage4;
-            if (!HandshakeProtocol.TryParseRequestMessage(ref message, out var deserializedMessage))
-            {
-                throw new Exception();
-            }
+            throw new Exception();
         }
+    }
 
-        [Benchmark]
-        public void ParsingHandshakeRequestMessage_ValidMessageSegments()
+    [Benchmark]
+    public void ParsingHandshakeRequestMessage_ValidMessage2()
+    {
+        var message = _requestMessage2;
+        if (!HandshakeProtocol.TryParseRequestMessage(ref message, out var deserializedMessage))
         {
-            var message = _requestMessage5;
-            if (!HandshakeProtocol.TryParseRequestMessage(ref message, out var deserializedMessage))
-            {
-                throw new Exception();
-            }
+            throw new Exception();
         }
+    }
 
-        [Benchmark]
-        public void ParsingHandshakeResponseMessage_ValidMessages1()
+    [Benchmark]
+    public void ParsingHandshakeRequestMessage_ValidMessage3()
+    {
+        var message = _requestMessage3;
+        if (!HandshakeProtocol.TryParseRequestMessage(ref message, out var deserializedMessage))
         {
-            var message = _responseMessage1;
-            if (!HandshakeProtocol.TryParseResponseMessage(ref message, out var deserializedMessage))
-            {
-                throw new Exception();
-            }
+            throw new Exception();
         }
+    }
 
-        [Benchmark]
-        public void ParsingHandshakeResponseMessage_ValidMessages2()
+    [Benchmark]
+    public void ParsingHandshakeRequestMessage_NotComplete1()
+    {
+        var message = _requestMessage4;
+        if (HandshakeProtocol.TryParseRequestMessage(ref message, out var deserializedMessage))
         {
-            var message = _responseMessage2;
-            if (!HandshakeProtocol.TryParseResponseMessage(ref message, out var deserializedMessage))
-            {
-                throw new Exception();
-            }
+            throw new Exception();
         }
+    }
 
-        [Benchmark]
-        public void ParsingHandshakeResponseMessage_ValidMessages3()
+    [Benchmark]
+    public void ParsingHandshakeRequestMessage_ValidMessageSegments()
+    {
+        var message = _requestMessage5;
+        if (!HandshakeProtocol.TryParseRequestMessage(ref message, out var deserializedMessage))
         {
-            var message = _responseMessage3;
-            if (!HandshakeProtocol.TryParseResponseMessage(ref message, out var deserializedMessage))
-            {
-                throw new Exception();
-            }
+            throw new Exception();
         }
+    }
 
-        [Benchmark]
-        public void ParsingHandshakeResponseMessage_ValidMessages4() 
+    [Benchmark]
+    public void ParsingHandshakeResponseMessage_ValidMessages1()
+    {
+        var message = _responseMessage1;
+        if (!HandshakeProtocol.TryParseResponseMessage(ref message, out var deserializedMessage))
         {
-            var message = _responseMessage4;
-            if (!HandshakeProtocol.TryParseResponseMessage(ref message, out var deserializedMessage))
-            {
-                throw new Exception();
-            }
+            throw new Exception();
         }
+    }
 
-        [Benchmark]
-        public void ParsingHandshakeResponseMessage_GivesMinorVersion1()
+    [Benchmark]
+    public void ParsingHandshakeResponseMessage_ValidMessages2()
+    {
+        var message = _responseMessage2;
+        if (!HandshakeProtocol.TryParseResponseMessage(ref message, out var deserializedMessage))
         {
-            var message = _responseMessage5;
-            if (!HandshakeProtocol.TryParseResponseMessage(ref message, out var deserializedMessage))
-            {
-                throw new Exception();
-            }
+            throw new Exception();
         }
+    }
 
-        [Benchmark]
-        public void ParsingHandshakeResponseMessage_GivesMinorVersion2()
+    [Benchmark]
+    public void ParsingHandshakeResponseMessage_ValidMessages3()
+    {
+        var message = _responseMessage3;
+        if (!HandshakeProtocol.TryParseResponseMessage(ref message, out var deserializedMessage))
         {
-            var message = _responseMessage6;
-            if (!HandshakeProtocol.TryParseResponseMessage(ref message, out var deserializedMessage))
-            {
-                throw new Exception();
-            }
+            throw new Exception();
+        }
+    }
+
+    [Benchmark]
+    public void ParsingHandshakeResponseMessage_ValidMessages4()
+    {
+        var message = _responseMessage4;
+        if (!HandshakeProtocol.TryParseResponseMessage(ref message, out var deserializedMessage))
+        {
+            throw new Exception();
+        }
+    }
+
+    [Benchmark]
+    public void ParsingHandshakeResponseMessage_GivesMinorVersion1()
+    {
+        var message = _responseMessage5;
+        if (!HandshakeProtocol.TryParseResponseMessage(ref message, out var deserializedMessage))
+        {
+            throw new Exception();
+        }
+    }
+
+    [Benchmark]
+    public void ParsingHandshakeResponseMessage_GivesMinorVersion2()
+    {
+        var message = _responseMessage6;
+        if (!HandshakeProtocol.TryParseResponseMessage(ref message, out var deserializedMessage))
+        {
+            throw new Exception();
         }
     }
 }

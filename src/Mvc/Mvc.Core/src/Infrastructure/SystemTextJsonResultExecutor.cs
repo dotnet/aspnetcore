@@ -1,173 +1,154 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable enable
-
-using System;
 using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Mvc.Infrastructure
+namespace Microsoft.AspNetCore.Mvc.Infrastructure;
+
+internal sealed partial class SystemTextJsonResultExecutor : IActionResultExecutor<JsonResult>
 {
-    internal sealed class SystemTextJsonResultExecutor : IActionResultExecutor<JsonResult>
+    private static readonly string DefaultContentType = new MediaTypeHeaderValue("application/json")
     {
-        private static readonly string DefaultContentType = new MediaTypeHeaderValue("application/json")
-        {
-            Encoding = Encoding.UTF8
-        }.ToString();
+        Encoding = Encoding.UTF8
+    }.ToString();
 
-        private readonly JsonOptions _options;
-        private readonly ILogger<SystemTextJsonResultExecutor> _logger;
-        private readonly AsyncEnumerableReader _asyncEnumerableReaderFactory;
+    private readonly JsonOptions _options;
+    private readonly ILogger<SystemTextJsonResultExecutor> _logger;
 
-        public SystemTextJsonResultExecutor(
-            IOptions<JsonOptions> options,
-            ILogger<SystemTextJsonResultExecutor> logger,
-            IOptions<MvcOptions> mvcOptions)
+    public SystemTextJsonResultExecutor(
+        IOptions<JsonOptions> options,
+        ILogger<SystemTextJsonResultExecutor> logger)
+    {
+        _options = options.Value;
+        _logger = logger;
+    }
+
+    public async Task ExecuteAsync(ActionContext context, JsonResult result)
+    {
+        if (context == null)
         {
-            _options = options.Value;
-            _logger = logger;
-            _asyncEnumerableReaderFactory = new AsyncEnumerableReader(mvcOptions.Value);
+            throw new ArgumentNullException(nameof(context));
         }
 
-        public async Task ExecuteAsync(ActionContext context, JsonResult result)
+        if (result == null)
         {
-            if (context == null)
+            throw new ArgumentNullException(nameof(result));
+        }
+
+        var jsonSerializerOptions = GetSerializerOptions(result);
+
+        var response = context.HttpContext.Response;
+
+        ResponseContentTypeHelper.ResolveContentTypeAndEncoding(
+            result.ContentType,
+            response.ContentType,
+            (DefaultContentType, Encoding.UTF8),
+            MediaType.GetEncoding,
+            out var resolvedContentType,
+            out var resolvedContentTypeEncoding);
+
+        response.ContentType = resolvedContentType;
+
+        if (result.StatusCode != null)
+        {
+            response.StatusCode = result.StatusCode.Value;
+        }
+
+        Log.JsonResultExecuting(_logger, result.Value);
+
+        var value = result.Value;
+        var objectType = value?.GetType() ?? typeof(object);
+
+        // Keep this code in sync with SystemTextJsonOutputFormatter
+        var responseStream = response.Body;
+        if (resolvedContentTypeEncoding.CodePage == Encoding.UTF8.CodePage)
+        {
+            try
             {
-                throw new ArgumentNullException(nameof(context));
+                await JsonSerializer.SerializeAsync(responseStream, value, objectType, jsonSerializerOptions, context.HttpContext.RequestAborted);
+                await responseStream.FlushAsync(context.HttpContext.RequestAborted);
             }
+            catch (OperationCanceledException) when (context.HttpContext.RequestAborted.IsCancellationRequested) { }
+        }
+        else
+        {
+            // JsonSerializer only emits UTF8 encoded output, but we need to write the response in the encoding specified by
+            // selectedEncoding
+            var transcodingStream = Encoding.CreateTranscodingStream(response.Body, resolvedContentTypeEncoding, Encoding.UTF8, leaveOpen: true);
 
-            if (result == null)
+            ExceptionDispatchInfo? exceptionDispatchInfo = null;
+            try
             {
-                throw new ArgumentNullException(nameof(result));
+                await JsonSerializer.SerializeAsync(transcodingStream, value, objectType, jsonSerializerOptions, context.HttpContext.RequestAborted);
+                await transcodingStream.FlushAsync(context.HttpContext.RequestAborted);
             }
-
-            var jsonSerializerOptions = GetSerializerOptions(result);
-
-            var response = context.HttpContext.Response;
-
-            ResponseContentTypeHelper.ResolveContentTypeAndEncoding(
-                result.ContentType,
-                response.ContentType,
-                DefaultContentType,
-                out var resolvedContentType,
-                out var resolvedContentTypeEncoding);
-
-            response.ContentType = resolvedContentType;
-
-            if (result.StatusCode != null)
+            catch (OperationCanceledException) when (context.HttpContext.RequestAborted.IsCancellationRequested)
+            { }
+            catch (Exception ex)
             {
-                response.StatusCode = result.StatusCode.Value;
+                // TranscodingStream may write to the inner stream as part of it's disposal.
+                // We do not want this exception "ex" to be eclipsed by any exception encountered during the write. We will stash it and
+                // explicitly rethrow it during the finally block.
+                exceptionDispatchInfo = ExceptionDispatchInfo.Capture(ex);
             }
-
-            Log.JsonResultExecuting(_logger, result.Value);
-
-            var value = result.Value;
-            if (value != null && _asyncEnumerableReaderFactory.TryGetReader(value.GetType(), out var reader))
+            finally
             {
-                Log.BufferingAsyncEnumerable(_logger, value);
-                value = await reader(value);
-            }
-
-            var objectType = value?.GetType() ?? typeof(object);
-
-            // Keep this code in sync with SystemTextJsonOutputFormatter
-            var responseStream = response.Body;
-            if (resolvedContentTypeEncoding.CodePage == Encoding.UTF8.CodePage)
-            {
-                await JsonSerializer.SerializeAsync(responseStream, value, objectType, jsonSerializerOptions);
-                await responseStream.FlushAsync();
-            }
-            else
-            {
-                // JsonSerializer only emits UTF8 encoded output, but we need to write the response in the encoding specified by
-                // selectedEncoding
-                var transcodingStream = Encoding.CreateTranscodingStream(response.Body, resolvedContentTypeEncoding, Encoding.UTF8, leaveOpen: true);
-
-                ExceptionDispatchInfo? exceptionDispatchInfo = null;
                 try
                 {
-                    await JsonSerializer.SerializeAsync(transcodingStream, value, objectType, jsonSerializerOptions);
-                    await transcodingStream.FlushAsync();
+                    await transcodingStream.DisposeAsync();
                 }
-                catch (Exception ex)
+                catch when (exceptionDispatchInfo != null)
                 {
-                    // TranscodingStream may write to the inner stream as part of it's disposal.
-                    // We do not want this exception "ex" to be eclipsed by any exception encountered during the write. We will stash it and
-                    // explicitly rethrow it during the finally block.
-                    exceptionDispatchInfo = ExceptionDispatchInfo.Capture(ex);
                 }
-                finally
-                {
-                    try
-                    {
-                        await transcodingStream.DisposeAsync();
-                    }
-                    catch when (exceptionDispatchInfo != null)
-                    {
-                    }
 
-                    exceptionDispatchInfo?.Throw();
-                }
+                exceptionDispatchInfo?.Throw();
             }
         }
+    }
 
-        private JsonSerializerOptions GetSerializerOptions(JsonResult result)
+    private JsonSerializerOptions GetSerializerOptions(JsonResult result)
+    {
+        var serializerSettings = result.SerializerSettings;
+        if (serializerSettings == null)
         {
-            var serializerSettings = result.SerializerSettings;
-            if (serializerSettings == null)
-            {
-                return _options.JsonSerializerOptions;
-            }
-            else
-            {
-                if (serializerSettings is not JsonSerializerOptions settingsFromResult)
-                {
-                    throw new InvalidOperationException(Resources.FormatProperty_MustBeInstanceOfType(
-                        nameof(JsonResult),
-                        nameof(JsonResult.SerializerSettings),
-                        typeof(JsonSerializerOptions)));
-                }
-
-                return settingsFromResult;
-            }
+            return _options.JsonSerializerOptions;
         }
-
-        private static class Log
+        else
         {
-            private static readonly Action<ILogger, string?, Exception?> _jsonResultExecuting = LoggerMessage.Define<string?>(
-                LogLevel.Information,
-                new EventId(1, "JsonResultExecuting"),
-                "Executing JsonResult, writing value of type '{Type}'.");
-
-            private static readonly Action<ILogger, string?, Exception?> _bufferingAsyncEnumerable = LoggerMessage.Define<string?>(
-               LogLevel.Debug,
-               new EventId(2, "BufferingAsyncEnumerable"),
-               "Buffering IAsyncEnumerable instance of type '{Type}'.");
-
-            public static void JsonResultExecuting(ILogger logger, object value)
+            if (serializerSettings is not JsonSerializerOptions settingsFromResult)
             {
-                if (logger.IsEnabled(LogLevel.Information))
-                {
-                    var type = value == null ? "null" : value.GetType().FullName;
-                    _jsonResultExecuting(logger, type, null);
-                }
+                throw new InvalidOperationException(Resources.FormatProperty_MustBeInstanceOfType(
+                    nameof(JsonResult),
+                    nameof(JsonResult.SerializerSettings),
+                    typeof(JsonSerializerOptions)));
             }
 
-            public static void BufferingAsyncEnumerable(ILogger logger, object asyncEnumerable)
+            return settingsFromResult;
+        }
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(1, LogLevel.Information, "Executing JsonResult, writing value of type '{Type}'.", EventName = "JsonResultExecuting", SkipEnabledCheck = true)]
+        private static partial void JsonResultExecuting(ILogger logger, string? type);
+
+        public static void JsonResultExecuting(ILogger logger, object? value)
+        {
+            if (logger.IsEnabled(LogLevel.Information))
             {
-                if (logger.IsEnabled(LogLevel.Debug))
-                {
-                    _bufferingAsyncEnumerable(logger, asyncEnumerable.GetType().FullName, null);
-                }
+                var type = value == null ? "null" : value.GetType().FullName;
+                JsonResultExecuting(logger, type);
             }
         }
+
+        // EventId 2 BufferingAsyncEnumerable
     }
 }

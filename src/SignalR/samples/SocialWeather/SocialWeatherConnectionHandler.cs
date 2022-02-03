@@ -1,64 +1,60 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
-using System.IO;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.Extensions.Logging;
 
-namespace SocialWeather
+namespace SocialWeather;
+
+public class SocialWeatherConnectionHandler : ConnectionHandler
 {
-    public class SocialWeatherConnectionHandler : ConnectionHandler
+    private readonly PersistentConnectionLifeTimeManager _lifetimeManager;
+    private readonly FormatterResolver _formatterResolver;
+    private readonly ILogger<SocialWeatherConnectionHandler> _logger;
+
+    public SocialWeatherConnectionHandler(PersistentConnectionLifeTimeManager lifetimeManager,
+        FormatterResolver formatterResolver, ILogger<SocialWeatherConnectionHandler> logger)
     {
-        private readonly PersistentConnectionLifeTimeManager _lifetimeManager;
-        private readonly FormatterResolver _formatterResolver;
-        private readonly ILogger<SocialWeatherConnectionHandler> _logger;
+        _lifetimeManager = lifetimeManager;
+        _formatterResolver = formatterResolver;
+        _logger = logger;
+    }
 
-        public SocialWeatherConnectionHandler(PersistentConnectionLifeTimeManager lifetimeManager,
-            FormatterResolver formatterResolver, ILogger<SocialWeatherConnectionHandler> logger)
+    public override async Task OnConnectedAsync(ConnectionContext connection)
+    {
+        _lifetimeManager.OnConnectedAsync(connection);
+        await ProcessRequests(connection);
+        _lifetimeManager.OnDisconnectedAsync(connection);
+    }
+
+    public async Task ProcessRequests(ConnectionContext connection)
+    {
+        var formatter = _formatterResolver.GetFormatter<WeatherReport>(
+            (string)connection.Items["format"]);
+
+        while (true)
         {
-            _lifetimeManager = lifetimeManager;
-            _formatterResolver = formatterResolver;
-            _logger = logger;
-        }
-
-        public async override Task OnConnectedAsync(ConnectionContext connection)
-        {
-            _lifetimeManager.OnConnectedAsync(connection);
-            await ProcessRequests(connection);
-            _lifetimeManager.OnDisconnectedAsync(connection);
-        }
-
-        public async Task ProcessRequests(ConnectionContext connection)
-        {
-            var formatter = _formatterResolver.GetFormatter<WeatherReport>(
-                (string)connection.Items["format"]);
-
-            while (true)
+            var result = await connection.Transport.Input.ReadAsync();
+            var buffer = result.Buffer;
+            try
             {
-                var result = await connection.Transport.Input.ReadAsync();
-                var buffer = result.Buffer;
-                try
+                if (!buffer.IsEmpty)
                 {
-                    if (!buffer.IsEmpty)
-                    {
-                        var stream = new MemoryStream();
-                        var data = buffer.ToArray();
-                        await stream.WriteAsync(data, 0, data.Length);
-                        stream.Position = 0;
-                        var weatherReport = await formatter.ReadAsync(stream);
-                        await _lifetimeManager.SendToAllAsync(weatherReport);
-                    }
-                    else if (result.IsCompleted)
-                    {
-                        break;
-                    }
+                    var stream = new MemoryStream();
+                    var data = buffer.ToArray();
+                    await stream.WriteAsync(data, 0, data.Length);
+                    stream.Position = 0;
+                    var weatherReport = await formatter.ReadAsync(stream);
+                    await _lifetimeManager.SendToAllAsync(weatherReport);
                 }
-                finally
+                else if (result.IsCompleted)
                 {
-                    connection.Transport.Input.AdvanceTo(buffer.End);
+                    break;
                 }
+            }
+            finally
+            {
+                connection.Transport.Input.AdvanceTo(buffer.End);
             }
         }
     }

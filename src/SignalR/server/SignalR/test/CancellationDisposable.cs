@@ -1,24 +1,23 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Threading;
 
-namespace Microsoft.AspNetCore.SignalR.Tests
+namespace Microsoft.AspNetCore.SignalR.Tests;
+
+internal class CancellationDisposable : IDisposable
 {
-    internal class CancellationDisposable : IDisposable
+    private readonly CancellationTokenSource _cts;
+
+    public CancellationDisposable(CancellationTokenSource cts)
     {
-        private readonly CancellationTokenSource _cts;
+        _cts = cts;
+    }
 
-        public CancellationDisposable(CancellationTokenSource cts)
-        {
-            _cts = cts;
-        }
-
-        public void Dispose()
-        {
-            _cts.Cancel();
-            _cts.Dispose();
-        }
+    public void Dispose()
+    {
+        _cts.Cancel();
+        _cts.Dispose();
     }
 }

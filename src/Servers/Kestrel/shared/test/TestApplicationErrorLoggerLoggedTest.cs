@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Concurrent;
@@ -9,31 +9,36 @@ using System.Threading.Tasks;
 using Xunit.Abstractions;
 using static Microsoft.AspNetCore.Testing.TestApplicationErrorLogger;
 
-namespace Microsoft.AspNetCore.Testing
+namespace Microsoft.AspNetCore.Testing;
+
+public class TestApplicationErrorLoggerLoggedTest : LoggedTest
 {
-    public class TestApplicationErrorLoggerLoggedTest : LoggedTest
+    private TestApplicationErrorLogger TestApplicationErrorLogger { get; set; }
+
+    public ConcurrentQueue<LogMessage> LogMessages => TestApplicationErrorLogger.Messages;
+
+    public bool ThrowOnCriticalErrors
     {
-        private TestApplicationErrorLogger TestApplicationErrorLogger { get; set; }
+        get => TestApplicationErrorLogger.ThrowOnCriticalErrors;
+        set => TestApplicationErrorLogger.ThrowOnCriticalErrors = value;
+    }
 
-        public ConcurrentQueue<LogMessage> LogMessages => TestApplicationErrorLogger.Messages;
+    public bool ThrowOnUngracefulShutdown
+    {
+        get => TestApplicationErrorLogger.ThrowOnUngracefulShutdown;
+        set => TestApplicationErrorLogger.ThrowOnUngracefulShutdown = value;
+    }
 
-        public bool ThrowOnUngracefulShutdown
-        {
-            get => TestApplicationErrorLogger.ThrowOnUngracefulShutdown;
-            set => TestApplicationErrorLogger.ThrowOnUngracefulShutdown = value;
-        }
+    public List<Type> IgnoredCriticalLogExceptions => TestApplicationErrorLogger.IgnoredExceptions;
 
-        public List<Type> IgnoredCriticalLogExceptions => TestApplicationErrorLogger.IgnoredExceptions;
+    public Task<LogMessage> WaitForLogMessage(Func<LogMessage, bool> messageFilter)
+        => TestApplicationErrorLogger.WaitForMessage(messageFilter);
 
-        public Task<LogMessage> WaitForLogMessage(Func<LogMessage, bool> messageFilter)
-            => TestApplicationErrorLogger.WaitForMessage(messageFilter);
+    public override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
+    {
+        base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
 
-        public override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
-        {
-            base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
-
-            TestApplicationErrorLogger = new TestApplicationErrorLogger();
-            LoggerFactory.AddProvider(new KestrelTestLoggerProvider(TestApplicationErrorLogger));
-        }
+        TestApplicationErrorLogger = new TestApplicationErrorLogger();
+        LoggerFactory.AddProvider(new KestrelTestLoggerProvider(TestApplicationErrorLogger));
     }
 }

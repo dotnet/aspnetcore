@@ -1,37 +1,36 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using BasicWebSite.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace BasicWebSite.Controllers
+namespace BasicWebSite.Controllers;
+
+[Route("[controller]/[action]")]
+public class RemoteAttribute_HomeController : Controller
 {
-    [Route("[controller]/[action]")]
-    public class RemoteAttribute_HomeController : Controller
+    private static RemoteAttributeUser _user;
+
+    [HttpGet]
+    public IActionResult Create()
     {
-        private static RemoteAttributeUser _user;
+        return View();
+    }
 
-        [HttpGet]
-        public IActionResult Create()
+    [HttpPost]
+    public IActionResult Create(RemoteAttributeUser user)
+    {
+        if (!ModelState.IsValid)
         {
-            return View();
+            return View(user);
         }
 
-        [HttpPost]
-        public IActionResult Create(RemoteAttributeUser user)
-        {
-            if (!ModelState.IsValid)
-            {
-                return View(user);
-            }
+        _user = user;
+        return RedirectToAction(nameof(Details));
+    }
 
-            _user = user;
-            return RedirectToAction(nameof(Details));
-        }
-
-        public IActionResult Details()
-        {
-            return View(_user);
-        }
+    public IActionResult Details()
+    {
+        return View(_user);
     }
 }

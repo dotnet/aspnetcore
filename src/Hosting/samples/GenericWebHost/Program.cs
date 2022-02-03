@@ -1,31 +1,31 @@
-using System.Threading.Tasks;
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Hosting;
 
-namespace GenericWebHost
+namespace GenericWebHost;
+
+public class Program
 {
-    public class Program
+    public static async Task Main(string[] args)
     {
-        public static async Task Main(string[] args)
-        {
-            var host = Host.CreateDefaultBuilder()
-                .ConfigureWebHost(builder =>
+        var host = Host.CreateDefaultBuilder()
+            .ConfigureWebHost(builder =>
+            {
+                builder.UseKestrel()
+                .Configure(app =>
                 {
-                    builder.UseKestrel()
-                    .Configure(app =>
+                    app.Run(async (context) =>
                     {
-                        app.Run(async (context) =>
-                        {
-                            await context.Response.WriteAsync("Hello World!");
-                        });
+                        await context.Response.WriteAsync("Hello World!");
                     });
-                })
-                .Build();
+                });
+            })
+            .Build();
 
-            await host.RunAsync();
-        }
+        await host.RunAsync();
     }
 }

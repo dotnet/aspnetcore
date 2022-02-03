@@ -7,7 +7,6 @@ obj/
 .packages/
 .tools/
 .vs/
-.vscode/
 node_modules/
 BenchmarkDotNet.Artifacts/
 .gradle/
@@ -43,3 +42,5 @@ StyleCop.Cache
 UpgradeLog.htm
 .idea
 *.svclog
+mono_crash.*.json
+mono_crash.*.blob

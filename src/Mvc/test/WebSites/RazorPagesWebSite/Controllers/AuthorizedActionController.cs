@@ -1,15 +1,14 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace RazorPagesWebSite.Controllers
+namespace RazorPagesWebSite.Controllers;
+
+[Route("[controller]/[action]")]
+[Authorize]
+public class AuthorizedActionController : Controller
 {
-    [Route("[controller]/[action]")]
-    [Authorize]
-    public class AuthorizedActionController : Controller
-    {
-        public IActionResult Index() => Ok();
-    }
+    public IActionResult Index() => Ok();
 }

@@ -1,22 +1,4 @@
 #nullable enable
-Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityDbContext
-Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityDbContext.IdentityDbContext() -> void
-Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityDbContext<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TRoleClaim, TUserToken>.IdentityDbContext() -> void
-Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityDbContext<TUser, TRole, TKey>.IdentityDbContext() -> void
-Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityDbContext<TUser>.IdentityDbContext() -> void
-Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.IdentityUserContext() -> void
-Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserContext<TUser, TKey>.IdentityUserContext() -> void
-Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserContext<TUser>.IdentityUserContext() -> void
-Microsoft.AspNetCore.Identity.EntityFrameworkCore.RoleStore<TRole, TContext, TKey, TUserRole, TRoleClaim>.AutoSaveChanges.get -> bool
-Microsoft.AspNetCore.Identity.EntityFrameworkCore.RoleStore<TRole, TContext, TKey, TUserRole, TRoleClaim>.AutoSaveChanges.set -> void
-Microsoft.AspNetCore.Identity.EntityFrameworkCore.RoleStore<TRole, TContext, TKey, TUserRole, TRoleClaim>.Dispose() -> void
-Microsoft.AspNetCore.Identity.EntityFrameworkCore.RoleStore<TRole, TContext, TKey, TUserRole, TRoleClaim>.ThrowIfDisposed() -> void
-Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserToken>.AutoSaveChanges.get -> bool
-Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserToken>.AutoSaveChanges.set -> void
-Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserStore
-Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserStore<TUser, TRole, TContext, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>.AutoSaveChanges.get -> bool
-Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserStore<TUser, TRole, TContext, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>.AutoSaveChanges.set -> void
-Microsoft.Extensions.DependencyInjection.IdentityEntityFrameworkBuilderExtensions
 ~Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityDbContext.IdentityDbContext(Microsoft.EntityFrameworkCore.DbContextOptions options) -> void
 ~Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityDbContext<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TRoleClaim, TUserToken>
 ~Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityDbContext<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TRoleClaim, TUserToken>.IdentityDbContext(Microsoft.EntityFrameworkCore.DbContextOptions options) -> void
@@ -45,8 +27,8 @@ Microsoft.Extensions.DependencyInjection.IdentityEntityFrameworkBuilderExtension
 ~Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserToken>.UserClaims.get -> Microsoft.EntityFrameworkCore.DbSet<TUserClaim>
 ~Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserToken>.UserLogins.get -> Microsoft.EntityFrameworkCore.DbSet<TUserLogin>
 ~Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserToken>.UserOnlyStore(TContext context, Microsoft.AspNetCore.Identity.IdentityErrorDescriber describer = null) -> void
-~Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserToken>.UserTokens.get -> Microsoft.EntityFrameworkCore.DbSet<TUserToken>
 ~Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserToken>.UsersSet.get -> Microsoft.EntityFrameworkCore.DbSet<TUser>
+~Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserToken>.UserTokens.get -> Microsoft.EntityFrameworkCore.DbSet<TUserToken>
 ~Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserOnlyStore<TUser, TContext, TKey>
 ~Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserOnlyStore<TUser, TContext, TKey>.UserOnlyStore(TContext context, Microsoft.AspNetCore.Identity.IdentityErrorDescriber describer = null) -> void
 ~Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserOnlyStore<TUser, TContext>
@@ -76,8 +58,8 @@ Microsoft.Extensions.DependencyInjection.IdentityEntityFrameworkBuilderExtension
 ~override Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserToken>.FindByNameAsync(string normalizedUserName, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<TUser>
 ~override Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserToken>.FindTokenAsync(TUser user, string loginProvider, string name, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<TUserToken>
 ~override Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserToken>.FindUserAsync(TKey userId, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<TUser>
-~override Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserToken>.FindUserLoginAsync(TKey userId, string loginProvider, string providerKey, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<TUserLogin>
 ~override Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserToken>.FindUserLoginAsync(string loginProvider, string providerKey, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<TUserLogin>
+~override Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserToken>.FindUserLoginAsync(TKey userId, string loginProvider, string providerKey, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<TUserLogin>
 ~override Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserToken>.GetClaimsAsync(TUser user, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IList<System.Security.Claims.Claim>>
 ~override Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserToken>.GetLoginsAsync(TUser user, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IList<Microsoft.AspNetCore.Identity.UserLoginInfo>>
 ~override Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserToken>.GetUsersForClaimAsync(System.Security.Claims.Claim claim, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IList<TUser>>
@@ -100,8 +82,8 @@ Microsoft.Extensions.DependencyInjection.IdentityEntityFrameworkBuilderExtension
 ~override Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserStore<TUser, TRole, TContext, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>.FindRoleAsync(string normalizedRoleName, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<TRole>
 ~override Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserStore<TUser, TRole, TContext, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>.FindTokenAsync(TUser user, string loginProvider, string name, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<TUserToken>
 ~override Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserStore<TUser, TRole, TContext, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>.FindUserAsync(TKey userId, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<TUser>
-~override Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserStore<TUser, TRole, TContext, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>.FindUserLoginAsync(TKey userId, string loginProvider, string providerKey, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<TUserLogin>
 ~override Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserStore<TUser, TRole, TContext, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>.FindUserLoginAsync(string loginProvider, string providerKey, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<TUserLogin>
+~override Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserStore<TUser, TRole, TContext, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>.FindUserLoginAsync(TKey userId, string loginProvider, string providerKey, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<TUserLogin>
 ~override Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserStore<TUser, TRole, TContext, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>.FindUserRoleAsync(TKey userId, TKey roleId, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<TUserRole>
 ~override Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserStore<TUser, TRole, TContext, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>.GetClaimsAsync(TUser user, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IList<System.Security.Claims.Claim>>
 ~override Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserStore<TUser, TRole, TContext, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>.GetLoginsAsync(TUser user, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IList<Microsoft.AspNetCore.Identity.UserLoginInfo>>
@@ -127,10 +109,10 @@ Microsoft.Extensions.DependencyInjection.IdentityEntityFrameworkBuilderExtension
 ~virtual Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.UserClaims.set -> void
 ~virtual Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.UserLogins.get -> Microsoft.EntityFrameworkCore.DbSet<TUserLogin>
 ~virtual Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.UserLogins.set -> void
-~virtual Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.UserTokens.get -> Microsoft.EntityFrameworkCore.DbSet<TUserToken>
-~virtual Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.UserTokens.set -> void
 ~virtual Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.Users.get -> Microsoft.EntityFrameworkCore.DbSet<TUser>
 ~virtual Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.Users.set -> void
+~virtual Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.UserTokens.get -> Microsoft.EntityFrameworkCore.DbSet<TUserToken>
+~virtual Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.UserTokens.set -> void
 ~virtual Microsoft.AspNetCore.Identity.EntityFrameworkCore.RoleStore<TRole, TContext, TKey, TUserRole, TRoleClaim>.AddClaimAsync(TRole role, System.Security.Claims.Claim claim, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task
 ~virtual Microsoft.AspNetCore.Identity.EntityFrameworkCore.RoleStore<TRole, TContext, TKey, TUserRole, TRoleClaim>.Context.get -> TContext
 ~virtual Microsoft.AspNetCore.Identity.EntityFrameworkCore.RoleStore<TRole, TContext, TKey, TUserRole, TRoleClaim>.ConvertIdFromString(string id) -> TKey
@@ -151,3 +133,21 @@ Microsoft.Extensions.DependencyInjection.IdentityEntityFrameworkBuilderExtension
 ~virtual Microsoft.AspNetCore.Identity.EntityFrameworkCore.RoleStore<TRole, TContext, TKey, TUserRole, TRoleClaim>.UpdateAsync(TRole role, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult>
 ~virtual Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserToken>.Context.get -> TContext
 ~virtual Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserStore<TUser, TRole, TContext, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>.Context.get -> TContext
+Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityDbContext
+Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityDbContext.IdentityDbContext() -> void
+Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityDbContext<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TRoleClaim, TUserToken>.IdentityDbContext() -> void
+Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityDbContext<TUser, TRole, TKey>.IdentityDbContext() -> void
+Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityDbContext<TUser>.IdentityDbContext() -> void
+Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.IdentityUserContext() -> void
+Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserContext<TUser, TKey>.IdentityUserContext() -> void
+Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserContext<TUser>.IdentityUserContext() -> void
+Microsoft.AspNetCore.Identity.EntityFrameworkCore.RoleStore<TRole, TContext, TKey, TUserRole, TRoleClaim>.AutoSaveChanges.get -> bool
+Microsoft.AspNetCore.Identity.EntityFrameworkCore.RoleStore<TRole, TContext, TKey, TUserRole, TRoleClaim>.AutoSaveChanges.set -> void
+Microsoft.AspNetCore.Identity.EntityFrameworkCore.RoleStore<TRole, TContext, TKey, TUserRole, TRoleClaim>.Dispose() -> void
+Microsoft.AspNetCore.Identity.EntityFrameworkCore.RoleStore<TRole, TContext, TKey, TUserRole, TRoleClaim>.ThrowIfDisposed() -> void
+Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserToken>.AutoSaveChanges.get -> bool
+Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserToken>.AutoSaveChanges.set -> void
+Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserStore
+Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserStore<TUser, TRole, TContext, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>.AutoSaveChanges.get -> bool
+Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserStore<TUser, TRole, TContext, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>.AutoSaveChanges.set -> void
+Microsoft.Extensions.DependencyInjection.IdentityEntityFrameworkBuilderExtensions

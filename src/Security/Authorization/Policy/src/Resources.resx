@@ -118,6 +118,6 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Exception_UnableToFindServices" xml:space="preserve">
-    <value>Unable to find the required services. Please add all the required services by calling '{0}.{1}' inside the call to '{2}' in the application startup code.</value>
+    <value>Unable to find the required services. Please add all the required services by calling '{0}.{1}' in the application startup code.</value>
   </data>
 </root>

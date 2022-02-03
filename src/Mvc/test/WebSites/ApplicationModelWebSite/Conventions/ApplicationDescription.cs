@@ -1,23 +1,21 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 
+namespace ApplicationModelWebSite;
 
-namespace ApplicationModelWebSite
+public class ApplicationDescription : IApplicationModelConvention
 {
-    public class ApplicationDescription : IApplicationModelConvention
+    private readonly string _description;
+
+    public ApplicationDescription(string description)
     {
-        private string _description;
+        _description = description;
+    }
 
-        public ApplicationDescription(string description)
-        {
-            _description = description;
-        }
-
-        public void Apply(ApplicationModel application)
-        {
-            application.Properties["description"] = _description;
-        }
+    public void Apply(ApplicationModel application)
+    {
+        application.Properties["description"] = _description;
     }
 }

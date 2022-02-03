@@ -1,36 +1,33 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using Xunit;
+namespace Microsoft.AspNetCore.Mvc.Razor;
 
-namespace Microsoft.AspNetCore.Mvc.Razor
+public class ViewPathTest
 {
-    public class ViewPathTest
+    [Theory]
+    [InlineData("/Views/Home/Index.cshtml")]
+    [InlineData("\\Views/Home/Index.cshtml")]
+    [InlineData("\\Views\\Home/Index.cshtml")]
+    [InlineData("\\Views\\Home\\Index.cshtml")]
+    public void NormalizePath_NormalizesSlashes(string input)
     {
-        [Theory]
-        [InlineData("/Views/Home/Index.cshtml")]
-        [InlineData("\\Views/Home/Index.cshtml")]
-        [InlineData("\\Views\\Home/Index.cshtml")]
-        [InlineData("\\Views\\Home\\Index.cshtml")]
-        public void NormalizePath_NormalizesSlashes(string input)
-        {
-            // Act
-            var normalizedPath = ViewPath.NormalizePath(input);
+        // Act
+        var normalizedPath = ViewPath.NormalizePath(input);
 
-            // Assert
-            Assert.Equal("/Views/Home/Index.cshtml", normalizedPath);
-        }
+        // Assert
+        Assert.Equal("/Views/Home/Index.cshtml", normalizedPath);
+    }
 
-        [Theory]
-        [InlineData("Views/Home/Index.cshtml")]
-        [InlineData("Views\\Home\\Index.cshtml")]
-        public void NormalizePath_AppendsLeadingSlash(string input)
-        {
-            // Act
-            var normalizedPath = ViewPath.NormalizePath(input);
+    [Theory]
+    [InlineData("Views/Home/Index.cshtml")]
+    [InlineData("Views\\Home\\Index.cshtml")]
+    public void NormalizePath_AppendsLeadingSlash(string input)
+    {
+        // Act
+        var normalizedPath = ViewPath.NormalizePath(input);
 
-            // Assert
-            Assert.Equal("/Views/Home/Index.cshtml", normalizedPath);
-        }
+        // Assert
+        Assert.Equal("/Views/Home/Index.cshtml", normalizedPath);
     }
 }

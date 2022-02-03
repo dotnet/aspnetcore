@@ -1,32 +1,31 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace ApiExplorerWebSite
+namespace ApiExplorerWebSite;
+
+[Route("ApiExplorerHttpMethod")]
+public class ApiExplorerHttpMethodController : Controller
 {
-    [Route("ApiExplorerHttpMethod")]
-    public class ApiExplorerHttpMethodController : Controller
+    [Route("All")]
+    public void All()
     {
-        [Route("All")]
-        public void All()
-        {
-        }
+    }
 
-        [HttpGet("Get")]
-        public void Get()
-        {
-        }
+    [HttpGet("Get")]
+    public void Get()
+    {
+    }
 
-        [AcceptVerbs("PUT", "POST", Route = "Single")]
-        public void PutOrPost()
-        {
-        }
+    [AcceptVerbs("PUT", "POST", Route = "Single")]
+    public void PutOrPost()
+    {
+    }
 
-        [HttpGet("MultipleActions")]
-        [HttpPut("MultipleActions")]
-        public void MultipleActions()
-        {
-        }
+    [HttpGet("MultipleActions")]
+    [HttpPut("MultipleActions")]
+    public void MultipleActions()
+    {
     }
 }

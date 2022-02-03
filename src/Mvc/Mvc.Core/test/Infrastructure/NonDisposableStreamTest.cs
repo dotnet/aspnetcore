@@ -1,87 +1,81 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Xunit;
+namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
-namespace Microsoft.AspNetCore.Mvc.Infrastructure
+public class NonDisposableStreamTest
 {
-    public class NonDisposableStreamTest
+    [Fact]
+    public void InnerStreamIsOpenOnClose()
     {
-        [Fact]
-        public void InnerStreamIsOpenOnClose()
-        {
-            // Arrange
-            var innerStream = new MemoryStream();
-            var nonDisposableStream = new NonDisposableStream(innerStream);
+        // Arrange
+        var innerStream = new MemoryStream();
+        var nonDisposableStream = new NonDisposableStream(innerStream);
 
-            // Act
-            nonDisposableStream.Close();
+        // Act
+        nonDisposableStream.Close();
 
-            // Assert
-            Assert.True(innerStream.CanRead);
-        }
+        // Assert
+        Assert.True(innerStream.CanRead);
+    }
 
-        [Fact]
-        public void InnerStreamIsNotFlushedOnClose()
-        {
-            // Arrange
-            var stream = FlushReportingStream.GetThrowingStream();
+    [Fact]
+    public void InnerStreamIsNotFlushedOnClose()
+    {
+        // Arrange
+        var stream = FlushReportingStream.GetThrowingStream();
 
-            var nonDisposableStream = new NonDisposableStream(stream);
+        var nonDisposableStream = new NonDisposableStream(stream);
 
-            // Act & Assert
-            nonDisposableStream.Close();
-        }
+        // Act & Assert
+        nonDisposableStream.Close();
+    }
 
-        [Fact]
-        public void InnerStreamIsOpenOnDispose()
-        {
-            // Arrange
-            var innerStream = new MemoryStream();
-            var nonDisposableStream = new NonDisposableStream(innerStream);
+    [Fact]
+    public void InnerStreamIsOpenOnDispose()
+    {
+        // Arrange
+        var innerStream = new MemoryStream();
+        var nonDisposableStream = new NonDisposableStream(innerStream);
 
-            // Act
-            nonDisposableStream.Dispose();
+        // Act
+        nonDisposableStream.Dispose();
 
-            // Assert
-            Assert.True(innerStream.CanRead);
-        }
+        // Assert
+        Assert.True(innerStream.CanRead);
+    }
 
-        [Fact]
-        public void InnerStreamIsNotFlushedOnDispose()
-        {
-            var stream = FlushReportingStream.GetThrowingStream();
-            var nonDisposableStream = new NonDisposableStream(stream);
+    [Fact]
+    public void InnerStreamIsNotFlushedOnDispose()
+    {
+        var stream = FlushReportingStream.GetThrowingStream();
+        var nonDisposableStream = new NonDisposableStream(stream);
 
-            // Act & Assert
-            nonDisposableStream.Dispose();
-        }
+        // Act & Assert
+        nonDisposableStream.Dispose();
+    }
 
-        [Fact]
-        public void InnerStreamIsNotFlushedOnFlush()
-        {
-            // Arrange
-            var stream = FlushReportingStream.GetThrowingStream();
+    [Fact]
+    public void InnerStreamIsNotFlushedOnFlush()
+    {
+        // Arrange
+        var stream = FlushReportingStream.GetThrowingStream();
 
-            var nonDisposableStream = new NonDisposableStream(stream);
+        var nonDisposableStream = new NonDisposableStream(stream);
 
-            // Act & Assert
-            nonDisposableStream.Flush();
-        }
+        // Act & Assert
+        nonDisposableStream.Flush();
+    }
 
-        [Fact]
-        public async Task InnerStreamIsNotFlushedOnFlushAsync()
-        {
-            // Arrange
-            var stream = FlushReportingStream.GetThrowingStream();
+    [Fact]
+    public async Task InnerStreamIsNotFlushedOnFlushAsync()
+    {
+        // Arrange
+        var stream = FlushReportingStream.GetThrowingStream();
 
-            var nonDisposableStream = new NonDisposableStream(stream);
+        var nonDisposableStream = new NonDisposableStream(stream);
 
-            // Act & Assert
-            await nonDisposableStream.FlushAsync();
-        }
+        // Act & Assert
+        await nonDisposableStream.FlushAsync();
     }
 }

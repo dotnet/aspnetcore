@@ -1,19 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Identity.UI.LoggerEventIds
-static readonly Microsoft.AspNetCore.Identity.UI.LoggerEventIds.AuthenticationAppKeyReset -> Microsoft.Extensions.Logging.EventId
-static readonly Microsoft.AspNetCore.Identity.UI.LoggerEventIds.InvalidAuthenticatorCode -> Microsoft.Extensions.Logging.EventId
-static readonly Microsoft.AspNetCore.Identity.UI.LoggerEventIds.InvalidRecoveryCode -> Microsoft.Extensions.Logging.EventId
-static readonly Microsoft.AspNetCore.Identity.UI.LoggerEventIds.PasswordChanged -> Microsoft.Extensions.Logging.EventId
-static readonly Microsoft.AspNetCore.Identity.UI.LoggerEventIds.PersonalDataRequested -> Microsoft.Extensions.Logging.EventId
-static readonly Microsoft.AspNetCore.Identity.UI.LoggerEventIds.TwoFADisabled -> Microsoft.Extensions.Logging.EventId
-static readonly Microsoft.AspNetCore.Identity.UI.LoggerEventIds.TwoFAEnabled -> Microsoft.Extensions.Logging.EventId
-static readonly Microsoft.AspNetCore.Identity.UI.LoggerEventIds.TwoFARecoveryGenerated -> Microsoft.Extensions.Logging.EventId
-static readonly Microsoft.AspNetCore.Identity.UI.LoggerEventIds.UserCreated -> Microsoft.Extensions.Logging.EventId
-static readonly Microsoft.AspNetCore.Identity.UI.LoggerEventIds.UserCreatedByExternalProvider -> Microsoft.Extensions.Logging.EventId
-static readonly Microsoft.AspNetCore.Identity.UI.LoggerEventIds.UserDeleted -> Microsoft.Extensions.Logging.EventId
-static readonly Microsoft.AspNetCore.Identity.UI.LoggerEventIds.UserLockout -> Microsoft.Extensions.Logging.EventId
-static readonly Microsoft.AspNetCore.Identity.UI.LoggerEventIds.UserLoggedInByExternalProvider -> Microsoft.Extensions.Logging.EventId
-static readonly Microsoft.AspNetCore.Identity.UI.LoggerEventIds.UserLoggedOut -> Microsoft.Extensions.Logging.EventId
-static readonly Microsoft.AspNetCore.Identity.UI.LoggerEventIds.UserLogin -> Microsoft.Extensions.Logging.EventId
-static readonly Microsoft.AspNetCore.Identity.UI.LoggerEventIds.UserLoginWith2FA -> Microsoft.Extensions.Logging.EventId
-static readonly Microsoft.AspNetCore.Identity.UI.LoggerEventIds.UserLoginWithRecoveryCode -> Microsoft.Extensions.Logging.EventId

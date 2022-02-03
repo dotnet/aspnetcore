@@ -1,25 +1,24 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace RoutingWebSite.Areas.Order
+namespace RoutingWebSite.Areas.Order;
+
+[Area("Order")]
+[Route("Order/[action]", Name = "[area]_[action]")]
+public class OrderController : Controller
 {
-    [Area("Order")]
-    [Route("Order/[action]", Name = "[area]_[action]")]
-    public class OrderController : Controller
+    private readonly TestResponseGenerator _generator;
+
+    public OrderController(TestResponseGenerator generator)
     {
-        private readonly TestResponseGenerator _generator;
+        _generator = generator;
+    }
 
-        public OrderController(TestResponseGenerator generator)
-        {
-            _generator = generator;
-        }
-
-        [HttpGet]
-        public IActionResult GetOrder()
-        {
-            return _generator.Generate("/Order/GetOrder");
-        }
+    [HttpGet]
+    public IActionResult GetOrder()
+    {
+        return _generator.Generate("/Order/GetOrder");
     }
 }

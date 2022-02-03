@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 import { TextMessageFormat } from "./TextMessageFormat";
 import { isArrayBuffer } from "./Utils";
@@ -24,7 +24,6 @@ export class HandshakeProtocol {
     }
 
     public parseHandshakeResponse(data: any): [any, HandshakeResponseMessage] {
-        let responseMessage: HandshakeResponseMessage;
         let messageData: string;
         let remainingData: any;
 
@@ -39,7 +38,7 @@ export class HandshakeProtocol {
             // content before separator is handshake response
             // optional content after is additional messages
             const responseLength = separatorIndex + 1;
-            messageData = String.fromCharCode.apply(null, binaryData.slice(0, responseLength));
+            messageData = String.fromCharCode.apply(null, Array.prototype.slice.call(binaryData.slice(0, responseLength)));
             remainingData = (binaryData.byteLength > responseLength) ? binaryData.slice(responseLength).buffer : null;
         } else {
             const textData: string = data;
@@ -61,7 +60,7 @@ export class HandshakeProtocol {
         if (response.type) {
             throw new Error("Expected a handshake response from the server.");
         }
-        responseMessage = response;
+        const responseMessage: HandshakeResponseMessage = response;
 
         // multiple messages could have arrived with handshake
         // return additional data to be parsed as usual, or null if all parsed

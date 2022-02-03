@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.Build" ExcludeAssets="runtime" />
+    <Reference Include="NuGet.Frameworks" />
     <ProjectReference Include="$(OpenAPIToolCSProjPath)" />
   </ItemGroup>
 

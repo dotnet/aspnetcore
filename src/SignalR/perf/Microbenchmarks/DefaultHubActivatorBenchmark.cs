@@ -1,38 +1,37 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
+namespace Microsoft.AspNetCore.SignalR.Microbenchmarks;
+
+public class DefaultHubActivatorBenchmark
 {
-    public class DefaultHubActivatorBenchmark
+    private DefaultHubActivator<MyHub> _activator;
+
+    [GlobalSetup]
+    public void GlobalSetup()
     {
-        private DefaultHubActivator<MyHub> _activator;
+        var services = new ServiceCollection();
 
-        [GlobalSetup]
-        public void GlobalSetup()
+        _activator = new DefaultHubActivator<MyHub>(services.BuildServiceProvider());
+    }
+
+    [Benchmark]
+    public int Create()
+    {
+        var hub = _activator.Create();
+        var result = hub.Addition();
+        return result;
+    }
+
+    public class MyHub : Hub
+    {
+        public int Addition()
         {
-            var services = new ServiceCollection();
-
-            _activator = new DefaultHubActivator<MyHub>(services.BuildServiceProvider());
-        }
-
-        [Benchmark]
-        public int Create()
-        {
-            var hub = _activator.Create();
-            var result = hub.Addition();
-            return result;
-        }
-
-        public class MyHub : Hub
-        {
-            public int Addition()
-            {
-                return 1 + 1;
-            }
+            return 1 + 1;
         }
     }
 }

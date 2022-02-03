@@ -1,16 +1,14 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Security.Cryptography.Xml;
 
-namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
+namespace Microsoft.AspNetCore.DataProtection.XmlEncryption;
+
+/// <summary>
+/// Internal implementation details of <see cref="EncryptedXmlDecryptor"/> for unit testing.
+/// </summary>
+internal interface IInternalEncryptedXmlDecryptor
 {
-    /// <summary>
-    /// Internal implementation details of <see cref="EncryptedXmlDecryptor"/> for unit testing.
-    /// </summary>
-    internal interface IInternalEncryptedXmlDecryptor
-    {
-        void PerformPreDecryptionSetup(EncryptedXml encryptedXml);
-    }
+    void PerformPreDecryptionSetup(EncryptedXml encryptedXml);
 }

@@ -1,40 +1,38 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace RazorPagesWebSite.Pages
+namespace RazorPagesWebSite.Pages;
+
+[TestPageFilter]
+public class ViewDataAvailableAfterHandlerExecutedModel : PageModel
 {
-    [TestPageFilter]
-    public class ViewDataAvailableAfterHandlerExecutedModel : PageModel
+    public IActionResult OnGet()
     {
-        public IActionResult OnGet()
+        return Page();
+    }
+
+    private class TestPageFilterAttribute : Attribute, IPageFilter
+    {
+        public void OnPageHandlerExecuted(PageHandlerExecutedContext context)
         {
-            return Page();
+            // This usage mimics Identity UI where it sets data into ViewData in a PageFilters's
+            // PageHandlerExecuted method.
+            if (context.Result is PageResult pageResult)
+            {
+                pageResult.ViewData["Foo"] = "Bar";
+            }
         }
 
-        private class TestPageFilterAttribute : Attribute, IPageFilter
+        public void OnPageHandlerExecuting(PageHandlerExecutingContext context)
         {
-            public void OnPageHandlerExecuted(PageHandlerExecutedContext context)
-            {
-                // This usage mimics Identity UI where it sets data into ViewData in a PageFilters's
-                // PageHandlerExecuted method.
-                if (context.Result is PageResult pageResult)
-                {
-                    pageResult.ViewData["Foo"] = "Bar";
-                }
-            }
+        }
 
-            public void OnPageHandlerExecuting(PageHandlerExecutingContext context)
-            {
-            }
-
-            public void OnPageHandlerSelected(PageHandlerSelectedContext context)
-            {
-            }
+        public void OnPageHandlerSelected(PageHandlerSelectedContext context)
+        {
         }
     }
 }

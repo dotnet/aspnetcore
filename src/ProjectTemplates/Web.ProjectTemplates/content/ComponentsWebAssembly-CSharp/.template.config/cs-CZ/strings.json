@@ -1,0 +1,9 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "Aplikace Blazor WebAssembly",
+    "description": "Šablona projektu pro vytvoření aplikace Blazor, která běží ve WebAssembly a dá se volitelně hostovat v aplikaci ASP.NET. Tato šablona se dá použít pro webové aplikace s propracovanými dynamickými uživatelskými rozhraními (UI).",
+    "parameter.Hosted.name": "_Hostováno pomocí ASP.NET Core",
+    "parameter.PWA.name": "_Progresivní webová aplikace"
+  }
+}

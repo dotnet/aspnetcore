@@ -10,8 +10,8 @@
     "type": "item"
   },
   "groupIdentity": "Microsoft.AspNetCore.Mvc.ViewImports",
-  "precedence": "100",
-  "identity": "Microsoft.AspNetCore.Mvc.ViewImports",
+  "precedence": "600",
+  "identity": "Microsoft.AspNetCore.Mvc.ViewImports.6.0",
   "shortName": "viewimports",
   "sourceName": "ignoreme",
   "primaryOutputs": [
@@ -33,6 +33,7 @@
   },
   "postActions": [
     {
+      "id": "openInEditor",
       "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
       "description": "Opens _ViewImports.cshtml in the editor",
       "manualInstructions": [ ],

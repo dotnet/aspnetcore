@@ -11,8 +11,12 @@ namespace System.Net.Http.HPack
         // http://httpwg.org/specs/rfc7541.html#rfc.section.4.1
         public const int RfcOverhead = 32;
 
-        public HeaderField(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+        public HeaderField(int? staticTableIndex, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
+            // Store the static table index (if there is one) for the header field.
+            // ASP.NET Core has a fast path that sets a header value using the static table index instead of the name.
+            StaticTableIndex = staticTableIndex;
+
             Debug.Assert(name.Length > 0);
 
             // TODO: We're allocating here on every new table entry.
@@ -23,6 +27,8 @@ namespace System.Net.Http.HPack
             Name = name.ToArray();
             Value = value.ToArray();
         }
+
+        public int? StaticTableIndex { get; }
 
         public byte[] Name { get; }
 
@@ -36,7 +42,7 @@ namespace System.Net.Http.HPack
         {
             if (Name != null)
             {
-                return Encoding.ASCII.GetString(Name) + ": " + Encoding.ASCII.GetString(Value);
+                return Encoding.Latin1.GetString(Name) + ": " + Encoding.Latin1.GetString(Value);
             }
             else
             {

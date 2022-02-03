@@ -25,6 +25,11 @@
     <UseSharedCompilation>true</UseSharedCompilation>
   </PropertyGroup>
 
+  <!-- Workaround continued use of netcoreapp2.1. -->
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);NETSDK1138;CS8969</NoWarn>
+  </PropertyGroup>
+
   <PropertyGroup>
     <!-- Ignore warning about calling the Pack target on Web SDK projects. Our build scripts call /t:pack on everything in this repo. -->
     <WarnOnPackingNonPackableProject>false</WarnOnPackingNonPackableProject>
@@ -36,4 +41,5 @@
   <PropertyGroup>
     <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
   </PropertyGroup>
+
 </Project>

@@ -1,0 +1,45 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": ".NET Core Attach",
+      "type": "coreclr",
+      "request": "attach",
+      "processId": "${command:pickProcess}"
+    },
+    {
+      "name": "BlazorServerApp",
+      "type": "coreclr",
+      "preLaunchTask": "BlazorServerApp-build",
+      "request": "launch",
+      "program": "${workspaceFolder}/../../artifacts/bin/BlazorServerApp/Debug/${env:TARGET}/BlazorServerApp.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+      },
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+    },
+    {
+      "name": "BasicTestApp",
+      "type": "coreclr",
+      "preLaunchTask": "BasicTestApp-build",
+      "request": "launch",
+      "program": "${workspaceFolder}/../../artifacts/bin/BasicTestApp/Debug/${env:TARGET}/BasicTestApp.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+      },
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+    }
+  ]
+}

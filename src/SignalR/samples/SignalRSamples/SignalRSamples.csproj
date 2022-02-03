@@ -20,8 +20,6 @@
     <Reference Include="Microsoft.Extensions.Configuration.CommandLine" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
     <Reference Include="System.Reactive.Linq" />
-    <!-- Avoid CS1705 errors due to mix of assemblies brought in transitively. -->
-    <Reference Include="Microsoft.AspNetCore.SignalR.Common" />
   </ItemGroup>
 
   <Target Name="CopyTSClient" BeforeTargets="AfterBuild">
@@ -32,11 +30,6 @@
     </ItemGroup>
     <Copy SourceFiles="@(SignalRBrowserJSClientFiles)" DestinationFolder="$(MSBuildThisFileDirectory)wwwroot\lib\signalr" />
     <Copy SourceFiles="@(SignalRWebWorkerJSClientFiles)" DestinationFolder="$(MSBuildThisFileDirectory)wwwroot\lib\signalr-webworker"/>
-
-    <ItemGroup>
-      <MsgPackClientFiles Include="$(MSBuildThisFileDirectory)..\..\clients\ts\signalr-protocol-msgpack\node_modules\msgpack5\dist\*" />
-    </ItemGroup>
-    <Copy SourceFiles="@(MsgPackClientFiles)" DestinationFolder="$(MSBuildThisFileDirectory)wwwroot\lib\msgpack5" />
   </Target>
 
 </Project>

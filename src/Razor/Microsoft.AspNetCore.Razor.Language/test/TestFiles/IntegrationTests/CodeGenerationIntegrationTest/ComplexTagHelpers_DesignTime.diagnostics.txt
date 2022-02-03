@@ -1,2 +1,0 @@
-TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml(36,17): Error RZ2006: Code blocks (e.g. @{var variable = 23;}) must not appear in non-string tag helper attribute values.
- Already in an expression (code) context. If necessary an explicit expression (e.g. @(@readonly)) may be used.

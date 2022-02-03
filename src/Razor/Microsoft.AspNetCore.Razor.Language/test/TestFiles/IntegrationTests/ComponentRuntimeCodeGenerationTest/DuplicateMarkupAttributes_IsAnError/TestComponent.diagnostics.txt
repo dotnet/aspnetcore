@@ -1,1 +1,0 @@
-x:\dir\subdir\Test\TestComponent.cshtml(2,5): Error RZ10007: The attribute 'href' is used two or more times for this element. Attributes must be unique (case-insensitive).

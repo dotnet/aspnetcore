@@ -1,67 +1,62 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Net.Http;
-using System.Threading.Tasks;
 using AngleSharp.Dom.Html;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Identity.FunctionalTests
+namespace Microsoft.AspNetCore.Identity.FunctionalTests;
+
+public static class HttpClientExtensions
 {
-    public static class HttpClientExtensions
+    public static Task<HttpResponseMessage> SendAsync(
+        this HttpClient client,
+        IHtmlFormElement form,
+        IHtmlElement submitButton)
     {
-        public static Task<HttpResponseMessage> SendAsync(
-            this HttpClient client,
-            IHtmlFormElement form,
-            IHtmlElement submitButton)
+        return client.SendAsync(form, submitButton, new Dictionary<string, string>());
+    }
+
+    public static Task<HttpResponseMessage> SendAsync(
+        this HttpClient client,
+        IHtmlFormElement form,
+        IEnumerable<KeyValuePair<string, string>> formValues)
+    {
+        var submitElement = Assert.Single(form.QuerySelectorAll("[type=submit]"));
+        var submitButton = Assert.IsAssignableFrom<IHtmlElement>(submitElement);
+
+        return client.SendAsync(form, submitButton, formValues);
+    }
+
+    public static Task<HttpResponseMessage> SendAsync(
+        this HttpClient client,
+        IHtmlFormElement form,
+        IHtmlElement submitButton,
+        IEnumerable<KeyValuePair<string, string>> formValues)
+    {
+        foreach (var kvp in formValues)
         {
-            return client.SendAsync(form, submitButton, new Dictionary<string, string>());
+            var element = Assert.IsAssignableFrom<IHtmlInputElement>(form[kvp.Key]);
+            element.Value = kvp.Value;
         }
 
-        public static Task<HttpResponseMessage> SendAsync(
-            this HttpClient client,
-            IHtmlFormElement form,
-            IEnumerable<KeyValuePair<string, string>> formValues)
+        var submit = form.GetSubmission(submitButton);
+        var target = (Uri)submit.Target;
+        if (submitButton.HasAttribute("formaction"))
         {
-            var submitElement = Assert.Single(form.QuerySelectorAll("[type=submit]"));
-            var submitButton = Assert.IsAssignableFrom<IHtmlElement>(submitElement);
+            var formaction = submitButton.GetAttribute("formaction");
+            target = new Uri(formaction, UriKind.Relative);
+        }
+        var submision = new HttpRequestMessage(new HttpMethod(submit.Method.ToString()), target)
+        {
+            Content = new StreamContent(submit.Body)
+        };
 
-            return client.SendAsync(form, submitButton, formValues);
+        foreach (var header in submit.Headers)
+        {
+            submision.Headers.TryAddWithoutValidation(header.Key, header.Value);
+            submision.Content.Headers.TryAddWithoutValidation(header.Key, header.Value);
         }
 
-        public static Task<HttpResponseMessage> SendAsync(
-            this HttpClient client,
-            IHtmlFormElement form,
-            IHtmlElement submitButton,
-            IEnumerable<KeyValuePair<string, string>> formValues)
-        {
-            foreach (var kvp in formValues)
-            {
-                var element = Assert.IsAssignableFrom<IHtmlInputElement>(form[kvp.Key]);
-                element.Value = kvp.Value;
-            }
-
-            var submit = form.GetSubmission(submitButton);
-            var target = (Uri)submit.Target;
-            if (submitButton.HasAttribute("formaction"))
-            {
-                var formaction = submitButton.GetAttribute("formaction");
-                target = new Uri(formaction, UriKind.Relative);
-            }
-            var submision = new HttpRequestMessage(new HttpMethod(submit.Method.ToString()), target)
-            {
-                Content = new StreamContent(submit.Body)
-            };
-
-            foreach (var header in submit.Headers)
-            {
-                submision.Headers.TryAddWithoutValidation(header.Key, header.Value);
-                submision.Content.Headers.TryAddWithoutValidation(header.Key, header.Value);
-            }
-
-            return client.SendAsync(submision);
-        }
+        return client.SendAsync(submision);
     }
 }

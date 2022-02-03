@@ -1,26 +1,23 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
+namespace Microsoft.AspNetCore.Components;
 
-namespace Microsoft.AspNetCore.Components
+/// <summary>
+/// Exception thrown when an <see cref="NavigationManager"/> is not able to navigate to a different url.
+/// </summary>
+public class NavigationException : Exception
 {
     /// <summary>
-    /// Exception thrown when an <see cref="NavigationManager"/> is not able to navigate to a different url.
+    /// Initializes a new <see cref="NavigationException"/> instance.
     /// </summary>
-    public class NavigationException : Exception
+    public NavigationException(string uri)
     {
-        /// <summary>
-        /// Initializes a new <see cref="NavigationException"/> instance.
-        /// </summary>
-        public NavigationException(string uri)
-        {
-            Location = uri;
-        }
-
-        /// <summary>
-        /// Gets the uri to which navigation was attempted.
-        /// </summary>
-        public string Location { get; }
+        Location = uri;
     }
+
+    /// <summary>
+    /// Gets the uri to which navigation was attempted.
+    /// </summary>
+    public string Location { get; }
 }

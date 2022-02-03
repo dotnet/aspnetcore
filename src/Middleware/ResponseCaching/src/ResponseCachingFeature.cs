@@ -1,36 +1,33 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
+namespace Microsoft.AspNetCore.ResponseCaching;
 
-namespace Microsoft.AspNetCore.ResponseCaching
+/// Default implementation for <see cref="IResponseCachingFeature" />
+public class ResponseCachingFeature : IResponseCachingFeature
 {
-    /// Default implementation for <see cref="IResponseCachingFeature" />
-    public class ResponseCachingFeature : IResponseCachingFeature
-    {
-        private string[]? _varyByQueryKeys;
+    private string[]? _varyByQueryKeys;
 
-        /// <inheritdoc />
-        public string[]? VaryByQueryKeys
+    /// <inheritdoc />
+    public string[]? VaryByQueryKeys
+    {
+        get
         {
-            get
+            return _varyByQueryKeys;
+        }
+        set
+        {
+            if (value?.Length > 1)
             {
-                return _varyByQueryKeys;
-            }
-            set
-            {
-                if (value?.Length > 1)
+                for (var i = 0; i < value.Length; i++)
                 {
-                    for (var i = 0; i < value.Length; i++)
+                    if (string.IsNullOrEmpty(value[i]))
                     {
-                        if (string.IsNullOrEmpty(value[i]))
-                        {
-                            throw new ArgumentException($"When {nameof(value)} contains more than one value, it cannot contain a null or empty value.", nameof(value));
-                        }
+                        throw new ArgumentException($"When {nameof(value)} contains more than one value, it cannot contain a null or empty value.", nameof(value));
                     }
                 }
-                _varyByQueryKeys = value;
             }
+            _varyByQueryKeys = value;
         }
     }
 }

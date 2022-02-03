@@ -1,26 +1,24 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Xunit;
 
-namespace Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.Test
+namespace Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.Test;
+
+public class EntityFrameworkCoreDataProtectionBuilderExtensionsTests
 {
-    public class EntityFrameworkCoreDataProtectionBuilderExtensionsTests
+    [Fact]
+    public void PersistKeysToEntityFrameworkCore_UsesEntityFrameworkCoreXmlRepository()
     {
-        [Fact]
-        public void PersistKeysToEntityFrameworkCore_UsesEntityFrameworkCoreXmlRepository()
-        {
-            var serviceCollection = new ServiceCollection();
-            serviceCollection
-                .AddDbContext<DataProtectionKeyContext>()
-                .AddDataProtection()
-                .PersistKeysToDbContext<DataProtectionKeyContext>();
-            var serviceProvider = serviceCollection.BuildServiceProvider(validateScopes: true);
-            var keyManagementOptions = serviceProvider.GetRequiredService<IOptions<KeyManagementOptions>>();
-            Assert.IsType<EntityFrameworkCoreXmlRepository<DataProtectionKeyContext>>(keyManagementOptions.Value.XmlRepository);
-        }
+        var serviceCollection = new ServiceCollection();
+        serviceCollection
+            .AddDbContext<DataProtectionKeyContext>()
+            .AddDataProtection()
+            .PersistKeysToDbContext<DataProtectionKeyContext>();
+        var serviceProvider = serviceCollection.BuildServiceProvider(validateScopes: true);
+        var keyManagementOptions = serviceProvider.GetRequiredService<IOptions<KeyManagementOptions>>();
+        Assert.IsType<EntityFrameworkCoreXmlRepository<DataProtectionKeyContext>>(keyManagementOptions.Value.XmlRepository);
     }
 }

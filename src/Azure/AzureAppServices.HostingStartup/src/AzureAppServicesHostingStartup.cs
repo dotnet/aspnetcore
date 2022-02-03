@@ -1,32 +1,31 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Hosting;
 
 [assembly: HostingStartup(typeof(Microsoft.AspNetCore.AzureAppServices.HostingStartup.AzureAppServicesHostingStartup))]
 
-namespace Microsoft.AspNetCore.AzureAppServices.HostingStartup
+namespace Microsoft.AspNetCore.AzureAppServices.HostingStartup;
+
+/// <summary>
+/// A dynamic azure lightup experience
+/// </summary>
+public class AzureAppServicesHostingStartup : IHostingStartup
 {
+    private const string HostingStartupName = "AppServices";
+    private const string DiagnosticsFeatureName = "DiagnosticsEnabled";
+
     /// <summary>
-    /// A dynamic azure lightup experience
+    /// Calls UseAzureAppServices
     /// </summary>
-    public class AzureAppServicesHostingStartup : IHostingStartup
+    /// <param name="builder"></param>
+    public void Configure(IWebHostBuilder builder)
     {
-        private const string HostingStartupName = "AppServices";
-        private const string DiagnosticsFeatureName = "DiagnosticsEnabled";
+        var baseConfiguration = HostingStartupConfigurationExtensions.GetBaseConfiguration();
 
-        /// <summary>
-        /// Calls UseAzureAppServices
-        /// </summary>
-        /// <param name="builder"></param>
-        public void Configure(IWebHostBuilder builder)
+        if (baseConfiguration.IsEnabled(HostingStartupName, DiagnosticsFeatureName))
         {
-            var baseConfiguration = HostingStartupConfigurationExtensions.GetBaseConfiguration();
-
-            if (baseConfiguration.IsEnabled(HostingStartupName, DiagnosticsFeatureName))
-            {
-                builder.UseAzureAppServices();
-            }
+            builder.UseAzureAppServices();
         }
     }
 }

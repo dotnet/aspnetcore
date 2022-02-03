@@ -38,10 +38,6 @@ jobs:
       value: ${{ parameters.configuration }}
     - group: Publish-Build-Assets
     - group: AzureDevOps-Artifact-Feeds-Pats
-    # Skip component governance and codesign validation for SDL. These jobs
-    # create no content.
-    - name: skipComponentGovernanceDetection
-      value: true
     - name: runCodesignValidationInjection
       value: false
 
@@ -52,6 +48,7 @@ jobs:
       inputs:
         artifactName: AssetManifests
         downloadPath: '$(Build.StagingDirectory)/Download'
+        checkDownloadedFiles: true
       condition: ${{ parameters.condition }}
       continueOnError: ${{ parameters.continueOnError }}
     
@@ -93,7 +90,31 @@ jobs:
         PathtoPublish: '$(Build.StagingDirectory)/ReleaseConfigs.txt'
         PublishLocation: Container
         ArtifactName: ReleaseConfigs
-    
+
+    - task: powershell@2
+      displayName: Check if SymbolPublishingExclusionsFile.txt exists
+      inputs:
+        targetType: inline
+        script: |
+          $symbolExclusionfile = "$(Build.SourcesDirectory)/eng/SymbolPublishingExclusionsFile.txt"
+          if(Test-Path -Path $symbolExclusionfile)
+          {
+            Write-Host "SymbolExclusionFile exists"
+            Write-Host "##vso[task.setvariable variable=SymbolExclusionFile]true"
+          }
+          else{
+           Write-Host "Symbols Exclusion file does not exists"
+           Write-Host "##vso[task.setvariable variable=SymbolExclusionFile]false"
+          }
+
+    - task: PublishBuildArtifacts@1
+      displayName: Publish SymbolPublishingExclusionsFile Artifact
+      condition: eq(variables['SymbolExclusionFile'], 'true') 
+      inputs:
+        PathtoPublish: '$(Build.SourcesDirectory)/eng/SymbolPublishingExclusionsFile.txt'
+        PublishLocation: Container
+        ArtifactName: ReleaseConfigs
+        
     - ${{ if eq(parameters.enablePublishBuildArtifacts, 'true') }}:
       - template: /eng/common/templates/steps/publish-logs.yml
         parameters:

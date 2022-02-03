@@ -1,114 +1,110 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using Xunit;
+namespace Microsoft.AspNetCore.Routing.Matching;
 
-namespace Microsoft.AspNetCore.Routing.Matching
+// Note that while we don't intend for this code to be used with non-ASCII test,
+// we still call into these methods with some non-ASCII characters so that
+// we are sure of how it behaves.
+public class AsciiTest
 {
-    // Note that while we don't intend for this code to be used with non-ASCII test,
-    // we still call into these methods with some non-ASCII characters so that
-    // we are sure of how it behaves.
-    public class AsciiTest
+    [Fact]
+    public void IsAscii_ReturnsTrueForAscii()
     {
-        [Fact]
-        public void IsAscii_ReturnsTrueForAscii()
-        {
-            // Arrange
-            var text = "abcd\u007F";
+        // Arrange
+        var text = "abcd\u007F";
 
-            // Act
-            var result = Ascii.IsAscii(text);
+        // Act
+        var result = Ascii.IsAscii(text);
 
-            // Assert
-            Assert.True(result);
-        }
+        // Assert
+        Assert.True(result);
+    }
 
-        [Fact]
-        public void IsAscii_ReturnsFalseForNonAscii()
-        {
-            // Arrange
-            var text = "abcd\u0080";
+    [Fact]
+    public void IsAscii_ReturnsFalseForNonAscii()
+    {
+        // Arrange
+        var text = "abcd\u0080";
 
-            // Act
-            var result = Ascii.IsAscii(text);
+        // Act
+        var result = Ascii.IsAscii(text);
 
-            // Assert
-            Assert.False(result);
-        }
+        // Assert
+        Assert.False(result);
+    }
 
-        [Theory]
+    [Theory]
 
-        // Identity
-        [InlineData('c', 'c')]
-        [InlineData('C', 'C')]
-        [InlineData('#', '#')]
-        [InlineData('\u0080', '\u0080')]
+    // Identity
+    [InlineData('c', 'c')]
+    [InlineData('C', 'C')]
+    [InlineData('#', '#')]
+    [InlineData('\u0080', '\u0080')]
 
-        // Case-insensitive
-        [InlineData('c', 'C')]
-        public void AsciiIgnoreCaseEquals_ReturnsTrue(char x, char y)
-        {
-            // Arrange
-            
-            // Act
-            var result = Ascii.AsciiIgnoreCaseEquals(x, y);
+    // Case-insensitive
+    [InlineData('c', 'C')]
+    public void AsciiIgnoreCaseEquals_ReturnsTrue(char x, char y)
+    {
+        // Arrange
 
-            // Assert
-            Assert.True(result);
-        }
+        // Act
+        var result = Ascii.AsciiIgnoreCaseEquals(x, y);
 
-        [Theory]
+        // Assert
+        Assert.True(result);
+    }
 
-        // Different letter
-        [InlineData('c', 'd')]
-        [InlineData('C', 'D')]
+    [Theory]
 
-        // Non-letter + casing difference - 'a' and 'A' are 32 bits apart and so are ' ' and '@'
-        [InlineData(' ', '@')] 
-        [InlineData('\u0080', '\u0080' + 32)] // Outside of ASCII range
-        public void AsciiIgnoreCaseEquals_ReturnsFalse(char x, char y)
-        {
-            // Arrange
+    // Different letter
+    [InlineData('c', 'd')]
+    [InlineData('C', 'D')]
 
-            // Act
-            var result = Ascii.AsciiIgnoreCaseEquals(x, y);
+    // Non-letter + casing difference - 'a' and 'A' are 32 bits apart and so are ' ' and '@'
+    [InlineData(' ', '@')]
+    [InlineData('\u0080', '\u0080' + 32)] // Outside of ASCII range
+    public void AsciiIgnoreCaseEquals_ReturnsFalse(char x, char y)
+    {
+        // Arrange
 
-            // Assert
-            Assert.False(result);
-        }
+        // Act
+        var result = Ascii.AsciiIgnoreCaseEquals(x, y);
 
-        [Theory]
-        [InlineData("", "", 0)]
-        [InlineData("abCD", "abcF", 3)]
-        [InlineData("ab#\u0080-$%", "Ab#\u0080-$%", 7)]
-        public void UnsafeAsciiIgnoreCaseEquals_ReturnsTrue(string x, string y, int length)
-        {
-            // Arrange
-            var spanX = x.AsSpan();
-            var spanY = y.AsSpan();
+        // Assert
+        Assert.False(result);
+    }
 
-            // Act
-            var result = Ascii.AsciiIgnoreCaseEquals(spanX, spanY, length);
+    [Theory]
+    [InlineData("", "", 0)]
+    [InlineData("abCD", "abcF", 3)]
+    [InlineData("ab#\u0080-$%", "Ab#\u0080-$%", 7)]
+    public void UnsafeAsciiIgnoreCaseEquals_ReturnsTrue(string x, string y, int length)
+    {
+        // Arrange
+        var spanX = x.AsSpan();
+        var spanY = y.AsSpan();
 
-            // Assert
-            Assert.True(result);
-        }
+        // Act
+        var result = Ascii.AsciiIgnoreCaseEquals(spanX, spanY, length);
 
-        [Theory]
-        [InlineData("abcD", "abCE", 4)]
-        [InlineData("ab#\u0080-$%", "Ab#\u0081-$%", 7)]
-        public void UnsafeAsciiIgnoreCaseEquals_ReturnsFalse(string x, string y, int length)
-        {
-            // Arrange
-            var spanX = x.AsSpan();
-            var spanY = y.AsSpan();
+        // Assert
+        Assert.True(result);
+    }
 
-            // Act
-            var result = Ascii.AsciiIgnoreCaseEquals(spanX, spanY, length);
+    [Theory]
+    [InlineData("abcD", "abCE", 4)]
+    [InlineData("ab#\u0080-$%", "Ab#\u0081-$%", 7)]
+    public void UnsafeAsciiIgnoreCaseEquals_ReturnsFalse(string x, string y, int length)
+    {
+        // Arrange
+        var spanX = x.AsSpan();
+        var spanY = y.AsSpan();
 
-            // Assert
-            Assert.False(result);
-        }
+        // Act
+        var result = Ascii.AsciiIgnoreCaseEquals(spanX, spanY, length);
+
+        // Assert
+        Assert.False(result);
     }
 }

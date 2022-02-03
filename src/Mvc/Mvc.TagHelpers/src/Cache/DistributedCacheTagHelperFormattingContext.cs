@@ -1,18 +1,17 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Html;
 
-namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache
+namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache;
+
+/// <summary>
+/// Represents an object containing the information to serialize with <see cref="IDistributedCacheTagHelperFormatter" />.
+/// </summary>
+public class DistributedCacheTagHelperFormattingContext
 {
     /// <summary>
-    /// Represents an object containing the information to serialize with <see cref="IDistributedCacheTagHelperFormatter" />.
+    /// Gets the <see cref="HtmlString"/> instance.
     /// </summary>
-    public class DistributedCacheTagHelperFormattingContext
-    {
-        /// <summary>
-        /// Gets the <see cref="HtmlString"/> instance.
-        /// </summary>
-        public HtmlString Html { get; set; }
-    }
+    public HtmlString Html { get; set; }
 }

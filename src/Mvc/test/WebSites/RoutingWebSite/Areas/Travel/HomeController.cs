@@ -1,29 +1,28 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace RoutingWebSite.Travel
+namespace RoutingWebSite.Travel;
+
+[Area("Travel")]
+public class HomeController : Controller
 {
-    [Area("Travel")]
-    public class HomeController : Controller
+    private readonly TestResponseGenerator _generator;
+
+    public HomeController(TestResponseGenerator generator)
     {
-        private readonly TestResponseGenerator _generator;
+        _generator = generator;
+    }
 
-        public HomeController(TestResponseGenerator generator)
-        {
-            _generator = generator;
-        }
+    public IActionResult Index()
+    {
+        return _generator.Generate("/Travel", "/Travel/Home", "/Travel/Home/Index");
+    }
 
-        public IActionResult Index()
-        {
-            return _generator.Generate("/Travel", "/Travel/Home", "/Travel/Home/Index");
-        }
-
-        [HttpGet("ContosoCorp/AboutTravel")]
-        public IActionResult About()
-        {
-            return _generator.Generate();
-        }
+    [HttpGet("ContosoCorp/AboutTravel")]
+    public IActionResult About()
+    {
+        return _generator.Generate();
     }
 }

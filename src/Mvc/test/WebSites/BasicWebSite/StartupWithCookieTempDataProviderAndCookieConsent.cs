@@ -1,39 +1,34 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
+namespace BasicWebSite;
 
-namespace BasicWebSite
+public class StartupWithCookieTempDataProviderAndCookieConsent
 {
-    public class StartupWithCookieTempDataProviderAndCookieConsent
+    public void ConfigureServices(IServiceCollection services)
     {
-        public void ConfigureServices(IServiceCollection services)
+        services.AddMvc()
+            .AddNewtonsoftJson();
+
+        services.Configure<CookiePolicyOptions>(o =>
         {
-            services.AddMvc()
-                .AddNewtonsoftJson();
+            o.CheckConsentNeeded = httpContext => true;
+        });
 
-            services.Configure<CookiePolicyOptions>(o =>
-            {
-                o.CheckConsentNeeded = httpContext => true;
-            });
+        services.ConfigureBaseWebSiteAuthPolicies();
+    }
 
-            services.ConfigureBaseWebSiteAuthPolicies();
-        }
+    public void Configure(IApplicationBuilder app)
+    {
+        app.UseDeveloperExceptionPage();
 
-        public void Configure(IApplicationBuilder app)
+        app.UseCookiePolicy();
+        app.UseRouting();
+        app.UseEndpoints(endpoints =>
         {
-            app.UseDeveloperExceptionPage();
-
-            app.UseCookiePolicy();
-            app.UseRouting();
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapDefaultControllerRoute();
-                endpoints.MapRazorPages();
-            });
-        }
+            endpoints.MapDefaultControllerRoute();
+            endpoints.MapRazorPages();
+        });
     }
 }
 

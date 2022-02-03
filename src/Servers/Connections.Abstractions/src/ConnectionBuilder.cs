@@ -1,53 +1,52 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Connections
+namespace Microsoft.AspNetCore.Connections;
+
+/// <summary>
+/// A default implementation for <see cref="IConnectionBuilder"/>.
+/// </summary>
+public class ConnectionBuilder : IConnectionBuilder
 {
+    private readonly IList<Func<ConnectionDelegate, ConnectionDelegate>> _components = new List<Func<ConnectionDelegate, ConnectionDelegate>>();
+
+    /// <inheritdoc />
+    public IServiceProvider ApplicationServices { get; }
+
     /// <summary>
-    /// A default implementation for <see cref="IConnectionBuilder"/>.
+    /// Initializes a new instance of <see cref="ConnectionBuilder"/>.
     /// </summary>
-    public class ConnectionBuilder : IConnectionBuilder
+    /// <param name="applicationServices">The application services <see cref="IServiceProvider"/>.</param>
+    public ConnectionBuilder(IServiceProvider applicationServices)
     {
-        private readonly IList<Func<ConnectionDelegate, ConnectionDelegate>> _components = new List<Func<ConnectionDelegate, ConnectionDelegate>>();
+        ApplicationServices = applicationServices;
+    }
 
-        /// <inheritdoc />
-        public IServiceProvider ApplicationServices { get; }
+    /// <inheritdoc />
+    public IConnectionBuilder Use(Func<ConnectionDelegate, ConnectionDelegate> middleware)
+    {
+        _components.Add(middleware);
+        return this;
+    }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="ConnectionBuilder"/>.
-        /// </summary>
-        /// <param name="applicationServices">The application services <see cref="IServiceProvider"/>.</param>
-        public ConnectionBuilder(IServiceProvider applicationServices)
+    /// <inheritdoc />
+    public ConnectionDelegate Build()
+    {
+        ConnectionDelegate app = features =>
         {
-            ApplicationServices = applicationServices;
+            return Task.CompletedTask;
+        };
+
+        foreach (var component in _components.Reverse())
+        {
+            app = component(app);
         }
 
-        /// <inheritdoc />
-        public IConnectionBuilder Use(Func<ConnectionDelegate, ConnectionDelegate> middleware)
-        {
-            _components.Add(middleware);
-            return this;
-        }
-
-        /// <inheritdoc />
-        public ConnectionDelegate Build()
-        {
-            ConnectionDelegate app = features =>
-            {
-                return Task.CompletedTask;
-            };
-
-            foreach (var component in _components.Reverse())
-            {
-                app = component(app);
-            }
-
-            return app;
-        }
+        return app;
     }
 }

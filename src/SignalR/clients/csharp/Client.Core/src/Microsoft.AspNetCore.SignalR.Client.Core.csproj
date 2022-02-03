@@ -4,11 +4,11 @@
     <Description>Client for ASP.NET Core SignalR</Description>
     <TargetFrameworks>$(DefaultNetCoreTargetFramework);$(DefaultNetFxTargetFramework);netstandard2.0;netstandard2.1</TargetFrameworks>
     <RootNamespace>Microsoft.AspNetCore.SignalR.Client</RootNamespace>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="$(SignalRSharedSourceRoot)AwaitableThreadPool.cs" Link="AwaitableThreadPool.cs" />
-    <Compile Include="$(SignalRSharedSourceRoot)ForceAsyncAwaiter.cs" Link="ForceAsyncAwaiter.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)PipeWriterStream.cs" Link="PipeWriterStream.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)ReflectionHelper.cs" Link="ReflectionHelper.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)TimerAwaitable.cs" Link="Internal\TimerAwaitable.cs" />
@@ -27,11 +27,6 @@
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="System.Threading.Channels" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(AspNetCoreMajorMinorVersion)' == '6.0' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <!-- Dependency (a transitive ref) was removed in 5.0. Suppression can be removed after 5.0 RTM is released. -->
-    <SuppressBaselineReference Include="Microsoft.Bcl.AsyncInterfaces" />
   </ItemGroup>
 
   <ItemGroup>

@@ -55,6 +55,9 @@ case $cpuname in
   aarch64)
     buildarch=arm64
     ;;
+  loongarch64)
+    buildarch=loongarch64
+    ;;
   amd64|x86_64)
     buildarch=x64
     ;;
@@ -70,7 +73,7 @@ case $cpuname in
     ;;
 esac
 
-dotnetRoot="$repo_root/.dotnet"
+dotnetRoot="${repo_root}.dotnet"
 if [[ $architecture != "" ]] && [[ $architecture != $buildarch ]]; then
   dotnetRoot="$dotnetRoot/$architecture"
 fi

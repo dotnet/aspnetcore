@@ -1,18 +1,17 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Mvc.ViewComponents
+namespace Microsoft.AspNetCore.Mvc.ViewComponents;
+
+/// <summary>
+/// Selects a view component based on a view component name.
+/// </summary>
+public interface IViewComponentSelector
 {
     /// <summary>
-    /// Selects a view component based on a view component name.
+    /// Selects a view component based on <paramref name="componentName"/>.
     /// </summary>
-    public interface IViewComponentSelector
-    {
-        /// <summary>
-        /// Selects a view component based on <paramref name="componentName"/>.
-        /// </summary>
-        /// <param name="componentName">The view component name.</param>
-        /// <returns>A <see cref="ViewComponentDescriptor"/>, or <c>null</c> if no match is found.</returns>
-        ViewComponentDescriptor SelectComponent(string componentName);
-    }
+    /// <param name="componentName">The view component name.</param>
+    /// <returns>A <see cref="ViewComponentDescriptor"/>, or <c>null</c> if no match is found.</returns>
+    ViewComponentDescriptor SelectComponent(string componentName);
 }

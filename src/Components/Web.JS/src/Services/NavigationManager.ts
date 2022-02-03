@@ -1,6 +1,9 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 import '@microsoft/dotnet-js-interop';
 import { resetScrollAfterNextBatch } from '../Rendering/Renderer';
-import { EventDelegator } from '../Rendering/EventDelegator';
+import { EventDelegator } from '../Rendering/Events/EventDelegator';
 
 let hasEnabledNavigationInterception = false;
 let hasRegisteredNavigationEventListeners = false;
@@ -13,11 +16,11 @@ export const internalFunctions = {
   listenForNavigationEvents,
   enableNavigationInterception,
   navigateTo,
-  getBaseURI: () => document.baseURI,
-  getLocationHref: () => location.href,
+  getBaseURI: (): string => document.baseURI,
+  getLocationHref: (): string => location.href,
 };
 
-function listenForNavigationEvents(callback: (uri: string, intercepted: boolean) => Promise<void>) {
+function listenForNavigationEvents(callback: (uri: string, intercepted: boolean) => Promise<void>): void {
   notifyLocationChangedCallback = callback;
 
   if (hasRegisteredNavigationEventListeners) {
@@ -28,11 +31,11 @@ function listenForNavigationEvents(callback: (uri: string, intercepted: boolean)
   window.addEventListener('popstate', () => notifyLocationChanged(false));
 }
 
-function enableNavigationInterception() {
+function enableNavigationInterception(): void {
   hasEnabledNavigationInterception = true;
 }
 
-export function attachToEventDelegator(eventDelegator: EventDelegator) {
+export function attachToEventDelegator(eventDelegator: EventDelegator): void {
   // We need to respond to clicks on <a> elements *after* the EventDelegator has finished
   // running its simulated bubbling process so that we can respect any preventDefault requests.
   // So instead of registering our own native event, register using the EventDelegator.
@@ -60,46 +63,64 @@ export function attachToEventDelegator(eventDelegator: EventDelegator) {
 
       if (isWithinBaseUriSpace(absoluteHref)) {
         event.preventDefault();
-        performInternalNavigation(absoluteHref, true);
+        performInternalNavigation(absoluteHref, /* interceptedLink */ true, /* replace */ false);
       }
     }
   });
 }
 
-export function navigateTo(uri: string, forceLoad: boolean, replace: boolean = false) {
+// For back-compat, we need to accept multiple overloads
+export function navigateTo(uri: string, options: NavigationOptions): void;
+export function navigateTo(uri: string, forceLoad: boolean): void;
+export function navigateTo(uri: string, forceLoad: boolean, replace: boolean): void;
+export function navigateTo(uri: string, forceLoadOrOptions: NavigationOptions | boolean, replaceIfUsingOldOverload = false): void {
   const absoluteUri = toAbsoluteUri(uri);
 
-  if (!forceLoad && isWithinBaseUriSpace(absoluteUri)) {
-    // It's an internal URL, so do client-side navigation
-    performInternalNavigation(absoluteUri, false, replace);
-  } else if (forceLoad && location.href === uri) {
-    // Force-loading the same URL you're already on requires special handling to avoid
-    // triggering browser-specific behavior issues.
+  // Normalize the parameters to the newer overload (i.e., using NavigationOptions)
+  const options: NavigationOptions = forceLoadOrOptions instanceof Object
+    ? forceLoadOrOptions
+    : { forceLoad: forceLoadOrOptions, replaceHistoryEntry: replaceIfUsingOldOverload };
+
+  if (!options.forceLoad && isWithinBaseUriSpace(absoluteUri)) {
+    performInternalNavigation(absoluteUri, false, options.replaceHistoryEntry);
+  } else {
+    // For external navigation, we work in terms of the originally-supplied uri string,
+    // not the computed absoluteUri. This is in case there are some special URI formats
+    // we're unable to translate into absolute URIs.
+    performExternalNavigation(uri, options.replaceHistoryEntry);
+  }
+}
+
+function performExternalNavigation(uri: string, replace: boolean) {
+  if (location.href === uri) {
+    // If you're already on this URL, you can't append another copy of it to the history stack,
+    // so we can ignore the 'replace' flag. However, reloading the same URL you're already on
+    // requires special handling to avoid triggering browser-specific behavior issues.
     // For details about what this fixes and why, see https://github.com/dotnet/aspnetcore/pull/10839
     const temporaryUri = uri + '?';
     history.replaceState(null, '', temporaryUri);
     location.replace(uri);
-  } else if (replace){
-    history.replaceState(null, '', absoluteUri)
+  } else if (replace) {
+    location.replace(uri);
   } else {
-    // It's either an external URL, or forceLoad is requested, so do a full page load
     location.href = uri;
   }
 }
 
-function performInternalNavigation(absoluteInternalHref: string, interceptedLink: boolean, replace: boolean = false) {
+function performInternalNavigation(absoluteInternalHref: string, interceptedLink: boolean, replace: boolean) {
   // Since this was *not* triggered by a back/forward gesture (that goes through a different
   // code path starting with a popstate event), we don't want to preserve the current scroll
   // position, so reset it.
-  // To avoid ugly flickering effects, we don't want to change the scroll position until the
+  // To avoid ugly flickering effects, we don't want to change the scroll position until
   // we render the new page. As a best approximation, wait until the next batch.
   resetScrollAfterNextBatch();
 
-  if(!replace){
+  if (!replace) {
     history.pushState(null, /* ignored title */ '', absoluteInternalHref);
-  }else{
+  } else {
     history.replaceState(null, /* ignored title */ '', absoluteInternalHref);
   }
+
   notifyLocationChanged(interceptedLink);
 }
 
@@ -110,7 +131,7 @@ async function notifyLocationChanged(interceptedLink: boolean) {
 }
 
 let testAnchor: HTMLAnchorElement;
-export function toAbsoluteUri(relativeUri: string) {
+export function toAbsoluteUri(relativeUri: string): string {
   testAnchor = testAnchor || document.createElement('a');
   testAnchor.href = relativeUri;
   return testAnchor.href;
@@ -165,4 +186,10 @@ function canProcessAnchor(anchorTarget: HTMLAnchorElement) {
   const targetAttributeValue = anchorTarget.getAttribute('target');
   const opensInSameFrame = !targetAttributeValue || targetAttributeValue === '_self';
   return opensInSameFrame && anchorTarget.hasAttribute('href') && !anchorTarget.hasAttribute('download');
+}
+
+// Keep in sync with Components/src/NavigationOptions.cs
+export interface NavigationOptions {
+  forceLoad: boolean;
+  replaceHistoryEntry: boolean;
 }

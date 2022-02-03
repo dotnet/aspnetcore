@@ -1,26 +1,23 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Threading;
+namespace Microsoft.AspNetCore.Http.Features;
 
-namespace Microsoft.AspNetCore.Http.Features
+/// <summary>
+/// Provides access to the HTTP request lifetime operations.
+/// </summary>
+public interface IHttpRequestLifetimeFeature
 {
     /// <summary>
-    /// Provides access to the HTTP request lifetime operations.
+    /// A <see cref="CancellationToken"/> that fires if the request is aborted and
+    /// the application should cease processing. The token will not fire if the request
+    /// completes successfully.
     /// </summary>
-    public interface IHttpRequestLifetimeFeature
-    {
-        /// <summary>
-        /// A <see cref="CancellationToken"/> that fires if the request is aborted and
-        /// the application should cease processing. The token will not fire if the request
-        /// completes successfully.
-        /// </summary>
-        CancellationToken RequestAborted { get; set; }
+    CancellationToken RequestAborted { get; set; }
 
-        /// <summary>
-        /// Forcefully aborts the request if it has not already completed. This will result in
-        /// RequestAborted being triggered.
-        /// </summary>
-        void Abort();
-    }
+    /// <summary>
+    /// Forcefully aborts the request if it has not already completed. This will result in
+    /// RequestAborted being triggered.
+    /// </summary>
+    void Abort();
 }

@@ -1,191 +1,187 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace ApiExplorerWebSite
-{
-    /// <summary>
-    /// A resource filter that looks up and serializes Api Explorer data for the action.
-    ///
-    /// This replaces the 'actual' output of the action.
-    /// </summary>
-    public class ApiExplorerDataFilter : IResourceFilter
-    {
-        private readonly IApiDescriptionGroupCollectionProvider _descriptionProvider;
+namespace ApiExplorerWebSite;
 
-        public ApiExplorerDataFilter(IApiDescriptionGroupCollectionProvider descriptionProvider)
+/// <summary>
+/// A resource filter that looks up and serializes Api Explorer data for the action.
+///
+/// This replaces the 'actual' output of the action.
+/// </summary>
+public class ApiExplorerDataFilter : IResourceFilter
+{
+    private readonly IApiDescriptionGroupCollectionProvider _descriptionProvider;
+
+    public ApiExplorerDataFilter(IApiDescriptionGroupCollectionProvider descriptionProvider)
+    {
+        _descriptionProvider = descriptionProvider;
+    }
+
+    public void OnResourceExecuting(ResourceExecutingContext context)
+    {
+        if (context.ActionDescriptor is ControllerActionDescriptor controllerActionDescriptor &&
+            controllerActionDescriptor.MethodInfo.IsDefined(typeof(PassThruAttribute)))
         {
-            _descriptionProvider = descriptionProvider;
+            return;
         }
 
-        public void OnResourceExecuting(ResourceExecutingContext context)
+        var descriptions = new List<ApiExplorerData>();
+        foreach (var group in _descriptionProvider.ApiDescriptionGroups.Items)
         {
-            if (context.ActionDescriptor is ControllerActionDescriptor controllerActionDescriptor &&
-                controllerActionDescriptor.MethodInfo.IsDefined(typeof(PassThruAttribute)))
+            foreach (var description in group.Items)
             {
-                return;
-            }
-
-            var descriptions = new List<ApiExplorerData>();
-            foreach (var group in _descriptionProvider.ApiDescriptionGroups.Items)
-            {
-                foreach (var description in group.Items)
+                if (context.ActionDescriptor == description.ActionDescriptor)
                 {
-                    if (context.ActionDescriptor == description.ActionDescriptor)
-                    {
-                        descriptions.Add(CreateSerializableData(description));
-                    }
+                    descriptions.Add(CreateSerializableData(description));
                 }
             }
-
-            context.Result = new JsonResult(descriptions);
         }
 
-        public void OnResourceExecuted(ResourceExecutedContext context)
-        {
-        }
+        context.Result = new JsonResult(descriptions);
+    }
 
-        private ApiExplorerData CreateSerializableData(ApiDescription description)
+    public void OnResourceExecuted(ResourceExecutedContext context)
+    {
+    }
+
+    private ApiExplorerData CreateSerializableData(ApiDescription description)
+    {
+        var data = new ApiExplorerData()
         {
-            var data = new ApiExplorerData()
+            GroupName = description.GroupName,
+            HttpMethod = description.HttpMethod,
+            RelativePath = description.RelativePath
+        };
+
+        foreach (var parameter in description.ParameterDescriptions)
+        {
+            var parameterData = new ApiExplorerParameterData()
             {
-                GroupName = description.GroupName,
-                HttpMethod = description.HttpMethod,
-                RelativePath = description.RelativePath
+                Name = parameter.Name,
+                Source = parameter.Source.Id,
+                Type = parameter.Type?.FullName,
+                DefaultValue = parameter.DefaultValue?.ToString(),
+                IsRequired = parameter.IsRequired,
             };
 
-            foreach (var parameter in description.ParameterDescriptions)
+            if (parameter.RouteInfo != null)
             {
-                var parameterData = new ApiExplorerParameterData()
+                parameterData.RouteInfo = new ApiExplorerParameterRouteInfo()
                 {
-                    Name = parameter.Name,
-                    Source = parameter.Source.Id,
-                    Type = parameter.Type?.FullName,
-                    DefaultValue = parameter.DefaultValue?.ToString(),
-                    IsRequired = parameter.IsRequired,
+                    ConstraintTypes = parameter.RouteInfo.Constraints?.Select(c => c.GetType().Name).ToArray(),
+                    DefaultValue = parameter.RouteInfo.DefaultValue,
+                    IsOptional = parameter.RouteInfo.IsOptional,
                 };
-
-                if (parameter.RouteInfo != null)
-                {
-                    parameterData.RouteInfo = new ApiExplorerParameterRouteInfo()
-                    {
-                        ConstraintTypes = parameter.RouteInfo.Constraints?.Select(c => c.GetType().Name).ToArray(),
-                        DefaultValue = parameter.RouteInfo.DefaultValue,
-                        IsOptional = parameter.RouteInfo.IsOptional,
-                    };
-                }
-
-                data.ParameterDescriptions.Add(parameterData);
             }
 
-            foreach (var request in description.SupportedRequestFormats)
+            data.ParameterDescriptions.Add(parameterData);
+        }
+
+        foreach (var request in description.SupportedRequestFormats)
+        {
+            data.SupportedRequestFormats.Add(new ApiExplorerRequestFormat
             {
-                data.SupportedRequestFormats.Add(new ApiExplorerRequestFormat
+                FormatterType = request.Formatter?.GetType().FullName,
+                MediaType = request.MediaType,
+            });
+        }
+
+        foreach (var response in description.SupportedResponseTypes)
+        {
+            var responseType = new ApiExplorerResponseType()
+            {
+                StatusCode = response.StatusCode,
+                ResponseType = response.Type?.FullName,
+                IsDefaultResponse = response.IsDefaultResponse,
+            };
+
+            foreach (var responseFormat in response.ApiResponseFormats)
+            {
+                responseType.ResponseFormats.Add(new ApiExplorerResponseFormat()
                 {
-                    FormatterType = request.Formatter?.GetType().FullName,
-                    MediaType = request.MediaType,
+                    FormatterType = responseFormat.Formatter?.GetType().FullName,
+                    MediaType = responseFormat.MediaType
                 });
             }
 
-            foreach (var response in description.SupportedResponseTypes)
-            {
-                var responseType = new ApiExplorerResponseType()
-                {
-                    StatusCode = response.StatusCode,
-                    ResponseType = response.Type?.FullName,
-                    IsDefaultResponse = response.IsDefaultResponse,
-                };
-
-                foreach(var responseFormat in response.ApiResponseFormats)
-                {
-                    responseType.ResponseFormats.Add(new ApiExplorerResponseFormat()
-                    {
-                        FormatterType = responseFormat.Formatter?.GetType().FullName,
-                        MediaType = responseFormat.MediaType
-                    });
-                }
-
-                data.SupportedResponseTypes.Add(responseType);
-            }
-
-            return data;
+            data.SupportedResponseTypes.Add(responseType);
         }
 
-        // Used to serialize data between client and server
-        private class ApiExplorerData
-        {
-            public string GroupName { get; set; }
+        return data;
+    }
 
-            public string HttpMethod { get; set; }
+    // Used to serialize data between client and server
+    private class ApiExplorerData
+    {
+        public string GroupName { get; set; }
 
-            public List<ApiExplorerParameterData> ParameterDescriptions { get; } = new List<ApiExplorerParameterData>();
+        public string HttpMethod { get; set; }
 
-            public string RelativePath { get; set; }
+        public List<ApiExplorerParameterData> ParameterDescriptions { get; } = new List<ApiExplorerParameterData>();
 
-            public List<ApiExplorerResponseType> SupportedResponseTypes { get; } = new List<ApiExplorerResponseType>();
+        public string RelativePath { get; set; }
 
-            public List<ApiExplorerRequestFormat> SupportedRequestFormats { get; } = new List<ApiExplorerRequestFormat>();
-        }
+        public List<ApiExplorerResponseType> SupportedResponseTypes { get; } = new List<ApiExplorerResponseType>();
 
-        // Used to serialize data between client and server
-        private class ApiExplorerParameterData
-        {
-            public string Name { get; set; }
+        public List<ApiExplorerRequestFormat> SupportedRequestFormats { get; } = new List<ApiExplorerRequestFormat>();
+    }
 
-            public ApiExplorerParameterRouteInfo RouteInfo { get; set; }
+    // Used to serialize data between client and server
+    private class ApiExplorerParameterData
+    {
+        public string Name { get; set; }
 
-            public string Source { get; set; }
+        public ApiExplorerParameterRouteInfo RouteInfo { get; set; }
 
-            public string Type { get; set; }
+        public string Source { get; set; }
 
-            public string DefaultValue { get; set; }
+        public string Type { get; set; }
 
-            public bool IsRequired { get; set; }
-        }
+        public string DefaultValue { get; set; }
 
-        // Used to serialize data between client and server
-        private class ApiExplorerParameterRouteInfo
-        {
-            public string[] ConstraintTypes { get; set; }
+        public bool IsRequired { get; set; }
+    }
 
-            public object DefaultValue { get; set; }
+    // Used to serialize data between client and server
+    private class ApiExplorerParameterRouteInfo
+    {
+        public string[] ConstraintTypes { get; set; }
 
-            public bool IsOptional { get; set; }
-        }
+        public object DefaultValue { get; set; }
 
-        // Used to serialize data between client and server
-        private class ApiExplorerResponseType
-        {
-            public IList<ApiExplorerResponseFormat> ResponseFormats { get; }
-                = new List<ApiExplorerResponseFormat>();
+        public bool IsOptional { get; set; }
+    }
 
-            public string ResponseType { get; set; }
+    // Used to serialize data between client and server
+    private class ApiExplorerResponseType
+    {
+        public IList<ApiExplorerResponseFormat> ResponseFormats { get; }
+            = new List<ApiExplorerResponseFormat>();
 
-            public int StatusCode { get; set; }
+        public string ResponseType { get; set; }
 
-            public bool IsDefaultResponse { get; set; }
-        }
+        public int StatusCode { get; set; }
 
-        private class ApiExplorerResponseFormat
-        {
-            public string MediaType { get; set; }
+        public bool IsDefaultResponse { get; set; }
+    }
 
-            public string FormatterType { get; set; }
-        }
+    private class ApiExplorerResponseFormat
+    {
+        public string MediaType { get; set; }
 
-        private class ApiExplorerRequestFormat
-        {
-            public string MediaType { get; set; }
+        public string FormatterType { get; set; }
+    }
 
-            public string FormatterType { get; set; }
-        }
+    private class ApiExplorerRequestFormat
+    {
+        public string MediaType { get; set; }
+
+        public string FormatterType { get; set; }
     }
 }

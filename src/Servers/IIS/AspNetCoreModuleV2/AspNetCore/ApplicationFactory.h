@@ -32,15 +32,17 @@ public:
     HRESULT Execute(
         _In_  IHttpServer           *pServer,
         _In_  IHttpContext          *pHttpContext,
+        _In_  std::wstring&   shadowCopyDirectory,
         _Outptr_ IAPPLICATION       **pApplication) const
     {
         // m_location.data() is const ptr copy to local to get mutable pointer
         auto location = m_location;
-        std::array<APPLICATION_PARAMETER, 3> parameters {
+        std::array<APPLICATION_PARAMETER, 4> parameters {
             {
                 {"InProcessExeLocation", location.data()},
                 {"TraceContext", pHttpContext->GetTraceContext()},
-                {"Site", pHttpContext->GetSite()}
+                {"Site", pHttpContext->GetSite()},
+                {"ShadowCopyDirectory", shadowCopyDirectory.data()}
             }
         };
 

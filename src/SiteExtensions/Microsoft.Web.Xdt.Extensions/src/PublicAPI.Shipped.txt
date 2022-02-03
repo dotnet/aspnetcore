@@ -1,6 +1,6 @@
 #nullable enable
+~Microsoft.Web.Xdt.Extensions.InsertOrAppendAttribute.AttributeName.get -> string
+~Microsoft.Web.Xdt.Extensions.InsertOrAppendAttribute.GetArgumentValue(string name) -> string
 Microsoft.Web.Xdt.Extensions.InsertOrAppendAttribute
 Microsoft.Web.Xdt.Extensions.InsertOrAppendAttribute.InsertOrAppendAttribute() -> void
 override Microsoft.Web.Xdt.Extensions.InsertOrAppendAttribute.Apply() -> void
-~Microsoft.Web.Xdt.Extensions.InsertOrAppendAttribute.AttributeName.get -> string
-~Microsoft.Web.Xdt.Extensions.InsertOrAppendAttribute.GetArgumentValue(string name) -> string

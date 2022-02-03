@@ -31,6 +31,14 @@ group('JSON handling', () => {
       }
     });
 
+  benchmark('Serialize 340kb (Source Generated)', () =>
+    benchmarkJson(app, '#serialize-large-sourcegen', '#serialized-length', 339803), {
+      descriptor: {
+        name: 'blazorwasm/jsonserialize-sourcegen-340kb',
+        description: 'Serialize JSON (SourceGen) 340kb - Time in ms'
+      }
+    });
+
   benchmark('Deserialize 1kb', () =>
     benchmarkJson(app, '#deserialize-small', '#deserialized-count', 5), {
       descriptor: {
@@ -44,6 +52,14 @@ group('JSON handling', () => {
       descriptor: {
         name: 'blazorwasm/jsondeserialize-340kb',
         description: 'Deserialize JSON 340kb - Time in ms'
+      }
+    });
+
+  benchmark('Deserialize 340kb (Source Generated)', () =>
+    benchmarkJson(app, '#deserialize-large-sourcegen', '#deserialized-count', 1365), {
+      descriptor: {
+        name: 'blazorwasm/jsondeserialize-sourcegen-340kb',
+        description: 'Deserialize JSON (SourceGen) 340kb - Time in ms'
       }
     });
 

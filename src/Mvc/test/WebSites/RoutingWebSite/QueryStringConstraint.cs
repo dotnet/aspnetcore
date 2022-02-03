@@ -1,16 +1,12 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
+namespace RoutingWebSite;
 
-namespace RoutingWebSite
+public class QueryStringConstraint : IRouteConstraint
 {
-    public class QueryStringConstraint : IRouteConstraint
+    public bool Match(HttpContext httpContext, IRouter route, string routeKey, RouteValueDictionary values, RouteDirection routeDirection)
     {
-        public bool Match(HttpContext httpContext, IRouter route, string routeKey, RouteValueDictionary values, RouteDirection routeDirection)
-        {
-            return httpContext.Request.Query["allowed"].ToString() == "true";
-        }
+        return httpContext.Request.Query["allowed"].ToString() == "true";
     }
 }

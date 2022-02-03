@@ -1,23 +1,22 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading;
 
-namespace Microsoft.AspNetCore.Connections.Features
+namespace Microsoft.AspNetCore.Connections.Features;
+
+/// <summary>
+/// Enables graceful termination of the connection.
+/// </summary>
+public interface IConnectionLifetimeNotificationFeature
 {
     /// <summary>
-    /// Enables graceful termination of the connection.
+    /// Gets or set an <see cref="CancellationToken"/> that will be triggered when closing the connection has been requested.
     /// </summary>
-    public interface IConnectionLifetimeNotificationFeature
-    {
-        /// <summary>
-        /// Gets or set an <see cref="CancellationToken"/> that will be triggered when closing the connection has been requested.
-        /// </summary>
-        CancellationToken ConnectionClosedRequested { get; set; }
+    CancellationToken ConnectionClosedRequested { get; set; }
 
-        /// <summary>
-        /// Requests the connection to be closed.
-        /// </summary>
-        void RequestClose();
-    }
+    /// <summary>
+    /// Requests the connection to be closed.
+    /// </summary>
+    void RequestClose();
 }

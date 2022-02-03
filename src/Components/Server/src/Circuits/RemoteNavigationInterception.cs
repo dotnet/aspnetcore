@@ -1,43 +1,40 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.JSInterop;
 using Interop = Microsoft.AspNetCore.Components.Web.BrowserNavigationManagerInterop;
 
-namespace Microsoft.AspNetCore.Components.Server.Circuits
+namespace Microsoft.AspNetCore.Components.Server.Circuits;
+
+internal sealed class RemoteNavigationInterception : INavigationInterception
 {
-    internal sealed class RemoteNavigationInterception : INavigationInterception
+    private IJSRuntime _jsRuntime;
+
+    public void AttachJSRuntime(IJSRuntime jsRuntime)
     {
-        private IJSRuntime _jsRuntime;
-
-        public void AttachJSRuntime(IJSRuntime jsRuntime)
+        if (HasAttachedJSRuntime)
         {
-            if (HasAttachedJSRuntime)
-            {
-                throw new InvalidOperationException("JSRuntime has already been initialized.");
-            }
-
-            _jsRuntime = jsRuntime;
+            throw new InvalidOperationException("JSRuntime has already been initialized.");
         }
 
-        public bool HasAttachedJSRuntime => _jsRuntime != null;
+        _jsRuntime = jsRuntime;
+    }
 
-        public async Task EnableNavigationInterceptionAsync()
+    public bool HasAttachedJSRuntime => _jsRuntime != null;
+
+    public async Task EnableNavigationInterceptionAsync()
+    {
+        if (!HasAttachedJSRuntime)
         {
-            if (!HasAttachedJSRuntime)
-            {
-                // We should generally never get here in the ordinary case. Router will only call this API once pre-rendering is complete.
-                // This would guard any unusual usage of this API.
-                throw new InvalidOperationException("Navigation commands can not be issued at this time. This is because the component is being " +
-                    "prerendered and the page has not yet loaded in the browser or because the circuit is currently disconnected. " +
-                    "Components must wrap any navigation calls in conditional logic to ensure those navigation calls are not " +
-                    "attempted during prerendering or while the client is disconnected.");
-            }
-
-            await _jsRuntime.InvokeAsync<object>(Interop.EnableNavigationInterception);
+            // We should generally never get here in the ordinary case. Router will only call this API once pre-rendering is complete.
+            // This would guard any unusual usage of this API.
+            throw new InvalidOperationException("Navigation commands can not be issued at this time. This is because the component is being " +
+                "prerendered and the page has not yet loaded in the browser or because the circuit is currently disconnected. " +
+                "Components must wrap any navigation calls in conditional logic to ensure those navigation calls are not " +
+                "attempted during prerendering or while the client is disconnected.");
         }
+
+        await _jsRuntime.InvokeAsync<object>(Interop.EnableNavigationInterception);
     }
 }

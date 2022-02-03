@@ -207,6 +207,12 @@ Language=English
 %1
 .
 
+Messageid=1037
+SymbolicName=ASPNETCORE_EVENT_RECYCLE_FILECHANGE
+Language=English
+%1
+.
+
 
 ;
 ;#endif     // _ASPNETCORE_MODULE_MSG_H_

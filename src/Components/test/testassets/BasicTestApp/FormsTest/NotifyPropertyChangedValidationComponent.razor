@@ -41,7 +41,8 @@
 
     protected override void OnInitialized()
     {
-        editContext = new EditContext(person).AddDataAnnotationsValidation();
+        editContext = new EditContext(person);
+        editContext.EnableDataAnnotationsValidation(new TestServiceProvider());
 
         // Wire up INotifyPropertyChanged to the EditContext
         person.PropertyChanged += (sender, eventArgs) =>
@@ -101,5 +102,11 @@
         }
 
         #endregion
+    }
+
+    public class TestServiceProvider : IServiceProvider
+    {
+        public object GetService(Type serviceType)
+            => throw new NotImplementedException();
     }
 }

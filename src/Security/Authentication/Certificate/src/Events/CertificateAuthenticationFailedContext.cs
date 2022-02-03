@@ -1,33 +1,31 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Authentication.Certificate
+namespace Microsoft.AspNetCore.Authentication.Certificate;
+
+/// <summary>
+/// Context used when a failure occurs.
+/// </summary>
+public class CertificateAuthenticationFailedContext : ResultContext<CertificateAuthenticationOptions>
 {
     /// <summary>
-    /// Context used when a failure occurs.
+    /// Constructor.
     /// </summary>
-    public class CertificateAuthenticationFailedContext : ResultContext<CertificateAuthenticationOptions>
+    /// <param name="context"></param>
+    /// <param name="scheme"></param>
+    /// <param name="options"></param>
+    public CertificateAuthenticationFailedContext(
+        HttpContext context,
+        AuthenticationScheme scheme,
+        CertificateAuthenticationOptions options)
+        : base(context, scheme, options)
     {
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        /// <param name="context"></param>
-        /// <param name="scheme"></param>
-        /// <param name="options"></param>
-        public CertificateAuthenticationFailedContext(
-            HttpContext context,
-            AuthenticationScheme scheme,
-            CertificateAuthenticationOptions options)
-            : base(context, scheme, options)
-        {
-        }
-
-        /// <summary>
-        /// The exception.
-        /// </summary>
-        public Exception Exception { get; set; } = default!;
     }
+
+    /// <summary>
+    /// The exception.
+    /// </summary>
+    public Exception Exception { get; set; } = default!;
 }

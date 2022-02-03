@@ -1,23 +1,17 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.IO.Pipelines;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+
+internal interface IHttpResponsePipeWriterControl
 {
-    internal interface IHttpResponsePipeWriterControl
-    {
-        void ProduceContinue();
-        Memory<byte> GetMemory(int sizeHint = 0);
-        Span<byte> GetSpan(int sizeHint = 0);
-        void Advance(int bytes);
-        ValueTask<FlushResult> FlushPipeAsync(CancellationToken cancellationToken);
-        ValueTask<FlushResult> WritePipeAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken);
-        void CancelPendingFlush();
-    }
+    void ProduceContinue();
+    Memory<byte> GetMemory(int sizeHint = 0);
+    Span<byte> GetSpan(int sizeHint = 0);
+    void Advance(int bytes);
+    ValueTask<FlushResult> FlushPipeAsync(CancellationToken cancellationToken);
+    ValueTask<FlushResult> WritePipeAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken);
+    void CancelPendingFlush();
 }

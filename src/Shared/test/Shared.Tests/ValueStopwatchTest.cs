@@ -1,39 +1,38 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Microsoft.Extensions.Internal.Test
+namespace Microsoft.Extensions.Internal.Test;
+
+public class ValueStopwatchTest
 {
-    public class ValueStopwatchTest
+    [Fact]
+    public void IsActiveIsFalseForDefaultValueStopwatch()
     {
-        [Fact]
-        public void IsActiveIsFalseForDefaultValueStopwatch()
-        {
-            Assert.False(default(ValueStopwatch).IsActive);
-        }
+        Assert.False(default(ValueStopwatch).IsActive);
+    }
 
-        [Fact]
-        public void IsActiveIsTrueWhenValueStopwatchStartedWithStartNew()
-        {
-            Assert.True(ValueStopwatch.StartNew().IsActive);
-        }
+    [Fact]
+    public void IsActiveIsTrueWhenValueStopwatchStartedWithStartNew()
+    {
+        Assert.True(ValueStopwatch.StartNew().IsActive);
+    }
 
-        [Fact]
-        public void GetElapsedTimeThrowsIfValueStopwatchIsDefaultValue()
-        {
-            var stopwatch = default(ValueStopwatch);
-            Assert.Throws<InvalidOperationException>(() => stopwatch.GetElapsedTime());
-        }
+    [Fact]
+    public void GetElapsedTimeThrowsIfValueStopwatchIsDefaultValue()
+    {
+        var stopwatch = default(ValueStopwatch);
+        Assert.Throws<InvalidOperationException>(() => stopwatch.GetElapsedTime());
+    }
 
-        [Fact]
-        public async Task GetElapsedTimeReturnsTimeElapsedSinceStart()
-        {
-            var stopwatch = ValueStopwatch.StartNew();
-            await Task.Delay(200);
-            Assert.True(stopwatch.GetElapsedTime().TotalMilliseconds > 0);
-        }
+    [Fact]
+    public async Task GetElapsedTimeReturnsTimeElapsedSinceStart()
+    {
+        var stopwatch = ValueStopwatch.StartNew();
+        await Task.Delay(200);
+        Assert.True(stopwatch.GetElapsedTime().TotalMilliseconds > 0);
     }
 }

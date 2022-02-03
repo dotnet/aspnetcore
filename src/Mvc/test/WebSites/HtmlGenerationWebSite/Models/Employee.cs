@@ -1,26 +1,25 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace HtmlGenerationWebSite.Models
+namespace HtmlGenerationWebSite.Models;
+
+public class Employee : Person
 {
-    public class Employee : Person
+    public string Address
     {
-        public string Address
-        {
-            get;
-            set;
-        }
+        get;
+        set;
+    }
 
-        public string OfficeNumber
-        {
-            get;
-            set;
-        }
+    public string OfficeNumber
+    {
+        get;
+        set;
+    }
 
-        public bool Remote
-        {
-            get;
-            set;
-        }
+    public bool Remote
+    {
+        get;
+        set;
     }
 }

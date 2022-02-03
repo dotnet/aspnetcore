@@ -1,27 +1,23 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable enable
-
-using System;
 using Microsoft.AspNetCore.Routing;
 
-namespace Microsoft.AspNetCore.Mvc.Routing
-{
-    internal class DynamicControllerMetadata : IDynamicEndpointMetadata
-    {
-        public DynamicControllerMetadata(RouteValueDictionary values)
-        {
-            if (values == null)
-            {
-                throw new ArgumentNullException(nameof(values));
-            }
+namespace Microsoft.AspNetCore.Mvc.Routing;
 
-            Values = values;
+internal class DynamicControllerMetadata : IDynamicEndpointMetadata
+{
+    public DynamicControllerMetadata(RouteValueDictionary values)
+    {
+        if (values == null)
+        {
+            throw new ArgumentNullException(nameof(values));
         }
 
-        public bool IsDynamic => true;
-
-        public RouteValueDictionary Values { get; }
+        Values = values;
     }
+
+    public bool IsDynamic => true;
+
+    public RouteValueDictionary Values { get; }
 }

@@ -1,53 +1,53 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Identity.ExternalClaims.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
-using Identity.ExternalClaims.Data;
 
-namespace Identity.ExternalClaims.Pages.Account.Manage
+namespace Identity.ExternalClaims.Pages.Account.Manage;
+
+public class TwoFactorAuthenticationModel : PageModel
 {
-    public class TwoFactorAuthenticationModel : PageModel
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly SignInManager<ApplicationUser> _signInManager;
+    private readonly ILogger<TwoFactorAuthenticationModel> _logger;
+
+    public TwoFactorAuthenticationModel(
+        UserManager<ApplicationUser> userManager,
+        SignInManager<ApplicationUser> signInManager,
+        ILogger<TwoFactorAuthenticationModel> logger)
     {
-        private const string AuthenicatorUriFormat = "otpauth://totp/{0}:{1}?secret={2}&issuer={0}";
+        _userManager = userManager;
+        _signInManager = signInManager;
+        _logger = logger;
+    }
 
-        private readonly UserManager<ApplicationUser> _userManager;
-        private readonly SignInManager<ApplicationUser> _signInManager;
-        private readonly ILogger<TwoFactorAuthenticationModel> _logger;
+    public bool HasAuthenticator { get; set; }
 
-        public TwoFactorAuthenticationModel(
-            UserManager<ApplicationUser> userManager,
-            SignInManager<ApplicationUser> signInManager,
-            ILogger<TwoFactorAuthenticationModel> logger)
+    public int RecoveryCodesLeft { get; set; }
+
+    [BindProperty]
+    public bool Is2faEnabled { get; set; }
+
+    public async Task<IActionResult> OnGet()
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
         {
-            _userManager = userManager;
-            _signInManager = signInManager;
-            _logger = logger;
+            throw new ApplicationException($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
         }
 
-        public bool HasAuthenticator { get; set; }
+        HasAuthenticator = await _userManager.GetAuthenticatorKeyAsync(user) != null;
+        Is2faEnabled = await _userManager.GetTwoFactorEnabledAsync(user);
+        RecoveryCodesLeft = await _userManager.CountRecoveryCodesAsync(user);
 
-        public int RecoveryCodesLeft { get; set; }
-
-        [BindProperty]
-        public bool Is2faEnabled { get; set; }
-
-        public async Task<IActionResult> OnGet()
-        {
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-            {
-                throw new ApplicationException($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
-            }
-
-            HasAuthenticator = await _userManager.GetAuthenticatorKeyAsync(user) != null;
-            Is2faEnabled = await _userManager.GetTwoFactorEnabledAsync(user);
-            RecoveryCodesLeft = await _userManager.CountRecoveryCodesAsync(user);
-
-            return Page();
-        }
+        return Page();
     }
 }

@@ -1,48 +1,18 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.HttpsPolicy
+namespace Microsoft.AspNetCore.HttpsPolicy;
+
+internal static partial class HstsLoggingExtensions
 {
-    internal static class HstsLoggingExtensions
-    {
-        private static readonly Action<ILogger, Exception?> _notSecure;
-        private static readonly Action<ILogger, string, Exception?> _excludedHost;
-        private static readonly Action<ILogger, Exception?> _addingHstsHeader;
+    [LoggerMessage(1, LogLevel.Debug, "The request is insecure. Skipping HSTS header.", EventName = "NotSecure")]
+    public static partial void SkippingInsecure(this ILogger logger);
 
-        static HstsLoggingExtensions()
-        {
-            _notSecure = LoggerMessage.Define(
-                LogLevel.Debug,
-                new EventId(1, "NotSecure"),
-                "The request is insecure. Skipping HSTS header.");
+    [LoggerMessage(2, LogLevel.Debug, "The host '{host}' is excluded. Skipping HSTS header.", EventName = "ExcludedHost")]
+    public static partial void SkippingExcludedHost(this ILogger logger, string host);
 
-            _excludedHost = LoggerMessage.Define<string>(
-                LogLevel.Debug,
-                new EventId(2, "ExcludedHost"),
-                "The host '{host}' is excluded. Skipping HSTS header.");
-
-            _addingHstsHeader = LoggerMessage.Define(
-                LogLevel.Trace,
-                new EventId(3, "AddingHstsHeader"),
-                "Adding HSTS header to response.");
-        }
-
-        public static void SkippingInsecure(this ILogger logger)
-        {
-            _notSecure(logger, null);
-        }
-
-        public static void SkippingExcludedHost(this ILogger logger, string host)
-        {
-            _excludedHost(logger, host, null);
-        }
-
-        public static void AddingHstsHeader(this ILogger logger)
-        {
-            _addingHstsHeader(logger, null);
-        }
-    }
+    [LoggerMessage(3, LogLevel.Trace, "Adding HSTS header to response.", EventName = "AddingHstsHeader")]
+    public static partial void AddingHstsHeader(this ILogger logger);
 }

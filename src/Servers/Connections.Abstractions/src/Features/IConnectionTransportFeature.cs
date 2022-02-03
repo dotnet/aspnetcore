@@ -1,18 +1,17 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO.Pipelines;
 
-namespace Microsoft.AspNetCore.Connections.Features
+namespace Microsoft.AspNetCore.Connections.Features;
+
+/// <summary>
+/// The transport for the connection.
+/// </summary>
+public interface IConnectionTransportFeature
 {
     /// <summary>
-    /// The transport for the connection.
+    /// Gets or sets the transport for the connection.
     /// </summary>
-    public interface IConnectionTransportFeature
-    {
-        /// <summary>
-        /// Gets or sets the transport for the connection.
-        /// </summary>
-        IDuplexPipe Transport { get; set; }
-    }
+    IDuplexPipe Transport { get; set; }
 }

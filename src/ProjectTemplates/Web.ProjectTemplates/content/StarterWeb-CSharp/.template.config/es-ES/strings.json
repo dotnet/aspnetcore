@@ -1,7 +1,7 @@
 {
   "version": "1.0.0.0",
   "strings": {
-    "name": "ASP.NET Core Web App (Model-View-Controller)",
+    "name": "Aplicación web de ASP.NET Core (Modelo-Vista-Controlador)",
     "description": "Una plantilla de proyecto para crear una aplicación ASP.NET Core con controladores y vistas de ASP.NET Core MVC de ejemplo. Esta plantilla también puede usarse para servicios RESTful HTTP."
   }
 }

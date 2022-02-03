@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\..\build\testsite.props" />
+
+  <PropertyGroup>
+    <!-- Using shorter assembly name instead of Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks because https://github.com/dotnet/BenchmarkDotNet/issues/498 -->
+    <AssemblyName>IIS.Microbenchmarks</AssemblyName>
+    <RootNamespace>Microsoft.AspNetCore.Server.IIS.Microbenchmarks</RootNamespace>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <ServerGarbageCollection>true</ServerGarbageCollection>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <SkipMicrobenchmarksValidation>true</SkipMicrobenchmarksValidation>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="..\..\test\Common.FunctionalTests\Infrastructure\*.config" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(UseIisNativeAssets)' == 'true'">
+    <None Include="$(ArtifactsBinDir)InProcessRequestHandler\x64\$(Configuration)\aspnetcorev2_inprocess.dll" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="%(FileName)%(Extension)" />
+    <None Include="$(ArtifactsBinDir)InProcessRequestHandler\x64\$(Configuration)\aspnetcorev2_inprocess.pdb" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="%(FileName)%(Extension)" />
+    <None Include="$(ArtifactsBinDir)AspNetCoreModuleShim\x64\$(Configuration)\aspnetcorev2.dll" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="%(FileName)%(Extension)" />
+    <None Include="$(ArtifactsBinDir)AspNetCoreModuleShim\x64\$(Configuration)\aspnetcorev2.pdb" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="%(FileName)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\test\IISExpress.FunctionalTests\IISExpress.FunctionalTests.csproj" />
+    <ProjectReference Include="..\..\test\IIS.Tests\IIS.Tests.csproj" />
+    <ProjectReference Include="..\..\test\testassets\InProcessWebSite\InProcessWebSite.csproj"
+      Private="false"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true" />
+    <ProjectReference Include="$(RepoRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="BenchmarkDotNet" />
+    <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />
+
+    <Compile Include="$(SharedSourceRoot)BenchmarkRunner\*.cs" />
+  </ItemGroup>
+
+</Project>

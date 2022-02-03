@@ -1,14 +1,13 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace HtmlGenerationWebSite.Models
+namespace HtmlGenerationWebSite.Models;
+
+public class ViewModel
 {
-    public class ViewModel
-    {
-        public int Integer { get; set; } = 23;
+    public int Integer { get; set; } = 23;
 
-        public long? NullableLong { get; set; } = 24L;
+    public long? NullableLong { get; set; } = 24L;
 
-        public TemplateModel Template { get; set; } = new SuperTemplateModel();
-    }
+    public TemplateModel Template { get; set; } = new SuperTemplateModel();
 }

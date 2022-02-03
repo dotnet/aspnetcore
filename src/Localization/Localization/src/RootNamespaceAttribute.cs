@@ -1,35 +1,34 @@
-// Copyright (c) .NET Foundation. All rights reserved. 
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 
-namespace Microsoft.Extensions.Localization
+namespace Microsoft.Extensions.Localization;
+
+/// <summary>
+/// Provides the RootNamespace of an Assembly. The RootNamespace of the assembly is used by Localization to
+/// determine the resource name to look for when RootNamespace differs from the AssemblyName.
+/// </summary>
+[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = false, Inherited = false)]
+public class RootNamespaceAttribute : Attribute
 {
     /// <summary>
-    /// Provides the RootNamespace of an Assembly. The RootNamespace of the assembly is used by Localization to
-    /// determine the resource name to look for when RootNamespace differs from the AssemblyName.
+    /// Creates a new <see cref="RootNamespaceAttribute"/>.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = false, Inherited = false)]
-    public class RootNamespaceAttribute : Attribute
+    /// <param name="rootNamespace">The RootNamespace for this Assembly.</param>
+    public RootNamespaceAttribute(string rootNamespace)
     {
-        /// <summary>
-        /// Creates a new <see cref="RootNamespaceAttribute"/>.
-        /// </summary>
-        /// <param name="rootNamespace">The RootNamespace for this Assembly.</param>
-        public RootNamespaceAttribute(string rootNamespace)
+        if (string.IsNullOrEmpty(rootNamespace))
         {
-            if (string.IsNullOrEmpty(rootNamespace))
-            {
-                throw new ArgumentNullException(nameof(rootNamespace));
-            }
-
-            RootNamespace = rootNamespace;
+            throw new ArgumentNullException(nameof(rootNamespace));
         }
 
-        /// <summary>
-        /// The RootNamespace of this Assembly. The RootNamespace of the assembly is used by Localization to
-        /// determine the resource name to look for when RootNamespace differs from the AssemblyName.
-        /// </summary>
-        public string RootNamespace { get; }
+        RootNamespace = rootNamespace;
     }
+
+    /// <summary>
+    /// The RootNamespace of this Assembly. The RootNamespace of the assembly is used by Localization to
+    /// determine the resource name to look for when RootNamespace differs from the AssemblyName.
+    /// </summary>
+    public string RootNamespace { get; }
 }

@@ -1,0 +1,9 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "Blazor WebAssembly アプリ",
+    "description": "WebAssembly 上で実行され、オプションで ASP.NET Core アプリによってホストされる Blazor アプリを作成するためのプロジェクト テンプレート。このテンプレートは、機能豊富で動的なユーザー インターフェイス (UI) を備えた Web アプリに使用できます。",
+    "parameter.Hosted.name": "ASP.NET Core でホストされた(_h)",
+    "parameter.PWA.name": "プログレッシブ Web アプリケーション(_P)"
+  }
+}

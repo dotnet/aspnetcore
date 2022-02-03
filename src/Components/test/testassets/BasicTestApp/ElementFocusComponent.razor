@@ -1,16 +1,55 @@
-﻿@using Microsoft.JSInterop
+﻿@if (performFocusDuringOnAfterRender)
+{
+    <input id="focus-input-onafterrender" @ref="inputForOnAfterRenderReference" @onfocusin="@(() => { didReceiveFocusIn = true; })" />
+}
 
 <button id="focus-button" @onclick="@(() => FocusInput(false))">Click to focus!</button>
 <hr />
 <button id="focus-button-prevented" @onclick="@(() => FocusInput(true))">Click to focus with preventScroll!</button>
 <hr />
+<button id="focus-button-onafterrender-invoke" @onclick="@FocusDuringOnAfterRenderViaInvoke">Focus during OnAfterRender via Invoke</button>
+<hr />
+<button id="focus-button-onafterrender-await" @onclick="@FocusDuringOnAfterRenderViaAwait">Focus during OnAfterRender via await</button>
+<hr />
+<p>Received focus in: <span id="focus-event-received">@didReceiveFocusIn</span></p>
+<hr />
 <input id="focus-input" @ref="inputReference" style="margin-top: 10000px" />
 
 @code {
     private ElementReference inputReference;
+    private ElementReference inputForOnAfterRenderReference;
+    private bool performFocusDuringOnAfterRender;
+    private bool didReceiveFocusIn;
 
     private async Task FocusInput(bool preventScroll)
     {
         await inputReference.FocusAsync(preventScroll);
+    }
+
+    private void FocusDuringOnAfterRenderViaInvoke()
+    {
+        Task.Run(async () =>
+        {
+            await Task.Delay(500);
+            _ = InvokeAsync(() =>
+            {
+                performFocusDuringOnAfterRender = true;
+                StateHasChanged();
+            });
+        });
+    }
+
+    private async Task FocusDuringOnAfterRenderViaAwait()
+    {
+        await Task.Delay(500);
+        performFocusDuringOnAfterRender = true;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (performFocusDuringOnAfterRender)
+        {
+            await inputForOnAfterRenderReference.FocusAsync();
+        }
     }
 }

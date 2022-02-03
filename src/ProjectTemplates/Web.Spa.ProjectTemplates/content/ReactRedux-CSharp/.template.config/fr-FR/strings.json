@@ -1,7 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "strings": {
-    "name": "React.js et Redux",
-    "description": "Modèle de projet pour créer une application ASP.NET Core avec React.js et Redux."
-  }
-}

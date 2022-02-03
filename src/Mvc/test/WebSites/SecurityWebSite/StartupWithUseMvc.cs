@@ -1,36 +1,32 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization.Policy;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 
-namespace SecurityWebSite
+namespace SecurityWebSite;
+
+public class StartupWithUseMvc
 {
-    public class StartupWithUseMvc
+    // This method gets called by the runtime. Use this method to add services to the container.
+    public void ConfigureServices(IServiceCollection services)
     {
-        // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services)
+        // Add framework services.
+        services.AddMvc(options => options.EnableEndpointRouting = false);
+        services.AddAntiforgery();
+        services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options =>
         {
-            // Add framework services.
-            services.AddMvc(options => options.EnableEndpointRouting = false);
-            services.AddAntiforgery();
-            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options =>
-            {
-                options.LoginPath = "/Home/Login";
-                options.LogoutPath = "/Home/Logout";
-            }).AddCookie("Cookie2");
+            options.LoginPath = "/Home/Login";
+            options.LogoutPath = "/Home/Logout";
+        }).AddCookie("Cookie2");
 
-            services.AddScoped<IPolicyEvaluator, CountingPolicyEvaluator>();
-        }
+        services.AddScoped<IPolicyEvaluator, CountingPolicyEvaluator>();
+    }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app)
-        {
-            app.UseAuthentication();
-            app.UseMvcWithDefaultRoute();
-        }
+    // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+    public void Configure(IApplicationBuilder app)
+    {
+        app.UseAuthentication();
+        app.UseMvcWithDefaultRoute();
     }
 }

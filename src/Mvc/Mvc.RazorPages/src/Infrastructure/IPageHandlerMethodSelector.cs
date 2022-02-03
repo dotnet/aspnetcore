@@ -1,18 +1,17 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
+namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
+
+/// <summary>
+/// Selects a handler method from a page.
+/// </summary>
+public interface IPageHandlerMethodSelector
 {
     /// <summary>
     /// Selects a handler method from a page.
     /// </summary>
-    public interface IPageHandlerMethodSelector
-    {
-        /// <summary>
-        /// Selects a handler method from a page.
-        /// </summary>
-        /// <param name="context">The <see cref="PageContext"/>.</param>
-        /// <returns>The selected <see cref="HandlerMethodDescriptor"/>.</returns>
-        HandlerMethodDescriptor Select(PageContext context);
-    }
+    /// <param name="context">The <see cref="PageContext"/>.</param>
+    /// <returns>The selected <see cref="HandlerMethodDescriptor"/>.</returns>
+    HandlerMethodDescriptor? Select(PageContext context);
 }

@@ -1,4 +1,8 @@
 #nullable enable
+const Microsoft.AspNetCore.Http.Features.FormOptions.DefaultBufferBodyLengthLimit = 134217728 -> int
+const Microsoft.AspNetCore.Http.Features.FormOptions.DefaultMemoryBufferThreshold = 65536 -> int
+const Microsoft.AspNetCore.Http.Features.FormOptions.DefaultMultipartBodyLengthLimit = 134217728 -> long
+const Microsoft.AspNetCore.Http.Features.FormOptions.DefaultMultipartBoundaryLengthLimit = 128 -> int
 Microsoft.AspNetCore.Builder.ApplicationBuilder
 Microsoft.AspNetCore.Builder.ApplicationBuilder.ApplicationBuilder(System.IServiceProvider! serviceProvider) -> void
 Microsoft.AspNetCore.Builder.ApplicationBuilder.ApplicationBuilder(System.IServiceProvider! serviceProvider, object! server) -> void
@@ -118,6 +122,9 @@ Microsoft.AspNetCore.Http.Features.HttpResponseFeature.ReasonPhrase.get -> strin
 Microsoft.AspNetCore.Http.Features.HttpResponseFeature.ReasonPhrase.set -> void
 Microsoft.AspNetCore.Http.Features.HttpResponseFeature.StatusCode.get -> int
 Microsoft.AspNetCore.Http.Features.HttpResponseFeature.StatusCode.set -> void
+Microsoft.AspNetCore.Http.Features.IHttpActivityFeature
+Microsoft.AspNetCore.Http.Features.IHttpActivityFeature.Activity.get -> System.Diagnostics.Activity!
+Microsoft.AspNetCore.Http.Features.IHttpActivityFeature.Activity.set -> void
 Microsoft.AspNetCore.Http.Features.ItemsFeature
 Microsoft.AspNetCore.Http.Features.ItemsFeature.Items.get -> System.Collections.Generic.IDictionary<object!, object?>!
 Microsoft.AspNetCore.Http.Features.ItemsFeature.Items.set -> void
@@ -169,8 +176,8 @@ Microsoft.AspNetCore.Http.FormCollection.Files.get -> Microsoft.AspNetCore.Http.
 Microsoft.AspNetCore.Http.FormCollection.FormCollection(System.Collections.Generic.Dictionary<string!, Microsoft.Extensions.Primitives.StringValues>? fields, Microsoft.AspNetCore.Http.IFormFileCollection? files = null) -> void
 Microsoft.AspNetCore.Http.FormCollection.GetEnumerator() -> Microsoft.AspNetCore.Http.FormCollection.Enumerator
 Microsoft.AspNetCore.Http.FormCollection.Keys.get -> System.Collections.Generic.ICollection<string!>!
-Microsoft.AspNetCore.Http.FormCollection.TryGetValue(string! key, out Microsoft.Extensions.Primitives.StringValues value) -> bool
 Microsoft.AspNetCore.Http.FormCollection.this[string! key].get -> Microsoft.Extensions.Primitives.StringValues
+Microsoft.AspNetCore.Http.FormCollection.TryGetValue(string! key, out Microsoft.Extensions.Primitives.StringValues value) -> bool
 Microsoft.AspNetCore.Http.FormFile
 Microsoft.AspNetCore.Http.FormFile.ContentDisposition.get -> string!
 Microsoft.AspNetCore.Http.FormFile.ContentDisposition.set -> void
@@ -191,8 +198,8 @@ Microsoft.AspNetCore.Http.FormFileCollection.GetFile(string! name) -> Microsoft.
 Microsoft.AspNetCore.Http.FormFileCollection.GetFiles(string! name) -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Http.IFormFile!>!
 Microsoft.AspNetCore.Http.FormFileCollection.this[string! name].get -> Microsoft.AspNetCore.Http.IFormFile?
 Microsoft.AspNetCore.Http.HeaderDictionary
-Microsoft.AspNetCore.Http.HeaderDictionary.Add(System.Collections.Generic.KeyValuePair<string!, Microsoft.Extensions.Primitives.StringValues> item) -> void
 Microsoft.AspNetCore.Http.HeaderDictionary.Add(string! key, Microsoft.Extensions.Primitives.StringValues value) -> void
+Microsoft.AspNetCore.Http.HeaderDictionary.Add(System.Collections.Generic.KeyValuePair<string!, Microsoft.Extensions.Primitives.StringValues> item) -> void
 Microsoft.AspNetCore.Http.HeaderDictionary.Clear() -> void
 Microsoft.AspNetCore.Http.HeaderDictionary.Contains(System.Collections.Generic.KeyValuePair<string!, Microsoft.Extensions.Primitives.StringValues> item) -> bool
 Microsoft.AspNetCore.Http.HeaderDictionary.ContainsKey(string! key) -> bool
@@ -206,24 +213,21 @@ Microsoft.AspNetCore.Http.HeaderDictionary.Enumerator.Dispose() -> void
 Microsoft.AspNetCore.Http.HeaderDictionary.Enumerator.MoveNext() -> bool
 Microsoft.AspNetCore.Http.HeaderDictionary.GetEnumerator() -> Microsoft.AspNetCore.Http.HeaderDictionary.Enumerator
 Microsoft.AspNetCore.Http.HeaderDictionary.HeaderDictionary() -> void
-Microsoft.AspNetCore.Http.HeaderDictionary.HeaderDictionary(System.Collections.Generic.Dictionary<string!, Microsoft.Extensions.Primitives.StringValues>? store) -> void
 Microsoft.AspNetCore.Http.HeaderDictionary.HeaderDictionary(int capacity) -> void
+Microsoft.AspNetCore.Http.HeaderDictionary.HeaderDictionary(System.Collections.Generic.Dictionary<string!, Microsoft.Extensions.Primitives.StringValues>? store) -> void
 Microsoft.AspNetCore.Http.HeaderDictionary.IsReadOnly.get -> bool
 Microsoft.AspNetCore.Http.HeaderDictionary.IsReadOnly.set -> void
 Microsoft.AspNetCore.Http.HeaderDictionary.Keys.get -> System.Collections.Generic.ICollection<string!>!
-Microsoft.AspNetCore.Http.HeaderDictionary.Remove(System.Collections.Generic.KeyValuePair<string!, Microsoft.Extensions.Primitives.StringValues> item) -> bool
 Microsoft.AspNetCore.Http.HeaderDictionary.Remove(string! key) -> bool
-Microsoft.AspNetCore.Http.HeaderDictionary.TryGetValue(string! key, out Microsoft.Extensions.Primitives.StringValues value) -> bool
-Microsoft.AspNetCore.Http.HeaderDictionary.Values.get -> System.Collections.Generic.ICollection<Microsoft.Extensions.Primitives.StringValues>!
+Microsoft.AspNetCore.Http.HeaderDictionary.Remove(System.Collections.Generic.KeyValuePair<string!, Microsoft.Extensions.Primitives.StringValues> item) -> bool
 Microsoft.AspNetCore.Http.HeaderDictionary.this[string! key].get -> Microsoft.Extensions.Primitives.StringValues
 Microsoft.AspNetCore.Http.HeaderDictionary.this[string! key].set -> void
+Microsoft.AspNetCore.Http.HeaderDictionary.TryGetValue(string! key, out Microsoft.Extensions.Primitives.StringValues value) -> bool
+Microsoft.AspNetCore.Http.HeaderDictionary.Values.get -> System.Collections.Generic.ICollection<Microsoft.Extensions.Primitives.StringValues>!
 Microsoft.AspNetCore.Http.HttpContextAccessor
 Microsoft.AspNetCore.Http.HttpContextAccessor.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext?
 Microsoft.AspNetCore.Http.HttpContextAccessor.HttpContext.set -> void
 Microsoft.AspNetCore.Http.HttpContextAccessor.HttpContextAccessor() -> void
-Microsoft.AspNetCore.Http.HttpContextFactory
-Microsoft.AspNetCore.Http.HttpContextFactory.Create(Microsoft.AspNetCore.Http.Features.IFeatureCollection! featureCollection) -> Microsoft.AspNetCore.Http.HttpContext!
-Microsoft.AspNetCore.Http.HttpContextFactory.Dispose(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> void
 Microsoft.AspNetCore.Http.HttpRequestRewindExtensions
 Microsoft.AspNetCore.Http.MiddlewareFactory
 Microsoft.AspNetCore.Http.MiddlewareFactory.Create(System.Type! middlewareType) -> Microsoft.AspNetCore.Http.IMiddleware?
@@ -239,11 +243,11 @@ Microsoft.AspNetCore.Http.QueryCollection.Enumerator.MoveNext() -> bool
 Microsoft.AspNetCore.Http.QueryCollection.GetEnumerator() -> Microsoft.AspNetCore.Http.QueryCollection.Enumerator
 Microsoft.AspNetCore.Http.QueryCollection.Keys.get -> System.Collections.Generic.ICollection<string!>!
 Microsoft.AspNetCore.Http.QueryCollection.QueryCollection() -> void
+Microsoft.AspNetCore.Http.QueryCollection.QueryCollection(int capacity) -> void
 Microsoft.AspNetCore.Http.QueryCollection.QueryCollection(Microsoft.AspNetCore.Http.QueryCollection! store) -> void
 Microsoft.AspNetCore.Http.QueryCollection.QueryCollection(System.Collections.Generic.Dictionary<string!, Microsoft.Extensions.Primitives.StringValues>! store) -> void
-Microsoft.AspNetCore.Http.QueryCollection.QueryCollection(int capacity) -> void
-Microsoft.AspNetCore.Http.QueryCollection.TryGetValue(string! key, out Microsoft.Extensions.Primitives.StringValues value) -> bool
 Microsoft.AspNetCore.Http.QueryCollection.this[string! key].get -> Microsoft.Extensions.Primitives.StringValues
+Microsoft.AspNetCore.Http.QueryCollection.TryGetValue(string! key, out Microsoft.Extensions.Primitives.StringValues value) -> bool
 Microsoft.AspNetCore.Http.RequestFormReaderExtensions
 Microsoft.AspNetCore.Http.SendFileFallback
 Microsoft.AspNetCore.Http.StreamResponseBodyFeature
@@ -254,10 +258,6 @@ Microsoft.AspNetCore.Http.StreamResponseBodyFeature.StreamResponseBodyFeature(Sy
 Microsoft.AspNetCore.Http.StreamResponseBodyFeature.StreamResponseBodyFeature(System.IO.Stream! stream, Microsoft.AspNetCore.Http.Features.IHttpResponseBodyFeature! priorFeature) -> void
 Microsoft.AspNetCore.Http.StreamResponseBodyFeature.Writer.get -> System.IO.Pipelines.PipeWriter!
 Microsoft.Extensions.DependencyInjection.HttpServiceCollectionExtensions
-const Microsoft.AspNetCore.Http.Features.FormOptions.DefaultBufferBodyLengthLimit = 134217728 -> int
-const Microsoft.AspNetCore.Http.Features.FormOptions.DefaultMemoryBufferThreshold = 65536 -> int
-const Microsoft.AspNetCore.Http.Features.FormOptions.DefaultMultipartBodyLengthLimit = 134217728 -> long
-const Microsoft.AspNetCore.Http.Features.FormOptions.DefaultMultipartBoundaryLengthLimit = 128 -> int
 override Microsoft.AspNetCore.Http.BindingAddress.Equals(object? obj) -> bool
 override Microsoft.AspNetCore.Http.BindingAddress.GetHashCode() -> int
 override Microsoft.AspNetCore.Http.BindingAddress.ToString() -> string!
@@ -296,7 +296,3 @@ virtual Microsoft.AspNetCore.Http.StreamResponseBodyFeature.CompleteAsync() -> S
 virtual Microsoft.AspNetCore.Http.StreamResponseBodyFeature.DisableBuffering() -> void
 virtual Microsoft.AspNetCore.Http.StreamResponseBodyFeature.SendFileAsync(string! path, long offset, long? count, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
 virtual Microsoft.AspNetCore.Http.StreamResponseBodyFeature.StartAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
-~Microsoft.AspNetCore.Http.HttpContextFactory.HttpContextFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Http.Features.FormOptions!>! formOptions) -> void
-~Microsoft.AspNetCore.Http.HttpContextFactory.HttpContextFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Http.Features.FormOptions!>! formOptions, Microsoft.AspNetCore.Http.IHttpContextAccessor? httpContextAccessor) -> void
-~Microsoft.AspNetCore.Http.HttpContextFactory.HttpContextFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Http.Features.FormOptions!>! formOptions, Microsoft.Extensions.DependencyInjection.IServiceScopeFactory! serviceScopeFactory) -> void
-~Microsoft.AspNetCore.Http.HttpContextFactory.HttpContextFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Http.Features.FormOptions!>! formOptions, Microsoft.Extensions.DependencyInjection.IServiceScopeFactory! serviceScopeFactory, Microsoft.AspNetCore.Http.IHttpContextAccessor? httpContextAccessor) -> void

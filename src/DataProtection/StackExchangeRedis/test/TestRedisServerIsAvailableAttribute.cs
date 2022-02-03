@@ -1,15 +1,14 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Testing;
 using System;
+using Microsoft.AspNetCore.Testing;
 
-namespace Microsoft.AspNetCore.DataProtection
+namespace Microsoft.AspNetCore.DataProtection;
+
+internal class TestRedisServerIsAvailableAttribute : Attribute, ITestCondition
 {
-    internal class TestRedisServerIsAvailableAttribute : Attribute, ITestCondition
-    {
-        public bool IsMet => !string.IsNullOrEmpty(TestRedisServer.GetConnectionString());
+    public bool IsMet => !string.IsNullOrEmpty(TestRedisServer.GetConnectionString());
 
-        public string SkipReason => $"A test redis server must be configured to run. Set the connection string as an environment variable as {TestRedisServer.ConnectionStringKeyName.Replace(":", "__")} or in testconfig.json";
-    }
+    public string SkipReason => $"A test redis server must be configured to run. Set the connection string as an environment variable as {TestRedisServer.ConnectionStringKeyName.Replace(":", "__")} or in testconfig.json";
 }

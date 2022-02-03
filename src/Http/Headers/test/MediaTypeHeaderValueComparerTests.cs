@@ -1,19 +1,15 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.Linq;
-using Xunit;
+namespace Microsoft.Net.Http.Headers;
 
-namespace Microsoft.Net.Http.Headers
+public class MediaTypeHeaderValueComparerTests
 {
-    public class MediaTypeHeaderValueComparerTests
+    public static IEnumerable<object[]> SortValues
     {
-        public static IEnumerable<object[]> SortValues
+        get
         {
-            get
-            {
-                yield return new object[] {
+            yield return new object[] {
                     new string[]
                         {
                             "application/*",
@@ -57,19 +53,18 @@ namespace Microsoft.Net.Http.Headers
                             "text/plain;q=0",
                         }
                 };
-            }
         }
+    }
 
-        [Theory]
-        [MemberData(nameof(SortValues))]
-        public void SortMediaTypeHeaderValuesByQFactor_SortsCorrectly(IEnumerable<string> unsorted, IEnumerable<string> expectedSorted)
-        {
-            var unsortedValues = MediaTypeHeaderValue.ParseList(unsorted.ToList());
-            var expectedSortedValues = MediaTypeHeaderValue.ParseList(expectedSorted.ToList());
+    [Theory]
+    [MemberData(nameof(SortValues))]
+    public void SortMediaTypeHeaderValuesByQFactor_SortsCorrectly(IEnumerable<string> unsorted, IEnumerable<string> expectedSorted)
+    {
+        var unsortedValues = MediaTypeHeaderValue.ParseList(unsorted.ToList());
+        var expectedSortedValues = MediaTypeHeaderValue.ParseList(expectedSorted.ToList());
 
-            var actualSorted = unsortedValues.OrderByDescending(m => m, MediaTypeHeaderValueComparer.QualityComparer).ToList();
+        var actualSorted = unsortedValues.OrderByDescending(m => m, MediaTypeHeaderValueComparer.QualityComparer).ToList();
 
-            Assert.Equal(expectedSortedValues, actualSorted);
-        }
+        Assert.Equal(expectedSortedValues, actualSorted);
     }
 }

@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <DefaultItemExcludes>$(DefaultItemExcludes);TestProjects\**\*</DefaultItemExcludes>
@@ -7,15 +6,20 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="$(MSBuildProjectDirectory)\..\src\build\**\*" CopyToOutputDirectory="PreserveNewest" LinkBase="build" />
-    <Content Include="$(MSBuildProjectDirectory)\..\src\buildMultiTargeting\**\*" CopyToOutputDirectory="PreserveNewest" LinkBase="buildMultiTargeting" />
-    <Content Include="TestProjects\**\*" CopyToOutputDirectory="PreserveNewest" />
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>TargetFramework</_Parameter1>
+      <_Parameter2>$(TargetFramework)</_Parameter2>
+    </AssemblyAttribute>
+
+    <Compile Include="$(SharedSourceRoot)Process\*.cs" LinkBase="ProcessHelpers" />
+    <Compile Include="$(SharedSourceRoot)\CommandLineUtils\Utilities\DotNetMuxer.cs"
+        Link="ProcessHelpers\DotNetMuxer.cs" />
+    <Compile Include="$(ToolSharedSourceRoot)TestHelpers\Temporary*.cs" LinkBase="TestHelpers" />
+
+    <Content Include="..\src\build\**\*" LinkBase="build" />
+    <Content Include="..\src\buildMultiTargeting\**\*" LinkBase="buildMultiTargeting" />
+    <Content Include="TestProjects\**\*" />
 
     <Reference Include="Microsoft.Extensions.ApiDescription.Client" />
   </ItemGroup>
-
-  <Target Name="CleanTestProjects" BeforeTargets="CoreCompile">
-    <RemoveDir Directories="$(TargetDir)TestProjects" />
-  </Target>
-
 </Project>

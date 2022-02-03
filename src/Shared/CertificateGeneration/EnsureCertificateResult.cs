@@ -1,18 +1,17 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Certificates.Generation
+namespace Microsoft.AspNetCore.Certificates.Generation;
+
+internal enum EnsureCertificateResult
 {
-    internal enum EnsureCertificateResult
-    {
-        Succeeded = 1,
-        ValidCertificatePresent,
-        ErrorCreatingTheCertificate,
-        ErrorSavingTheCertificateIntoTheCurrentUserPersonalStore,
-        ErrorExportingTheCertificate,
-        FailedToTrustTheCertificate,
-        UserCancelledTrustStep,
-        FailedToMakeKeyAccessible,
-    }
+    Succeeded = 1,
+    ValidCertificatePresent,
+    ErrorCreatingTheCertificate,
+    ErrorSavingTheCertificateIntoTheCurrentUserPersonalStore,
+    ErrorExportingTheCertificate,
+    FailedToTrustTheCertificate,
+    UserCancelledTrustStep,
+    FailedToMakeKeyAccessible,
 }
 

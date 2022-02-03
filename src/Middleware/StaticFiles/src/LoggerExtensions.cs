@@ -1,154 +1,61 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNetCore.StaticFiles
+namespace Microsoft.AspNetCore.StaticFiles;
+
+/// <summary>
+/// Defines *all* the logger messages produced by static files
+/// </summary>
+internal static partial class LoggerExtensions
 {
-    /// <summary>
-    /// Defines *all* the logger messages produced by static files
-    /// </summary>
-    internal static class LoggerExtensions
+    [LoggerMessage(1, LogLevel.Debug, "{Method} requests are not supported", EventName = "MethodNotSupported")]
+    public static partial void RequestMethodNotSupported(this ILogger logger, string method);
+
+    [LoggerMessage(2, LogLevel.Information, "Sending file. Request path: '{VirtualPath}'. Physical path: '{PhysicalPath}'", EventName = "FileServed")]
+    private static partial void FileServedCore(this ILogger logger, string virtualPath, string physicalPath);
+
+    public static void FileServed(this ILogger logger, string virtualPath, string physicalPath)
     {
-        private static Action<ILogger, string, Exception?> _methodNotSupported;
-        private static Action<ILogger, string, string, Exception?> _fileServed;
-        private static Action<ILogger, string, Exception?> _pathMismatch;
-        private static Action<ILogger, string, Exception?> _fileTypeNotSupported;
-        private static Action<ILogger, string, Exception?> _fileNotFound;
-        private static Action<ILogger, string, Exception?> _fileNotModified;
-        private static Action<ILogger, string, Exception?> _preconditionFailed;
-        private static Action<ILogger, int, string, Exception?> _handled;
-        private static Action<ILogger, string, Exception?> _rangeNotSatisfiable;
-        private static Action<ILogger, StringValues, string, Exception?> _sendingFileRange;
-        private static Action<ILogger, StringValues, string, Exception?> _copyingFileRange;
-        private static Action<ILogger, Exception?> _writeCancelled;
-        private static Action<ILogger, Exception?> _endpointMatched;
-
-        static LoggerExtensions()
+        if (string.IsNullOrEmpty(physicalPath))
         {
-            _methodNotSupported = LoggerMessage.Define<string>(
-                logLevel: LogLevel.Debug,
-                eventId: new EventId(1, "MethodNotSupported"),
-                formatString: "{Method} requests are not supported");
-            _fileServed = LoggerMessage.Define<string, string>(
-               logLevel: LogLevel.Information,
-               eventId: new EventId(2, "FileServed"),
-               formatString: "Sending file. Request path: '{VirtualPath}'. Physical path: '{PhysicalPath}'");
-            _pathMismatch = LoggerMessage.Define<string>(
-                logLevel: LogLevel.Debug,
-                eventId: new EventId(3, "PathMismatch"),
-                formatString: "The request path {Path} does not match the path filter");
-            _fileTypeNotSupported = LoggerMessage.Define<string>(
-                logLevel: LogLevel.Debug,
-                eventId: new EventId(4, "FileTypeNotSupported"),
-                formatString: "The request path {Path} does not match a supported file type");
-            _fileNotFound = LoggerMessage.Define<string>(
-                logLevel: LogLevel.Debug,
-                eventId: new EventId(5, "FileNotFound"),
-                formatString: "The request path {Path} does not match an existing file");
-            _fileNotModified = LoggerMessage.Define<string>(
-                logLevel: LogLevel.Information,
-                eventId: new EventId(6, "FileNotModified"),
-                formatString: "The file {Path} was not modified");
-            _preconditionFailed = LoggerMessage.Define<string>(
-                logLevel: LogLevel.Information,
-                eventId: new EventId(7, "PreconditionFailed"),
-                formatString: "Precondition for {Path} failed");
-            _handled = LoggerMessage.Define<int, string>(
-                logLevel: LogLevel.Debug,
-                eventId: new EventId(8, "Handled"),
-                formatString: "Handled. Status code: {StatusCode} File: {Path}");
-            _rangeNotSatisfiable = LoggerMessage.Define<string>(
-                logLevel: LogLevel.Warning,
-                eventId: new EventId(9, "RangeNotSatisfiable"),
-                formatString: "Range not satisfiable for {Path}");
-            _sendingFileRange = LoggerMessage.Define<StringValues, string>(
-                logLevel: LogLevel.Information,
-                eventId: new EventId(10, "SendingFileRange"),
-                formatString: "Sending {Range} of file {Path}");
-            _copyingFileRange = LoggerMessage.Define<StringValues, string>(
-                logLevel: LogLevel.Debug,
-                eventId: new EventId(11, "CopyingFileRange"),
-                formatString: "Copying {Range} of file {Path} to the response body");
-            _writeCancelled = LoggerMessage.Define(
-                logLevel: LogLevel.Debug,
-                eventId: new EventId(14, "WriteCancelled"),
-                formatString: "The file transmission was cancelled");
-            _endpointMatched = LoggerMessage.Define(
-                logLevel: LogLevel.Debug,
-                eventId: new EventId(15, "EndpointMatched"),
-                formatString: "Static files was skipped as the request already matched an endpoint.");
+            physicalPath = "N/A";
         }
-
-        public static void RequestMethodNotSupported(this ILogger logger, string method)
-        {
-            _methodNotSupported(logger, method, null);
-        }
-
-        public static void FileServed(this ILogger logger, string virtualPath, string physicalPath)
-        {
-            if (string.IsNullOrEmpty(physicalPath))
-            {
-                physicalPath = "N/A";
-            }
-            _fileServed(logger, virtualPath, physicalPath, null);
-        }
-
-        public static void EndpointMatched(this ILogger logger)
-        {
-            _endpointMatched(logger, null);
-        }
-
-        public static void PathMismatch(this ILogger logger, string path)
-        {
-            _pathMismatch(logger, path, null);
-        }
-
-        public static void FileTypeNotSupported(this ILogger logger, string path)
-        {
-            _fileTypeNotSupported(logger, path, null);
-        }
-
-        public static void FileNotFound(this ILogger logger, string path)
-        {
-            _fileNotFound(logger, path, null);
-        }
-
-        public static void FileNotModified(this ILogger logger, string path)
-        {
-            _fileNotModified(logger, path, null);
-        }
-
-        public static void PreconditionFailed(this ILogger logger, string path)
-        {
-            _preconditionFailed(logger, path, null);
-        }
-
-        public static void Handled(this ILogger logger, int statusCode, string path)
-        {
-            _handled(logger, statusCode, path, null);
-        }
-
-        public static void RangeNotSatisfiable(this ILogger logger, string path)
-        {
-            _rangeNotSatisfiable(logger, path, null);
-        }
-
-        public static void SendingFileRange(this ILogger logger, StringValues range, string path)
-        {
-            _sendingFileRange(logger, range, path, null);
-        }
-
-        public static void CopyingFileRange(this ILogger logger, StringValues range, string path)
-        {
-            _copyingFileRange(logger, range, path, null);
-        }
-
-        public static void WriteCancelled(this ILogger logger, Exception ex)
-        {
-            _writeCancelled(logger, ex);
-        }
+        FileServedCore(logger, virtualPath, physicalPath);
     }
+
+    [LoggerMessage(15, LogLevel.Debug, "Static files was skipped as the request already matched an endpoint.", EventName = "EndpointMatched")]
+    public static partial void EndpointMatched(this ILogger logger);
+
+    [LoggerMessage(3, LogLevel.Debug, "The request path {Path} does not match the path filter", EventName = "PathMismatch")]
+    public static partial void PathMismatch(this ILogger logger, string path);
+
+    [LoggerMessage(4, LogLevel.Debug, "The request path {Path} does not match a supported file type", EventName = "FileTypeNotSupported")]
+    public static partial void FileTypeNotSupported(this ILogger logger, string path);
+
+    [LoggerMessage(5, LogLevel.Debug, "The request path {Path} does not match an existing file", EventName = "FileNotFound")]
+    public static partial void FileNotFound(this ILogger logger, string path);
+
+    [LoggerMessage(6, LogLevel.Information, "The file {Path} was not modified", EventName = "FileNotModified")]
+    public static partial void FileNotModified(this ILogger logger, string path);
+
+    [LoggerMessage(7, LogLevel.Information, "Precondition for {Path} failed", EventName = "PreconditionFailed")]
+    public static partial void PreconditionFailed(this ILogger logger, string path);
+
+    [LoggerMessage(8, LogLevel.Debug, "Handled. Status code: {StatusCode} File: {Path}", EventName = "Handled")]
+    public static partial void Handled(this ILogger logger, int statusCode, string path);
+
+    [LoggerMessage(9, LogLevel.Warning, "Range not satisfiable for {Path}", EventName = "RangeNotSatisfiable")]
+    public static partial void RangeNotSatisfiable(this ILogger logger, string path);
+
+    [LoggerMessage(10, LogLevel.Information, "Sending {Range} of file {Path}", EventName = "SendingFileRange")]
+    public static partial void SendingFileRange(this ILogger logger, StringValues range, string path);
+
+    [LoggerMessage(11, LogLevel.Debug, "Copying {Range} of file {Path} to the response body", EventName = "CopyingFileRange")]
+    public static partial void CopyingFileRange(this ILogger logger, StringValues range, string path);
+
+    [LoggerMessage(14, LogLevel.Debug, "The file transmission was cancelled", EventName = "WriteCancelled")]
+    public static partial void WriteCancelled(this ILogger logger, Exception ex);
 }

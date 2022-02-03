@@ -1,26 +1,25 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.DataProtection.EntityFrameworkCore
+namespace Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
+
+/// <summary>
+/// Code first model used by <see cref="EntityFrameworkCoreXmlRepository{TContext}"/>.
+/// </summary>
+public class DataProtectionKey
 {
     /// <summary>
-    /// Code first model used by <see cref="EntityFrameworkCoreXmlRepository{TContext}"/>.
+    /// The entity identifier of the <see cref="DataProtectionKey"/>.
     /// </summary>
-    public class DataProtectionKey
-    {
-        /// <summary>
-        /// The entity identifier of the <see cref="DataProtectionKey"/>.
-        /// </summary>
-        public int Id { get; set; }
+    public int Id { get; set; }
 
-        /// <summary>
-        /// The friendly name of the <see cref="DataProtectionKey"/>.
-        /// </summary>
-        public string? FriendlyName { get; set; }
+    /// <summary>
+    /// The friendly name of the <see cref="DataProtectionKey"/>.
+    /// </summary>
+    public string? FriendlyName { get; set; }
 
-        /// <summary>
-        /// The XML representation of the <see cref="DataProtectionKey"/>.
-        /// </summary>
-        public string? Xml { get; set; }
-    }
+    /// <summary>
+    /// The XML representation of the <see cref="DataProtectionKey"/>.
+    /// </summary>
+    public string? Xml { get; set; }
 }

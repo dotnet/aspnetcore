@@ -2,6 +2,8 @@
 @using BasicTestApp.InteropTest
 @using System.Runtime.InteropServices
 @using System.Text.Json
+@using System.IO
+@using static BasicTestApp.InteropTest.JSStreamReferenceInterop
 @inject IJSRuntime JSRuntime
 
 <button id="btn-interop" @onclick="InvokeInteropAsync">Invoke interop!</button>
@@ -136,11 +138,35 @@
             ReturnValues["returnPrimitive"] = ((IJSInProcessRuntime)JSRuntime).Invoke<int>("returnPrimitive").ToString();
             ReturnValues["returnArray"] = string.Join(",", ((IJSInProcessRuntime)JSRuntime).Invoke<Segment[]>("returnArray").Select(x => x.Source).ToArray());
         }
+        
+        try
+        {
+            // Triger a non-serializable WindowProxy (https://developer.mozilla.org/en-US/docs/Web/API/Window)
+            // InvokeVoidAsync shouldn't serialize return values, and thus there shouldn't be any exception thrown. 
+            await JSRuntime.InvokeVoidAsync("eval", "window");
+            ReturnValues["invokeVoidAsyncReturnsWithoutSerializing"] = "Success";
+        }
+        catch (Exception ex)
+        {
+            ReturnValues["invokeVoidAsyncReturnsWithoutSerializing"] = $"Failure: {ex.Message}";
+        }
 
         var jsObjectReference = await JSRuntime.InvokeAsync<IJSObjectReference>("returnJSObjectReference");
         ReturnValues["jsObjectReference.identity"] = await jsObjectReference.InvokeAsync<string>("identity", "Invoked from JSObjectReference");
         ReturnValues["jsObjectReference.nested.add"] = (await jsObjectReference.InvokeAsync<int>("nested.add", 2, 3)).ToString();
         ReturnValues["addViaJSObjectReference"] = (await JSRuntime.InvokeAsync<int>("addViaJSObjectReference", jsObjectReference, 2, 3)).ToString();
+
+        try
+        {
+            // Fetch a non-serializable Window (https://developer.mozilla.org/en-US/docs/Web/API/Window)
+            // InvokeVoidAsync shouldn't serialize return values, and thus there shouldn't be any exception thrown. 
+            await jsObjectReference.InvokeVoidAsync("getWindow");
+            ReturnValues["invokeVoidAsyncReturnsWithoutSerializingInJSObjectReference"] = "Success";
+        }
+        catch (Exception ex)
+        {
+            ReturnValues["invokeVoidAsyncReturnsWithoutSerializingInJSObjectReference"] = $"Failure: {ex.Message}";
+        }
 
         try
         {
@@ -156,11 +182,77 @@
 
         if (shouldSupportSyncInterop)
         {
-            InvokeInProcessJSInterop();
+            await InvokeInProcessJSInterop();
         }
 
+        var byteArray = new byte[] { 1, 5, 7, 15, 35, 200 };
+        var byteArrayWrapperObject = new ByteArrayInterop.ByteArrayWrapper()
+        {
+            StrVal = "Some String",
+            ByteArrayVal = byteArray,
+            IntVal = 100000
+        };
+        ReturnValues["roundTripByteArrayAsyncFromDotNet"] = string.Join(",", (await JSRuntime.InvokeAsync<byte[]>("roundTripByteArrayAsync", byteArray)).ToArray());
+        ReturnValues["roundTripByteArrayWrapperObjectAsyncFromDotNet"] = (await JSRuntime.InvokeAsync<ByteArrayInterop.ByteArrayWrapper>("roundTripByteArrayWrapperObjectAsync", byteArrayWrapperObject)).ToString();
+
+        if (shouldSupportSyncInterop)
+        {
+            ReturnValues["roundTripByteArrayFromDotNet"] = string.Join(",", ((IJSInProcessRuntime)JSRuntime).Invoke<byte[]>("roundTripByteArray", byteArray).ToArray());
+            ReturnValues["roundTripByteArrayWrapperObjectFromDotNet"] = ((IJSInProcessRuntime)JSRuntime).Invoke<ByteArrayInterop.ByteArrayWrapper>("roundTripByteArrayWrapperObject", byteArrayWrapperObject).ToString();
+        }
+
+        var dataReference = await JSRuntime.InvokeAsync<IJSStreamReference>("jsToDotNetStreamReturnValueAsync");
+        using var dataReferenceStream = await dataReference.OpenReadStreamAsync();
+        await ValidateStreamValuesAsync("jsToDotNetStreamReturnValueAsync", dataReferenceStream);
+
+        var dataWrapperReference = await JSRuntime.InvokeAsync<JSStreamReferenceWrapper>("jsToDotNetStreamWrapperObjectReturnValueAsync");
+        if (dataWrapperReference.StrVal != "SomeStr")
+        {
+            ReturnValues["jsToDotNetStreamWrapperObjectReturnValueAsync"] = $"StrVal did not match expected 'SomeStr', received {dataWrapperReference.StrVal}.";
+        }
+        else if (dataWrapperReference.IntVal != 5)
+        {
+            ReturnValues["jsToDotNetStreamWrapperObjectReturnValueAsync"] = $"IntVal did not match expected '5', received {dataWrapperReference.IntVal}.";
+        }
+        else
+        {
+            using var dataWrapperReferenceStream = await dataWrapperReference.JSStreamReferenceVal.OpenReadStreamAsync();
+            await ValidateStreamValuesAsync("jsToDotNetStreamWrapperObjectReturnValueAsync", dataWrapperReferenceStream);
+        }
+
+        var dotNetStreamReference = DotNetStreamReferenceInterop.GetDotNetStreamReference();
+        ReturnValues["dotNetToJSReceiveDotNetStreamReferenceAsync"] = await JSRuntime.InvokeAsync<string>("jsInteropTests.receiveDotNetStreamReference", dotNetStreamReference);
+
+        var dotNetStreamReferenceWrapper = DotNetStreamReferenceInterop.GetDotNetStreamWrapperReference();
+        ReturnValues["dotNetToJSReceiveDotNetStreamWrapperReferenceAsync"] = await JSRuntime.InvokeAsync<string>("jsInteropTests.receiveDotNetStreamWrapperReference", dotNetStreamReferenceWrapper);
+        
         Invocations = invocations;
         DoneWithInterop = true;
+    }
+
+    private async Task ValidateStreamValuesAsync(string testName, Stream stream)
+    {
+        using var memoryStream = new System.IO.MemoryStream();
+        await stream.CopyToAsync(memoryStream);
+        var buffer = memoryStream.ToArray();
+
+        for (var i = 0; i < buffer.Length; i++)
+        {
+            var expectedValue = i % 256;
+            if (buffer[i] != expectedValue)
+            {
+                ReturnValues[testName] = $"Failure at index {i}.";
+                break;
+            }
+        }
+
+        if (buffer.Length != 100_000)
+        {
+            ReturnValues[testName] = $"Failure, got a stream of length {buffer.Length}, expected a length of 100,000.";
+        }
+
+        // Mark the test as successful if we haven't already set a failure above
+        ReturnValues.TryAdd(testName, "Success");
     }
 
     public void InvokeInProcessInterop()
@@ -188,12 +280,36 @@
         ReceiveDotNetObjectByRefResult["testDto"] = result.TestDto.Value == passDotNetObjectByRef ? "Same" : "Different";
     }
 
-    public void InvokeInProcessJSInterop()
+    public async Task InvokeInProcessJSInterop()
     {
         var inProcRuntime = ((IJSInProcessRuntime)JSRuntime);
 
+         try
+        {
+            // Fetch a non-serializable Window (https://developer.mozilla.org/en-US/docs/Web/API/Window)
+            // InvokeVoid shouldn't serialize return values, and thus there shouldn't be any exception thrown.
+            inProcRuntime.InvokeVoid("eval", "window");
+            ReturnValues["invokeVoidReturnsWithoutSerializingIJSInProcessRuntime"] = "Success";
+        }
+        catch (Exception ex)
+        {
+            ReturnValues["invokeVoidReturnsWithoutSerializingIJSInProcessRuntime"] = $"Failure: {ex.Message}";
+        }
+
         var jsInProcObjectReference = inProcRuntime.Invoke<IJSInProcessObjectReference>("returnJSObjectReference");
         ReturnValues["jsInProcessObjectReference.identity"] = jsInProcObjectReference.Invoke<string>("identity", "Invoked from JSInProcessObjectReference");
+
+        try
+        {
+            // Fetch a non-serializable Window (https://developer.mozilla.org/en-US/docs/Web/API/Window)
+            // InvokeVoid shouldn't serialize return values, and thus there shouldn't be any exception thrown.
+            jsInProcObjectReference.InvokeVoid("getWindow");
+            ReturnValues["invokeVoidReturnsWithoutSerializingInIJSInProcessObjectReference"] = "Success";
+        }
+        catch (Exception ex)
+        {
+            ReturnValues["invokeVoidReturnsWithoutSerializingInIJSInProcessObjectReference"] = $"Failure: {ex.Message}";
+        }
 
         // we should be able to downcast a IJSInProcessObjectReference as a IJSUnmarshalledObjectReference
         var unmarshalledCast = (IJSUnmarshalledObjectReference)jsInProcObjectReference;
@@ -211,6 +327,11 @@
             Message = "Sent from .NET",
             NumberField = 42,
         }).ToString();
+
+
+        var dataReference = unmarshalledRuntime.InvokeUnmarshalled<IJSStreamReference>("jsToDotNetStreamReturnValue");
+        using var dataReferenceStream = await dataReference.OpenReadStreamAsync();
+        await ValidateStreamValuesAsync("jsToDotNetStreamReturnValueUnmarshalled", dataReferenceStream);
     }
 
     public class PassDotNetObjectByRefArgs

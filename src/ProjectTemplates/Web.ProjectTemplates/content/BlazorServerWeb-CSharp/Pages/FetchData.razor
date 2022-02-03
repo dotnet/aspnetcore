@@ -1,5 +1,7 @@
 ﻿@page "/fetchdata"
 
+<PageTitle>Weather forecast</PageTitle>
+
 @using BlazorServerWeb_CSharp.Data
 @inject WeatherForecastService ForecastService
 
@@ -37,7 +39,7 @@ else
 }
 
 @code {
-    private WeatherForecast[] forecasts;
+    private WeatherForecast[]? forecasts;
 
     protected override async Task OnInitializedAsync()
     {

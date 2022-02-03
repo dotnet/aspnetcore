@@ -1,15 +1,14 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace BasicWebSite.Controllers
+namespace BasicWebSite.Controllers;
+
+public class RazorComponentsController : Controller
 {
-    public class RazorComponentsController : Controller
+    private static readonly WeatherRow[] _weatherData = new[]
     {
-        private static WeatherRow[] _weatherData = new[]
-        {
                 new WeatherRow
                 {
                     DateFormatted = "06/05/2018",
@@ -47,37 +46,36 @@ namespace BasicWebSite.Controllers
                 }
             };
 
-        [HttpGet("/components/{**slug}")]
-        [HttpGet("/components/routable/{**slug}")]
-        public IActionResult Index()
-        {
-            // Override the path so that the router finds the RoutedPage component
-            // as the client router doesn't support optional parameters.
-            Request.Path = Request.Path.StartsWithSegments("/components/routable") ?
-                PathString.FromUriComponent("/components/routable") : Request.Path;
+    [HttpGet("/components/{**slug}")]
+    [HttpGet("/components/routable/{**slug}")]
+    public IActionResult Index()
+    {
+        // Override the path so that the router finds the RoutedPage component
+        // as the client router doesn't support optional parameters.
+        Request.Path = Request.Path.StartsWithSegments("/components/routable") ?
+            PathString.FromUriComponent("/components/routable") : Request.Path;
 
-            return View();
-        }
+        return View();
+    }
 
-        [HttpGet("/WeatherData")]
-        [Produces("application/json")]
-        public IActionResult WeatherData()
-        {
-            return Ok(_weatherData);
-        }
+    [HttpGet("/WeatherData")]
+    [Produces("application/json")]
+    public IActionResult WeatherData()
+    {
+        return Ok(_weatherData);
+    }
 
-        [HttpGet("/components/Navigation")]
-        public IActionResult Navigation()
-        {
-            return View();
-        }
+    [HttpGet("/components/Navigation")]
+    public IActionResult Navigation()
+    {
+        return View();
+    }
 
-        private class WeatherRow
-        {
-            public string DateFormatted { get; internal set; }
-            public int TemperatureC { get; internal set; }
-            public string Summary { get; internal set; }
-            public int TemperatureF { get; internal set; }
-        }
+    private class WeatherRow
+    {
+        public string DateFormatted { get; internal set; }
+        public int TemperatureC { get; internal set; }
+        public string Summary { get; internal set; }
+        public int TemperatureF { get; internal set; }
     }
 }

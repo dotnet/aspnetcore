@@ -1,30 +1,29 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.SignalR
+namespace Microsoft.AspNetCore.SignalR;
+
+/// <summary>
+/// A base class for SignalR hubs that use <c>dynamic</c> to represent client invocations.
+/// </summary>
+public abstract class DynamicHub : Hub
 {
+    private DynamicHubClients? _clients;
+
     /// <summary>
-    /// A base class for SignalR hubs that use <c>dynamic</c> to represent client invocations.
+    /// Gets or sets an object that can be used to invoke methods on the clients connected to this hub.
     /// </summary>
-    public abstract class DynamicHub : Hub
+    public new DynamicHubClients Clients
     {
-        private DynamicHubClients? _clients;
-
-        /// <summary>
-        /// Gets or sets an object that can be used to invoke methods on the clients connected to this hub.
-        /// </summary>
-        public new DynamicHubClients Clients
+        get
         {
-            get
+            if (_clients == null)
             {
-                if (_clients == null)
-                {
-                    _clients = new DynamicHubClients(base.Clients);
-                }
-
-                return _clients;
+                _clients = new DynamicHubClients(base.Clients);
             }
-            set => _clients = value;
+
+            return _clients;
         }
+        set => _clients = value;
     }
 }

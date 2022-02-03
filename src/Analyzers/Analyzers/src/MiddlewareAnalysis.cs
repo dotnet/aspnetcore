@@ -1,23 +1,22 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 
-namespace Microsoft.AspNetCore.Analyzers
+namespace Microsoft.AspNetCore.Analyzers;
+
+internal class MiddlewareAnalysis
 {
-    internal class MiddlewareAnalysis
+    public MiddlewareAnalysis(IMethodSymbol configureMethod, ImmutableArray<MiddlewareItem> middleware)
     {
-        public MiddlewareAnalysis(IMethodSymbol configureMethod, ImmutableArray<MiddlewareItem> middleware)
-        {
-            ConfigureMethod = configureMethod;
-            Middleware = middleware;
-        }
-
-        public INamedTypeSymbol StartupType => ConfigureMethod.ContainingType;
-
-        public IMethodSymbol ConfigureMethod { get; }
-
-        public ImmutableArray<MiddlewareItem> Middleware { get; }
+        ConfigureMethod = configureMethod;
+        Middleware = middleware;
     }
+
+    public INamedTypeSymbol StartupType => ConfigureMethod.ContainingType;
+
+    public IMethodSymbol ConfigureMethod { get; }
+
+    public ImmutableArray<MiddlewareItem> Middleware { get; }
 }

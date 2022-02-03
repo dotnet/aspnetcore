@@ -1,16 +1,15 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Connections.Features
+namespace Microsoft.AspNetCore.Connections.Features;
+
+/// <summary>
+/// The unique identifier for a given connection.
+/// </summary>
+public interface IConnectionIdFeature
 {
     /// <summary>
-    /// The unique identifier for a given connection.
+    /// Gets or sets the connection identifier.
     /// </summary>
-    public interface IConnectionIdFeature
-    {
-        /// <summary>
-        /// Gets or sets the connection identifier.
-        /// </summary>
-        string ConnectionId { get; set; }
-    }
+    string ConnectionId { get; set; }
 }

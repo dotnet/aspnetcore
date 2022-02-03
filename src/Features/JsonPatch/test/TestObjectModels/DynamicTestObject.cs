@@ -1,87 +1,86 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using System.Dynamic;
 
-namespace Microsoft.AspNetCore.JsonPatch
+namespace Microsoft.AspNetCore.JsonPatch;
+
+public class DynamicTestObject : DynamicObject
 {
-    public class DynamicTestObject : DynamicObject
+    private Dictionary<string, object> _dictionary = new Dictionary<string, object>();
+
+    public object this[string key] { get => ((IDictionary<string, object>)_dictionary)[key]; set => ((IDictionary<string, object>)_dictionary)[key] = value; }
+
+    public ICollection<string> Keys => ((IDictionary<string, object>)_dictionary).Keys;
+
+    public ICollection<object> Values => ((IDictionary<string, object>)_dictionary).Values;
+
+    public int Count => ((IDictionary<string, object>)_dictionary).Count;
+
+    public bool IsReadOnly => ((IDictionary<string, object>)_dictionary).IsReadOnly;
+
+    public void Add(string key, object value)
     {
-        private Dictionary<string, object> _dictionary = new Dictionary<string, object>();
+        ((IDictionary<string, object>)_dictionary).Add(key, value);
+    }
 
-        public object this[string key] { get => ((IDictionary<string, object>)_dictionary)[key]; set => ((IDictionary<string, object>)_dictionary)[key] = value; }
+    public void Add(KeyValuePair<string, object> item)
+    {
+        ((IDictionary<string, object>)_dictionary).Add(item);
+    }
 
-        public ICollection<string> Keys => ((IDictionary<string, object>)_dictionary).Keys;
+    public void Clear()
+    {
+        ((IDictionary<string, object>)_dictionary).Clear();
+    }
 
-        public ICollection<object> Values => ((IDictionary<string, object>)_dictionary).Values;
+    public bool Contains(KeyValuePair<string, object> item)
+    {
+        return ((IDictionary<string, object>)_dictionary).Contains(item);
+    }
 
-        public int Count => ((IDictionary<string, object>)_dictionary).Count;
+    public bool ContainsKey(string key)
+    {
+        return ((IDictionary<string, object>)_dictionary).ContainsKey(key);
+    }
 
-        public bool IsReadOnly => ((IDictionary<string, object>)_dictionary).IsReadOnly;
+    public void CopyTo(KeyValuePair<string, object>[] array, int arrayIndex)
+    {
+        ((IDictionary<string, object>)_dictionary).CopyTo(array, arrayIndex);
+    }
 
-        public void Add(string key, object value)
-        {
-            ((IDictionary<string, object>)_dictionary).Add(key, value);
-        }
+    public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+    {
+        return ((IDictionary<string, object>)_dictionary).GetEnumerator();
+    }
 
-        public void Add(KeyValuePair<string, object> item)
-        {
-            ((IDictionary<string, object>)_dictionary).Add(item);
-        }
+    public bool Remove(string key)
+    {
+        return ((IDictionary<string, object>)_dictionary).Remove(key);
+    }
 
-        public void Clear()
-        {
-            ((IDictionary<string, object>)_dictionary).Clear();
-        }
+    public bool Remove(KeyValuePair<string, object> item)
+    {
+        return ((IDictionary<string, object>)_dictionary).Remove(item);
+    }
 
-        public bool Contains(KeyValuePair<string, object> item)
-        {
-            return ((IDictionary<string, object>)_dictionary).Contains(item);
-        }
+    public bool TryGetValue(string key, out object value)
+    {
+        return ((IDictionary<string, object>)_dictionary).TryGetValue(key, out value);
+    }
 
-        public bool ContainsKey(string key)
-        {
-            return ((IDictionary<string, object>)_dictionary).ContainsKey(key);
-        }
+    public override bool TryGetMember(GetMemberBinder binder, out object result)
+    {
+        var name = binder.Name;
 
-        public void CopyTo(KeyValuePair<string, object>[] array, int arrayIndex)
-        {
-            ((IDictionary<string, object>)_dictionary).CopyTo(array, arrayIndex);
-        }
+        return TryGetValue(name, out result);
+    }
 
-        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
-        {
-            return ((IDictionary<string, object>)_dictionary).GetEnumerator();
-        }
+    public override bool TrySetMember(SetMemberBinder binder, object value)
+    {
+        _dictionary[binder.Name] = value;
 
-        public bool Remove(string key)
-        {
-            return ((IDictionary<string, object>)_dictionary).Remove(key);
-        }
-
-        public bool Remove(KeyValuePair<string, object> item)
-        {
-            return ((IDictionary<string, object>)_dictionary).Remove(item);
-        }
-
-        public bool TryGetValue(string key, out object value)
-        {
-            return ((IDictionary<string, object>)_dictionary).TryGetValue(key, out value);
-        }
-
-        public override bool TryGetMember(GetMemberBinder binder, out object result)
-        {
-            var name = binder.Name;
-
-            return TryGetValue(name, out result);
-        }
-
-        public override bool TrySetMember(SetMemberBinder binder, object value)
-        {
-            _dictionary[binder.Name] = value;
-
-            return true;
-        }
+        return true;
     }
 }

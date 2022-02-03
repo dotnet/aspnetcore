@@ -1,50 +1,47 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Linq;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Controllers;
 
-namespace RoutingWebSite
+namespace RoutingWebSite;
+
+public class RemoveControllerActionDescriptorProvider : IActionDescriptorProvider
 {
-    public class RemoveControllerActionDescriptorProvider : IActionDescriptorProvider
+    private readonly ControllerToRemove[] _controllerTypes;
+
+    public RemoveControllerActionDescriptorProvider(params ControllerToRemove[] controllerTypes)
     {
-        private readonly ControllerToRemove[] _controllerTypes;
+        _controllerTypes = controllerTypes;
+    }
 
-        public RemoveControllerActionDescriptorProvider(params ControllerToRemove[] controllerTypes)
+    public int Order => int.MaxValue;
+
+    public void OnProvidersExecuted(ActionDescriptorProviderContext context)
+    {
+    }
+
+    public void OnProvidersExecuting(ActionDescriptorProviderContext context)
+    {
+        foreach (var item in context.Results.ToList())
         {
-            _controllerTypes = controllerTypes;
-        }
-
-        public int Order => int.MaxValue;
-
-        public void OnProvidersExecuted(ActionDescriptorProviderContext context)
-        {
-        }
-
-        public void OnProvidersExecuting(ActionDescriptorProviderContext context)
-        {
-            foreach (var item in context.Results.ToList())
+            if (item is ControllerActionDescriptor controllerActionDescriptor)
             {
-                if (item is ControllerActionDescriptor controllerActionDescriptor)
+                var controllerToRemove = _controllerTypes.SingleOrDefault(c => c.ControllerType == controllerActionDescriptor.ControllerTypeInfo);
+                if (controllerToRemove != null)
                 {
-                    var controllerToRemove = _controllerTypes.SingleOrDefault(c => c.ControllerType == controllerActionDescriptor.ControllerTypeInfo);
-                    if (controllerToRemove != null)
+                    if (controllerToRemove.Actions == null || controllerToRemove.Actions.Contains(controllerActionDescriptor.ActionName))
                     {
-                        if (controllerToRemove.Actions == null || controllerToRemove.Actions.Contains(controllerActionDescriptor.ActionName))
-                        {
-                            context.Results.Remove(item);
-                        }
+                        context.Results.Remove(item);
                     }
                 }
             }
         }
     }
+}
 
-    public class ControllerToRemove
-    {
-        public Type ControllerType { get; set; }
-        public string[] Actions { get; set; }
-    }
+public class ControllerToRemove
+{
+    public Type ControllerType { get; set; }
+    public string[] Actions { get; set; }
 }

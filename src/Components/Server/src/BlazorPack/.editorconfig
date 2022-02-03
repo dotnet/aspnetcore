@@ -1,0 +1,4 @@
+[{Requires.cs,SequenceOfT.cs}]
+# IDE0073: File header
+dotnet_diagnostic.IDE0073.severity = warning
+file_header_template = Copyright (c) Andrew Arnott. All rights reserved.\nLicensed under the MIT license. See LICENSE.txt file in the project root for full license information.

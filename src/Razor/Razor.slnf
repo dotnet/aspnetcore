@@ -1,30 +1,11 @@
-﻿{
+{
   "solution": {
     "path": "..\\..\\AspNetCore.sln",
-    "projects" : [
-      "src\\Razor\\Razor\\src\\Microsoft.AspNetCore.Razor.csproj",
-      "src\\Razor\\Razor\\test\\Microsoft.AspNetCore.Razor.Test.csproj",
+    "projects": [
       "src\\Razor\\Razor.Runtime\\src\\Microsoft.AspNetCore.Razor.Runtime.csproj",
       "src\\Razor\\Razor.Runtime\\test\\Microsoft.AspNetCore.Razor.Runtime.Test.csproj",
-      "src\\Razor\\Microsoft.AspNetCore.Mvc.Razor.Extensions\\src\\Microsoft.AspNetCore.Mvc.Razor.Extensions.csproj",
-      "src\\Razor\\Microsoft.AspNetCore.Mvc.Razor.Extensions\\test\\Microsoft.AspNetCore.Mvc.Razor.Extensions.Test.csproj",
-      "src\\Razor\\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X\\src\\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.csproj",
-      "src\\Razor\\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X\\test\\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.Test.csproj",
-      "src\\Razor\\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X\\src\\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.csproj",
-      "src\\Razor\\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X\\test\\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.Test.csproj",
-      "src\\Razor\\Microsoft.AspNetCore.Razor.Language\\src\\Microsoft.AspNetCore.Razor.Language.csproj",
-      "src\\Razor\\Microsoft.AspNetCore.Razor.Language\\test\\Microsoft.AspNetCore.Razor.Language.Test.csproj",
-      "src\\Razor\\Microsoft.CodeAnalysis.Razor\\src\\Microsoft.CodeAnalysis.Razor.csproj",
-      "src\\Razor\\Microsoft.CodeAnalysis.Razor\\test\\Microsoft.CodeAnalysis.Razor.Test.csproj",
-      "src\\Razor\\tools\\Microsoft.AspNetCore.Razor.Internal.Transport\\Microsoft.AspNetCore.Razor.Internal.Transport.csproj",
-      "src\\Razor\\tools\\RazorSyntaxGenerator\\RazorSyntaxGenerator.csproj",
-      "src\\Razor\\perf\\Microsoft.AspNetCore.Razor.Performance\\Microsoft.AspNetCore.Razor.Performance.csproj",
-      "src\\Razor\\test\\Microsoft.AspNetCore.Razor.Test.Common\\Microsoft.AspNetCore.Razor.Test.Common.csproj",
-      "src\\Razor\\test\\Microsoft.AspNetCore.Razor.Test.ComponentShim\\Microsoft.AspNetCore.Razor.Test.ComponentShim.csproj",
-      "src\\Razor\\test\\Microsoft.AspNetCore.Razor.Test.MvcShim\\Microsoft.AspNetCore.Razor.Test.MvcShim.csproj",
-      "src\\Razor\\test\\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib\\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.csproj",
-      "src\\Razor\\test\\Microsoft.AspNetCore.Razor.Test.MvcShim.Version1_X\\Microsoft.AspNetCore.Razor.Test.MvcShim.Version1_X.csproj",
-      "src\\Razor\\test\\Microsoft.AspNetCore.Razor.Test.MvcShim.Version2_X\\Microsoft.AspNetCore.Razor.Test.MvcShim.Version2_X.csproj",
+      "src\\Razor\\Razor\\src\\Microsoft.AspNetCore.Razor.csproj",
+      "src\\Razor\\Razor\\test\\Microsoft.AspNetCore.Razor.Test.csproj"
     ]
   }
 }

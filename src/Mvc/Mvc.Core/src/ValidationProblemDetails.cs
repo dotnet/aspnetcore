@@ -1,92 +1,91 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-namespace Microsoft.AspNetCore.Mvc
+namespace Microsoft.AspNetCore.Mvc;
+
+/// <summary>
+/// A <see cref="ProblemDetails"/> for validation errors.
+/// </summary>
+[JsonConverter(typeof(ValidationProblemDetailsJsonConverter))]
+public class ValidationProblemDetails : HttpValidationProblemDetails
 {
     /// <summary>
-    /// A <see cref="ProblemDetails"/> for validation errors.
+    /// Initializes a new instance of <see cref="ValidationProblemDetails"/>.
     /// </summary>
-    [JsonConverter(typeof(ValidationProblemDetailsJsonConverter))]
-    public class ValidationProblemDetails : ProblemDetails
+    public ValidationProblemDetails()
     {
-        /// <summary>
-        /// Initializes a new instance of <see cref="ValidationProblemDetails"/>.
-        /// </summary>
-        public ValidationProblemDetails()
+        Title = Resources.ValidationProblemDescription_Title;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="ValidationProblemDetails"/> using the specified <paramref name="modelState"/>.
+    /// </summary>
+    /// <param name="modelState"><see cref="ModelStateDictionary"/> containing the validation errors.</param>
+    public ValidationProblemDetails(ModelStateDictionary modelState)
+        : base(CreateErrorDictionary(modelState))
+    {
+    }
+
+    private static IDictionary<string, string[]> CreateErrorDictionary(ModelStateDictionary modelState)
+    {
+        if (modelState == null)
         {
-            Title = Resources.ValidationProblemDescription_Title;
+            throw new ArgumentNullException(nameof(modelState));
         }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="ValidationProblemDetails"/> using the specified <paramref name="modelState"/>.
-        /// </summary>
-        /// <param name="modelState"><see cref="ModelStateDictionary"/> containing the validation errors.</param>
-        public ValidationProblemDetails(ModelStateDictionary modelState)
-            : this()
+        var errorDictionary = new Dictionary<string, string[]>(StringComparer.Ordinal);
+
+        foreach (var keyModelStatePair in modelState)
         {
-            if (modelState == null)
+            var key = keyModelStatePair.Key;
+            var errors = keyModelStatePair.Value.Errors;
+            if (errors != null && errors.Count > 0)
             {
-                throw new ArgumentNullException(nameof(modelState));
-            }
-
-            foreach (var keyModelStatePair in modelState)
-            {
-                var key = keyModelStatePair.Key;
-                var errors = keyModelStatePair.Value.Errors;
-                if (errors != null && errors.Count > 0)
+                if (errors.Count == 1)
                 {
-                    if (errors.Count == 1)
+                    var errorMessage = GetErrorMessage(errors[0]);
+                    errorDictionary.Add(key, new[] { errorMessage });
+                }
+                else
+                {
+                    var errorMessages = new string[errors.Count];
+                    for (var i = 0; i < errors.Count; i++)
                     {
-                        var errorMessage = GetErrorMessage(errors[0]);
-                        Errors.Add(key, new[] { errorMessage });
+                        errorMessages[i] = GetErrorMessage(errors[i]);
                     }
-                    else
-                    {
-                        var errorMessages = new string[errors.Count];
-                        for (var i = 0; i < errors.Count; i++)
-                        {
-                            errorMessages[i] = GetErrorMessage(errors[i]);
-                        }
 
-                        Errors.Add(key, errorMessages);
-                    }
+                    errorDictionary.Add(key, errorMessages);
                 }
             }
-
-            string GetErrorMessage(ModelError error)
-            {
-                return string.IsNullOrEmpty(error.ErrorMessage) ?
-                    Resources.SerializableError_DefaultError :
-                    error.ErrorMessage;
-            }
         }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="ValidationProblemDetails"/> using the specified <paramref name="errors"/>.
-        /// </summary>
-        /// <param name="errors">The validation errors.</param>
-        public ValidationProblemDetails(IDictionary<string, string[]> errors)
-            : this()
+        return errorDictionary;
+
+        static string GetErrorMessage(ModelError error)
         {
-            if (errors == null)
-            {
-                throw new ArgumentNullException(nameof(errors));
-            }
-
-            Errors = new Dictionary<string, string[]>(errors, StringComparer.Ordinal);
+            return string.IsNullOrEmpty(error.ErrorMessage) ?
+                Resources.SerializableError_DefaultError :
+                error.ErrorMessage;
         }
-
-        /// <summary>
-        /// Gets the validation errors associated with this instance of <see cref="ValidationProblemDetails"/>.
-        /// </summary>
-        [JsonPropertyName("errors")]
-        public IDictionary<string, string[]> Errors { get; } = new Dictionary<string, string[]>(StringComparer.Ordinal);
     }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="ValidationProblemDetails"/> using the specified <paramref name="errors"/>.
+    /// </summary>
+    /// <param name="errors">The validation errors.</param>
+    public ValidationProblemDetails(IDictionary<string, string[]> errors)
+        : base(errors)
+    {
+    }
+
+    /// <summary>
+    /// Gets the validation errors associated with this instance of <see cref="HttpValidationProblemDetails"/>.
+    /// </summary>
+    public new IDictionary<string, string[]> Errors => base.Errors;
 }

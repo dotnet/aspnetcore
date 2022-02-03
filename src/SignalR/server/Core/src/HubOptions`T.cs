@@ -1,14 +1,13 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.SignalR
+namespace Microsoft.AspNetCore.SignalR;
+
+/// <summary>
+/// Options used to configure the specified hub type instances. These options override globally set options.
+/// </summary>
+/// <typeparam name="THub">The hub type to configure.</typeparam>
+public class HubOptions<THub> : HubOptions where THub : Hub
 {
-    /// <summary>
-    /// Options used to configure the specified hub type instances. These options override globally set options.
-    /// </summary>
-    /// <typeparam name="THub">The hub type to configure.</typeparam>
-    public class HubOptions<THub> : HubOptions where THub : Hub
-    {
-        internal bool UserHasSetValues { get; set; }
-    }
+    internal bool UserHasSetValues { get; set; }
 }

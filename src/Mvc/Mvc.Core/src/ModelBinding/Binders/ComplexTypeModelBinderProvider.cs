@@ -1,46 +1,43 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
-using System;
-using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
+namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
+
+/// <summary>
+/// An <see cref="IModelBinderProvider"/> for complex types.
+/// </summary>
+[Obsolete("This type is obsolete and will be removed in a future version. Use ComplexObjectModelBinderProvider instead.")]
+public class ComplexTypeModelBinderProvider : IModelBinderProvider
 {
-    /// <summary>
-    /// An <see cref="IModelBinderProvider"/> for complex types.
-    /// </summary>
-    [Obsolete("This type is obsolete and will be removed in a future version. Use ComplexObjectModelBinderProvider instead.")]
-    public class ComplexTypeModelBinderProvider : IModelBinderProvider
+    /// <inheritdoc />
+    public IModelBinder GetBinder(ModelBinderProviderContext context)
     {
-        /// <inheritdoc />
-        public IModelBinder GetBinder(ModelBinderProviderContext context)
+        if (context == null)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            if (context.Metadata.IsComplexType && !context.Metadata.IsCollectionType)
-            {
-                var propertyBinders = new Dictionary<ModelMetadata, IModelBinder>();
-                for (var i = 0; i < context.Metadata.Properties.Count; i++)
-                {
-                    var property = context.Metadata.Properties[i];
-                    propertyBinders.Add(property, context.CreateBinder(property));
-                }
-
-                var loggerFactory = context.Services.GetRequiredService<ILoggerFactory>();
-                return new ComplexTypeModelBinder(
-                    propertyBinders,
-                    loggerFactory,
-                    allowValidatingTopLevelNodes: true);
-            }
-
-            return null;
+            throw new ArgumentNullException(nameof(context));
         }
+
+        if (context.Metadata.IsComplexType && !context.Metadata.IsCollectionType)
+        {
+            var propertyBinders = new Dictionary<ModelMetadata, IModelBinder>();
+            for (var i = 0; i < context.Metadata.Properties.Count; i++)
+            {
+                var property = context.Metadata.Properties[i];
+                propertyBinders.Add(property, context.CreateBinder(property));
+            }
+
+            var loggerFactory = context.Services.GetRequiredService<ILoggerFactory>();
+            return new ComplexTypeModelBinder(
+                propertyBinders,
+                loggerFactory,
+                allowValidatingTopLevelNodes: true);
+        }
+
+        return null;
     }
 }

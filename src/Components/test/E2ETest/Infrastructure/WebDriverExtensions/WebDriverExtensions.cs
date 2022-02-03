@@ -1,28 +1,17 @@
-using System;
-using System.Collections.Generic;
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using OpenQA.Selenium;
-using OpenQA.Selenium.Support.UI;
-using Xunit.Sdk;
 
-namespace Microsoft.AspNetCore.Components.E2ETest
+namespace Microsoft.AspNetCore.Components.E2ETest;
+
+internal static class WebDriverExtensions
 {
-    internal static class WebDriverExtensions
+    public static void Navigate(this IWebDriver browser, Uri baseUri, string relativeUrl, bool noReload)
     {
-        public static void Navigate(this IWebDriver browser, Uri baseUri, string relativeUrl, bool noReload)
-        {
-            var absoluteUrl = new Uri(baseUri, relativeUrl);
+        var absoluteUrl = new Uri(baseUri, relativeUrl);
 
-            if (noReload)
-            {
-                var existingUrl = browser.Url;
-                if (string.Equals(existingUrl, absoluteUrl.AbsoluteUri, StringComparison.Ordinal))
-                {
-                    return;
-                }
-            }
-
-            browser.Navigate().GoToUrl("about:blank");
-            browser.Navigate().GoToUrl(absoluteUrl);
-        }
+        browser.Navigate().GoToUrl("about:blank");
+        browser.Navigate().GoToUrl(absoluteUrl);
     }
 }

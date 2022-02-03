@@ -1,32 +1,31 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
 using Microsoft.AspNetCore.Mvc;
 
-namespace BasicWebSite.Controllers
+namespace BasicWebSite.Controllers;
+
+public class NonNullableController : Controller
 {
-    public class NonNullableController : Controller
+    public ActionResult Index()
     {
-        public ActionResult Index()
+        return View();
+    }
+
+    [HttpPost]
+    public ActionResult Index(NonNullablePerson person, string description)
+    {
+        if (ModelState.IsValid)
         {
-            return View();
+            return RedirectToAction();
         }
 
-        [HttpPost]
-        public ActionResult Index(NonNullablePerson person, string description)
-        {
-            if (ModelState.IsValid)
-            {
-                return RedirectToAction();
-            }
+        return View(person);
+    }
 
-            return View(person);
-        }
-
-        public class NonNullablePerson
-        {
-            public string Name { get; set; } = default!;
-        }
+    public class NonNullablePerson
+    {
+        public string Name { get; set; } = default!;
     }
 }

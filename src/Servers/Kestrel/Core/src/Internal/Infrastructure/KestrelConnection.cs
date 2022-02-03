@@ -1,184 +1,179 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+
+internal abstract class KestrelConnection : IConnectionHeartbeatFeature, IConnectionCompleteFeature, IConnectionLifetimeNotificationFeature
 {
-    internal abstract class KestrelConnection : IConnectionHeartbeatFeature, IConnectionCompleteFeature, IConnectionLifetimeNotificationFeature
+    private List<(Action<object> handler, object state)>? _heartbeatHandlers;
+    private readonly object _heartbeatLock = new object();
+
+    private Stack<KeyValuePair<Func<object, Task>, object>>? _onCompleted;
+    private bool _completed;
+
+    private readonly CancellationTokenSource _connectionClosingCts = new CancellationTokenSource();
+    private readonly TaskCompletionSource _completionTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+    protected readonly long _id;
+    protected readonly ServiceContext _serviceContext;
+    protected readonly TransportConnectionManager _transportConnectionManager;
+
+    public KestrelConnection(long id,
+                             ServiceContext serviceContext,
+                             TransportConnectionManager transportConnectionManager,
+                             KestrelTrace logger)
     {
-        private List<(Action<object> handler, object state)>? _heartbeatHandlers;
-        private readonly object _heartbeatLock = new object();
+        _id = id;
+        _serviceContext = serviceContext;
+        _transportConnectionManager = transportConnectionManager;
+        Logger = logger;
 
-        private Stack<KeyValuePair<Func<object, Task>, object>>? _onCompleted;
-        private bool _completed;
+        ConnectionClosedRequested = _connectionClosingCts.Token;
+    }
 
-        private readonly CancellationTokenSource _connectionClosingCts = new CancellationTokenSource();
-        private readonly TaskCompletionSource _completionTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        protected readonly long _id;
-        protected readonly ServiceContext _serviceContext;
-        protected readonly TransportConnectionManager _transportConnectionManager;
+    protected KestrelTrace Logger { get; }
 
-        public KestrelConnection(long id,
-                                 ServiceContext serviceContext,
-                                 TransportConnectionManager transportConnectionManager,
-                                 IKestrelTrace logger)
+    public CancellationToken ConnectionClosedRequested { get; set; }
+    public Task ExecutionTask => _completionTcs.Task;
+
+    public void TickHeartbeat()
+    {
+        lock (_heartbeatLock)
         {
-            _id = id;
-            _serviceContext = serviceContext;
-            _transportConnectionManager = transportConnectionManager;
-            Logger = logger;
-
-            ConnectionClosedRequested = _connectionClosingCts.Token;
-        }
-
-        protected IKestrelTrace Logger { get; }
-
-        public CancellationToken ConnectionClosedRequested { get; set; }
-        public Task ExecutionTask => _completionTcs.Task;
-
-        public void TickHeartbeat()
-        {
-            lock (_heartbeatLock)
+            if (_heartbeatHandlers == null)
             {
-                if (_heartbeatHandlers == null)
-                {
-                    return;
-                }
+                return;
+            }
 
-                foreach (var (handler, state) in _heartbeatHandlers)
-                {
-                    handler(state);
-                }
+            foreach (var (handler, state) in _heartbeatHandlers)
+            {
+                handler(state);
             }
         }
+    }
 
-        public abstract BaseConnectionContext TransportConnection { get; }
+    public abstract BaseConnectionContext TransportConnection { get; }
 
-        public void OnHeartbeat(Action<object> action, object state)
+    public void OnHeartbeat(Action<object> action, object state)
+    {
+        lock (_heartbeatLock)
         {
-            lock (_heartbeatLock)
+            if (_heartbeatHandlers == null)
             {
-                if (_heartbeatHandlers == null)
-                {
-                    _heartbeatHandlers = new List<(Action<object> handler, object state)>();
-                }
-
-                _heartbeatHandlers.Add((action, state));
+                _heartbeatHandlers = new List<(Action<object> handler, object state)>();
             }
+
+            _heartbeatHandlers.Add((action, state));
+        }
+    }
+
+    void IConnectionCompleteFeature.OnCompleted(Func<object, Task> callback, object state)
+    {
+        if (_completed)
+        {
+            throw new InvalidOperationException("The connection is already complete.");
         }
 
-        void IConnectionCompleteFeature.OnCompleted(Func<object, Task> callback, object state)
+        if (_onCompleted == null)
         {
-            if (_completed)
-            {
-                throw new InvalidOperationException("The connection is already complete.");
-            }
+            _onCompleted = new Stack<KeyValuePair<Func<object, Task>, object>>();
+        }
+        _onCompleted.Push(new KeyValuePair<Func<object, Task>, object>(callback, state));
+    }
 
-            if (_onCompleted == null)
-            {
-                _onCompleted = new Stack<KeyValuePair<Func<object, Task>, object>>();
-            }
-            _onCompleted.Push(new KeyValuePair<Func<object, Task>, object>(callback, state));
+    public Task FireOnCompletedAsync()
+    {
+        if (_completed)
+        {
+            throw new InvalidOperationException("The connection is already complete.");
         }
 
-        public Task FireOnCompletedAsync()
+        _completed = true;
+        var onCompleted = _onCompleted;
+
+        if (onCompleted == null || onCompleted.Count == 0)
         {
-            if (_completed)
-            {
-                throw new InvalidOperationException("The connection is already complete.");
-            }
-
-            _completed = true;
-            var onCompleted = _onCompleted;
-
-            if (onCompleted == null || onCompleted.Count == 0)
-            {
-                return Task.CompletedTask;
-            }
-
-            return CompleteAsyncMayAwait(onCompleted);
-        }
-
-        private Task CompleteAsyncMayAwait(Stack<KeyValuePair<Func<object, Task>, object>> onCompleted)
-        {
-            while (onCompleted.TryPop(out var entry))
-            {
-                try
-                {
-                    var task = entry.Key.Invoke(entry.Value);
-                    if (!task.IsCompletedSuccessfully)
-                    {
-                        return CompleteAsyncAwaited(task, onCompleted);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, "An error occurred running an IConnectionCompleteFeature.OnCompleted callback.");
-                }
-            }
-
             return Task.CompletedTask;
         }
 
-        private async Task CompleteAsyncAwaited(Task currentTask, Stack<KeyValuePair<Func<object, Task>, object>> onCompleted)
+        return CompleteAsyncMayAwait(onCompleted);
+    }
+
+    private Task CompleteAsyncMayAwait(Stack<KeyValuePair<Func<object, Task>, object>> onCompleted)
+    {
+        while (onCompleted.TryPop(out var entry))
         {
             try
             {
-                await currentTask;
+                var task = entry.Key.Invoke(entry.Value);
+                if (!task.IsCompletedSuccessfully)
+                {
+                    return CompleteAsyncAwaited(task, onCompleted);
+                }
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "An error occurred running an IConnectionCompleteFeature.OnCompleted callback.");
             }
-
-            while (onCompleted.TryPop(out var entry))
-            {
-                try
-                {
-                    await entry.Key.Invoke(entry.Value);
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, "An error occurred running an IConnectionCompleteFeature.OnCompleted callback.");
-                }
-            }
         }
 
-        public void RequestClose()
+        return Task.CompletedTask;
+    }
+
+    private async Task CompleteAsyncAwaited(Task currentTask, Stack<KeyValuePair<Func<object, Task>, object>> onCompleted)
+    {
+        try
+        {
+            await currentTask;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "An error occurred running an IConnectionCompleteFeature.OnCompleted callback.");
+        }
+
+        while (onCompleted.TryPop(out var entry))
         {
             try
             {
-                _connectionClosingCts.Cancel();
+                await entry.Key.Invoke(entry.Value);
             }
-            catch (ObjectDisposedException)
+            catch (Exception ex)
             {
-                // There's a race where the token could be disposed
-                // swallow the exception and no-op
+                Logger.LogError(ex, "An error occurred running an IConnectionCompleteFeature.OnCompleted callback.");
             }
         }
+    }
 
-        public void Complete()
+    public void RequestClose()
+    {
+        try
         {
-            _completionTcs.TrySetResult();
+            _connectionClosingCts.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+            // There's a race where the token could be disposed
+            // swallow the exception and no-op
+        }
+    }
 
-            _connectionClosingCts.Dispose();
+    public void Complete()
+    {
+        _completionTcs.TrySetResult();
+
+        _connectionClosingCts.Dispose();
+    }
+
+    protected IDisposable? BeginConnectionScope(BaseConnectionContext connectionContext)
+    {
+        if (Logger.IsEnabled(LogLevel.Critical))
+        {
+            return Logger.BeginScope(new ConnectionLogScope(connectionContext.ConnectionId));
         }
 
-        protected IDisposable? BeginConnectionScope(BaseConnectionContext connectionContext)
-        {
-            if (Logger.IsEnabled(LogLevel.Critical))
-            {
-                return Logger.BeginScope(new ConnectionLogScope(connectionContext.ConnectionId));
-            }
-
-            return null;
-        }
+        return null;
     }
 }

@@ -1,17 +1,17 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 import { HttpClient } from "./HttpClient";
-import { MessageHeaders } from "./IHubProtocol";
 import { ILogger, LogLevel } from "./ILogger";
 import { NullLogger } from "./Loggers";
 import { IStreamSubscriber, ISubscription } from "./Stream";
 import { Subject } from "./Subject";
+import { IHttpConnectionOptions } from "./IHttpConnectionOptions";
 
 // Version token that will be replaced by the prepack command
 /** The version of the SignalR client. */
-export const VERSION: string = "0.0.0-DEV_BUILD";
 
+export const VERSION: string = "0.0.0-DEV_BUILD";
 /** @private */
 export class Arg {
     public static isRequired(val: any, name: string): void {
@@ -35,16 +35,25 @@ export class Arg {
 
 /** @private */
 export class Platform {
+    // react-native has a window but no document so we should check both
     public static get isBrowser(): boolean {
-        return typeof window === "object";
+        return typeof window === "object" && typeof window.document === "object";
     }
 
+    // WebWorkers don't have a window object so the isBrowser check would fail
     public static get isWebWorker(): boolean {
         return typeof self === "object" && "importScripts" in self;
     }
 
+    // react-native has a window but no document
+    static get isReactNative(): boolean {
+        return typeof window === "object" && typeof window.document === "undefined";
+    }
+
+    // Node apps shouldn't have a window object, but WebWorkers don't either
+    // so we need to check for both WebWorker and window
     public static get isNode(): boolean {
-        return !this.isBrowser && !this.isWebWorker;
+        return !this.isBrowser && !this.isWebWorker && !this.isReactNative;
     }
 }
 
@@ -91,8 +100,8 @@ export function isArrayBuffer(val: any): val is ArrayBuffer {
 
 /** @private */
 export async function sendMessage(logger: ILogger, transportName: string, httpClient: HttpClient, url: string, accessTokenFactory: (() => string | Promise<string>) | undefined,
-                                  content: string | ArrayBuffer, logMessageContent: boolean, withCredentials: boolean, defaultHeaders: MessageHeaders): Promise<void> {
-    let headers = {};
+                                  content: string | ArrayBuffer, options: IHttpConnectionOptions): Promise<void> {
+    let headers: {[k: string]: string} = {};
     if (accessTokenFactory) {
         const token = await accessTokenFactory();
         if (token) {
@@ -105,21 +114,22 @@ export async function sendMessage(logger: ILogger, transportName: string, httpCl
     const [name, value] = getUserAgentHeader();
     headers[name] = value;
 
-    logger.log(LogLevel.Trace, `(${transportName} transport) sending data. ${getDataDetail(content, logMessageContent)}.`);
+    logger.log(LogLevel.Trace, `(${transportName} transport) sending data. ${getDataDetail(content, options.logMessageContent!)}.`);
 
     const responseType = isArrayBuffer(content) ? "arraybuffer" : "text";
     const response = await httpClient.post(url, {
         content,
-        headers: { ...headers, ...defaultHeaders},
+        headers: { ...headers, ...options.headers},
         responseType,
-        withCredentials,
+        timeout: options.timeout,
+        withCredentials: options.withCredentials,
     });
 
     logger.log(LogLevel.Trace, `(${transportName} transport) request complete. Response status: ${response.statusCode}.`);
 }
 
 /** @private */
-export function createLogger(logger?: ILogger | LogLevel) {
+export function createLogger(logger?: ILogger | LogLevel): ILogger {
     if (logger === undefined) {
         return new ConsoleLogger(LogLevel.Information);
     }
@@ -128,7 +138,7 @@ export function createLogger(logger?: ILogger | LogLevel) {
         return NullLogger.instance;
     }
 
-    if ((logger as ILogger).log) {
+    if ((logger as ILogger).log !== undefined) {
         return logger as ILogger;
     }
 
@@ -137,32 +147,32 @@ export function createLogger(logger?: ILogger | LogLevel) {
 
 /** @private */
 export class SubjectSubscription<T> implements ISubscription<T> {
-    private subject: Subject<T>;
-    private observer: IStreamSubscriber<T>;
+    private _subject: Subject<T>;
+    private _observer: IStreamSubscriber<T>;
 
     constructor(subject: Subject<T>, observer: IStreamSubscriber<T>) {
-        this.subject = subject;
-        this.observer = observer;
+        this._subject = subject;
+        this._observer = observer;
     }
 
     public dispose(): void {
-        const index: number = this.subject.observers.indexOf(this.observer);
+        const index: number = this._subject.observers.indexOf(this._observer);
         if (index > -1) {
-            this.subject.observers.splice(index, 1);
+            this._subject.observers.splice(index, 1);
         }
 
-        if (this.subject.observers.length === 0 && this.subject.cancelCallback) {
-            this.subject.cancelCallback().catch((_) => { });
+        if (this._subject.observers.length === 0 && this._subject.cancelCallback) {
+            this._subject.cancelCallback().catch((_) => { });
         }
     }
 }
 
 /** @private */
 export class ConsoleLogger implements ILogger {
-    private readonly minimumLogLevel: LogLevel;
+    private readonly _minLevel: LogLevel;
 
     // Public for testing purposes.
-    public outputConsole: {
+    public out: {
         error(message: any): void,
         warn(message: any): void,
         info(message: any): void,
@@ -170,26 +180,27 @@ export class ConsoleLogger implements ILogger {
     };
 
     constructor(minimumLogLevel: LogLevel) {
-        this.minimumLogLevel = minimumLogLevel;
-        this.outputConsole = console;
+        this._minLevel = minimumLogLevel;
+        this.out = console;
     }
 
     public log(logLevel: LogLevel, message: string): void {
-        if (logLevel >= this.minimumLogLevel) {
+        if (logLevel >= this._minLevel) {
+            const msg = `[${new Date().toISOString()}] ${LogLevel[logLevel]}: ${message}`;
             switch (logLevel) {
                 case LogLevel.Critical:
                 case LogLevel.Error:
-                    this.outputConsole.error(`[${new Date().toISOString()}] ${LogLevel[logLevel]}: ${message}`);
+                    this.out.error(msg);
                     break;
                 case LogLevel.Warning:
-                    this.outputConsole.warn(`[${new Date().toISOString()}] ${LogLevel[logLevel]}: ${message}`);
+                    this.out.warn(msg);
                     break;
                 case LogLevel.Information:
-                    this.outputConsole.info(`[${new Date().toISOString()}] ${LogLevel[logLevel]}: ${message}`);
+                    this.out.info(msg);
                     break;
                 default:
                     // console.debug only goes to attached debuggers in Node, so we use console.log for Trace and Debug
-                    this.outputConsole.log(`[${new Date().toISOString()}] ${LogLevel[logLevel]}: ${message}`);
+                    this.out.log(msg);
                     break;
             }
         }
@@ -232,7 +243,8 @@ export function constructUserAgent(version: string, os: string, runtime: string,
     return userAgent;
 }
 
-function getOsName(): string {
+// eslint-disable-next-line spaced-comment
+/*#__PURE__*/ function getOsName(): string {
     if (Platform.isNode) {
         switch (process.platform) {
             case "win32":
@@ -249,7 +261,8 @@ function getOsName(): string {
     }
 }
 
-function getRuntimeVersion(): string | undefined {
+// eslint-disable-next-line spaced-comment
+/*#__PURE__*/ function getRuntimeVersion(): string | undefined {
     if (Platform.isNode) {
         return process.versions.node;
     }
@@ -262,4 +275,32 @@ function getRuntime(): string {
     } else {
         return "Browser";
     }
+}
+
+/** @private */
+export function getErrorString(e: any): string {
+    if (e.stack) {
+        return e.stack;
+    } else if (e.message) {
+        return e.message;
+    }
+    return `${e}`;
+}
+
+/** @private */
+export function getGlobalThis(): unknown {
+    // globalThis is semi-new and not available in Node until v12
+    if (typeof globalThis !== "undefined") {
+        return globalThis;
+    }
+    if (typeof self !== "undefined") {
+        return self;
+    }
+    if (typeof window !== "undefined") {
+        return window;
+    }
+    if (typeof global !== "undefined") {
+        return global;
+    }
+    throw new Error("could not find global");
 }

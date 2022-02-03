@@ -1,134 +1,128 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.FunctionalTests
+namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
+
+public class TagHelpersTest :
+    IClassFixture<MvcTestFixture<TagHelpersWebSite.Startup>>,
+    IClassFixture<MvcEncodedTestFixture<TagHelpersWebSite.Startup>>
 {
-    public class TagHelpersTest :
-        IClassFixture<MvcTestFixture<TagHelpersWebSite.Startup>>,
-        IClassFixture<MvcEncodedTestFixture<TagHelpersWebSite.Startup>>
+    // Some tests require comparing the actual response body against an expected response baseline
+    // so they require a reference to the assembly on which the resources are located, in order to
+    // make the tests less verbose, we get a reference to the assembly with the resources and we
+    // use it on all the rest of the tests.
+    private static readonly Assembly _resourcesAssembly = typeof(TagHelpersTest).GetTypeInfo().Assembly;
+
+    public TagHelpersTest(
+        MvcTestFixture<TagHelpersWebSite.Startup> fixture,
+        MvcEncodedTestFixture<TagHelpersWebSite.Startup> encodedFixture)
     {
-        // Some tests require comparing the actual response body against an expected response baseline
-        // so they require a reference to the assembly on which the resources are located, in order to
-        // make the tests less verbose, we get a reference to the assembly with the resources and we
-        // use it on all the rest of the tests.
-        private static readonly Assembly _resourcesAssembly = typeof(TagHelpersTest).GetTypeInfo().Assembly;
+        Client = fixture.CreateDefaultClient();
+        EncodedClient = encodedFixture.CreateDefaultClient();
+    }
 
-        public TagHelpersTest(
-            MvcTestFixture<TagHelpersWebSite.Startup> fixture,
-            MvcEncodedTestFixture<TagHelpersWebSite.Startup> encodedFixture)
+    public HttpClient Client { get; }
+
+    public HttpClient EncodedClient { get; }
+
+    [Theory]
+    [InlineData("Index")]
+    [InlineData("About")]
+    [InlineData("Help")]
+    [InlineData("UnboundDynamicAttributes")]
+    public async Task CanRenderViewsWithTagHelpers(string action)
+    {
+        // Arrange
+        var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
+        var outputFile = "compiler/resources/TagHelpersWebSite.Home." + action + ".html";
+        var expectedContent =
+            await ResourceFile.ReadResourceAsync(_resourcesAssembly, outputFile, sourceFile: false);
+
+        // Act
+        // The host is not important as everything runs in memory and tests are isolated from each other.
+        var response = await Client.GetAsync("http://localhost/Home/" + action);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
+
+        var responseContent = await response.Content.ReadAsStringAsync();
+        ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent);
+    }
+
+    [ConditionalTheory(Skip = "https://github.com/dotnet/aspnetcore/issues/10423")]
+    [InlineData("GlobbingTagHelpers")]
+    [InlineData("ViewComponentTagHelpers")]
+    public Task CanRenderViewsWithTagHelpersNotReadyForHelix(string action) => CanRenderViewsWithTagHelpers(action);
+
+    [Fact]
+    public async Task GivesCorrectCallstackForSyncronousCalls()
+    {
+        // Regression test for https://github.com/dotnet/aspnetcore/issues/15367
+        // Arrange
+        var exception = await Assert.ThrowsAsync<HttpRequestException>(async () => await Client.GetAsync("http://localhost/Home/MyHtml"));
+
+        // Assert
+        Assert.Equal("Should be visible", exception.InnerException.InnerException.Message);
+    }
+
+    [Fact]
+    public async Task CanRenderViewsWithTagHelpersAndUnboundDynamicAttributes_Encoded()
+    {
+        // Arrange
+        var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
+        var outputFile = "compiler/resources/TagHelpersWebSite.Home.UnboundDynamicAttributes.Encoded.html";
+        var expectedContent =
+            await ResourceFile.ReadResourceAsync(_resourcesAssembly, outputFile, sourceFile: false);
+
+        // Act
+        // The host is not important as everything runs in memory and tests are isolated from each other.
+        var response = await EncodedClient.GetAsync("http://localhost/Home/UnboundDynamicAttributes");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
+
+        var responseContent = await response.Content.ReadAsStringAsync();
+        ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent);
+    }
+
+    [Fact]
+    public async Task ReRegisteringAntiforgeryTokenInsideFormTagHelper_DoesNotAddDuplicateAntiforgeryTokenFields()
+    {
+        // Arrange
+        var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
+        var outputFile = "compiler/resources/TagHelpersWebSite.Employee.DuplicateAntiforgeryTokenRegistration.html";
+        var expectedContent =
+            await ResourceFile.ReadResourceAsync(_resourcesAssembly, outputFile, sourceFile: false);
+
+        // Act
+        var response = await Client.GetAsync("http://localhost/Employee/DuplicateAntiforgeryTokenRegistration");
+        var responseContent = await response.Content.ReadAsStringAsync();
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
+
+        responseContent = responseContent.Trim();
+
+        var forgeryToken = AntiforgeryTestHelper.RetrieveAntiforgeryToken(
+            responseContent, "/Employee/DuplicateAntiforgeryTokenRegistration");
+        ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent, forgeryToken);
+    }
+
+    public static TheoryData TagHelpersAreInheritedFromViewImportsPagesData
+    {
+        get
         {
-            Client = fixture.CreateDefaultClient();
-            EncodedClient = encodedFixture.CreateDefaultClient();
-        }
-
-        public HttpClient Client { get; }
-
-        public HttpClient EncodedClient { get; }
-
-        [Theory]
-        [InlineData("Index")]
-        [InlineData("About")]
-        [InlineData("Help")]
-        [InlineData("UnboundDynamicAttributes")]
-        public async Task CanRenderViewsWithTagHelpers(string action)
-        {
-            // Arrange
-            var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
-            var outputFile = "compiler/resources/TagHelpersWebSite.Home." + action + ".html";
-            var expectedContent =
-                await ResourceFile.ReadResourceAsync(_resourcesAssembly, outputFile, sourceFile: false);
-
-            // Act
-            // The host is not important as everything runs in memory and tests are isolated from each other.
-            var response = await Client.GetAsync("http://localhost/Home/" + action);
-
-            // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
-
-            var responseContent = await response.Content.ReadAsStringAsync();
-            ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent);
-        }
-
-        [ConditionalTheory]
-        [InlineData("GlobbingTagHelpers")]
-        [InlineData("ViewComponentTagHelpers")]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/10423")]
-        public Task CanRenderViewsWithTagHelpersNotReadyForHelix(string action)
-            => CanRenderViewsWithTagHelpers(action);
-
-        [Fact]
-        public async Task GivesCorrectCallstackForSyncronousCalls()
-        {
-            // Regression test for https://github.com/dotnet/aspnetcore/issues/15367
-            // Arrange
-            var exception = await Assert.ThrowsAsync<HttpRequestException>(async () => await Client.GetAsync("http://localhost/Home/MyHtml"));
-
-            // Assert
-            Assert.Equal("Should be visible", exception.InnerException.InnerException.Message);
-        }
-
-        [Fact]
-        public async Task CanRenderViewsWithTagHelpersAndUnboundDynamicAttributes_Encoded()
-        {
-            // Arrange
-            var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
-            var outputFile = "compiler/resources/TagHelpersWebSite.Home.UnboundDynamicAttributes.Encoded.html";
-            var expectedContent =
-                await ResourceFile.ReadResourceAsync(_resourcesAssembly, outputFile, sourceFile: false);
-
-            // Act
-            // The host is not important as everything runs in memory and tests are isolated from each other.
-            var response = await EncodedClient.GetAsync("http://localhost/Home/UnboundDynamicAttributes");
-
-            // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
-
-            var responseContent = await response.Content.ReadAsStringAsync();
-            ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent);
-        }
-
-        [Fact]
-        public async Task ReRegisteringAntiforgeryTokenInsideFormTagHelper_DoesNotAddDuplicateAntiforgeryTokenFields()
-        {
-            // Arrange
-            var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
-            var outputFile = "compiler/resources/TagHelpersWebSite.Employee.DuplicateAntiforgeryTokenRegistration.html";
-            var expectedContent =
-                await ResourceFile.ReadResourceAsync(_resourcesAssembly, outputFile, sourceFile: false);
-
-            // Act
-            var response = await Client.GetAsync("http://localhost/Employee/DuplicateAntiforgeryTokenRegistration");
-            var responseContent = await response.Content.ReadAsStringAsync();
-
-            // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
-
-            responseContent = responseContent.Trim();
-
-            var forgeryToken = AntiforgeryTestHelper.RetrieveAntiforgeryToken(
-                responseContent, "/Employee/DuplicateAntiforgeryTokenRegistration");
-            ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent, forgeryToken);
-        }
-
-        public static TheoryData TagHelpersAreInheritedFromViewImportsPagesData
-        {
-            get
-            {
-                // action, expected
-                return new TheoryData<string, string>
+            // action, expected
+            return new TheoryData<string, string>
                 {
                     {
                         "NestedViewImportsTagHelper",
@@ -171,59 +165,59 @@ page:<root>root-content</root>"
 page:<root>root-content</root>"
                     },
                 };
-            }
         }
+    }
 
-        [Theory]
-        [MemberData(nameof(TagHelpersAreInheritedFromViewImportsPagesData))]
-        public async Task TagHelpersAreInheritedFromViewImportsPages(string action, string expected)
-        {
-            // Arrange & Act
-            var result = await Client.GetStringAsync("http://localhost/Home/" + action);
+    [Theory]
+    [MemberData(nameof(TagHelpersAreInheritedFromViewImportsPagesData))]
+    public async Task TagHelpersAreInheritedFromViewImportsPages(string action, string expected)
+    {
+        // Arrange & Act
+        var result = await Client.GetStringAsync("http://localhost/Home/" + action);
 
-            // Assert
-            Assert.Equal(expected, result.Trim(), ignoreLineEndingDifferences: true);
-        }
+        // Assert
+        Assert.Equal(expected, result.Trim(), ignoreLineEndingDifferences: true);
+    }
 
-        [Fact]
-        public async Task DefaultInheritedTagsCanBeRemoved()
-        {
-            // Arrange
-            var expected =
+    [Fact]
+    public async Task DefaultInheritedTagsCanBeRemoved()
+    {
+        // Arrange
+        var expected =
 @"<a href=""~/VirtualPath"">Virtual path</a>";
 
-            var result = await Client.GetStringAsync("RemoveDefaultInheritedTagHelpers");
+        var result = await Client.GetStringAsync("RemoveDefaultInheritedTagHelpers");
 
-            // Assert
-            Assert.Equal(expected, result.Trim(), ignoreLineEndingDifferences: true);
-        }
+        // Assert
+        Assert.Equal(expected, result.Trim(), ignoreLineEndingDifferences: true);
+    }
 
-        [Fact]
-        public async Task ViewsWithModelMetadataAttributes_CanRenderForm()
-        {
-            // Arrange
-            var outputFile = "compiler/resources/TagHelpersWebSite.Employee.Create.html";
-            var expectedContent =
-                await ResourceFile.ReadResourceAsync(_resourcesAssembly, outputFile, sourceFile: false);
+    [Fact]
+    public async Task ViewsWithModelMetadataAttributes_CanRenderForm()
+    {
+        // Arrange
+        var outputFile = "compiler/resources/TagHelpersWebSite.Employee.Create.html";
+        var expectedContent =
+            await ResourceFile.ReadResourceAsync(_resourcesAssembly, outputFile, sourceFile: false);
 
-            // Act
-            var response = await Client.GetAsync("http://localhost/Employee/Create");
+        // Act
+        var response = await Client.GetAsync("http://localhost/Employee/Create");
 
-            // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-            var responseContent = await response.Content.ReadAsStringAsync();
-            ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent);
-        }
+        var responseContent = await response.Content.ReadAsStringAsync();
+        ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent);
+    }
 
-        [Fact]
-        public async Task ViewsWithModelMetadataAttributes_CanRenderPostedValue()
-        {
-            // Arrange
-            var outputFile = "compiler/resources/TagHelpersWebSite.Employee.Details.AfterCreate.html";
-            var expectedContent =
-                await ResourceFile.ReadResourceAsync(_resourcesAssembly, outputFile, sourceFile: false);
-            var validPostValues = new Dictionary<string, string>
+    [Fact]
+    public async Task ViewsWithModelMetadataAttributes_CanRenderPostedValue()
+    {
+        // Arrange
+        var outputFile = "compiler/resources/TagHelpersWebSite.Employee.Details.AfterCreate.html";
+        var expectedContent =
+            await ResourceFile.ReadResourceAsync(_resourcesAssembly, outputFile, sourceFile: false);
+        var validPostValues = new Dictionary<string, string>
             {
                 { "FullName", "Boo" },
                 { "Gender", "M" },
@@ -232,26 +226,26 @@ page:<root>root-content</root>"
                 { "JoinDate", "2014-12-01" },
                 { "Email", "a@b.com" },
             };
-            var postContent = new FormUrlEncodedContent(validPostValues);
+        var postContent = new FormUrlEncodedContent(validPostValues);
 
-            // Act
-            var response = await Client.PostAsync("http://localhost/Employee/Create", postContent);
+        // Act
+        var response = await Client.PostAsync("http://localhost/Employee/Create", postContent);
 
-            // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-            var responseContent = await response.Content.ReadAsStringAsync();
-            ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent);
-        }
+        var responseContent = await response.Content.ReadAsStringAsync();
+        ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent);
+    }
 
-        [Fact]
-        public async Task ViewsWithModelMetadataAttributes_CanHandleInvalidData()
-        {
-            // Arrange
-            var outputFile = "compiler/resources/TagHelpersWebSite.Employee.Create.Invalid.html";
-            var expectedContent =
-                await ResourceFile.ReadResourceAsync(_resourcesAssembly, outputFile, sourceFile: false);
-            var validPostValues = new Dictionary<string, string>
+    [Fact]
+    public async Task ViewsWithModelMetadataAttributes_CanHandleInvalidData()
+    {
+        // Arrange
+        var outputFile = "compiler/resources/TagHelpersWebSite.Employee.Create.Invalid.html";
+        var expectedContent =
+            await ResourceFile.ReadResourceAsync(_resourcesAssembly, outputFile, sourceFile: false);
+        var validPostValues = new Dictionary<string, string>
             {
                 { "FullName", "Boo" },
                 { "Gender", "M" },
@@ -260,38 +254,37 @@ page:<root>root-content</root>"
                 { "Email", "a@b.com" },
                 { "Salary", "z" },
             };
-            var postContent = new FormUrlEncodedContent(validPostValues);
+        var postContent = new FormUrlEncodedContent(validPostValues);
 
-            // Act
-            var response = await Client.PostAsync("http://localhost/Employee/Create", postContent);
+        // Act
+        var response = await Client.PostAsync("http://localhost/Employee/Create", postContent);
 
-            // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-            var responseContent = await response.Content.ReadAsStringAsync();
-            ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent);
-        }
+        var responseContent = await response.Content.ReadAsStringAsync();
+        ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent);
+    }
 
-        [Theory]
-        [InlineData("Index")]
-        [InlineData("CustomEncoder")]
-        [InlineData("NullEncoder")]
-        [InlineData("TwoEncoders")]
-        [InlineData("ThreeEncoders")]
-        public async Task EncodersPages_ReturnExpectedContent(string actionName)
-        {
-            // Arrange
-            var outputFile = $"compiler/resources/TagHelpersWebSite.Encoders.{ actionName }.html";
-            var expectedContent =
-                await ResourceFile.ReadResourceAsync(_resourcesAssembly, outputFile, sourceFile: false);
+    [Theory]
+    [InlineData("Index")]
+    [InlineData("CustomEncoder")]
+    [InlineData("NullEncoder")]
+    [InlineData("TwoEncoders")]
+    [InlineData("ThreeEncoders")]
+    public async Task EncodersPages_ReturnExpectedContent(string actionName)
+    {
+        // Arrange
+        var outputFile = $"compiler/resources/TagHelpersWebSite.Encoders.{ actionName }.html";
+        var expectedContent =
+            await ResourceFile.ReadResourceAsync(_resourcesAssembly, outputFile, sourceFile: false);
 
-            // Act
-            var response = await Client.GetAsync($"/Encoders/{ actionName }");
+        // Act
+        var response = await Client.GetAsync($"/Encoders/{ actionName }");
 
-            // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            var responseContent = await response.Content.ReadAsStringAsync();
-            ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent);
-        }
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var responseContent = await response.Content.ReadAsStringAsync();
+        ResourceFile.UpdateOrVerify(_resourcesAssembly, outputFile, expectedContent, responseContent);
     }
 }

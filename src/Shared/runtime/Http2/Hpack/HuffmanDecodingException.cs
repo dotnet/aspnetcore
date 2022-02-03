@@ -7,7 +7,7 @@ namespace System.Net.Http.HPack
 {
     // TODO: Should this be public?
     [Serializable]
-    internal class HuffmanDecodingException : Exception, ISerializable
+    internal sealed class HuffmanDecodingException : Exception, ISerializable
     {
         public HuffmanDecodingException()
         {
@@ -18,7 +18,7 @@ namespace System.Net.Http.HPack
         {
         }
 
-        protected HuffmanDecodingException(SerializationInfo info, StreamingContext context)
+        private HuffmanDecodingException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
         }

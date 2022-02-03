@@ -1,125 +1,120 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.AspNetCore.Routing.TestObjects;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Routing
+namespace Microsoft.AspNetCore.Routing;
+
+public class DataSourceDependentCacheTest
 {
-    public class DataSourceDependentCacheTest
+    [Fact]
+    public void Cache_Initializes_WhenEnsureInitializedCalled()
     {
-        [Fact]
-        public void Cache_Initializes_WhenEnsureInitializedCalled()
+        // Arrange
+        var called = false;
+
+        var dataSource = new DynamicEndpointDataSource();
+        var cache = new DataSourceDependentCache<string>(dataSource, (endpoints) =>
         {
-            // Arrange
-            var called = false;
+            called = true;
+            return "hello, world!";
+        });
 
-            var dataSource = new DynamicEndpointDataSource();
-            var cache = new DataSourceDependentCache<string>(dataSource, (endpoints) =>
-            {
-                called = true;
-                return "hello, world!";
-            });
+        // Act
+        cache.EnsureInitialized();
 
-            // Act
-            cache.EnsureInitialized();
+        // Assert
+        Assert.True(called);
+        Assert.Equal("hello, world!", cache.Value);
+    }
 
-            // Assert
-            Assert.True(called);
-            Assert.Equal("hello, world!", cache.Value);
-        }
+    [Fact]
+    public void Cache_DoesNotInitialize_WhenValueCalled()
+    {
+        // Arrange
+        var called = false;
 
-        [Fact]
-        public void Cache_DoesNotInitialize_WhenValueCalled()
+        var dataSource = new DynamicEndpointDataSource();
+        var cache = new DataSourceDependentCache<string>(dataSource, (endpoints) =>
         {
-            // Arrange
-            var called = false;
+            called = true;
+            return "hello, world!";
+        });
 
-            var dataSource = new DynamicEndpointDataSource();
-            var cache = new DataSourceDependentCache<string>(dataSource, (endpoints) =>
-            {
-                called = true;
-                return "hello, world!";
-            });
+        // Act
+        GC.KeepAlive(cache.Value);
 
-            // Act
-            GC.KeepAlive(cache.Value);
+        // Assert
+        Assert.False(called);
+        Assert.Null(cache.Value);
+    }
 
-            // Assert
-            Assert.False(called);
-            Assert.Null(cache.Value);
-        }
+    [Fact]
+    public void Cache_Reinitializes_WhenDataSourceChanges()
+    {
+        // Arrange
+        var count = 0;
 
-        [Fact]
-        public void Cache_Reinitializes_WhenDataSourceChanges()
+        var dataSource = new DynamicEndpointDataSource();
+        var cache = new DataSourceDependentCache<string>(dataSource, (endpoints) =>
         {
-            // Arrange
-            var count = 0;
+            count++;
+            return $"hello, {count}!";
+        });
 
-            var dataSource = new DynamicEndpointDataSource();
-            var cache = new DataSourceDependentCache<string>(dataSource, (endpoints) =>
-            {
-                count++;
-                return $"hello, {count}!";
-            });
+        cache.EnsureInitialized();
+        Assert.Equal("hello, 1!", cache.Value);
 
-            cache.EnsureInitialized();
-            Assert.Equal("hello, 1!", cache.Value);
+        // Act
+        dataSource.AddEndpoint(null);
 
-            // Act
-            dataSource.AddEndpoint(null);
+        // Assert
+        Assert.Equal(2, count);
+        Assert.Equal("hello, 2!", cache.Value);
+    }
 
-            // Assert
-            Assert.Equal(2, count);
-            Assert.Equal("hello, 2!", cache.Value);
-        }
+    [Fact]
+    public void Cache_CanDispose_WhenUninitialized()
+    {
+        // Arrange
+        var count = 0;
 
-        [Fact]
-        public void Cache_CanDispose_WhenUninitialized()
+        var dataSource = new DynamicEndpointDataSource();
+        var cache = new DataSourceDependentCache<string>(dataSource, (endpoints) =>
         {
-            // Arrange
-            var count = 0;
+            count++;
+            return $"hello, {count}!";
+        });
 
-            var dataSource = new DynamicEndpointDataSource();
-            var cache = new DataSourceDependentCache<string>(dataSource, (endpoints) =>
-            {
-                count++;
-                return $"hello, {count}!";
-            });
+        // Act
+        cache.Dispose();
 
-            // Act
-            cache.Dispose();
+        // Assert
+        dataSource.AddEndpoint(null);
+        Assert.Null(cache.Value);
+    }
 
-            // Assert
-            dataSource.AddEndpoint(null);
-            Assert.Null(cache.Value);
-        }
+    [Fact]
+    public void Cache_CanDispose_WhenInitialized()
+    {
+        // Arrange
+        var count = 0;
 
-        [Fact]
-        public void Cache_CanDispose_WhenInitialized()
+        var dataSource = new DynamicEndpointDataSource();
+        var cache = new DataSourceDependentCache<string>(dataSource, (endpoints) =>
         {
-            // Arrange
-            var count = 0;
+            count++;
+            return $"hello, {count}!";
+        });
 
-            var dataSource = new DynamicEndpointDataSource();
-            var cache = new DataSourceDependentCache<string>(dataSource, (endpoints) =>
-            {
-                count++;
-                return $"hello, {count}!";
-            });
+        cache.EnsureInitialized();
+        Assert.Equal("hello, 1!", cache.Value);
 
-            cache.EnsureInitialized();
-            Assert.Equal("hello, 1!", cache.Value);
+        // Act
+        cache.Dispose();
 
-            // Act
-            cache.Dispose();
-
-            // Assert
-            dataSource.AddEndpoint(null);
-            Assert.Equal("hello, 1!", cache.Value); // Ignores update
-        }
+        // Assert
+        dataSource.AddEndpoint(null);
+        Assert.Equal("hello, 1!", cache.Value); // Ignores update
     }
 }

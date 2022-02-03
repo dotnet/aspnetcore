@@ -1,7 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "strings": {
-    "name": "ASP.NET Core with React.js and Redux",
-    "description": "A project template for creating an ASP.NET Core application with React.js and Redux"
-  }
-}

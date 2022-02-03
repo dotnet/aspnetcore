@@ -1,18 +1,17 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.Extensions.FileProviders.Embedded.Manifest.Task
+namespace Microsoft.Extensions.FileProviders.Embedded.Manifest.Task;
+
+internal static class SetExtensions
 {
-    internal static class SetExtensions
+    public static Entry AddRange(this Entry source, params Entry[] elements)
     {
-        public static Entry AddRange(this Entry source, params Entry[] elements)
+        foreach (var element in elements)
         {
-            foreach (var element in elements)
-            {
-                source.Children.Add(element);
-            }
-
-            return source;
+            source.Children.Add(element);
         }
+
+        return source;
     }
 }

@@ -1,42 +1,44 @@
-﻿using System;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
-namespace AuthSamples.DynamicSchemes.Controllers
+namespace AuthSamples.DynamicSchemes.Controllers;
+
+public class AuthController : Controller
 {
-    public class AuthController : Controller
+    private readonly IAuthenticationSchemeProvider _schemeProvider;
+    private readonly IOptionsMonitorCache<SimpleOptions> _optionsCache;
+
+    public AuthController(IAuthenticationSchemeProvider schemeProvider, IOptionsMonitorCache<SimpleOptions> optionsCache)
     {
-        private readonly IAuthenticationSchemeProvider _schemeProvider;
-        private readonly IOptionsMonitorCache<SimpleOptions> _optionsCache;
+        _schemeProvider = schemeProvider;
+        _optionsCache = optionsCache;
+    }
 
-        public AuthController(IAuthenticationSchemeProvider schemeProvider, IOptionsMonitorCache<SimpleOptions> optionsCache)
+    public IActionResult Remove(string scheme)
+    {
+        _schemeProvider.RemoveScheme(scheme);
+        _optionsCache.TryRemove(scheme);
+        return Redirect("/");
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> AddOrUpdate(string scheme, string optionsMessage)
+    {
+        if (await _schemeProvider.GetSchemeAsync(scheme) == null)
         {
-            _schemeProvider = schemeProvider;
-            _optionsCache = optionsCache;
+            _schemeProvider.AddScheme(new AuthenticationScheme(scheme, scheme, typeof(SimpleAuthHandler)));
         }
-
-        public IActionResult Remove(string scheme)
+        else
         {
-            _schemeProvider.RemoveScheme(scheme);
             _optionsCache.TryRemove(scheme);
-            return Redirect("/");
         }
-
-        [HttpPost]
-        public async Task<IActionResult> AddOrUpdate(string scheme, string optionsMessage)
-        {
-            if (await _schemeProvider.GetSchemeAsync(scheme) == null)
-            {
-                _schemeProvider.AddScheme(new AuthenticationScheme(scheme, scheme, typeof(SimpleAuthHandler)));
-            }
-            else
-            {
-                _optionsCache.TryRemove(scheme);
-            }
-            _optionsCache.TryAdd(scheme, new SimpleOptions { DisplayMessage = optionsMessage });
-            return Redirect("/");
-        }
+        _optionsCache.TryAdd(scheme, new SimpleOptions { DisplayMessage = optionsMessage });
+        return Redirect("/");
     }
 }

@@ -6,6 +6,11 @@
 @using Microsoft.AspNetCore.Diagnostics.RazorViews
 @functions
 {
+    public CompilationErrorPage(CompilationErrorPageModel model)
+    {
+        Model = model;
+    }
+
     public CompilationErrorPageModel Model { get; set; }
 }
 @{

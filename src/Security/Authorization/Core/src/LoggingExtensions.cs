@@ -1,38 +1,25 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using Microsoft.AspNetCore.Authorization;
 
-namespace Microsoft.Extensions.Logging
+namespace Microsoft.Extensions.Logging;
+
+internal static partial class LoggingExtensions
 {
-    internal static class LoggingExtensions
+    [LoggerMessage(1, LogLevel.Debug, "Authorization was successful.", EventName = "UserAuthorizationSucceeded")]
+    public static partial void UserAuthorizationSucceeded(this ILogger logger);
+
+    [LoggerMessage(2, LogLevel.Information, "Authorization failed. {Reason}", EventName = "UserAuthorizationFailed")]
+    private static partial void UserAuthorizationFailed(this ILogger logger, string reason);
+
+    public static void UserAuthorizationFailed(this ILogger logger, AuthorizationFailure failure)
     {
-        private static Action<ILogger, string, Exception?> _userAuthorizationFailed;
-        private static Action<ILogger, Exception?> _userAuthorizationSucceeded;
+        var reason = failure.FailCalled
+            ? "Fail() was explicitly called."
+            : "These requirements were not met:" + Environment.NewLine + string.Join(Environment.NewLine, failure.FailedRequirements);
 
-        static LoggingExtensions()
-        {
-            _userAuthorizationSucceeded = LoggerMessage.Define(
-                eventId: new EventId(1, "UserAuthorizationSucceeded"),
-                logLevel: LogLevel.Debug,
-                formatString: "Authorization was successful.");
-            _userAuthorizationFailed = LoggerMessage.Define<string>(
-                eventId: new EventId(2, "UserAuthorizationFailed"),
-                logLevel: LogLevel.Information,
-                formatString: "Authorization failed. {0}");
-        }
-
-        public static void UserAuthorizationSucceeded(this ILogger logger)
-            => _userAuthorizationSucceeded(logger, null);
-
-        public static void UserAuthorizationFailed(this ILogger logger, AuthorizationFailure failure)
-        {
-            var reason = failure.FailCalled
-                ? "Fail() was explicitly called."
-                : "These requirements were not met:" + Environment.NewLine + string.Join(Environment.NewLine, failure.FailedRequirements);
-
-            _userAuthorizationFailed(logger, reason, null);
-        }
+        UserAuthorizationFailed(logger, reason);
     }
 }

@@ -1,18 +1,17 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
+namespace Microsoft.AspNetCore.Mvc.Formatters.Xml;
+
+public class PersonWrapperProviderFactory : IWrapperProviderFactory
 {
-    public class PersonWrapperProviderFactory : IWrapperProviderFactory
+    public IWrapperProvider GetProvider(WrapperProviderContext context)
     {
-        public IWrapperProvider GetProvider(WrapperProviderContext context)
+        if (context.DeclaredType == typeof(Person))
         {
-            if (context.DeclaredType == typeof(Person))
-            {
-                return new PersonWrapperProvider();
-            }
-
-            return null;
+            return new PersonWrapperProvider();
         }
+
+        return null;
     }
 }

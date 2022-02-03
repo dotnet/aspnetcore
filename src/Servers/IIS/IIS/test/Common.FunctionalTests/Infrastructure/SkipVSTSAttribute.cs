@@ -1,18 +1,17 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing;
 
-namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
-{
-    [AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Class | AttributeTargets.Method)]
-    public sealed class SkipInVSTSAttribute : Attribute, ITestCondition
-    {
-        public static bool RunningInVSTS = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SYSTEM_TASKDEFINITIONSURI"));
-        public bool IsMet => !RunningInVSTS;
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 
-        public string SkipReason => "Running in VSTS";
-    }
+[AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Class | AttributeTargets.Method)]
+public sealed class SkipInVSTSAttribute : Attribute, ITestCondition
+{
+    public static bool RunningInVSTS = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SYSTEM_TASKDEFINITIONSURI"));
+    public bool IsMet => !RunningInVSTS;
+
+    public string SkipReason => "Running in VSTS";
 }

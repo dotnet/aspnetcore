@@ -1,20 +1,19 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.Extensions.DependencyInjection
+namespace Microsoft.Extensions.DependencyInjection;
+
+/// <summary>
+/// Sets up default options for <see cref="MvcOptions"/>.
+/// </summary>
+internal class TempDataMvcOptionsSetup : IConfigureOptions<MvcOptions>
 {
-    /// <summary>
-    /// Sets up default options for <see cref="MvcOptions"/>.
-    /// </summary>
-    internal class TempDataMvcOptionsSetup : IConfigureOptions<MvcOptions>
+    public void Configure(MvcOptions options)
     {
-        public void Configure(MvcOptions options)
-        {
-            options.Filters.Add(new SaveTempDataAttribute());
-        }
+        options.Filters.Add(new SaveTempDataAttribute());
     }
 }

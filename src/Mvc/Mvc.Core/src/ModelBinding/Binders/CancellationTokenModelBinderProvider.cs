@@ -1,36 +1,32 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
 
-using System;
-using System.Threading;
+namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 
-namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
+/// <summary>
+/// An <see cref="IModelBinderProvider"/> for <see cref="CancellationToken"/>.
+/// </summary>
+public class CancellationTokenModelBinderProvider : IModelBinderProvider
 {
-    /// <summary>
-    /// An <see cref="IModelBinderProvider"/> for <see cref="CancellationToken"/>.
-    /// </summary>
-    public class CancellationTokenModelBinderProvider : IModelBinderProvider
+    // CancellationTokenModelBinder does not have any state. Re-use the same instance for binding.
+
+    private readonly CancellationTokenModelBinder _modelBinder = new();
+
+    /// <inheritdoc />
+    public IModelBinder? GetBinder(ModelBinderProviderContext context)
     {
-        // CancellationTokenModelBinder does not have any state. Re-use the same instance for binding.
-
-        private readonly CancellationTokenModelBinder _modelBinder = new();
-
-        /// <inheritdoc />
-        public IModelBinder? GetBinder(ModelBinderProviderContext context)
+        if (context == null)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            if (context.Metadata.ModelType == typeof(CancellationToken))
-            {
-                return _modelBinder;
-            }
-
-            return null;
+            throw new ArgumentNullException(nameof(context));
         }
+
+        if (context.Metadata.ModelType == typeof(CancellationToken))
+        {
+            return _modelBinder;
+        }
+
+        return null;
     }
 }

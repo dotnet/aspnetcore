@@ -1,16 +1,15 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using Microsoft.AspNetCore.JsonPatch.Exceptions;
 
-namespace Microsoft.AspNetCore.JsonPatch.Internal
+namespace Microsoft.AspNetCore.JsonPatch.Internal;
+
+internal static class ErrorReporter
 {
-    internal static class ErrorReporter
+    public static readonly Action<JsonPatchError> Default = (error) =>
     {
-        public static readonly Action<JsonPatchError> Default = (error) =>
-        {
-            throw new JsonPatchException(error);
-        };
-    }
+        throw new JsonPatchException(error);
+    };
 }

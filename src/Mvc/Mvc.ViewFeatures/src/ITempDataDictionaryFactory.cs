@@ -1,25 +1,24 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Mvc.ViewFeatures
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
+
+/// <summary>
+/// A factory which provides access to an <see cref="ITempDataDictionary"/> instance
+/// for a request.
+/// </summary>
+public interface ITempDataDictionaryFactory
 {
     /// <summary>
-    /// A factory which provides access to an <see cref="ITempDataDictionary"/> instance
-    /// for a request.
+    /// Gets or creates an <see cref="ITempDataDictionary"/> instance for the request associated with the
+    /// given <paramref name="context"/>.
     /// </summary>
-    public interface ITempDataDictionaryFactory
-    {
-        /// <summary>
-        /// Gets or creates an <see cref="ITempDataDictionary"/> instance for the request associated with the
-        /// given <paramref name="context"/>.
-        /// </summary>
-        /// <param name="context">The <see cref="HttpContext"/>.</param>
-        /// <returns>
-        /// An <see cref="ITempDataDictionary"/> instance for the request associated with the given
-        /// <paramref name="context"/>.
-        /// </returns>
-        ITempDataDictionary GetTempData(HttpContext context);
-    }
+    /// <param name="context">The <see cref="HttpContext"/>.</param>
+    /// <returns>
+    /// An <see cref="ITempDataDictionary"/> instance for the request associated with the given
+    /// <paramref name="context"/>.
+    /// </returns>
+    ITempDataDictionary GetTempData(HttpContext context);
 }

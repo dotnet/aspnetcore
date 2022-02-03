@@ -1,23 +1,20 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing.Patterns;
-using System.Collections.Generic;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Routing
+namespace Microsoft.AspNetCore.Routing;
+
+// This is a set of integration tests that are similar to a typical MVC configuration.
+//
+// We're doing this here because it's relatively expensive to test these scenarios
+// inside MVC - it requires creating actual controllers and pages.
+public class LinkGeneratorIntegrationTest : LinkGeneratorTestBase
 {
-    // This is a set of integration tests that are similar to a typical MVC configuration.
-    //
-    // We're doing this here because it's relatively expensive to test these scenarios
-    // inside MVC - it requires creating actual controllers and pages.
-    public class LinkGeneratorIntegrationTest : LinkGeneratorTestBase
+    public LinkGeneratorIntegrationTest()
     {
-        public LinkGeneratorIntegrationTest()
-        {
-            var endpoints = new List<Endpoint>()
+        var endpoints = new List<Endpoint>()
             {
                 // Attribute routed endpoint 1
                 EndpointFactory.CreateRouteEndpoint(
@@ -202,513 +199,512 @@ namespace Microsoft.AspNetCore.Routing
                     metadata: new object[] { new SuppressLinkGenerationMetadata(), }),
             };
 
-            Endpoints = endpoints;
-            LinkGenerator = CreateLinkGenerator(endpoints.ToArray());
-        }
+        Endpoints = endpoints;
+        LinkGenerator = CreateLinkGenerator(endpoints.ToArray());
+    }
 
-        private IReadOnlyList<Endpoint> Endpoints { get; }
+    private IReadOnlyList<Endpoint> Endpoints { get; }
 
-        private LinkGenerator LinkGenerator { get; }
+    private LinkGenerator LinkGenerator { get; }
 
-        #region Without ambient values (simple cases)
+    #region Without ambient values (simple cases)
 
-        [Fact]
-        public void GetPathByAddress_LinkToAttributedAction_GeneratesPath()
+    [Fact]
+    public void GetPathByAddress_LinkToAttributedAction_GeneratesPath()
+    {
+        // Arrange
+        var httpContext = CreateHttpContext();
+
+        var values = new { controller = "Pets", action = "GetById", id = "17", };
+        var ambientValues = new { };
+        var address = CreateAddress(values: values, ambientValues: ambientValues);
+
+        // Act
+        var path = LinkGenerator.GetPathByAddress(
+            httpContext,
+            address,
+            address.ExplicitValues,
+            address.AmbientValues);
+
+        // Assert
+        Assert.Equal("/api/Pets/17", path);
+    }
+
+    [Fact]
+    public void GetPathByAddress_LinkToConventionalAction_GeneratesPath()
+    {
+        // Arrange
+        var httpContext = CreateHttpContext();
+
+        var values = new { controller = "Home", action = "Index", };
+        var ambientValues = new { };
+        var address = CreateAddress(values: values, ambientValues: ambientValues);
+
+        // Act
+        var path = LinkGenerator.GetPathByAddress(
+            httpContext,
+            address,
+            address.ExplicitValues,
+            address.AmbientValues);
+
+        // Assert
+        Assert.Equal("/", path);
+    }
+
+    [Fact]
+    public void GetPathByAddress_LinkToConventionalActionInArea_GeneratesPath()
+    {
+        // Arrange
+        var httpContext = CreateHttpContext();
+
+        var values = new { area = "Admin", controller = "Users", action = "Add", };
+        var ambientValues = new { };
+        var address = CreateAddress(values: values, ambientValues: ambientValues);
+
+        // Act
+        var path = LinkGenerator.GetPathByAddress(
+            httpContext,
+            address,
+            address.ExplicitValues,
+            address.AmbientValues);
+
+        // Assert
+        Assert.Equal("/Admin/Users/Add", path);
+    }
+
+    [Fact]
+    public void GetPathByAddress_LinkToConventionalRoute_GeneratesPath()
+    {
+        // Arrange
+        var httpContext = CreateHttpContext();
+
+        var values = new { controller = "Store", id = "17", };
+        var ambientValues = new { };
+        var address = CreateAddress(routeName: "custom", values: values, ambientValues: ambientValues);
+
+        // Act
+        var path = LinkGenerator.GetPathByAddress(
+            httpContext,
+            address,
+            address.ExplicitValues,
+            address.AmbientValues);
+
+        // Assert
+        Assert.Equal("/api/Store/17", path);
+    }
+
+    [Fact]
+    public void GetPathByAddress_LinkToPage_GeneratesPath()
+    {
+        // Arrange
+        var httpContext = CreateHttpContext();
+
+        var values = new { page = "/Pages/Index", };
+        var ambientValues = new { };
+        var address = CreateAddress(values: values, ambientValues: ambientValues);
+
+        // Act
+        var path = LinkGenerator.GetPathByAddress(
+            httpContext,
+            address,
+            address.ExplicitValues,
+            address.AmbientValues);
+
+        // Assert
+        Assert.Equal("/Pages", path);
+    }
+
+    [Fact]
+    public void GetPathByAddress_LinkToPageInArea_GeneratesPath()
+    {
+        // Arrange
+        var httpContext = CreateHttpContext();
+
+        var values = new { area = "Admin", page = "/Pages/Index", };
+        var ambientValues = new { };
+        var address = CreateAddress(values: values, ambientValues: ambientValues);
+
+        // Act
+        var path = LinkGenerator.GetPathByAddress(
+            httpContext,
+            address,
+            address.ExplicitValues,
+            address.AmbientValues);
+
+        // Assert
+        Assert.Equal("/Admin/Pages", path);
+    }
+
+    [Fact]
+    public void GetPathByAddress_LinkToNonExistentAction_GeneratesPath()
+    {
+        // Arrange
+        var httpContext = CreateHttpContext();
+
+        var values = new { controller = "Home", action = "Fake", id = "17", };
+        var ambientValues = new { };
+        var address = CreateAddress(values: values, ambientValues: ambientValues);
+
+        // Act
+        var path = LinkGenerator.GetPathByAddress(
+            httpContext,
+            address,
+            address.ExplicitValues,
+            address.AmbientValues);
+
+        // Assert
+        Assert.Equal("/Home/Fake/17", path);
+    }
+
+    #endregion
+
+    #region With ambient values
+
+    [Fact]
+    public void GetPathByAddress_LinkToAttributedAction_FromSameAction_KeepsAmbientValues()
+    {
+        // Arrange
+        var httpContext = CreateHttpContext();
+
+        var values = new { controller = "Pets", action = "GetById", };
+        var ambientValues = new { controller = "Pets", action = "GetById", id = "17", };
+        var address = CreateAddress(values: values, ambientValues: ambientValues);
+
+        // Act
+        var path = LinkGenerator.GetPathByAddress(
+            httpContext,
+            address,
+            address.ExplicitValues,
+            address.AmbientValues);
+
+        // Assert
+        Assert.Equal("/api/Pets/17", path);
+    }
+
+    [Fact]
+    public void GetPathByAddress_LinkToAttributedAction_FromAnotherAction_DiscardsAmbientValues()
+    {
+        // Arrange
+        var httpContext = CreateHttpContext();
+
+        var values = new { controller = "Pets", action = "GetById", };
+        var ambientValues = new { controller = "Pets", action = "Update", id = "17", };
+        var address = CreateAddress(values: values, ambientValues: ambientValues);
+
+        // Act
+        var path = LinkGenerator.GetPathByAddress(
+            httpContext,
+            address,
+            address.ExplicitValues,
+            address.AmbientValues);
+
+        // Assert
+        Assert.Equal("/Pets/GetById", path);
+    }
+
+    [Fact]
+    public void GetPathByAddress_LinkToAttributedAction_FromPage_DiscardsAmbientValues()
+    {
+        // Arrange
+        var httpContext = CreateHttpContext();
+
+        var values = new { controller = "Pets", action = "GetById", };
+        var ambientValues = new { page = "/Pages/Help", id = "17", };
+        var address = CreateAddress(values: values, ambientValues: ambientValues);
+
+        // Act
+        var path = LinkGenerator.GetPathByAddress(
+            httpContext,
+            address,
+            address.ExplicitValues,
+            address.AmbientValues);
+
+        // Assert
+        Assert.Equal("/Pets/GetById", path);
+    }
+
+    [Fact]
+    public void GetPathByAddress_LinkToConventionalAction_FromSameAction_KeepsAmbientValues()
+    {
+        // Arrange
+        var httpContext = CreateHttpContext();
+
+        var values = new { controller = "Home", action = "Index", };
+        var ambientValues = new { controller = "Home", action = "Index", id = "17", };
+        var address = CreateAddress(values: values, ambientValues: ambientValues);
+
+        // Act
+        var path = LinkGenerator.GetPathByAddress(
+            httpContext,
+            address,
+            address.ExplicitValues,
+            address.AmbientValues);
+
+        // Assert
+        Assert.Equal("/Home/Index/17", path);
+    }
+
+    [Fact]
+    public void GetPathByAddress_LinkToConventionalAction_FromAnotherAction_DiscardsAmbientValues()
+    {
+        // Arrange
+        var httpContext = CreateHttpContext();
+
+        var values = new { controller = "Home", action = "Index", };
+        var ambientValues = new { controller = "Pets", action = "Update", id = "17", };
+        var address = CreateAddress(values: values, ambientValues: ambientValues);
+
+        // Act
+        var path = LinkGenerator.GetPathByAddress(
+            httpContext,
+            address,
+            address.ExplicitValues,
+            address.AmbientValues);
+
+        // Assert
+        Assert.Equal("/", path);
+    }
+
+    [Fact]
+    public void GetPathByAddress_LinkToConventionalAction_FromPage_DiscardsAmbientValues()
+    {
+        // Arrange
+        var httpContext = CreateHttpContext();
+
+        var values = new { controller = "Home", action = "Index", };
+        var ambientValues = new { page = "/Pages/Help", id = "17", };
+        var address = CreateAddress(values: values, ambientValues: ambientValues);
+
+        // Act
+        var path = LinkGenerator.GetPathByAddress(
+            httpContext,
+            address,
+            address.ExplicitValues,
+            address.AmbientValues);
+
+        // Assert
+        Assert.Equal("/", path);
+    }
+
+    [Fact]
+    public void GetPathByAddress_LinkToNonExistentConventionalAction_FromAnotherAction_DiscardsAmbientValues()
+    {
+        // Arrange
+        var httpContext = CreateHttpContext();
+
+        var values = new { controller = "Home", action = "Index11", };
+        var ambientValues = new { controller = "Pets", action = "Update", id = "17", };
+        var address = CreateAddress(values: values, ambientValues: ambientValues);
+
+        // Act
+        var path = LinkGenerator.GetPathByAddress(
+            httpContext,
+            address,
+            address.ExplicitValues,
+            address.AmbientValues);
+
+        // Assert
+        Assert.Equal("/Home/Index11", path);
+    }
+
+    [Fact]
+    public void GetPathByAddress_LinkToNonExistentAreaAction_FromAnotherAction_DiscardsAmbientValues()
+    {
+        // Arrange
+        var httpContext = CreateHttpContext();
+
+        var values = new { area = "Admin", controller = "Home", action = "Index11", };
+        var ambientValues = new { controller = "Pets", action = "Update", id = "17", };
+        var address = CreateAddress(values: values, ambientValues: ambientValues);
+
+        // Act
+        var path = LinkGenerator.GetPathByAddress(
+            httpContext,
+            address,
+            address.ExplicitValues,
+            address.AmbientValues);
+
+        // Assert
+        Assert.Equal("/Admin/Home/Index11", path);
+    }
+
+    [Fact]
+    public void GetPathByAddress_LinkToConventionalRoute_FromAction_DiscardsAmbientValues()
+    {
+        // Arrange
+        var httpContext = CreateHttpContext();
+
+        var values = new { controller = "Store", };
+        var ambientValues = new { controller = "Home", action = "Index", id = "17", };
+        var address = CreateAddress(routeName: "custom", values: values, ambientValues: ambientValues);
+
+        // Act
+        var path = LinkGenerator.GetPathByAddress(
+            httpContext,
+            address,
+            address.ExplicitValues,
+            address.AmbientValues);
+
+        // Assert
+        Assert.Equal("/api/Store", path);
+    }
+
+    [Fact]
+    public void GetPathByAddress_LinkToConventionalRoute_WithAmbientValues_GeneratesPath()
+    {
+        // Arrange
+        var httpContext = CreateHttpContext();
+
+        var values = new { controller = "Store", id = "17", };
+        var ambientValues = new { controller = "Store", };
+        var address = CreateAddress(routeName: "custom", values: values, ambientValues: ambientValues);
+
+        // Act
+        var path = LinkGenerator.GetPathByAddress(
+            httpContext,
+            address,
+            address.ExplicitValues,
+            address.AmbientValues);
+
+        // Assert
+        Assert.Equal("/api/Store/17", path);
+    }
+
+    [Fact]
+    public void GetPathByAddress_LinkToConventionalRouteWithoutSharedAmbientValues_WithAmbientValues_GeneratesPath()
+    {
+        // Arrange
+        var httpContext = CreateHttpContext();
+
+        var values = new { custom2 = "17", };
+        var ambientValues = new { controller = "Store", };
+        var address = CreateAddress(routeName: "custom2", values: values, ambientValues: ambientValues);
+
+        // Act
+        var path = LinkGenerator.GetPathByAddress(
+            httpContext,
+            address,
+            address.ExplicitValues,
+            address.AmbientValues);
+
+        // Assert
+        Assert.Equal("/api/Foo/17", path);
+    }
+
+    [Fact]
+    public void GetPathByAddress_LinkToPage_FromSamePage_KeepsAmbientValues()
+    {
+        // Arrange
+        var httpContext = CreateHttpContext();
+
+        var values = new { page = "/Pages/Help", };
+        var ambientValues = new { page = "/Pages/Help", id = "17", };
+        var address = CreateAddress(values: values, ambientValues: ambientValues);
+
+        // Act
+        var path = LinkGenerator.GetPathByAddress(
+            httpContext,
+            address,
+            address.ExplicitValues,
+            address.AmbientValues);
+
+        // Assert
+        Assert.Equal("/Pages/Help/17", path);
+    }
+
+    [Fact]
+    public void GetPathByAddress_LinkToPage_FromAction_DiscardsAmbientValues()
+    {
+        // Arrange
+        var httpContext = CreateHttpContext();
+
+        var values = new { page = "/Pages/Help", };
+        var ambientValues = new { controller = "Pets", action = "Update", id = "17", };
+        var address = CreateAddress(values: values, ambientValues: ambientValues);
+
+        // Act
+        var path = LinkGenerator.GetPathByAddress(
+            httpContext,
+            address,
+            address.ExplicitValues,
+            address.AmbientValues);
+
+        // Assert
+        Assert.Equal("/Pages/Help", path);
+    }
+
+    [Fact]
+    public void GetPathByAddress_LinkToPage_FromAnotherPage_DiscardsAmbientValues()
+    {
+        // Arrange
+        var httpContext = CreateHttpContext();
+
+        var values = new { page = "/Pages/Help", };
+        var ambientValues = new { page = "/Pages/About", id = "17", };
+        var address = CreateAddress(values: values, ambientValues: ambientValues);
+
+        // Act
+        var path = LinkGenerator.GetPathByAddress(
+            httpContext,
+            address,
+            address.ExplicitValues,
+            address.AmbientValues);
+
+        // Assert
+        Assert.Equal("/Pages/Help", path);
+    }
+
+    [Fact]
+    public void GetPathByAddress_LinkToNonExistentPage_FromAction_MatchesActionConventionalRoute()
+    {
+        // Arrange
+        var httpContext = CreateHttpContext();
+
+        var values = new { page = "/Pages/Help2", };
+        var ambientValues = new { controller = "Pets", action = "Update", id = "17", };
+        var address = CreateAddress(values: values, ambientValues: ambientValues);
+
+        // Act
+        var path = LinkGenerator.GetPathByAddress(
+            httpContext,
+            address,
+            address.ExplicitValues,
+            address.AmbientValues);
+
+        // Assert
+        Assert.Equal("/Pets/Update?page=%2FPages%2FHelp2", path);
+    }
+
+    [Fact]
+    public void GetPathByAddress_LinkToPageInSameArea_FromAction_UsingAreaAmbientValue()
+    {
+        // Arrange
+        var httpContext = CreateHttpContext();
+
+        var values = new { page = "/Pages/Index", };
+        var ambientValues = new { area = "Admin", controller = "Users", action = "Add", };
+        var address = CreateAddress(values: values, ambientValues: ambientValues);
+
+        // Act
+        var path = LinkGenerator.GetPathByAddress(
+            httpContext,
+            address,
+            address.ExplicitValues,
+            address.AmbientValues);
+
+        // Assert
+        Assert.Equal("/Admin/Pages", path);
+    }
+
+    #endregion
+
+    private static RouteValuesAddress CreateAddress(string routeName = null, object values = null, object ambientValues = null)
+    {
+        return new RouteValuesAddress()
         {
-            // Arrange
-            var httpContext = CreateHttpContext();
-
-            var values = new { controller = "Pets", action = "GetById", id = "17", };
-            var ambientValues = new { };
-            var address = CreateAddress(values: values, ambientValues: ambientValues);
-
-            // Act
-            var path = LinkGenerator.GetPathByAddress(
-                httpContext,
-                address,
-                address.ExplicitValues,
-                address.AmbientValues);
-
-            // Assert
-            Assert.Equal("/api/Pets/17", path);
-        }
-
-        [Fact]
-        public void GetPathByAddress_LinkToConventionalAction_GeneratesPath()
-        {
-            // Arrange
-            var httpContext = CreateHttpContext();
-
-            var values = new { controller = "Home", action = "Index", };
-            var ambientValues = new { };
-            var address = CreateAddress(values: values, ambientValues: ambientValues);
-
-            // Act
-            var path = LinkGenerator.GetPathByAddress(
-                httpContext,
-                address,
-                address.ExplicitValues,
-                address.AmbientValues);
-
-            // Assert
-            Assert.Equal("/", path);
-        }
-
-        [Fact]
-        public void GetPathByAddress_LinkToConventionalActionInArea_GeneratesPath()
-        {
-            // Arrange
-            var httpContext = CreateHttpContext();
-
-            var values = new { area = "Admin", controller = "Users", action = "Add", };
-            var ambientValues = new { };
-            var address = CreateAddress(values: values, ambientValues: ambientValues);
-
-            // Act
-            var path = LinkGenerator.GetPathByAddress(
-                httpContext,
-                address,
-                address.ExplicitValues,
-                address.AmbientValues);
-
-            // Assert
-            Assert.Equal("/Admin/Users/Add", path);
-        }
-
-        [Fact]
-        public void GetPathByAddress_LinkToConventionalRoute_GeneratesPath()
-        {
-            // Arrange
-            var httpContext = CreateHttpContext();
-
-            var values = new { controller = "Store", id = "17", };
-            var ambientValues = new { };
-            var address = CreateAddress(routeName: "custom", values: values, ambientValues: ambientValues);
-
-            // Act
-            var path = LinkGenerator.GetPathByAddress(
-                httpContext,
-                address,
-                address.ExplicitValues,
-                address.AmbientValues);
-
-            // Assert
-            Assert.Equal("/api/Store/17", path);
-        }
-
-        [Fact]
-        public void GetPathByAddress_LinkToPage_GeneratesPath()
-        {
-            // Arrange
-            var httpContext = CreateHttpContext();
-
-            var values = new { page = "/Pages/Index", };
-            var ambientValues = new { };
-            var address = CreateAddress(values: values, ambientValues: ambientValues);
-
-            // Act
-            var path = LinkGenerator.GetPathByAddress(
-                httpContext,
-                address,
-                address.ExplicitValues,
-                address.AmbientValues);
-
-            // Assert
-            Assert.Equal("/Pages", path);
-        }
-        
-        [Fact]
-        public void GetPathByAddress_LinkToPageInArea_GeneratesPath()
-        {
-            // Arrange
-            var httpContext = CreateHttpContext();
-
-            var values = new { area = "Admin", page = "/Pages/Index", };
-            var ambientValues = new { };
-            var address = CreateAddress(values: values, ambientValues: ambientValues);
-
-            // Act
-            var path = LinkGenerator.GetPathByAddress(
-                httpContext,
-                address,
-                address.ExplicitValues,
-                address.AmbientValues);
-
-            // Assert
-            Assert.Equal("/Admin/Pages", path);
-        }
-
-        [Fact]
-        public void GetPathByAddress_LinkToNonExistentAction_GeneratesPath()
-        {
-            // Arrange
-            var httpContext = CreateHttpContext();
-
-            var values = new { controller = "Home", action = "Fake", id = "17", };
-            var ambientValues = new { };
-            var address = CreateAddress(values: values, ambientValues: ambientValues);
-
-            // Act
-            var path = LinkGenerator.GetPathByAddress(
-                httpContext,
-                address,
-                address.ExplicitValues,
-                address.AmbientValues);
-
-            // Assert
-            Assert.Equal("/Home/Fake/17", path);
-        }
-
-        #endregion
-
-        #region With ambient values
-
-        [Fact]
-        public void GetPathByAddress_LinkToAttributedAction_FromSameAction_KeepsAmbientValues()
-        {
-            // Arrange
-            var httpContext = CreateHttpContext();
-
-            var values = new { controller = "Pets", action = "GetById", };
-            var ambientValues = new { controller = "Pets", action = "GetById", id = "17", };
-            var address = CreateAddress(values: values, ambientValues: ambientValues);
-
-            // Act
-            var path = LinkGenerator.GetPathByAddress(
-                httpContext,
-                address,
-                address.ExplicitValues,
-                address.AmbientValues);
-
-            // Assert
-            Assert.Equal("/api/Pets/17", path);
-        }
-
-        [Fact]
-        public void GetPathByAddress_LinkToAttributedAction_FromAnotherAction_DiscardsAmbientValues()
-        {
-            // Arrange
-            var httpContext = CreateHttpContext();
-
-            var values = new { controller = "Pets", action = "GetById", };
-            var ambientValues = new { controller = "Pets", action = "Update", id = "17", };
-            var address = CreateAddress(values: values, ambientValues: ambientValues);
-
-            // Act
-            var path = LinkGenerator.GetPathByAddress(
-                httpContext,
-                address,
-                address.ExplicitValues,
-                address.AmbientValues);
-
-            // Assert
-            Assert.Equal("/Pets/GetById", path);
-        }
-
-        [Fact]
-        public void GetPathByAddress_LinkToAttributedAction_FromPage_DiscardsAmbientValues()
-        {
-            // Arrange
-            var httpContext = CreateHttpContext();
-
-            var values = new { controller = "Pets", action = "GetById", };
-            var ambientValues = new { page = "/Pages/Help", id = "17", };
-            var address = CreateAddress(values: values, ambientValues: ambientValues);
-
-            // Act
-            var path = LinkGenerator.GetPathByAddress(
-                httpContext,
-                address,
-                address.ExplicitValues,
-                address.AmbientValues);
-
-            // Assert
-            Assert.Equal("/Pets/GetById", path);
-        }
-
-        [Fact]
-        public void GetPathByAddress_LinkToConventionalAction_FromSameAction_KeepsAmbientValues()
-        {
-            // Arrange
-            var httpContext = CreateHttpContext();
-
-            var values = new { controller = "Home", action = "Index", };
-            var ambientValues = new { controller = "Home", action = "Index", id = "17", };
-            var address = CreateAddress(values: values, ambientValues: ambientValues);
-
-            // Act
-            var path = LinkGenerator.GetPathByAddress(
-                httpContext,
-                address,
-                address.ExplicitValues,
-                address.AmbientValues);
-
-            // Assert
-            Assert.Equal("/Home/Index/17", path);
-        }
-
-        [Fact]
-        public void GetPathByAddress_LinkToConventionalAction_FromAnotherAction_DiscardsAmbientValues()
-        {
-            // Arrange
-            var httpContext = CreateHttpContext();
-
-            var values = new { controller = "Home", action = "Index", };
-            var ambientValues = new { controller = "Pets", action = "Update", id = "17", };
-            var address = CreateAddress(values: values, ambientValues: ambientValues);
-
-            // Act
-            var path = LinkGenerator.GetPathByAddress(
-                httpContext,
-                address,
-                address.ExplicitValues,
-                address.AmbientValues);
-
-            // Assert
-            Assert.Equal("/", path);
-        }
-
-        [Fact]
-        public void GetPathByAddress_LinkToConventionalAction_FromPage_DiscardsAmbientValues()
-        {
-            // Arrange
-            var httpContext = CreateHttpContext();
-
-            var values = new { controller = "Home", action = "Index", };
-            var ambientValues = new { page = "/Pages/Help", id = "17", };
-            var address = CreateAddress(values: values, ambientValues: ambientValues);
-
-            // Act
-            var path = LinkGenerator.GetPathByAddress(
-                httpContext,
-                address,
-                address.ExplicitValues,
-                address.AmbientValues);
-
-            // Assert
-            Assert.Equal("/", path);
-        }
-
-        [Fact]
-        public void GetPathByAddress_LinkToNonExistentConventionalAction_FromAnotherAction_DiscardsAmbientValues()
-        {
-            // Arrange
-            var httpContext = CreateHttpContext();
-
-            var values = new { controller = "Home", action = "Index11", };
-            var ambientValues = new { controller = "Pets", action = "Update", id = "17", };
-            var address = CreateAddress(values: values, ambientValues: ambientValues);
-
-            // Act
-            var path = LinkGenerator.GetPathByAddress(
-                httpContext,
-                address,
-                address.ExplicitValues,
-                address.AmbientValues);
-
-            // Assert
-            Assert.Equal("/Home/Index11", path);
-        }
-
-        [Fact]
-        public void GetPathByAddress_LinkToNonExistentAreaAction_FromAnotherAction_DiscardsAmbientValues()
-        {
-            // Arrange
-            var httpContext = CreateHttpContext();
-
-            var values = new { area = "Admin", controller = "Home", action = "Index11", };
-            var ambientValues = new { controller = "Pets", action = "Update", id = "17", };
-            var address = CreateAddress(values: values, ambientValues: ambientValues);
-
-            // Act
-            var path = LinkGenerator.GetPathByAddress(
-                httpContext,
-                address,
-                address.ExplicitValues,
-                address.AmbientValues);
-
-            // Assert
-            Assert.Equal("/Admin/Home/Index11", path);
-        }
-
-        [Fact]
-        public void GetPathByAddress_LinkToConventionalRoute_FromAction_DiscardsAmbientValues()
-        {
-            // Arrange
-            var httpContext = CreateHttpContext();
-
-            var values = new { controller = "Store", };
-            var ambientValues = new { controller = "Home", action = "Index", id = "17", };
-            var address = CreateAddress(routeName: "custom", values: values, ambientValues: ambientValues);
-
-            // Act
-            var path = LinkGenerator.GetPathByAddress(
-                httpContext,
-                address,
-                address.ExplicitValues,
-                address.AmbientValues);
-
-            // Assert
-            Assert.Equal("/api/Store", path);
-        }
-
-        [Fact]
-        public void GetPathByAddress_LinkToConventionalRoute_WithAmbientValues_GeneratesPath()
-        {
-            // Arrange
-            var httpContext = CreateHttpContext();
-
-            var values = new { controller = "Store", id = "17", };
-            var ambientValues = new { controller = "Store", };
-            var address = CreateAddress(routeName: "custom", values: values, ambientValues: ambientValues);
-
-            // Act
-            var path = LinkGenerator.GetPathByAddress(
-                httpContext,
-                address,
-                address.ExplicitValues,
-                address.AmbientValues);
-
-            // Assert
-            Assert.Equal("/api/Store/17", path);
-        }
-
-        [Fact]
-        public void GetPathByAddress_LinkToConventionalRouteWithoutSharedAmbientValues_WithAmbientValues_GeneratesPath()
-        {
-            // Arrange
-            var httpContext = CreateHttpContext();
-
-            var values = new { custom2 = "17", };
-            var ambientValues = new { controller = "Store", };
-            var address = CreateAddress(routeName: "custom2", values: values, ambientValues: ambientValues);
-
-            // Act
-            var path = LinkGenerator.GetPathByAddress(
-                httpContext,
-                address,
-                address.ExplicitValues,
-                address.AmbientValues);
-
-            // Assert
-            Assert.Equal("/api/Foo/17", path);
-        }
-
-        [Fact]
-        public void GetPathByAddress_LinkToPage_FromSamePage_KeepsAmbientValues()
-        {
-            // Arrange
-            var httpContext = CreateHttpContext();
-
-            var values = new { page = "/Pages/Help", };
-            var ambientValues = new { page = "/Pages/Help", id = "17", };
-            var address = CreateAddress(values: values, ambientValues: ambientValues);
-
-            // Act
-            var path = LinkGenerator.GetPathByAddress(
-                httpContext,
-                address,
-                address.ExplicitValues,
-                address.AmbientValues);
-
-            // Assert
-            Assert.Equal("/Pages/Help/17", path);
-        }
-
-        [Fact]
-        public void GetPathByAddress_LinkToPage_FromAction_DiscardsAmbientValues()
-        {
-            // Arrange
-            var httpContext = CreateHttpContext();
-
-            var values = new { page = "/Pages/Help", };
-            var ambientValues = new { controller = "Pets", action = "Update", id = "17", };
-            var address = CreateAddress(values: values, ambientValues: ambientValues);
-
-            // Act
-            var path = LinkGenerator.GetPathByAddress(
-                httpContext,
-                address,
-                address.ExplicitValues,
-                address.AmbientValues);
-
-            // Assert
-            Assert.Equal("/Pages/Help", path);
-        }
-
-        [Fact]
-        public void GetPathByAddress_LinkToPage_FromAnotherPage_DiscardsAmbientValues()
-        {
-            // Arrange
-            var httpContext = CreateHttpContext();
-
-            var values = new { page = "/Pages/Help", };
-            var ambientValues = new { page = "/Pages/About", id = "17", };
-            var address = CreateAddress(values: values, ambientValues: ambientValues);
-
-            // Act
-            var path = LinkGenerator.GetPathByAddress(
-                httpContext,
-                address,
-                address.ExplicitValues,
-                address.AmbientValues);
-
-            // Assert
-            Assert.Equal("/Pages/Help", path);
-        }
-
-        [Fact]
-        public void GetPathByAddress_LinkToNonExistentPage_FromAction_MatchesActionConventionalRoute()
-        {
-            // Arrange
-            var httpContext = CreateHttpContext();
-
-            var values = new { page = "/Pages/Help2", };
-            var ambientValues = new { controller = "Pets", action = "Update", id = "17", };
-            var address = CreateAddress(values: values, ambientValues: ambientValues);
-
-            // Act
-            var path = LinkGenerator.GetPathByAddress(
-                httpContext,
-                address,
-                address.ExplicitValues,
-                address.AmbientValues);
-
-            // Assert
-            Assert.Equal("/Pets/Update?page=%2FPages%2FHelp2", path);
-        }
-
-        [Fact]
-        public void GetPathByAddress_LinkToPageInSameArea_FromAction_UsingAreaAmbientValue()
-        {
-            // Arrange
-            var httpContext = CreateHttpContext();
-
-            var values = new { page = "/Pages/Index", };
-            var ambientValues = new { area = "Admin", controller = "Users", action = "Add",  };
-            var address = CreateAddress(values: values, ambientValues: ambientValues);
-
-            // Act
-            var path = LinkGenerator.GetPathByAddress(
-                httpContext,
-                address,
-                address.ExplicitValues,
-                address.AmbientValues);
-
-            // Assert
-            Assert.Equal("/Admin/Pages", path);
-        }
-
-        #endregion
-
-        private static RouteValuesAddress CreateAddress(string routeName = null, object values = null, object ambientValues = null)
-        {
-            return new RouteValuesAddress()
-            {
-                RouteName = routeName,
-                ExplicitValues = new RouteValueDictionary(values),
-                AmbientValues = new RouteValueDictionary(ambientValues),
-            };
-        }
+            RouteName = routeName,
+            ExplicitValues = new RouteValueDictionary(values),
+            AmbientValues = new RouteValueDictionary(ambientValues),
+        };
     }
 }

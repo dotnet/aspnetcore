@@ -1,104 +1,46 @@
-// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Threading;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 #nullable enable
 
-namespace System.Buffers
+namespace System.Buffers;
+
+/// <summary>
+/// Block tracking object used by the byte buffer memory pool. A slab is a large allocation which is divided into smaller blocks. The
+/// individual blocks are then treated as independent array segments.
+/// </summary>
+internal sealed class DiagnosticPoolBlock : MemoryManager<byte>
 {
     /// <summary>
-    /// Block tracking object used by the byte buffer memory pool. A slab is a large allocation which is divided into smaller blocks. The
-    /// individual blocks are then treated as independent array segments.
+    /// Back-reference to the memory pool which this block was allocated from. It may only be returned to this pool.
     /// </summary>
-    internal sealed class DiagnosticPoolBlock : MemoryManager<byte>
+    private readonly DiagnosticMemoryPool _pool;
+
+    private readonly IMemoryOwner<byte> _memoryOwner;
+    private MemoryHandle? _memoryHandle;
+    private readonly Memory<byte> _memory;
+
+    private readonly object _syncObj = new object();
+    private bool _isDisposed;
+    private int _pinCount;
+
+    /// <summary>
+    /// This object cannot be instantiated outside of the static Create method
+    /// </summary>
+    internal DiagnosticPoolBlock(DiagnosticMemoryPool pool, IMemoryOwner<byte> memoryOwner)
     {
-        /// <summary>
-        /// Back-reference to the memory pool which this block was allocated from. It may only be returned to this pool.
-        /// </summary>
-        private readonly DiagnosticMemoryPool _pool;
+        _pool = pool;
+        _memoryOwner = memoryOwner;
+        _memory = memoryOwner.Memory;
+    }
 
-        private readonly IMemoryOwner<byte> _memoryOwner;
-        private MemoryHandle? _memoryHandle;
-        private Memory<byte> _memory;
-
-        private readonly object _syncObj = new object();
-        private bool _isDisposed;
-        private int _pinCount;
-
-
-        /// <summary>
-        /// This object cannot be instantiated outside of the static Create method
-        /// </summary>
-        internal DiagnosticPoolBlock(DiagnosticMemoryPool pool, IMemoryOwner<byte> memoryOwner)
-        {
-            _pool = pool;
-            _memoryOwner = memoryOwner;
-            _memory = memoryOwner.Memory;
-        }
-
-        public override Memory<byte> Memory
-        {
-            get
-            {
-                try
-                {
-                    lock (_syncObj)
-                    {
-                        if (_isDisposed)
-                        {
-                            MemoryPoolThrowHelper.ThrowObjectDisposedException(MemoryPoolThrowHelper.ExceptionArgument.MemoryPoolBlock);
-                        }
-
-                        if (_pool.IsDisposed)
-                        {
-                            MemoryPoolThrowHelper.ThrowInvalidOperationException_BlockIsBackedByDisposedSlab(this);
-                        }
-
-                        return CreateMemory(_memory.Length);
-                    }
-                }
-                catch (Exception exception)
-                {
-                    _pool.ReportException(exception);
-                    throw;
-                }
-            }
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            try
-            {
-                lock (_syncObj)
-                {
-                    if (Volatile.Read(ref _pinCount) > 0)
-                    {
-                        MemoryPoolThrowHelper.ThrowInvalidOperationException_ReturningPinnedBlock(this);
-                    }
-
-                    if (_isDisposed)
-                    {
-                        MemoryPoolThrowHelper.ThrowInvalidOperationException_BlockDoubleDispose(this);
-                    }
-
-                    _memoryOwner.Dispose();
-
-                    _pool.Return(this);
-
-                    _isDisposed = true;
-                }
-            }
-            catch (Exception exception)
-            {
-                _pool.ReportException(exception);
-                throw;
-            }
-        }
-
-        public override Span<byte> GetSpan()
+    public override Memory<byte> Memory
+    {
+        get
         {
             try
             {
@@ -114,7 +56,7 @@ namespace System.Buffers
                         MemoryPoolThrowHelper.ThrowInvalidOperationException_BlockIsBackedByDisposedSlab(this);
                     }
 
-                    return _memory.Span;
+                    return CreateMemory(_memory.Length);
                 }
             }
             catch (Exception exception)
@@ -123,104 +65,160 @@ namespace System.Buffers
                 throw;
             }
         }
+    }
 
-        public override MemoryHandle Pin(int byteOffset = 0)
+    protected override void Dispose(bool disposing)
+    {
+        try
         {
-            try
+            lock (_syncObj)
             {
-                lock (_syncObj)
+                if (Volatile.Read(ref _pinCount) > 0)
                 {
-                    if (_isDisposed)
-                    {
-                        MemoryPoolThrowHelper.ThrowObjectDisposedException(MemoryPoolThrowHelper.ExceptionArgument.MemoryPoolBlock);
-                    }
-
-                    if (_pool.IsDisposed)
-                    {
-                        MemoryPoolThrowHelper.ThrowInvalidOperationException_BlockIsBackedByDisposedSlab(this);
-                    }
-
-                    if (byteOffset < 0 || byteOffset > _memory.Length)
-                    {
-                        MemoryPoolThrowHelper.ThrowArgumentOutOfRangeException(_memory.Length, byteOffset);
-                    }
-
-                    _pinCount++;
-
-                    _memoryHandle = _memoryHandle ?? _memory.Pin();
-
-                    unsafe
-                    {
-                        return new MemoryHandle(((IntPtr)_memoryHandle.Value.Pointer + byteOffset).ToPointer(), default, this);
-                    }
+                    MemoryPoolThrowHelper.ThrowInvalidOperationException_ReturningPinnedBlock(this);
                 }
-            }
-            catch (Exception exception)
-            {
-                _pool.ReportException(exception);
-                throw;
-            }
-        }
 
-        protected override bool TryGetArray(out ArraySegment<byte> segment)
-        {
-            try
-            {
-                lock (_syncObj)
+                if (_isDisposed)
                 {
-                    if (_isDisposed)
-                    {
-                        MemoryPoolThrowHelper.ThrowObjectDisposedException(MemoryPoolThrowHelper.ExceptionArgument.MemoryPoolBlock);
-                    }
-
-                    if (_pool.IsDisposed)
-                    {
-                        MemoryPoolThrowHelper.ThrowInvalidOperationException_BlockIsBackedByDisposedSlab(this);
-                    }
-
-                    return MemoryMarshal.TryGetArray(_memory, out segment);
+                    MemoryPoolThrowHelper.ThrowInvalidOperationException_BlockDoubleDispose(this);
                 }
-            }
-            catch (Exception exception)
-            {
-                _pool.ReportException(exception);
-                throw;
+
+                _memoryOwner.Dispose();
+
+                _pool.Return(this);
+
+                _isDisposed = true;
             }
         }
-
-        public override void Unpin()
+        catch (Exception exception)
         {
-            try
+            _pool.ReportException(exception);
+            throw;
+        }
+    }
+
+    public override Span<byte> GetSpan()
+    {
+        try
+        {
+            lock (_syncObj)
             {
-                lock (_syncObj)
+                if (_isDisposed)
                 {
-                    if (_pinCount == 0)
-                    {
-                        MemoryPoolThrowHelper.ThrowInvalidOperationException_PinCountZero(this);
-                    }
+                    MemoryPoolThrowHelper.ThrowObjectDisposedException(MemoryPoolThrowHelper.ExceptionArgument.MemoryPoolBlock);
+                }
 
-                    _pinCount--;
+                if (_pool.IsDisposed)
+                {
+                    MemoryPoolThrowHelper.ThrowInvalidOperationException_BlockIsBackedByDisposedSlab(this);
+                }
 
-                    if (_pinCount == 0)
-                    {
-                        Debug.Assert(_memoryHandle.HasValue);
-                        _memoryHandle.Value.Dispose();
-                        _memoryHandle = null;
-                    }
+                return _memory.Span;
+            }
+        }
+        catch (Exception exception)
+        {
+            _pool.ReportException(exception);
+            throw;
+        }
+    }
+
+    public override MemoryHandle Pin(int byteOffset = 0)
+    {
+        try
+        {
+            lock (_syncObj)
+            {
+                if (_isDisposed)
+                {
+                    MemoryPoolThrowHelper.ThrowObjectDisposedException(MemoryPoolThrowHelper.ExceptionArgument.MemoryPoolBlock);
+                }
+
+                if (_pool.IsDisposed)
+                {
+                    MemoryPoolThrowHelper.ThrowInvalidOperationException_BlockIsBackedByDisposedSlab(this);
+                }
+
+                if (byteOffset < 0 || byteOffset > _memory.Length)
+                {
+                    MemoryPoolThrowHelper.ThrowArgumentOutOfRangeException(_memory.Length, byteOffset);
+                }
+
+                _pinCount++;
+
+                _memoryHandle = _memoryHandle ?? _memory.Pin();
+
+                unsafe
+                {
+                    return new MemoryHandle(((IntPtr)_memoryHandle.Value.Pointer + byteOffset).ToPointer(), default, this);
                 }
             }
-            catch (Exception exception)
+        }
+        catch (Exception exception)
+        {
+            _pool.ReportException(exception);
+            throw;
+        }
+    }
+
+    protected override bool TryGetArray(out ArraySegment<byte> segment)
+    {
+        try
+        {
+            lock (_syncObj)
             {
-                _pool.ReportException(exception);
-                throw;
+                if (_isDisposed)
+                {
+                    MemoryPoolThrowHelper.ThrowObjectDisposedException(MemoryPoolThrowHelper.ExceptionArgument.MemoryPoolBlock);
+                }
+
+                if (_pool.IsDisposed)
+                {
+                    MemoryPoolThrowHelper.ThrowInvalidOperationException_BlockIsBackedByDisposedSlab(this);
+                }
+
+                return MemoryMarshal.TryGetArray(_memory, out segment);
             }
         }
-
-        public StackTrace? Leaser { get; set; }
-
-        public void Track()
+        catch (Exception exception)
         {
-            Leaser = new StackTrace(false);
+            _pool.ReportException(exception);
+            throw;
         }
+    }
+
+    public override void Unpin()
+    {
+        try
+        {
+            lock (_syncObj)
+            {
+                if (_pinCount == 0)
+                {
+                    MemoryPoolThrowHelper.ThrowInvalidOperationException_PinCountZero(this);
+                }
+
+                _pinCount--;
+
+                if (_pinCount == 0)
+                {
+                    Debug.Assert(_memoryHandle.HasValue);
+                    _memoryHandle.Value.Dispose();
+                    _memoryHandle = null;
+                }
+            }
+        }
+        catch (Exception exception)
+        {
+            _pool.ReportException(exception);
+            throw;
+        }
+    }
+
+    public StackTrace? Leaser { get; set; }
+
+    public void Track()
+    {
+        Leaser = new StackTrace(false);
     }
 }

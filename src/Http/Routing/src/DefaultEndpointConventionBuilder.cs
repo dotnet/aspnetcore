@@ -1,38 +1,48 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Routing
+namespace Microsoft.AspNetCore.Routing;
+
+internal class DefaultEndpointConventionBuilder : IEndpointConventionBuilder
 {
-    internal class DefaultEndpointConventionBuilder : IEndpointConventionBuilder
+    internal EndpointBuilder EndpointBuilder { get; }
+
+    private List<Action<EndpointBuilder>>? _conventions;
+
+    public DefaultEndpointConventionBuilder(EndpointBuilder endpointBuilder)
     {
-        internal EndpointBuilder EndpointBuilder { get; }
+        EndpointBuilder = endpointBuilder;
+        _conventions = new();
+    }
 
-        private readonly List<Action<EndpointBuilder>> _conventions;
+    public void Add(Action<EndpointBuilder> convention)
+    {
+        var conventions = _conventions;
 
-        public DefaultEndpointConventionBuilder(EndpointBuilder endpointBuilder)
+        if (conventions is null)
         {
-            EndpointBuilder = endpointBuilder;
-            _conventions = new List<Action<EndpointBuilder>>();
+            throw new InvalidOperationException("Conventions cannot be added after building the endpoint");
         }
 
-        public void Add(Action<EndpointBuilder> convention)
-        {
-            _conventions.Add(convention);
-        }
+        conventions.Add(convention);
+    }
 
-        public Endpoint Build()
+    public Endpoint Build()
+    {
+        // Only apply the conventions once
+        var conventions = Interlocked.Exchange(ref _conventions, null);
+
+        if (conventions is not null)
         {
-            foreach (var convention in _conventions)
+            foreach (var convention in conventions)
             {
                 convention(EndpointBuilder);
             }
-
-            return EndpointBuilder.Build();
         }
+
+        return EndpointBuilder.Build();
     }
 }

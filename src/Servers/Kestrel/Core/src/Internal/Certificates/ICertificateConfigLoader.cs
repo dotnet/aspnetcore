@@ -1,14 +1,13 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Security.Cryptography.X509Certificates;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Certificates
-{
-    internal interface ICertificateConfigLoader
-    {
-        bool IsTestMock { get; }
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Certificates;
 
-        X509Certificate2? LoadCertificate(CertificateConfig? certInfo, string endpointName);
-    }
+internal interface ICertificateConfigLoader
+{
+    bool IsTestMock { get; }
+
+    X509Certificate2? LoadCertificate(CertificateConfig? certInfo, string endpointName);
 }

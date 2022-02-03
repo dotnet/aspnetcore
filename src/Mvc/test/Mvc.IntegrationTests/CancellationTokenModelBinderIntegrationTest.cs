@@ -1,136 +1,128 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.IntegrationTests
+namespace Microsoft.AspNetCore.Mvc.IntegrationTests;
+
+public class CancellationTokenModelBinderIntegrationTest
 {
-    public class CancellationTokenModelBinderIntegrationTest
+    private class Person
     {
-        private class Person
-        {
-            public CancellationToken Token { get; set; }
-        }
+        public CancellationToken Token { get; set; }
+    }
 
-        [Fact]
-        public async Task BindProperty_WithData_WithPrefix_GetsBound()
+    [Fact]
+    public async Task BindProperty_WithData_WithPrefix_GetsBound()
+    {
+        // Arrange
+        var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+        var parameter = new ParameterDescriptor()
         {
-            // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
-            var parameter = new ParameterDescriptor()
+            Name = "Parameter1",
+            BindingInfo = new BindingInfo()
             {
-                Name = "Parameter1",
-                BindingInfo = new BindingInfo()
-                {
-                    BinderModelName = "CustomParameter",
-                },
+                BinderModelName = "CustomParameter",
+            },
 
-                ParameterType = typeof(Person)
-            };
+            ParameterType = typeof(Person)
+        };
 
-            var testContext = ModelBindingTestHelper.GetTestContext();
-            var modelState = testContext.ModelState;
+        var testContext = ModelBindingTestHelper.GetTestContext();
+        var modelState = testContext.ModelState;
 
-            // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+        // Act
+        var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
-            // Assert
+        // Assert
 
-            // ModelBindingResult
-            Assert.True(modelBindingResult.IsModelSet);
+        // ModelBindingResult
+        Assert.True(modelBindingResult.IsModelSet);
 
-            // Model
-            var boundPerson = Assert.IsType<Person>(modelBindingResult.Model);
-            Assert.NotNull(boundPerson);
-            Assert.False(boundPerson.Token.IsCancellationRequested);
-            testContext.HttpContext.Abort();
-            Assert.True(boundPerson.Token.IsCancellationRequested);
+        // Model
+        var boundPerson = Assert.IsType<Person>(modelBindingResult.Model);
+        Assert.NotNull(boundPerson);
+        Assert.False(boundPerson.Token.IsCancellationRequested);
+        testContext.HttpContext.Abort();
+        Assert.True(boundPerson.Token.IsCancellationRequested);
 
-            // ModelState
-            Assert.True(modelState.IsValid);
+        // ModelState
+        Assert.True(modelState.IsValid);
 
-            Assert.Empty(modelState.Keys);
-        }
+        Assert.Empty(modelState.Keys);
+    }
 
-        [Fact]
-        public async Task BindProperty_WithData_WithEmptyPrefix_GetsBound()
+    [Fact]
+    public async Task BindProperty_WithData_WithEmptyPrefix_GetsBound()
+    {
+        // Arrange
+        var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+        var parameter = new ParameterDescriptor()
         {
-            // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
-            var parameter = new ParameterDescriptor()
-            {
-                Name = "Parameter1",
-                BindingInfo = new BindingInfo(),
-                ParameterType = typeof(Person)
-            };
+            Name = "Parameter1",
+            BindingInfo = new BindingInfo(),
+            ParameterType = typeof(Person)
+        };
 
-            var testContext = ModelBindingTestHelper.GetTestContext();
-            var modelState = testContext.ModelState;
+        var testContext = ModelBindingTestHelper.GetTestContext();
+        var modelState = testContext.ModelState;
 
-            // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+        // Act
+        var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
-            // Assert
+        // Assert
 
-            // ModelBindingResult
-            Assert.True(modelBindingResult.IsModelSet);
+        // ModelBindingResult
+        Assert.True(modelBindingResult.IsModelSet);
 
-            // Model
-            var boundPerson = Assert.IsType<Person>(modelBindingResult.Model);
-            Assert.NotNull(boundPerson);
-            Assert.False(boundPerson.Token.IsCancellationRequested);
-            testContext.HttpContext.Abort();
-            Assert.True(boundPerson.Token.IsCancellationRequested);
+        // Model
+        var boundPerson = Assert.IsType<Person>(modelBindingResult.Model);
+        Assert.NotNull(boundPerson);
+        Assert.False(boundPerson.Token.IsCancellationRequested);
+        testContext.HttpContext.Abort();
+        Assert.True(boundPerson.Token.IsCancellationRequested);
 
-            // ModelState
-            Assert.True(modelState.IsValid);
-            Assert.Empty(modelState);
-        }
+        // ModelState
+        Assert.True(modelState.IsValid);
+        Assert.Empty(modelState);
+    }
 
-        [Fact]
-        public async Task BindParameter_WithData_GetsBound()
+    [Fact]
+    public async Task BindParameter_WithData_GetsBound()
+    {
+        // Arrange
+        var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+        var parameter = new ParameterDescriptor()
         {
-            // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
-            var parameter = new ParameterDescriptor()
+            Name = "Parameter1",
+            BindingInfo = new BindingInfo()
             {
-                Name = "Parameter1",
-                BindingInfo = new BindingInfo()
-                {
-                    BinderModelName = "CustomParameter",
-                },
+                BinderModelName = "CustomParameter",
+            },
 
-                ParameterType = typeof(CancellationToken)
-            };
+            ParameterType = typeof(CancellationToken)
+        };
 
-            var testContext = ModelBindingTestHelper.GetTestContext();
-            var modelState = testContext.ModelState;
+        var testContext = ModelBindingTestHelper.GetTestContext();
+        var modelState = testContext.ModelState;
 
-            // Act
-            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+        // Act
+        var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
-            // Assert
+        // Assert
 
-            // ModelBindingResult
-            Assert.True(modelBindingResult.IsModelSet);
+        // ModelBindingResult
+        Assert.True(modelBindingResult.IsModelSet);
 
-            // Model
-            var token = Assert.IsType<CancellationToken>(modelBindingResult.Model);
-            Assert.False(token.IsCancellationRequested);
-            testContext.HttpContext.Abort();
-            Assert.True(token.IsCancellationRequested);
+        // Model
+        var token = Assert.IsType<CancellationToken>(modelBindingResult.Model);
+        Assert.False(token.IsCancellationRequested);
+        testContext.HttpContext.Abort();
+        Assert.True(token.IsCancellationRequested);
 
-            // ModelState
-            Assert.True(modelState.IsValid);
-            Assert.Empty(modelState);
-        }
+        // ModelState
+        Assert.True(modelState.IsValid);
+        Assert.Empty(modelState);
     }
 }

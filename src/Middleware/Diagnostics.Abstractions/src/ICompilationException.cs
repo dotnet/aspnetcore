@@ -1,22 +1,19 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
+namespace Microsoft.AspNetCore.Diagnostics;
 
-namespace Microsoft.AspNetCore.Diagnostics
+/// <summary>
+/// Specifies the contract for an exception representing compilation failure.
+/// </summary>
+/// <remarks>
+/// This interface is implemented on exceptions thrown during compilation to enable consumers
+/// to read compilation-related data out of the exception
+/// </remarks>
+public interface ICompilationException
 {
     /// <summary>
-    /// Specifies the contract for an exception representing compilation failure.
+    /// Gets a sequence of <see cref="CompilationFailure"/> with compilation failures.
     /// </summary>
-    /// <remarks>
-    /// This interface is implemented on exceptions thrown during compilation to enable consumers
-    /// to read compilation-related data out of the exception
-    /// </remarks>
-    public interface ICompilationException
-    {
-        /// <summary>
-        /// Gets a sequence of <see cref="CompilationFailure"/> with compilation failures.
-        /// </summary>
-        IEnumerable<CompilationFailure?>? CompilationFailures { get; }
-    }
+    IEnumerable<CompilationFailure?>? CompilationFailures { get; }
 }

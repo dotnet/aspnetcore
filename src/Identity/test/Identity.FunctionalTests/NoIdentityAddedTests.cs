@@ -1,42 +1,40 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
-using System.Threading.Tasks;
 using Identity.DefaultUI.WebSite;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Identity.FunctionalTests
+namespace Microsoft.AspNetCore.Identity.FunctionalTests;
+
+public class NoIdentityAddedTests : IClassFixture<ServerFactory<NoIdentityStartup, IdentityDbContext>>
 {
-    public class NoIdentityAddedTests : IClassFixture<ServerFactory<NoIdentityStartup, IdentityDbContext>>
+    public NoIdentityAddedTests(ServerFactory<NoIdentityStartup, IdentityDbContext> serverFactory)
     {
-        public NoIdentityAddedTests(ServerFactory<NoIdentityStartup, IdentityDbContext> serverFactory)
-        {
-            ServerFactory = serverFactory;
-        }
+        ServerFactory = serverFactory;
+    }
 
-        public ServerFactory<NoIdentityStartup, IdentityDbContext> ServerFactory { get; }
+    public ServerFactory<NoIdentityStartup, IdentityDbContext> ServerFactory { get; }
 
-        [Theory]
-        [MemberData(nameof(IdentityEndpoints))]
-        public async Task QueryingIdentityEndpointsReturnsNotFoundWhenIdentityIsNotPresent(string endpoint)
-        {
-            // Arrange
-            void ConfigureTestServices(IServiceCollection services) { return; };
+    [Theory]
+    [MemberData(nameof(IdentityEndpoints))]
+    public async Task QueryingIdentityEndpointsReturnsNotFoundWhenIdentityIsNotPresent(string endpoint)
+    {
+        // Arrange
+        void ConfigureTestServices(IServiceCollection services) { return; };
 
-            var client = ServerFactory
-                .WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices))
-                .CreateClient();
+        var client = ServerFactory
+            .WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices))
+            .CreateClient();
 
-            // Act
-            var response = await client.GetAsync(endpoint);
+        // Act
+        var response = await client.GetAsync(endpoint);
 
-            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-        }
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
 
-        public static TheoryData<string> IdentityEndpoints => new TheoryData<string>
+    public static TheoryData<string> IdentityEndpoints => new TheoryData<string>
         {
             "/Identity/Account/AccessDenied",
             "/Identity/Account/ConfirmEmail",
@@ -65,5 +63,4 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             "/Identity/Account/Manage/ShowRecoveryCodes",
             "/Identity/Account/Manage/TwoFactorAuthentication",
         };
-    }
 }

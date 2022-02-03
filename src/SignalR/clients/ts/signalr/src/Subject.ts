@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 import { IStreamResult, IStreamSubscriber, ISubscription } from "./Stream";
 import { SubjectSubscription } from "./Utils";
@@ -7,7 +7,7 @@ import { SubjectSubscription } from "./Utils";
 /** Stream implementation to stream items to the server. */
 export class Subject<T> implements IStreamResult<T> {
     /** @internal */
-    public observers: Array<IStreamSubscriber<T>>;
+    public observers: IStreamSubscriber<T>[];
 
     /** @internal */
     public cancelCallback?: () => Promise<void>;

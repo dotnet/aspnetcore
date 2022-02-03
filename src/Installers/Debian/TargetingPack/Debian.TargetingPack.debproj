@@ -28,10 +28,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
-    </ProjectReference>
+    <ProjectReference Include="..\..\..\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj"
+      Private="false"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
 
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
@@ -44,9 +44,6 @@
     <!-- Deb installers are versioned as M.N.P~PreReleaseVersionLabel-Build following the core-setup convention -->
     <DebPackageVersion Condition="'$(VersionSuffix)' != ''">$(DebPackageVersion)~$(VersionSuffix)</DebPackageVersion>
     <PackageRevision>1</PackageRevision>
-
-    <!-- Suppresses building this project completely during servicing builds. -->
-    <DebBuildDependsOn Condition="'$(IsTargetingPackBuilding)' == 'false'" />
   </PropertyGroup>
 
 </Project>

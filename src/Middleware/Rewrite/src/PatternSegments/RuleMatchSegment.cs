@@ -1,23 +1,22 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
 
-namespace Microsoft.AspNetCore.Rewrite.PatternSegments
+namespace Microsoft.AspNetCore.Rewrite.PatternSegments;
+
+internal class RuleMatchSegment : PatternSegment
 {
-    internal class RuleMatchSegment : PatternSegment
+    private readonly int _index;
+
+    public RuleMatchSegment(int index)
     {
-        private readonly int _index;
+        _index = index;
+    }
 
-        public RuleMatchSegment(int index)
-        {
-            _index = index;
-        }
-
-        public override string? Evaluate(RewriteContext context, BackReferenceCollection? ruleBackReferences, BackReferenceCollection? conditionBackReferences)
-        {
-            Debug.Assert(ruleBackReferences != null);
-            return ruleBackReferences[_index];
-        }
+    public override string? Evaluate(RewriteContext context, BackReferenceCollection? ruleBackReferences, BackReferenceCollection? conditionBackReferences)
+    {
+        Debug.Assert(ruleBackReferences != null);
+        return ruleBackReferences[_index];
     }
 }

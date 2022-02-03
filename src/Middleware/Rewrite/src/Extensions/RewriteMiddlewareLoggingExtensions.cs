@@ -1,169 +1,50 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Rewrite.Logging
+namespace Microsoft.AspNetCore.Rewrite.Logging;
+
+internal static partial class RewriteMiddlewareLoggingExtensions
 {
-    internal static class RewriteMiddlewareLoggingExtensions
-    {
-        private static readonly Action<ILogger, string, Exception?> _requestContinueResults;
-        private static readonly Action<ILogger, string, int, Exception?> _requestResponseComplete;
-        private static readonly Action<ILogger, string, Exception?> _requestStopRules;
-        private static readonly Action<ILogger, string?, Exception?> _urlRewriteNotMatchedRule;
-        private static readonly Action<ILogger, string?, Exception?> _urlRewriteMatchedRule;
-        private static readonly Action<ILogger, Exception?> _modRewriteNotMatchedRule;
-        private static readonly Action<ILogger, Exception?> _modRewriteMatchedRule;
-        private static readonly Action<ILogger, Exception?> _redirectedToHttps;
-        private static readonly Action<ILogger, Exception?> _redirectedToWww;
-        private static readonly Action<ILogger, Exception?> _redirectedToNonWww;
-        private static readonly Action<ILogger, string, Exception?> _redirectedRequest;
-        private static readonly Action<ILogger, string, Exception?> _rewrittenRequest;
-        private static readonly Action<ILogger, string, Exception?> _abortedRequest;
-        private static readonly Action<ILogger, string, Exception?> _customResponse;
+    [LoggerMessage(1, LogLevel.Debug, "Request is continuing in applying rules. Current url is {currentUrl}", EventName = "RequestContinueResults")]
+    public static partial void RewriteMiddlewareRequestContinueResults(this ILogger logger, string currentUrl);
 
-        static RewriteMiddlewareLoggingExtensions()
-        {
-            _requestContinueResults = LoggerMessage.Define<string>(
-                            LogLevel.Debug,
-                            new EventId(1, "RequestContinueResults"),
-                            "Request is continuing in applying rules. Current url is {currentUrl}");
+    [LoggerMessage(2, LogLevel.Debug, "Request is done processing. Location header '{Location}' with status code '{StatusCode}'.", EventName = "RequestResponseComplete")]
+    public static partial void RewriteMiddlewareRequestResponseComplete(this ILogger logger, string location, int statusCode);
 
-            _requestResponseComplete = LoggerMessage.Define<string, int>(
-                            LogLevel.Debug,
-                            new EventId(2, "RequestResponseComplete"),
-                            "Request is done processing. Location header '{Location}' with status code '{StatusCode}'.");
+    [LoggerMessage(3, LogLevel.Debug, "Request is done applying rules. Url was rewritten to {rewrittenUrl}", EventName = "RequestStopRules")]
+    public static partial void RewriteMiddlewareRequestStopRules(this ILogger logger, string rewrittenUrl);
 
-            _requestStopRules = LoggerMessage.Define<string>(
-                            LogLevel.Debug,
-                            new EventId(3, "RequestStopRules"),
-                            "Request is done applying rules. Url was rewritten to {rewrittenUrl}");
+    [LoggerMessage(4, LogLevel.Debug, "Request did not match current rule '{Name}'.", EventName = "UrlRewriteNotMatchedRule")]
+    public static partial void UrlRewriteNotMatchedRule(this ILogger logger, string? name);
 
-            _urlRewriteNotMatchedRule = LoggerMessage.Define<string?>(
-                            LogLevel.Debug,
-                            new EventId(4, "UrlRewriteNotMatchedRule"),
-                            "Request did not match current rule '{Name}'.");
+    [LoggerMessage(5, LogLevel.Debug, "Request matched current UrlRewriteRule '{Name}'.", EventName = "UrlRewriteMatchedRule")]
+    public static partial void UrlRewriteMatchedRule(this ILogger logger, string? name);
 
-            _urlRewriteMatchedRule = LoggerMessage.Define<string?>(
-                            LogLevel.Debug,
-                            new EventId(5, "UrlRewriteMatchedRule"),
-                            "Request matched current UrlRewriteRule '{Name}'.");
+    [LoggerMessage(6, LogLevel.Debug, "Request matched current ModRewriteRule.", EventName = "ModRewriteNotMatchedRule")]
+    public static partial void ModRewriteNotMatchedRule(this ILogger logger);
 
-            _modRewriteNotMatchedRule = LoggerMessage.Define(
-                            LogLevel.Debug,
-                            new EventId(6, "ModRewriteNotMatchedRule"),
-                            "Request matched current ModRewriteRule.");
+    [LoggerMessage(7, LogLevel.Debug, "Request matched current ModRewriteRule.", EventName = "ModRewriteMatchedRule")]
+    public static partial void ModRewriteMatchedRule(this ILogger logger);
 
-            _modRewriteMatchedRule = LoggerMessage.Define(
-                            LogLevel.Debug,
-                            new EventId(7, "ModRewriteMatchedRule"),
-                            "Request matched current ModRewriteRule.");
+    [LoggerMessage(8, LogLevel.Information, "Request redirected to HTTPS", EventName = "RedirectedToHttps")]
+    public static partial void RedirectedToHttps(this ILogger logger);
 
-            _redirectedToHttps = LoggerMessage.Define(
-                            LogLevel.Information,
-                            new EventId(8, "RedirectedToHttps"),
-                            "Request redirected to HTTPS");
+    [LoggerMessage(13, LogLevel.Information, "Request redirected to www", EventName = "RedirectedToWww")]
+    public static partial void RedirectedToWww(this ILogger logger);
 
-            _redirectedRequest = LoggerMessage.Define<string>(
-                            LogLevel.Information,
-                            new EventId(9, "RedirectedRequest"),
-                            "Request was redirected to {redirectedUrl}");
+    [LoggerMessage(14, LogLevel.Information, "Request redirected to root domain from www subdomain", EventName = "RedirectedToNonWww")]
+    public static partial void RedirectedToNonWww(this ILogger logger);
+    [LoggerMessage(9, LogLevel.Information, "Request was redirected to {redirectedUrl}", EventName = "RedirectedRequest")]
+    public static partial void RedirectedRequest(this ILogger logger, string redirectedUrl);
 
-            _rewrittenRequest = LoggerMessage.Define<string>(
-                            LogLevel.Information,
-                            new EventId(10, "RewritetenRequest"),
-                            "Request was rewritten to {rewrittenUrl}");
+    [LoggerMessage(10, LogLevel.Information, "Request was rewritten to {rewrittenUrl}", EventName = "RewritetenRequest")]
+    public static partial void RewrittenRequest(this ILogger logger, string rewrittenUrl);
 
-            _abortedRequest = LoggerMessage.Define<string>(
-                            LogLevel.Debug,
-                            new EventId(11, "AbortedRequest"),
-                            "Request to {requestedUrl} was aborted");
+    [LoggerMessage(11, LogLevel.Debug, "Request to {requestedUrl} was aborted", EventName = "AbortedRequest")]
+    public static partial void AbortedRequest(this ILogger logger, string requestedUrl);
 
-            _customResponse = LoggerMessage.Define<string>(
-                            LogLevel.Debug,
-                            new EventId(12, "CustomResponse"),
-                            "Request to {requestedUrl} was ended");
-
-            _redirectedToWww = LoggerMessage.Define(
-                            LogLevel.Information,
-                            new EventId(13, "RedirectedToWww"),
-                            "Request redirected to www");
-
-            _redirectedToNonWww = LoggerMessage.Define(
-                            LogLevel.Information,
-                            new EventId(14, "RedirectedToNonWww"),
-                            "Request redirected to root domain from www subdomain");
-        }
-
-        public static void RewriteMiddlewareRequestContinueResults(this ILogger logger, string currentUrl)
-        {
-            _requestContinueResults(logger, currentUrl, null);
-        }
-
-        public static void RewriteMiddlewareRequestResponseComplete(this ILogger logger, string location, int statusCode)
-        {
-            _requestResponseComplete(logger, location, statusCode, null);
-        }
-
-        public static void RewriteMiddlewareRequestStopRules(this ILogger logger, string rewrittenUrl)
-        {
-            _requestStopRules(logger, rewrittenUrl, null);
-        }
-
-        public static void UrlRewriteNotMatchedRule(this ILogger logger, string? name)
-        {
-            _urlRewriteNotMatchedRule(logger, name, null);
-        }
-
-        public static void UrlRewriteMatchedRule(this ILogger logger, string? name)
-        {
-            _urlRewriteMatchedRule(logger, name, null);
-        }
-
-        public static void ModRewriteNotMatchedRule(this ILogger logger)
-        {
-            _modRewriteNotMatchedRule(logger, null);
-        }
-
-        public static void ModRewriteMatchedRule(this ILogger logger)
-        {
-            _modRewriteMatchedRule(logger, null);
-        }
-
-        public static void RedirectedToHttps(this ILogger logger)
-        {
-            _redirectedToHttps(logger, null);
-        }
-
-        public static void RedirectedToWww(this ILogger logger)
-        {
-            _redirectedToWww(logger, null);
-        }
-
-        public static void RedirectedToNonWww(this ILogger logger)
-        {
-            _redirectedToNonWww(logger, null);
-        }
-
-        public static void RedirectedRequest(this ILogger logger, string redirectedUrl)
-        {
-            _redirectedRequest(logger, redirectedUrl, null);
-        }
-
-        public static void RewrittenRequest(this ILogger logger, string rewrittenUrl)
-        {
-            _rewrittenRequest(logger, rewrittenUrl, null);
-        }
-
-        public static void AbortedRequest(this ILogger logger, string requestedUrl)
-        {
-            _abortedRequest(logger, requestedUrl, null);
-        }
-
-        public static void CustomResponse(this ILogger logger, string requestedUrl)
-        {
-            _customResponse(logger, requestedUrl, null);
-        }
-    }
+    [LoggerMessage(12, LogLevel.Debug, "Request to {requestedUrl} was ended", EventName = "CustomResponse")]
+    public static partial void CustomResponse(this ILogger logger, string requestedUrl);
 }

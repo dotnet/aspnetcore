@@ -1,1 +1,2 @@
 #nullable enable
+Microsoft.AspNetCore.Builder.WebApplication.Use(System.Func<Microsoft.AspNetCore.Http.RequestDelegate!, Microsoft.AspNetCore.Http.RequestDelegate!>! middleware) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!

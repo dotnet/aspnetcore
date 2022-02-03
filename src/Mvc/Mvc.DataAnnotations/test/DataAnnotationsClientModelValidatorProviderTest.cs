@@ -1,162 +1,158 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.Options;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.DataAnnotations
+namespace Microsoft.AspNetCore.Mvc.DataAnnotations;
+
+public class DataAnnotationsClientModelValidatorProviderTest
 {
-    public class DataAnnotationsClientModelValidatorProviderTest
+    private readonly IModelMetadataProvider _metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+
+    [Fact]
+    public void CreateValidators_AddsRequiredAttribute_ForIsRequiredTrue()
     {
-        private readonly IModelMetadataProvider _metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+        // Arrange
+        var provider = new DataAnnotationsClientModelValidatorProvider(
+            new ValidationAttributeAdapterProvider(),
+            Options.Create(new MvcDataAnnotationsLocalizationOptions()),
+            stringLocalizerFactory: null);
 
-        [Fact]
-        public void CreateValidators_AddsRequiredAttribute_ForIsRequiredTrue()
+        var metadata = _metadataProvider.GetMetadataForProperty(
+            typeof(DummyRequiredAttributeHelperClass),
+            nameof(DummyRequiredAttributeHelperClass.ValueTypeWithoutAttribute));
+
+        var providerContext = new ClientValidatorProviderContext(metadata, GetValidatorItems(metadata));
+
+        // Act
+        provider.CreateValidators(providerContext);
+
+        // Assert
+        var validatorItem = Assert.Single(providerContext.Results);
+        Assert.IsType<RequiredAttributeAdapter>(validatorItem.Validator);
+    }
+
+    [Fact]
+    public void CreateValidators_DoesNotAddDuplicateRequiredAttribute_ForIsRequiredTrue()
+    {
+        // Arrange
+        var provider = new DataAnnotationsClientModelValidatorProvider(
+            new ValidationAttributeAdapterProvider(),
+            Options.Create(new MvcDataAnnotationsLocalizationOptions()),
+            stringLocalizerFactory: null);
+
+        var metadata = _metadataProvider.GetMetadataForProperty(
+            typeof(DummyRequiredAttributeHelperClass),
+            nameof(DummyRequiredAttributeHelperClass.ValueTypeWithoutAttribute));
+
+        var items = GetValidatorItems(metadata);
+        var expectedValidatorItem = new ClientValidatorItem
         {
-            // Arrange
-            var provider = new DataAnnotationsClientModelValidatorProvider(
-                new ValidationAttributeAdapterProvider(),
-                Options.Create(new MvcDataAnnotationsLocalizationOptions()),
-                stringLocalizerFactory: null);
+            Validator = new RequiredAttributeAdapter(new RequiredAttribute(), stringLocalizer: null),
+            IsReusable = true
+        };
+        items.Add(expectedValidatorItem);
 
-            var metadata = _metadataProvider.GetMetadataForProperty(
-                typeof(DummyRequiredAttributeHelperClass),
-                nameof(DummyRequiredAttributeHelperClass.ValueTypeWithoutAttribute));
+        var providerContext = new ClientValidatorProviderContext(metadata, items);
 
-            var providerContext = new ClientValidatorProviderContext(metadata, GetValidatorItems(metadata));
+        // Act
+        provider.CreateValidators(providerContext);
 
-            // Act
-            provider.CreateValidators(providerContext);
+        // Assert
+        var validatorItem = Assert.Single(providerContext.Results);
+        Assert.Same(expectedValidatorItem.Validator, validatorItem.Validator);
+    }
 
-            // Assert
-            var validatorItem = Assert.Single(providerContext.Results);
-            Assert.IsType<RequiredAttributeAdapter>(validatorItem.Validator);
-        }
+    [Fact]
+    public void CreateValidators_DoesNotAddRequiredAttribute_ForIsRequiredFalse()
+    {
+        // Arrange
+        var provider = new DataAnnotationsClientModelValidatorProvider(
+            new ValidationAttributeAdapterProvider(),
+            Options.Create(new MvcDataAnnotationsLocalizationOptions()),
+            stringLocalizerFactory: null);
 
-        [Fact]
-        public void CreateValidators_DoesNotAddDuplicateRequiredAttribute_ForIsRequiredTrue()
-        {
-            // Arrange
-            var provider = new DataAnnotationsClientModelValidatorProvider(
-                new ValidationAttributeAdapterProvider(),
-                Options.Create(new MvcDataAnnotationsLocalizationOptions()),
-                stringLocalizerFactory: null);
+        var metadata = _metadataProvider.GetMetadataForProperty(
+            typeof(DummyRequiredAttributeHelperClass),
+            nameof(DummyRequiredAttributeHelperClass.ReferenceTypeWithoutAttribute));
 
-            var metadata = _metadataProvider.GetMetadataForProperty(
-                typeof(DummyRequiredAttributeHelperClass),
-                nameof(DummyRequiredAttributeHelperClass.ValueTypeWithoutAttribute));
+        var providerContext = new ClientValidatorProviderContext(metadata, GetValidatorItems(metadata));
 
-            var items = GetValidatorItems(metadata);
-            var expectedValidatorItem = new ClientValidatorItem
-            {
-                Validator = new RequiredAttributeAdapter(new RequiredAttribute(), stringLocalizer: null),
-                IsReusable = true
-            };
-            items.Add(expectedValidatorItem);
+        // Act
+        provider.CreateValidators(providerContext);
 
-            var providerContext = new ClientValidatorProviderContext(metadata, items);
+        // Assert
+        Assert.Empty(providerContext.Results);
+    }
 
-            // Act
-            provider.CreateValidators(providerContext);
+    [Fact]
+    public void CreateValidators_DoesNotAddExtraRequiredAttribute_IfAttributeIsSpecifiedExplicitly()
+    {
+        // Arrange
+        var provider = new DataAnnotationsClientModelValidatorProvider(
+            new ValidationAttributeAdapterProvider(),
+            Options.Create(new MvcDataAnnotationsLocalizationOptions()),
+            stringLocalizerFactory: null);
 
-            // Assert
-            var validatorItem = Assert.Single(providerContext.Results);
-            Assert.Same(expectedValidatorItem.Validator, validatorItem.Validator);
-        }
+        var metadata = _metadataProvider.GetMetadataForProperty(
+            typeof(DummyRequiredAttributeHelperClass),
+            nameof(DummyRequiredAttributeHelperClass.WithAttribute));
 
-        [Fact]
-        public void CreateValidators_DoesNotAddRequiredAttribute_ForIsRequiredFalse()
-        {
-            // Arrange
-            var provider = new DataAnnotationsClientModelValidatorProvider(
-                new ValidationAttributeAdapterProvider(),
-                Options.Create(new MvcDataAnnotationsLocalizationOptions()),
-                stringLocalizerFactory: null);
+        var providerContext = new ClientValidatorProviderContext(metadata, GetValidatorItems(metadata));
 
-            var metadata = _metadataProvider.GetMetadataForProperty(
-                typeof(DummyRequiredAttributeHelperClass),
-                nameof(DummyRequiredAttributeHelperClass.ReferenceTypeWithoutAttribute));
+        // Act
+        provider.CreateValidators(providerContext);
 
-            var providerContext = new ClientValidatorProviderContext(metadata, GetValidatorItems(metadata));
+        // Assert
+        var validatorItem = Assert.Single(providerContext.Results);
+        var adapter = Assert.IsType<RequiredAttributeAdapter>(validatorItem.Validator);
+        Assert.Equal("Custom Required Message", adapter.Attribute.ErrorMessage);
+    }
 
-            // Act
-            provider.CreateValidators(providerContext);
+    [Fact]
+    public void UnknownValidationAttribute_IsNotAddedAsValidator()
+    {
+        // Arrange
+        var provider = new DataAnnotationsClientModelValidatorProvider(
+            new ValidationAttributeAdapterProvider(),
+            Options.Create(new MvcDataAnnotationsLocalizationOptions()),
+            stringLocalizerFactory: null);
+        var metadata = _metadataProvider.GetMetadataForType(typeof(DummyClassWithDummyValidationAttribute));
 
-            // Assert
-            Assert.Empty(providerContext.Results);
-        }
+        var providerContext = new ClientValidatorProviderContext(metadata, GetValidatorItems(metadata));
 
-        [Fact]
-        public void CreateValidators_DoesNotAddExtraRequiredAttribute_IfAttributeIsSpecifiedExplicitly()
-        {
-            // Arrange
-            var provider = new DataAnnotationsClientModelValidatorProvider(
-                new ValidationAttributeAdapterProvider(),
-                Options.Create(new MvcDataAnnotationsLocalizationOptions()),
-                stringLocalizerFactory: null);
+        // Act
+        provider.CreateValidators(providerContext);
 
-            var metadata = _metadataProvider.GetMetadataForProperty(
-                typeof(DummyRequiredAttributeHelperClass),
-                nameof(DummyRequiredAttributeHelperClass.WithAttribute));
+        // Assert
+        var validatorItem = Assert.Single(providerContext.Results);
+        Assert.Null(validatorItem.Validator);
+    }
 
-            var providerContext = new ClientValidatorProviderContext(metadata, GetValidatorItems(metadata));
+    private IList<ClientValidatorItem> GetValidatorItems(ModelMetadata metadata)
+    {
+        return metadata.ValidatorMetadata.Select(v => new ClientValidatorItem(v)).ToList();
+    }
 
-            // Act
-            provider.CreateValidators(providerContext);
+    private class DummyValidationAttribute : ValidationAttribute
+    {
+    }
 
-            // Assert
-            var validatorItem = Assert.Single(providerContext.Results);
-            var adapter = Assert.IsType<RequiredAttributeAdapter>(validatorItem.Validator);
-            Assert.Equal("Custom Required Message", adapter.Attribute.ErrorMessage);
-        }
+    [DummyValidation]
+    private class DummyClassWithDummyValidationAttribute
+    {
+    }
 
-        [Fact]
-        public void UnknownValidationAttribute_IsNotAddedAsValidator()
-        {
-            // Arrange
-            var provider = new DataAnnotationsClientModelValidatorProvider(
-                new ValidationAttributeAdapterProvider(),
-                Options.Create(new MvcDataAnnotationsLocalizationOptions()),
-                stringLocalizerFactory: null);
-            var metadata = _metadataProvider.GetMetadataForType(typeof(DummyClassWithDummyValidationAttribute));
+    private class DummyRequiredAttributeHelperClass
+    {
+        [Required(ErrorMessage = "Custom Required Message")]
+        public int WithAttribute { get; set; }
 
-            var providerContext = new ClientValidatorProviderContext(metadata, GetValidatorItems(metadata));
+        public int ValueTypeWithoutAttribute { get; set; }
 
-            // Act
-            provider.CreateValidators(providerContext);
-
-            // Assert
-            var validatorItem = Assert.Single(providerContext.Results);
-            Assert.Null(validatorItem.Validator);
-        }
-
-        private IList<ClientValidatorItem> GetValidatorItems(ModelMetadata metadata)
-        {
-            return metadata.ValidatorMetadata.Select(v => new ClientValidatorItem(v)).ToList();
-        }
-
-        private class DummyValidationAttribute : ValidationAttribute
-        {
-        }
-
-        [DummyValidation]
-        private class DummyClassWithDummyValidationAttribute
-        {
-        }
-
-        private class DummyRequiredAttributeHelperClass
-        {
-            [Required(ErrorMessage = "Custom Required Message")]
-            public int WithAttribute { get; set; }
-
-            public int ValueTypeWithoutAttribute { get; set; }
-
-            public string ReferenceTypeWithoutAttribute { get; set; }
-        }
+        public string ReferenceTypeWithoutAttribute { get; set; }
     }
 }

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
 
 brew update
-brew install openssl nginx
+brew list openssl || brew install openssl
+brew list nginx || brew install nginx

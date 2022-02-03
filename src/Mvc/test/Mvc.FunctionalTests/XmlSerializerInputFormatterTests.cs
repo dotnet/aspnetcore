@@ -1,59 +1,56 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.FunctionalTests
+namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
+
+public class XmlSerializerInputFormatterTests : IClassFixture<MvcTestFixture<XmlFormattersWebSite.Startup>>
 {
-    public class XmlSerializerInputFormatterTests : IClassFixture<MvcTestFixture<XmlFormattersWebSite.Startup>>
+    public XmlSerializerInputFormatterTests(MvcTestFixture<XmlFormattersWebSite.Startup> fixture)
     {
-        public XmlSerializerInputFormatterTests(MvcTestFixture<XmlFormattersWebSite.Startup> fixture)
-        {
-            Client = fixture.CreateDefaultClient();
-        }
+        Client = fixture.CreateDefaultClient();
+    }
 
-        public HttpClient Client { get; }
+    public HttpClient Client { get; }
 
-        [Fact]
-        public async Task CheckIfXmlSerializerInputFormatterIsCalled()
-        {
-            // Arrange
-            var sampleInputInt = 10;
-            var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-                "<DummyClass><SampleInt>"
-                + sampleInputInt.ToString(CultureInfo.InvariantCulture) + "</SampleInt></DummyClass>";
-            var content = new StringContent(input, Encoding.UTF8, "application/xml-xmlser");
+    [Fact]
+    public async Task CheckIfXmlSerializerInputFormatterIsCalled()
+    {
+        // Arrange
+        var sampleInputInt = 10;
+        var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<DummyClass><SampleInt>"
+            + sampleInputInt.ToString(CultureInfo.InvariantCulture) + "</SampleInt></DummyClass>";
+        var content = new StringContent(input, Encoding.UTF8, "application/xml-xmlser");
 
-            // Act
-            var response = await Client.PostAsync("http://localhost/Home/Index", content);
+        // Act
+        var response = await Client.PostAsync("http://localhost/Home/Index", content);
 
-            // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal(sampleInputInt.ToString(CultureInfo.InvariantCulture), await response.Content.ReadAsStringAsync());
-        }
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(sampleInputInt.ToString(CultureInfo.InvariantCulture), await response.Content.ReadAsStringAsync());
+    }
 
-        [ConditionalFact]
-        // Mono.Xml2.XmlTextReader.ReadText is unable to read the XML. This is fixed in mono 4.3.0.
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        public async Task ThrowsOnInvalidInput_AndAddsToModelState()
-        {
-            // Arrange
-            var input = "Not a valid xml document";
-            var content = new StringContent(input, Encoding.UTF8, "application/xml-xmlser");
+    [ConditionalFact]
+    // Mono.Xml2.XmlTextReader.ReadText is unable to read the XML. This is fixed in mono 4.3.0.
+    [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+    public async Task ThrowsOnInvalidInput_AndAddsToModelState()
+    {
+        // Arrange
+        var input = "Not a valid xml document";
+        var content = new StringContent(input, Encoding.UTF8, "application/xml-xmlser");
 
-            // Act
-            var response = await Client.PostAsync("http://localhost/Home/Index", content);
+        // Act
+        var response = await Client.PostAsync("http://localhost/Home/Index", content);
 
-            // Assert
-            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-            var data = await response.Content.ReadAsStringAsync();
-            Assert.Contains("An error occurred while deserializing input data.", data);
-        }
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var data = await response.Content.ReadAsStringAsync();
+        Assert.Contains("An error occurred while deserializing input data.", data);
     }
 }
