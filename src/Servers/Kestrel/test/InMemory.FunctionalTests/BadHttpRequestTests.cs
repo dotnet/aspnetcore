@@ -141,18 +141,44 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task CanOptOutOfBadRequestIfHostHeaderDoesNotMatchRequestTarget()
         {
+            BadHttpRequestException loggedException = null;
+
+            var mockKestrelTrace = new Mock<IKestrelTrace>();
+            mockKestrelTrace
+                .Setup(trace => trace.IsEnabled(LogLevel.Information))
+                .Returns(true);
+            mockKestrelTrace
+                .Setup(trace => trace.ConnectionBadRequest(It.IsAny<string>(), It.IsAny<BadHttpRequestException>()))
+                .Callback<string, BadHttpRequestException>((connectionId, exception) => loggedException = exception);
+
+            // Set up a listener to catch the BadRequest event
+            var diagListener = new DiagnosticListener("OptOutBadRequestTestsDiagListener");
+            string eventProviderName = "";
+            string exceptionString = "";
+            var badRequestEventListener = new BadRequestEventListener(diagListener, (pair) => {
+                eventProviderName = pair.Key;
+                var featureCollection = pair.Value as IFeatureCollection;
+                if (featureCollection is not null)
+                {
+                    var badRequestFeature = featureCollection.Get<IBadRequestExceptionFeature>();
+                    exceptionString = badRequestFeature.Error.ToString();
+                }
+            });
+
             var receivedHost = StringValues.Empty;
             await using var server = new TestServer(context =>
             {
                 receivedHost = context.Request.Headers.Host;
                 return Task.CompletedTask;
-            }, new TestServiceContext(LoggerFactory)
+            }, new TestServiceContext(LoggerFactory, mockKestrelTrace.Object)
             {
+                DiagnosticSource = diagListener,
                 ServerOptions = new KestrelServerOptions()
                 {
                     EnableInsecureAbsoluteFormHostOverride = true,
                 }
             });
+
             using var client = server.CreateConnection();
 
             await client.SendAll($"GET http://www.foo.com/api/data HTTP/1.1\r\nHost: www.foo.comConnection: keep-alive\r\n\r\n");
@@ -160,6 +186,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             await client.Receive("HTTP/1.1 200 OK");
 
             Assert.Equal("www.foo.com:80", receivedHost);
+
+            mockKestrelTrace.Verify(trace => trace.ConnectionBadRequest(It.IsAny<string>(), It.IsAny<BadHttpRequestException>()));
+            Assert.Equal(CoreStrings.FormatBadRequest_InvalidHostHeader_Detail("www.foo.comConnection: keep-alive"), loggedException.Message);
+
+            // Verify DiagnosticSource event for bad request
+            Assert.True(badRequestEventListener.EventFired);
+            Assert.Equal("Microsoft.AspNetCore.Server.Kestrel.BadRequest", eventProviderName);
+            Assert.Contains(CoreStrings.FormatBadRequest_InvalidHostHeader_Detail("www.foo.comConnection: keep-alive"), exceptionString);
         }
 
         [Fact]
