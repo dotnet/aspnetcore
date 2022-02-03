@@ -110,7 +110,6 @@ public sealed class ComponentParameterAnalyzer : DiagnosticAnalyzer
                                     symbols.ParameterCaptureUnmatchedValuesRuntimeType.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)));
                             }
                         }
-                        
                         if (!IsAutoProperty(property) && !IsSameSemanticAsAutoProperty(property, context.CancellationToken))
                         {
                             context.ReportDiagnostic(Diagnostic.Create(
