@@ -46,6 +46,9 @@ parameters:
   # Optional: enable sending telemetry
   enableTelemetry: false
 
+  # Options: Don't run CG
+  disableComponentGovernance: false
+
   # Optional: define the helix repo for telemetry (example: 'dotnet/arcade')
   helixRepo: ''
 
@@ -156,6 +159,9 @@ jobs:
 
   - ${{ each step in parameters.steps }}:
     - ${{ step }}
+
+  - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), ne(parameters.disableComponentGovernance, 'true')) }}:
+      - task: ComponentGovernanceComponentDetection@0
 
   - ${{ if eq(parameters.enableMicrobuild, 'true') }}:
     - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
