@@ -1,25 +1,18 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.BrowserTesting;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.CommandLineUtils;
 using Newtonsoft.Json.Linq;
-using PlaywrightSharp;
+using Microsoft.Playwright;
 using Templates.Test.Helpers;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace BlazorTemplates.Tests;
 
@@ -60,10 +53,10 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
         }
     }
 
-    private async Task<IPage> NavigateToPage(IBrowserContext browser, string listeningUri)
+    private static async Task<IPage> NavigateToPage(IBrowserContext browser, string listeningUri)
     {
         var page = await browser.NewPageAsync();
-        await page.GoToAsync(listeningUri, LifecycleEvent.Networkidle);
+        await page.GotoAsync(listeningUri, new() { WaitUntil = WaitUntilState.NetworkIdle });
         return page;
     }
 
@@ -140,9 +133,9 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
 
             // The PWA template supports offline use. By now, the browser should have cached everything it needs,
             // so we can continue working even without the server.
-            await page.GoToAsync("about:blank");
+            await page.GotoAsync("about:blank");
             await browser.SetOfflineAsync(true);
-            await page.GoToAsync(listeningUri);
+            await page.GotoAsync(listeningUri);
             await TestBasicNavigation(project.ProjectName, page, skipFetchData: true);
             await page.CloseAsync();
         }
@@ -188,9 +181,9 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
             // The PWA template supports offline use. By now, the browser should have cached everything it needs,
             // so we can continue working even without the server.
             // Since this is the hosted project, backend APIs won't work offline, so we need to skip "fetchdata"
-            await page.GoToAsync("about:blank");
+            await page.GotoAsync("about:blank");
             await browser.SetOfflineAsync(true);
-            await page.GoToAsync(listeningUri);
+            await page.GotoAsync(listeningUri);
             await TestBasicNavigation(project.ProjectName, page, skipFetchData: true);
             await page.CloseAsync();
         }
@@ -200,7 +193,7 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
         }
     }
 
-    private void ValidatePublishedServiceWorker(Project project)
+    private static void ValidatePublishedServiceWorker(Project project)
     {
         var publishDir = Path.Combine(project.TemplatePublishDir, "wwwroot");
 
@@ -230,7 +223,6 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/30882")]
     public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithLocalDB(BrowserKind browserKind)
         => BlazorWasmHostedTemplate_IndividualAuth_Works(browserKind, true);
-
 
     // This test depends on BlazorWasmTemplate_CreateBuildPublish_IndividualAuthNoLocalDb running first
     [Theory]
@@ -416,18 +408,18 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
         }
     }
 
-    private async Task TestBasicNavigation(string appName, IPage page, bool usesAuth = false, bool skipFetchData = false)
+    private static async Task TestBasicNavigation(string appName, IPage page, bool usesAuth = false, bool skipFetchData = false)
     {
         await page.WaitForSelectorAsync("nav");
 
         // Initially displays the home page
         await page.WaitForSelectorAsync("h1 >> text=Hello, world!");
 
-        Assert.Equal("Index", (await page.GetTitleAsync()).Trim());
+        Assert.Equal("Index", (await page.TitleAsync()).Trim());
 
         // Can navigate to the counter page
         await Task.WhenAll(
-            page.WaitForNavigationAsync("**/counter"),
+            page.WaitForNavigationAsync(new() { UrlString = "**/counter" }),
             page.WaitForSelectorAsync("h1 >> text=Counter"),
             page.WaitForSelectorAsync("p >> text=Current count: 0"),
             page.ClickAsync("a[href=counter]"));
@@ -440,16 +432,16 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
         if (usesAuth)
         {
             await Task.WhenAll(
-                page.WaitForNavigationAsync("**/Identity/Account/Login**", LifecycleEvent.Networkidle),
+                page.WaitForNavigationAsync(new() { UrlString = "**/Identity/Account/Login**", WaitUntil = WaitUntilState.NetworkIdle }),
                 page.ClickAsync("text=Log in"));
 
             await Task.WhenAll(
                 page.WaitForSelectorAsync("[name=\"Input.Email\"]"),
-                page.WaitForNavigationAsync("**/Identity/Account/Register**", LifecycleEvent.Networkidle),
+                page.WaitForNavigationAsync(new() { UrlString = "**/Identity/Account/Register**", WaitUntil = WaitUntilState.NetworkIdle }),
                 page.ClickAsync("text=Register as a new user"));
 
             var userName = $"{Guid.NewGuid()}@example.com";
-            var password = $"!Test.Password1$";
+            var password = "[PLACEHOLDER]-1a";
 
             await page.TypeAsync("[name=\"Input.Email\"]", userName);
             await page.TypeAsync("[name=\"Input.Password\"]", password);
@@ -457,12 +449,12 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
 
             // We will be redirected to the RegisterConfirmation
             await Task.WhenAll(
-                page.WaitForNavigationAsync("**/Identity/Account/RegisterConfirmation**", LifecycleEvent.Networkidle),
+                page.WaitForNavigationAsync(new() { UrlString = "**/Identity/Account/RegisterConfirmation**", WaitUntil = WaitUntilState.NetworkIdle }),
                 page.ClickAsync("#registerSubmit"));
 
             // We will be redirected to the ConfirmEmail
             await Task.WhenAll(
-                page.WaitForNavigationAsync("**/Identity/Account/ConfirmEmail**", LifecycleEvent.Networkidle),
+                page.WaitForNavigationAsync(new() { UrlString = "**/Identity/Account/ConfirmEmail**", WaitUntil = WaitUntilState.NetworkIdle }),
                 page.ClickAsync("text=Click here to confirm your account"));
 
             // Now we can login
@@ -473,25 +465,25 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
             await page.ClickAsync("#login-submit");
 
             // Need to navigate to fetch page
-            await page.GoToAsync(new Uri(page.Url).GetLeftPart(UriPartial.Authority));
-            Assert.Equal(appName.Trim(), (await page.GetTitleAsync()).Trim());
+            await page.GotoAsync(new Uri(page.Url).GetLeftPart(UriPartial.Authority));
+            Assert.Equal(appName.Trim(), (await page.TitleAsync()).Trim());
         }
 
         if (!skipFetchData)
         {
             // Can navigate to the 'fetch data' page
             await Task.WhenAll(
-                page.WaitForNavigationAsync("**/fetchdata"),
+                page.WaitForNavigationAsync(new() { UrlString = "**/fetchdata" }),
                 page.WaitForSelectorAsync("h1 >> text=Weather forecast"),
                 page.ClickAsync("text=Fetch data"));
 
             // Asynchronously loads and displays the table of weather forecasts
             await page.WaitForSelectorAsync("table>tbody>tr");
-            Assert.Equal(5, (await page.QuerySelectorAllAsync("p+table>tbody>tr")).Count());
+            Assert.Equal(5, await page.Locator("p+table>tbody>tr").CountAsync());
         }
     }
 
-    private string ReadFile(string basePath, string path)
+    private static string ReadFile(string basePath, string path)
     {
         var fullPath = Path.Combine(basePath, path);
         var doesExist = File.Exists(fullPath);
@@ -500,7 +492,7 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
         return File.ReadAllText(Path.Combine(basePath, path));
     }
 
-    private void UpdatePublishedSettings(Project serverProject)
+    private static void UpdatePublishedSettings(Project serverProject)
     {
         // Hijack here the config file to use the development key during publish.
         var appSettings = JObject.Parse(File.ReadAllText(Path.Combine(serverProject.TemplateOutputDir, "appsettings.json")));

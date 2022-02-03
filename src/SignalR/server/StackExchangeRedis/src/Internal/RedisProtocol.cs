@@ -1,11 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Runtime.InteropServices;
 using MessagePack;
 using Microsoft.AspNetCore.Internal;
@@ -74,7 +71,7 @@ internal class RedisProtocol
         }
     }
 
-    public byte[] WriteGroupCommand(RedisGroupCommand command)
+    public static byte[] WriteGroupCommand(RedisGroupCommand command)
     {
         // Written as a MessagePack 'arr' containing at least these items:
         // * An 'int': the Id of the command
@@ -105,7 +102,7 @@ internal class RedisProtocol
         }
     }
 
-    public byte[] WriteAck(int messageId)
+    public static byte[] WriteAck(int messageId)
     {
         // Written as a MessagePack 'arr' containing at least these items:
         // * An 'int': The Id of the command being acknowledged.
@@ -128,7 +125,7 @@ internal class RedisProtocol
         }
     }
 
-    public RedisInvocation ReadInvocation(ReadOnlyMemory<byte> data)
+    public static RedisInvocation ReadInvocation(ReadOnlyMemory<byte> data)
     {
         // See WriteInvocation for the format
         var reader = new MessagePackReader(data);
@@ -153,7 +150,7 @@ internal class RedisProtocol
         return new RedisInvocation(message, excludedConnectionIds);
     }
 
-    public RedisGroupCommand ReadGroupCommand(ReadOnlyMemory<byte> data)
+    public static RedisGroupCommand ReadGroupCommand(ReadOnlyMemory<byte> data)
     {
         var reader = new MessagePackReader(data);
 
@@ -169,7 +166,7 @@ internal class RedisProtocol
         return new RedisGroupCommand(id, serverName, action, groupName, connectionId);
     }
 
-    public int ReadAck(ReadOnlyMemory<byte> data)
+    public static int ReadAck(ReadOnlyMemory<byte> data)
     {
         var reader = new MessagePackReader(data);
 

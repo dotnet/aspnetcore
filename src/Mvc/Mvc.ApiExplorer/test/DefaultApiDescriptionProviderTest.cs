@@ -1,14 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
@@ -26,7 +22,6 @@ using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Description;
 
@@ -132,7 +127,6 @@ public class DefaultApiDescriptionProviderTest
         var description = Assert.Single(descriptions);
         Assert.Null(description.HttpMethod);
     }
-
 
     [Fact]
     public void GetApiDescription_CreatesMultipleDescriptionsForMultipleHttpMethods()
@@ -246,6 +240,57 @@ public class DefaultApiDescriptionProviderTest
         {
             Assert.Null(parameter.RouteInfo.DefaultValue);
         }
+    }
+
+    [Fact]
+    public void GetApiDescription_WithInferredBindingSource_ExcludesPathParametersWhenNotPresentInRoute()
+    {
+        // Arrange
+        var action = CreateActionDescriptor(nameof(FromModelBinding));
+        action.AttributeRouteInfo = new AttributeRouteInfo { Template = "api/products" };
+
+        action.Parameters[0].BindingInfo = new BindingInfo()
+        {
+            BindingSource = BindingSource.Path
+        };
+
+        // Act
+        var descriptions = GetApiDescriptions(action);
+
+        // Assert
+        var description = Assert.Single(descriptions);
+        Assert.Empty(description.ParameterDescriptions);
+    }
+
+    [Theory]
+    [InlineData("api/products/{id}")]
+    [InlineData("api/products/{id?}")]
+    [InlineData("api/products/{id=5}")]
+    [InlineData("api/products/{id:int}")]
+    [InlineData("api/products/{id:int?}")]
+    [InlineData("api/products/{id:int=5}")]
+    [InlineData("api/products/{*id}")]
+    [InlineData("api/products/{*id:int}")]
+    [InlineData("api/products/{*id:int=5}")]
+    public void GetApiDescription_WithInferredBindingSource_IncludesPathParametersWhenPresentInRoute(string template)
+    {
+        // Arrange
+        var action = CreateActionDescriptor(nameof(FromModelBinding));
+        action.AttributeRouteInfo = new AttributeRouteInfo { Template = template };
+
+        action.Parameters[0].BindingInfo = new BindingInfo()
+        {
+            BindingSource = BindingSource.Path
+        };
+
+        // Act
+        var descriptions = GetApiDescriptions(action);
+
+        // Assert
+        var description = Assert.Single(descriptions);
+        var parameter = Assert.Single(description.ParameterDescriptions);
+        Assert.Equal(BindingSource.Path, parameter.Source);
+        Assert.Equal("id", parameter.Name);
     }
 
     [Fact]
@@ -2131,7 +2176,6 @@ public class DefaultApiDescriptionProviderTest
 
     private void ReturnsVoid()
     {
-
     }
 
     private IActionResult ReturnsActionResult()
@@ -2601,7 +2645,6 @@ public class DefaultApiDescriptionProviderTest
 
     private interface ITestService
     {
-
     }
 
     private class FromFormFileAttribute : Attribute, IBindingSourceMetadata

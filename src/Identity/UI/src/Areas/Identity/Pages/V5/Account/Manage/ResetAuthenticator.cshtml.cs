@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
@@ -73,7 +71,7 @@ internal class ResetAuthenticatorModel<TUser> : ResetAuthenticatorModel where TU
 
         await _userManager.SetTwoFactorEnabledAsync(user, false);
         await _userManager.ResetAuthenticatorKeyAsync(user);
-        var userId = await _userManager.GetUserIdAsync(user);
+        await _userManager.GetUserIdAsync(user);
         _logger.LogInformation(LoggerEventIds.AuthenticationAppKeyReset, "User has reset their authentication app key.");
 
         await _signInManager.RefreshSignInAsync(user);

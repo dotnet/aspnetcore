@@ -1,26 +1,19 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Net;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Authentication.Certificate.Test;
 
@@ -330,7 +323,7 @@ public class ClientCertificateAuthenticationTests
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
-    [Fact]
+    [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/39669")]
     public async Task VerifyValidClientCertWithTrustedChainAuthenticates()
     {
         using var host = await CreateHost(
@@ -347,7 +340,7 @@ public class ClientCertificateAuthenticationTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
-    [Fact]
+    [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/39669")]
     public async Task VerifyValidClientCertWithAdditionalCertificatesAuthenticates()
     {
         using var host = await CreateHost(
@@ -810,7 +803,6 @@ public class ClientCertificateAuthenticationTests
                             }
                             return next(context);
                         });
-
 
                         if (wireUpHeaderMiddleware)
                         {

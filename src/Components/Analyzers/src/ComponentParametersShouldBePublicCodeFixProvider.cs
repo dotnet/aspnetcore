@@ -47,7 +47,7 @@ public class ComponentParametersShouldBePublicCodeFixProvider : CodeFixProvider
             diagnostic);
     }
 
-    private Task<Document> GetTransformedDocumentAsync(
+    private static Task<Document> GetTransformedDocumentAsync(
         Document document,
         SyntaxNode root,
         PropertyDeclarationSyntax declarationNode)
@@ -57,7 +57,7 @@ public class ComponentParametersShouldBePublicCodeFixProvider : CodeFixProvider
         return Task.FromResult(document.WithSyntaxRoot(newSyntaxRoot));
     }
 
-    private SyntaxNode HandlePropertyDeclaration(PropertyDeclarationSyntax node)
+    private static SyntaxNode HandlePropertyDeclaration(PropertyDeclarationSyntax node)
     {
         TypeSyntax type = node.Type;
         if (type == null || type.IsMissing)

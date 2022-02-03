@@ -1,12 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Runtime.ExceptionServices;
 using System.Security.Claims;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication.Internal;
@@ -15,7 +11,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 
@@ -385,7 +380,6 @@ public class RemoteAuthenticatorCoreTests
             Status = RemoteAuthenticationStatus.Redirect,
         });
 
-
         await Assert.ThrowsAsync<InvalidOperationException>(
             async () => await renderer.Dispatcher.InvokeAsync<object>(async () =>
             {
@@ -564,7 +558,6 @@ public class RemoteAuthenticatorCoreTests
         // Act
         Task result = await renderer.Dispatcher.InvokeAsync<Task>(() => authenticator.SetParametersAsync(parameters));
 
-
         // Assert
         Assert.Null(result.Exception);
     }
@@ -608,7 +601,6 @@ public class RemoteAuthenticatorCoreTests
         validator.RetrieveOriginalRender(authenticator);
         validator.SetupFakeRender(authenticator);
         Task result = await renderer.Dispatcher.InvokeAsync<Task>(() => authenticator.SetParametersAsync(parameters));
-
 
         // Assert
         Assert.True(validator.WasCalled);

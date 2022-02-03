@@ -234,8 +234,6 @@ public class Project : IDisposable
 
     internal async Task<ProcessResult> RunDotNetEfUpdateDatabaseAsync()
     {
-        var assembly = typeof(ProjectFactoryFixture).Assembly;
-
         var args = "--verbose --no-build database update";
 
         // Only run one instance of 'dotnet new' at once, as a workaround for
@@ -274,11 +272,13 @@ public class Project : IDisposable
         Assert.NotNull(file);
         var contents = File.ReadAllText(file);
 
-        var emptyMigration = @"protected override void Up(MigrationBuilder migrationBuilder)
+        var emptyMigration = @"/// <inheritdoc />
+        protected override void Up(MigrationBuilder migrationBuilder)
         {
 
         }
 
+        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
 

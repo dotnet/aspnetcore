@@ -1,11 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json;
-using System.Threading.Tasks;
 using BasicTestApp;
 using BasicTestApp.FormsTest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
@@ -13,7 +8,6 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests;
@@ -78,6 +72,26 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         submitButton.Click();
         Browser.Empty(messagesAccessor);
         Browser.Equal("OnValidSubmit", () => appElement.FindElement(By.Id("last-callback")).Text);
+    }
+
+    [Fact]
+    public void EditFormWorksWithDataAnnotationsValidatorAndDI()
+    {
+        var appElement = Browser.MountTestComponent<ValidationComponentDI>();
+        var form = appElement.FindElement(By.TagName("form"));
+        var userNameInput = appElement.FindElement(By.ClassName("the-quiz")).FindElement(By.TagName("input"));
+        var submitButton = appElement.FindElement(By.CssSelector("button[type=submit]"));
+        var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+
+        userNameInput.SendKeys("Bacon\t");
+        submitButton.Click();
+        //We can only have this errormessage when DI is working
+        Browser.Equal(new[] { "You should not put that in a salad!" }, messagesAccessor);
+
+        userNameInput.Clear();
+        userNameInput.SendKeys("Watermelon\t");
+        submitButton.Click();
+        Browser.Empty(messagesAccessor);
     }
 
     [Fact]

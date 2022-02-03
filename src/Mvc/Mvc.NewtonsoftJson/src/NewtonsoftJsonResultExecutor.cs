@@ -1,10 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -19,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 /// <summary>
 /// Executes a <see cref="JsonResult"/> to write to the response.
 /// </summary>
-internal class NewtonsoftJsonResultExecutor : IActionResultExecutor<JsonResult>
+internal partial class NewtonsoftJsonResultExecutor : IActionResultExecutor<JsonResult>
 {
     private static readonly string DefaultContentType = new MediaTypeHeaderValue("application/json")
     {
@@ -133,7 +131,7 @@ internal class NewtonsoftJsonResultExecutor : IActionResultExecutor<JsonResult>
                 {
                     value = await reader(value, context.HttpContext.RequestAborted);
                 }
-                catch (OperationCanceledException) { }
+                catch (OperationCanceledException) when (context.HttpContext.RequestAborted.IsCancellationRequested) { }
                 if (context.HttpContext.RequestAborted.IsCancellationRequested)
                 {
                     return;
@@ -187,36 +185,28 @@ internal class NewtonsoftJsonResultExecutor : IActionResultExecutor<JsonResult>
         }
     }
 
-    private static class Log
+    private static partial class Log
     {
-        private static readonly LogDefineOptions SkipEnabledCheckLogOptions = new() { SkipEnabledCheck = true };
+        [LoggerMessage(1, LogLevel.Debug, "Buffering IAsyncEnumerable instance of type '{Type}'.", EventName = "BufferingAsyncEnumerable", SkipEnabledCheck = true)]
+        private static partial void BufferingAsyncEnumerable(ILogger logger, string? type);
 
-        private static readonly Action<ILogger, string?, Exception?> _jsonResultExecuting = LoggerMessage.Define<string?>(
-            LogLevel.Information,
-            new EventId(1, "JsonResultExecuting"),
-            "Executing JsonResult, writing value of type '{Type}'.",
-            SkipEnabledCheckLogOptions);
+        public static void BufferingAsyncEnumerable(ILogger logger, object asyncEnumerable)
+        {
+            if (logger.IsEnabled(LogLevel.Debug))
+            {
+                BufferingAsyncEnumerable(logger, asyncEnumerable.GetType().FullName);
+            }
+        }
 
-        private static readonly Action<ILogger, string?, Exception?> _bufferingAsyncEnumerable = LoggerMessage.Define<string?>(
-            LogLevel.Debug,
-            new EventId(1, "BufferingAsyncEnumerable"),
-            "Buffering IAsyncEnumerable instance of type '{Type}'.",
-            SkipEnabledCheckLogOptions);
+        [LoggerMessage(2, LogLevel.Information, "Executing JsonResult, writing value of type '{Type}'.", EventName = "JsonResultExecuting", SkipEnabledCheck = true)]
+        private static partial void JsonResultExecuting(ILogger logger, string? type);
 
         public static void JsonResultExecuting(ILogger logger, object? value)
         {
             if (logger.IsEnabled(LogLevel.Information))
             {
                 var type = value == null ? "null" : value.GetType().FullName;
-                _jsonResultExecuting(logger, type, null);
-            }
-        }
-
-        public static void BufferingAsyncEnumerable(ILogger logger, object asyncEnumerable)
-        {
-            if (logger.IsEnabled(LogLevel.Debug))
-            {
-                _bufferingAsyncEnumerable(logger, asyncEnumerable.GetType().FullName, null);
+                JsonResultExecuting(logger, type);
             }
         }
     }

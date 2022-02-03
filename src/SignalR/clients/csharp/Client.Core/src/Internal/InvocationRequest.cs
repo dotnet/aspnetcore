@@ -106,7 +106,7 @@ internal abstract class InvocationRequest : IDisposable
             {
                 while (!_channel.Writer.TryWrite(item))
                 {
-                    if (!await _channel.Writer.WaitToWriteAsync())
+                    if (!await _channel.Writer.WaitToWriteAsync().ConfigureAwait(false))
                     {
                         return false;
                     }

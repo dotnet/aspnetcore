@@ -2,12 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Security.Claims;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace SecurityWebSite.Controllers;
 
@@ -40,5 +38,4 @@ public class AdministrationController : Controller
         await HttpContext.SignInAsync("Cookie2", new ClaimsPrincipal(new ClaimsIdentity("Cookie2")));
         return Content("SignInCookie2");
     }
-
 }

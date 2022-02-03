@@ -97,7 +97,6 @@ public class CopyOnWriteDictionaryTest
         copyOnWriteDictionary.Add("key3", "value3");
         copyOnWriteDictionary.Remove("key1");
 
-
         // Assert
         Assert.Equal(2, sourceDictionary.Count);
         Assert.Equal("value1", sourceDictionary["key1"]);

@@ -202,7 +202,6 @@ public class RequestParsingBenchmark
         while (true);
     }
 
-
     [IterationCleanup]
     public void Cleanup()
     {

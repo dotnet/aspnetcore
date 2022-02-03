@@ -2,10 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Analyzer.Testing;
 using Microsoft.CodeAnalysis;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Api.Analyzers;
 
@@ -56,6 +54,9 @@ public class AddResponseTypeAttributeCodeFixProviderIntegrationTest
 
     [Fact]
     public Task CodeFixWorksOnExpressionBodiedMethod() => RunTest();
+
+    [Fact]
+    public Task CodeFixWorksWithValidationProblem() => RunTest();
 
     private async Task RunTest([CallerMemberName] string testMethod = "")
     {

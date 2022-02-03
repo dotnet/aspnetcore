@@ -90,7 +90,7 @@ public class Entry : IEquatable<Entry>
         return string.Equals(Name, currentSegment, StringComparison.Ordinal);
     }
 
-    private bool SameChildren(ISet<Entry> left, ISet<Entry> right)
+    private static bool SameChildren(ISet<Entry> left, ISet<Entry> right)
     {
         if (left.Count != right.Count)
         {

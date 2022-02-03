@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.Filters;
@@ -9,7 +8,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters;
 /// <summary>
 /// An <see cref="IActionFilter"/> which sets the appropriate headers related to response caching.
 /// </summary>
-internal class ResponseCacheFilter : IActionFilter, IResponseCacheFilter
+internal partial class ResponseCacheFilter : IActionFilter, IResponseCacheFilter
 {
     private readonly ResponseCacheFilterExecutor _executor;
     private readonly ILogger _logger;
@@ -92,7 +91,7 @@ internal class ResponseCacheFilter : IActionFilter, IResponseCacheFilter
         var effectivePolicy = context.FindEffectivePolicy<IResponseCacheFilter>();
         if (effectivePolicy != null && effectivePolicy != this)
         {
-            _logger.NotMostEffectiveFilter(GetType(), effectivePolicy.GetType(), typeof(IResponseCacheFilter));
+            Log.NotMostEffectiveFilter(_logger, GetType(), effectivePolicy.GetType(), typeof(IResponseCacheFilter));
             return;
         }
 
@@ -102,5 +101,11 @@ internal class ResponseCacheFilter : IActionFilter, IResponseCacheFilter
     /// <inheritdoc />
     public void OnActionExecuted(ActionExecutedContext context)
     {
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(4, LogLevel.Debug, "Execution of filter {OverriddenFilter} is preempted by filter {OverridingFilter} which is the most effective filter implementing policy {FilterPolicy}.", EventName = "NotMostEffectiveFilter")]
+        public static partial void NotMostEffectiveFilter(ILogger logger, Type overriddenFilter, Type overridingFilter, Type filterPolicy);
     }
 }

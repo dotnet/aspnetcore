@@ -36,7 +36,7 @@ internal class RefreshCommand : BaseCommand
         return 0;
     }
 
-    private string FindReferenceFromUrl(FileInfo projectFile, string url)
+    private static string FindReferenceFromUrl(FileInfo projectFile, string url)
     {
         var project = LoadProject(projectFile);
         var openApiReferenceItems = project.GetItems(OpenApiReference);

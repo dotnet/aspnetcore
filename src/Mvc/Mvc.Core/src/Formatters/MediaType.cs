@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Globalization;
 using System.Text;
 using Microsoft.AspNetCore.Http.Headers;
@@ -298,117 +297,9 @@ public readonly struct MediaType
             quality);
     }
 
-    private static Encoding? GetEncodingFromCharset(StringSegment charset)
-    {
-        if (charset.Equals("utf-8", StringComparison.OrdinalIgnoreCase))
-        {
-            // This is an optimization for utf-8 that prevents the Substring caused by
-            // charset.Value
-            return Encoding.UTF8;
-        }
-
-        try
-        {
-            // charset.Value might be an invalid encoding name as in charset=invalid.
-            // For that reason, we catch the exception thrown by Encoding.GetEncoding
-            // and return null instead.
-            return charset.HasValue ? Encoding.GetEncoding(charset.Value) : null;
-        }
-        catch (Exception)
-        {
-            return null;
-        }
-    }
-
     private static string CreateMediaTypeWithEncoding(StringSegment mediaType, Encoding encoding)
     {
         return $"{mediaType.Value}; charset={encoding.WebName}";
-    }
-
-    private bool MatchesType(MediaType set)
-    {
-        return set.MatchesAllTypes ||
-            set.Type.Equals(Type, StringComparison.OrdinalIgnoreCase);
-    }
-
-    private bool MatchesSubtype(MediaType set)
-    {
-        if (set.MatchesAllSubTypes)
-        {
-            return true;
-        }
-
-        if (set.SubTypeSuffix.HasValue)
-        {
-            if (SubTypeSuffix.HasValue)
-            {
-                // Both the set and the media type being checked have suffixes, so both parts must match.
-                return MatchesSubtypeWithoutSuffix(set) && MatchesSubtypeSuffix(set);
-            }
-            else
-            {
-                // The set has a suffix, but the media type being checked doesn't. We never consider this to match.
-                return false;
-            }
-        }
-        else
-        {
-            // If this subtype or suffix matches the subtype of the set,
-            // it is considered a subtype.
-            // Ex: application/json > application/val+json
-            return MatchesEitherSubtypeOrSuffix(set);
-        }
-    }
-
-    private bool MatchesSubtypeWithoutSuffix(MediaType set)
-    {
-        return set.MatchesAllSubTypesWithoutSuffix ||
-            set.SubTypeWithoutSuffix.Equals(SubTypeWithoutSuffix, StringComparison.OrdinalIgnoreCase);
-    }
-
-    private bool MatchesSubtypeSuffix(MediaType set)
-    {
-        // We don't have support for wildcards on suffixes alone (e.g., "application/entity+*")
-        // because there's no clear use case for it.
-        return set.SubTypeSuffix.Equals(SubTypeSuffix, StringComparison.OrdinalIgnoreCase);
-    }
-
-    private bool MatchesEitherSubtypeOrSuffix(MediaType set)
-    {
-        return set.SubType.Equals(SubType, StringComparison.OrdinalIgnoreCase) ||
-            set.SubType.Equals(SubTypeSuffix, StringComparison.OrdinalIgnoreCase);
-    }
-
-    private bool ContainsAllParameters(MediaTypeParameterParser setParameters)
-    {
-        var parameterFound = true;
-        while (setParameters.ParseNextParameter(out var setParameter) && parameterFound)
-        {
-            if (setParameter.HasName("q"))
-            {
-                // "q" and later parameters are not involved in media type matching. Quoting the RFC: The first
-                // "q" parameter (if any) separates the media-range parameter(s) from the accept-params.
-                break;
-            }
-
-            if (setParameter.HasName("*"))
-            {
-                // A parameter named "*" has no effect on media type matching, as it is only used as an indication
-                // that the entire media type string should be treated as a wildcard.
-                continue;
-            }
-
-            // Copy the parser as we need to iterate multiple times over it.
-            // We can do this because it's a struct
-            var subSetParameters = _mediaTypeHeaderValue.ParameterParser;
-            parameterFound = false;
-            while (subSetParameters.ParseNextParameter(out var subSetParameter) && !parameterFound)
-            {
-                parameterFound = subSetParameter.Equals(setParameter);
-            }
-        }
-
-        return parameterFound;
     }
 
     private struct MediaTypeParameterParser

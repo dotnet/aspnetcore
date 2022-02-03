@@ -28,7 +28,6 @@ internal sealed class DiagnosticPoolBlock : MemoryManager<byte>
     private bool _isDisposed;
     private int _pinCount;
 
-
     /// <summary>
     /// This object cannot be instantiated outside of the static Create method
     /// </summary>

@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
@@ -18,7 +17,6 @@ public class BackSlashExpander : IViewLocationExpander
         if (context.ActionContext is ViewContext viewContext && (string)viewContext.ViewData["back-slash"] == "true")
         {
             return new[] { $@"Views\BackSlash\{context.ViewName}.cshtml" };
-
         }
 
         return viewLocations;

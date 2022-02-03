@@ -1,18 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
@@ -598,7 +593,10 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
         {
             try
             {
-                await TryProduceInvalidRequestResponse();
+                if (_requestRejectedException != null)
+                {
+                    await TryProduceInvalidRequestResponse();
+                }
             }
             catch (Exception ex)
             {
@@ -655,7 +653,6 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
             IsUpgradableRequest = messageBody.RequestUpgrade;
 
             InitializeBodyControl(messageBody);
-
 
             var context = application.CreateContext(this);
 
@@ -990,10 +987,12 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
         VerifyAndUpdateWrite(firstWriteByteCount);
     }
 
-    protected Task TryProduceInvalidRequestResponse()
+    protected virtual Task TryProduceInvalidRequestResponse()
     {
-        // If _requestAborted is set, the connection has already been closed.
-        if (_requestRejectedException != null && !_connectionAborted)
+        Debug.Assert(_requestRejectedException != null);
+
+        // If _connectionAborted is set, the connection has already been closed.
+        if (!_connectionAborted)
         {
             return ProduceEnd();
         }

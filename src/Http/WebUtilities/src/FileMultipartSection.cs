@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.WebUtilities;
@@ -65,5 +63,4 @@ public class FileMultipartSection
     /// Gets the name of the file from the section
     /// </summary>
     public string FileName { get; }
-
 }

@@ -1,13 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO.Pipelines;
 using System.Security.Claims;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Internal;
@@ -35,7 +31,7 @@ internal
     private readonly CancellationTokenSource _cts;
 
     public DefaultConnectionContext Connection { get; }
-    public Task Connected => ((TaskCompletionSource<bool>)Connection.Items["ConnectedTask"]).Task;
+    public Task Connected => ((TaskCompletionSource)Connection.Items["ConnectedTask"]).Task;
     public HandshakeResponseMessage HandshakeResponseMessage { get; private set; }
 
     public TransferFormat SupportedFormats { get; set; } = TransferFormat.Text | TransferFormat.Binary;
@@ -61,7 +57,7 @@ internal
         }
 
         Connection.User = new ClaimsPrincipal(new ClaimsIdentity(claims));
-        Connection.Items["ConnectedTask"] = new TaskCompletionSource<bool>();
+        Connection.Items["ConnectedTask"] = new TaskCompletionSource();
 
         _protocol = protocol ?? new NewtonsoftJsonHubProtocol();
         _invocationBinder = invocationBinder ?? new DefaultInvocationBinder();
@@ -164,7 +160,7 @@ internal
 
             switch (message)
             {
-                case StreamItemMessage result:
+                case StreamItemMessage:
                     throw new NotSupportedException("Use 'StreamAsync' to call a streaming method");
                 case CompletionMessage completion:
                     return completion;

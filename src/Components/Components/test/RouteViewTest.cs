@@ -1,13 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Test;
 
@@ -32,7 +27,6 @@ public class RouteViewTest
             // Throws synchronously, so no need to await
             _ = _routeViewComponent.SetParametersAsync(ParameterView.Empty);
         });
-
 
         Assert.Equal($"The {nameof(RouteView)} component requires a non-null value for the parameter {nameof(RouteView.RouteData)}.", ex.Message);
     }

@@ -1,9 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http.Result;
 
@@ -34,7 +34,12 @@ internal sealed partial class PhysicalFileResult : FileResult, IResult
     public Func<string, FileInfoWrapper> GetFileInfoWrapper { get; init; } =
         static path => new FileInfoWrapper(path);
 
-    public Task ExecuteAsync(HttpContext httpContext)
+    protected override ILogger GetLogger(HttpContext httpContext)
+    {
+        return httpContext.RequestServices.GetRequiredService<ILogger<PhysicalFileResult>>();
+    }
+
+    public override Task ExecuteAsync(HttpContext httpContext)
     {
         var fileInfo = GetFileInfoWrapper(FileName);
         if (!fileInfo.Exists)
@@ -42,48 +47,18 @@ internal sealed partial class PhysicalFileResult : FileResult, IResult
             throw new FileNotFoundException($"Could not find file: {FileName}", FileName);
         }
 
-        var logger = httpContext.RequestServices.GetRequiredService<ILogger<PhysicalFileResult>>();
+        LastModified = LastModified ?? fileInfo.LastWriteTimeUtc;
+        FileLength = fileInfo.Length;
 
-        Log.ExecutingFileResult(logger, this, FileName);
+        return base.ExecuteAsync(httpContext);
+    }
 
-        var lastModified = LastModified ?? fileInfo.LastWriteTimeUtc;
-        var fileResultInfo = new FileResultInfo
-        {
-            ContentType = ContentType,
-            EnableRangeProcessing = EnableRangeProcessing,
-            EntityTag = EntityTag,
-            FileDownloadName = FileDownloadName,
-            LastModified = lastModified,
-        };
-
-        var (range, rangeLength, serveBody) = FileResultHelper.SetHeadersAndLog(
-            httpContext,
-            fileResultInfo,
-            fileInfo.Length,
-            EnableRangeProcessing,
-            lastModified,
-            EntityTag,
-            logger);
-
-        if (!serveBody)
-        {
-            return Task.CompletedTask;
-        }
-
-        if (range != null && rangeLength == 0)
-        {
-            return Task.CompletedTask;
-        }
-
+    protected override Task ExecuteCoreAsync(HttpContext httpContext, RangeItemHeaderValue? range, long rangeLength)
+    {
         var response = httpContext.Response;
         if (!Path.IsPathRooted(FileName))
         {
             throw new NotSupportedException($"Path '{FileName}' was not rooted.");
-        }
-
-        if (range != null)
-        {
-            FileResultHelper.Log.WritingRangeToBody(logger);
         }
 
         var offset = 0L;
@@ -105,6 +80,14 @@ internal sealed partial class PhysicalFileResult : FileResult, IResult
         public FileInfoWrapper(string path)
         {
             var fileInfo = new FileInfo(path);
+
+            // It means we are dealing with a symlink and need to get the information
+            // from the target file instead.
+            if (fileInfo.Exists && !string.IsNullOrEmpty(fileInfo.LinkTarget))
+            {
+                fileInfo = (FileInfo?)fileInfo.ResolveLinkTarget(returnFinalTarget: true) ?? fileInfo;
+            }
+
             Exists = fileInfo.Exists;
             Length = fileInfo.Length;
             LastWriteTimeUtc = fileInfo.LastWriteTimeUtc;

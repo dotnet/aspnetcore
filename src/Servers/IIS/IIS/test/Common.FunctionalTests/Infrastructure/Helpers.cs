@@ -159,7 +159,6 @@ public static class Helpers
         }
     }
 
-
     public static async Task AssertRecycledAsync(this IISDeploymentResult deploymentResult, Func<Task> verificationAction = null)
     {
         if (deploymentResult.DeploymentParameters.HostingModel != HostingModel.InProcess)

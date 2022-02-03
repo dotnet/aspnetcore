@@ -1,16 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
-using System.Reflection.Metadata.Ecma335;
-using System.Runtime.ExceptionServices;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Test;
 
@@ -241,7 +234,7 @@ public class ComponentBaseTest
         // Arrange
         var renderer = new TestRenderer();
         var component = new TestComponent() { Counter = 1 };
-        var initTask = new TaskCompletionSource<object>();
+        var initTask = new TaskCompletionSource();
         component.OnInitAsyncLogic = _ => initTask.Task;
 
         // Act
@@ -314,7 +307,7 @@ public class ComponentBaseTest
         var component = new TestComponent() { Counter = 1 };
 
         var onAfterRenderCompleted = false;
-        var tcs = new TaskCompletionSource<object>();
+        var tcs = new TaskCompletionSource();
         component.OnAfterRenderAsyncLogic = async (c, firstRender) =>
         {
             Assert.True(firstRender);
@@ -328,7 +321,7 @@ public class ComponentBaseTest
         var renderTask = renderer.RenderRootComponentAsync(componentId);
 
         // Assert
-        tcs.SetResult(null);
+        tcs.SetResult();
         await renderTask;
         Assert.True(onAfterRenderCompleted);
 
@@ -337,7 +330,7 @@ public class ComponentBaseTest
 
         // Act: Render again!
         onAfterRenderCompleted = false;
-        tcs = new TaskCompletionSource<object>();
+        tcs = new TaskCompletionSource();
         component.OnAfterRenderAsyncLogic = async (c, firstRender) =>
         {
             Assert.False(firstRender);
@@ -349,7 +342,7 @@ public class ComponentBaseTest
         renderTask = renderer.RenderRootComponentAsync(componentId);
 
         // Assert
-        tcs.SetResult(null);
+        tcs.SetResult();
         await renderTask;
         Assert.True(onAfterRenderCompleted);
         Assert.Equal(2, renderer.Batches.Count);
@@ -385,7 +378,7 @@ public class ComponentBaseTest
         // Arrange
         var renderer = new TestRenderer();
         var component = new TestComponent() { Counter = 1 };
-        var onParametersSetTask = new TaskCompletionSource<object>();
+        var onParametersSetTask = new TaskCompletionSource();
         component.OnParametersSetAsyncLogic = _ => onParametersSetTask.Task;
 
         // Act

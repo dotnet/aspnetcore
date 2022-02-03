@@ -20,7 +20,6 @@ namespace Microsoft.Extensions.Internal;
 /// <summary>
 /// Helper code for the various activator services.
 /// </summary>
-
 #if ActivatorUtilities_In_DependencyInjection
 public
 #else
@@ -125,7 +124,6 @@ static class ActivatorUtilities
     {
         return (T)CreateInstance(provider, typeof(T), parameters);
     }
-
 
     /// <summary>
     /// Retrieve an instance of the given type from the service provider. If one is not found then instantiate it directly.

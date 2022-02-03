@@ -3,8 +3,6 @@
 
 #nullable enable
 
-using System.Collections.Generic;
-
 namespace Microsoft.AspNetCore.Mvc.ModelBinding;
 
 /// <summary>

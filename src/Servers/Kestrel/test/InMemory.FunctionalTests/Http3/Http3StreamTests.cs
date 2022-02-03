@@ -1129,9 +1129,9 @@ public class Http3StreamTests : Http3TestBase
     [Fact]
     public async Task CompleteAsync_BeforeBodyStarted_SendsHeadersWithEndStream()
     {
-        var startingTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var appTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var clientTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var startingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
         {
                 new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
@@ -1143,7 +1143,7 @@ public class Http3StreamTests : Http3TestBase
         {
             try
             {
-                context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
+                context.Response.OnStarting(() => { startingTcs.SetResult(); return Task.CompletedTask; });
                 await context.Response.CompleteAsync().DefaultTimeout();
 
                 Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
@@ -1152,7 +1152,7 @@ public class Http3StreamTests : Http3TestBase
 
                 // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
                 await clientTcs.Task.DefaultTimeout();
-                appTcs.SetResult(0);
+                appTcs.SetResult();
             }
             catch (Exception ex)
             {
@@ -1164,7 +1164,7 @@ public class Http3StreamTests : Http3TestBase
 
         var decodedHeaders = await requestStream.ExpectHeadersAsync();
 
-        clientTcs.SetResult(0);
+        clientTcs.SetResult();
         await appTcs.Task;
 
         Assert.Equal(3, decodedHeaders.Count);
@@ -1178,9 +1178,9 @@ public class Http3StreamTests : Http3TestBase
     [Fact]
     public async Task CompleteAsync_BeforeBodyStarted_WithTrailers_SendsHeadersAndTrailersWithEndStream()
     {
-        var startingTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var appTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var clientTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var startingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
         {
                 new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
@@ -1191,7 +1191,7 @@ public class Http3StreamTests : Http3TestBase
         {
             try
             {
-                context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
+                context.Response.OnStarting(() => { startingTcs.SetResult(); return Task.CompletedTask; });
                 context.Response.AppendTrailer("CustomName", "Custom Value");
 
                 await context.Response.CompleteAsync().DefaultTimeout();
@@ -1203,7 +1203,7 @@ public class Http3StreamTests : Http3TestBase
 
                 // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
                 await clientTcs.Task.DefaultTimeout();
-                appTcs.SetResult(0);
+                appTcs.SetResult();
             }
             catch (Exception ex)
             {
@@ -1216,7 +1216,7 @@ public class Http3StreamTests : Http3TestBase
         var decodedHeaders = await requestStream.ExpectHeadersAsync();
         var decodedTrailers = await requestStream.ExpectHeadersAsync();
 
-        clientTcs.SetResult(0);
+        clientTcs.SetResult();
         await appTcs.Task;
 
         await requestStream.ExpectReceiveEndOfStream();
@@ -1233,8 +1233,8 @@ public class Http3StreamTests : Http3TestBase
     [Fact]
     public async Task CompleteAsync_BeforeBodyStarted_WithTrailers_TruncatedContentLength_ThrowsAnd500()
     {
-        var startingTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var appTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var startingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
         {
                 new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
@@ -1245,7 +1245,7 @@ public class Http3StreamTests : Http3TestBase
         {
             try
             {
-                context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
+                context.Response.OnStarting(() => { startingTcs.SetResult(); return Task.CompletedTask; });
 
                 context.Response.ContentLength = 25;
                 context.Response.AppendTrailer("CustomName", "Custom Value");
@@ -1257,7 +1257,7 @@ public class Http3StreamTests : Http3TestBase
                 Assert.False(context.Response.Headers.IsReadOnly);
                 Assert.False(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
 
-                appTcs.SetResult(0);
+                appTcs.SetResult();
             }
             catch (Exception ex)
             {
@@ -1282,9 +1282,9 @@ public class Http3StreamTests : Http3TestBase
     [Fact]
     public async Task CompleteAsync_AfterBodyStarted_SendsBodyWithEndStream()
     {
-        var startingTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var appTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var clientTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var startingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
         {
                 new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
@@ -1295,7 +1295,7 @@ public class Http3StreamTests : Http3TestBase
         {
             try
             {
-                context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
+                context.Response.OnStarting(() => { startingTcs.SetResult(); return Task.CompletedTask; });
 
                 await context.Response.WriteAsync("Hello World");
                 Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
@@ -1308,7 +1308,7 @@ public class Http3StreamTests : Http3TestBase
 
                 // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
                 await clientTcs.Task.DefaultTimeout();
-                appTcs.SetResult(0);
+                appTcs.SetResult();
             }
             catch (Exception ex)
             {
@@ -1328,7 +1328,7 @@ public class Http3StreamTests : Http3TestBase
 
         Assert.Equal("Hello World", Encoding.UTF8.GetString(data.Span));
 
-        clientTcs.SetResult(0);
+        clientTcs.SetResult();
         await appTcs.Task;
 
         await requestStream.ExpectReceiveEndOfStream();
@@ -1337,9 +1337,9 @@ public class Http3StreamTests : Http3TestBase
     [Fact]
     public async Task CompleteAsync_WriteAfterComplete_Throws()
     {
-        var startingTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var appTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var clientTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var startingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
         {
                 new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
@@ -1350,7 +1350,7 @@ public class Http3StreamTests : Http3TestBase
         {
             try
             {
-                context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
+                context.Response.OnStarting(() => { startingTcs.SetResult(); return Task.CompletedTask; });
                 await context.Response.CompleteAsync().DefaultTimeout();
 
                 Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
@@ -1362,7 +1362,7 @@ public class Http3StreamTests : Http3TestBase
 
                 // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
                 await clientTcs.Task.DefaultTimeout();
-                appTcs.SetResult(0);
+                appTcs.SetResult();
             }
             catch (Exception ex)
             {
@@ -1379,7 +1379,7 @@ public class Http3StreamTests : Http3TestBase
         Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
         Assert.Equal("0", decodedHeaders[HeaderNames.ContentLength]);
 
-        clientTcs.SetResult(0);
+        clientTcs.SetResult();
         await appTcs.Task;
 
         await requestStream.ExpectReceiveEndOfStream();
@@ -1388,9 +1388,9 @@ public class Http3StreamTests : Http3TestBase
     [Fact]
     public async Task CompleteAsync_WriteAgainAfterComplete_Throws()
     {
-        var startingTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var appTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var clientTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var startingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
         {
                 new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
@@ -1401,7 +1401,7 @@ public class Http3StreamTests : Http3TestBase
         {
             try
             {
-                context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
+                context.Response.OnStarting(() => { startingTcs.SetResult(); return Task.CompletedTask; });
 
                 await context.Response.WriteAsync("Hello World").DefaultTimeout();
                 Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
@@ -1416,7 +1416,7 @@ public class Http3StreamTests : Http3TestBase
 
                 // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
                 await clientTcs.Task.DefaultTimeout();
-                appTcs.SetResult(0);
+                appTcs.SetResult();
             }
             catch (Exception ex)
             {
@@ -1435,7 +1435,7 @@ public class Http3StreamTests : Http3TestBase
         var data = await requestStream.ExpectDataAsync();
         Assert.Equal("Hello World", Encoding.UTF8.GetString(data.Span));
 
-        clientTcs.SetResult(0);
+        clientTcs.SetResult();
         await appTcs.Task;
 
         await requestStream.ExpectReceiveEndOfStream();
@@ -1485,9 +1485,9 @@ public class Http3StreamTests : Http3TestBase
     [Fact]
     public async Task CompleteAsync_AfterPipeWrite_WithTrailers_SendsBodyAndTrailersWithEndStream()
     {
-        var startingTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var appTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var clientTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var startingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
         {
                 new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
@@ -1498,7 +1498,7 @@ public class Http3StreamTests : Http3TestBase
         {
             try
             {
-                context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
+                context.Response.OnStarting(() => { startingTcs.SetResult(); return Task.CompletedTask; });
 
                 var buffer = context.Response.BodyWriter.GetMemory();
                 var length = Encoding.UTF8.GetBytes("Hello World", buffer.Span);
@@ -1517,7 +1517,7 @@ public class Http3StreamTests : Http3TestBase
 
                 // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
                 await clientTcs.Task.DefaultTimeout();
-                appTcs.SetResult(0);
+                appTcs.SetResult();
             }
             catch (Exception ex)
             {
@@ -1538,7 +1538,7 @@ public class Http3StreamTests : Http3TestBase
         var decodedTrailers = await requestStream.ExpectHeadersAsync();
         Assert.Equal("Custom Value", decodedTrailers["CustomName"]);
 
-        clientTcs.SetResult(0);
+        clientTcs.SetResult();
         await appTcs.Task;
 
         await requestStream.ExpectReceiveEndOfStream();
@@ -1547,9 +1547,9 @@ public class Http3StreamTests : Http3TestBase
     [Fact]
     public async Task CompleteAsync_AfterBodyStarted_WithTrailers_SendsBodyAndTrailersWithEndStream()
     {
-        var startingTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var appTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var clientTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var startingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
         {
                 new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
@@ -1560,7 +1560,7 @@ public class Http3StreamTests : Http3TestBase
         {
             try
             {
-                context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
+                context.Response.OnStarting(() => { startingTcs.SetResult(); return Task.CompletedTask; });
 
                 await context.Response.WriteAsync("Hello World");
                 Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
@@ -1574,7 +1574,7 @@ public class Http3StreamTests : Http3TestBase
 
                 // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
                 await clientTcs.Task.DefaultTimeout();
-                appTcs.SetResult(0);
+                appTcs.SetResult();
             }
             catch (Exception ex)
             {
@@ -1595,7 +1595,7 @@ public class Http3StreamTests : Http3TestBase
         var decodedTrailers = await requestStream.ExpectHeadersAsync();
         Assert.Equal("Custom Value", decodedTrailers["CustomName"]);
 
-        clientTcs.SetResult(0);
+        clientTcs.SetResult();
         await appTcs.Task;
 
         await requestStream.ExpectReceiveEndOfStream();
@@ -1604,9 +1604,9 @@ public class Http3StreamTests : Http3TestBase
     [Fact]
     public async Task CompleteAsync_AfterBodyStarted_WithTrailers_TruncatedContentLength_ThrowsAndReset()
     {
-        var startingTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var appTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var clientTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var startingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
         {
                 new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
@@ -1617,7 +1617,7 @@ public class Http3StreamTests : Http3TestBase
         {
             try
             {
-                context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
+                context.Response.OnStarting(() => { startingTcs.SetResult(); return Task.CompletedTask; });
 
                 context.Response.ContentLength = 25;
                 await context.Response.WriteAsync("Hello World");
@@ -1633,7 +1633,7 @@ public class Http3StreamTests : Http3TestBase
 
                 // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
                 await clientTcs.Task.DefaultTimeout();
-                appTcs.SetResult(0);
+                appTcs.SetResult();
             }
             catch (Exception ex)
             {
@@ -1652,7 +1652,7 @@ public class Http3StreamTests : Http3TestBase
         var data = await requestStream.ExpectDataAsync();
         Assert.Equal("Hello World", Encoding.UTF8.GetString(data.Span));
 
-        clientTcs.SetResult(0);
+        clientTcs.SetResult();
 
         await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.InternalError,
             expectedErrorMessage: CoreStrings.FormatTooFewBytesWritten(11, 25));
@@ -1663,9 +1663,9 @@ public class Http3StreamTests : Http3TestBase
     [Fact]
     public async Task PipeWriterComplete_AfterBodyStarted_WithTrailers_TruncatedContentLength_ThrowsAndReset()
     {
-        var startingTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var appTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var clientTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var startingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
         {
                 new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
@@ -1677,7 +1677,7 @@ public class Http3StreamTests : Http3TestBase
         {
             try
             {
-                context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
+                context.Response.OnStarting(() => { startingTcs.SetResult(); return Task.CompletedTask; });
 
                 context.Response.ContentLength = 25;
                 await context.Response.WriteAsync("Hello World");
@@ -1693,7 +1693,7 @@ public class Http3StreamTests : Http3TestBase
 
                 // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
                 await clientTcs.Task.DefaultTimeout();
-                appTcs.SetResult(0);
+                appTcs.SetResult();
             }
             catch (Exception ex)
             {
@@ -1712,7 +1712,7 @@ public class Http3StreamTests : Http3TestBase
         var data = await requestStream.ExpectDataAsync();
         Assert.Equal("Hello World", Encoding.UTF8.GetString(data.Span));
 
-        clientTcs.SetResult(0);
+        clientTcs.SetResult();
 
         await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.InternalError,
             expectedErrorMessage: CoreStrings.FormatTooFewBytesWritten(11, 25));
@@ -1723,9 +1723,9 @@ public class Http3StreamTests : Http3TestBase
     [Fact]
     public async Task AbortAfterCompleteAsync_GETWithResponseBodyAndTrailers_ResetsAfterResponse()
     {
-        var startingTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var appTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var clientTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var startingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
         {
                 new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
@@ -1736,7 +1736,7 @@ public class Http3StreamTests : Http3TestBase
         {
             try
             {
-                context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
+                context.Response.OnStarting(() => { startingTcs.SetResult(); return Task.CompletedTask; });
 
                 await context.Response.WriteAsync("Hello World");
                 Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
@@ -1754,7 +1754,7 @@ public class Http3StreamTests : Http3TestBase
 
                 // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
                 await clientTcs.Task.DefaultTimeout();
-                appTcs.SetResult(0);
+                appTcs.SetResult();
             }
             catch (Exception ex)
             {
@@ -1777,16 +1777,16 @@ public class Http3StreamTests : Http3TestBase
 
         await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.InternalError, expectedErrorMessage: null);
 
-        clientTcs.SetResult(0);
+        clientTcs.SetResult();
         await appTcs.Task;
     }
 
     [Fact]
     public async Task AbortAfterCompleteAsync_POSTWithResponseBodyAndTrailers_RequestBodyThrows()
     {
-        var startingTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var appTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var clientTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var startingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
         {
                 new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
@@ -1799,7 +1799,7 @@ public class Http3StreamTests : Http3TestBase
             {
                 var requestBodyTask = context.Request.BodyReader.ReadAsync();
 
-                context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
+                context.Response.OnStarting(() => { startingTcs.SetResult(); return Task.CompletedTask; });
 
                 await context.Response.WriteAsync("Hello World");
                 Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
@@ -1820,7 +1820,7 @@ public class Http3StreamTests : Http3TestBase
 
                 // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
                 await clientTcs.Task.DefaultTimeout();
-                appTcs.SetResult(0);
+                appTcs.SetResult();
             }
             catch (Exception ex)
             {
@@ -1843,16 +1843,16 @@ public class Http3StreamTests : Http3TestBase
 
         await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.InternalError, expectedErrorMessage: null);
 
-        clientTcs.SetResult(0);
+        clientTcs.SetResult();
         await appTcs.Task;
     }
 
     [Fact]
     public async Task ResetAfterCompleteAsync_GETWithResponseBodyAndTrailers_ResetsAfterResponse()
     {
-        var startingTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var appTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var clientTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var startingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
         {
                 new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
@@ -1863,7 +1863,7 @@ public class Http3StreamTests : Http3TestBase
         {
             try
             {
-                context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
+                context.Response.OnStarting(() => { startingTcs.SetResult(); return Task.CompletedTask; });
 
                 await context.Response.WriteAsync("Hello World");
                 Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
@@ -1883,7 +1883,7 @@ public class Http3StreamTests : Http3TestBase
 
                 // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
                 await clientTcs.Task.DefaultTimeout();
-                appTcs.SetResult(0);
+                appTcs.SetResult();
             }
             catch (Exception ex)
             {
@@ -1908,16 +1908,16 @@ public class Http3StreamTests : Http3TestBase
             Http3ErrorCode.NoError,
             expectedErrorMessage: "The HTTP/3 stream was reset by the application with error code H3_NO_ERROR.");
 
-        clientTcs.SetResult(0);
+        clientTcs.SetResult();
         await appTcs.Task;
     }
 
     [Fact]
     public async Task ResetAfterCompleteAsync_POSTWithResponseBodyAndTrailers_RequestBodyThrows()
     {
-        var startingTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var appTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var clientTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var startingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var headers = new[]
         {
                 new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
@@ -1930,7 +1930,7 @@ public class Http3StreamTests : Http3TestBase
             {
                 var requestBodyTask = context.Request.BodyReader.ReadAsync();
 
-                context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
+                context.Response.OnStarting(() => { startingTcs.SetResult(); return Task.CompletedTask; });
 
                 await context.Response.WriteAsync("Hello World");
                 Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
@@ -1953,7 +1953,7 @@ public class Http3StreamTests : Http3TestBase
 
                 // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
                 await clientTcs.Task.DefaultTimeout();
-                appTcs.SetResult(0);
+                appTcs.SetResult();
             }
             catch (Exception ex)
             {
@@ -1978,7 +1978,7 @@ public class Http3StreamTests : Http3TestBase
             Http3ErrorCode.NoError,
             expectedErrorMessage: "The HTTP/3 stream was reset by the application with error code H3_NO_ERROR.");
 
-        clientTcs.SetResult(0);
+        clientTcs.SetResult();
         await appTcs.Task;
     }
 
@@ -2762,9 +2762,9 @@ public class Http3StreamTests : Http3TestBase
     [Fact]
     public async Task PostRequest_ServerReadsPartialAndFinishes_SendsBodyWithEndStream()
     {
-        var startingTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var appTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var clientTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var startingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var clientTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(async context =>
         {
@@ -2780,7 +2780,7 @@ public class Http3StreamTests : Http3TestBase
 
                 await context.Response.Body.WriteAsync(buffer.AsMemory(0, 100));
                 await clientTcs.Task.DefaultTimeout();
-                appTcs.SetResult(0);
+                appTcs.SetResult();
             }
             catch (Exception ex)
             {
@@ -2810,7 +2810,7 @@ public class Http3StreamTests : Http3TestBase
 
         Assert.Equal(sourceData.AsMemory(0, 100).ToArray(), data.ToArray());
 
-        clientTcs.SetResult(0);
+        clientTcs.SetResult();
         await appTcs.Task;
 
         await requestStream.ExpectReceiveEndOfStream();

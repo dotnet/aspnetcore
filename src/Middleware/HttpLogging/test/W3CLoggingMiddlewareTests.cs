@@ -1,21 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Hosting.Internal;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.HttpLogging;
 
@@ -36,7 +28,6 @@ public class W3CLoggingMiddlewareTests
             },
             null,
             new TestW3CLogger(options, new HostingEnvironment(), NullLoggerFactory.Instance)));
-
 
         Assert.Throws<ArgumentNullException>(() => new W3CLoggingMiddleware(c =>
             {

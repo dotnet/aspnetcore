@@ -1,11 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Microsoft.AspNetCore.Mvc;
 
 public class NonSeekableReadStream : Stream
@@ -76,6 +71,11 @@ public class NonSeekableReadStream : Stream
     {
         count = Math.Max(count, 1);
         return _inner.ReadAsync(buffer, offset, count, cancellationToken);
+    }
+
+    public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken)
+    {
+        return _inner.ReadAsync(buffer, cancellationToken);
     }
 }
 

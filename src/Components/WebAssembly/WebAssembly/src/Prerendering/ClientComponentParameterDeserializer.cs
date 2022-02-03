@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
@@ -77,13 +75,13 @@ internal class WebAssemblyComponentParameterDeserializer
     [DynamicDependency(JsonSerialized, typeof(ComponentParameter))]
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "The correct members will be preserved by the above DynamicDependency.")]
     // This should use JSON source generation
-    public ComponentParameter[] GetParameterDefinitions(string parametersDefinitions)
+    public static ComponentParameter[] GetParameterDefinitions(string parametersDefinitions)
     {
         return JsonSerializer.Deserialize<ComponentParameter[]>(parametersDefinitions, WebAssemblyComponentSerializationSettings.JsonSerializationOptions)!;
     }
 
     [RequiresUnreferencedCode("This API attempts to JSON deserialize types which might be trimmed.")]
-    public IList<object> GetParameterValues(string parameterValues)
+    public static IList<object> GetParameterValues(string parameterValues)
     {
         return JsonSerializer.Deserialize<IList<object>>(parameterValues, WebAssemblyComponentSerializationSettings.JsonSerializationOptions)!;
     }

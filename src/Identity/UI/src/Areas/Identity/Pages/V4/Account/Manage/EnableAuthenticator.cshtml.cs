@@ -1,13 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
@@ -143,7 +141,7 @@ internal class EnableAuthenticatorModel<TUser> : EnableAuthenticatorModel where 
         }
 
         await _userManager.SetTwoFactorEnabledAsync(user, true);
-        var userId = await _userManager.GetUserIdAsync(user);
+        await _userManager.GetUserIdAsync(user);
         _logger.LogInformation(LoggerEventIds.TwoFAEnabled, "User has enabled 2FA with an authenticator app.");
 
         StatusMessage = "Your authenticator app has been verified.";
@@ -176,7 +174,7 @@ internal class EnableAuthenticatorModel<TUser> : EnableAuthenticatorModel where 
         AuthenticatorUri = GenerateQrCodeUri(email, unformattedKey);
     }
 
-    private string FormatKey(string unformattedKey)
+    private static string FormatKey(string unformattedKey)
     {
         var result = new StringBuilder();
         int currentPosition = 0;

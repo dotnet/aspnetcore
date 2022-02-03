@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
 using System.Buffers.Binary;
 using System.Diagnostics;
@@ -203,8 +202,8 @@ internal static partial class HttpUtilities
             {
                 var value = BinaryPrimitives.ReadUInt64LittleEndian(span);
                 var index = GetKnownMethodIndex(value);
-                var knownMehods = _knownMethods;
-                if ((uint)index < (uint)knownMehods.Length)
+                var knownMethods = _knownMethods;
+                if ((uint)index < (uint)knownMethods.Length)
                 {
                     var knownMethod = _knownMethods[index];
 

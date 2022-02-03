@@ -1,17 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 // See the details of the component serialization protocol in WebAssemblyComponentDeserializer.cs on the Components solution.
 internal class WebAssemblyComponentSerializer
 {
-    public WebAssemblyComponentMarker SerializeInvocation(Type type, ParameterView parameters, bool prerendered)
+    public static WebAssemblyComponentMarker SerializeInvocation(Type type, ParameterView parameters, bool prerendered)
     {
         var assembly = type.Assembly.GetName().Name;
         var typeFullName = type.FullName;
@@ -26,49 +25,25 @@ internal class WebAssemblyComponentSerializer
             WebAssemblyComponentMarker.NonPrerendered(assembly, typeFullName, serializedDefinitions, serializedValues);
     }
 
-    internal IEnumerable<string> GetPreamble(WebAssemblyComponentMarker record)
+    internal static void AppendPreamble(ViewBuffer viewBuffer, WebAssemblyComponentMarker record)
     {
         var serializedStartRecord = JsonSerializer.Serialize(
             record,
             WebAssemblyComponentSerializationSettings.JsonSerializationOptions);
 
-        if (record.PrerenderId != null)
-        {
-            return PrerenderedStart(serializedStartRecord);
-        }
-        else
-        {
-            return NonPrerenderedSequence(serializedStartRecord);
-        }
-
-        static IEnumerable<string> PrerenderedStart(string startRecord)
-        {
-            yield return "<!--Blazor:";
-            yield return startRecord;
-            yield return "-->";
-        }
-
-        static IEnumerable<string> NonPrerenderedSequence(string record)
-        {
-            yield return "<!--Blazor:";
-            yield return record;
-            yield return "-->";
-        }
+        viewBuffer.AppendHtml("<!--Blazor:");
+        viewBuffer.AppendHtml(serializedStartRecord);
+        viewBuffer.AppendHtml("-->");
     }
 
-    internal IEnumerable<string> GetEpilogue(WebAssemblyComponentMarker record)
+    internal static void AppendEpilogue(ViewBuffer viewBuffer, WebAssemblyComponentMarker record)
     {
-        var serializedStartRecord = JsonSerializer.Serialize(
+        var endRecord = JsonSerializer.Serialize(
             record.GetEndRecord(),
             WebAssemblyComponentSerializationSettings.JsonSerializationOptions);
 
-        return PrerenderEnd(serializedStartRecord);
-
-        static IEnumerable<string> PrerenderEnd(string endRecord)
-        {
-            yield return "<!--Blazor:";
-            yield return endRecord;
-            yield return "-->";
-        }
+        viewBuffer.AppendHtml("<!--Blazor:");
+        viewBuffer.AppendHtml(endRecord);
+        viewBuffer.AppendHtml("-->");
     }
 }

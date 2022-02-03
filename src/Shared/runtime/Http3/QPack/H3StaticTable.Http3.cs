@@ -48,7 +48,7 @@ namespace System.Net.Http.QPack
         // TODO: just use Dictionary directly to avoid interface dispatch.
         public static IReadOnlyDictionary<HttpMethod, int> MethodIndex => s_methodIndex;
 
-        public static ref HeaderField Get(int index) => ref s_staticTable[index];
+        public static ref readonly HeaderField Get(int index) => ref s_staticTable[index];
 
         private static readonly HeaderField[] s_staticTable = new HeaderField[]
         {

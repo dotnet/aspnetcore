@@ -3,11 +3,8 @@
 
 #nullable enable
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.ExceptionServices;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Internal;
@@ -549,7 +546,7 @@ internal class ControllerActionInvoker : ResourceInvoker, IActionInvoker
         {
             var parameterInfo = declaredParameterInfos[index];
 
-            if (!actionParameters.TryGetValue(parameterInfo.Name!, out var value))
+            if (!actionParameters.TryGetValue(parameterInfo.Name!, out var value) || value is null)
             {
                 value = actionMethodExecutor.GetDefaultValueForParameter(index);
             }

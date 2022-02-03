@@ -252,7 +252,6 @@ public class RazorPagesTemplateTest : LoggedTest
         return project;
     }
 
-
     private string ReadFile(string basePath, string path)
     {
         var fullPath = Path.Combine(basePath, path);

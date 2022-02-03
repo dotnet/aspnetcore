@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Linq;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
@@ -45,7 +44,7 @@ internal class AuthorizationPageApplicationModelProvider : IPageApplicationModel
         {
             pageModel.Filters.Add(AuthorizationApplicationModelProvider.GetFilter(_policyProvider, authorizeData));
         }
-        foreach (var attribute in pageModel.HandlerTypeAttributes.OfType<IAllowAnonymous>())
+        foreach (var _ in pageModel.HandlerTypeAttributes.OfType<IAllowAnonymous>())
         {
             pageModel.Filters.Add(new AllowAnonymousFilter());
         }

@@ -6,16 +6,15 @@
     <HelixQueueFedora34>(Fedora.34.Amd64.Open)Ubuntu.1804.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-34-helix-20210924174119-4f64125</HelixQueueFedora34>
     <HelixQueueMariner>(Mariner)Ubuntu.1804.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-1.0-helix-20210528192219-92bf620</HelixQueueMariner>
     <HelixQueueArmDebian11>(Debian.11.Arm64.Open)Ubuntu.1804.Armarch.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-11-helix-arm64v8-20211001171229-97d8652</HelixQueueArmDebian11>
+
+    <!-- Do not attempt to override global property. -->
+    <RunQuarantinedTests Condition=" '$(RunQuarantinedTests)' == '' ">false</RunQuarantinedTests>
   </PropertyGroup>
 
-  <!-- Don't use <Choose/> for $(IsWindowsOnlyTest) checks. <When/> Condition is evaluated before project load. -->
-  <ItemGroup Condition=" '$(IsWindowsOnlyTest)' != 'true' ">
+  <ItemGroup>
     <HelixAvailablePlatform Include="Windows" />
     <HelixAvailablePlatform Include="OSX" />
     <HelixAvailablePlatform Include="Linux" />
-  </ItemGroup>
-  <ItemGroup Condition=" '$(IsWindowsOnlyTest)' == 'true' ">
-    <HelixAvailablePlatform Include="Windows" />
   </ItemGroup>
 
   <!--
@@ -59,6 +58,23 @@
         <HelixAvailableTargetQueue Include="Windows.10.Arm64v8.Open" Platform="Windows"
             Condition=" '$(IsWindowsOnlyTest)' != 'true' "/>
       </ItemGroup>
+    </Otherwise>
+  </Choose>
+
+  <Choose>
+    <When Condition=" '$(HelixTargetQueue)' == '' ">
+      <PropertyGroup>
+        <IsArm64HelixQueue>false</IsArm64HelixQueue>
+        <IsWindowsHelixQueue>false</IsWindowsHelixQueue>
+        <IsMacHelixQueue>false</IsMacHelixQueue>
+      </PropertyGroup>
+    </When>
+    <Otherwise>
+      <PropertyGroup>
+        <IsArm64HelixQueue>$(HelixTargetQueue.Contains('Arm64'))</IsArm64HelixQueue>
+        <IsWindowsHelixQueue>$(HelixTargetQueue.Contains('Windows'))</IsWindowsHelixQueue>
+        <IsMacHelixQueue>$(HelixTargetQueue.Contains('OSX'))</IsMacHelixQueue>
+      </PropertyGroup>
     </Otherwise>
   </Choose>
 </Project>

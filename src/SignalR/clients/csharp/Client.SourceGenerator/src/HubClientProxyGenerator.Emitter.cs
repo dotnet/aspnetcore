@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
@@ -186,7 +185,6 @@ namespace {_spec.SetterNamespace}
                 {
                     lambaParams.Append("()");
                 }
-
 
                 var lambda = $"{lambaParams} => provider.{member.Name}{lambaParams}";
                 var call = $"connection.On{genericArgs}(\"{member.Name}\", {lambda})";

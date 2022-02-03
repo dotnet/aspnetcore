@@ -3,10 +3,7 @@
 
 #nullable disable
 
-using System;
-using System.Collections.Generic;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
@@ -91,7 +88,6 @@ public partial class TreeRouter : IRouter
 
         foreach (var entry in linkGenerationEntries)
         {
-
             var binder = new TemplateBinder(urlEncoder, objectPool, entry.RouteTemplate, entry.Defaults);
             var outboundMatch = new OutboundMatch() { Entry = entry, TemplateBinder = binder };
             outboundMatches.Add(outboundMatch);

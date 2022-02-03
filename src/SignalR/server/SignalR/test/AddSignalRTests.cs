@@ -111,6 +111,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             Assert.Equal(globalHubOptions.SupportedProtocols, hubOptions.SupportedProtocols);
             Assert.Equal(globalHubOptions.ClientTimeoutInterval, hubOptions.ClientTimeoutInterval);
             Assert.Equal(globalHubOptions.MaximumParallelInvocationsPerClient, hubOptions.MaximumParallelInvocationsPerClient);
+            Assert.Equal(globalHubOptions.DisableImplicitFromServiceParameters, hubOptions.DisableImplicitFromServiceParameters);
             Assert.True(hubOptions.UserHasSetValues);
         }
 
@@ -145,6 +146,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 options.SupportedProtocols = null;
                 options.ClientTimeoutInterval = TimeSpan.FromSeconds(1);
                 options.MaximumParallelInvocationsPerClient = 3;
+                options.DisableImplicitFromServiceParameters = true;
             });
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
@@ -158,6 +160,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             Assert.Null(globalOptions.SupportedProtocols);
             Assert.Equal(3, globalOptions.MaximumParallelInvocationsPerClient);
             Assert.Equal(TimeSpan.FromSeconds(1), globalOptions.ClientTimeoutInterval);
+            Assert.True(globalOptions.DisableImplicitFromServiceParameters);
         }
 
         [Fact]

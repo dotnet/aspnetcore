@@ -3,11 +3,8 @@
 
 #nullable enable
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -19,7 +16,6 @@ namespace Microsoft.AspNetCore.Routing;
 /// </summary>
 public class RouteCollection : IRouteCollection
 {
-    private static readonly char[] UrlQueryDelimiters = new char[] { '?', '#' };
     private readonly List<IRouter> _routes = new List<IRouter>();
     private readonly List<IRouter> _unnamedRoutes = new List<IRouter>();
     private readonly Dictionary<string, INamedRouter> _namedRoutes =
@@ -160,7 +156,7 @@ public class RouteCollection : IRouteCollection
 
         if (!string.IsNullOrEmpty(url) && (_options.LowercaseUrls || _options.AppendTrailingSlash))
         {
-            var indexOfSeparator = url.IndexOfAny(UrlQueryDelimiters);
+            var indexOfSeparator = url.AsSpan().IndexOfAny('?', '#');
             var urlWithoutQueryString = url;
             var queryString = string.Empty;
 

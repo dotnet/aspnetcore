@@ -1,18 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
 using Microsoft.AspNetCore.Testing;
@@ -59,7 +51,7 @@ public class IISExpressDeployer : IISDeployerBase
             // and contentRoot points to the project directory so you get things like static assets.
             // For a published app both point to the publish directory.
             var dllRoot = CheckIfPublishIsRequired();
-            var contentRoot = string.Empty;
+            string contentRoot;
             if (DeploymentParameters.PublishApplicationBeforeDeployment)
             {
                 DotnetPublish();
@@ -74,7 +66,7 @@ public class IISExpressDeployer : IISDeployerBase
                 var executableExtension = DeploymentParameters.ApplicationType == ApplicationType.Portable ? ".dll" : ".exe";
                 var entryPoint = Path.Combine(dllRoot, DeploymentParameters.ApplicationName + executableExtension);
 
-                var executableName = string.Empty;
+                string executableName;
                 var executableArgs = string.Empty;
 
                 if (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.CoreClr && DeploymentParameters.ApplicationType == ApplicationType.Portable)
@@ -97,7 +89,6 @@ public class IISExpressDeployer : IISDeployerBase
             }
 
             RunWebConfigActions(contentRoot);
-
 
             // Launch the host process.
             var (actualUri, hostExitToken) = await StartIISExpressAsync(contentRoot);

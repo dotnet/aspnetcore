@@ -15,7 +15,7 @@ public class ClientProcess : IDisposable
 {
     private readonly Process _process;
     private readonly ProcessEx _processEx;
-    private readonly TaskCompletionSource<object> _startTcs;
+    private readonly TaskCompletionSource _startTcs;
     private readonly StringBuilder _output;
     private readonly object _outputLock = new object();
 
@@ -38,7 +38,7 @@ public class ClientProcess : IDisposable
 
         _processEx = new ProcessEx(output, _process, timeout: Timeout.InfiniteTimeSpan);
 
-        _startTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        _startTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
     }
 
     public Task WaitForReadyAsync() => _startTcs.Task;
@@ -61,7 +61,7 @@ public class ClientProcess : IDisposable
         {
             if (data.Contains("Application started."))
             {
-                _startTcs.TrySetResult(null);
+                _startTcs.TrySetResult();
             }
 
             lock (_outputLock)

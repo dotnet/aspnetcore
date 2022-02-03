@@ -1,16 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.Contracts;
-using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -191,7 +186,7 @@ public class ClientHandler : HttpMessageHandler
         var httpContext = await contextBuilder.SendAsync(cancellationToken);
 
         response.StatusCode = (HttpStatusCode)httpContext.Response.StatusCode;
-        response.ReasonPhrase = httpContext.Features.Get<IHttpResponseFeature>()!.ReasonPhrase;
+        response.ReasonPhrase = httpContext.Features.GetRequiredFeature<IHttpResponseFeature>().ReasonPhrase;
         response.RequestMessage = request;
         response.Version = request.Version;
 

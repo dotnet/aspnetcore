@@ -1,15 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.WebSockets;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -19,7 +14,6 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
-using Xunit;
 
 namespace Microsoft.AspNetCore.TestHost;
 
@@ -327,7 +321,7 @@ public class TestClientTests
     public async Task ClientStreaming_ResponseCompletesWithoutReadingRequest()
     {
         // Arrange
-        var requestStreamTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var requestStreamTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var responseEndingSyncPoint = new SyncPoint();
 
         RequestDelegate appDelegate = async ctx =>
@@ -368,7 +362,7 @@ public class TestClientTests
             try
             {
                 await requestStream.WriteAsync(Encoding.UTF8.GetBytes(new string('!', 1024 * 1024 * 50))).AsTask().DefaultTimeout();
-                requestStreamTcs.SetResult(null);
+                requestStreamTcs.SetResult();
             }
             catch (Exception ex)
             {
@@ -389,7 +383,7 @@ public class TestClientTests
     public async Task ClientStreaming_ResponseCompletesWithPendingRead_ThrowError()
     {
         // Arrange
-        var requestStreamTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var requestStreamTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         RequestDelegate appDelegate = async ctx =>
         {
@@ -430,14 +424,14 @@ public class TestClientTests
         Assert.Equal("An error occurred when completing the request. Request delegate may have finished while there is a pending read of the request body.", ex.InnerException.Message);
 
         // Unblock request
-        requestStreamTcs.TrySetResult(null);
+        requestStreamTcs.TrySetResult();
     }
 
     [Fact]
     public async Task ClientStreaming_ResponseCompletesWithoutResponseBodyWrite()
     {
         // Arrange
-        var requestStreamTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var requestStreamTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         RequestDelegate appDelegate = ctx =>
         {
@@ -477,7 +471,7 @@ public class TestClientTests
         await Assert.ThrowsAnyAsync<Exception>(() => requestStream.WriteAsync(buffer).AsTask());
 
         // Unblock request
-        requestStreamTcs.TrySetResult(null);
+        requestStreamTcs.TrySetResult();
     }
 
     [Fact]
@@ -810,7 +804,7 @@ public class TestClientTests
     public async Task ClientDisposalAbortsRequest()
     {
         // Arrange
-        var tcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         RequestDelegate appDelegate = async ctx =>
         {
             // Write Headers
@@ -843,13 +837,13 @@ public class TestClientTests
     [Fact]
     public async Task ClientCancellationAbortsRequest()
     {
-        var tcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var builder = new WebHostBuilder().Configure(app => app.Run(async ctx =>
         {
             try
             {
                 await Task.Delay(TimeSpan.FromSeconds(30), ctx.RequestAborted);
-                tcs.SetResult(0);
+                tcs.SetResult();
             }
             catch (Exception e)
             {

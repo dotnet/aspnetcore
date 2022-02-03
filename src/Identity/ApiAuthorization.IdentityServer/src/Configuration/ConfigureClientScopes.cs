@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Linq;
 using Duende.IdentityServer.Models;
 using Microsoft.Extensions.Logging;
@@ -11,7 +10,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Configuration;
 
 internal class ConfigureClientScopes : IPostConfigureOptions<ApiAuthorizationOptions>
 {
-    private static readonly char[] DefaultClientListSeparator = new char[] { ' ' };
+    private const char DefaultClientListSeparator = ' ';
     private readonly ILogger<ConfigureClientScopes> _logger;
 
     public ConfigureClientScopes(ILogger<ConfigureClientScopes> logger)

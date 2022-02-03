@@ -1,11 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using System.Runtime.InteropServices;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.FileProviders;
 using PhotinoNET;
@@ -53,7 +49,7 @@ internal class PhotinoWebViewManager : WebViewManager
         var hasFileExtension = url.LastIndexOf('.') > url.LastIndexOf('/');
 
         if (url.StartsWith(AppBaseUri, StringComparison.Ordinal)
-            && TryGetResponseContent(url, !hasFileExtension, out var statusCode, out var statusMessage, out var content, out var headers))
+            && TryGetResponseContent(url, !hasFileExtension, out _, out _, out var content, out var headers))
         {
             headers.TryGetValue("Content-Type", out contentType);
             return content;

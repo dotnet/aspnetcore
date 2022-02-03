@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -66,8 +65,7 @@ internal class RewriteRule : IRule
                 HostString host;
                 PathString pathString;
                 QueryString query;
-                FragmentString fragment;
-                UriHelper.FromAbsolute(result, out scheme, out host, out pathString, out query, out fragment);
+                UriHelper.FromAbsolute(result, out scheme, out host, out pathString, out query, out _);
 
                 request.Scheme = scheme;
                 request.Host = host;

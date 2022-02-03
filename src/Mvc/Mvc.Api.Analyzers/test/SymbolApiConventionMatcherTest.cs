@@ -1,12 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Analyzer.Testing;
 using Microsoft.CodeAnalysis;
-using Xunit;
 using static Microsoft.AspNetCore.Mvc.Api.Analyzers.SymbolApiConventionMatcher;
 
 namespace Microsoft.AspNetCore.Mvc.Api.Analyzers;
@@ -310,7 +305,6 @@ public class SymbolApiConventionMatcherTest
 
         var type = compilation.GetTypeByMetadataName(DerivedTypeName);
         var conventionType = compilation.GetTypeByMetadataName(BaseTypeName);
-
 
         // Act
         var result = IsTypeMatch(type, conventionType, SymbolApiConventionTypeMatchBehavior.AssignableFrom);

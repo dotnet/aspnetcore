@@ -1,18 +1,14 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.HostFiltering;
 
@@ -127,7 +123,7 @@ public class HostFilteringMiddleware
     }
 
     // returns false if any wildcards were found
-    private bool TryProcessHosts(IEnumerable<string> incoming, IList<StringSegment> results)
+    private static bool TryProcessHosts(IEnumerable<string> incoming, IList<StringSegment> results)
     {
         foreach (var entry in incoming)
         {
@@ -149,7 +145,7 @@ public class HostFilteringMiddleware
         return true;
     }
 
-    private bool IsTopLevelWildcard(string host)
+    private static bool IsTopLevelWildcard(string host)
     {
         return (string.Equals("*", host, StringComparison.Ordinal) // HttpSys wildcard
                        || string.Equals("[::]", host, StringComparison.Ordinal) // Kestrel wildcard, IPv6 Any

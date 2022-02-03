@@ -1,13 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
@@ -378,14 +374,12 @@ internal class ViewBuffer : IHtmlContentBuilder
                 // Now we can return the source page, and it can be reused in the scope of this request.
                 Array.Clear(page.Buffer, 0, page.Count);
                 _bufferScope.ReturnSegment(page.Buffer);
-
             }
             else
             {
                 // Otherwise, let's just add the source page to the other buffer.
                 destination.AddPage(page);
             }
-
         }
 
         Clear();

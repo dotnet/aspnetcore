@@ -1,12 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace HealthChecksSample;
 
@@ -45,7 +40,6 @@ public class LivenessProbeStartup
         //
         // In this example, the readiness check will run all registered checks, include a check with a 
         // long initialization time (15 seconds).
-
 
         // The readiness check uses all registered checks with the 'ready' tag.
         app.UseHealthChecks("/health/ready", new HealthCheckOptions()

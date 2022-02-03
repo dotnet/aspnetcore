@@ -1,11 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.FileProviders;
@@ -143,7 +139,7 @@ public static class SendFileResponseExtensions
     {
         var useRequestAborted = !cancellationToken.CanBeCanceled;
         var localCancel = useRequestAborted ? response.HttpContext.RequestAborted : cancellationToken;
-        var sendFile = response.HttpContext.Features.Get<IHttpResponseBodyFeature>()!;
+        var sendFile = response.HttpContext.Features.GetRequiredFeature<IHttpResponseBodyFeature>();
 
         try
         {

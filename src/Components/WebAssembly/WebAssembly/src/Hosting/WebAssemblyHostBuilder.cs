@@ -1,11 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -121,8 +118,8 @@ public sealed class WebAssemblyHostBuilder
                     $"This is likely a result of trimming (tree shaking).");
             }
 
-            var definitions = componentDeserializer.GetParameterDefinitions(registeredComponent.ParameterDefinitions!);
-            var values = componentDeserializer.GetParameterValues(registeredComponent.ParameterValues!);
+            var definitions = WebAssemblyComponentParameterDeserializer.GetParameterDefinitions(registeredComponent.ParameterDefinitions!);
+            var values = WebAssemblyComponentParameterDeserializer.GetParameterValues(registeredComponent.ParameterValues!);
             var parameters = componentDeserializer.DeserializeParameters(definitions, values);
 
             RootComponents.Add(componentType, registeredComponent.PrerenderId!, parameters);
@@ -134,7 +131,7 @@ public sealed class WebAssemblyHostBuilder
         _persistedState = jsRuntime.InvokeUnmarshalled<string>("Blazor._internal.getPersistedState");
     }
 
-    private void InitializeNavigationManager(IJSUnmarshalledRuntime jsRuntime)
+    private static void InitializeNavigationManager(IJSUnmarshalledRuntime jsRuntime)
     {
         var baseUri = jsRuntime.InvokeUnmarshalled<string>(BrowserNavigationManagerInterop.GetBaseUri);
         var uri = jsRuntime.InvokeUnmarshalled<string>(BrowserNavigationManagerInterop.GetLocationHref);

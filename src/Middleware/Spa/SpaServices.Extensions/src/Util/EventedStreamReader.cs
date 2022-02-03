@@ -1,12 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.NodeServices.Util;
 
@@ -95,8 +91,8 @@ internal class EventedStreamReader
 
             OnChunk(new ArraySegment<char>(buf, 0, chunkLength));
 
-            int lineBreakPos = -1;
-            int startPos = 0;
+            int lineBreakPos;
+            var startPos = 0;
 
             // get all the newlines
             while ((lineBreakPos = Array.IndexOf(buf, '\n', startPos, chunkLength - startPos)) >= 0 && startPos < chunkLength)

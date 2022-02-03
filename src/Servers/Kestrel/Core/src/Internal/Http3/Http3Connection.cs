@@ -1,24 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.IO.Pipelines;
 using System.Net;
 using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 
@@ -58,7 +50,7 @@ internal class Http3Connection : IHttp3StreamLifetimeHandler, IRequestProcessor
         _context = context;
         _streamLifetimeHandler = this;
 
-        _errorCodeFeature = context.ConnectionFeatures.Get<IProtocolErrorCodeFeature>()!;
+        _errorCodeFeature = context.ConnectionFeatures.GetRequiredFeature<IProtocolErrorCodeFeature>();
 
         var httpLimits = context.ServiceContext.ServerOptions.Limits;
 
@@ -308,7 +300,7 @@ internal class Http3Connection : IHttp3StreamLifetimeHandler, IRequestProcessor
                         if (_gracefulCloseStarted)
                         {
                             // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1.2-3
-                            streamContext.Features.Get<IProtocolErrorCodeFeature>()!.Error = (long)Http3ErrorCode.RequestRejected;
+                            streamContext.Features.GetRequiredFeature<IProtocolErrorCodeFeature>().Error = (long)Http3ErrorCode.RequestRejected;
                             streamContext.Abort(new ConnectionAbortedException("HTTP/3 connection is closing and no longer accepts new requests."));
                             await streamContext.DisposeAsync();
 
@@ -438,7 +430,7 @@ internal class Http3Connection : IHttp3StreamLifetimeHandler, IRequestProcessor
         }
     }
 
-    private ConnectionAbortedException CreateConnectionAbortError(Exception? error, bool clientAbort)
+    private static ConnectionAbortedException CreateConnectionAbortError(Exception? error, bool clientAbort)
     {
         if (error is ConnectionAbortedException abortedException)
         {

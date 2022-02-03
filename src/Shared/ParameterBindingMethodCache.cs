@@ -43,9 +43,9 @@ internal sealed class ParameterBindingMethodCache
         _enumTryParseMethod = GetEnumTryParseMethod(preferNonGenericEnumParseOverload);
     }
 
-    public bool HasTryParseMethod(ParameterInfo parameter)
+    public bool HasTryParseMethod(Type type)
     {
-        var nonNullableParameterType = Nullable.GetUnderlyingType(parameter.ParameterType) ?? parameter.ParameterType;
+        var nonNullableParameterType = Nullable.GetUnderlyingType(type) ?? type;
         return FindTryParseMethod(nonNullableParameterType) is not null;
     }
 
@@ -84,7 +84,6 @@ internal sealed class ParameterBindingMethodCache
                         Expression.Condition(success, Expression.Convert(enumAsObject, type), Expression.Default(type))),
                     success);
                 };
-
             }
 
             if (TryGetDateTimeTryParseMethod(type, out methodInfo))

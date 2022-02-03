@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using Microsoft.Extensions.Primitives;
@@ -248,8 +246,7 @@ public class EntityTagHeaderValue
             }
 
             var tagStartIndex = current;
-            var tagLength = 0;
-            if (HttpRuleParser.GetQuotedStringLength(input, current, out tagLength) != HttpParseResult.Parsed)
+            if (HttpRuleParser.GetQuotedStringLength(input, current, out var tagLength) != HttpParseResult.Parsed)
             {
                 return 0;
             }

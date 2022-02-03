@@ -3,8 +3,6 @@
 
 using System.Net;
 using System.Net.Http;
-using System.Threading.Tasks;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Diagnostics.FunctionalTests;
 
@@ -16,7 +14,6 @@ public class DeveloperExceptionPageSampleTest : IClassFixture<TestFixture<Develo
     }
 
     public HttpClient Client { get; }
-
 
     [Fact]
     public async Task DeveloperExceptionPage_ShowsError()

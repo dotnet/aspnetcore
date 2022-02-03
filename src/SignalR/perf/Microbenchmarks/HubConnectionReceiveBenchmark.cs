@@ -1,11 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
 using System.IO.Pipelines;
-using System.Linq;
-using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
@@ -32,7 +29,7 @@ public class HubConnectionReceiveBenchmark
     private int _currentInterationMessageCount;
     private TaskCompletionSource<ReadResult> _tcs;
     private TaskCompletionSource<ReadResult> _nextReadTcs;
-    private TaskCompletionSource<bool> _waitTcs;
+    private TaskCompletionSource _waitTcs;
 
     [GlobalSetup]
     public void GlobalSetup()
@@ -103,7 +100,7 @@ public class HubConnectionReceiveBenchmark
             if (_currentInterationMessageCount == MessageCount)
             {
                 _currentInterationMessageCount = 0;
-                _waitTcs.SetResult(true);
+                _waitTcs.SetResult();
             }
             else if (_currentInterationMessageCount > MessageCount)
             {
@@ -144,7 +141,7 @@ public class HubConnectionReceiveBenchmark
         _nextReadTcs = new TaskCompletionSource<ReadResult>();
         _pipe.AddReadResult(new ValueTask<ReadResult>(_nextReadTcs.Task));
 
-        _waitTcs = new TaskCompletionSource<bool>();
+        _waitTcs = new TaskCompletionSource();
     }
 
     [Benchmark]

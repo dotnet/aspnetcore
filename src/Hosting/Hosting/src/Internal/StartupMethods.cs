@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,5 +22,4 @@ internal class StartupMethods
     public object? StartupInstance { get; }
     public Func<IServiceCollection, IServiceProvider> ConfigureServicesDelegate { get; }
     public Action<IApplicationBuilder> ConfigureDelegate { get; }
-
 }

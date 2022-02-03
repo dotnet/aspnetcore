@@ -498,7 +498,10 @@ public class ChunkedRequestTests : LoggedTest
         await using (var server = new TestServer(async context =>
         {
             var buffer = new byte[128];
-            while (await context.Request.Body.ReadAsync(buffer, 0, buffer.Length) != 0) ; // read to end
+            while (await context.Request.Body.ReadAsync(buffer, 0, buffer.Length) != 0)
+            {
+                // read to end
+            }
         }, testContext))
         {
             using (var connection = server.CreateConnection())
@@ -539,7 +542,10 @@ public class ChunkedRequestTests : LoggedTest
         await using (var server = new TestServer(async context =>
         {
             var buffer = new byte[128];
-            while (await context.Request.Body.ReadAsync(buffer, 0, buffer.Length) != 0) ; // read to end
+            while (await context.Request.Body.ReadAsync(buffer, 0, buffer.Length) != 0)
+            {
+                // read to end
+            }
         }, testContext))
         {
             using (var connection = server.CreateConnection())
@@ -739,7 +745,6 @@ public class ChunkedRequestTests : LoggedTest
             }
         }
     }
-
 
     [Fact]
     public async Task ChunkedNotFinalTransferCodingResultsIn400()

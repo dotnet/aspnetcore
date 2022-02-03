@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Reflection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -46,8 +44,8 @@ public static class IdentityEntityFrameworkBuilderExtensions
                 throw new InvalidOperationException(Resources.NotIdentityRole);
             }
 
-            Type userStoreType = null;
-            Type roleStoreType = null;
+            Type userStoreType;
+            Type roleStoreType;
             var identityContext = FindGenericBaseType(contextType, typeof(IdentityDbContext<,,,,,,,>));
             if (identityContext == null)
             {
@@ -74,7 +72,7 @@ public static class IdentityEntityFrameworkBuilderExtensions
         }
         else
         {   // No Roles
-            Type userStoreType = null;
+            Type userStoreType;
             var identityContext = FindGenericBaseType(contextType, typeof(IdentityUserContext<,,,,>));
             if (identityContext == null)
             {

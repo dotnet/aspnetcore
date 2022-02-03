@@ -6,13 +6,14 @@ using System.Collections;
 using System.Globalization;
 using System.Net.Http;
 using System.Net.Http.HPack;
+using System.Net.Security;
+using System.Security.Authentication;
 using System.Text;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
@@ -360,6 +361,7 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/39477")]
     public async Task StreamPool_MultipleStreamsConcurrent_StreamsReturnedToPool()
     {
         await InitializeConnectionAsync(_echoApplication);
@@ -3109,7 +3111,7 @@ public class Http2ConnectionTests : Http2TestBase
     [Fact]
     public async Task RST_STREAM_IncompleteRequest_AdditionalDataFrames_ConnectionAborted()
     {
-        var tcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         var headers = new[]
         {
@@ -3124,7 +3126,7 @@ public class Http2ConnectionTests : Http2TestBase
         await SendDataAsync(1, new byte[2], endStream: false);
         await SendRstStreamAsync(1);
         await SendDataAsync(1, new byte[10], endStream: false);
-        tcs.TrySetResult(0);
+        tcs.TrySetResult();
 
         await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(ignoreNonGoAwayFrames: false, expectedLastStreamId: 1,
             Http2ErrorCode.STREAM_CLOSED, CoreStrings.FormatHttp2ErrorStreamAborted(Http2FrameType.DATA, 1));
@@ -3133,7 +3135,7 @@ public class Http2ConnectionTests : Http2TestBase
     [Fact]
     public async Task RST_STREAM_IncompleteRequest_AdditionalTrailerFrames_ConnectionAborted()
     {
-        var tcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         var headers = new[]
         {
@@ -3148,7 +3150,7 @@ public class Http2ConnectionTests : Http2TestBase
         await SendDataAsync(1, new byte[2], endStream: false);
         await SendRstStreamAsync(1);
         await SendHeadersAsync(1, Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM, _requestTrailers);
-        tcs.TrySetResult(0);
+        tcs.TrySetResult();
 
         await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(ignoreNonGoAwayFrames: false, expectedLastStreamId: 1,
             Http2ErrorCode.STREAM_CLOSED, CoreStrings.FormatHttp2ErrorStreamAborted(Http2FrameType.HEADERS, 1));
@@ -3157,7 +3159,7 @@ public class Http2ConnectionTests : Http2TestBase
     [Fact]
     public async Task RST_STREAM_IncompleteRequest_AdditionalResetFrame_IgnoreAdditionalReset()
     {
-        var tcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         var headers = new[]
         {
@@ -3171,7 +3173,7 @@ public class Http2ConnectionTests : Http2TestBase
         await SendDataAsync(1, new byte[1], endStream: false);
         await SendRstStreamAsync(1);
         await SendRstStreamAsync(1);
-        tcs.TrySetResult(0);
+        tcs.TrySetResult();
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
     }
@@ -3179,7 +3181,7 @@ public class Http2ConnectionTests : Http2TestBase
     [Fact]
     public async Task RST_STREAM_IncompleteRequest_AdditionalWindowUpdateFrame_ConnectionAborted()
     {
-        var tcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         var headers = new[]
         {
@@ -3193,7 +3195,7 @@ public class Http2ConnectionTests : Http2TestBase
         await SendDataAsync(1, new byte[1], endStream: false);
         await SendRstStreamAsync(1);
         await SendWindowUpdateAsync(1, 1024);
-        tcs.TrySetResult(0);
+        tcs.TrySetResult();
 
         await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(ignoreNonGoAwayFrames: false, expectedLastStreamId: 1,
             Http2ErrorCode.STREAM_CLOSED, CoreStrings.FormatHttp2ErrorStreamAborted(Http2FrameType.WINDOW_UPDATE, 1));
@@ -3694,6 +3696,7 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/39520")]
     public async Task GOAWAY_Received_SetsConnectionStateToClosingAndWaitForAllStreamsToComplete()
     {
         await InitializeConnectionAsync(_echoApplication);
@@ -4624,6 +4627,7 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/39492")]
     public async Task StopProcessingNextRequestSendsGracefulGOAWAYThenFinalGOAWAYWhenAllStreamsComplete()
     {
         await InitializeConnectionAsync(_echoApplication);
@@ -4654,6 +4658,7 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/39479")]
     public async Task AcceptNewStreamsDuringClosingConnection()
     {
         await InitializeConnectionAsync(_echoApplication);
@@ -4978,7 +4983,7 @@ public class Http2ConnectionTests : Http2TestBase
     [Fact]
     public async Task RefusedStream_Post_2xLimitRefused()
     {
-        var requestBlock = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var requestBlock = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         CreateConnection();
 
@@ -5041,7 +5046,7 @@ public class Http2ConnectionTests : Http2TestBase
         await WaitForStreamErrorAsync(3, Http2ErrorCode.REFUSED_STREAM, "HTTP/2 stream ID 3 error (REFUSED_STREAM): A new stream was refused because this connection has reached its stream limit.");
         await WaitForStreamErrorAsync(5, Http2ErrorCode.REFUSED_STREAM, "HTTP/2 stream ID 5 error (REFUSED_STREAM): A new stream was refused because this connection has reached its stream limit.");
         await WaitForStreamErrorAsync(7, Http2ErrorCode.REFUSED_STREAM, "HTTP/2 stream ID 7 error (REFUSED_STREAM): A new stream was refused because this connection has reached its stream limit.");
-        requestBlock.SetResult(0);
+        requestBlock.SetResult();
         await StopConnectionAsync(expectedLastStreamId: 7, ignoreNonGoAwayFrames: true);
     }
 
@@ -5209,6 +5214,72 @@ public class Http2ConnectionTests : Http2TestBase
                     CoreStrings.FormatHttp2ErrorStreamClosed(finalFrameType, streamId: 1),
                     CoreStrings.FormatHttp2ErrorStreamAborted(finalFrameType, streamId: 1)
             });
+    }
+
+    [Fact]
+    public async Task StartConnection_SendPreface_ReturnSettings()
+    {
+        InitializeConnectionWithoutPreface(_noopApplication);
+
+        await SendAsync(Http2Connection.ClientPreface);
+
+        await ExpectAsync(Http2FrameType.SETTINGS,
+            withLength: 3 * Http2FrameReader.SettingSize,
+            withFlags: 0,
+            withStreamId: 0);
+
+        await StopConnectionAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: true);
+    }
+
+    [Fact]
+    public async Task StartConnection_SendHttp1xRequest_ReturnHttp11Status400()
+    {
+        InitializeConnectionWithoutPreface(_noopApplication);
+
+        await SendAsync(Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\n"));
+
+        var data = await ReadAllAsync();
+
+        Assert.NotNull(Http2Connection.InvalidHttp1xErrorResponseBytes);
+        Assert.Equal(Http2Connection.InvalidHttp1xErrorResponseBytes, data);
+    }
+
+    [Fact]
+    public async Task StartConnection_SendHttp1xRequest_ExceedsRequestLineLimit_ProtocolError()
+    {
+        InitializeConnectionWithoutPreface(_noopApplication);
+
+        await SendAsync(Encoding.ASCII.GetBytes($"GET /{new string('a', _connection.Limits.MaxRequestLineSize)} HTTP/1.1\r\n"));
+
+        await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
+            ignoreNonGoAwayFrames: false,
+            expectedLastStreamId: 0,
+            expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR,
+            expectedErrorMessage: CoreStrings.Http2ErrorInvalidPreface);
+    }
+
+    [Fact]
+    public async Task StartTlsConnection_SendHttp1xRequest_NoError()
+    {
+        CreateConnection();
+
+        var tlsHandshakeMock = new Mock<ITlsHandshakeFeature>();
+        tlsHandshakeMock.SetupGet(m => m.Protocol).Returns(SslProtocols.Tls12);
+        _connection.ConnectionFeatures.Set<ITlsHandshakeFeature>(tlsHandshakeMock.Object);
+
+        InitializeConnectionWithoutPreface(_noopApplication);
+
+        await SendAsync(Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\n"));
+
+        await StopConnectionAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false);
+    }
+
+    [Fact]
+    public async Task StartConnection_SendNothing_NoError()
+    {
+        InitializeConnectionWithoutPreface(_noopApplication);
+
+        await StopConnectionAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false);
     }
 
     public static TheoryData<byte[]> UpperCaseHeaderNameData

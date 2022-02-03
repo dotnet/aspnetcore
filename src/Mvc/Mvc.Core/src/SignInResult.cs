@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -13,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc;
 /// <summary>
 /// An <see cref="ActionResult"/> that on execution invokes <see cref="M:HttpContext.SignInAsync"/>.
 /// </summary>
-public class SignInResult : ActionResult
+public partial class SignInResult : ActionResult
 {
     /// <summary>
     /// Initializes a new instance of <see cref="SignInResult"/> with the
@@ -87,9 +85,14 @@ public class SignInResult : ActionResult
         var httpContext = context.HttpContext;
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger<SignInResult>();
-
-        logger.SignInResultExecuting(AuthenticationScheme, Principal);
+        Log.SignInResultExecuting(logger, AuthenticationScheme, Principal);
 
         return httpContext.SignInAsync(AuthenticationScheme, Principal, Properties);
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(1, LogLevel.Information, $"Executing {nameof(SignInResult)} with authentication scheme ({{Scheme}}) and the following principal: {{Principal}}.", EventName = "SignInResultExecuting")]
+        public static partial void SignInResultExecuting(ILogger logger, string? scheme, ClaimsPrincipal principal);
     }
 }

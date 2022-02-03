@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-
 namespace Microsoft.AspNetCore.Components.Routing;
 
 internal class TemplateSegment
@@ -34,7 +32,6 @@ internal class TemplateSegment
         {
             if (Value.IndexOf(':') < 0)
             {
-
                 // Set the IsOptional flag to true for segments that contain
                 // a parameter with no type constraints but optionality set
                 // via the '?' token.

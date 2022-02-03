@@ -1,10 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Text.Json;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop.Infrastructure;
 
 // Sync vs Async APIs for this.
@@ -73,7 +69,7 @@ internal class IpcReceiver
         }
     }
 
-    private void BeginInvokeDotNet(PageContext pageContext, string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)
+    private static void BeginInvokeDotNet(PageContext pageContext, string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)
     {
         DotNetDispatcher.BeginInvokeDotNet(
             pageContext.JSRuntime,
@@ -81,7 +77,7 @@ internal class IpcReceiver
             argsJson);
     }
 
-    private void EndInvokeJS(PageContext pageContext, long asyncHandle, bool succeeded, string argumentsOrError)
+    private static void EndInvokeJS(PageContext pageContext, long asyncHandle, bool succeeded, string argumentsOrError)
     {
         DotNetDispatcher.EndInvokeJS(pageContext.JSRuntime, argumentsOrError);
     }
@@ -91,7 +87,7 @@ internal class IpcReceiver
         DotNetDispatcher.ReceiveByteArray(pageContext.JSRuntime, id, data);
     }
 
-    private void OnRenderCompleted(PageContext pageContext, long batchId, string errorMessageOrNull)
+    private static void OnRenderCompleted(PageContext pageContext, long batchId, string errorMessageOrNull)
     {
         if (errorMessageOrNull != null)
         {
@@ -101,7 +97,7 @@ internal class IpcReceiver
         pageContext.Renderer.NotifyRenderCompleted(batchId);
     }
 
-    private void OnLocationChanged(PageContext pageContext, string uri, bool intercepted)
+    private static void OnLocationChanged(PageContext pageContext, string uri, bool intercepted)
     {
         pageContext.NavigationManager.LocationUpdated(uri, intercepted);
     }

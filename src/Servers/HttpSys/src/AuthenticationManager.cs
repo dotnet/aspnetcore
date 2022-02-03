@@ -1,13 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Security.Claims;
-using System.Security.Principal;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -142,7 +138,7 @@ public sealed class AuthenticationManager
         return challenges;
     }
 
-    internal void SetAuthenticationChallenge(RequestContext context)
+    internal static void SetAuthenticationChallenge(RequestContext context)
     {
         IList<string> challenges = GenerateChallenges(context.Response.AuthenticationChallenges);
 

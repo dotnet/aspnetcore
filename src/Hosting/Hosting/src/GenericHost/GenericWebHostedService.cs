@@ -1,13 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -69,10 +64,29 @@ internal sealed partial class GenericWebHostService : IHostedService
         var addresses = serverAddressesFeature?.Addresses;
         if (addresses != null && !addresses.IsReadOnly && addresses.Count == 0)
         {
+            // We support reading "urls" from app configuration
             var urls = Configuration[WebHostDefaults.ServerUrlsKey];
+
+            // But fall back to host settings
+            if (string.IsNullOrEmpty(urls))
+            {
+                urls = Options.WebHostOptions.ServerUrls;
+            }
+
             if (!string.IsNullOrEmpty(urls))
             {
-                serverAddressesFeature!.PreferHostingUrls = WebHostUtilities.ParseBool(Configuration, WebHostDefaults.PreferHostingUrlsKey);
+                // We support reading "preferHostingUrls" from app configuration
+                var preferHostingUrlsConfig = Configuration[WebHostDefaults.PreferHostingUrlsKey];
+
+                // But fall back to host settings
+                if (!string.IsNullOrEmpty(preferHostingUrlsConfig))
+                {
+                    serverAddressesFeature!.PreferHostingUrls = WebHostUtilities.ParseBool(preferHostingUrlsConfig);
+                }
+                else
+                {
+                    serverAddressesFeature!.PreferHostingUrls = Options.WebHostOptions.PreferHostingUrls;
+                }
 
                 foreach (var value in urls.Split(';', StringSplitOptions.RemoveEmptyEntries))
                 {

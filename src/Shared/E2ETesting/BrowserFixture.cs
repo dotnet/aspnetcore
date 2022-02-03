@@ -72,7 +72,7 @@ public class BrowserFixture : IAsyncLifetime
     public async Task DisposeAsync()
     {
         var browsers = await Task.WhenAll(_browsers.Values);
-        foreach (var (browser, log) in browsers)
+        foreach (var (browser, _) in browsers)
         {
             browser?.Quit();
             browser?.Dispose();
@@ -131,7 +131,6 @@ public class BrowserFixture : IAsyncLifetime
 
             createBrowserFunc = CreateBrowserAsync;
         }
-
 
         return _browsers.GetOrAdd(isolationContext, createBrowserFunc, output);
     }
@@ -218,7 +217,7 @@ public class BrowserFixture : IAsyncLifetime
         throw new InvalidOperationException("Couldn't create a Selenium remote driver client. The server is irresponsive", innerException);
     }
 
-    private string UserProfileDirectory(string context)
+    private static string UserProfileDirectory(string context)
     {
         if (string.IsNullOrEmpty(context))
         {

@@ -1,12 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
-using System.IO;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.WebUtilities;
 
@@ -191,6 +187,12 @@ public class BufferedReadStream : Stream
     public override void Write(byte[] buffer, int offset, int count)
     {
         _inner.Write(buffer, offset, count);
+    }
+
+    /// <inheritdoc/>
+    public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
+    {
+        return _inner.WriteAsync(buffer, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -426,7 +428,7 @@ public class BufferedReadStream : Stream
     private static void ValidateBuffer(byte[] buffer, int offset, int count)
     {
         // Delegate most of our validation.
-        var ignored = new ArraySegment<byte>(buffer, offset, count);
+        _ = new ArraySegment<byte>(buffer, offset, count);
         if (count == 0)
         {
             throw new ArgumentOutOfRangeException(nameof(count), "The value must be greater than zero.");

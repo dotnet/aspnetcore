@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 import '@microsoft/dotnet-js-interop';
 import { resetScrollAfterNextBatch } from '../Rendering/Renderer';
 import { EventDelegator } from '../Rendering/Events/EventDelegator';
@@ -13,8 +16,8 @@ export const internalFunctions = {
   listenForNavigationEvents,
   enableNavigationInterception,
   navigateTo,
-  getBaseURI: () => document.baseURI,
-  getLocationHref: () => location.href,
+  getBaseURI: (): string => document.baseURI,
+  getLocationHref: (): string => location.href,
 };
 
 function listenForNavigationEvents(callback: (uri: string, intercepted: boolean) => Promise<void>): void {

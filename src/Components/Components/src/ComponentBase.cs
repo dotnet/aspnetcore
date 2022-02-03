@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components;
@@ -189,7 +187,6 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
 
         _renderHandle = renderHandle;
     }
-
 
     /// <summary>
     /// Sets parameters supplied by the component's parent in the render tree.

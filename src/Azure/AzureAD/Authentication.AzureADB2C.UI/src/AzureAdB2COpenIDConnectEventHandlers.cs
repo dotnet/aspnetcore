@@ -1,10 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
@@ -44,7 +40,7 @@ internal class AzureADB2COpenIDConnectEventHandlers
 
     private string BuildIssuerAddress(RedirectContext context, string defaultPolicy, string policy)
     {
-        if (!_policyToIssuerAddress.TryGetValue(policy, out var issuerAddress))
+        if (!_policyToIssuerAddress.TryGetValue(policy, out _))
         {
             _policyToIssuerAddress[policy] = context.ProtocolMessage.IssuerAddress.ToLowerInvariant()
                 .Replace($"/{defaultPolicy.ToLowerInvariant()}/", $"/{policy.ToLowerInvariant()}/");

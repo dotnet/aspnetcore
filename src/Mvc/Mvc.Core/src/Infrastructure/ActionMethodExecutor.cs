@@ -3,9 +3,7 @@
 
 #nullable enable
 
-using System;
 using System.Diagnostics;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.Extensions.Internal;
 
@@ -218,7 +216,7 @@ internal abstract class ActionMethodExecutor
         }
     }
 
-    private IActionResult ConvertToActionResult(IActionResultTypeMapper mapper, object? returnValue, Type declaredType)
+    private static IActionResult ConvertToActionResult(IActionResultTypeMapper mapper, object? returnValue, Type declaredType)
     {
         var result = (returnValue as IActionResult) ?? mapper.Convert(returnValue, declaredType);
         if (result == null)

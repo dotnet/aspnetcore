@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.ComponentModel.DataAnnotations;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
@@ -105,7 +103,7 @@ internal class DeletePersonalDataModel<TUser> : DeletePersonalDataModel where TU
         }
 
         var result = await _userManager.DeleteAsync(user);
-        var userId = await _userManager.GetUserIdAsync(user);
+        await _userManager.GetUserIdAsync(user);
         if (!result.Succeeded)
         {
             throw new InvalidOperationException($"Unexpected error occurred deleting user.");

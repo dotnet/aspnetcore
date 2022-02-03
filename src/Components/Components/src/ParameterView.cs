@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -262,7 +260,6 @@ public readonly struct ParameterView
     /// <summary>
     /// An enumerator that iterates through a <see cref="ParameterView"/>.
     /// </summary>
-
     // Note that this intentionally does not implement IEnumerator<>. This is the same pattern as Span<>.Enumerator
     // it's valid to foreach over a type that doesn't implement IEnumerator<>.
     public struct Enumerator

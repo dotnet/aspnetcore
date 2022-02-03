@@ -41,5 +41,4 @@ public class AuthorizationResult
     /// </summary>
     /// <returns>The <see cref="AuthorizationResult"/>.</returns>
     public static AuthorizationResult Failed() => new AuthorizationResult { Failure = AuthorizationFailure.ExplicitFail() };
-
 }

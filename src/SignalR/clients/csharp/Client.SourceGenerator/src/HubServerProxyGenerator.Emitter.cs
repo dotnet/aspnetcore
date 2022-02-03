@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
@@ -106,7 +105,7 @@ namespace {_spec.GetterNamespace}
                 signature.Append(')');
 
                 // Prepare method body
-                var body = "";
+                string body;
                 if (methodSpec.Support != SupportClassification.Supported)
                 {
                     body = methodSpec.SupportHint is null
@@ -174,7 +173,7 @@ namespace {_spec.GetterNamespace}
             _context.AddSource($"HubServerProxy.{classSpec.ClassTypeName}.g.cs", SourceText.From(proxy.ToString(), Encoding.UTF8));
         }
 
-        private string GetSpecificCall(MethodSpec methodSpec)
+        private static string GetSpecificCall(MethodSpec methodSpec)
         {
             if (methodSpec.Stream.HasFlag(StreamSpec.ServerToClient) &&
                 !methodSpec.Stream.HasFlag(StreamSpec.AsyncEnumerable))

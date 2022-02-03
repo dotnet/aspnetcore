@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.CSharp.RuntimeBinder;
 using Newtonsoft.Json;
@@ -79,7 +78,6 @@ public class DynamicObjectAdapter : IAdapter
 
         errorMessage = null;
         return true;
-
     }
 
     public virtual bool TryReplace(

@@ -207,7 +207,6 @@ public class ShadowCopyTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/38931")]
     public async Task ShadowCopyCleansUpOlderFolders()
     {
         using var directory = TempDirectory.Create();
@@ -251,7 +250,6 @@ public class ShadowCopyTests : IISFunctionalTestBase
         Assert.False(Directory.Exists(Path.Combine(directory.DirectoryPath, "1")), "Expected 1 shadow copy directory to be deleted");
         Assert.False(Directory.Exists(Path.Combine(directory.DirectoryPath, "3")), "Expected 3 shadow copy directory to be deleted");
     }
-
 
     [ConditionalFact]
     public async Task ShadowCopyIgnoresItsOwnDirectoryWithRelativePathSegmentWhenCopying()

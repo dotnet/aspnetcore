@@ -3,9 +3,8 @@ parameters:
   dependsOn: ''
 
   # Optional: A defined YAML pool - https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=vsts&tabs=schema#pool
-  pool:
-    vmImage: 'windows-2019'
-
+  pool: ''
+    
   CeapexPat: $(dn-bot-ceapex-package-r) # PAT for the loc AzDO instance https://dev.azure.com/ceapex
   GithubPat: $(BotAccount-dotnet-bot-repo-PAT)
 
@@ -31,7 +30,18 @@ jobs:
 
   displayName: OneLocBuild
 
-  pool: ${{ parameters.pool }}
+  ${{ if ne(parameters.pool, '') }}:
+    pool: ${{ parameters.pool }}
+  ${{ if eq(parameters.pool, '') }}:
+    pool:
+      # We don't use the collection uri here because it might vary (.visualstudio.com vs. dev.azure.com)
+      ${{ if eq(variables['System.TeamProject'], 'DevDiv') }}:
+        name: VSEngSS-MicroBuild2022-1ES
+        demands: Cmd
+      # If it's not devdiv, it's dnceng
+      ${{ if ne(variables['System.TeamProject'], 'DevDiv') }}:
+        name: NetCore1ESPool-Internal
+        demands: ImageOverride -equals Build.Server.Amd64.VS2019
 
   variables:
     - group: OneLocBuildVariables # Contains the CeapexPat and GithubPat

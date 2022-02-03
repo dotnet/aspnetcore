@@ -1,19 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
-using System.Collections.Generic;
-using System.IO;
-using System.IO.Pipelines;
 using System.Security.Claims;
 using System.Security.Principal;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Connections.Internal.Transports;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
@@ -639,16 +631,18 @@ internal partial class HttpConnectionDispatcher
         // The reason we're copying the base features instead of the HttpContext properties is
         // so that we can get all of the logic built into DefaultHttpContext to extract higher level
         // structure from the low level properties
-        var existingRequestFeature = context.Features.Get<IHttpRequestFeature>()!;
+        var existingRequestFeature = context.Features.GetRequiredFeature<IHttpRequestFeature>();
 
-        var requestFeature = new HttpRequestFeature();
-        requestFeature.Protocol = existingRequestFeature.Protocol;
-        requestFeature.Method = existingRequestFeature.Method;
-        requestFeature.Scheme = existingRequestFeature.Scheme;
-        requestFeature.Path = existingRequestFeature.Path;
-        requestFeature.PathBase = existingRequestFeature.PathBase;
-        requestFeature.QueryString = existingRequestFeature.QueryString;
-        requestFeature.RawTarget = existingRequestFeature.RawTarget;
+        var requestFeature = new HttpRequestFeature
+        {
+            Protocol = existingRequestFeature.Protocol,
+            Method = existingRequestFeature.Method,
+            Scheme = existingRequestFeature.Scheme,
+            Path = existingRequestFeature.Path,
+            PathBase = existingRequestFeature.PathBase,
+            QueryString = existingRequestFeature.QueryString,
+            RawTarget = existingRequestFeature.RawTarget
+        };
         var requestHeaders = new Dictionary<string, StringValues>(existingRequestFeature.Headers.Count, StringComparer.OrdinalIgnoreCase);
         foreach (var header in existingRequestFeature.Headers)
         {

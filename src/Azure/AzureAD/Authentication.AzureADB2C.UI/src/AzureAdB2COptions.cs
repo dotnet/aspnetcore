@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 
@@ -30,7 +29,6 @@ public class AzureADB2COptions
     /// instance of Azure Active Directory B2C Bearer authentication.
     /// </summary>
     public string JwtBearerSchemeName { get; internal set; }
-
 
     /// <summary>
     /// Gets or sets the client Id.

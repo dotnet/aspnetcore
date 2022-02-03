@@ -1,11 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Microsoft.AspNetCore.Http.Extensions.Tests;
 
 public class TestStream : Stream
@@ -50,8 +45,8 @@ public class TestStream : Stream
 
     public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
     {
-        var tcs = new TaskCompletionSource<int>();
-        cancellationToken.Register(s => ((TaskCompletionSource<int>)s).SetCanceled(), tcs);
+        var tcs = new TaskCompletionSource();
+        cancellationToken.Register(s => ((TaskCompletionSource)s).SetCanceled(), tcs);
         return new ValueTask(tcs.Task);
     }
 }

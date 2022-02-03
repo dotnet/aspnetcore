@@ -14,7 +14,6 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
 [SupportedOSPlatform("windows")]
 public sealed class CngGcmAuthenticatedEncryptorDescriptorDeserializer : IAuthenticatedEncryptorDescriptorDeserializer
 {
-
     /// <summary>
     /// Imports the <see cref="CngCbcAuthenticatedEncryptorDescriptor"/> from serialized XML.
     /// </summary>

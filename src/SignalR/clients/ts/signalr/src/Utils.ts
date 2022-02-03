@@ -288,7 +288,7 @@ export function getErrorString(e: any): string {
 }
 
 /** @private */
-export function getGlobalThis() {
+export function getGlobalThis(): unknown {
     // globalThis is semi-new and not available in Node until v12
     if (typeof globalThis !== "undefined") {
         return globalThis;

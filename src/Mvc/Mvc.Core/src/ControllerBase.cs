@@ -1,12 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
@@ -16,7 +13,6 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc;
@@ -1924,6 +1920,7 @@ public abstract class ControllerBase
     /// </summary>
     /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
     [NonAction]
+    [DefaultStatusCode(StatusCodes.Status400BadRequest)]
     public virtual ActionResult ValidationProblem([ActionResultObjectValue] ValidationProblemDetails descriptor)
     {
         if (descriptor == null)
@@ -1941,9 +1938,9 @@ public abstract class ControllerBase
     /// <param name="modelStateDictionary">The <see cref="ModelStateDictionary"/>.</param>
     /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
     [NonAction]
+    [DefaultStatusCode(StatusCodes.Status400BadRequest)]
     public virtual ActionResult ValidationProblem([ActionResultObjectValue] ModelStateDictionary modelStateDictionary)
          => ValidationProblem(detail: null, modelStateDictionary: modelStateDictionary);
-
 
     /// <summary>
     /// Creates an <see cref="ActionResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response
@@ -1951,6 +1948,7 @@ public abstract class ControllerBase
     /// </summary>
     /// <returns>The created <see cref="ActionResult"/> for the response.</returns>
     [NonAction]
+    [DefaultStatusCode(StatusCodes.Status400BadRequest)]
     public virtual ActionResult ValidationProblem()
         => ValidationProblem(ModelState);
 
@@ -1967,6 +1965,7 @@ public abstract class ControllerBase
     /// When <see langword="null"/> uses <see cref="ModelState"/>.</param>
     /// <returns>The created <see cref="ActionResult"/> for the response.</returns>
     [NonAction]
+    [DefaultStatusCode(StatusCodes.Status400BadRequest)]
     public virtual ActionResult ValidationProblem(
         string? detail = null,
         string? instance = null,

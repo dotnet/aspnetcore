@@ -1,22 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -588,11 +583,8 @@ public class ComplexTypeModelBinderTest
             string.Format(
                 CultureInfo.CurrentCulture,
                 "Could not create an instance of type '{0}'. Model bound complex types must not be abstract or " +
-                "value types and must have a parameterless constructor. Alternatively, set the '{1}' property to" +
-                " a non-null value in the '{2}' constructor.",
-                typeof(PointStruct).FullName,
-                nameof(Location.Point),
-                typeof(Location).FullName),
+                "value types and must have a parameterless constructor.",
+                typeof(PointStruct).FullName),
             exception.Message);
     }
 
@@ -1002,6 +994,32 @@ public class ComplexTypeModelBinderTest
         Assert.True(bindingContext.ModelState.IsValid);
     }
 
+    // Validates fix for https://github.com/dotnet/aspnetcore/issues/21916
+    [Fact]
+    public async Task BindModelAsync_PropertyInitializedInNonParameterlessConstructorConstructor()
+    {
+        // Arrange
+        var model = new ModelWithPropertyInitializedInConstructor("TestName");
+        var property = GetMetadataForProperty(model.GetType(), nameof(ModelWithPropertyInitializedInConstructor.NameContainer));
+        var nestedProperty = GetMetadataForProperty(typeof(ClassWithNoParameterlessConstructor), nameof(ClassWithNoParameterlessConstructor.Name));
+        var bindingContext = CreateContext(property);
+        bindingContext.IsTopLevelObject = false;
+        var valueProvider = new Mock<IValueProvider>(MockBehavior.Strict);
+        valueProvider
+            .Setup(provider => provider.ContainsPrefix("theModel.Name"))
+            .Returns(true);
+        bindingContext.ValueProvider = valueProvider.Object;
+        var binder = CreateBinder(bindingContext.ModelMetadata);
+
+        binder.Results[nestedProperty] = ModelBindingResult.Success(null);
+
+        // Act
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await binder.BindModelAsync(bindingContext));
+        // Assert
+        var unexpectedMessage = "Alternatively, set the 'NameContainer' property to a non-null value in the 'Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ComplexTypeModelBinderTest+ModelWithPropertyInitializedInConstructor' constructor.";
+        Assert.DoesNotContain(exception.Message, unexpectedMessage);
+    }
+
     [Fact]
     public void SetProperty_PropertyHasDefaultValue_DefaultValueAttributeDoesNothing()
     {
@@ -1300,6 +1318,17 @@ public class ComplexTypeModelBinderTest
         }
 
         public string Name { get; set; }
+    }
+
+    private class ModelWithPropertyInitializedInConstructor
+    {
+        public ModelWithPropertyInitializedInConstructor(string name)
+        {
+            NameContainer = new ClassWithNoParameterlessConstructor(name);
+        }
+
+        [ValueBinderMetadataAttribute]
+        public ClassWithNoParameterlessConstructor NameContainer { get; set; }
     }
 
     private class BindingOptionalProperty

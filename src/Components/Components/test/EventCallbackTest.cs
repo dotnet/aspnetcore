@@ -1,10 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Text;
-using System.Threading.Tasks;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Components;
 
@@ -30,7 +27,6 @@ public class EventCallbackTest
         await callback.InvokeAsync();
     }
 
-
     [Fact]
     public async Task EventCallback_NullReceiver()
     {
@@ -40,7 +36,6 @@ public class EventCallbackTest
 
         // Act
         await callback.InvokeAsync();
-
 
         // Assert
         Assert.Equal(1, runCount);
@@ -55,7 +50,6 @@ public class EventCallbackTest
 
         // Act
         await callback.InvokeAsync();
-
 
         // Assert
         Assert.Equal(1, runCount);
@@ -72,7 +66,6 @@ public class EventCallbackTest
 
         // Act
         await callback.InvokeAsync();
-
 
         // Assert
         Assert.Equal(1, runCount);
@@ -91,7 +84,6 @@ public class EventCallbackTest
         // Act
         await callback.InvokeAsync(new EventArgs());
 
-
         // Assert
         Assert.Equal(1, runCount);
         Assert.Equal(1, component.Count);
@@ -109,7 +101,6 @@ public class EventCallbackTest
 
         // Act
         await callback.InvokeAsync();
-
 
         // Assert
         Assert.Null(arg);
@@ -130,7 +121,6 @@ public class EventCallbackTest
         // Act
         await callback.InvokeAsync(new EventArgs());
 
-
         // Assert
         Assert.NotNull(arg);
         Assert.Equal(1, runCount);
@@ -149,7 +139,6 @@ public class EventCallbackTest
 
         // Act
         await callback.InvokeAsync(17);
-
 
         // Assert
         Assert.Equal(17, arg);
@@ -186,7 +175,6 @@ public class EventCallbackTest
         // Act
         await callback.InvokeAsync();
 
-
         // Assert
         Assert.Equal(1, runCount);
         Assert.Equal(1, component.Count);
@@ -203,7 +191,6 @@ public class EventCallbackTest
 
         // Act
         await callback.InvokeAsync(new EventArgs());
-
 
         // Assert
         Assert.Equal(1, runCount);
@@ -222,7 +209,6 @@ public class EventCallbackTest
 
         // Act
         await callback.InvokeAsync();
-
 
         // Assert
         Assert.Null(arg);
@@ -243,7 +229,6 @@ public class EventCallbackTest
         // Act
         await callback.InvokeAsync(new EventArgs());
 
-
         // Assert
         Assert.NotNull(arg);
         Assert.Equal(1, runCount);
@@ -262,7 +247,6 @@ public class EventCallbackTest
 
         // Act
         await callback.InvokeAsync(17);
-
 
         // Assert
         Assert.Equal(17, arg);
@@ -299,7 +283,6 @@ public class EventCallbackTest
         // Act
         await callback.InvokeAsync();
 
-
         // Assert
         Assert.Equal(1, runCount);
         Assert.Equal(1, component.Count);
@@ -316,7 +299,6 @@ public class EventCallbackTest
 
         // Act
         await callback.InvokeAsync(new EventArgs());
-
 
         // Assert
         Assert.Equal(1, runCount);
@@ -335,7 +317,6 @@ public class EventCallbackTest
 
         // Act
         await callback.InvokeAsync();
-
 
         // Assert
         Assert.Null(arg);
@@ -356,7 +337,6 @@ public class EventCallbackTest
         // Act
         await callback.InvokeAsync(new EventArgs());
 
-
         // Assert
         Assert.NotNull(arg);
         Assert.Equal(1, runCount);
@@ -375,7 +355,6 @@ public class EventCallbackTest
         // Act
         await callback.InvokeAsync();
 
-
         // Assert
         Assert.Equal(1, runCount);
         Assert.Equal(1, component.Count);
@@ -392,7 +371,6 @@ public class EventCallbackTest
 
         // Act
         await callback.InvokeAsync(new EventArgs());
-
 
         // Assert
         Assert.Equal(1, runCount);
@@ -412,7 +390,6 @@ public class EventCallbackTest
         // Act
         await callback.InvokeAsync();
 
-
         // Assert
         Assert.Null(arg);
         Assert.Equal(1, runCount);
@@ -431,7 +408,6 @@ public class EventCallbackTest
 
         // Act
         await callback.InvokeAsync(new EventArgs());
-
 
         // Assert
         Assert.NotNull(arg);

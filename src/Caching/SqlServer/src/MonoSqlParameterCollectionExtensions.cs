@@ -25,7 +25,6 @@ internal static class MonoSqlParameterCollectionExtensions
         return parameters.AddWithValue(Columns.Names.ExpiresAtTime, SqlDbType.DateTime, utcTime.UtcDateTime);
     }
 
-
     public static SqlParameterCollection AddAbsoluteExpirationMono(
                 this SqlParameterCollection parameters,
                 DateTimeOffset? utcTime)

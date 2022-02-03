@@ -1,10 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.IO.Pipelines;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 
@@ -38,7 +35,7 @@ internal class ServerSentEventsServerTransport : IHttpTransport
         context.Response.Headers.Pragma = "no-cache";
 
         // Make sure we disable all response buffering for SSE
-        var bufferingFeature = context.Features.Get<IHttpResponseBodyFeature>()!;
+        var bufferingFeature = context.Features.GetRequiredFeature<IHttpResponseBodyFeature>();
         bufferingFeature.DisableBuffering();
 
         context.Response.Headers.ContentEncoding = "identity";

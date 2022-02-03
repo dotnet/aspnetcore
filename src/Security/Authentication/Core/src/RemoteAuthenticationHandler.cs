@@ -1,11 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -17,7 +15,6 @@ namespace Microsoft.AspNetCore.Authentication;
 /// provider.
 /// </summary>
 /// <typeparam name="TOptions">The type for the options used to configure the authentication handler.</typeparam>
-
 public abstract class RemoteAuthenticationHandler<TOptions> : AuthenticationHandler<TOptions>, IAuthenticationRequestHandler
     where TOptions : RemoteAuthenticationOptions, new()
 {
@@ -49,7 +46,6 @@ public abstract class RemoteAuthenticationHandler<TOptions> : AuthenticationHand
     /// <param name="clock">The <see cref="ISystemClock"/>.</param>
     protected RemoteAuthenticationHandler(IOptionsMonitor<TOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
         : base(options, logger, encoder, clock) { }
-
 
     /// <inheritdoc />
     protected override Task<object> CreateEventsAsync()

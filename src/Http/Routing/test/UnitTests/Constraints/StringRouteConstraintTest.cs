@@ -2,9 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing.Constraints;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Routing.Constraints;
 

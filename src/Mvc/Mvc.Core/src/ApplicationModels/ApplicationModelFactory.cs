@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -68,7 +66,6 @@ internal class ApplicationModelFactory
         Func<ApplicationModel, ControllerModel, ActionModel, SelectorModel, TResult> flattener)
     {
         var results = new List<TResult>();
-        var errors = new Dictionary<MethodInfo, IList<string>>();
 
         var actionsByMethod = new Dictionary<MethodInfo, List<(ActionModel, SelectorModel)>>();
         var actionsByRouteName = new Dictionary<string, List<(ActionModel, SelectorModel)>>(StringComparer.OrdinalIgnoreCase);
@@ -124,7 +121,6 @@ internal class ApplicationModelFactory
             var message = CreateAttributeRoutingAggregateErrorMessage(routeTemplateErrors);
             throw new InvalidOperationException(message);
         }
-
 
         return results;
     }

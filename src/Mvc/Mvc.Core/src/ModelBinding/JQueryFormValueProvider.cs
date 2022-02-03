@@ -3,7 +3,6 @@
 
 #nullable enable
 
-using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.Extensions.Primitives;
 

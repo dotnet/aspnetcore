@@ -1,10 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
@@ -16,7 +12,6 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
-using Xunit;
 using static Microsoft.AspNetCore.Razor.Hosting.TestRazorCompiledItem;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
@@ -830,7 +825,6 @@ this should fail";
             FileProviders = { fileProvider }
         });
         var compilationFileProvider = new RuntimeCompilationFileProvider(options);
-
 
         referenceManager = referenceManager ?? CreateReferenceManager();
         precompiledViews = precompiledViews ?? Array.Empty<CompiledViewDescriptor>();

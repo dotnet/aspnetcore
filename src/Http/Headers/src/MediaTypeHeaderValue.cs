@@ -1,13 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Extensions.Primitives;
 
@@ -317,7 +314,6 @@ public class MediaTypeHeaderValue
         }
     }
 
-
     /// <summary>
     /// Get a <see cref="IList{T}"/> of facets of the <see cref="MediaTypeHeaderValue"/>. Facets are a
     /// period separated list of StringSegments in the <see cref="SubTypeWithoutSuffix"/>.
@@ -582,7 +578,7 @@ public class MediaTypeHeaderValue
 
         var current = startIndex + mediaTypeLength;
         current = current + HttpRuleParser.GetWhitespaceLength(input, current);
-        MediaTypeHeaderValue? mediaTypeHeader = null;
+        MediaTypeHeaderValue? mediaTypeHeader;
 
         // If we're not done and we have a parameter delimiter, then we have a list of parameters.
         if ((current < input.Length) && (input[current] == ';'))

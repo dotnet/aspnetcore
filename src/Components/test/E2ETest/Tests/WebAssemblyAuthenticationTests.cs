@@ -1,19 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Data.Common;
 using System.Drawing;
 using System.Globalization;
-using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -24,7 +19,6 @@ using Microsoft.Extensions.Hosting;
 using OpenQA.Selenium;
 using Wasm.Authentication.Server;
 using Wasm.Authentication.Server.Data;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests;
@@ -130,7 +124,6 @@ public class WebAssemblyAuthenticationTests : ServerTestBase<AspNetSiteServerFix
 
         Browser.Exists(By.Id("admin-success"));
     }
-
 
     private void ClickAndNavigate(By link, string page)
     {

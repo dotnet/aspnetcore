@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text.RegularExpressions;
@@ -17,7 +15,6 @@ internal class RuleBuilder
     private IList<Condition>? _conditions;
     internal IList<UrlAction> _actions = new List<UrlAction>();
     private UrlMatch? _match;
-    private readonly CookieActionFactory _cookieActionFactory = new CookieActionFactory();
 
     private readonly TimeSpan _regexTimeout = TimeSpan.FromSeconds(1);
 
@@ -32,9 +29,9 @@ internal class RuleBuilder
 
     public void AddRule(string rule)
     {
-        var tokens = new Tokenizer().Tokenize(rule)!;
-        var regex = new RuleRegexParser().ParseRuleRegex(tokens[1]);
-        var pattern = new TestStringParser().Parse(tokens[2]);
+        var tokens = Tokenizer.Tokenize(rule)!;
+        var regex = RuleRegexParser.ParseRuleRegex(tokens[1]);
+        var pattern = TestStringParser.Parse(tokens[2]);
 
         Flags flags;
         if (tokens.Count == 4)
@@ -179,7 +176,7 @@ internal class RuleBuilder
     {
         if (flags.GetValue(FlagType.Cookie, out var flag))
         {
-            var action = _cookieActionFactory.Create(flag);
+            var action = CookieActionFactory.Create(flag);
             _actions.Add(action);
         }
 

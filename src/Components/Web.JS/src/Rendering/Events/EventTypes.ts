@@ -1,6 +1,9 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 export interface EventTypeOptions {
   browserEventName?: string;
-  createEventArgs?: (event: Event) => any;
+  createEventArgs?: (event: Event) => unknown;
 }
 
 const eventTypeRegistry: Map<string, EventTypeOptions> = new Map();
@@ -57,47 +60,102 @@ function registerBuiltInEventType(eventNames: string[], options: EventTypeOption
 }
 
 registerBuiltInEventType(['input', 'change'], {
-  createEventArgs: parseChangeEvent
+  createEventArgs: parseChangeEvent,
 });
 
-registerBuiltInEventType(['copy', 'cut', 'paste'], {
-  createEventArgs: e => parseClipboardEvent(e as ClipboardEvent)
+registerBuiltInEventType([
+  'copy',
+  'cut',
+  'paste',
+], {
+  createEventArgs: e => parseClipboardEvent(e as ClipboardEvent),
 });
 
-registerBuiltInEventType(['drag', 'dragend', 'dragenter', 'dragleave', 'dragover', 'dragstart', 'drop'], {
-  createEventArgs: e => parseDragEvent(e as DragEvent)
+registerBuiltInEventType([
+  'drag',
+  'dragend',
+  'dragenter',
+  'dragleave',
+  'dragover',
+  'dragstart',
+  'drop',
+], {
+  createEventArgs: e => parseDragEvent(e as DragEvent),
 });
 
-registerBuiltInEventType(['focus', 'blur', 'focusin', 'focusout'], {
-  createEventArgs: e => parseFocusEvent(e as FocusEvent)
+registerBuiltInEventType([
+  'focus',
+  'blur',
+  'focusin',
+  'focusout',
+], {
+  createEventArgs: e => parseFocusEvent(e as FocusEvent),
 });
 
-registerBuiltInEventType(['keydown', 'keyup', 'keypress'], {
-  createEventArgs: e => parseKeyboardEvent(e as KeyboardEvent)
+registerBuiltInEventType([
+  'keydown',
+  'keyup',
+  'keypress',
+], {
+  createEventArgs: e => parseKeyboardEvent(e as KeyboardEvent),
 });
 
-registerBuiltInEventType(['contextmenu', 'click', 'mouseover', 'mouseout', 'mousemove', 'mousedown', 'mouseup', 'dblclick'], {
-  createEventArgs: e => parseMouseEvent(e as MouseEvent)
+registerBuiltInEventType([
+  'contextmenu',
+  'click',
+  'mouseover',
+  'mouseout',
+  'mousemove',
+  'mousedown',
+  'mouseup',
+  'dblclick',
+], {
+  createEventArgs: e => parseMouseEvent(e as MouseEvent),
 });
 
 registerBuiltInEventType(['error'], {
-  createEventArgs: e => parseErrorEvent(e as ErrorEvent)
+  createEventArgs: e => parseErrorEvent(e as ErrorEvent),
 });
 
-registerBuiltInEventType(['loadstart', 'timeout', 'abort', 'load', 'loadend', 'progress'], {
-  createEventArgs: e => parseProgressEvent(e as ProgressEvent)
+registerBuiltInEventType([
+  'loadstart',
+  'timeout',
+  'abort',
+  'load',
+  'loadend',
+  'progress',
+], {
+  createEventArgs: e => parseProgressEvent(e as ProgressEvent),
 });
 
-registerBuiltInEventType(['touchcancel', 'touchend', 'touchmove', 'touchenter', 'touchleave', 'touchstart'], {
-  createEventArgs: e => parseTouchEvent(e as TouchEvent)
+registerBuiltInEventType([
+  'touchcancel',
+  'touchend',
+  'touchmove',
+  'touchenter',
+  'touchleave',
+  'touchstart',
+], {
+  createEventArgs: e => parseTouchEvent(e as TouchEvent),
 });
 
-registerBuiltInEventType(['gotpointercapture', 'lostpointercapture', 'pointercancel', 'pointerdown', 'pointerenter', 'pointerleave', 'pointermove', 'pointerout', 'pointerover', 'pointerup'], {
-  createEventArgs: e => parsePointerEvent(e as PointerEvent)
+registerBuiltInEventType([
+  'gotpointercapture',
+  'lostpointercapture',
+  'pointercancel',
+  'pointerdown',
+  'pointerenter',
+  'pointerleave',
+  'pointermove',
+  'pointerout',
+  'pointerover',
+  'pointerup',
+], {
+  createEventArgs: e => parsePointerEvent(e as PointerEvent),
 });
 
 registerBuiltInEventType(['wheel', 'mousewheel'], {
-  createEventArgs: e => parseWheelEvent(e as WheelEvent)
+  createEventArgs: e => parseWheelEvent(e as WheelEvent),
 });
 
 registerBuiltInEventType(['toggle'], createBlankEventArgsOptions);
@@ -154,19 +212,19 @@ function parseTouchEvent(event: TouchEvent): TouchEventArgs {
     shiftKey: event.shiftKey,
     altKey: event.altKey,
     metaKey: event.metaKey,
-    type: event.type
+    type: event.type,
   };
 }
 
 function parseFocusEvent(event: FocusEvent): FocusEventArgs {
   return {
-    type: event.type
+    type: event.type,
   };
 }
 
 function parseClipboardEvent(event: ClipboardEvent): ClipboardEventArgs {
   return {
-    type: event.type
+    type: event.type,
   };
 }
 

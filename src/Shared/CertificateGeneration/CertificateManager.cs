@@ -61,7 +61,7 @@ internal abstract class CertificateManager
         AspNetHttpsCertificateVersion = version;
     }
 
-    public bool IsHttpsDevelopmentCertificate(X509Certificate2 certificate) =>
+    public static bool IsHttpsDevelopmentCertificate(X509Certificate2 certificate) =>
         certificate.Extensions.OfType<X509Extension>()
         .Any(e => string.Equals(AspNetHttpsOid, e.Oid?.Value, StringComparison.Ordinal));
 
@@ -445,7 +445,7 @@ internal abstract class CertificateManager
 
     protected abstract IList<X509Certificate2> GetCertificatesToRemove(StoreName storeName, StoreLocation storeLocation);
 
-    internal void ExportCertificate(X509Certificate2 certificate, string path, bool includePrivateKey, string? password, CertificateKeyExportFormat format)
+    internal static void ExportCertificate(X509Certificate2 certificate, string path, bool includePrivateKey, string? password, CertificateKeyExportFormat format)
     {
         if (Log.IsEnabled())
         {
@@ -698,7 +698,7 @@ internal abstract class CertificateManager
 
     internal abstract void CorrectCertificateState(X509Certificate2 candidate);
 
-    internal X509Certificate2 CreateSelfSignedCertificate(
+    internal static X509Certificate2 CreateSelfSignedCertificate(
         X500DistinguishedName subject,
         IEnumerable<X509Extension> extensions,
         DateTimeOffset notBefore,
@@ -715,7 +715,7 @@ internal abstract class CertificateManager
         var result = request.CreateSelfSigned(notBefore, notAfter);
         return result;
 
-        RSA CreateKeyMaterial(int minimumKeySize)
+        static RSA CreateKeyMaterial(int minimumKeySize)
         {
             var rsa = RSA.Create(minimumKeySize);
             if (rsa.KeySize < minimumKeySize)
@@ -780,7 +780,7 @@ internal abstract class CertificateManager
     }
 
     internal static string GetDescription(X509Certificate2 c) =>
-        $"{c.Thumbprint} - {c.Subject} - Valid from {c.NotBefore:u} to {c.NotAfter:u} - IsHttpsDevelopmentCertificate: {Instance.IsHttpsDevelopmentCertificate(c).ToString().ToLowerInvariant()} - IsExportable: {Instance.IsExportable(c).ToString().ToLowerInvariant()}";
+        $"{c.Thumbprint} - {c.Subject} - Valid from {c.NotBefore:u} to {c.NotAfter:u} - IsHttpsDevelopmentCertificate: {IsHttpsDevelopmentCertificate(c).ToString().ToLowerInvariant()} - IsExportable: {Instance.IsExportable(c).ToString().ToLowerInvariant()}";
 
     [EventSource(Name = "Dotnet-dev-certs")]
     public class CertificateManagerEventSource : EventSource
@@ -812,16 +812,14 @@ internal abstract class CertificateManager
         [Event(9, Level = EventLevel.Verbose, Message = "Excluded certificates: {0}")]
         public void ExcludedCertificates(string excludedCertificates) => WriteEvent(9, excludedCertificates);
 
-
         [Event(14, Level = EventLevel.Verbose, Message = "Valid certificates: {0}")]
         public void ValidCertificatesFound(string certificates) => WriteEvent(14, certificates);
 
         [Event(15, Level = EventLevel.Verbose, Message = "Selected certificate: {0}")]
         public void SelectedCertificate(string certificate) => WriteEvent(15, certificate);
 
-        [Event(16, Level = EventLevel.Verbose)]
-        public void NoValidCertificatesFound() => WriteEvent(16, "No valid certificates found.");
-
+        [Event(16, Level = EventLevel.Verbose, Message = "No valid certificates found.")]
+        public void NoValidCertificatesFound() => WriteEvent(16);
 
         [Event(17, Level = EventLevel.Verbose, Message = "Generating HTTPS development certificate.")]
         public void CreateDevelopmentCertificateStart() => WriteEvent(17);
@@ -862,8 +860,8 @@ internal abstract class CertificateManager
         [Event(29, Level = EventLevel.Verbose, Message = "Trusting the certificate to: {0}.")]
         public void TrustCertificateStart(string certificate) => WriteEvent(29, certificate);
 
-        [Event(30, Level = EventLevel.Verbose)]
-        public void TrustCertificateEnd() => WriteEvent(30, "Finished trusting the certificate.");
+        [Event(30, Level = EventLevel.Verbose, Message = "Finished trusting the certificate.")]
+        public void TrustCertificateEnd() => WriteEvent(30);
 
         [Event(31, Level = EventLevel.Error, Message = "An error has occurred while trusting the certificate: {0}.")]
         public void TrustCertificateError(string error) => WriteEvent(31, error);
@@ -889,7 +887,6 @@ internal abstract class CertificateManager
         [Event(38, Level = EventLevel.Verbose, Message = "The certificate is not trusted: {0}.")]
         public void MacOSCertificateUntrusted(string certificate) => WriteEvent(38, certificate);
 
-
         [Event(39, Level = EventLevel.Verbose, Message = "Removing the certificate from the keychain {0} {1}.")]
         public void MacOSRemoveCertificateFromKeyChainStart(string keyChain, string certificate) => WriteEvent(39, keyChain, certificate);
 
@@ -899,7 +896,6 @@ internal abstract class CertificateManager
         [Event(41, Level = EventLevel.Warning, Message = "An error has occurred while running the remove trust command: {0}.")]
         public void MacOSRemoveCertificateFromKeyChainError(int exitCode) => WriteEvent(41, exitCode);
 
-
         [Event(42, Level = EventLevel.Verbose, Message = "Removing the certificate from the user store {0}.")]
         public void RemoveCertificateFromUserStoreStart(string certificate) => WriteEvent(42, certificate);
 
@@ -908,7 +904,6 @@ internal abstract class CertificateManager
 
         [Event(44, Level = EventLevel.Error, Message = "An error has occurred while removing the certificate from the user store: {0}.")]
         public void RemoveCertificateFromUserStoreError(string error) => WriteEvent(44, error);
-
 
         [Event(45, Level = EventLevel.Verbose, Message = "Adding certificate to the trusted root certification authority store.")]
         public void WindowsAddCertificateToRootStore() => WriteEvent(45);
@@ -945,7 +940,6 @@ internal abstract class CertificateManager
 
         [Event(56, Level = EventLevel.Error, Message = "An error has occurred while importing the certificate to the keychain: {0}.")]
         internal void MacOSAddCertificateToKeyChainError(int exitCode) => WriteEvent(56, exitCode);
-
 
         [Event(57, Level = EventLevel.Verbose, Message = "Writing the certificate to: {0}.")]
         public void WritePemKeyToDisk(string path) => WriteEvent(57, path);

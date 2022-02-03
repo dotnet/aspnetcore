@@ -1,11 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
 
@@ -68,6 +64,8 @@ internal sealed class HttpRequestStream : Stream
     public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         => throw new NotSupportedException();
 
+    public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
+        => throw new NotSupportedException();
 
     public override long Seek(long offset, SeekOrigin origin)
     {
@@ -149,7 +147,6 @@ internal sealed class HttpRequestStream : Stream
                 _pipeReader.AdvanceTo(consumed);
             }
         }
-
     }
 
     /// <inheritdoc />

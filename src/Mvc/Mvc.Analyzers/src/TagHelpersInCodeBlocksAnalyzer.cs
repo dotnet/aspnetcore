@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
@@ -90,7 +90,6 @@ public class TagHelpersInCodeBlocksAnalyzer : DiagnosticAnalyzer
                 {
                     capturedDiagnosticLocations.Add(parent.Syntax.GetLocation());
                 }
-
             }, OperationKind.Await);
 
             startBlockContext.RegisterOperationBlockEndAction(context =>
@@ -104,7 +103,7 @@ public class TagHelpersInCodeBlocksAnalyzer : DiagnosticAnalyzer
         });
     }
 
-    private bool IsTagHelperRunnerRunAsync(IMethodSymbol method, SymbolCache symbolCache)
+    private static bool IsTagHelperRunnerRunAsync(IMethodSymbol method, SymbolCache symbolCache)
     {
         if (!SymbolEqualityComparer.Default.Equals(method, symbolCache.TagHelperRunnerRunAsyncMethodSymbol))
         {
@@ -114,7 +113,7 @@ public class TagHelpersInCodeBlocksAnalyzer : DiagnosticAnalyzer
         return true;
     }
 
-    private bool IsParentMethod(IOperation operation)
+    private static bool IsParentMethod(IOperation operation)
     {
         if (operation.Kind == OperationKind.LocalFunction)
         {
@@ -147,7 +146,6 @@ public class TagHelpersInCodeBlocksAnalyzer : DiagnosticAnalyzer
         public IMethodSymbol TagHelperRunnerRunAsyncMethodSymbol { get; }
 
         public INamedTypeSymbol TaskType { get; }
-
 
         public static bool TryCreate(Compilation compilation, out SymbolCache symbolCache)
         {

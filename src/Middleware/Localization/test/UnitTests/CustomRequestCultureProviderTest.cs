@@ -1,17 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Hosting;
-using Xunit;
 
 namespace Microsoft.Extensions.Localization;
 
@@ -65,7 +61,7 @@ public class CustomRequestCultureProviderTest
         }
     }
 
-    private string GetCultureInfoFromUrl(HttpContext context, IList<CultureInfo> supportedCultures)
+    private static string GetCultureInfoFromUrl(HttpContext context, IList<CultureInfo> supportedCultures)
     {
         var currentCulture = "en";
         var segments = context.Request.Path.Value.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);

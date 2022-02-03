@@ -1,13 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using System.IO.Pipelines;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http;
 
@@ -69,7 +64,7 @@ internal sealed class DefaultHttpResponse : HttpResponse
         get { return HttpResponseBodyFeature.Stream; }
         set
         {
-            var otherFeature = _features.Collection.Get<IHttpResponseBodyFeature>()!;
+            var otherFeature = _features.Collection.GetRequiredFeature<IHttpResponseBodyFeature>();
 
             if (otherFeature is StreamResponseBodyFeature streamFeature
                 && streamFeature.PriorFeature != null

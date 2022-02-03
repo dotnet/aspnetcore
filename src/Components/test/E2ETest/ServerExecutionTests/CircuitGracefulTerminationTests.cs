@@ -1,19 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Testing;
 using OpenQA.Selenium;
 using TestServer;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests;
@@ -28,7 +23,7 @@ public class CircuitGracefulTerminationTests : ServerTestBase<BasicTestAppServer
     {
     }
 
-    public TaskCompletionSource<object> GracefulDisconnectCompletionSource { get; private set; }
+    public TaskCompletionSource GracefulDisconnectCompletionSource { get; private set; }
     public TestSink Sink { get; private set; }
     public List<(Extensions.Logging.LogLevel level, string eventIdName)> Messages { get; private set; }
 
@@ -47,7 +42,7 @@ public class CircuitGracefulTerminationTests : ServerTestBase<BasicTestAppServer
         Browser.MountTestComponent<GracefulTermination>();
         Browser.Equal("Graceful Termination", () => Browser.Exists(By.TagName("h1")).Text);
 
-        GracefulDisconnectCompletionSource = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        GracefulDisconnectCompletionSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         Sink = _serverFixture.Host.Services.GetRequiredService<TestSink>();
         Messages = new List<(Extensions.Logging.LogLevel level, string eventIdName)>();
         Sink.MessageLogged += Log;
@@ -134,7 +129,7 @@ public class CircuitGracefulTerminationTests : ServerTestBase<BasicTestAppServer
     {
         if ((Extensions.Logging.LogLevel.Debug, "CircuitTerminatedGracefully") == (wc.LogLevel, wc.EventId.Name))
         {
-            GracefulDisconnectCompletionSource.TrySetResult(null);
+            GracefulDisconnectCompletionSource.TrySetResult();
         }
         Messages.Add((wc.LogLevel, wc.EventId.Name));
     }

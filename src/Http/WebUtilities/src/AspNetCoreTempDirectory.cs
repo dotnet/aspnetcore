@@ -3,9 +3,6 @@
 
 #nullable enable
 
-using System;
-using System.IO;
-
 namespace Microsoft.AspNetCore.Internal;
 
 internal static class AspNetCoreTempDirectory

@@ -1,4 +1,7 @@
 #nullable enable
+override Microsoft.AspNetCore.WebUtilities.BufferedReadStream.WriteAsync(System.ReadOnlyMemory<byte> buffer, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
+override Microsoft.AspNetCore.WebUtilities.FileBufferingReadStream.WriteAsync(System.ReadOnlyMemory<byte> buffer, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
+override Microsoft.AspNetCore.WebUtilities.FileBufferingWriteStream.ReadAsync(System.Memory<byte> buffer, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<int>
 override Microsoft.AspNetCore.WebUtilities.HttpResponseStreamWriter.WriteLineAsync(char value) -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.WebUtilities.HttpResponseStreamWriter.WriteLineAsync(char[]! values, int index, int count) -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.WebUtilities.HttpResponseStreamWriter.WriteLineAsync(string? value) -> System.Threading.Tasks.Task!

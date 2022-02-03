@@ -3,7 +3,6 @@
 
 #nullable enable
 
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Microsoft.AspNetCore.Mvc.ViewEngines;

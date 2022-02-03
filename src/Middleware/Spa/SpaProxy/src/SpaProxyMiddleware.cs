@@ -1,12 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using System.Text;
 using System.Text.Encodings.Web;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -72,7 +68,7 @@ internal class SpaProxyMiddleware
             context.Response.Redirect(_options.Value.ServerUrl);
         }
 
-        string GenerateSpaLaunchPage(SpaDevelopmentServerOptions options)
+        static string GenerateSpaLaunchPage(SpaDevelopmentServerOptions options)
         {
             return $@"
 <!DOCTYPE html>

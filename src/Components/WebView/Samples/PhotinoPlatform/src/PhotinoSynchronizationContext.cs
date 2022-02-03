@@ -1,10 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
 using PhotinoNET;
 
 #nullable disable warnings
@@ -174,7 +171,7 @@ internal class PhotinoSynchronizationContext : SynchronizationContext
     public override void Send(SendOrPostCallback d, object state)
     {
         Task antecedent;
-        var completion = new TaskCompletionSource<object>();
+        var completion = new TaskCompletionSource();
 
         lock (_state.Lock)
         {
@@ -203,7 +200,7 @@ internal class PhotinoSynchronizationContext : SynchronizationContext
     // if necessary.
     private void ExecuteSynchronouslyIfPossible(SendOrPostCallback d, object state)
     {
-        TaskCompletionSource<object> completion;
+        TaskCompletionSource completion;
         lock (_state.Lock)
         {
             if (!_state.Task.IsCompleted)
@@ -214,7 +211,7 @@ internal class PhotinoSynchronizationContext : SynchronizationContext
 
             // We can execute this synchronously because nothing is currently running
             // or queued.
-            completion = new TaskCompletionSource<object>();
+            completion = new TaskCompletionSource();
             _state.Task = completion.Task;
         }
 
@@ -248,7 +245,7 @@ internal class PhotinoSynchronizationContext : SynchronizationContext
     }
 
     private void ExecuteSynchronously(
-        TaskCompletionSource<object> completion,
+        TaskCompletionSource completion,
         SendOrPostCallback d,
         object state)
     {
@@ -268,7 +265,7 @@ internal class PhotinoSynchronizationContext : SynchronizationContext
                     _state.IsBusy = false;
                     SetSynchronizationContext(original);
 
-                    completion?.SetResult(null);
+                    completion?.SetResult();
                 }
             }});
     }

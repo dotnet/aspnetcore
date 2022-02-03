@@ -78,7 +78,6 @@ internal class ExceptionDetailsProvider
                 list.Add(innerException);
             }
         }
-
         else
         {
             while (ex != null)

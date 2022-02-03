@@ -89,7 +89,6 @@ internal class DiagnosticMemoryPool : MemoryPool<byte>
                 SetAllBlocksReturned();
             }
         }
-
     }
 
     internal void ReportException(Exception exception)

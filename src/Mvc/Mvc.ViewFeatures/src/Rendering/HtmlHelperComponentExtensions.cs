@@ -1,8 +1,6 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -46,7 +44,7 @@ public static class HtmlHelperComponentExtensions
     /// <param name="parameters">An <see cref="object"/> containing the parameters to pass
     /// to the component.</param>
     /// <param name="renderMode">The <see cref="RenderMode"/> for the component.</param>
-    public static Task<IHtmlContent> RenderComponentAsync(
+    public static async Task<IHtmlContent> RenderComponentAsync(
         this IHtmlHelper htmlHelper,
         Type componentType,
         RenderMode renderMode,
@@ -64,6 +62,6 @@ public static class HtmlHelperComponentExtensions
 
         var viewContext = htmlHelper.ViewContext;
         var componentRenderer = viewContext.HttpContext.RequestServices.GetRequiredService<IComponentRenderer>();
-        return componentRenderer.RenderComponentAsync(viewContext, componentType, renderMode, parameters);
+        return await componentRenderer.RenderComponentAsync(viewContext, componentType, renderMode, parameters);
     }
 }

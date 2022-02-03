@@ -3,9 +3,6 @@
 
 #nullable enable
 
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
@@ -60,10 +57,10 @@ public class KeyValuePairModelBinder<TKey, TValue> : IModelBinder
         _logger.AttemptingToBindModel(bindingContext);
 
         var keyModelName = ModelNames.CreatePropertyModelName(bindingContext.ModelName, "Key");
-        var keyResult = await TryBindStrongModel<TKey?>(bindingContext, _keyBinder, "Key", keyModelName);
+        var keyResult = await KeyValuePairModelBinder<TKey, TValue>.TryBindStrongModel<TKey?>(bindingContext, _keyBinder, "Key", keyModelName);
 
         var valueModelName = ModelNames.CreatePropertyModelName(bindingContext.ModelName, "Value");
-        var valueResult = await TryBindStrongModel<TValue?>(bindingContext, _valueBinder, "Value", valueModelName);
+        var valueResult = await KeyValuePairModelBinder<TKey, TValue>.TryBindStrongModel<TValue?>(bindingContext, _valueBinder, "Value", valueModelName);
 
         if (keyResult.IsModelSet && valueResult.IsModelSet)
         {
@@ -104,7 +101,7 @@ public class KeyValuePairModelBinder<TKey, TValue> : IModelBinder
         _logger.DoneAttemptingToBindModel(bindingContext);
     }
 
-    internal async Task<ModelBindingResult> TryBindStrongModel<TModel>(
+    internal static async Task<ModelBindingResult> TryBindStrongModel<TModel>(
         ModelBindingContext bindingContext,
         IModelBinder binder,
         string propertyName,

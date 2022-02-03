@@ -1,11 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.AspNetCore.Routing.TestObjects;
@@ -14,7 +10,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Routing.Tree;
 
@@ -1110,7 +1105,6 @@ public class TreeRouterTest
         Assert.Equal("/a/b/3/d", result.VirtualPath);
     }
 
-
     [Fact]
     public void TreeRouter_GeneratesLink_ForMultipleNamedEntriesWithTheSameTemplate()
     {
@@ -2053,7 +2047,6 @@ public class TreeRouterTest
 
         return entry;
     }
-
 
     private static string CreateRouteGroup(int order, string template)
     {

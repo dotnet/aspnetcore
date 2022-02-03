@@ -1,11 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using System.IO.Pipelines;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 
@@ -232,7 +228,7 @@ internal class HttpContextBuilder : IHttpBodyControlFeature, IHttpResetFeature
             {
                 newFeatures[pair.Key] = pair.Value;
             }
-            var serverResponseFeature = _httpContext.Features.Get<IHttpResponseFeature>()!;
+            var serverResponseFeature = _httpContext.Features.GetRequiredFeature<IHttpResponseFeature>();
             // The client gets a deep copy of this so they can interact with the body stream independently of the server.
             var clientResponseFeature = new HttpResponseFeature()
             {

@@ -3,7 +3,6 @@
 
 #nullable enable
 
-using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -12,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 /// <summary>
 /// An <see cref="IModelBinderProvider"/> for binding header values.
 /// </summary>
-public class HeaderModelBinderProvider : IModelBinderProvider
+public partial class HeaderModelBinderProvider : IModelBinderProvider
 {
     /// <inheritdoc />
     public IModelBinder? GetBinder(ModelBinderProviderContext context)
@@ -35,7 +34,7 @@ public class HeaderModelBinderProvider : IModelBinderProvider
 
         if (!IsSimpleType(modelMetadata))
         {
-            logger.CannotCreateHeaderModelBinder(modelMetadata.ModelType);
+            Log.CannotCreateHeaderModelBinder(logger, modelMetadata.ModelType);
             return null;
         }
 
@@ -60,9 +59,15 @@ public class HeaderModelBinderProvider : IModelBinderProvider
     }
 
     // Support binding only to simple types or collection of simple types.
-    private bool IsSimpleType(ModelMetadata modelMetadata)
+    private static bool IsSimpleType(ModelMetadata modelMetadata)
     {
         var metadata = modelMetadata.ElementMetadata ?? modelMetadata;
         return !metadata.IsComplexType;
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(20, LogLevel.Debug, "Could not create a binder for type '{ModelType}' as this binder only supports simple types (like string, int, bool, enum) or a collection of simple types.", EventName = "CannotCreateHeaderModelBinder")]
+        public static partial void CannotCreateHeaderModelBinder(ILogger logger, Type modelType);
     }
 }

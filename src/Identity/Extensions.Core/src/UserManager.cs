@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -793,7 +792,6 @@ public class UserManager<TUser> : IDisposable where TUser : class
             throw new ArgumentNullException(nameof(user));
         }
 
-
         if (await VerifyPasswordAsync(passwordStore, user, currentPassword) != PasswordVerificationResult.Failed)
         {
             var result = await UpdatePasswordHash(passwordStore, user, newPassword);
@@ -1057,7 +1055,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     public virtual Task<IdentityResult> AddClaimAsync(TUser user, Claim claim)
     {
         ThrowIfDisposed();
-        var claimStore = GetClaimStore();
+        GetClaimStore();
         if (claim == null)
         {
             throw new ArgumentNullException(nameof(claim));
@@ -1138,7 +1136,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     public virtual Task<IdentityResult> RemoveClaimAsync(TUser user, Claim claim)
     {
         ThrowIfDisposed();
-        var claimStore = GetClaimStore();
+        GetClaimStore();
         if (user == null)
         {
             throw new ArgumentNullException(nameof(user));

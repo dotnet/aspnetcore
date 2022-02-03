@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using Duende.IdentityServer.Extensions;
 using Microsoft.AspNetCore.Http;
@@ -28,12 +26,12 @@ internal class DefaultClientRequestParametersProvider : IClientRequestParameters
     {
         var client = Options.Value.Clients[clientId];
         var authority = context.GetIdentityServerIssuerUri();
-        var responseType = "";
         if (!client.Properties.TryGetValue(ApplicationProfilesPropertyNames.Profile, out var type))
         {
             throw new InvalidOperationException($"Can't determine the type for the client '{clientId}'");
         }
 
+        string responseType;
         switch (type)
         {
             case ApplicationProfiles.IdentityServerSPA:

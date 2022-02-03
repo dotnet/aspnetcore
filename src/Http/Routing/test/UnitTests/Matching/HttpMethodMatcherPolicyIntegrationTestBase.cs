@@ -1,15 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
-using Xunit;
 using static Microsoft.AspNetCore.Routing.Matching.HttpMethodMatcherPolicy;
 
 namespace Microsoft.AspNetCore.Routing.Matching;
@@ -66,7 +61,6 @@ public abstract class HttpMethodMatcherPolicyIntegrationTestBase
         // Assert
         MatcherAssert.AssertMatch(httpContext, endpoint);
     }
-
 
     [Fact] // Nothing here supports OPTIONS, so it goes to a 405.
     public async Task NotMatch_HttpMethod_CORS_Preflight()

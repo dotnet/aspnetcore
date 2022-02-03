@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Core;
@@ -99,7 +97,7 @@ internal class ApiBehaviorApplicationModelProvider : IApplicationModelProvider
             throw new InvalidOperationException(message);
         }
 
-        bool IsAttributeRouted(IList<SelectorModel> selectorModel)
+        static bool IsAttributeRouted(IList<SelectorModel> selectorModel)
         {
             for (var i = 0; i < selectorModel.Count; i++)
             {

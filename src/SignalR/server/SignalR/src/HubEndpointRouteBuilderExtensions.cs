@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Routing;
@@ -24,7 +23,7 @@ public static class HubEndpointRouteBuilderExtensions
     /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
     /// <param name="pattern">The route pattern.</param>
     /// <returns>An <see cref="HubEndpointConventionBuilder"/> for endpoints associated with the connections.</returns>
-    public static HubEndpointConventionBuilder MapHub<[DynamicallyAccessedMembers(HubAccessibility)]THub>(this IEndpointRouteBuilder endpoints, string pattern) where THub : Hub
+    public static HubEndpointConventionBuilder MapHub<[DynamicallyAccessedMembers(HubAccessibility)] THub>(this IEndpointRouteBuilder endpoints, string pattern) where THub : Hub
     {
         return endpoints.MapHub<THub>(pattern, configureOptions: null);
     }
@@ -37,7 +36,7 @@ public static class HubEndpointRouteBuilderExtensions
     /// <param name="pattern">The route pattern.</param>
     /// <param name="configureOptions">A callback to configure dispatcher options.</param>
     /// <returns>An <see cref="HubEndpointConventionBuilder"/> for endpoints associated with the connections.</returns>
-    public static HubEndpointConventionBuilder MapHub<[DynamicallyAccessedMembers(HubAccessibility)]THub>(this IEndpointRouteBuilder endpoints, string pattern, Action<HttpConnectionDispatcherOptions>? configureOptions) where THub : Hub
+    public static HubEndpointConventionBuilder MapHub<[DynamicallyAccessedMembers(HubAccessibility)] THub>(this IEndpointRouteBuilder endpoints, string pattern, Action<HttpConnectionDispatcherOptions>? configureOptions) where THub : Hub
     {
         var marker = endpoints.ServiceProvider.GetService<SignalRMarkerService>();
 

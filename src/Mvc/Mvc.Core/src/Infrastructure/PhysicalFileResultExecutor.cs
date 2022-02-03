@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.Extensions.Logging;
@@ -14,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 /// <summary>
 /// A <see cref="IActionResultExecutor{PhysicalFileResult}"/> for <see cref="PhysicalFileResult"/>.
 /// </summary>
-public class PhysicalFileResultExecutor : FileResultExecutorBase, IActionResultExecutor<PhysicalFileResult>
+public partial class PhysicalFileResultExecutor : FileResultExecutorBase, IActionResultExecutor<PhysicalFileResult>
 {
     /// <summary>
     /// Initializes a new instance of <see cref="PhysicalFileResultExecutor"/>.
@@ -100,7 +97,7 @@ public class PhysicalFileResultExecutor : FileResultExecutorBase, IActionResultE
 
         if (range != null)
         {
-            logger.WritingRangeToBody();
+            Log.WritingRangeToBody(logger);
         }
 
         if (range != null)
@@ -135,7 +132,6 @@ public class PhysicalFileResultExecutor : FileResultExecutorBase, IActionResultE
                 FileOptions.Asynchronous | FileOptions.SequentialScan);
     }
 
-
     /// <summary>
     /// Get the file metadata for a path.
     /// </summary>
@@ -144,6 +140,14 @@ public class PhysicalFileResultExecutor : FileResultExecutorBase, IActionResultE
     protected virtual FileMetadata GetFileInfo(string path)
     {
         var fileInfo = new FileInfo(path);
+
+        // It means we are dealing with a symlink and need to get the information
+        // from the target file instead.
+        if (fileInfo.Exists && !string.IsNullOrEmpty(fileInfo.LinkTarget))
+        {
+            fileInfo = (FileInfo?)fileInfo.ResolveLinkTarget(returnFinalTarget: true) ?? fileInfo;
+        }
+
         return new FileMetadata
         {
             Exists = fileInfo.Exists,
@@ -171,5 +175,11 @@ public class PhysicalFileResultExecutor : FileResultExecutorBase, IActionResultE
         /// When the file was last modified.
         /// </summary>
         public DateTimeOffset LastModified { get; set; }
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(17, LogLevel.Debug, "Writing the requested range of bytes to the body...", EventName = "WritingRangeToBody")]
+        public static partial void WritingRangeToBody(ILogger logger);
     }
 }

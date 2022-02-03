@@ -1,19 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.WebSockets;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
@@ -157,16 +152,14 @@ public class OwinEnvironment : IDictionary<string, object>
 
     bool IDictionary<string, object>.ContainsKey(string key)
     {
-        object value;
-        return ((IDictionary<string, object>)this).TryGetValue(key, out value);
+        return ((IDictionary<string, object>)this).TryGetValue(key, out _);
     }
 
     ICollection<string> IDictionary<string, object>.Keys
     {
         get
         {
-            object value;
-            return _entries.Where(pair => pair.Value.TryGet(_context, out value))
+            return _entries.Where(pair => pair.Value.TryGet(_context, out _))
                 .Select(pair => pair.Key).Concat(_context.Items.Keys.Select(key => Convert.ToString(key, CultureInfo.InvariantCulture))).ToList();
         }
     }

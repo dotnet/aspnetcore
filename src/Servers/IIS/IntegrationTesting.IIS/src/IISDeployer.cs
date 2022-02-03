@@ -1,14 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.ServiceProcess;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
 using Microsoft.Extensions.Logging;
@@ -446,7 +440,7 @@ public class IISDeployer : IISDeployerBase
         }
     }
 
-    private void RetryServerManagerAction(Action<ServerManager> action)
+    private static void RetryServerManagerAction(Action<ServerManager> action)
     {
         List<Exception> exceptions = null;
         var sw = Stopwatch.StartNew();

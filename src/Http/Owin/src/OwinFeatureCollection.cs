@@ -1,20 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.IO.Pipelines;
 using System.Net;
 using System.Net.WebSockets;
-using System.Reflection;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
@@ -310,8 +304,7 @@ public class OwinFeatureCollection :
     {
         get
         {
-            object obj;
-            return Environment.TryGetValue(OwinConstants.WebSocket.AcceptAlt, out obj);
+            return Environment.TryGetValue(OwinConstants.WebSocket.AcceptAlt, out _);
         }
     }
 

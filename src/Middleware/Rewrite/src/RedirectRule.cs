@@ -1,12 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Rewrite.Logging;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Rewrite;
 
@@ -48,7 +46,6 @@ internal class RedirectRule : IRule
         {
             initMatchResults = InitialMatch.Match(path.ToString().Substring(1));
         }
-
 
         if (initMatchResults.Success)
         {

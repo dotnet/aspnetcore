@@ -3,17 +3,14 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
-using Serilog;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Testing;
@@ -119,7 +116,6 @@ public class LoggedTestBase : ILoggedTest, ITestMethodLifecycle
 
     Task ITestMethodLifecycle.OnTestStartAsync(TestContext context, CancellationToken cancellationToken)
     {
-
         Context = context;
         return InitializeAsync(context, context.TestMethod, context.MethodArguments, context.Output);
     }

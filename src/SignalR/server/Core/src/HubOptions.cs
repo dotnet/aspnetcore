@@ -1,8 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
+using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.SignalR;
 
@@ -73,4 +73,13 @@ public class HubOptions
             _maximumParallelInvocationsPerClient = value;
         }
     }
+
+    /// <summary>
+    /// When <see langword="false"/>, <see cref="IServiceProviderIsService"/> determines if a Hub method parameter will be injected from the DI container.
+    /// Parameters can be explicitly marked with an attribute that implements <see cref="IFromServiceMetadata"/> with or without this option set.
+    /// </summary>
+    /// <remarks>
+    /// False by default. Hub method arguments will be resolved from a DI container if possible.
+    /// </remarks>
+    public bool DisableImplicitFromServiceParameters { get; set; }
 }

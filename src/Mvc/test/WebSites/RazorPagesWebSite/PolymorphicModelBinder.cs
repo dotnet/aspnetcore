@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace RazorPagesWebSite;
@@ -17,7 +16,6 @@ public class PolymorphicModelBinder : IModelBinder
         {
             age = int.Parse(ageValue.FirstValue, CultureInfo.InvariantCulture);
         }
-
 
         var model = new UserModel
         {

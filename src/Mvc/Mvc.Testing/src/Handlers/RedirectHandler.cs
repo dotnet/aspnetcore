@@ -1,14 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
-using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc.Testing.Handlers;
@@ -177,7 +173,7 @@ public class RedirectHandler : DelegatingHandler
         response.StatusCode == HttpStatusCode.RedirectKeepVerb ||
             (int)response.StatusCode == 308;
 
-    private bool IsRedirect(HttpResponseMessage response) =>
+    private static bool IsRedirect(HttpResponseMessage response) =>
         response.StatusCode == HttpStatusCode.MovedPermanently ||
             response.StatusCode == HttpStatusCode.Redirect ||
             response.StatusCode == HttpStatusCode.RedirectMethod ||

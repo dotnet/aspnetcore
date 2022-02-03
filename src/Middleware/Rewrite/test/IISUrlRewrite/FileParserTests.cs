@@ -1,13 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.IO;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Rewrite.IISUrlRewrite;
 using Microsoft.AspNetCore.Rewrite.UrlActions;
 using Microsoft.AspNetCore.Rewrite.UrlMatches;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite;
 
@@ -171,7 +168,7 @@ public class FileParserTests
     }
 
     // Creates a rule with appropriate default values of the url rewrite rule.
-    private IISUrlRewriteRule CreateTestRule(ConditionCollection conditions,
+    private static IISUrlRewriteRule CreateTestRule(ConditionCollection conditions,
         string name = "",
         bool enabled = true,
         PatternSyntax patternSyntax = PatternSyntax.ECMAScript,
@@ -197,7 +194,7 @@ public class FileParserTests
     }
 
     // TODO make rules comparable?
-    private void AssertUrlRewriteRuleEquality(IList<IISUrlRewriteRule> actual, IList<IISUrlRewriteRule> expected)
+    private static void AssertUrlRewriteRuleEquality(IList<IISUrlRewriteRule> actual, IList<IISUrlRewriteRule> expected)
     {
         Assert.Equal(actual.Count, expected.Count);
         for (var i = 0; i < actual.Count; i++)

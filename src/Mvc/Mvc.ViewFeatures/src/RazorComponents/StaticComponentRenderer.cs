@@ -1,14 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,7 +24,7 @@ internal class StaticComponentRenderer
         _renderer = renderer;
     }
 
-    public async Task<IEnumerable<string>> PrerenderComponentAsync(
+    public async ValueTask<IHtmlContent> PrerenderComponentAsync(
         ParameterView parameters,
         HttpContext httpContext,
         Type componentType)
@@ -54,10 +52,10 @@ internal class StaticComponentRenderer
             }
 
             httpContext.Response.Redirect(navigationException.Location);
-            return Array.Empty<string>();
+            return HtmlString.Empty;
         }
 
-        return result.Tokens;
+        return result.HtmlContent;
     }
 
     private Task InitializeStandardComponentServicesAsync(HttpContext httpContext)
@@ -74,7 +72,7 @@ internal class StaticComponentRenderer
 
         return _initialized;
 
-        async Task InitializeCore(HttpContext httpContext)
+        static async Task InitializeCore(HttpContext httpContext)
         {
             var navigationManager = (IHostEnvironmentNavigationManager)httpContext.RequestServices.GetRequiredService<NavigationManager>();
             navigationManager?.Initialize(GetContextBaseUri(httpContext.Request), GetFullUri(httpContext.Request));
@@ -93,7 +91,7 @@ internal class StaticComponentRenderer
         }
     }
 
-    private string GetFullUri(HttpRequest request)
+    private static string GetFullUri(HttpRequest request)
     {
         return UriHelper.BuildAbsolute(
             request.Scheme,
@@ -103,7 +101,7 @@ internal class StaticComponentRenderer
             request.QueryString);
     }
 
-    private string GetContextBaseUri(HttpRequest request)
+    private static string GetContextBaseUri(HttpRequest request)
     {
         var result = UriHelper.BuildAbsolute(request.Scheme, request.Host, request.PathBase);
 

@@ -1,17 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Runtime.Serialization;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Options;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.DataAnnotations;
 
@@ -60,7 +56,6 @@ public class ModelMetadataProviderTest
         // Assert
         Assert.Equal("TypePrefix", metadata.BinderModelName);
     }
-
 
     [Fact]
     public void ModelMetadataProvider_ReadsScaffoldColumnAttribute_ForShowForDisplay()

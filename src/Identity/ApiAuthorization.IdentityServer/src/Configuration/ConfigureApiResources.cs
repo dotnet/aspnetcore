@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using Duende.IdentityServer.Models;
 using Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
 using Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Configuration;
@@ -14,7 +12,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 internal class ConfigureApiResources : IConfigureOptions<ApiAuthorizationOptions>
 {
-    private static readonly char[] ScopesSeparator = new char[] { ' ' };
+    private const char ScopesSeparator = ' ';
 
     private readonly IConfiguration _configuration;
     private readonly ILogger<ConfigureApiResources> _logger;
@@ -64,7 +62,7 @@ internal class ConfigureApiResources : IConfigureOptions<ApiAuthorizationOptions
         }
     }
 
-    public ApiResource GetResource(string name, ResourceDefinition definition)
+    public static ApiResource GetResource(string name, ResourceDefinition definition)
     {
         switch (definition.Profile)
         {
@@ -77,7 +75,7 @@ internal class ConfigureApiResources : IConfigureOptions<ApiAuthorizationOptions
         }
     }
 
-    private string[] ParseScopes(string scopes)
+    private static string[] ParseScopes(string scopes)
     {
         if (scopes == null)
         {
@@ -93,14 +91,14 @@ internal class ConfigureApiResources : IConfigureOptions<ApiAuthorizationOptions
         return parsed;
     }
 
-    private ApiResource GetAPI(string name, ResourceDefinition definition) =>
+    private static ApiResource GetAPI(string name, ResourceDefinition definition) =>
         ApiResourceBuilder.ApiResource(name)
             .FromConfiguration()
             .WithAllowedClients(ApplicationProfilesPropertyValues.AllowAllApplications)
             .ReplaceScopes(ParseScopes(definition.Scopes) ?? new[] { name })
             .Build();
 
-    private ApiResource GetLocalAPI(string name, ResourceDefinition definition) =>
+    private static ApiResource GetLocalAPI(string name, ResourceDefinition definition) =>
         ApiResourceBuilder.IdentityServerJwt(name)
             .FromConfiguration()
             .WithAllowedClients(ApplicationProfilesPropertyValues.AllowAllApplications)

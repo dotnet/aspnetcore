@@ -1,10 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Concurrent;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Core;
 
 namespace Microsoft.AspNetCore.Mvc.Filters;
@@ -50,7 +50,7 @@ internal class MiddlewareFilterBuilder
         var nestedAppBuilder = ApplicationBuilder.New();
 
         // Get the 'Configure' method from the user provided type.
-        var configureDelegate = _configurationProvider.CreateConfigureDelegate(middlewarePipelineProviderType);
+        var configureDelegate = MiddlewareFilterConfigurationProvider.CreateConfigureDelegate(middlewarePipelineProviderType);
         configureDelegate(nestedAppBuilder);
 
         // The middleware resource filter, after receiving the request executes the user configured middleware
@@ -61,12 +61,7 @@ internal class MiddlewareFilterBuilder
         // middleware filter -> user-middleware1 -> user-middleware2 -> end-middleware -> resource filters or model binding
         nestedAppBuilder.Run(async (httpContext) =>
         {
-            var feature = httpContext.Features.Get<IMiddlewareFilterFeature>();
-            if (feature == null)
-            {
-                throw new InvalidOperationException(
-                    Resources.FormatMiddlewareFilterBuilder_NoMiddlewareFeature(nameof(IMiddlewareFilterFeature)));
-            }
+            var feature = httpContext.Features.GetRequiredFeature<IMiddlewareFilterFeature>();
 
             var resourceExecutionDelegate = feature.ResourceExecutionDelegate!;
 

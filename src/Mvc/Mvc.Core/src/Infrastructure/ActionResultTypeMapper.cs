@@ -3,8 +3,6 @@
 
 #nullable enable
 
-using System;
-
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
 internal class ActionResultTypeMapper : IActionResultTypeMapper

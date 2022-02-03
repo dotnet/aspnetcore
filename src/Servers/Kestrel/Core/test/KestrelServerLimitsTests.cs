@@ -251,7 +251,6 @@ public class KestrelServerLimitsTests
         Assert.Equal(value, limits.MaxConcurrentUpgradedConnections);
     }
 
-
     [Theory]
     [InlineData(long.MinValue)]
     [InlineData(-1)]

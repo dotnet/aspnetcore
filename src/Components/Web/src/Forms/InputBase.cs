@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 
@@ -272,8 +271,8 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
     /// <summary>
     /// Returns a dictionary with the same values as the specified <paramref name="source"/>.
     /// </summary>
-    /// <returns>true, if a new dictrionary with copied values was created. false - otherwise.</returns>
-    private bool ConvertToDictionary(IReadOnlyDictionary<string, object>? source, out Dictionary<string, object> result)
+    /// <returns>true, if a new dictionary with copied values was created. false - otherwise.</returns>
+    private static bool ConvertToDictionary(IReadOnlyDictionary<string, object>? source, out Dictionary<string, object> result)
     {
         var newDictionaryCreated = true;
         if (source == null)

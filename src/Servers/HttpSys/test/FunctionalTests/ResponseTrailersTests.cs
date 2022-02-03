@@ -118,7 +118,7 @@ public class ResponseTrailersTests
     public async Task ResponseTrailers_WithContentLengthBody_TrailersNotSent()
     {
         var body = "Hello World";
-        var responseFinished = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var responseFinished = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         using (Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
         {
             httpContext.Response.ContentLength = body.Length;
@@ -126,7 +126,7 @@ public class ResponseTrailersTests
             try
             {
                 Assert.Throws<InvalidOperationException>(() => httpContext.Response.AppendTrailer("TrailerName", "Trailer Value"));
-                responseFinished.SetResult(0);
+                responseFinished.SetResult();
             }
             catch (Exception ex)
             {
@@ -224,7 +224,7 @@ public class ResponseTrailersTests
     [MinimumOSVersion(OperatingSystems.Windows, "10.0.19529", SkipReason = "Requires HTTP/2 Trailers support.")]
     public async Task ResponseTrailers_CompleteAsyncNoBody_TrailersSent()
     {
-        var trailersReceived = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var trailersReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         using (Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
         {
             httpContext.Response.AppendTrailer("trailername", "TrailerValue");
@@ -237,7 +237,7 @@ public class ResponseTrailersTests
             Assert.Equal(HttpVersion.Version20, response.Version);
             Assert.NotEmpty(response.TrailingHeaders);
             Assert.Equal("TrailerValue", response.TrailingHeaders.GetValues("TrailerName").Single());
-            trailersReceived.SetResult(0);
+            trailersReceived.SetResult();
         }
     }
 
@@ -245,7 +245,7 @@ public class ResponseTrailersTests
     [MinimumOSVersion(OperatingSystems.Windows, "10.0.19529", SkipReason = "Requires HTTP/2 Trailers support.")]
     public async Task ResponseTrailers_CompleteAsyncWithBody_TrailersSent()
     {
-        var trailersReceived = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var trailersReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         using (Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
         {
             await httpContext.Response.WriteAsync("Hello World");
@@ -260,7 +260,7 @@ public class ResponseTrailersTests
             Assert.Equal("Hello World", await response.Content.ReadAsStringAsync());
             Assert.NotEmpty(response.TrailingHeaders);
             Assert.Equal("Trailer Value", response.TrailingHeaders.GetValues("TrailerName").Single());
-            trailersReceived.SetResult(0);
+            trailersReceived.SetResult();
         }
     }
 

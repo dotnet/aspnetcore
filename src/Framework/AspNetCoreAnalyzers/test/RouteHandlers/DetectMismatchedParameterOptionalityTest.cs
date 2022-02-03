@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Microsoft.AspNetCore.Analyzers.RouteHandlers.CSharpRouteHandlerCodeFixVerifier<
     Microsoft.AspNetCore.Analyzers.RouteHandlers.RouteHandlerAnalyzer,
     Microsoft.AspNetCore.Analyzers.RouteHandlers.Fixers.DetectMismatchedParameterOptionalityFixer>;

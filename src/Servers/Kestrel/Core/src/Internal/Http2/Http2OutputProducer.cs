@@ -1,12 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.IO.Pipelines;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Threading.Tasks.Sources;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Internal;
@@ -415,7 +412,6 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
             ReadResult readResult = default;
             try
             {
-
                 do
                 {
                     var firstWrite = true;

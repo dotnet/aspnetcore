@@ -23,7 +23,7 @@ internal static class SendUtils
         {
             while (true)
             {
-                var result = await application.Input.ReadAsync(cancellationToken);
+                var result = await application.Input.ReadAsync(cancellationToken).ConfigureAwait(false);
                 var buffer = result.Buffer;
 
                 try
@@ -49,7 +49,7 @@ internal static class SendUtils
                         // rather than buffer the entire response. This gives a small perf boost.
                         // Note that it is important to dispose of the response when doing this to
                         // avoid leaving the connection open.
-                        using (var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken))
+                        using (var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false))
                         {
                             response.EnsureSuccessStatusCode();
                         }

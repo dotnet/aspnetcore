@@ -1,19 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Runtime.InteropServices;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
+#pragma warning disable CA1844 // Provide memory-based overrides of async methods when subclassing 'Stream'. Fixing this is too gnarly.
 internal partial class RequestStream : Stream
+#pragma warning restore CA1844 // Provide memory-based overrides of async methods when subclassing 'Stream'
 {
     private const int MaxReadSize = 0x20000; // http.sys recommends we limit reads to 128k
 
@@ -96,7 +94,7 @@ internal partial class RequestStream : Stream
         _requestContext.Abort();
     }
 
-    private void ValidateReadBuffer(byte[] buffer, int offset, int size)
+    private static void ValidateReadBuffer(byte[] buffer, int offset, int size)
     {
         if (buffer == null)
         {

@@ -3,9 +3,6 @@
 
 #nullable enable
 
-using System;
-using System.IO;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
@@ -14,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 /// <summary>
 /// A <see cref="IActionResultExecutor{FileContentResult}"/>
 /// </summary>
-public class FileContentResultExecutor : FileResultExecutorBase, IActionResultExecutor<FileContentResult>
+public partial class FileContentResultExecutor : FileResultExecutorBase, IActionResultExecutor<FileContentResult>
 {
     /// <summary>
     /// Intializes a new <see cref="FileContentResultExecutor"/>.
@@ -82,10 +79,16 @@ public class FileContentResultExecutor : FileResultExecutorBase, IActionResultEx
 
         if (range != null)
         {
-            Logger.WritingRangeToBody();
+            Log.WritingRangeToBody(Logger);
         }
 
         var fileContentStream = new MemoryStream(result.FileContents);
         return WriteFileAsync(context.HttpContext, fileContentStream, range, rangeLength);
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(17, LogLevel.Debug, "Writing the requested range of bytes to the body...", EventName = "WritingRangeToBody")]
+        public static partial void WritingRangeToBody(ILogger logger);
     }
 }

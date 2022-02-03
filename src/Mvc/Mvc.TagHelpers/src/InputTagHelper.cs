@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -288,7 +286,7 @@ public class InputTagHelper : TagHelper
         {
             if (modelExplorer.Model != null)
             {
-                if (!bool.TryParse(modelExplorer.Model.ToString(), out var potentialBool))
+                if (!bool.TryParse(modelExplorer.Model.ToString(), out _))
                 {
                     throw new InvalidOperationException(Resources.FormatInputTagHelper_InvalidStringResult(
                         ForAttributeName,

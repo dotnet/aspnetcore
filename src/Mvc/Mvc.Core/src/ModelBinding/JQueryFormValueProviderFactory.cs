@@ -3,10 +3,7 @@
 
 #nullable enable
 
-using System;
 using System.Globalization;
-using System.IO;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
 

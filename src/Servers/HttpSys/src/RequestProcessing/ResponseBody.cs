@@ -1,20 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Runtime.InteropServices;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
 using static Microsoft.AspNetCore.HttpSys.Internal.UnsafeNclNativeMethods;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
+#pragma warning disable CA1844 // Provide memory-based overrides of async methods when subclassing 'Stream'. Fixing this is too gnarly.
 internal class ResponseBody : Stream
+#pragma warning restore CA1844
 {
     private readonly RequestContext _requestContext;
     private long _leftToWrite = long.MinValue;
@@ -277,7 +274,7 @@ internal class ResponseBody : Stream
         chunkIndex++;
     }
 
-    private void FreeDataBuffers(List<GCHandle> pinnedBuffers)
+    private static void FreeDataBuffers(List<GCHandle> pinnedBuffers)
     {
         foreach (var pin in pinnedBuffers)
         {
@@ -320,7 +317,7 @@ internal class ResponseBody : Stream
 
         // Make sure all validation is performed before this computes the headers
         var flags = ComputeLeftToWrite(data.Count);
-        uint statusCode = 0;
+        uint statusCode;
         var chunked = _requestContext.Response.BoundaryType == BoundaryType.Chunked;
         var asyncResult = new ResponseStreamAsyncResult(this, data, chunked, cancellationToken);
         uint bytesSent = 0;

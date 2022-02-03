@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.Extensions.Logging;
@@ -90,6 +89,5 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
 
         [LoggerMessage(2, LogLevel.Debug, "Received notification that the URI has changed to {Uri} with isIntercepted={IsIntercepted}", EventName = "ReceivedLocationChangedNotification")]
         public static partial void ReceivedLocationChangedNotification(ILogger logger, string uri, bool isIntercepted);
-
     }
 }

@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 import { ReconnectDisplay } from './ReconnectDisplay';
 import { Logger, LogLevel } from '../Logging/Logger';
 import { Blazor } from '../../GlobalExports';
@@ -73,7 +76,7 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
         if (!successful) {
           this.rejected();
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         // We got an exception, server is currently unavailable
         this.logger.log(LogLevel.Error, err as Error);
         this.failed();

@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -349,7 +347,6 @@ public class TemplateBinder
             }
             else if (_defaults != null && _defaults.TryGetValue(parameter.Name, out var defaultValue))
             {
-
                 // Add the default value only if there isn't already a new value for it and
                 // only if it actually has a default value.
                 slots[i] = new KeyValuePair<string, object?>(key, defaultValue);

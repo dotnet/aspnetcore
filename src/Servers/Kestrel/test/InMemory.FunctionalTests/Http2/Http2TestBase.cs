@@ -470,7 +470,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         _timeoutControl.Initialize(_serviceContext.SystemClock.UtcNow.Ticks);
     }
 
-    protected async Task InitializeConnectionAsync(RequestDelegate application, int expectedSettingsCount = 3, bool expectedWindowUpdate = true)
+    protected void InitializeConnectionWithoutPreface(RequestDelegate application)
     {
         if (_connection == null)
         {
@@ -493,9 +493,15 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         }
 
         _connectionTask = CompletePipeOnTaskCompletion();
+    }
+
+    protected async Task InitializeConnectionAsync(RequestDelegate application, int expectedSettingsCount = 3, bool expectedWindowUpdate = true)
+    {
+        InitializeConnectionWithoutPreface(application);
 
         // Lose xUnit's AsyncTestSyncContext so middleware always runs inline for better determinism.
         await ThreadPoolAwaitable.Instance;
+
         await SendPreambleAsync();
         await SendSettingsAsync();
 
@@ -1109,6 +1115,22 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         return FlushAsync(outputWriter);
     }
 
+    internal async Task<byte[]> ReadAllAsync()
+    {
+        while (true)
+        {
+            var result = await _pair.Application.Input.ReadAsync().AsTask().DefaultTimeout();
+
+            if (result.IsCompleted)
+            {
+                return result.Buffer.ToArray();
+            }
+
+            // Consume nothing, just wait for everything
+            _pair.Application.Input.AdvanceTo(result.Buffer.Start, result.Buffer.End);
+        }
+    }
+
     internal async Task<Http2FrameWithPayload> ReceiveFrameAsync(uint maxFrameSize = Http2PeerSettings.DefaultMaxFrameSize)
     {
         var frame = new Http2FrameWithPayload();
@@ -1356,7 +1378,6 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
             _realTimeoutControl.CancelTimeout();
         }
 
-
         public virtual void InitializeHttp2(InputFlowControl connectionInputFlowControl)
         {
             _realTimeoutControl.InitializeHttp2(connectionInputFlowControl);
@@ -1386,7 +1407,6 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         {
             _realTimeoutControl.BytesRead(count);
         }
-
 
         public virtual void StartTimingWrite()
         {

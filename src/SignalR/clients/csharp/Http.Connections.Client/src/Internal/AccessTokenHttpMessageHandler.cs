@@ -19,13 +19,13 @@ internal class AccessTokenHttpMessageHandler : DelegatingHandler
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        var accessToken = await _httpConnection.GetAccessTokenAsync();
+        var accessToken = await _httpConnection.GetAccessTokenAsync().ConfigureAwait(false);
 
         if (!string.IsNullOrEmpty(accessToken))
         {
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
         }
 
-        return await base.SendAsync(request, cancellationToken);
+        return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
     }
 }

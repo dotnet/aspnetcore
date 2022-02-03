@@ -1,8 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Security.Claims;
-using System.Threading.Tasks;
+using System.Diagnostics.CodeAnalysis;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 
@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 /// Represents a contract for services that perform authentication operations for a Blazor WebAssembly application.
 /// </summary>
 /// <typeparam name="TRemoteAuthenticationState">The state to be persisted across authentication operations.</typeparam>
-public interface IRemoteAuthenticationService<TRemoteAuthenticationState>
+public interface IRemoteAuthenticationService<[DynamicallyAccessedMembers(JsonSerialized)] TRemoteAuthenticationState>
     where TRemoteAuthenticationState : RemoteAuthenticationState
 {
     /// <summary>

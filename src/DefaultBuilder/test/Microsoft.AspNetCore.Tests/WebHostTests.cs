@@ -1,13 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics.Tracing;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HostFiltering;
 using Microsoft.AspNetCore.Hosting;
@@ -18,7 +13,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Tests;
 
@@ -46,10 +40,10 @@ public class WebHostTests
 
         Assert.Contains("*", options.AllowedHosts);
 
-        var changed = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var changed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         monitor.OnChange(newOptions =>
         {
-            changed.SetResult(0);
+            changed.SetResult();
         });
 
         config["AllowedHosts"] = "NewHost";

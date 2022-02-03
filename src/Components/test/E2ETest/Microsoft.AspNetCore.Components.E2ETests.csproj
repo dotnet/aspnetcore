@@ -38,7 +38,6 @@
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
-    <Reference Include="Ignitor" />
   </ItemGroup>
 
   <ItemGroup>

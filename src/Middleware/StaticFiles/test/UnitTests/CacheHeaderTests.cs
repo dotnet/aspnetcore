@@ -1,15 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
 using System.Net.Http;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.TestHost;
-using Xunit;
 
 namespace Microsoft.AspNetCore.StaticFiles;
 
@@ -203,7 +199,6 @@ public class CacheHeaderTests
 
         Assert.Equal(HttpStatusCode.NotModified, resp2.StatusCode);
     }
-
 
     [Theory]
     [MemberData(nameof(SupportedMethods))]
@@ -431,7 +426,6 @@ public class CacheHeaderTests
 
         Assert.Equal(HttpStatusCode.PreconditionFailed, res2.StatusCode);
     }
-
 
     public static IEnumerable<object[]> SupportedMethods => new[]
     {

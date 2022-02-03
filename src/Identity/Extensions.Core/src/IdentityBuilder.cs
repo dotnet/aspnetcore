@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Identity.Core;
@@ -41,7 +40,6 @@ public class IdentityBuilder
     /// The <see cref="Type"/> used for users.
     /// </value>
     public Type UserType { get; private set; }
-
 
     /// <summary>
     /// Gets the <see cref="Type"/> used for roles.

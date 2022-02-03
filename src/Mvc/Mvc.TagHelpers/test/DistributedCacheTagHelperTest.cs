@@ -1,12 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -25,7 +20,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.TagHelpers;
 
@@ -539,9 +533,9 @@ public class DistributedCacheTagHelperTest
     {
         // Arrange
         var childContent = "some-content";
-        var event1 = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var event2 = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var event3 = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var event1 = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var event2 = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var event3 = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var calls = 0;
         var formatter = GetFormatter();
         var storage = GetStorage();
@@ -560,7 +554,7 @@ public class DistributedCacheTagHelperTest
             getChildContentAsync: (useCachedResult, encoder) =>
             {
                 calls++;
-                event2.SetResult(0);
+                event2.SetResult();
 
                 var tagHelperContent = new DefaultTagHelperContent();
                 tagHelperContent.SetHtmlContent(childContent);
@@ -602,7 +596,7 @@ public class DistributedCacheTagHelperTest
         {
             await event1.Task.TimeoutAfter(TimeSpan.FromSeconds(5));
             await cacheTagHelper1.ProcessAsync(tagHelperContext1, tagHelperOutput1);
-            event3.SetResult(0);
+            event3.SetResult();
         });
 
         var task2 = Task.Run(async () =>
@@ -611,7 +605,7 @@ public class DistributedCacheTagHelperTest
             await cacheTagHelper2.ProcessAsync(tagHelperContext1, tagHelperOutput2);
         });
 
-        event1.SetResult(0);
+        event1.SetResult();
         await Task.WhenAll(task1, task2);
 
         // Assert
@@ -633,9 +627,9 @@ public class DistributedCacheTagHelperTest
     {
         // Arrange
         var childContent = "some-content";
-        var event1 = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var event2 = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var event3 = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var event1 = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var event2 = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var event3 = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var calls = 0;
         var formatter = GetFormatter();
         var storage = GetStorage();
@@ -654,7 +648,7 @@ public class DistributedCacheTagHelperTest
             getChildContentAsync: (useCachedResult, encoder) =>
             {
                 calls++;
-                event2.SetResult(0);
+                event2.SetResult();
 
                 throw new Exception();
             });
@@ -694,7 +688,7 @@ public class DistributedCacheTagHelperTest
         {
             await event1.Task.TimeoutAfter(TimeSpan.FromSeconds(5));
             await Assert.ThrowsAsync<Exception>(() => cacheTagHelper1.ProcessAsync(tagHelperContext1, tagHelperOutput1));
-            event3.SetResult(0);
+            event3.SetResult();
         });
 
         var task2 = Task.Run(async () =>
@@ -703,7 +697,7 @@ public class DistributedCacheTagHelperTest
             await cacheTagHelper2.ProcessAsync(tagHelperContext2, tagHelperOutput2);
         });
 
-        event1.SetResult(0);
+        event1.SetResult();
         await Task.WhenAll(task1, task2);
 
         // Assert

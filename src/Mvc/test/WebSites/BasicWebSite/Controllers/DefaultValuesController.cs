@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
 
@@ -27,5 +26,12 @@ public class DefaultValuesController : Controller
         TimeSpan timeSpan = default(TimeSpan))
     {
         return $"{guid}, {timeSpan}";
+    }
+
+    [HttpGet]
+    [Route("/[controller]/EchoValue_DefaultParameterValue_ForGlobbedPath/{**path}")]
+    public string EchoValue_DefaultParameterValue_ForGlobbedPath(string path = "index.html")
+    {
+        return path;
     }
 }

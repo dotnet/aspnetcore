@@ -3,12 +3,8 @@
 
 #nullable enable
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Hosting.Builder;
@@ -202,12 +198,12 @@ public class WebHostBuilder : IWebHostBuilder
             throw;
         }
 
-        IServiceProvider GetProviderFromFactory(IServiceCollection collection)
+        static IServiceProvider GetProviderFromFactory(IServiceCollection collection)
         {
             var provider = collection.BuildServiceProvider();
             var factory = provider.GetService<IServiceProviderFactory<IServiceCollection>>();
 
-            if (factory != null && !(factory is DefaultServiceProviderFactory))
+            if (factory != null && factory is not DefaultServiceProviderFactory)
             {
                 using (provider)
                 {
@@ -224,7 +220,7 @@ public class WebHostBuilder : IWebHostBuilder
     {
         hostingStartupErrors = null;
 
-        _options = new WebHostOptions(_config, Assembly.GetEntryAssembly()?.GetName().Name ?? string.Empty);
+        _options = new WebHostOptions(_config);
 
         if (!_options.PreventHostingStartup)
         {

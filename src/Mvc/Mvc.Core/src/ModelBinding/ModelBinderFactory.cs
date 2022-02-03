@@ -3,9 +3,7 @@
 
 #nullable enable
 
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -21,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding;
 /// <summary>
 /// A factory for <see cref="IModelBinder"/> instances.
 /// </summary>
-public class ModelBinderFactory : IModelBinderFactory
+public partial class ModelBinderFactory : IModelBinderFactory
 {
     private readonly IModelMetadataProvider _metadataProvider;
     private readonly IModelBinderProvider[] _providers;
@@ -46,7 +44,7 @@ public class ModelBinderFactory : IModelBinderFactory
 
         var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger<ModelBinderFactory>();
-        logger.RegisteredModelBinderProviders(_providers);
+        Log.RegisteredModelBinderProviders(logger, _providers);
     }
 
     /// <inheritdoc />
@@ -330,5 +328,11 @@ public class ModelBinderFactory : IModelBinderFactory
                     return $"Unsupported MetadataKind '{_metadata.MetadataKind}'.";
             }
         }
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(12, LogLevel.Debug, "Registered model binder providers, in the following order: {ModelBinderProviders}", EventName = "RegisteredModelBinderProviders")]
+        public static partial void RegisteredModelBinderProviders(ILogger logger, IModelBinderProvider[] modelBinderProviders);
     }
 }

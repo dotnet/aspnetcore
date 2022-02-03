@@ -1,12 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.RenderTree;
 
 #if BLAZOR_WEBVIEW
 namespace Microsoft.AspNetCore.Components.WebView;
@@ -56,12 +51,26 @@ internal sealed class ArrayBuilderMemoryStream : Stream
     public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         => throw new NotSupportedException();
 
+    public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken)
+        => throw new NotSupportedException();
+
     /// <inheritdoc />
     public override void Write(byte[] buffer, int offset, int count)
     {
         ValidateArguments(buffer, offset, count);
 
         ArrayBuilder.Append(buffer, offset, count);
+    }
+
+    public override void Write(ReadOnlySpan<byte> buffer)
+    {
+        ArrayBuilder.Append(buffer);
+    }
+
+    public override ValueTask WriteAsync(ReadOnlyMemory<byte> memory, CancellationToken cancellationToken)
+    {
+        ArrayBuilder.Append(memory.Span);
+        return default;
     }
 
     /// <inheritdoc />

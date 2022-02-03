@@ -20,7 +20,10 @@ public class RetryTest
         _wasInvokedPreviously = true;
 
         _retryFailsUntil3++;
-        if (_retryFailsUntil3 != 2) throw new Exception($"NOOOOOOOO [retry count={_retryFailsUntil3}]");
+        if (_retryFailsUntil3 != 2)
+        {
+            throw new Exception($"NOOOOOOOO [retry count={_retryFailsUntil3}]");
+        }
     }
 
     private static int _canOverrideRetries = 0;
@@ -34,6 +37,9 @@ public class RetryTest
         _wasInvokedPreviously = true;
 
         _canOverrideRetries++;
-        if (_canOverrideRetries != 5) throw new Exception($"NOOOOOOOO [retry count={_canOverrideRetries}]");
+        if (_canOverrideRetries != 5)
+        {
+            throw new Exception($"NOOOOOOOO [retry count={_canOverrideRetries}]");
+        }
     }
 }

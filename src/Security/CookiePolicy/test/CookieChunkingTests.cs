@@ -1,10 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Internal;
 
@@ -146,8 +144,6 @@ public class CookieChunkingTests
                 "TestCookieC7=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure",
             }, cookies);
     }
-
-
 
     [Fact]
     public void DeleteChunkedCookieWithOptionsAndResponseCookies_AllDeleted()

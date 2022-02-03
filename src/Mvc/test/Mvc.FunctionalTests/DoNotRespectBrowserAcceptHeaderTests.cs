@@ -4,10 +4,8 @@
 using System.Net;
 using System.Net.Http;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Formatters.Xml;
 using Microsoft.AspNetCore.Testing;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 

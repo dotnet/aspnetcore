@@ -17,7 +17,7 @@ using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using PlaywrightSharp;
+using Microsoft.Playwright;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -109,9 +109,8 @@ public class AspNetProcess : IDisposable
     public async Task VisitInBrowserAsync(IPage page)
     {
         _output.WriteLine($"Opening browser at {ListeningUri}...");
-        await page.GoToAsync(ListeningUri.AbsoluteUri);
+        await page.GotoAsync(ListeningUri.AbsoluteUri);
     }
-
 
     public async Task AssertPagesOk(IEnumerable<Page> pages)
     {
@@ -226,7 +225,7 @@ public class AspNetProcess : IDisposable
 {string.Join(Environment.NewLine, buffer)}");
     }
 
-    private bool IsSuccessStatusCode(HttpResponseMessage response)
+    private static bool IsSuccessStatusCode(HttpResponseMessage response)
     {
         return response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.Redirect;
     }

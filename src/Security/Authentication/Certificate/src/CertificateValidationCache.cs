@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Http;
@@ -63,7 +62,7 @@ public class CertificateValidationCache : ICertificateValidationCache
             .SetAbsoluteExpiration(absoluteExpiration));
     }
 
-    private string ComputeKey(X509Certificate2 certificate)
+    private static string ComputeKey(X509Certificate2 certificate)
         => certificate.GetCertHashString(HashAlgorithmName.SHA256);
 
     private class CachingClock : Extensions.Internal.ISystemClock

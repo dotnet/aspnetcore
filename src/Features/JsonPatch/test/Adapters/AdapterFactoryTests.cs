@@ -44,7 +44,6 @@ public class AdapterFactoryTests
     private class PocoModel
     { }
 
-
     [Fact]
     public void GetPocoAdapterForGenericObjects()
     {
@@ -57,8 +56,6 @@ public class AdapterFactoryTests
         // Assert
         Assert.Equal(typeof(PocoAdapter), adapter.GetType());
     }
-
-
 
     [Fact]
     public void GetDynamicAdapterForGenericObjects()

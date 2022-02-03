@@ -1,11 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Net.Http;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
@@ -41,7 +38,7 @@ public class LoggingHandler : DelegatingHandler
             var readAsStreamAsync = await response.Content.ReadAsStreamAsync();
             var buffer = new byte[_maxBodyLogSize];
             var offset = 0;
-            var count = 0;
+            int count;
             do
             {
                 count = await readAsStreamAsync.ReadAsync(buffer.AsMemory(offset));

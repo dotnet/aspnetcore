@@ -58,7 +58,6 @@ internal partial class DefaultHealthCheckService : HealthCheckService
 
         await Task.WhenAll(tasks).ConfigureAwait(false);
 
-
         index = 0;
         var entries = new Dictionary<string, HealthReportEntry>(StringComparer.OrdinalIgnoreCase);
         foreach (var registration in registrations)
@@ -223,7 +222,7 @@ internal partial class DefaultHealthCheckService : HealthCheckService
         private static partial void HealthCheckEndHealthy(ILogger logger, string HealthCheckName, HealthStatus HealthStatus, double ElapsedMilliseconds, string? HealthCheckDescription);
 
         [LoggerMessage(EventIds.HealthCheckEndId, LogLevel.Warning, HealthCheckEndText, EventName = EventIds.HealthCheckEndName)]
-        private static partial void HealthCheckEndDegraded(ILogger logger, string HealthCheckName, HealthStatus HealthStatus, double ElapsedMilliseconds, string? HealthCheckDescription);
+        private static partial void HealthCheckEndDegraded(ILogger logger, string HealthCheckName, HealthStatus HealthStatus, double ElapsedMilliseconds, string? HealthCheckDescription, Exception? exception);
 
         [LoggerMessage(EventIds.HealthCheckEndId, LogLevel.Error, HealthCheckEndText, EventName = EventIds.HealthCheckEndName)]
         private static partial void HealthCheckEndUnhealthy(ILogger logger, string HealthCheckName, HealthStatus HealthStatus, double ElapsedMilliseconds, string? HealthCheckDescription, Exception? exception);
@@ -238,7 +237,7 @@ internal partial class DefaultHealthCheckService : HealthCheckService
                     break;
 
                 case HealthStatus.Degraded:
-                    HealthCheckEndDegraded(logger, registration.Name, entry.Status, duration.TotalMilliseconds, entry.Description);
+                    HealthCheckEndDegraded(logger, registration.Name, entry.Status, duration.TotalMilliseconds, entry.Description, entry.Exception);
                     break;
 
                 case HealthStatus.Unhealthy:

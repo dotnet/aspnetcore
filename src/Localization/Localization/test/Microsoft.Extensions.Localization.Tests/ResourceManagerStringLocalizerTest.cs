@@ -8,7 +8,6 @@ using System.Linq;
 using System.Reflection;
 using System.Resources;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.Localization.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -237,7 +236,6 @@ public class ResourceManagerStringLocalizerTest
 
         return result;
     }
-
 
     private TestSink Sink { get; } = new TestSink();
 

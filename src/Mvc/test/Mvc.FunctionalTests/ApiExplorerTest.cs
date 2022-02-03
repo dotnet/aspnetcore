@@ -1,19 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Threading.Tasks;
 using ApiExplorerWebSite;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Testing;
 using Newtonsoft.Json;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
@@ -922,7 +916,6 @@ public class ApiExplorerTest : IClassFixture<MvcTestFixture<ApiExplorerWebSite.S
         // Assert
         var description = Assert.Single(result);
         var responseType = Assert.Single(description.SupportedResponseTypes);
-
 
         Assert.Equal(typeof(Product).FullName, responseType.ResponseType);
         Assert.Equal(200, responseType.StatusCode);

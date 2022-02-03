@@ -42,7 +42,6 @@ public static class ResourceFile
         }
     }
 
-
     /// <summary>
     /// Return <see cref="Stream"/> for <paramref name="resourceName"/> from <paramref name="assembly"/>'s
     /// manifest.
