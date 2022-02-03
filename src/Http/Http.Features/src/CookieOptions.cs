@@ -47,7 +47,7 @@ public class CookieOptions
     public SameSiteMode SameSite { get; set; } = SameSiteMode.Unspecified;
 
     /// <summary>
-    /// Gets or sets a value that indicates whether a cookie is accessible by client-side script.
+    /// Gets or sets a value that indicates whether a cookie is inaccessible by client-side script.
     /// </summary>
     /// <returns>true if a cookie must not be accessible by client-side script; otherwise, false.</returns>
     public bool HttpOnly { get; set; }
