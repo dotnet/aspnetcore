@@ -261,7 +261,7 @@ public class RedisCache : IDistributedCache, IDisposable
                 }
                 else
                 {
-                    _connection = await _options.ConnectionMultiplexerFactory();
+                    _connection = await _options.ConnectionMultiplexerFactory().ConfigureAwait(false);
                 }
 
                 PrepareConnection();

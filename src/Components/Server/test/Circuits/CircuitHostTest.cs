@@ -239,7 +239,7 @@ public class CircuitHostTest
     {
         // Arrange
         var handler = new Mock<CircuitHandler>(MockBehavior.Strict);
-        var tcs = new TaskCompletionSource<object>();
+        var tcs = new TaskCompletionSource();
         var reportedErrors = new List<UnhandledExceptionEventArgs>();
 
         handler

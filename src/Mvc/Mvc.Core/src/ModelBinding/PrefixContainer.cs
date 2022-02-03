@@ -112,7 +112,7 @@ public class PrefixContainer
     {
         string key;
         string fullName;
-        var delimiterPosition = entry.IndexOfAny(Delimiters, 0);
+        var delimiterPosition = entry.AsSpan().IndexOfAny('[', '.');
 
         if (delimiterPosition == 0 && entry[0] == '[')
         {

@@ -239,12 +239,12 @@ public static class H2SpecCommands
                     logger.LogError(args.Data);
                 }
             };
-            var exitedTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var exitedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             process.EnableRaisingEvents = true; // Enables Exited
             process.Exited += (_, args) =>
             {
                 logger.LogDebug("H2spec has exited.");
-                exitedTcs.TrySetResult(0);
+                exitedTcs.TrySetResult();
             };
 
             Assert.True(process.Start());

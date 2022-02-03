@@ -40,10 +40,10 @@ public class WebHostTests
 
         Assert.Contains("*", options.AllowedHosts);
 
-        var changed = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var changed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         monitor.OnChange(newOptions =>
         {
-            changed.SetResult(0);
+            changed.SetResult();
         });
 
         config["AllowedHosts"] = "NewHost";

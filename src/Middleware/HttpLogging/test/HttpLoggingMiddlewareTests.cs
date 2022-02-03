@@ -754,8 +754,8 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         var options = CreateOptionsAccessor();
         options.CurrentValue.LoggingFields = HttpLoggingFields.Response;
 
-        var writtenHeaders = new TaskCompletionSource<object>();
-        var letBodyFinish = new TaskCompletionSource<object>();
+        var writtenHeaders = new TaskCompletionSource();
+        var letBodyFinish = new TaskCompletionSource();
 
         var middleware = new HttpLoggingMiddleware(
             async c =>
@@ -764,7 +764,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
                 c.Response.Headers[HeaderNames.TransferEncoding] = "test";
                 c.Response.ContentType = "text/plain";
                 await c.Response.WriteAsync("test");
-                writtenHeaders.SetResult(null);
+                writtenHeaders.SetResult();
                 await letBodyFinish.Task;
             },
             options,
@@ -780,7 +780,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         Assert.Contains(TestSink.Writes, w => w.Message.Contains("Transfer-Encoding: test"));
         Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("Body: test"));
 
-        letBodyFinish.SetResult(null);
+        letBodyFinish.SetResult();
 
         await middlewareTask;
 
@@ -793,8 +793,8 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         var options = CreateOptionsAccessor();
         options.CurrentValue.LoggingFields = HttpLoggingFields.Response;
 
-        var writtenHeaders = new TaskCompletionSource<object>();
-        var letBodyFinish = new TaskCompletionSource<object>();
+        var writtenHeaders = new TaskCompletionSource();
+        var letBodyFinish = new TaskCompletionSource();
 
         var middleware = new HttpLoggingMiddleware(
             async c =>
@@ -803,7 +803,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
                 c.Response.Headers[HeaderNames.TransferEncoding] = "test";
                 c.Response.ContentType = "text/plain";
                 await c.Response.StartAsync();
-                writtenHeaders.SetResult(null);
+                writtenHeaders.SetResult();
                 await letBodyFinish.Task;
             },
             options,
@@ -819,7 +819,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         Assert.Contains(TestSink.Writes, w => w.Message.Contains("Transfer-Encoding: test"));
         Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("Body: test"));
 
-        letBodyFinish.SetResult(null);
+        letBodyFinish.SetResult();
 
         await middlewareTask;
     }

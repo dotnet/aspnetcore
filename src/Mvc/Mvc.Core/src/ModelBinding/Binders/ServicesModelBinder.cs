@@ -14,6 +14,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 /// </summary>
 public class ServicesModelBinder : IModelBinder
 {
+    internal bool IsOptional { get; set; }
+
     /// <inheritdoc />
     public Task BindModelAsync(ModelBindingContext bindingContext)
     {
@@ -23,9 +25,14 @@ public class ServicesModelBinder : IModelBinder
         }
 
         var requestServices = bindingContext.HttpContext.RequestServices;
-        var model = requestServices.GetRequiredService(bindingContext.ModelType);
+        var model = IsOptional ?
+            requestServices.GetService(bindingContext.ModelType) :
+            requestServices.GetRequiredService(bindingContext.ModelType);
 
-        bindingContext.ValidationState.Add(model, new ValidationStateEntry() { SuppressValidation = true });
+        if (model != null)
+        {
+            bindingContext.ValidationState.Add(model, new ValidationStateEntry() { SuppressValidation = true });
+        }
 
         bindingContext.Result = ModelBindingResult.Success(model);
         return Task.CompletedTask;

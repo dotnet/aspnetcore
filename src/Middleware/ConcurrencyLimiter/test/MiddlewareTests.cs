@@ -125,7 +125,7 @@ public class MiddlewareTests
     [Fact]
     public async Task ExceptionThrownDuringOnRejected()
     {
-        TaskCompletionSource<bool> tcs = new TaskCompletionSource<bool>();
+        TaskCompletionSource tcs = new TaskCompletionSource();
 
         var concurrent = 0;
         var testQueue = new TestQueue(
@@ -167,7 +167,7 @@ public class MiddlewareTests
         Assert.Equal(0, testQueue.QueuedRequests);
 
         // the first request is unblocked, and the queue continues functioning as expected
-        tcs.SetResult(true);
+        tcs.SetResult();
         Assert.True(firstRequest.IsCompletedSuccessfully);
         Assert.Equal(0, concurrent);
         Assert.Equal(0, testQueue.QueuedRequests);

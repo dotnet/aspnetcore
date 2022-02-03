@@ -40,7 +40,7 @@ public class TestServer : IDisposable
 
     private static readonly int PortRetryCount = 10;
 
-    private readonly TaskCompletionSource<object> _startedTaskCompletionSource = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+    private readonly TaskCompletionSource _startedTaskCompletionSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
     private readonly Action<IApplicationBuilder> _appBuilder;
     private readonly ILoggerFactory _loggerFactory;
@@ -155,7 +155,7 @@ public class TestServer : IDisposable
 
         lifetime.ApplicationStopping.Register(() => doneEvent.Set());
         _host.Start();
-        _startedTaskCompletionSource.SetResult(null);
+        _startedTaskCompletionSource.SetResult();
         doneEvent.Wait();
         _host.Dispose();
         return 0;

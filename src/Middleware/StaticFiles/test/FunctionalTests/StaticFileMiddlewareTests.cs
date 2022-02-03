@@ -235,9 +235,9 @@ public class StaticFileMiddlewareTests : LoggedTest
     private async Task ClientDisconnect_NoWriteExceptionThrown(ServerType serverType)
     {
         var interval = TimeSpan.FromSeconds(15);
-        var requestReceived = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var requestCancelled = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var responseComplete = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var requestReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var requestCancelled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var responseComplete = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         Exception exception = null;
         using var host = new HostBuilder()
             .ConfigureWebHost(webHostBuilder =>
@@ -251,7 +251,7 @@ public class StaticFileMiddlewareTests : LoggedTest
                     {
                         try
                         {
-                            requestReceived.SetResult(0);
+                            requestReceived.SetResult();
                             await requestCancelled.Task.TimeoutAfter(interval);
                             Assert.True(context.RequestAborted.WaitHandle.WaitOne(interval), "not aborted");
                             await next(context);
@@ -260,7 +260,7 @@ public class StaticFileMiddlewareTests : LoggedTest
                         {
                             exception = ex;
                         }
-                        responseComplete.SetResult(0);
+                        responseComplete.SetResult();
                     });
                     app.UseStaticFiles();
                 })
@@ -284,7 +284,7 @@ public class StaticFileMiddlewareTests : LoggedTest
 
         socket.LingerState = new LingerOption(true, 0);
         socket.Dispose();
-        requestCancelled.SetResult(0);
+        requestCancelled.SetResult();
 
         await responseComplete.Task.TimeoutAfter(interval);
         Assert.Null(exception);
