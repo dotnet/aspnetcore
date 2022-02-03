@@ -103,7 +103,7 @@ private void DoSomething() { }
             Message = "Component parameter 'C.MyProp' should be auto property",
             Locations = new[]
             {
-                new DiagnosticResultLocation("Test0.cs", 9, 19),
+                new DiagnosticResultLocation("Test0.cs", 9, 15),
             },
             Severity = CodeAnalysis.DiagnosticSeverity.Warning,
         });
@@ -142,7 +142,7 @@ private void DoSomething() { }
             Message = "Component parameter 'C.MyProp' should be auto property",
             Locations = new[]
             {
-                new DiagnosticResultLocation("Test0.cs", 9, 19),
+                new DiagnosticResultLocation("Test0.cs", 9, 15),
             },
             Severity = CodeAnalysis.DiagnosticSeverity.Warning,
         });
