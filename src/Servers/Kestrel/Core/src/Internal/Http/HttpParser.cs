@@ -153,7 +153,9 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
         // let's prioritize SSE/NEON path
         // TODO: use AdvSimd for Arm64
         if (!Sse2.IsSupported || ulen < (nuint)Vector128<byte>.Count)
+        {
             goto SCALAR;
+        }
 
         var crVector = Vector128.Create((byte)'\r');
         var lfVector = Vector128.Create((byte)'\n');
@@ -179,16 +181,22 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
 
         int matches = Sse2.MoveMask(orAll);
         if (matches != 0)
+        {
             return (int)(offset + (nuint)BitOperations.TrailingZeroCount(matches));
+        }
 
         offset += (nuint)Vector128<byte>.Count;
         if (offset == ulen)
+        {
             // we're done and nothing was found
             return -1;
+        }
         if (offset + (nuint)Vector128<byte>.Count > ulen)
+        {
             // not enough space for the next 128bit vector so let's overlap
             // with the current one in order to avoid SCALAR fallback
             offset = ulen - (nuint)Vector128<byte>.Count;
+        }
         goto NEXT_VECTOR;
 
     SCALAR:
@@ -208,12 +216,16 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
             //
             val = (byte)(val - 9); // lower limit is '\t'
             if (val > 49) // upper limit is ':'
+            {
                 continue;
+            }
 
             const ulong bitMask = 0b10000000000000000000000000100000000000000000010011;
             //                      :                        ' '                 r  nt
             if (((bitMask >> val) & 1) == 1)
+            {
                 return (int)offset;
+            }
         }
         return -1;
     }
@@ -231,7 +243,9 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
         // let's prioritize SSE/NEON path
         // TODO: use AdvSimd for Arm64
         if (!Sse2.IsSupported || ulen < (nuint)Vector128<byte>.Count)
+        {
             goto SCALAR;
+        }
 
         var crVector = Vector128.Create((byte)'\r');
         var lfVector = Vector128.Create((byte)'\n');
@@ -245,16 +259,22 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
 
         int matches = Sse2.MoveMask(Sse2.Or(cmp0, cmp1));
         if (matches != 0)
+        {
             return (int)(offset + (nuint)BitOperations.TrailingZeroCount(matches));
+        }
 
         offset += (nuint)Vector128<byte>.Count;
         if (offset == ulen)
+        {
             // we're done
             return -1;
+        }
         if (offset + (nuint)Vector128<byte>.Count > ulen)
+        {
             // not enough space for the next 128bit vector so let's overlap
             // with the current one in order to avoid SCALAR fallback
             offset = ulen - (nuint)Vector128<byte>.Count;
+        }
         goto NEXT_VECTOR;
 
     SCALAR:
@@ -264,7 +284,9 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
             // the following code is a "bittest" version of ^:
             var val = Unsafe.AddByteOffset(ref searchSpace, offset);
             if (val == '\r' || val == '\n')
+            {
                 return (int)offset;
+            }
         }
         return -1;
     }
@@ -291,23 +313,31 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
 
         // colon was not found - needs more data
         if (colonPos == -1)
+        {
             goto NOT_ENOUGH_DATA;
+        }
 
         // name should not be empty
         if (colonPos == 0)
+        {
             goto FAILED;
+        }
 
         ref byte colonValue = ref Unsafe.AddByteOffset(ref searchSpace, (nuint)colonPos);
 
         // none of '\r', '\n', '\t', ' ' should be found before ':'
         if (colonValue != ByteColon)
+        {
             goto FAILED;
+        }
 
         int crlf = IndexOfCrOrLf(ref colonValue, span.Length - colonPos);
 
         // CR was not found - needs more data
         if (crlf == -1)
+        {
             goto NOT_ENOUGH_DATA;
+        }
 
         int crPos = crlf + colonPos;
 
@@ -317,15 +347,21 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
         // like "X:\r\n", however, "X: \r\n" was fine for it
         // should we care about it here?
         if (/*crPos < 3 ||*/ crRef != ByteCR)
+        {
             goto FAILED;
+        }
 
         // no room for LF - needs more data
         if (crPos == span.Length - 1)
+        {
             goto NOT_ENOUGH_DATA;
+        }
 
         // check next symbol after CR, it has to be LF
         if (Unsafe.AddByteOffset(ref crRef, 1) != ByteLF)
+        {
             goto FAILED;
+        }
 
         // Trim leading ' ' and '\t'
         int valueStarts = colonPos + 1;
@@ -333,7 +369,9 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
         {
             var val = Unsafe.AddByteOffset(ref searchSpace, (nuint)valueStarts);
             if (val != ByteSpace && val != ByteTab)
+            {
                 break;
+            }
         }
 
         // Trim trailing ' ' and '\t'
@@ -342,7 +380,9 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
         {
             var b = Unsafe.AddByteOffset(ref searchSpace, (nuint)valueEnds);
             if (b != ByteSpace && b != ByteTab)
+            {
                 break;
+            }
         }
 
         handler.OnHeader(span.Slice(0, colonPos), span.Slice(valueStarts, (valueEnds + 1 - valueStarts)));
