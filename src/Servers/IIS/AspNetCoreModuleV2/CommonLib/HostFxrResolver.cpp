@@ -63,53 +63,85 @@ HostFxrResolver::GetHostFxrParameters(
 
         if (dotnetExePath.empty())
         {
-            dotnetExePath = GetAbsolutePathToDotnet(applicationPhysicalPath, expandedProcessPath);
-        }
+            // REVIEW TODO: do we need to throw if we aren't in shim?
 
-        // REVIEW TODO: do we need to throw if we aren't in shim?
+            std::wstring hostfxrPath;
+            size_t size = MAX_PATH * 2;
+            hostfxrPath.resize(size);
 
-        std::wstring hostfxrPath;
-        size_t size = MAX_PATH * 2;
-        hostfxrPath.resize(size);
+            get_hostfxr_parameters params;
+            get_hostfxr_parameters* pParams = NULL;
 
-        get_hostfxr_parameters params;
-        get_hostfxr_parameters* pParams = NULL;
+            // when dotnet launched from path case, we don't want to set the dotnet_root
+            if (!equals_ignore_case(expandedProcessPath, L"dotnet.exe")) {
+                params.size = sizeof(get_hostfxr_parameters);
+                params.assembly_path = applicationPhysicalPath.c_str();
+                params.dotnet_root = expandedProcessPath.parent_path().c_str();
+                LOG_INFOF(L"hostfxr.dotnet_root: '%ls'", params.dotnet_root);
+                LOG_INFOF(L"hostfxr.assembly_path: '%ls'", applicationPhysicalPath.c_str());
+                pParams = &params;
+            }
+            else
+            {
+                LOG_INFOF(L"hostfxr with null params");
+            }
 
-        // when dotnet launched from path case, we don't want to set the dotnet_root
-        if (!equals_ignore_case(expandedProcessPath, L"dotnet.exe")) {
-            params.assembly_path = applicationPhysicalPath.c_str();
-            params.dotnet_root = expandedProcessPath.parent_path().c_str();
-            LOG_INFOF(L"hostfxr.dotnet_root: '%ls'", params.dotnet_root);
-            LOG_INFOF(L"hostfxr.assembly_path: '%ls'", applicationPhysicalPath.c_str());
-            pParams = &params;
+            int result = get_hostfxr_path(hostfxrPath.data(), &size, pParams);
+
+            // If this fails, path probe
+            if (result != 0)
+            {
+                LOG_INFOF(L"get_hostfxr_path failed, trying again with dotnet path as dotnet root.");
+
+                params.size = sizeof(get_hostfxr_parameters);
+                params.assembly_path = applicationPhysicalPath.c_str();
+                params.dotnet_root = dotnetExePath.parent_path().c_str();
+                pParams = &params;
+
+                LOG_INFOF(L"- hostfxr.dotnet_root: '%ls'", params.dotnet_root);
+                LOG_INFOF(L"- hostfxr.assembly_path: '%ls'", applicationPhysicalPath.c_str());
+
+                result = get_hostfxr_path(hostfxrPath.data(), &size, &params);
+
+                // If this fails, give up
+                if (result != 0)
+                {
+                    throw InvalidOperationException(L"Failed to find host fxr.");
+                }
+            }
+
+            AppendArguments(
+                expandedApplicationArguments,
+                applicationPhysicalPath,
+                arguments,
+                true);
+
+            hostfxrPath.resize(size);
+            hostFxrDllPath = hostfxrPath;
+
+            dotnetExePath = GetAbsolutePathToDotnetFromHostfxr(hostfxrPath);
+
+            LOG_INFOF(L"get_hostfxr_path '%ls'", hostfxrPath.c_str());
+            LOG_INFOF(L"dotnetExePath '%ls'", dotnetExePath.c_str());
+
+            arguments.insert(arguments.begin(), dotnetExePath);
         }
         else
         {
-            LOG_INFOF(L"hostfxr with null params");
+            arguments.push_back(dotnetExePath);
+            AppendArguments(
+                expandedApplicationArguments,
+                applicationPhysicalPath,
+                arguments,
+                true);
+//            hostFxrDllPath = GetAbsolutePathToHostFxr(dotnetExePath);
         }
 
-        int result = get_hostfxr_path(hostfxrPath.data(), &size, pParams);
+        //hostFxrDllPath = hostfxrPath;
 
-        // If this fails, path probe
-        if (result != 0)
-        {
-            LOG_INFOF(L"get_hostfxr_path failed");
-            throw InvalidOperationException(L"Failed to find host fxr.");
-        }
+        // TODO: get rid of this and use hostfxrPath
+        //hostFxrDllPath = GetAbsolutePathToHostFxr(dotnetExePath);
 
-        hostfxrPath.resize(size);
-        hostFxrDllPath = hostfxrPath;
-
-        LOG_INFOF(L"get_hostfxr_path '%ls'", hostfxrPath.c_str());
-
-        hostFxrDllPath = GetAbsolutePathToHostFxr(dotnetExePath);
-
-        arguments.push_back(dotnetExePath);
-        AppendArguments(
-            expandedApplicationArguments,
-            applicationPhysicalPath,
-            arguments,
-            true);
     }
     else
     {
