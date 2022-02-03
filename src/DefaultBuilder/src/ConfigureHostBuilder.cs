@@ -19,9 +19,13 @@ public sealed class ConfigureHostBuilder : IHostBuilder, ISupportsConfigureWebHo
     private readonly IServiceCollection _services;
     private readonly HostBuilderContext _context;
 
-    private readonly List<Action<IHostBuilder>> _operations = new();
+    private readonly List<Action<HostBuilderContext, object>> _configureContainerActions = new();
+    private IServiceProviderFactory<object>? _serviceProviderFactory;
 
-    internal ConfigureHostBuilder(HostBuilderContext context, ConfigurationManager configuration, IServiceCollection services)
+    internal ConfigureHostBuilder(
+        HostBuilderContext context,
+        ConfigurationManager configuration,
+        IServiceCollection services)
     {
         _configuration = configuration;
         _services = services;
@@ -52,7 +56,8 @@ public sealed class ConfigureHostBuilder : IHostBuilder, ISupportsConfigureWebHo
             throw new ArgumentNullException(nameof(configureDelegate));
         }
 
-        _operations.Add(b => b.ConfigureContainer(configureDelegate));
+        _configureContainerActions.Add((context, containerBuilder) => configureDelegate(context, (TContainerBuilder)containerBuilder));
+
         return this;
     }
 
@@ -61,7 +66,7 @@ public sealed class ConfigureHostBuilder : IHostBuilder, ISupportsConfigureWebHo
     {
         var previousApplicationName = _configuration[HostDefaults.ApplicationKey];
         // Use the real content root so we can compare paths
-        var previousContentRoot = _context.HostingEnvironment.ContentRootPath;
+        var previousContentRoot = HostingPathResolver.ResolvePath(_context.HostingEnvironment.ContentRootPath);
         var previousContentRootConfig = _configuration[HostDefaults.ContentRootKey];
         var previousEnvironment = _configuration[HostDefaults.EnvironmentKey];
 
@@ -105,32 +110,56 @@ public sealed class ConfigureHostBuilder : IHostBuilder, ISupportsConfigureWebHo
             throw new ArgumentNullException(nameof(factory));
         }
 
-        _operations.Add(b => b.UseServiceProviderFactory(factory));
+        _serviceProviderFactory = new ServiceProviderFactoryAdapter<TContainerBuilder>(factory);
         return this;
     }
 
     /// <inheritdoc />
     public IHostBuilder UseServiceProviderFactory<TContainerBuilder>(Func<HostBuilderContext, IServiceProviderFactory<TContainerBuilder>> factory) where TContainerBuilder : notnull
     {
-        if (factory is null)
-        {
-            throw new ArgumentNullException(nameof(factory));
-        }
-
-        _operations.Add(b => b.UseServiceProviderFactory(factory));
-        return this;
-    }
-
-    internal void RunDeferredCallbacks(IHostBuilder hostBuilder)
-    {
-        foreach (var operation in _operations)
-        {
-            operation(hostBuilder);
-        }
+        return UseServiceProviderFactory(factory(_context));
     }
 
     IHostBuilder ISupportsConfigureWebHost.ConfigureWebHost(Action<IWebHostBuilder> configure, Action<WebHostBuilderOptions> configureOptions)
     {
         throw new NotSupportedException("ConfigureWebHost() is not supported by WebApplicationBuilder.Host. Use the WebApplication returned by WebApplicationBuilder.Build() instead.");
+    }
+
+    internal void ApplyServiceProviderFactory(HostApplicationBuilder hostApplicationBuilder)
+    {
+        if (_serviceProviderFactory is null)
+        {
+            // No custom factory. Avoid calling hostApplicationBuilder.ConfigureContainer() which might override default validation options.
+            // If there were any callbacks supplied to ConfigureHostBuilder.ConfigureContainer(), call those with the IServiceCollection.
+            foreach (var action in _configureContainerActions)
+            {
+                action(_context, _services);
+            }
+
+            return;
+        }
+
+        void ConfigureContainerBuilderAdapter(object containerBuilder)
+        {
+            foreach (var action in _configureContainerActions)
+            {
+                action(_context, containerBuilder);
+            }
+        }
+
+        hostApplicationBuilder.ConfigureContainer(_serviceProviderFactory, ConfigureContainerBuilderAdapter);
+    }
+
+    private sealed class ServiceProviderFactoryAdapter<TContainerBuilder> : IServiceProviderFactory<object> where TContainerBuilder : notnull
+    {
+        private IServiceProviderFactory<TContainerBuilder> _serviceProviderFactory;
+
+        public ServiceProviderFactoryAdapter(IServiceProviderFactory<TContainerBuilder> serviceProviderFactory)
+        {
+            _serviceProviderFactory = serviceProviderFactory;
+        }
+
+        public object CreateBuilder(IServiceCollection services) => _serviceProviderFactory.CreateBuilder(services);
+        public IServiceProvider CreateServiceProvider(object containerBuilder) => _serviceProviderFactory.CreateServiceProvider((TContainerBuilder)containerBuilder);
     }
 }
