@@ -16,7 +16,11 @@ parameters:
 
   # Optional: Enable publishing using release pipelines
   enablePublishUsingPipelines: false
-  
+
+  # Optional: Disable component governance detection. In general, component governance
+  # should be on for all jobs. Use only in the event of issues.
+  disableComponentGovernance: false
+
   graphFileGeneration:
     # Optional: Enable generating the graph files at the end of the build
     enabled: false
