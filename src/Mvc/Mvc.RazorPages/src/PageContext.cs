@@ -48,7 +48,7 @@ public class PageContext : ActionContext
         HttpContext httpContext,
         RouteData routeData,
         CompiledPageActionDescriptor actionDescriptor)
-        : base(httpContext, routeData, actionDescriptor, new ModelStateDictionary())
+        : base(httpContext, routeData, actionDescriptor)
     {
         _actionDescriptor = actionDescriptor;
     }
