@@ -60,8 +60,8 @@
 
     <KnownAppHostPack Update="Microsoft.NETCore.App">
       <AppHostPackVersion
-        Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftNETCoreAppRuntimeVersion}</LatestRuntimeFrameworkVersion>
-    </KnownRuntimePack>
+        Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftNETCoreAppRuntimeVersion}</AppHostPackVersion>
+    </KnownAppHostPack>
     
     <KnownRuntimePack Update="Microsoft.NETCore.App">
       <LatestRuntimeFrameworkVersion
