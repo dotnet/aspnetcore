@@ -56,7 +56,7 @@ internal class ControllerRequestDelegateFactory : IRequestDelegateFactory
     public RequestDelegate? CreateRequestDelegate(ActionDescriptor actionDescriptor, RouteValueDictionary? dataTokens)
     {
         // Fallback to action invoker extensibility so that invokers can override any default behaviors
-        if (_enableActionInvokers || actionDescriptor is not ControllerActionDescriptor)
+        if (_enableActionInvokers || actionDescriptor is not ControllerActionDescriptor controller)
         {
             return null;
         }
@@ -75,9 +75,7 @@ internal class ControllerRequestDelegateFactory : IRequestDelegateFactory
                 routeData.PushState(router: null, context.Request.RouteValues, dataTokens);
             }
 
-            var actionContext = new ActionContext(context, routeData, actionDescriptor);
-
-            var controllerContext = new ControllerContext(actionContext)
+            var controllerContext = new ControllerContext(context, routeData, controller)
             {
                 // PERF: These are rarely going to be changed, so let's go copy-on-write.
                 ValueProviderFactories = new CopyOnWriteList<IValueProviderFactory>(_valueProviderFactories)
