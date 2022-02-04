@@ -155,7 +155,7 @@ internal sealed class HttpLoggingMiddleware
 
             if (streamResponseBodyFeature != null)
             {
-                await streamResponseBodyFeature.FlushWriterAsync();
+                await streamResponseBodyFeature.CompleteWriterAsync();
             }
 
             if (requestBufferingStream?.HasLogged == false)

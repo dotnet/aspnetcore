@@ -144,14 +144,14 @@ public class StreamResponseBodyFeature : IHttpResponseBodyFeature
     }
 
     /// <summary>
-    /// Flushes the current PipeWriter, if it exists
+    /// Completes the current PipeWriter, if it exists
     /// </summary>
     /// <returns></returns>
-    public async Task FlushWriterAsync()
+    public async Task CompleteWriterAsync()
     {
         if (_pipeWriter != null)
         {
-            await _pipeWriter.FlushAsync();
+            await _pipeWriter.CompleteAsync();
         }
     }
 
