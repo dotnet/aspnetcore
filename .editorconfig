@@ -77,9 +77,6 @@ charset = utf-8-bom
 
 [*.{cs,vb}]
 
-# CA1847: Use string.Contains(char) instead of string.Contains(string) with single characters
-dotnet_diagnostic.CA1847.severity = warning
-
 # CA1018: Mark attributes with AttributeUsageAttribute
 dotnet_diagnostic.CA1018.severity = warning
 
@@ -177,6 +174,9 @@ dotnet_diagnostic.CA1845.severity = warning
 
 # CA1846: Prefer AsSpan over Substring
 dotnet_diagnostic.CA1846.severity = warning
+
+# CA1847: Use string.Contains(char) instead of string.Contains(string) with single characters
+dotnet_diagnostic.CA1847.severity = warning
 
 # CA2008: Do not create tasks without passing a TaskScheduler
 dotnet_diagnostic.CA2008.severity = warning
