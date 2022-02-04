@@ -61,6 +61,23 @@ HostFxrResolver::GetHostFxrParameters(
             throw InvalidOperationException(L"Application arguments are empty.");
         }
 
+        // OLD CODE
+        if (dotnetExePath.empty())
+        {
+            dotnetExePath = GetAbsolutePathToDotnet(applicationPhysicalPath, expandedProcessPath);
+        }
+
+        hostFxrDllPath = GetAbsolutePathToHostFxr(dotnetExePath);
+
+        arguments.push_back(dotnetExePath);
+        AppendArguments(
+            expandedApplicationArguments,
+            applicationPhysicalPath,
+            arguments,
+            true);
+
+#if false
+        // NEW CODE
         if (dotnetExePath.empty())
         {
             // REVIEW TODO: do we need to throw if we aren't in shim?
@@ -130,6 +147,7 @@ HostFxrResolver::GetHostFxrParameters(
         {
 // OLD behavior when we have dotnetExePath
             hostFxrDllPath = GetAbsolutePathToHostFxr(dotnetExePath);
+            LOG_INFOF(L"- GetAbsolutePathToHostFxr '%ls'", hostFxrDllPath.c_str());
 
             arguments.push_back(dotnetExePath);
             AppendArguments(
@@ -143,6 +161,7 @@ HostFxrResolver::GetHostFxrParameters(
 
         // TODO: get rid of this and use hostfxrPath
         //hostFxrDllPath = GetAbsolutePathToHostFxr(dotnetExePath);
+#endif // new code
 
     }
     else
