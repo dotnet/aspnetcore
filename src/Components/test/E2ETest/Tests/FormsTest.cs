@@ -537,7 +537,6 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var confirmEmailContainer = appElement.FindElement(By.ClassName("confirm-email"));
         var confirmInput = confirmEmailContainer.FindElement(By.TagName("input"));
         var confirmEmailValidationMessage = CreateValidationMessagesAccessor(confirmEmailContainer);
-        CreateValidationMessagesAccessor(emailContainer, "special-email-css-class-override");
         var submitButton = appElement.FindElement(By.CssSelector("button[type=submit]"));
 
         // Updates on edit
