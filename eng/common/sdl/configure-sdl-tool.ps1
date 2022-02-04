@@ -15,7 +15,9 @@ Param(
   # Optional: Additional params to add to any tool using CredScan.
   [string[]] $CrScanAdditionalRunConfigParams,
   # Optional: Additional params to add to any tool using PoliCheck.
-  [string[]] $PoliCheckAdditionalRunConfigParams
+  [string[]] $PoliCheckAdditionalRunConfigParams,
+  # Optional: Additional params to add to any tool using CodeQL/Semmle.
+  [string[]] $CodeQLAdditionalRunConfigParams
 )
 
 $ErrorActionPreference = 'Stop'
@@ -78,6 +80,11 @@ try {
         $tool.Args += "Target < $TargetDirectory"
       }
       $tool.Args += $PoliCheckAdditionalRunConfigParams
+    } elseif ($tool.Name -eq 'semmle' -or $tool.Name -eq 'codeql') {
+      if ($targetDirectory) {
+        $tool.Args += "`"SourceCodeDirectory < $TargetDirectory`""
+      }
+      $tool.Args += $CodeQLAdditionalRunConfigParams
     }
 
     # Create variable pointing to the args array directly so we can use splat syntax later.
