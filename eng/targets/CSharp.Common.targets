@@ -35,7 +35,7 @@
     <NoWarn Condition="'$(TargetFrameworks)' != ''">$(NoWarn);IDE0005</NoWarn>
 
     <!--
-      Turn off ConfigureAwait analyzer rule in the projects that are exclusively meant to run in the ASP.NET Core or Blazor.
+      Turn off ConfigureAwait analyzer rule in the projects that are exclusively meant to run in ASP.NET Core or Blazor contexts.
       Since we don't have a good way to detect this, we'll use the presence of ns2.0 as a proxy.
      -->
     <NoWarn Condition="'$(_IsSrcProject)' != 'true' OR !$(TargetFrameworks.Contains('netstandard'))">$(NoWarn);CA2007</NoWarn>
