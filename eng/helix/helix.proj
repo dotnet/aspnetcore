@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.DotNet.Helix.Sdk" DefaultTargets="Test" TreatAsLocalProperty="ProjectToBuild">
-
   <PropertyGroup>
     <!--
       When invoking helix.proj for the whole repo with build.cmd, ProjectToBuild will be set to the path to this project.
@@ -120,11 +119,18 @@
   </Target>
 
   <Target Name="Gather" BeforeTargets="Build">
+    <!--
+      In CI builds, do not rebuild test projects; they were built in previous build step. Test projects that use
+      the MSBuild task to publish _and build_ test assets need to override NoBuild for correct operation.
+    -->
+    <PropertyGroup Condition=" '$(IsHelixJob)' == 'true' ">
+      <_OverrideNoBuild>NoBuild=true</_OverrideNoBuild>
+    </PropertyGroup>
     <MSBuild Projects="@(ProjectToBuild)"
-              Targets="CreateHelixPayload"
-              SkipNonexistentTargets="true">
+             Properties="$(_OverrideNoBuild)"
+             Targets="CreateHelixPayload"
+             SkipNonexistentTargets="true">
       <Output TaskParameter="TargetOutputs" ItemName="HelixWorkItem" />
     </MSBuild>
   </Target>
-
 </Project>

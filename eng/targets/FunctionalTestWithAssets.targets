@@ -7,12 +7,26 @@
   <Target Name="PublishTestAssets"
       BeforeTargets="Publish;RunTests;VSTest"
       Condition=" '@(TestAssetProjectReference->Count())' != 0 ">
-    <!-- Build and Publish test assets into folders relative to test project. -->
     <ItemGroup>
       <_ProjectsToPublish Include="@(TestAssetProjectReference)" />
+
+      <!-- Always Publish test assets relative to test project's output. -->
       <_ProjectsToPublish AdditionalProperties="%(_ProjectsToPublish.AdditionalProperties);
-          OutputPath=$(OutputPath)%(RelativeFolder);
           PublishDir=$(PublishDir)%(RelativeFolder)" />
+
+      <!-- Do not build when publishing if SkipBuild requested. -->
+      <_ProjectsToPublish Condition=" '%(SkipBuild)' == 'true' "
+          AdditionalProperties="%(_ProjectsToPublish.AdditionalProperties);NoBuild=true" />
+
+      <!--
+        Otherwise, both Build and Publish test assets into folders relative to test project's output. Reset
+        NoBuild if helix.proj set the property to true.
+      -->
+      <_ProjectsToPublish Condition=" '%(SkipBuild)' != 'true' "
+          AdditionalProperties="%(_ProjectsToPublish.AdditionalProperties);
+            OutputPath=$(OutputPath)%(RelativeFolder)" />
+      <_ProjectsToPublish Condition=" '%(SkipBuild)' != 'true' AND '$(IsHelixJob)' == 'true' "
+          AdditionalProperties="%(_ProjectsToPublish.AdditionalProperties);NoBuild=false" />
     </ItemGroup>
 
     <!--

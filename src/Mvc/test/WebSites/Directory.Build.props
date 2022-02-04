@@ -1,4 +1,4 @@
-<Project>
+<Project TreatAsLocalProperty="NoBuild">
   <PropertyGroup>
     <IsTestAssetProject>true</IsTestAssetProject>
     <!--
@@ -6,7 +6,15 @@
       We do not want the path mangling (e.g. _content/MyClassLib) that comes with SWA.
     -->
     <StaticWebAssetsEnabled>false</StaticWebAssetsEnabled>
+
+    <!--
+      The Razor SDK does not execute RazorCompile after PrepareForPublish when NoBuild is true. The result is
+      over-publication (for some reason) and that confuses tests. Undo the helix.proj NoBuild override if in a
+      Helix CI job.
+    -->
+    <NoBuild Condition=" '$(RazorCompileOnPublish)' == 'true' AND '$(IsHelixJob)' == 'true' ">false</NoBuild>
   </PropertyGroup>
+
   <!-- Skip the parent folder to prevent getting test package references. -->
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\..\, Directory.Build.props))\Directory.Build.props" />
 </Project>
