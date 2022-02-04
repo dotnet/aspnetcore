@@ -217,7 +217,7 @@ internal sealed class Http1ContentLengthMessageBody : Http1MessageBody
 
             if (!_finalAdvanceCalled && buffer.IsEmpty)
             {
-                // Don't reference the old buffer as it will be released by the pipe after calling AdvancedTo
+                // Don't reference the old buffer as it will be released by the pipe after calling AdvanceTo
                 _readResult = new ReadResult(new ReadOnlySequence<byte>(), isCanceled: false, isCompleted: true);
 
                 _context.Input.AdvanceTo(consumed);
