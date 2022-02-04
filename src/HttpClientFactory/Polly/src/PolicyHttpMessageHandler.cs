@@ -167,7 +167,7 @@ public class PolicyHttpMessageHandler : DelegatingHandler
             disposable.Dispose();
         }
 
-        var result = await base.SendAsync(request, cancellationToken);
+        var result = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
         request.Properties[PriorResponseKey] = result;
 

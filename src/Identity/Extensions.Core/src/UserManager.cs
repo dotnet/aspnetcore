@@ -466,20 +466,20 @@ public class UserManager<TUser> : IDisposable where TUser : class
     public virtual async Task<IdentityResult> CreateAsync(TUser user)
     {
         ThrowIfDisposed();
-        await UpdateSecurityStampInternal(user);
-        var result = await ValidateUserAsync(user);
+        await UpdateSecurityStampInternal(user).ConfigureAwait(false);
+        var result = await ValidateUserAsync(user).ConfigureAwait(false);
         if (!result.Succeeded)
         {
             return result;
         }
         if (Options.Lockout.AllowedForNewUsers && SupportsUserLockout)
         {
-            await GetUserLockoutStore().SetLockoutEnabledAsync(user, true, CancellationToken);
+            await GetUserLockoutStore().SetLockoutEnabledAsync(user, true, CancellationToken).ConfigureAwait(false);
         }
-        await UpdateNormalizedUserNameAsync(user);
-        await UpdateNormalizedEmailAsync(user);
+        await UpdateNormalizedUserNameAsync(user).ConfigureAwait(false);
+        await UpdateNormalizedEmailAsync(user).ConfigureAwait(false);
 
-        return await Store.CreateAsync(user, CancellationToken);
+        return await Store.CreateAsync(user, CancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -549,7 +549,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         }
         userName = NormalizeName(userName);
 
-        var user = await Store.FindByNameAsync(userName, CancellationToken);
+        var user = await Store.FindByNameAsync(userName, CancellationToken).ConfigureAwait(false);
 
         // Need to potentially check all keys
         if (user == null && Options.Stores.ProtectPersonalData)
@@ -561,7 +561,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
                 foreach (var key in keyRing.GetAllKeyIds())
                 {
                     var oldKey = protector.Protect(key, userName);
-                    user = await Store.FindByNameAsync(oldKey, CancellationToken);
+                    user = await Store.FindByNameAsync(oldKey, CancellationToken).ConfigureAwait(false);
                     if (user != null)
                     {
                         return user;
@@ -594,12 +594,12 @@ public class UserManager<TUser> : IDisposable where TUser : class
         {
             throw new ArgumentNullException(nameof(password));
         }
-        var result = await UpdatePasswordHash(passwordStore, user, password);
+        var result = await UpdatePasswordHash(passwordStore, user, password).ConfigureAwait(false);
         if (!result.Succeeded)
         {
             return result;
         }
-        return await CreateAsync(user);
+        return await CreateAsync(user).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -636,9 +636,9 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
     public virtual async Task UpdateNormalizedUserNameAsync(TUser user)
     {
-        var normalizedName = NormalizeName(await GetUserNameAsync(user));
+        var normalizedName = NormalizeName(await GetUserNameAsync(user).ConfigureAwait(false));
         normalizedName = ProtectPersonalData(normalizedName);
-        await Store.SetNormalizedUserNameAsync(user, normalizedName, CancellationToken);
+        await Store.SetNormalizedUserNameAsync(user, normalizedName, CancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -653,7 +653,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         {
             throw new ArgumentNullException(nameof(user));
         }
-        return await Store.GetUserNameAsync(user, CancellationToken);
+        return await Store.GetUserNameAsync(user, CancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -670,9 +670,9 @@ public class UserManager<TUser> : IDisposable where TUser : class
             throw new ArgumentNullException(nameof(user));
         }
 
-        await Store.SetUserNameAsync(user, userName, CancellationToken);
-        await UpdateSecurityStampInternal(user);
-        return await UpdateUserAsync(user);
+        await Store.SetUserNameAsync(user, userName, CancellationToken).ConfigureAwait(false);
+        await UpdateSecurityStampInternal(user).ConfigureAwait(false);
+        return await UpdateUserAsync(user).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -683,7 +683,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     public virtual async Task<string> GetUserIdAsync(TUser user)
     {
         ThrowIfDisposed();
-        return await Store.GetUserIdAsync(user, CancellationToken);
+        return await Store.GetUserIdAsync(user, CancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -704,11 +704,11 @@ public class UserManager<TUser> : IDisposable where TUser : class
             return false;
         }
 
-        var result = await VerifyPasswordAsync(passwordStore, user, password);
+        var result = await VerifyPasswordAsync(passwordStore, user, password).ConfigureAwait(false);
         if (result == PasswordVerificationResult.SuccessRehashNeeded)
         {
-            await UpdatePasswordHash(passwordStore, user, password, validatePassword: false);
-            await UpdateUserAsync(user);
+            await UpdatePasswordHash(passwordStore, user, password, validatePassword: false).ConfigureAwait(false);
+            await UpdateUserAsync(user).ConfigureAwait(false);
         }
 
         var success = result != PasswordVerificationResult.Failed;
@@ -758,18 +758,18 @@ public class UserManager<TUser> : IDisposable where TUser : class
             throw new ArgumentNullException(nameof(user));
         }
 
-        var hash = await passwordStore.GetPasswordHashAsync(user, CancellationToken);
+        var hash = await passwordStore.GetPasswordHashAsync(user, CancellationToken).ConfigureAwait(false);
         if (hash != null)
         {
             Logger.LogWarning(LoggerEventIds.UserAlreadyHasPassword, "User already has a password.");
             return IdentityResult.Failed(ErrorDescriber.UserAlreadyHasPassword());
         }
-        var result = await UpdatePasswordHash(passwordStore, user, password);
+        var result = await UpdatePasswordHash(passwordStore, user, password).ConfigureAwait(false);
         if (!result.Succeeded)
         {
             return result;
         }
-        return await UpdateUserAsync(user);
+        return await UpdateUserAsync(user).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -792,14 +792,14 @@ public class UserManager<TUser> : IDisposable where TUser : class
             throw new ArgumentNullException(nameof(user));
         }
 
-        if (await VerifyPasswordAsync(passwordStore, user, currentPassword) != PasswordVerificationResult.Failed)
+        if (await VerifyPasswordAsync(passwordStore, user, currentPassword).ConfigureAwait(false) != PasswordVerificationResult.Failed)
         {
-            var result = await UpdatePasswordHash(passwordStore, user, newPassword);
+            var result = await UpdatePasswordHash(passwordStore, user, newPassword).ConfigureAwait(false);
             if (!result.Succeeded)
             {
                 return result;
             }
-            return await UpdateUserAsync(user);
+            return await UpdateUserAsync(user).ConfigureAwait(false);
         }
         Logger.LogWarning(LoggerEventIds.ChangePasswordFailed, "Change password failed for user.");
         return IdentityResult.Failed(ErrorDescriber.PasswordMismatch());
@@ -822,8 +822,8 @@ public class UserManager<TUser> : IDisposable where TUser : class
             throw new ArgumentNullException(nameof(user));
         }
 
-        await UpdatePasswordHash(passwordStore, user, null, validatePassword: false);
-        return await UpdateUserAsync(user);
+        await UpdatePasswordHash(passwordStore, user, null, validatePassword: false).ConfigureAwait(false);
+        return await UpdateUserAsync(user).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -838,7 +838,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// </returns>
     protected virtual async Task<PasswordVerificationResult> VerifyPasswordAsync(IUserPasswordStore<TUser> store, TUser user, string password)
     {
-        var hash = await store.GetPasswordHashAsync(user, CancellationToken);
+        var hash = await store.GetPasswordHashAsync(user, CancellationToken).ConfigureAwait(false);
         if (hash == null)
         {
             return PasswordVerificationResult.Failed;
@@ -859,7 +859,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         {
             throw new ArgumentNullException(nameof(user));
         }
-        var stamp = await securityStore.GetSecurityStampAsync(user, CancellationToken);
+        var stamp = await securityStore.GetSecurityStampAsync(user, CancellationToken).ConfigureAwait(false);
         if (stamp == null)
         {
             Logger.LogWarning(LoggerEventIds.GetSecurityStampFailed, "GetSecurityStampAsync for user failed because stamp was null.");
@@ -888,8 +888,8 @@ public class UserManager<TUser> : IDisposable where TUser : class
             throw new ArgumentNullException(nameof(user));
         }
 
-        await UpdateSecurityStampInternal(user);
-        return await UpdateUserAsync(user);
+        await UpdateSecurityStampInternal(user).ConfigureAwait(false);
+        return await UpdateUserAsync(user).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -925,16 +925,16 @@ public class UserManager<TUser> : IDisposable where TUser : class
         }
 
         // Make sure the token is valid and the stamp matches
-        if (!await VerifyUserTokenAsync(user, Options.Tokens.PasswordResetTokenProvider, ResetPasswordTokenPurpose, token))
+        if (!await VerifyUserTokenAsync(user, Options.Tokens.PasswordResetTokenProvider, ResetPasswordTokenPurpose, token).ConfigureAwait(false))
         {
             return IdentityResult.Failed(ErrorDescriber.InvalidToken());
         }
-        var result = await UpdatePasswordHash(user, newPassword, validatePassword: true);
+        var result = await UpdatePasswordHash(user, newPassword, validatePassword: true).ConfigureAwait(false);
         if (!result.Succeeded)
         {
             return result;
         }
-        return await UpdateUserAsync(user);
+        return await UpdateUserAsync(user).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -988,9 +988,9 @@ public class UserManager<TUser> : IDisposable where TUser : class
             throw new ArgumentNullException(nameof(user));
         }
 
-        await loginStore.RemoveLoginAsync(user, loginProvider, providerKey, CancellationToken);
-        await UpdateSecurityStampInternal(user);
-        return await UpdateUserAsync(user);
+        await loginStore.RemoveLoginAsync(user, loginProvider, providerKey, CancellationToken).ConfigureAwait(false);
+        await UpdateSecurityStampInternal(user).ConfigureAwait(false);
+        return await UpdateUserAsync(user).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -1015,14 +1015,14 @@ public class UserManager<TUser> : IDisposable where TUser : class
             throw new ArgumentNullException(nameof(user));
         }
 
-        var existingUser = await FindByLoginAsync(login.LoginProvider, login.ProviderKey);
+        var existingUser = await FindByLoginAsync(login.LoginProvider, login.ProviderKey).ConfigureAwait(false);
         if (existingUser != null)
         {
             Logger.LogWarning(LoggerEventIds.AddLoginFailed, "AddLogin for user failed because it was already associated with another user.");
             return IdentityResult.Failed(ErrorDescriber.LoginAlreadyAssociated());
         }
-        await loginStore.AddLoginAsync(user, login, CancellationToken);
-        return await UpdateUserAsync(user);
+        await loginStore.AddLoginAsync(user, login, CancellationToken).ConfigureAwait(false);
+        return await UpdateUserAsync(user).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -1040,7 +1040,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         {
             throw new ArgumentNullException(nameof(user));
         }
-        return await loginStore.GetLoginsAsync(user, CancellationToken);
+        return await loginStore.GetLoginsAsync(user, CancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -1089,8 +1089,8 @@ public class UserManager<TUser> : IDisposable where TUser : class
             throw new ArgumentNullException(nameof(user));
         }
 
-        await claimStore.AddClaimsAsync(user, claims, CancellationToken);
-        return await UpdateUserAsync(user);
+        await claimStore.AddClaimsAsync(user, claims, CancellationToken).ConfigureAwait(false);
+        return await UpdateUserAsync(user).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -1120,8 +1120,8 @@ public class UserManager<TUser> : IDisposable where TUser : class
             throw new ArgumentNullException(nameof(user));
         }
 
-        await claimStore.ReplaceClaimAsync(user, claim, newClaim, CancellationToken);
-        return await UpdateUserAsync(user);
+        await claimStore.ReplaceClaimAsync(user, claim, newClaim, CancellationToken).ConfigureAwait(false);
+        return await UpdateUserAsync(user).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -1170,8 +1170,8 @@ public class UserManager<TUser> : IDisposable where TUser : class
             throw new ArgumentNullException(nameof(claims));
         }
 
-        await claimStore.RemoveClaimsAsync(user, claims, CancellationToken);
-        return await UpdateUserAsync(user);
+        await claimStore.RemoveClaimsAsync(user, claims, CancellationToken).ConfigureAwait(false);
+        return await UpdateUserAsync(user).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -1189,7 +1189,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         {
             throw new ArgumentNullException(nameof(user));
         }
-        return await claimStore.GetClaimsAsync(user, CancellationToken);
+        return await claimStore.GetClaimsAsync(user, CancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -1211,12 +1211,12 @@ public class UserManager<TUser> : IDisposable where TUser : class
         }
 
         var normalizedRole = NormalizeName(role);
-        if (await userRoleStore.IsInRoleAsync(user, normalizedRole, CancellationToken))
+        if (await userRoleStore.IsInRoleAsync(user, normalizedRole, CancellationToken).ConfigureAwait(false))
         {
             return UserAlreadyInRoleError(role);
         }
-        await userRoleStore.AddToRoleAsync(user, normalizedRole, CancellationToken);
-        return await UpdateUserAsync(user);
+        await userRoleStore.AddToRoleAsync(user, normalizedRole, CancellationToken).ConfigureAwait(false);
+        return await UpdateUserAsync(user).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -1244,13 +1244,13 @@ public class UserManager<TUser> : IDisposable where TUser : class
         foreach (var role in roles.Distinct())
         {
             var normalizedRole = NormalizeName(role);
-            if (await userRoleStore.IsInRoleAsync(user, normalizedRole, CancellationToken))
+            if (await userRoleStore.IsInRoleAsync(user, normalizedRole, CancellationToken).ConfigureAwait(false))
             {
                 return UserAlreadyInRoleError(role);
             }
-            await userRoleStore.AddToRoleAsync(user, normalizedRole, CancellationToken);
+            await userRoleStore.AddToRoleAsync(user, normalizedRole, CancellationToken).ConfigureAwait(false);
         }
-        return await UpdateUserAsync(user);
+        return await UpdateUserAsync(user).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -1272,12 +1272,12 @@ public class UserManager<TUser> : IDisposable where TUser : class
         }
 
         var normalizedRole = NormalizeName(role);
-        if (!await userRoleStore.IsInRoleAsync(user, normalizedRole, CancellationToken))
+        if (!await userRoleStore.IsInRoleAsync(user, normalizedRole, CancellationToken).ConfigureAwait(false))
         {
             return UserNotInRoleError(role);
         }
-        await userRoleStore.RemoveFromRoleAsync(user, normalizedRole, CancellationToken);
-        return await UpdateUserAsync(user);
+        await userRoleStore.RemoveFromRoleAsync(user, normalizedRole, CancellationToken).ConfigureAwait(false);
+        return await UpdateUserAsync(user).ConfigureAwait(false);
     }
 
     private IdentityResult UserAlreadyInRoleError(string role)
@@ -1317,13 +1317,13 @@ public class UserManager<TUser> : IDisposable where TUser : class
         foreach (var role in roles)
         {
             var normalizedRole = NormalizeName(role);
-            if (!await userRoleStore.IsInRoleAsync(user, normalizedRole, CancellationToken))
+            if (!await userRoleStore.IsInRoleAsync(user, normalizedRole, CancellationToken).ConfigureAwait(false))
             {
                 return UserNotInRoleError(role);
             }
-            await userRoleStore.RemoveFromRoleAsync(user, normalizedRole, CancellationToken);
+            await userRoleStore.RemoveFromRoleAsync(user, normalizedRole, CancellationToken).ConfigureAwait(false);
         }
-        return await UpdateUserAsync(user);
+        return await UpdateUserAsync(user).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -1339,7 +1339,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         {
             throw new ArgumentNullException(nameof(user));
         }
-        return await userRoleStore.GetRolesAsync(user, CancellationToken);
+        return await userRoleStore.GetRolesAsync(user, CancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -1359,7 +1359,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         {
             throw new ArgumentNullException(nameof(user));
         }
-        return await userRoleStore.IsInRoleAsync(user, NormalizeName(role), CancellationToken);
+        return await userRoleStore.IsInRoleAsync(user, NormalizeName(role), CancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -1375,7 +1375,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         {
             throw new ArgumentNullException(nameof(user));
         }
-        return await store.GetEmailAsync(user, CancellationToken);
+        return await store.GetEmailAsync(user, CancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -1396,10 +1396,10 @@ public class UserManager<TUser> : IDisposable where TUser : class
             throw new ArgumentNullException(nameof(user));
         }
 
-        await store.SetEmailAsync(user, email, CancellationToken);
-        await store.SetEmailConfirmedAsync(user, false, CancellationToken);
-        await UpdateSecurityStampInternal(user);
-        return await UpdateUserAsync(user);
+        await store.SetEmailAsync(user, email, CancellationToken).ConfigureAwait(false);
+        await store.SetEmailConfirmedAsync(user, false, CancellationToken).ConfigureAwait(false);
+        await UpdateSecurityStampInternal(user).ConfigureAwait(false);
+        return await UpdateUserAsync(user).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -1421,7 +1421,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         }
 
         email = NormalizeEmail(email);
-        var user = await store.FindByEmailAsync(email, CancellationToken);
+        var user = await store.FindByEmailAsync(email, CancellationToken).ConfigureAwait(false);
 
         // Need to potentially check all keys
         if (user == null && Options.Stores.ProtectPersonalData)
@@ -1433,7 +1433,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
                 foreach (var key in keyRing.GetAllKeyIds())
                 {
                     var oldKey = protector.Protect(key, email);
-                    user = await store.FindByEmailAsync(oldKey, CancellationToken);
+                    user = await store.FindByEmailAsync(oldKey, CancellationToken).ConfigureAwait(false);
                     if (user != null)
                     {
                         return user;
@@ -1454,8 +1454,8 @@ public class UserManager<TUser> : IDisposable where TUser : class
         var store = GetEmailStore(throwOnFail: false);
         if (store != null)
         {
-            var email = await GetEmailAsync(user);
-            await store.SetNormalizedEmailAsync(user, ProtectPersonalData(NormalizeEmail(email)), CancellationToken);
+            var email = await GetEmailAsync(user).ConfigureAwait(false);
+            await store.SetNormalizedEmailAsync(user, ProtectPersonalData(NormalizeEmail(email)), CancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -1490,12 +1490,12 @@ public class UserManager<TUser> : IDisposable where TUser : class
             throw new ArgumentNullException(nameof(user));
         }
 
-        if (!await VerifyUserTokenAsync(user, Options.Tokens.EmailConfirmationTokenProvider, ConfirmEmailTokenPurpose, token))
+        if (!await VerifyUserTokenAsync(user, Options.Tokens.EmailConfirmationTokenProvider, ConfirmEmailTokenPurpose, token).ConfigureAwait(false))
         {
             return IdentityResult.Failed(ErrorDescriber.InvalidToken());
         }
-        await store.SetEmailConfirmedAsync(user, true, CancellationToken);
-        return await UpdateUserAsync(user);
+        await store.SetEmailConfirmedAsync(user, true, CancellationToken).ConfigureAwait(false);
+        return await UpdateUserAsync(user).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -1515,7 +1515,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         {
             throw new ArgumentNullException(nameof(user));
         }
-        return await store.GetEmailConfirmedAsync(user, CancellationToken);
+        return await store.GetEmailConfirmedAsync(user, CancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -1551,15 +1551,15 @@ public class UserManager<TUser> : IDisposable where TUser : class
         }
 
         // Make sure the token is valid and the stamp matches
-        if (!await VerifyUserTokenAsync(user, Options.Tokens.ChangeEmailTokenProvider, GetChangeEmailTokenPurpose(newEmail), token))
+        if (!await VerifyUserTokenAsync(user, Options.Tokens.ChangeEmailTokenProvider, GetChangeEmailTokenPurpose(newEmail), token).ConfigureAwait(false))
         {
             return IdentityResult.Failed(ErrorDescriber.InvalidToken());
         }
         var store = GetEmailStore();
-        await store.SetEmailAsync(user, newEmail, CancellationToken);
-        await store.SetEmailConfirmedAsync(user, true, CancellationToken);
-        await UpdateSecurityStampInternal(user);
-        return await UpdateUserAsync(user);
+        await store.SetEmailAsync(user, newEmail, CancellationToken).ConfigureAwait(false);
+        await store.SetEmailConfirmedAsync(user, true, CancellationToken).ConfigureAwait(false);
+        await UpdateSecurityStampInternal(user).ConfigureAwait(false);
+        return await UpdateUserAsync(user).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -1575,7 +1575,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         {
             throw new ArgumentNullException(nameof(user));
         }
-        return await store.GetPhoneNumberAsync(user, CancellationToken);
+        return await store.GetPhoneNumberAsync(user, CancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -1596,10 +1596,10 @@ public class UserManager<TUser> : IDisposable where TUser : class
             throw new ArgumentNullException(nameof(user));
         }
 
-        await store.SetPhoneNumberAsync(user, phoneNumber, CancellationToken);
-        await store.SetPhoneNumberConfirmedAsync(user, false, CancellationToken);
-        await UpdateSecurityStampInternal(user);
-        return await UpdateUserAsync(user);
+        await store.SetPhoneNumberAsync(user, phoneNumber, CancellationToken).ConfigureAwait(false);
+        await store.SetPhoneNumberConfirmedAsync(user, false, CancellationToken).ConfigureAwait(false);
+        await UpdateSecurityStampInternal(user).ConfigureAwait(false);
+        return await UpdateUserAsync(user).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -1622,15 +1622,15 @@ public class UserManager<TUser> : IDisposable where TUser : class
             throw new ArgumentNullException(nameof(user));
         }
 
-        if (!await VerifyChangePhoneNumberTokenAsync(user, token, phoneNumber))
+        if (!await VerifyChangePhoneNumberTokenAsync(user, token, phoneNumber).ConfigureAwait(false))
         {
             Logger.LogWarning(LoggerEventIds.PhoneNumberChanged, "Change phone number for user failed with invalid token.");
             return IdentityResult.Failed(ErrorDescriber.InvalidToken());
         }
-        await store.SetPhoneNumberAsync(user, phoneNumber, CancellationToken);
-        await store.SetPhoneNumberConfirmedAsync(user, true, CancellationToken);
-        await UpdateSecurityStampInternal(user);
-        return await UpdateUserAsync(user);
+        await store.SetPhoneNumberAsync(user, phoneNumber, CancellationToken).ConfigureAwait(false);
+        await store.SetPhoneNumberConfirmedAsync(user, true, CancellationToken).ConfigureAwait(false);
+        await UpdateSecurityStampInternal(user).ConfigureAwait(false);
+        return await UpdateUserAsync(user).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -1718,7 +1718,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
             throw new NotSupportedException(Resources.FormatNoTokenProvider(nameof(TUser), tokenProvider));
         }
         // Make sure the token is valid
-        var result = await _tokenProviders[tokenProvider].ValidateAsync(purpose, token, this, user);
+        var result = await _tokenProviders[tokenProvider].ValidateAsync(purpose, token, this, user).ConfigureAwait(false);
 
         if (!result)
         {
@@ -1790,7 +1790,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         var results = new List<string>();
         foreach (var f in _tokenProviders)
         {
-            if (await f.Value.CanGenerateTwoFactorTokenAsync(this, user))
+            if (await f.Value.CanGenerateTwoFactorTokenAsync(this, user).ConfigureAwait(false))
             {
                 results.Add(f.Key);
             }
@@ -1821,7 +1821,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         }
 
         // Make sure the token is valid
-        var result = await _tokenProviders[tokenProvider].ValidateAsync("TwoFactor", token, this, user);
+        var result = await _tokenProviders[tokenProvider].ValidateAsync("TwoFactor", token, this, user).ConfigureAwait(false);
         if (!result)
         {
             Logger.LogWarning(LoggerEventIds.VerifyTwoFactorTokenFailed, $"{nameof(VerifyTwoFactorTokenAsync)}() failed for user.");
@@ -1870,7 +1870,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         {
             throw new ArgumentNullException(nameof(user));
         }
-        return await store.GetTwoFactorEnabledAsync(user, CancellationToken);
+        return await store.GetTwoFactorEnabledAsync(user, CancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -1891,9 +1891,9 @@ public class UserManager<TUser> : IDisposable where TUser : class
             throw new ArgumentNullException(nameof(user));
         }
 
-        await store.SetTwoFactorEnabledAsync(user, enabled, CancellationToken);
-        await UpdateSecurityStampInternal(user);
-        return await UpdateUserAsync(user);
+        await store.SetTwoFactorEnabledAsync(user, enabled, CancellationToken).ConfigureAwait(false);
+        await UpdateSecurityStampInternal(user).ConfigureAwait(false);
+        return await UpdateUserAsync(user).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -1913,11 +1913,11 @@ public class UserManager<TUser> : IDisposable where TUser : class
         {
             throw new ArgumentNullException(nameof(user));
         }
-        if (!await store.GetLockoutEnabledAsync(user, CancellationToken))
+        if (!await store.GetLockoutEnabledAsync(user, CancellationToken).ConfigureAwait(false))
         {
             return false;
         }
-        var lockoutTime = await store.GetLockoutEndDateAsync(user, CancellationToken);
+        var lockoutTime = await store.GetLockoutEndDateAsync(user, CancellationToken).ConfigureAwait(false);
         return lockoutTime >= DateTimeOffset.UtcNow;
     }
 
@@ -1939,8 +1939,8 @@ public class UserManager<TUser> : IDisposable where TUser : class
             throw new ArgumentNullException(nameof(user));
         }
 
-        await store.SetLockoutEnabledAsync(user, enabled, CancellationToken);
-        return await UpdateUserAsync(user);
+        await store.SetLockoutEnabledAsync(user, enabled, CancellationToken).ConfigureAwait(false);
+        return await UpdateUserAsync(user).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -1958,7 +1958,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         {
             throw new ArgumentNullException(nameof(user));
         }
-        return await store.GetLockoutEnabledAsync(user, CancellationToken);
+        return await store.GetLockoutEnabledAsync(user, CancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -1977,7 +1977,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         {
             throw new ArgumentNullException(nameof(user));
         }
-        return await store.GetLockoutEndDateAsync(user, CancellationToken);
+        return await store.GetLockoutEndDateAsync(user, CancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -1995,13 +1995,13 @@ public class UserManager<TUser> : IDisposable where TUser : class
             throw new ArgumentNullException(nameof(user));
         }
 
-        if (!await store.GetLockoutEnabledAsync(user, CancellationToken))
+        if (!await store.GetLockoutEnabledAsync(user, CancellationToken).ConfigureAwait(false))
         {
             Logger.LogWarning(LoggerEventIds.LockoutFailed, "Lockout for user failed because lockout is not enabled for this user.");
             return IdentityResult.Failed(ErrorDescriber.UserLockoutNotEnabled());
         }
-        await store.SetLockoutEndDateAsync(user, lockoutEnd, CancellationToken);
-        return await UpdateUserAsync(user);
+        await store.SetLockoutEndDateAsync(user, lockoutEnd, CancellationToken).ConfigureAwait(false);
+        return await UpdateUserAsync(user).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -2021,16 +2021,16 @@ public class UserManager<TUser> : IDisposable where TUser : class
         }
 
         // If this puts the user over the threshold for lockout, lock them out and reset the access failed count
-        var count = await store.IncrementAccessFailedCountAsync(user, CancellationToken);
+        var count = await store.IncrementAccessFailedCountAsync(user, CancellationToken).ConfigureAwait(false);
         if (count < Options.Lockout.MaxFailedAccessAttempts)
         {
-            return await UpdateUserAsync(user);
+            return await UpdateUserAsync(user).ConfigureAwait(false);
         }
         Logger.LogWarning(LoggerEventIds.UserLockedOut, "User is locked out.");
         await store.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow.Add(Options.Lockout.DefaultLockoutTimeSpan),
-            CancellationToken);
-        await store.ResetAccessFailedCountAsync(user, CancellationToken);
-        return await UpdateUserAsync(user);
+            CancellationToken).ConfigureAwait(false);
+        await store.ResetAccessFailedCountAsync(user, CancellationToken).ConfigureAwait(false);
+        return await UpdateUserAsync(user).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -2047,12 +2047,12 @@ public class UserManager<TUser> : IDisposable where TUser : class
             throw new ArgumentNullException(nameof(user));
         }
 
-        if (await GetAccessFailedCountAsync(user) == 0)
+        if (await GetAccessFailedCountAsync(user).ConfigureAwait(false) == 0)
         {
             return IdentityResult.Success;
         }
-        await store.ResetAccessFailedCountAsync(user, CancellationToken);
-        return await UpdateUserAsync(user);
+        await store.ResetAccessFailedCountAsync(user, CancellationToken).ConfigureAwait(false);
+        return await UpdateUserAsync(user).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -2069,7 +2069,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         {
             throw new ArgumentNullException(nameof(user));
         }
-        return await store.GetAccessFailedCountAsync(user, CancellationToken);
+        return await store.GetAccessFailedCountAsync(user, CancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -2164,8 +2164,8 @@ public class UserManager<TUser> : IDisposable where TUser : class
         }
 
         // REVIEW: should updating any tokens affect the security stamp?
-        await store.SetTokenAsync(user, loginProvider, tokenName, tokenValue, CancellationToken);
-        return await UpdateUserAsync(user);
+        await store.SetTokenAsync(user, loginProvider, tokenName, tokenValue, CancellationToken).ConfigureAwait(false);
+        return await UpdateUserAsync(user).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -2192,8 +2192,8 @@ public class UserManager<TUser> : IDisposable where TUser : class
             throw new ArgumentNullException(nameof(tokenName));
         }
 
-        await store.RemoveTokenAsync(user, loginProvider, tokenName, CancellationToken);
-        return await UpdateUserAsync(user);
+        await store.RemoveTokenAsync(user, loginProvider, tokenName, CancellationToken).ConfigureAwait(false);
+        return await UpdateUserAsync(user).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -2225,9 +2225,9 @@ public class UserManager<TUser> : IDisposable where TUser : class
         {
             throw new ArgumentNullException(nameof(user));
         }
-        await store.SetAuthenticatorKeyAsync(user, GenerateNewAuthenticatorKey(), CancellationToken);
-        await UpdateSecurityStampInternal(user);
-        return await UpdateAsync(user);
+        await store.SetAuthenticatorKeyAsync(user, GenerateNewAuthenticatorKey(), CancellationToken).ConfigureAwait(false);
+        await UpdateSecurityStampInternal(user).ConfigureAwait(false);
+        return await UpdateAsync(user).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -2258,8 +2258,8 @@ public class UserManager<TUser> : IDisposable where TUser : class
             newCodes.Add(CreateTwoFactorRecoveryCode());
         }
 
-        await store.ReplaceCodesAsync(user, newCodes.Distinct(), CancellationToken);
-        var update = await UpdateAsync(user);
+        await store.ReplaceCodesAsync(user, newCodes.Distinct(), CancellationToken).ConfigureAwait(false);
+        var update = await UpdateAsync(user).ConfigureAwait(false);
         if (update.Succeeded)
         {
             return newCodes;
@@ -2290,10 +2290,10 @@ public class UserManager<TUser> : IDisposable where TUser : class
             throw new ArgumentNullException(nameof(user));
         }
 
-        var success = await store.RedeemCodeAsync(user, code, CancellationToken);
+        var success = await store.RedeemCodeAsync(user, code, CancellationToken).ConfigureAwait(false);
         if (success)
         {
-            return await UpdateAsync(user);
+            return await UpdateAsync(user).ConfigureAwait(false);
         }
         return IdentityResult.Failed(ErrorDescriber.RecoveryCodeRedemptionFailed());
     }
@@ -2375,7 +2375,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// <returns>The security token bytes.</returns>
     public virtual async Task<byte[]> CreateSecurityTokenAsync(TUser user)
     {
-        return Encoding.Unicode.GetBytes(await GetSecurityStampAsync(user));
+        return Encoding.Unicode.GetBytes(await GetSecurityStampAsync(user).ConfigureAwait(false));
     }
 
     // Update the security stamp if the store supports it
@@ -2383,7 +2383,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     {
         if (SupportsUserSecurityStamp)
         {
-            await GetSecurityStore().SetSecurityStampAsync(user, NewSecurityStamp(), CancellationToken);
+            await GetSecurityStore().SetSecurityStampAsync(user, NewSecurityStamp(), CancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -2402,15 +2402,15 @@ public class UserManager<TUser> : IDisposable where TUser : class
     {
         if (validatePassword)
         {
-            var validate = await ValidatePasswordAsync(user, newPassword);
+            var validate = await ValidatePasswordAsync(user, newPassword).ConfigureAwait(false);
             if (!validate.Succeeded)
             {
                 return validate;
             }
         }
         var hash = newPassword != null ? PasswordHasher.HashPassword(user, newPassword) : null;
-        await passwordStore.SetPasswordHashAsync(user, hash, CancellationToken);
-        await UpdateSecurityStampInternal(user);
+        await passwordStore.SetPasswordHashAsync(user, hash, CancellationToken).ConfigureAwait(false);
+        await UpdateSecurityStampInternal(user).ConfigureAwait(false);
         return IdentityResult.Success;
     }
 
@@ -2483,7 +2483,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     {
         if (SupportsUserSecurityStamp)
         {
-            var stamp = await GetSecurityStampAsync(user);
+            var stamp = await GetSecurityStampAsync(user).ConfigureAwait(false);
             if (stamp == null)
             {
                 throw new InvalidOperationException(Resources.NullSecurityStamp);
@@ -2492,7 +2492,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         var errors = new List<IdentityError>();
         foreach (var v in UserValidators)
         {
-            var result = await v.ValidateAsync(this, user);
+            var result = await v.ValidateAsync(this, user).ConfigureAwait(false);
             if (!result.Succeeded)
             {
                 errors.AddRange(result.Errors);
@@ -2519,7 +2519,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         var isValid = true;
         foreach (var v in PasswordValidators)
         {
-            var result = await v.ValidateAsync(this, user, password);
+            var result = await v.ValidateAsync(this, user, password).ConfigureAwait(false);
             if (!result.Succeeded)
             {
                 if (result.Errors.Any())
@@ -2545,14 +2545,14 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// <returns>Whether the operation was successful.</returns>
     protected virtual async Task<IdentityResult> UpdateUserAsync(TUser user)
     {
-        var result = await ValidateUserAsync(user);
+        var result = await ValidateUserAsync(user).ConfigureAwait(false);
         if (!result.Succeeded)
         {
             return result;
         }
-        await UpdateNormalizedUserNameAsync(user);
-        await UpdateNormalizedEmailAsync(user);
-        return await Store.UpdateAsync(user, CancellationToken);
+        await UpdateNormalizedUserNameAsync(user).ConfigureAwait(false);
+        await UpdateNormalizedEmailAsync(user).ConfigureAwait(false);
+        return await Store.UpdateAsync(user, CancellationToken).ConfigureAwait(false);
     }
 
     private IUserAuthenticatorKeyStore<TUser> GetAuthenticatorKeyStore()

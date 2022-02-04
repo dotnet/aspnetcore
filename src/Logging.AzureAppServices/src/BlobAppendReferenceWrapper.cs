@@ -41,7 +41,7 @@ internal class BlobAppendReferenceWrapper : ICloudAppendBlob
             return _client.SendAsync(message, cancellationToken);
         }
 
-        var response = await AppendDataAsync();
+        var response = await AppendDataAsync().ConfigureAwait(false);
 
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
@@ -58,14 +58,14 @@ internal class BlobAppendReferenceWrapper : ICloudAppendBlob
 
             AddCommonHeaders(message);
 
-            response = await _client.SendAsync(message, cancellationToken);
+            response = await _client.SendAsync(message, cancellationToken).ConfigureAwait(false);
 
             // If result is 2** or 412 try to append again
             if (response.IsSuccessStatusCode ||
                 response.StatusCode == HttpStatusCode.PreconditionFailed)
             {
                 // Retry sending data after blob creation
-                response = await AppendDataAsync();
+                response = await AppendDataAsync().ConfigureAwait(false);
             }
         }
 

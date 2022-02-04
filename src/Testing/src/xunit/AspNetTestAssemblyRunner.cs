@@ -28,7 +28,7 @@ public class AspNetTestAssemblyRunner : XunitTestAssemblyRunner
 
     protected override async Task AfterTestAssemblyStartingAsync()
     {
-        await base.AfterTestAssemblyStartingAsync();
+        await base.AfterTestAssemblyStartingAsync().ConfigureAwait(false);
 
         // Find all the AssemblyFixtureAttributes on the test assembly
         await Aggregator.RunAsync(async () =>
@@ -57,10 +57,10 @@ public class AspNetTestAssemblyRunner : XunitTestAssemblyRunner
 
                 if (instance is IAsyncLifetime asyncInit)
                 {
-                    await asyncInit.InitializeAsync();
+                    await asyncInit.InitializeAsync().ConfigureAwait(false);
                 }
             }
-        });
+        }).ConfigureAwait(false);
     }
 
     protected override async Task BeforeTestAssemblyFinishedAsync()
@@ -73,10 +73,10 @@ public class AspNetTestAssemblyRunner : XunitTestAssemblyRunner
 
         foreach (var disposable in _assemblyFixtureMappings.Values.OfType<IAsyncLifetime>())
         {
-            await Aggregator.RunAsync(disposable.DisposeAsync);
+            await Aggregator.RunAsync(disposable.DisposeAsync).ConfigureAwait(false);
         }
 
-        await base.BeforeTestAssemblyFinishedAsync();
+        await base.BeforeTestAssemblyFinishedAsync().ConfigureAwait(false);
     }
 
     protected override Task<RunSummary> RunTestCollectionAsync(

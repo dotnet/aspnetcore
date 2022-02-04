@@ -22,9 +22,5 @@ variables:
   - name: SymbolToolVersion
     value: 1.0.1
 
-  # Skip component governance and codesign validation for SDL. These jobs
-  # create no content.
-  - name: skipComponentGovernanceDetection
-    value: true
   - name: runCodesignValidationInjection
     value: false
