@@ -128,13 +128,15 @@ HostFxrResolver::GetHostFxrParameters(
         }
         else
         {
+// OLD behavior when we have dotnetExePath
+            hostFxrDllPath = GetAbsolutePathToHostFxr(dotnetExePath);
+
             arguments.push_back(dotnetExePath);
             AppendArguments(
                 expandedApplicationArguments,
                 applicationPhysicalPath,
                 arguments,
                 true);
-//            hostFxrDllPath = GetAbsolutePathToHostFxr(dotnetExePath);
         }
 
         //hostFxrDllPath = hostfxrPath;
