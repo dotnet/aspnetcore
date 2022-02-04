@@ -173,6 +173,7 @@ namespace Microsoft.AspNetCore.Builder
                     if (match.Success)
                     {
                         capturedUrl = match.Groups["url"].Value;
+                    capturedUrl = capturedUrl.Replace("http://", "ws://");
                     }
                 }
             }
