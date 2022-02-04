@@ -77,6 +77,9 @@ charset = utf-8-bom
 
 [*.{cs,vb}]
 
+# CA1847: Use string.Contains(char) instead of string.Contains(string) with single characters
+dotnet_diagnostic.CA1847.severity = warning
+
 # CA1018: Mark attributes with AttributeUsageAttribute
 dotnet_diagnostic.CA1018.severity = warning
 
