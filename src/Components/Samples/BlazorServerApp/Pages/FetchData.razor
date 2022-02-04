@@ -3,7 +3,6 @@
 <PageTitle>Weather forecast</PageTitle>
 
 @using BlazorServerApp.Data
-@inject WeatherForecastService ForecastService
 
 <h1>Weather forecast</h1>
 
@@ -40,6 +39,13 @@ else
 
 @code {
     WeatherForecast[]? forecasts;
+
+    public FetchData(WeatherForecastService forecastService)
+    {
+        ForecastService = forecastService;
+    }
+
+    private WeatherForecastService ForecastService { get; }
 
     protected override async Task OnInitializedAsync()
     {

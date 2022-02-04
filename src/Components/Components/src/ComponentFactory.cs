@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.Reflection;
+using Microsoft.Extensions.DependencyInjection;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components;
@@ -14,46 +15,76 @@ internal sealed class ComponentFactory
     private const BindingFlags _injectablePropertyBindingFlags
         = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
-    private static readonly ConcurrentDictionary<Type, Action<IServiceProvider, IComponent>> _cachedInitializers = new();
+    private static readonly ConcurrentDictionary<Type, (Action<IServiceProvider, IComponent> propertyInitializers, ObjectFactory? componentInitializer)> _cachedInitializers = new();
+    private readonly IComponentActivator? _componentActivator;
 
-    private readonly IComponentActivator _componentActivator;
-
-    public ComponentFactory(IComponentActivator componentActivator)
+    public ComponentFactory(IComponentActivator? componentActivator)
     {
-        _componentActivator = componentActivator ?? throw new ArgumentNullException(nameof(componentActivator));
+        _componentActivator = componentActivator;
     }
 
     public static void ClearCache() => _cachedInitializers.Clear();
 
     public IComponent InstantiateComponent(IServiceProvider serviceProvider, [DynamicallyAccessedMembers(Component)] Type componentType)
     {
-        var component = _componentActivator.CreateInstance(componentType);
-        if (component is null)
+        if (_componentActivator is not null)
         {
-            // The default activator will never do this, but an externally-supplied one might
-            throw new InvalidOperationException($"The component activator returned a null value for a component of type {componentType.FullName}.");
+            return InstantiateWithActivator(_componentActivator, serviceProvider, componentType);
         }
 
-        PerformPropertyInjection(serviceProvider, component);
-        return component;
+        return InstantiateDefault(serviceProvider, componentType);
     }
 
-    private static void PerformPropertyInjection(IServiceProvider serviceProvider, IComponent instance)
+    private static IComponent InstantiateDefault(IServiceProvider serviceProvider, [DynamicallyAccessedMembers(Component)] Type componentType)
     {
         // This is thread-safe because _cachedInitializers is a ConcurrentDictionary.
         // We might generate the initializer more than once for a given type, but would
         // still produce the correct result.
-        var instanceType = instance.GetType();
-        if (!_cachedInitializers.TryGetValue(instanceType, out var initializer))
+        if (!_cachedInitializers.TryGetValue(componentType, out var initializer))
         {
-            initializer = CreateInitializer(instanceType);
-            _cachedInitializers.TryAdd(instanceType, initializer);
+            if (!typeof(IComponent).IsAssignableFrom(componentType))
+            {
+                throw new ArgumentException($"The type {componentType.FullName} does not implement {nameof(IComponent)}.", nameof(componentType));
+            }
+
+            initializer = (CreatePropertyInitializer(componentType), ActivatorUtilities.CreateFactory(componentType, Type.EmptyTypes));
+            _cachedInitializers.TryAdd(componentType, initializer);
         }
 
-        initializer(serviceProvider, instance);
+        var (propertyInitializer, componentInitializer) = initializer;
+        var component = (IComponent)componentInitializer!.Invoke(serviceProvider, Array.Empty<object?>());
+        propertyInitializer(serviceProvider, component);
+        return component;
     }
 
-    private static Action<IServiceProvider, IComponent> CreateInitializer([DynamicallyAccessedMembers(Component)] Type type)
+    private static IComponent InstantiateWithActivator(IComponentActivator componentActivator, IServiceProvider serviceProvider, [DynamicallyAccessedMembers(Component)] Type componentType)
+    {
+        var component = componentActivator.CreateInstance(componentType);
+        if (component is null)
+        {
+            // A user implemented IComponentActivator might return null.
+            throw new InvalidOperationException($"The component activator returned a null value for a component of type {componentType.FullName}.");
+        }
+
+        // Use the activated type instead of specified type since the activator may return different/ derived instances.
+        componentType = component.GetType();
+
+        // This is thread-safe because _cachedInitializers is a ConcurrentDictionary.
+        // We might generate the initializer more than once for a given type, but would
+        // still produce the correct result.
+        if (!_cachedInitializers.TryGetValue(componentType, out var initializer))
+        {
+            initializer = (CreatePropertyInitializer(componentType), componentInitializer: null);
+            _cachedInitializers.TryAdd(componentType, initializer);
+        }
+
+        var (propertyInitializer, _) = initializer;
+
+        propertyInitializer(serviceProvider, component);
+        return component;
+    }
+
+    private static Action<IServiceProvider, IComponent> CreatePropertyInitializer([DynamicallyAccessedMembers(Component)] Type type)
     {
         // Do all the reflection up front
         List<(string name, Type propertyType, PropertySetter setter)>? injectables = null;
