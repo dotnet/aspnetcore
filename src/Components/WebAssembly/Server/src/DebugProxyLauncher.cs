@@ -169,6 +169,7 @@ internal static class DebugProxyLauncher
                 {
                     capturedUrl = match.Groups["url"].Value;
                     capturedUrl = capturedUrl.Replace("http://", "ws://");
+                    capturedUrl = capturedUrl.Replace("https://", "wss://");
                 }
             }
         }
