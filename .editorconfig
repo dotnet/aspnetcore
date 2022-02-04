@@ -175,6 +175,9 @@ dotnet_diagnostic.CA1845.severity = warning
 # CA1846: Prefer AsSpan over Substring
 dotnet_diagnostic.CA1846.severity = warning
 
+# CA2007: Consider calling ConfigureAwait on the awaited task
+dotnet_diagnostic.CA2007.severity = warning
+
 # CA2008: Do not create tasks without passing a TaskScheduler
 dotnet_diagnostic.CA2008.severity = warning
 
@@ -250,7 +253,7 @@ dotnet_diagnostic.IDE0161.severity = warning
 dotnet_style_allow_multiple_blank_lines_experimental = false
 dotnet_diagnostic.IDE2000.severity = warning
 
-[**/{test,samples,perf}/**.{cs,vb}]
+[{eng/tools/**.cs,**/{test,samples,perf}/**.cs}]
 # CA1018: Mark attributes with AttributeUsageAttribute
 dotnet_diagnostic.CA1018.severity = suggestion
 # CA1507: Use nameof to express symbol names
