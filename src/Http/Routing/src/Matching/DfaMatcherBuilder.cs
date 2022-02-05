@@ -940,5 +940,5 @@ internal class DfaMatcherBuilder : MatcherBuilder
         return !RouteValueEqualityComparer.Default.Equals(value, string.Empty);
     }
 
-    private record struct DfaBuilderWorkerWorkItem(RouteEndpoint Endpoint, int PrecedenceDigit, List<DfaNode> Parents);
+    private readonly record struct DfaBuilderWorkerWorkItem(RouteEndpoint Endpoint, int PrecedenceDigit, List<DfaNode> Parents);
 }

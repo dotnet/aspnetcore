@@ -160,13 +160,13 @@ public class RoleManager<TRole> : IDisposable where TRole : class
         {
             throw new ArgumentNullException(nameof(role));
         }
-        var result = await ValidateRoleAsync(role);
+        var result = await ValidateRoleAsync(role).ConfigureAwait(false);
         if (!result.Succeeded)
         {
             return result;
         }
-        await UpdateNormalizedRoleNameAsync(role);
-        result = await Store.CreateAsync(role, CancellationToken);
+        await UpdateNormalizedRoleNameAsync(role).ConfigureAwait(false);
+        result = await Store.CreateAsync(role, CancellationToken).ConfigureAwait(false);
         return result;
     }
 
@@ -179,8 +179,8 @@ public class RoleManager<TRole> : IDisposable where TRole : class
     /// </returns>
     public virtual async Task UpdateNormalizedRoleNameAsync(TRole role)
     {
-        var name = await GetRoleNameAsync(role);
-        await Store.SetNormalizedRoleNameAsync(role, NormalizeKey(name), CancellationToken);
+        var name = await GetRoleNameAsync(role).ConfigureAwait(false);
+        await Store.SetNormalizedRoleNameAsync(role, NormalizeKey(name), CancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -234,7 +234,7 @@ public class RoleManager<TRole> : IDisposable where TRole : class
             throw new ArgumentNullException(nameof(roleName));
         }
 
-        return await FindByNameAsync(roleName) != null;
+        return await FindByNameAsync(roleName).ConfigureAwait(false) != null;
     }
 
     /// <summary>
@@ -288,8 +288,8 @@ public class RoleManager<TRole> : IDisposable where TRole : class
     {
         ThrowIfDisposed();
 
-        await Store.SetRoleNameAsync(role, name, CancellationToken);
-        await UpdateNormalizedRoleNameAsync(role);
+        await Store.SetRoleNameAsync(role, name, CancellationToken).ConfigureAwait(false);
+        await UpdateNormalizedRoleNameAsync(role).ConfigureAwait(false);
         return IdentityResult.Success;
     }
 
@@ -348,8 +348,8 @@ public class RoleManager<TRole> : IDisposable where TRole : class
             throw new ArgumentNullException(nameof(role));
         }
 
-        await claimStore.AddClaimAsync(role, claim, CancellationToken);
-        return await UpdateRoleAsync(role);
+        await claimStore.AddClaimAsync(role, claim, CancellationToken).ConfigureAwait(false);
+        return await UpdateRoleAsync(role).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -370,8 +370,8 @@ public class RoleManager<TRole> : IDisposable where TRole : class
             throw new ArgumentNullException(nameof(role));
         }
 
-        await claimStore.RemoveClaimAsync(role, claim, CancellationToken);
-        return await UpdateRoleAsync(role);
+        await claimStore.RemoveClaimAsync(role, claim, CancellationToken).ConfigureAwait(false);
+        return await UpdateRoleAsync(role).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -426,7 +426,7 @@ public class RoleManager<TRole> : IDisposable where TRole : class
         var errors = new List<IdentityError>();
         foreach (var v in RoleValidators)
         {
-            var result = await v.ValidateAsync(this, role);
+            var result = await v.ValidateAsync(this, role).ConfigureAwait(false);
             if (!result.Succeeded)
             {
                 errors.AddRange(result.Errors);
@@ -434,7 +434,7 @@ public class RoleManager<TRole> : IDisposable where TRole : class
         }
         if (errors.Count > 0)
         {
-            Logger.LogWarning(LoggerEventIds.RoleValidationFailed, "Role {roleId} validation failed: {errors}.", await GetRoleIdAsync(role), string.Join(";", errors.Select(e => e.Code)));
+            Logger.LogWarning(LoggerEventIds.RoleValidationFailed, "Role {roleId} validation failed: {errors}.", await GetRoleIdAsync(role).ConfigureAwait(false), string.Join(";", errors.Select(e => e.Code)));
             return IdentityResult.Failed(errors.ToArray());
         }
         return IdentityResult.Success;
@@ -447,13 +447,13 @@ public class RoleManager<TRole> : IDisposable where TRole : class
     /// <returns>Whether the operation was successful.</returns>
     protected virtual async Task<IdentityResult> UpdateRoleAsync(TRole role)
     {
-        var result = await ValidateRoleAsync(role);
+        var result = await ValidateRoleAsync(role).ConfigureAwait(false);
         if (!result.Succeeded)
         {
             return result;
         }
-        await UpdateNormalizedRoleNameAsync(role);
-        return await Store.UpdateAsync(role, CancellationToken);
+        await UpdateNormalizedRoleNameAsync(role).ConfigureAwait(false);
+        return await Store.UpdateAsync(role, CancellationToken).ConfigureAwait(false);
     }
 
     // IRoleClaimStore methods

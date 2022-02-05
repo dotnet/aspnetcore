@@ -451,10 +451,10 @@ public abstract class UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserTo
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        var userLogin = await FindUserLoginAsync(loginProvider, providerKey, cancellationToken);
+        var userLogin = await FindUserLoginAsync(loginProvider, providerKey, cancellationToken).ConfigureAwait(false);
         if (userLogin != null)
         {
-            return await FindUserAsync(userLogin.UserId, cancellationToken);
+            return await FindUserAsync(userLogin.UserId, cancellationToken).ConfigureAwait(false);
         }
         return null;
     }
@@ -924,10 +924,10 @@ public abstract class UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserTo
             throw new ArgumentNullException(nameof(user));
         }
 
-        var token = await FindTokenAsync(user, loginProvider, name, cancellationToken);
+        var token = await FindTokenAsync(user, loginProvider, name, cancellationToken).ConfigureAwait(false);
         if (token == null)
         {
-            await AddUserTokenAsync(CreateUserToken(user, loginProvider, name, value));
+            await AddUserTokenAsync(CreateUserToken(user, loginProvider, name, value)).ConfigureAwait(false);
         }
         else
         {
@@ -952,10 +952,10 @@ public abstract class UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserTo
         {
             throw new ArgumentNullException(nameof(user));
         }
-        var entry = await FindTokenAsync(user, loginProvider, name, cancellationToken);
+        var entry = await FindTokenAsync(user, loginProvider, name, cancellationToken).ConfigureAwait(false);
         if (entry != null)
         {
-            await RemoveUserTokenAsync(entry);
+            await RemoveUserTokenAsync(entry).ConfigureAwait(false);
         }
     }
 
@@ -976,7 +976,7 @@ public abstract class UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserTo
         {
             throw new ArgumentNullException(nameof(user));
         }
-        var entry = await FindTokenAsync(user, loginProvider, name, cancellationToken);
+        var entry = await FindTokenAsync(user, loginProvider, name, cancellationToken).ConfigureAwait(false);
         return entry?.Value;
     }
 
@@ -1018,7 +1018,7 @@ public abstract class UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserTo
         {
             throw new ArgumentNullException(nameof(user));
         }
-        var mergedCodes = await GetTokenAsync(user, InternalLoginProvider, RecoveryCodeTokenName, cancellationToken) ?? "";
+        var mergedCodes = await GetTokenAsync(user, InternalLoginProvider, RecoveryCodeTokenName, cancellationToken).ConfigureAwait(false) ?? "";
         if (mergedCodes.Length > 0)
         {
             return mergedCodes.Split(';').Length;
@@ -1061,12 +1061,12 @@ public abstract class UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserTo
             throw new ArgumentNullException(nameof(code));
         }
 
-        var mergedCodes = await GetTokenAsync(user, InternalLoginProvider, RecoveryCodeTokenName, cancellationToken) ?? "";
+        var mergedCodes = await GetTokenAsync(user, InternalLoginProvider, RecoveryCodeTokenName, cancellationToken).ConfigureAwait(false) ?? "";
         var splitCodes = mergedCodes.Split(';');
         if (splitCodes.Contains(code))
         {
             var updatedCodes = new List<string>(splitCodes.Where(s => s != code));
-            await ReplaceCodesAsync(user, updatedCodes, cancellationToken);
+            await ReplaceCodesAsync(user, updatedCodes, cancellationToken).ConfigureAwait(false);
             return true;
         }
         return false;

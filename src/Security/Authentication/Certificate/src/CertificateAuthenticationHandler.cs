@@ -118,9 +118,11 @@ internal class CertificateAuthenticationHandler : AuthenticationHandler<Certific
 
     private async Task<AuthenticateResult> ValidateCertificateAsync(X509Certificate2 clientCertificate)
     {
+        var isCertificateSelfSigned = clientCertificate.IsSelfSigned();
+
         // If we have a self signed cert, and they're not allowed, exit early and not bother with
         // any other validations.
-        if (clientCertificate.IsSelfSigned() &&
+        if (isCertificateSelfSigned &&
             !Options.AllowedCertificateTypes.HasFlag(CertificateTypes.SelfSigned))
         {
             Logger.CertificateRejected("Self signed", clientCertificate.Subject);
@@ -129,14 +131,14 @@ internal class CertificateAuthenticationHandler : AuthenticationHandler<Certific
 
         // If we have a chained cert, and they're not allowed, exit early and not bother with
         // any other validations.
-        if (!clientCertificate.IsSelfSigned() &&
+        if (!isCertificateSelfSigned &&
             !Options.AllowedCertificateTypes.HasFlag(CertificateTypes.Chained))
         {
             Logger.CertificateRejected("Chained", clientCertificate.Subject);
             return AuthenticateResult.Fail("Options do not allow chained certificates.");
         }
 
-        var chainPolicy = BuildChainPolicy(clientCertificate);
+        var chainPolicy = BuildChainPolicy(clientCertificate, isCertificateSelfSigned);
         using var chain = new X509Chain
         {
             ChainPolicy = chainPolicy
@@ -186,13 +188,13 @@ internal class CertificateAuthenticationHandler : AuthenticationHandler<Certific
         await HandleForbiddenAsync(properties);
     }
 
-    private X509ChainPolicy BuildChainPolicy(X509Certificate2 certificate)
+    private X509ChainPolicy BuildChainPolicy(X509Certificate2 certificate, bool isCertificateSelfSigned)
     {
         // Now build the chain validation options.
         X509RevocationFlag revocationFlag = Options.RevocationFlag;
         X509RevocationMode revocationMode = Options.RevocationMode;
 
-        if (certificate.IsSelfSigned())
+        if (isCertificateSelfSigned)
         {
             // Turn off chain validation, because we have a self signed certificate.
             revocationFlag = X509RevocationFlag.EntireChain;
@@ -210,7 +212,7 @@ internal class CertificateAuthenticationHandler : AuthenticationHandler<Certific
             chainPolicy.ApplicationPolicy.Add(ClientCertificateOid);
         }
 
-        if (certificate.IsSelfSigned())
+        if (isCertificateSelfSigned)
         {
             chainPolicy.VerificationFlags |= X509VerificationFlags.AllowUnknownCertificateAuthority;
             chainPolicy.VerificationFlags |= X509VerificationFlags.IgnoreEndRevocationUnknown;

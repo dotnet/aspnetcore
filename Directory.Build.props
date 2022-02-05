@@ -244,4 +244,5 @@
   <Import Project="eng\targets\Npm.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.npmproj'" />
   <Import Project="eng\targets\Java.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.javaproj'" />
   <Import Project="eng\targets\Helix.props" Condition=" $(IsTestProject) " />
+  <Import Project="eng\targets\FunctionalTestWithAssets.props" Condition=" $(IsTestProject) " />
 </Project>
