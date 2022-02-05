@@ -62,7 +62,7 @@ internal static class DiagnosticDescriptors
         isEnabledByDefault: true,
         description: new LocalizableResourceString(nameof(Resources.DoNotUseRenderTreeTypes_Description), Resources.ResourceManager, typeof(Resources)));
 
-    public static readonly DiagnosticDescriptor ComponentParametersShouldBeAutoProperies = new(
+    public static readonly DiagnosticDescriptor ComponentParametersShouldBeAutoProperties = new(
         "BL0007",
         new LocalizableResourceString(nameof(Resources.ComponentParametersShouldBeAutoProperties_Title), Resources.ResourceManager, typeof(Resources)),
         new LocalizableResourceString(nameof(Resources.ComponentParametersShouldBeAutoProperties_Message), Resources.ResourceManager, typeof(Resources)),
