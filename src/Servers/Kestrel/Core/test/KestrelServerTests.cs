@@ -249,6 +249,35 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             StartDummyApplication(server);
         }
 
+    [Fact]
+    public async Task ListenWithCustomEndpoint_DoesNotThrow()
+    {
+        var options = new KestrelServerOptions();
+        options.ApplicationServices = new ServiceCollection()
+           .AddLogging()
+           .BuildServiceProvider();
+
+        var customEndpoint = new UriEndPoint(new("http://localhost:5000"));
+        options.Listen(customEndpoint);
+
+        var mockTransportFactory = new MockTransportFactory();
+        var mockMultiplexedTransportFactory = new MockMultiplexedTransportFactory();
+
+        using var server = new KestrelServerImpl(
+            Options.Create(options),
+            new List<IConnectionListenerFactory>() { mockTransportFactory },
+            new List<IMultiplexedConnectionListenerFactory>() { mockMultiplexedTransportFactory },
+            new LoggerFactory(new[] { new KestrelTestLoggerProvider() }));
+
+        await server.StartAsync(new DummyApplication(context => Task.CompletedTask), CancellationToken.None);
+
+        var transportEndPoint = Assert.Single(mockTransportFactory.BoundEndPoints);
+        var multiplexedTransportEndPoint = Assert.Single(mockMultiplexedTransportFactory.BoundEndPoints);
+
+        Assert.Same(customEndpoint, transportEndPoint);
+        Assert.Same(customEndpoint, multiplexedTransportEndPoint);
+    }
+
         [Fact]
         public async Task ListenIPWithStaticPort_TransportsGetIPv6Any()
         {

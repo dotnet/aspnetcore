@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 case FileHandleEndPoint _:
                     return $"{Scheme}://<file handle>";
                 default:
-                    throw new InvalidOperationException();
+                return EndPoint.ToString() ?? "";
             }
         }
 
