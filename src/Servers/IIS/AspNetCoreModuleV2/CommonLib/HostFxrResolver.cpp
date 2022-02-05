@@ -62,6 +62,7 @@ HostFxrResolver::GetHostFxrParameters(
         }
 
         // OLD CODE
+#if false
         if (dotnetExePath.empty())
         {
             dotnetExePath = GetAbsolutePathToDotnet(applicationPhysicalPath, expandedProcessPath);
@@ -75,11 +76,13 @@ HostFxrResolver::GetHostFxrParameters(
             applicationPhysicalPath,
             arguments,
             true);
+#endif
 
-#if false
+#if true
         // NEW CODE
         if (dotnetExePath.empty())
         {
+
             // REVIEW TODO: do we need to throw if we aren't in shim?
 
             std::wstring hostfxrPath;
@@ -138,10 +141,16 @@ HostFxrResolver::GetHostFxrParameters(
 
             dotnetExePath = GetAbsolutePathToDotnetFromHostfxr(hostfxrPath);
 
+
             LOG_INFOF(L"get_hostfxr_path '%ls'", hostfxrPath.c_str());
             LOG_INFOF(L"dotnetExePath '%ls'", dotnetExePath.c_str());
 
             arguments.insert(arguments.begin(), dotnetExePath);
+            fs::path oldDotnetExePath = GetAbsolutePathToDotnet(applicationPhysicalPath, expandedProcessPath);
+            if (!equals_ignore_case(oldDotnetExePath.c_str(), dotnetExePath.c_str()) {
+                LOG_INFOF(L"MISMATCH oldDotnetExePath '%ls'", oldDotnetExePath.c_str());
+                throw InvalidOperationException(L"dotnetExePath mismatch");
+            }
         }
         else
         {
