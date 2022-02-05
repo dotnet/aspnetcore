@@ -59,7 +59,7 @@ internal class RewriteRule : IRule
                 result = "/";
             }
 
-            if (result.Contains(Uri.SchemeDelimiter))
+            if (result.Contains(Uri.SchemeDelimiter, StringComparison.Ordinal))
             {
                 string scheme;
                 HostString host;

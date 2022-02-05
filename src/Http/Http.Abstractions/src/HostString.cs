@@ -172,7 +172,7 @@ public readonly struct HostString : IEquatable<HostString>
             {
                 // IPv6 without brackets ::1 is the only type of host with 2 or more colons
             }
-            else if (uriComponent.Contains("xn--"))
+            else if (uriComponent.Contains("xn--", StringComparison.Ordinal))
             {
                 // Contains punycode
                 if (index >= 0)
