@@ -476,7 +476,7 @@ public class EndpointMetadataApiDescriptionProviderTest
     [Fact]
     public void AddsMetadataFromRouteEndpoint()
     {
-        var apiDescription = GetApiDescription([ApiExplorerSettings(IgnoreApi = true)]() => { });
+        var apiDescription = GetApiDescription([ApiExplorerSettings(IgnoreApi = true)] () => { });
 
         Assert.NotEmpty(apiDescription.ActionDescriptor.EndpointMetadata);
 
@@ -763,7 +763,7 @@ public class EndpointMetadataApiDescriptionProviderTest
     {
         // Arrange
         var builder = CreateBuilder();
-        builder.MapGet("/api/todos", [ProducesResponseType(typeof(List<string>), StatusCodes.Status200OK)]() => "")
+        builder.MapGet("/api/todos", [ProducesResponseType(typeof(List<string>), StatusCodes.Status200OK)] () => "")
             .Produces<InferredJsonClass>(StatusCodes.Status200OK);
         var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
 

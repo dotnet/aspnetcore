@@ -40,7 +40,7 @@ public class DefaultViewComponentSelector : IViewComponentSelector
 
         // ViewComponent names can either be fully-qualified, or refer to the 'short-name'. If the provided
         // name contains a '.' - then it's a fully-qualified name.
-        if (componentName.Contains("."))
+        if (componentName.Contains('.'))
         {
             return _cache.SelectByFullName(componentName);
         }

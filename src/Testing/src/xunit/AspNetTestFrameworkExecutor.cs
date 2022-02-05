@@ -19,7 +19,7 @@ public class AspNetTestFrameworkExecutor : XunitTestFrameworkExecutor
     {
         using (var assemblyRunner = new AspNetTestAssemblyRunner(TestAssembly, testCases, DiagnosticMessageSink, executionMessageSink, executionOptions))
         {
-            await assemblyRunner.RunAsync();
+            await assemblyRunner.RunAsync().ConfigureAwait(false);
         }
     }
 }

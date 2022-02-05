@@ -1,6 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="$(MvcTestingTargets)" Condition="'$(MvcTestingTargets)' != ''" />
-
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <TestGroupName>Mvc.FunctionalTests</TestGroupName>
@@ -16,31 +14,12 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc.Testing" />
+
     <ProjectReference Include="..\..\samples\MvcSandbox\MvcSandbox.csproj" />
-
     <ProjectReference Include="..\..\shared\Mvc.Core.TestCommon\Microsoft.AspNetCore.Mvc.Core.TestCommon.csproj" />
-
-    <ProjectReference Include="..\WebSites\ApiExplorerWebSite\ApiExplorerWebSite.csproj" />
-    <ProjectReference Include="..\WebSites\ApplicationModelWebSite\ApplicationModelWebSite.csproj" />
-    <ProjectReference Include="..\WebSites\BasicWebSite\BasicWebSite.csproj" />
-    <ProjectReference Include="..\WebSites\ControllersFromServicesWebSite\ControllersFromServicesWebSite.csproj" />
-    <ProjectReference Include="..\WebSites\CorsWebSite\CorsWebSite.csproj" />
-    <ProjectReference Include="..\WebSites\ErrorPageMiddlewareWebSite\ErrorPageMiddlewareWebSite.csproj" />
-    <ProjectReference Include="..\WebSites\FilesWebSite\FilesWebSite.csproj" />
-    <ProjectReference Include="..\WebSites\FormatterWebSite\FormatterWebSite.csproj" />
-    <ProjectReference Include="..\WebSites\GenericHostWebSite\GenericHostWebSite.csproj" />
-    <ProjectReference Include="..\WebSites\HtmlGenerationWebSite\HtmlGenerationWebSite.csproj" />
-    <ProjectReference Include="..\WebSites\RazorBuildWebSite\RazorBuildWebSite.csproj" />
-    <ProjectReference Include="..\WebSites\RazorPagesWebSite\RazorPagesWebSite.csproj" />
-    <ProjectReference Include="..\WebSites\RazorWebSite\RazorWebSite.csproj" />
-    <ProjectReference Include="..\WebSites\RoutingWebSite\Mvc.RoutingWebSite.csproj" />
-    <ProjectReference Include="..\WebSites\SecurityWebSite\SecurityWebSite.csproj" />
-    <ProjectReference Include="..\WebSites\SimpleWebSite\SimpleWebSite.csproj" />
-    <ProjectReference Include="..\WebSites\SimpleWebSiteWithWebApplicationBuilder\SimpleWebSiteWithWebApplicationBuilder.csproj" />
-    <ProjectReference Include="..\WebSites\SimpleWebSiteWithWebApplicationBuilderException\SimpleWebSiteWithWebApplicationBuilderException.csproj" />
-    <ProjectReference Include="..\WebSites\TagHelpersWebSite\TagHelpersWebSite.csproj" />
-    <ProjectReference Include="..\WebSites\VersioningWebSite\VersioningWebSite.csproj" />
-    <ProjectReference Include="..\WebSites\XmlFormattersWebSite\XmlFormattersWebSite.csproj" />
+    <ProjectReference Include="..\WebSites\*\*.csproj"
+        Exclude="..\WebSites\ControllersFromServicesClassLibrary\ControllersFromServicesClassLibrary.csproj;
+          ..\WebSites\RazorBuildWebSite.*\RazorBuildWebSite.*.csproj" />
 
     <Reference Include="AngleSharp" />
     <Reference Include="System.Net.Http" />
@@ -51,4 +30,5 @@
     <Reference Include="Microsoft.AspNetCore.TestHost" />
   </ItemGroup>
 
+  <Import Project="$(MvcTestingTargets)" Condition="'$(MvcTestingTargets)' != ''" />
 </Project>

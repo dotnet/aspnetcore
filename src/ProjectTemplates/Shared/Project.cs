@@ -272,11 +272,13 @@ public class Project : IDisposable
         Assert.NotNull(file);
         var contents = File.ReadAllText(file);
 
-        var emptyMigration = @"protected override void Up(MigrationBuilder migrationBuilder)
+        var emptyMigration = @"/// <inheritdoc />
+        protected override void Up(MigrationBuilder migrationBuilder)
         {
 
         }
 
+        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
 

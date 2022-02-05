@@ -19,6 +19,6 @@ public class DefaultUserConfirmation<TUser> : IUserConfirmation<TUser> where TUs
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/> of the confirmation operation.</returns>
     public virtual async Task<bool> IsConfirmedAsync(UserManager<TUser> manager, TUser user)
     {
-        return await manager.IsEmailConfirmedAsync(user);
+        return await manager.IsEmailConfirmedAsync(user).ConfigureAwait(false);
     }
 }
