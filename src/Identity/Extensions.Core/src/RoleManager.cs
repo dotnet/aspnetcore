@@ -255,7 +255,7 @@ public class RoleManager<TRole> : IDisposable where TRole : class
     /// The <see cref="Task"/> that represents the asynchronous operation, containing the role
     /// associated with the specified <paramref name="roleId"/>
     /// </returns>
-    public virtual Task<TRole> FindByIdAsync(string roleId)
+    public virtual Task<TRole?> FindByIdAsync(string roleId)
     {
         ThrowIfDisposed();
         return Store.FindByIdAsync(roleId, CancellationToken);
@@ -315,7 +315,7 @@ public class RoleManager<TRole> : IDisposable where TRole : class
     /// The <see cref="Task"/> that represents the asynchronous operation, containing the role
     /// associated with the specified <paramref name="roleName"/>
     /// </returns>
-    public virtual Task<TRole> FindByNameAsync(string roleName)
+    public virtual Task<TRole?> FindByNameAsync(string roleName)
     {
         ThrowIfDisposed();
         if (roleName == null)

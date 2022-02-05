@@ -57,17 +57,17 @@ public class IdentityRole<TKey> where TKey : IEquatable<TKey>
     /// <summary>
     /// Gets or sets the primary key for this role.
     /// </summary>
-    public virtual TKey Id { get; set; }
+    public virtual TKey Id { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the name for this role.
     /// </summary>
-    public virtual string Name { get; set; }
+    public virtual string Name { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the normalized name for this role.
     /// </summary>
-    public virtual string NormalizedName { get; set; }
+    public virtual string NormalizedName { get; set; } = default!;
 
     /// <summary>
     /// A random value that should change whenever a role is persisted to the store

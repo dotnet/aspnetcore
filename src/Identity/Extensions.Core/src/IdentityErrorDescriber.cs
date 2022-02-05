@@ -110,7 +110,7 @@ public class IdentityErrorDescriber
     /// </summary>
     /// <param name="email">The email that is invalid.</param>
     /// <returns>An <see cref="IdentityError"/> indicating the specified <paramref name="email"/> is invalid.</returns>
-    public virtual IdentityError InvalidEmail(string email)
+    public virtual IdentityError InvalidEmail(string? email)
     {
         return new IdentityError
         {

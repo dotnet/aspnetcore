@@ -59,29 +59,29 @@ public class IdentityUser<TKey> where TKey : IEquatable<TKey>
     /// Gets or sets the primary key for this user.
     /// </summary>
     [PersonalData]
-    public virtual TKey Id { get; set; }
+    public virtual TKey Id { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the user name for this user.
     /// </summary>
     [ProtectedPersonalData]
-    public virtual string UserName { get; set; }
+    public virtual string UserName { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the normalized user name for this user.
     /// </summary>
-    public virtual string NormalizedUserName { get; set; }
+    public virtual string NormalizedUserName { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the email address for this user.
     /// </summary>
     [ProtectedPersonalData]
-    public virtual string Email { get; set; }
+    public virtual string? Email { get; set; }
 
     /// <summary>
     /// Gets or sets the normalized email address for this user.
     /// </summary>
-    public virtual string NormalizedEmail { get; set; }
+    public virtual string? NormalizedEmail { get; set; }
 
     /// <summary>
     /// Gets or sets a flag indicating if a user has confirmed their email address.
@@ -93,12 +93,12 @@ public class IdentityUser<TKey> where TKey : IEquatable<TKey>
     /// <summary>
     /// Gets or sets a salted and hashed representation of the password for this user.
     /// </summary>
-    public virtual string PasswordHash { get; set; }
+    public virtual string? PasswordHash { get; set; }
 
     /// <summary>
     /// A random value that must change whenever a users credentials change (password changed, login removed)
     /// </summary>
-    public virtual string SecurityStamp { get; set; }
+    public virtual string? SecurityStamp { get; set; }
 
     /// <summary>
     /// A random value that must change whenever a user is persisted to the store
@@ -109,7 +109,7 @@ public class IdentityUser<TKey> where TKey : IEquatable<TKey>
     /// Gets or sets a telephone number for the user.
     /// </summary>
     [ProtectedPersonalData]
-    public virtual string PhoneNumber { get; set; }
+    public virtual string? PhoneNumber { get; set; }
 
     /// <summary>
     /// Gets or sets a flag indicating if a user has confirmed their telephone address.

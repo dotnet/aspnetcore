@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading;
@@ -85,7 +86,7 @@ public abstract class RoleStoreBase<TRole, TKey, TUserRole, TRoleClaim> :
         {
             throw new ArgumentNullException(nameof(role));
         }
-        return Task.FromResult(ConvertIdToString(role.Id));
+        return Task.FromResult(ConvertIdToString(role.Id)!);
     }
 
     /// <summary>
@@ -129,13 +130,13 @@ public abstract class RoleStoreBase<TRole, TKey, TUserRole, TRoleClaim> :
     /// </summary>
     /// <param name="id">The id to convert.</param>
     /// <returns>An instance of <typeparamref name="TKey"/> representing the provided <paramref name="id"/>.</returns>
-    public virtual TKey ConvertIdFromString(string id)
+    public virtual TKey? ConvertIdFromString(string? id)
     {
         if (id == null)
         {
             return default(TKey);
         }
-        return (TKey)TypeDescriptor.GetConverter(typeof(TKey)).ConvertFromInvariantString(id);
+        return (TKey?)TypeDescriptor.GetConverter(typeof(TKey)).ConvertFromInvariantString(id);
     }
 
     /// <summary>
@@ -143,7 +144,7 @@ public abstract class RoleStoreBase<TRole, TKey, TUserRole, TRoleClaim> :
     /// </summary>
     /// <param name="id">The id to convert.</param>
     /// <returns>An <see cref="string"/> representation of the provided <paramref name="id"/>.</returns>
-    public virtual string ConvertIdToString(TKey id)
+    public virtual string? ConvertIdToString(TKey id)
     {
         if (id.Equals(default(TKey)))
         {
@@ -158,7 +159,7 @@ public abstract class RoleStoreBase<TRole, TKey, TUserRole, TRoleClaim> :
     /// <param name="id">The role ID to look for.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
     /// <returns>A <see cref="Task{TResult}"/> that result of the look up.</returns>
-    public abstract Task<TRole> FindByIdAsync(string id, CancellationToken cancellationToken = default(CancellationToken));
+    public abstract Task<TRole?> FindByIdAsync(string id, CancellationToken cancellationToken = default(CancellationToken));
 
     /// <summary>
     /// Finds the role who has the specified normalized name as an asynchronous operation.
@@ -166,7 +167,7 @@ public abstract class RoleStoreBase<TRole, TKey, TUserRole, TRoleClaim> :
     /// <param name="normalizedName">The normalized role name to look for.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
     /// <returns>A <see cref="Task{TResult}"/> that result of the look up.</returns>
-    public abstract Task<TRole> FindByNameAsync(string normalizedName, CancellationToken cancellationToken = default(CancellationToken));
+    public abstract Task<TRole?> FindByNameAsync(string normalizedName, CancellationToken cancellationToken = default(CancellationToken));
 
     /// <summary>
     /// Get a role's normalized name as an asynchronous operation.

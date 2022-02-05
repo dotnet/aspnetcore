@@ -41,5 +41,5 @@ public interface IUserAuthenticationTokenStore<TUser> : IUserStore<TUser> where 
     /// <param name="name">The name of the token.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
-    Task<string> GetTokenAsync(TUser user, string loginProvider, string name, CancellationToken cancellationToken);
+    Task<string?> GetTokenAsync(TUser user, string loginProvider, string name, CancellationToken cancellationToken);
 }

@@ -87,7 +87,7 @@ public interface IUserStore<TUser> : IDisposable where TUser : class
     /// <returns>
     /// The <see cref="Task"/> that represents the asynchronous operation, containing the user matching the specified <paramref name="userId"/> if it exists.
     /// </returns>
-    Task<TUser> FindByIdAsync(string userId, CancellationToken cancellationToken);
+    Task<TUser?> FindByIdAsync(string userId, CancellationToken cancellationToken);
 
     /// <summary>
     /// Finds and returns a user, if any, who has the specified normalized user name.
@@ -97,5 +97,5 @@ public interface IUserStore<TUser> : IDisposable where TUser : class
     /// <returns>
     /// The <see cref="Task"/> that represents the asynchronous operation, containing the user matching the specified <paramref name="normalizedUserName"/> if it exists.
     /// </returns>
-    Task<TUser> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken);
+    Task<TUser?> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken);
 }

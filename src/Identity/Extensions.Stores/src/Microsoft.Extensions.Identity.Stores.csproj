@@ -7,7 +7,8 @@
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;identity;membership</PackageTags>
-    <Nullable>disable</Nullable>
+    <NoWarn>$(NoWarn);RS0036</NoWarn>
+
   </PropertyGroup>
 
   <ItemGroup>

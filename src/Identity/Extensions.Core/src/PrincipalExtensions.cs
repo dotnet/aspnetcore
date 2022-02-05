@@ -14,14 +14,13 @@ public static class PrincipalExtensions
     /// <param name="principal">The <see cref="ClaimsPrincipal"/> instance this method extends.</param>
     /// <param name="claimType">The claim type whose first value should be returned.</param>
     /// <returns>The value of the first instance of the specified claim type, or null if the claim is not present.</returns>
-    public static string FindFirstValue(this ClaimsPrincipal principal, string claimType)
+    public static string? FindFirstValue(this ClaimsPrincipal principal, string claimType)
     {
         if (principal == null)
         {
             throw new ArgumentNullException(nameof(principal));
         }
         var claim = principal.FindFirst(claimType);
-        return claim != null ? claim.Value : null;
+        return claim?.Value;
     }
-
 }

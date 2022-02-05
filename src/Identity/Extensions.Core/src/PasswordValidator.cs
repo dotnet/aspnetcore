@@ -18,7 +18,7 @@ public class PasswordValidator<TUser> : IPasswordValidator<TUser> where TUser : 
     /// Constructions a new instance of <see cref="PasswordValidator{TUser}"/>.
     /// </summary>
     /// <param name="errors">The <see cref="IdentityErrorDescriber"/> to retrieve error text from.</param>
-    public PasswordValidator(IdentityErrorDescriber errors = null)
+    public PasswordValidator(IdentityErrorDescriber? errors = null)
     {
         Describer = errors ?? new IdentityErrorDescriber();
     }
@@ -36,7 +36,7 @@ public class PasswordValidator<TUser> : IPasswordValidator<TUser> where TUser : 
     /// <param name="user">The user whose password should be validated.</param>
     /// <param name="password">The password supplied for validation</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
-    public virtual Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user, string password)
+    public virtual Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user, string? password)
     {
         if (password == null)
         {

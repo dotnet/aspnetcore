@@ -85,7 +85,7 @@ public interface IRoleStore<TRole> : IDisposable where TRole : class
     /// <param name="roleId">The role ID to look for.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
     /// <returns>A <see cref="Task{TResult}"/> that result of the look up.</returns>
-    Task<TRole> FindByIdAsync(string roleId, CancellationToken cancellationToken);
+    Task<TRole?> FindByIdAsync(string roleId, CancellationToken cancellationToken);
 
     /// <summary>
     /// Finds the role who has the specified normalized name as an asynchronous operation.
@@ -93,5 +93,5 @@ public interface IRoleStore<TRole> : IDisposable where TRole : class
     /// <param name="normalizedRoleName">The normalized role name to look for.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
     /// <returns>A <see cref="Task{TResult}"/> that result of the look up.</returns>
-    Task<TRole> FindByNameAsync(string normalizedRoleName, CancellationToken cancellationToken);
+    Task<TRole?> FindByNameAsync(string normalizedRoleName, CancellationToken cancellationToken);
 }

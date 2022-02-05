@@ -98,17 +98,17 @@ public abstract class IdentityDbContext<TUser, TRole, TKey, TUserClaim, TUserRol
     /// <summary>
     /// Gets or sets the <see cref="DbSet{TEntity}"/> of User roles.
     /// </summary>
-    public virtual DbSet<TUserRole> UserRoles { get; set; }
+    public virtual DbSet<TUserRole> UserRoles { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the <see cref="DbSet{TEntity}"/> of roles.
     /// </summary>
-    public virtual DbSet<TRole> Roles { get; set; }
+    public virtual DbSet<TRole> Roles { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the <see cref="DbSet{TEntity}"/> of role claims.
     /// </summary>
-    public virtual DbSet<TRoleClaim> RoleClaims { get; set; }
+    public virtual DbSet<TRoleClaim> RoleClaims { get; set; } = default!;
 
     /// <summary>
     /// Configures the schema needed for the identity framework.

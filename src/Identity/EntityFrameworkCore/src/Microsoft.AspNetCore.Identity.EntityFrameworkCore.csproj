@@ -5,7 +5,8 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;entityframeworkcore;identity;membership</PackageTags>
-    <Nullable>disable</Nullable>
+    <NoWarn>$(NoWarn);RS0036</NoWarn>
+
   </PropertyGroup>
 
   <ItemGroup>
