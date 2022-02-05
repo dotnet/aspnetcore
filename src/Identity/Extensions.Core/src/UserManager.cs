@@ -1722,7 +1722,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
 
         if (!result)
         {
-            Logger.LogWarning(LoggerEventIds.VerifyUserTokenFailed, "VerifyUserTokenAsync() failed with purpose: {purpose} for user.", purpose);
+            Logger.LogDebug(LoggerEventIds.VerifyUserTokenFailed, "VerifyUserTokenAsync() failed with purpose: {purpose} for user.", purpose);
         }
         return result;
     }
