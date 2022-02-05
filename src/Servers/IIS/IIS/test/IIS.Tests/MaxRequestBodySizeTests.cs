@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.IIS;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 using BadHttpRequestException = Microsoft.AspNetCore.Http.BadHttpRequestException;
@@ -53,6 +54,7 @@ public class MaxRequestBodySizeTests : LoggedTest
         }
 
         Assert.Equal(CoreStrings.BadRequest_RequestBodyTooLarge, exception.Message);
+        VerifyLogs();
     }
 
     [ConditionalFact]
@@ -95,6 +97,7 @@ public class MaxRequestBodySizeTests : LoggedTest
         }
 
         Assert.Equal(CoreStrings.BadRequest_RequestBodyTooLarge, exception.Message);
+        VerifyLogs();
     }
 
     [ConditionalFact]
@@ -304,6 +307,7 @@ public class MaxRequestBodySizeTests : LoggedTest
 
         Assert.NotNull(exception);
         Assert.Equal(CoreStrings.BadRequest_RequestBodyTooLarge, exception.Message);
+        VerifyLogs();
     }
 
     [ConditionalFact]
@@ -340,5 +344,12 @@ public class MaxRequestBodySizeTests : LoggedTest
         Assert.NotNull(requestRejectedEx2);
         Assert.Equal(CoreStrings.BadRequest_RequestBodyTooLarge, requestRejectedEx1.Message);
         Assert.Equal(CoreStrings.BadRequest_RequestBodyTooLarge, requestRejectedEx2.Message);
+        VerifyLogs();
+    }
+
+    private void VerifyLogs()
+    {
+        var log = Assert.Single(TestSink.Writes, w => w.LoggerName == "Microsoft.AspNetCore.Server.IIS.Core.IISHttpServer" && w.LogLevel > LogLevel.Debug);
+        Assert.Equal(new EventId(2, "ApplicationError"), log.EventId);
     }
 }

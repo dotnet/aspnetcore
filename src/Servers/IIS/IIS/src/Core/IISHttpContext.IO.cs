@@ -135,6 +135,12 @@ internal partial class IISHttpContext
             AbortIO(clientDisconnect: true);
             error = ex;
         }
+        catch (Http.BadHttpRequestException ex)
+        {
+            // Similar to a ConnectionResetException, this shouldn't be logged as an "Unexpected exception."
+            // This should be logged by whatever catches it. Likely IISHttpContextOfT.ProcessRequestsAsync().
+            error = ex;
+        }
         catch (Exception ex)
         {
             error = ex;
