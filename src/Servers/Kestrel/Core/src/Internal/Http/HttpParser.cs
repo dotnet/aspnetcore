@@ -139,6 +139,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
 
     public bool ParseHeaders(TRequestHandler handler, ref SequenceReader<byte> reader)
     {
+        Thread.Sleep(2);
         while (!reader.End)
         {
             var span = reader.UnreadSpan;
