@@ -99,7 +99,7 @@ private void DoSomething() { }
 " + ComponentsTestDeclarations.Source;
         VerifyCSharpDiagnostic(source, new DiagnosticResult
         {
-            Id = DiagnosticDescriptors.ComponentParametersShouldBeAutoProperies.Id,
+            Id = DiagnosticDescriptors.ComponentParametersShouldBeAutoProperties.Id,
             Message = "Component parameter 'C.MyProp' should be auto property",
             Locations = new[]
             {
@@ -138,7 +138,7 @@ private void DoSomething() { }
 " + ComponentsTestDeclarations.Source;
         VerifyCSharpDiagnostic(source, new DiagnosticResult
         {
-            Id = DiagnosticDescriptors.ComponentParametersShouldBeAutoProperies.Id,
+            Id = DiagnosticDescriptors.ComponentParametersShouldBeAutoProperties.Id,
             Message = "Component parameter 'C.MyProp' should be auto property",
             Locations = new[]
             {

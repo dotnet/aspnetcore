@@ -27,7 +27,7 @@ public sealed class ComponentParameterAnalyzer : DiagnosticAnalyzer
             DiagnosticDescriptors.ComponentParameterSettersShouldBePublic,
             DiagnosticDescriptors.ComponentParameterCaptureUnmatchedValuesMustBeUnique,
             DiagnosticDescriptors.ComponentParameterCaptureUnmatchedValuesHasWrongType,
-            DiagnosticDescriptors.ComponentParametersShouldBeAutoProperies,
+            DiagnosticDescriptors.ComponentParametersShouldBeAutoProperties,
         });
     }
 
@@ -113,7 +113,7 @@ public sealed class ComponentParameterAnalyzer : DiagnosticAnalyzer
                         if (!IsAutoProperty(property) && !IsSameSemanticAsAutoProperty(property, context.CancellationToken))
                         {
                             context.ReportDiagnostic(Diagnostic.Create(
-                                DiagnosticDescriptors.ComponentParametersShouldBeAutoProperies,
+                                DiagnosticDescriptors.ComponentParametersShouldBeAutoProperties,
                                 propertyLocation,
                                 property.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)));
                         }
