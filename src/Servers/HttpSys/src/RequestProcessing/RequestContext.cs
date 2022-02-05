@@ -87,6 +87,10 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
     {
         if (!IsUpgradableRequest)
         {
+            if (Request.ProtocolVersion < System.Net.HttpVersion.Version11)
+            {
+                throw new InvalidOperationException("Upgrade is not valid on connections targeting HTTP/1.0 or lower.");
+            }
             throw new InvalidOperationException("This request cannot be upgraded, it is incompatible.");
         }
         if (Response.HasStarted)

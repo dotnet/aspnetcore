@@ -250,7 +250,7 @@ internal sealed partial class Request
     public string Scheme => IsHttps ? Constants.HttpsScheme : Constants.HttpScheme;
 
     // HTTP.Sys allows you to upgrade anything to opaque unless content-length > 0 or chunked are specified.
-    internal bool IsUpgradable => ProtocolVersion < HttpVersion.Version20 && !HasEntityBody && ComNetOS.IsWin8orLater;
+    internal bool IsUpgradable => ProtocolVersion > HttpVersion.Version10 && ProtocolVersion < HttpVersion.Version20 && !HasEntityBody && ComNetOS.IsWin8orLater;
 
     internal WindowsPrincipal User { get; }
 

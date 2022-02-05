@@ -301,6 +301,70 @@ public class OpaqueUpgradeTests
         }
     }
 
+    [ConditionalFact]
+    [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
+    public async Task OpaqueUpgrade_Http10_ThrowsIfUpgraded()
+    {
+        var upgrade = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        using (Utilities.CreateHttpServer(out string address, async httpContext =>
+        {
+            var opaqueFeature = httpContext.Features.Get<IHttpUpgradeFeature>();
+            Assert.NotNull(opaqueFeature);
+            Assert.False(opaqueFeature.IsUpgradableRequest);
+            try
+            {
+                await opaqueFeature.UpgradeAsync();
+            }
+            catch (Exception ex)
+            {
+                upgrade.TrySetException(ex);
+                throw;
+            }
+            upgrade.TrySetResult();
+        }))
+        {
+            // Connect with a socket
+            Uri uri = new Uri(address);
+            TcpClient client = new TcpClient();
+
+            try
+            {
+                await client.ConnectAsync(uri.Host, uri.Port);
+                NetworkStream stream = client.GetStream();
+
+                // Send an HTTP GET request
+                StringBuilder builder = new StringBuilder();
+                builder.Append("connect");
+                builder.Append(" ");
+                builder.Append(uri.PathAndQuery);
+                builder.Append(" HTTP/1.0");
+                builder.AppendLine();
+
+                builder.Append("Host: ");
+                builder.Append(uri.Host);
+                builder.Append(':');
+                builder.Append(uri.Port);
+                builder.AppendLine();
+
+                builder.AppendLine();
+                var requestBytes = Encoding.ASCII.GetBytes(builder.ToString());
+                await stream.WriteAsync(requestBytes, 0, requestBytes.Length);
+
+                var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => upgrade.Task);
+                Assert.Equal("Upgrade is not valid on connections targeting HTTP/1.0 or lower.", ex.Message);
+
+                // Read the response headers, fail if it's not a 101
+                ex = await Assert.ThrowsAsync<InvalidOperationException>(() => ParseResponseAsync(stream));
+                Assert.EndsWith("HTTP/1.1 500 Internal Server Error", ex.Message);
+            }
+            catch (Exception)
+            {
+                ((IDisposable)client).Dispose();
+                throw;
+            }
+        }
+    }
+
     private async Task<HttpResponseMessage> SendRequestAsync(string uri)
     {
         using (HttpClient client = new HttpClient())
