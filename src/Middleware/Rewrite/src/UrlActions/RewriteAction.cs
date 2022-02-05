@@ -59,7 +59,7 @@ internal class RewriteAction : UrlAction
         }
 
         // TODO PERF, substrings, object creation, etc.
-        if (pattern.IndexOf(Uri.SchemeDelimiter, StringComparison.Ordinal) >= 0)
+        if (pattern.Contains(Uri.SchemeDelimiter))
         {
             string scheme;
             HostString host;
