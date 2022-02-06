@@ -255,6 +255,7 @@ if [ "$build_managed" = true ] || ([ "$build_all" = true ] && [ "$build_managed"
     if [ -z "$build_nodejs" ]; then
         if [ -x "$(command -v node)" ]; then
             __warn "Building of C# project is enabled and has dependencies on NodeJS projects. Building of NodeJS projects is enabled since node is detected on PATH."
+            build_nodejs=true
         else
             __warn "Building of NodeJS projects is disabled since node is not detected on Path and no BuildNodeJs or NoBuildNodeJs setting is set explicitly."
             build_nodejs=false

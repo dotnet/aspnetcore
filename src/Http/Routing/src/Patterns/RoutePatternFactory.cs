@@ -571,7 +571,7 @@ public static class RoutePatternFactory
             throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(content));
         }
 
-        if (content.IndexOf('?') >= 0)
+        if (content.Contains('?'))
         {
             throw new ArgumentException(Resources.FormatTemplateRoute_InvalidLiteral(content));
         }

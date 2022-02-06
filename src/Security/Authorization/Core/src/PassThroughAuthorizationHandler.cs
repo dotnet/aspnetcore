@@ -20,7 +20,7 @@ public class PassThroughAuthorizationHandler : IAuthorizationHandler
     {
         foreach (var handler in context.Requirements.OfType<IAuthorizationHandler>())
         {
-            await handler.HandleAsync(context);
+            await handler.HandleAsync(context).ConfigureAwait(false);
         }
     }
 }
