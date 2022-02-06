@@ -7,7 +7,6 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
-using System.Runtime.Intrinsics.X86;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -151,53 +150,54 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
 
         // most inputs will be longer than 16 bytes so
         // let's prioritize SSE/NEON path
-        // TODO: use AdvSimd for Arm64
-        if (!Sse2.IsSupported || ulen < (nuint)Vector128<byte>.Count)
+        if (!Vector128.IsHardwareAccelerated || ulen < (nuint)Vector128<byte>.Count)
         {
             goto SCALAR;
         }
 
-        var crVector = Vector128.Create((byte)'\r');
-        var lfVector = Vector128.Create((byte)'\n');
-        var tbVector = Vector128.Create((byte)'\t');
-        var wsVector = Vector128.Create((byte)' ');
-        var clVector = Vector128.Create((byte)':');
+        nuint ulenMinusVector = ulen - (nuint)Vector128<byte>.Count;
 
-    NEXT_VECTOR:
-        var search = Unsafe.ReadUnaligned<Vector128<byte>>(
-            ref Unsafe.AddByteOffset(ref searchSpace, offset));
+        Vector128<byte> crVector = Vector128.Create(ByteCR);
+        Vector128<byte> lfVector = Vector128.Create(ByteLF);
+        Vector128<byte> tbVector = Vector128.Create(ByteTab);
+        Vector128<byte> wsVector = Vector128.Create(ByteSpace);
+        Vector128<byte> clVector = Vector128.Create(ByteColon);
 
-        // pipeline SIMD operations
-        var cmp0 = Sse2.CompareEqual(crVector, search);
-        var cmp1 = Sse2.CompareEqual(lfVector, search);
-        var cmp2 = Sse2.CompareEqual(tbVector, search);
-        var cmp3 = Sse2.CompareEqual(wsVector, search);
-        var cmp4 = Sse2.CompareEqual(clVector, search);
-
-        // For some reason JIT may still re-order some :'(
-        var or01 = Sse2.Or(cmp0, cmp1);
-        var or23 = Sse2.Or(cmp2, cmp3);
-        var orAll = Sse2.Or(Sse2.Or(or01, cmp4), or23);
-
-        int matches = Sse2.MoveMask(orAll);
-        if (matches != 0)
+        do
         {
-            return (int)(offset + (nuint)BitOperations.TrailingZeroCount(matches));
-        }
+            Vector128<byte> search = Vector128.LoadUnsafe(ref searchSpace, offset);
 
-        offset += (nuint)Vector128<byte>.Count;
-        if (offset == ulen)
-        {
-            // we're done and nothing was found
-            return -1;
-        }
-        if (offset + (nuint)Vector128<byte>.Count > ulen)
-        {
-            // not enough space for the next 128bit vector so let's overlap
-            // with the current one in order to avoid SCALAR fallback
-            offset = ulen - (nuint)Vector128<byte>.Count;
-        }
-        goto NEXT_VECTOR;
+            // pipeline SIMD operations
+            Vector128<byte> cmp0 = Vector128.Equals(crVector, search);
+            Vector128<byte> cmp1 = Vector128.Equals(lfVector, search);
+            Vector128<byte> cmp2 = Vector128.Equals(tbVector, search);
+            Vector128<byte> cmp3 = Vector128.Equals(wsVector, search);
+            Vector128<byte> cmp4 = Vector128.Equals(clVector, search);
+
+            // For some reason JIT may still re-order some :'(
+            Vector128<byte> or01 = cmp0 | cmp1;
+            Vector128<byte> or23 = cmp2 | cmp3;
+            Vector128<byte> orAll = or01 | cmp4 | or23;
+
+            uint matches = orAll.ExtractMostSignificantBits();
+            if (matches != 0)
+            {
+                return (int)(offset + (nuint)BitOperations.TrailingZeroCount(matches));
+            }
+
+            offset += (nuint)Vector128<byte>.Count;
+            if (offset == ulen)
+            {
+                // we're done and nothing was found
+                return -1;
+            }
+            if (offset > ulenMinusVector)
+            {
+                // not enough space for the next 128bit vector so let's overlap
+                // with the current one in order to avoid SCALAR fallback
+                offset = ulenMinusVector;
+            }
+        } while (true);
 
     SCALAR:
         for (; offset < ulen; offset++)
@@ -241,49 +241,49 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
 
         // most inputs will be longer than 16 bytes so
         // let's prioritize SSE/NEON path
-        // TODO: use AdvSimd for Arm64
-        if (!Sse2.IsSupported || ulen < (nuint)Vector128<byte>.Count)
+        if (!Vector128.IsHardwareAccelerated || ulen < (nuint)Vector128<byte>.Count)
         {
             goto SCALAR;
         }
 
-        var crVector = Vector128.Create((byte)'\r');
-        var lfVector = Vector128.Create((byte)'\n');
+        Vector128<byte> crVector = Vector128.Create(ByteCR);
+        Vector128<byte> lfVector = Vector128.Create(ByteLF);
 
-    NEXT_VECTOR:
-        var search = Unsafe.ReadUnaligned<Vector128<byte>>(
-            ref Unsafe.AddByteOffset(ref searchSpace, offset));
+        nuint ulenMinusVector = ulen - (nuint)Vector128<byte>.Count;
 
-        var cmp0 = Sse2.CompareEqual(crVector, search);
-        var cmp1 = Sse2.CompareEqual(lfVector, search);
-
-        int matches = Sse2.MoveMask(Sse2.Or(cmp0, cmp1));
-        if (matches != 0)
+        do
         {
-            return (int)(offset + (nuint)BitOperations.TrailingZeroCount(matches));
-        }
+            Vector128<byte> search = Vector128.LoadUnsafe(ref searchSpace, offset);
+            Vector128<byte> cmp0 = Vector128.Equals(crVector, search);
+            Vector128<byte> cmp1 = Vector128.Equals(lfVector, search);
 
-        offset += (nuint)Vector128<byte>.Count;
-        if (offset == ulen)
-        {
-            // we're done
-            return -1;
-        }
-        if (offset + (nuint)Vector128<byte>.Count > ulen)
-        {
-            // not enough space for the next 128bit vector so let's overlap
-            // with the current one in order to avoid SCALAR fallback
-            offset = ulen - (nuint)Vector128<byte>.Count;
-        }
-        goto NEXT_VECTOR;
+            uint matches = (cmp0 | cmp1).ExtractMostSignificantBits();
+            if (matches != 0)
+            {
+                return (int)(offset + (nuint)BitOperations.TrailingZeroCount(matches));
+            }
+
+            offset += (nuint)Vector128<byte>.Count;
+            if (offset == ulen)
+            {
+                // we're done
+                return -1;
+            }
+            if (offset > ulenMinusVector)
+            {
+                // not enough space for the next 128bit vector so let's overlap
+                // with the current one in order to avoid SCALAR fallback
+                offset = ulenMinusVector;
+            }
+        } while (true);
 
     SCALAR:
         for (; offset < ulen; offset++)
         {
             // if (val == '\r' || val == '\n' || val == '\t' || val == ' ' || val == ':')
             // the following code is a "bittest" version of ^:
-            var val = Unsafe.AddByteOffset(ref searchSpace, offset);
-            if (val == '\r' || val == '\n')
+            byte val = Unsafe.AddByteOffset(ref searchSpace, offset);
+            if (val == ByteCR || val == ByteLF)
             {
                 return (int)offset;
             }
