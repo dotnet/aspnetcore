@@ -50,7 +50,6 @@ public class InferParameterBindingInfoConvention : IActionModelConvention
         _serviceProviderIsService = serviceProviderIsService ?? throw new ArgumentNullException(nameof(serviceProviderIsService));
     }
 
-
     internal bool IsInferForServiceParametersEnabled => _serviceProviderIsService != null;
 
     /// <summary>
