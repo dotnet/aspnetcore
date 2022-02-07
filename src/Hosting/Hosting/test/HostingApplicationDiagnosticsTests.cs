@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
@@ -494,6 +495,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/40038")]
         public void ActivityListenersAreCalled()
         {
             var hostingApplication = CreateApplication(out var features);
