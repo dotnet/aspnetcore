@@ -22,4 +22,9 @@ public interface IProducesResponseTypeMetadata
     /// Gets the content types supported by the metadata.
     /// </summary>
     IEnumerable<string> ContentTypes { get; }
+
+    /// <summary>
+    /// Gets the description of the response.
+    /// </summary>
+    string? Description { get; }
 }

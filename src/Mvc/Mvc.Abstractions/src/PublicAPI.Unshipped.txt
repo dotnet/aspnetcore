@@ -1,1 +1,9 @@
 #nullable enable
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterDescription.Examples.get -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Http.Metadata.IExampleMetadata!>?
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterDescription.Examples.set -> void
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseType.Examples.get -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Http.Metadata.IExampleMetadata!>?
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseType.Examples.set -> void
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterDescription.Description.get -> string?
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterDescription.Description.set -> void
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseType.Description.get -> string?
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseType.Description.set -> void

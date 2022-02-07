@@ -4,8 +4,10 @@
 using System.ComponentModel;
 using System.Reflection;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -488,7 +490,7 @@ public class EndpointMetadataApiDescriptionProviderTest
     [Fact]
     public void TestParameterAttributesCanBeInspected()
     {
-        var apiDescription = GetApiDescription(([Description("The name.")] string name) => { });
+        var apiDescription = GetApiDescription(([System.ComponentModel.Description("The name.")] string name) => { });
         Assert.Equal(1, apiDescription.ParameterDescriptions.Count);
 
         var nameParam = apiDescription.ParameterDescriptions[0];
@@ -505,7 +507,7 @@ public class EndpointMetadataApiDescriptionProviderTest
 
         Assert.NotNull(descriptor.ParameterInfo);
 
-        var description = Assert.Single(descriptor.ParameterInfo.GetCustomAttributes<DescriptionAttribute>());
+        var description = Assert.Single(descriptor.ParameterInfo.GetCustomAttributes<System.ComponentModel.DescriptionAttribute>());
 
         Assert.NotNull(description);
         Assert.Equal("The name.", description.Description);
@@ -1121,6 +1123,263 @@ public class EndpointMetadataApiDescriptionProviderTest
             constraint => Assert.IsType<MaxLengthRouteConstraint>(constraint));
     }
 
+    [Fact]
+    public void HandlesEndpointWithDescriptionAndSummary_WithExtensionMethods()
+    {
+        var builder = CreateBuilder();
+        builder.MapGet("/api/todos/{id}", (int id) => "").WithDescription("A description").WithSummary("A summary");
+
+        var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+        var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+        var hostEnvironment = new HostEnvironment
+        {
+            ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
+        };
+        var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
+
+        // Act
+        provider.OnProvidersExecuting(context);
+
+        // Assert
+        var apiDescription = Assert.Single(context.Results);
+        Assert.NotEmpty(apiDescription.ActionDescriptor.EndpointMetadata);
+
+        var descriptionMetadata = apiDescription.ActionDescriptor.EndpointMetadata.OfType<IDescriptionMetadata>().SingleOrDefault();
+        Assert.NotNull(descriptionMetadata);
+        Assert.Equal("A description", descriptionMetadata.Description);
+
+        var summaryMetadata = apiDescription.ActionDescriptor.EndpointMetadata.OfType<ISummaryMetadata>().SingleOrDefault();
+        Assert.NotNull(summaryMetadata);
+        Assert.Equal("A summary", summaryMetadata.Summary);
+    }
+
+    [Fact]
+    public void HandlesEndpointWithDescriptionAndSummary_WithAttributes()
+    {
+        var builder = CreateBuilder();
+        builder.MapGet("/api/todos/{id}", [Summary("A summary")] [Http.Description("A description")] (int id) => "");
+
+        var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+        var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+        var hostEnvironment = new HostEnvironment
+        {
+            ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
+        };
+        var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
+
+        // Act
+        provider.OnProvidersExecuting(context);
+
+        // Assert
+        var apiDescription = Assert.Single(context.Results);
+        Assert.NotEmpty(apiDescription.ActionDescriptor.EndpointMetadata);
+
+        var descriptionMetadata = apiDescription.ActionDescriptor.EndpointMetadata.OfType<IDescriptionMetadata>().SingleOrDefault();
+        Assert.NotNull(descriptionMetadata);
+        Assert.Equal("A description", descriptionMetadata.Description);
+
+        var summaryMetadata = apiDescription.ActionDescriptor.EndpointMetadata.OfType<ISummaryMetadata>().SingleOrDefault();
+        Assert.NotNull(summaryMetadata);
+        Assert.Equal("A summary", summaryMetadata.Summary);
+    }
+
+    [Fact]
+    public void HandlesResponseWithDescription_ViaExtensionMethod()
+    {
+        var builder = CreateBuilder();
+        builder.MapGet("/api/todos/{id}", (int id) => "").Produces(StatusCodes.Status200OK, "This is a response description", typeof(Todo));
+
+        var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+        var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+        var hostEnvironment = new HostEnvironment
+        {
+            ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
+        };
+        var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
+
+        // Act
+        provider.OnProvidersExecuting(context);
+
+        // Assert
+        var apiDescription = Assert.Single(context.Results);
+        var apiResponse = Assert.Single(apiDescription.SupportedResponseTypes);
+        Assert.Equal("This is a response description", apiResponse.Description);
+    }
+
+    [Fact]
+    public void HandlesParameterWithDescription_ViaAttributes()
+    {
+        var builder = CreateBuilder();
+        builder.MapGet("/api/todos/{id}", ([Http.Description("A description for the parameter")] int id) => "");
+
+        var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+        var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+        var hostEnvironment = new HostEnvironment
+        {
+            ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
+        };
+        var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
+
+        // Act
+        provider.OnProvidersExecuting(context);
+
+        // Assert
+        var apiDescription = Assert.Single(context.Results);
+        var apiParameterDescription = Assert.Single(apiDescription.ParameterDescriptions);
+        Assert.Equal("A description for the parameter", apiParameterDescription.Description);
+    }
+
+    [Fact]
+    public void HandleRequestBodyWithExample_ViaExtensionMethod()
+    {
+        var builder = CreateBuilder();
+        builder
+            .MapPost("/api/todos", (Todo todo) => "")
+            .WithParameterExample("todo", "A todo", "A quick description of the todo", new Todo() { Id = 0, Title = "foo" });
+
+        var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+        var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+        var hostEnvironment = new HostEnvironment
+        {
+            ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
+        };
+        var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
+
+        // Act
+        provider.OnProvidersExecuting(context);
+
+        // Assert
+        var apiDescription = Assert.Single(context.Results);
+        var parameter = Assert.Single(apiDescription.ParameterDescriptions);
+        var example = Assert.Single(parameter.Examples);
+        Assert.Equal("A quick description of the todo", example.Description);
+        Assert.Equal("A todo", example.Summary);
+        var todo = Assert.IsType<Todo>(example.Value);
+        Assert.Equal(0, todo.Id);
+    }
+
+    [Fact]
+    public void CanHandleParameterWithExample_WithAttribute()
+    {
+        var builder = CreateBuilder();
+        builder.MapPost("/api/todos", (
+            [Example("A number", "A detailed description of number", 2)]
+            int id,
+            [Example("A bool", "A detailed description of bool", true)]
+            bool name
+        ) => "");
+
+        var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+        var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+        var hostEnvironment = new HostEnvironment
+        {
+            ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
+        };
+        var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
+
+        // Act
+        provider.OnProvidersExecuting(context);
+
+        // Assert
+        var apiDescription = Assert.Single(context.Results);
+        Assert.Collection(apiDescription.ParameterDescriptions,
+            intParam =>
+            {
+                var example = Assert.Single(intParam.Examples);
+                Assert.Equal("A detailed description of number", example.Description);
+                Assert.Equal("A number", example.Summary);
+                var value = Assert.IsType<int>(example.Value);
+                Assert.Equal(2, value);
+            },
+            boolParam =>
+            {
+                var example = Assert.Single(boolParam.Examples);
+                Assert.Equal("A detailed description of bool", example.Description);
+                Assert.Equal("A bool", example.Summary);
+                var value = Assert.IsType<bool>(example.Value);
+                Assert.True(value);
+            }
+        );
+    }
+
+    [Fact]
+    public void CanHandleParameterWithExample_ExtensionMethod()
+    {
+        var date = new DateTime();
+        var guid = new Guid();
+        var builder = CreateBuilder();
+        builder.MapPost("/api/todos", (DateTime startDate, Guid id) => "")
+            .WithParameterExample("startDate", "A date", "A description of a date", date)
+            .WithParameterExample("id", "An ID", "A GUID", guid);
+
+        var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+        var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+        var hostEnvironment = new HostEnvironment
+        {
+            ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
+        };
+        var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
+
+        // Act
+        provider.OnProvidersExecuting(context);
+
+        // Assert
+        var apiDescription = Assert.Single(context.Results);
+        Assert.Collection(apiDescription.ParameterDescriptions,
+            intParam =>
+            {
+                var example = Assert.Single(intParam.Examples);
+                Assert.Equal("A date", example.Summary);
+                Assert.Equal("A description of a date", example.Description);
+                var value = Assert.IsType<DateTime>(example.Value);
+                Assert.Equal(date, value);
+            },
+            boolParam =>
+            {
+                var example = Assert.Single(boolParam.Examples);
+                Assert.Equal("An ID", example.Summary);
+                Assert.Equal("A GUID", example.Description);
+                var value = Assert.IsType<Guid>(example.Value);
+                Assert.Equal(guid, value);
+            }
+        );
+    }
+
+    [Fact]
+    public void CanHandleResponseWithExample()
+    {
+        var builder = CreateBuilder();
+        builder.MapGet("/api/todos", (int id) => "").WithResponseExample("A todo", "A todo description", new Todo() { Id = 1, Title = "foo" });
+
+        var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+        var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+        var hostEnvironment = new HostEnvironment
+        {
+            ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
+        };
+        var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
+
+        // Act
+        provider.OnProvidersExecuting(context);
+
+        // Assert
+        var apiDescription = Assert.Single(context.Results);
+        var response = Assert.Single(apiDescription.SupportedResponseTypes);
+        var example = Assert.Single(response.Examples);
+        Assert.Equal("A todo description", example.Description);
+        Assert.Equal("A todo", example.Summary);
+        var todo = Assert.IsType<Todo>(example.Value);
+        Assert.Equal(1, todo.Id);
+    }
+
     private static IEnumerable<string> GetSortedMediaTypes(ApiResponseType apiResponseType)
     {
         return apiResponseType.ApiResponseFormats
@@ -1184,6 +1443,12 @@ public class EndpointMetadataApiDescriptionProviderTest
 
     private interface IInferredJsonInterface
     {
+    }
+
+    private class Todo
+    {
+        public int Id { get; set; }
+        public string Title { get; set; }
     }
 
     private class ServiceProviderIsService : IServiceProviderIsService

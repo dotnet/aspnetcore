@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Microsoft.AspNetCore.Mvc.ApiExplorer;
@@ -47,4 +48,14 @@ public class ApiResponseType
     /// for communicating error conditions.
     /// </remarks>
     public bool IsDefaultResponse { get; set; }
+
+    /// <summary>
+    /// Gets or sets a collection of elements representing examples for the response type.
+    /// </summary>
+    public IEnumerable<IExampleMetadata>? Examples { get; set; }
+
+    /// <summary>
+    /// Gets or sets the description associated with the response.
+    /// </summary>
+    public string? Description { get; set; } = default!;
 }

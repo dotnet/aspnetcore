@@ -30,12 +30,27 @@ internal sealed class ProducesResponseTypeMetadata : IProducesResponseTypeMetada
     /// </summary>
     /// <param name="type">The <see cref="Type"/> of object that is going to be written in the response.</param>
     /// <param name="statusCode">The HTTP response status code.</param>
-    public ProducesResponseTypeMetadata(Type type, int statusCode)
+    /// <param name="description">A description of the response.</param>
+    public ProducesResponseTypeMetadata(Type type, int statusCode, string? description = null)
     {
         Type = type ?? throw new ArgumentNullException(nameof(type));
         StatusCode = statusCode;
         IsResponseTypeSetByDefault = false;
+        Description = description;
         _contentTypes = Enumerable.Empty<string>();
+    }
+
+    /// <summary>
+    /// Initializes an instance of <see cref="ProducesResponseTypeMetadata"/>.
+    /// </summary>
+    /// <param name="type">The <see cref="Type"/> of object that is going to be written in the response.</param>
+    /// <param name="description">A description of the response.</param>
+    /// <param name="statusCode">The HTTP response status code.</param>
+    /// <param name="contentType">The content type associated with the response.</param>
+    /// <param name="additionalContentTypes">Additional content types supported by the response.</param>
+    public ProducesResponseTypeMetadata(Type type, string description, int statusCode, string contentType, params string[] additionalContentTypes) : this(type, statusCode, contentType, additionalContentTypes)
+    {
+        Description = description;
     }
 
     /// <summary>
@@ -86,6 +101,9 @@ internal sealed class ProducesResponseTypeMetadata : IProducesResponseTypeMetada
     /// </summary>
     /// <value></value>
     internal bool IsResponseTypeSetByDefault { get; }
+
+    /// <inheritdoc />
+    public string? Description { get; }
 
     public IEnumerable<string> ContentTypes => _contentTypes;
 

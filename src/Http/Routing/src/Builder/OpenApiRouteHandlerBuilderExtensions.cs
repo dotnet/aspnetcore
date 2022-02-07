@@ -42,11 +42,11 @@ public static class OpenApiRouteHandlerBuilderExtensions
 #pragma warning disable RS0026
     public static RouteHandlerBuilder Produces<TResponse>(this RouteHandlerBuilder builder,
 #pragma warning restore RS0026
-            int statusCode = StatusCodes.Status200OK,
+        int statusCode = StatusCodes.Status200OK,
         string? contentType = null,
         params string[] additionalContentTypes)
     {
-        return Produces(builder, statusCode, typeof(TResponse), contentType, additionalContentTypes);
+        return Produces(builder, statusCode, null, typeof(TResponse), contentType, additionalContentTypes);
     }
 
     /// <summary>
@@ -55,6 +55,7 @@ public static class OpenApiRouteHandlerBuilderExtensions
     /// </summary>
     /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
     /// <param name="statusCode">The response status code.</param>
+    /// <param name="description">The response status code.</param>
     /// <param name="responseType">The type of the response. Defaults to null.</param>
     /// <param name="contentType">The response content type. Defaults to "application/json" if responseType is not null, otherwise defaults to null.</param>
     /// <param name="additionalContentTypes">Additional response content types the endpoint produces for the supplied status code.</param>
@@ -62,7 +63,8 @@ public static class OpenApiRouteHandlerBuilderExtensions
 #pragma warning disable RS0026
     public static RouteHandlerBuilder Produces(this RouteHandlerBuilder builder,
 #pragma warning restore RS0026
-            int statusCode,
+        int statusCode,
+        string? description = null,
         Type? responseType = null,
         string? contentType = null,
         params string[] additionalContentTypes)
@@ -74,7 +76,13 @@ public static class OpenApiRouteHandlerBuilderExtensions
 
         if (contentType is null)
         {
-            builder.WithMetadata(new ProducesResponseTypeMetadata(responseType ?? typeof(void), statusCode));
+            builder.WithMetadata(new ProducesResponseTypeMetadata(responseType ?? typeof(void), statusCode, description));
+            return builder;
+        }
+
+        if (description is not null)
+        {
+            builder.WithMetadata(new ProducesResponseTypeMetadata(responseType ?? typeof(void), description, statusCode, contentType, additionalContentTypes));
             return builder;
         }
 
@@ -206,6 +214,94 @@ public static class OpenApiRouteHandlerBuilderExtensions
         Type requestType, bool isOptional, string contentType, params string[] additionalContentTypes)
     {
         builder.WithMetadata(new AcceptsMetadata(requestType, isOptional, GetAllContentTypes(contentType, additionalContentTypes)));
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds <see cref="IExampleMetadata"/> to <see cref="EndpointBuilder.Metadata"/> representing
+    /// an example of the parameter for all builders produced by <paramref name="builder"/>.
+    /// </summary>
+    /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
+    /// <param name="parameterName">A string representing the name of the parameter associated with the example.</param>
+    /// <param name="summary">A string representing a summary of the example.</param>
+    /// <param name="description">A string representing a detailed description of the example.</param>
+    /// <param name="value">An object representing the example associated with a particualr type.</param>
+    /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
+    public static RouteHandlerBuilder WithParameterExample(this RouteHandlerBuilder builder, string parameterName, string summary, string description, object value)
+    {
+        builder.WithMetadata(new ExampleAttribute(summary, description, value) { ParameterName = parameterName });
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds <see cref="IExampleMetadata"/> to <see cref="EndpointBuilder.Metadata"/> representing
+    /// an example of the parameter for all builders produced by <paramref name="builder"/>.
+    /// </summary>
+    /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
+    /// <param name="parameterName">A string representing the name of the parameter associated with the example.</param>
+    /// <param name="summary">A string representing a summary of the example.</param>
+    /// <param name="description">A string representing a detailed description of the example.</param>
+    /// <param name="externalValue">A string pointing to a reference of the example.</param>
+    /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
+    public static RouteHandlerBuilder WithParameterExample(this RouteHandlerBuilder builder, string parameterName, string summary, string description, string externalValue)
+    {
+        builder.WithMetadata(new ExampleAttribute(summary, description, externalValue) { ParameterName = parameterName });
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds <see cref="IExampleMetadata"/> to <see cref="EndpointBuilder.Metadata"/> representing
+    /// an example of the response type for all builders produced by <paramref name="builder"/>.
+    /// </summary>
+    /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
+    /// <param name="summary">A string representing a summary of the example.</param>
+    /// <param name="description">A string representing a detailed description of the example.</param>
+    /// <param name="value">An object representing the example associated with a particualr type.</param>
+    /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
+    public static RouteHandlerBuilder WithResponseExample(this RouteHandlerBuilder builder, string summary, string description, object value)
+    {
+        builder.WithMetadata(new ExampleAttribute(summary, description, value));
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds <see cref="IExampleMetadata"/> to <see cref="EndpointBuilder.Metadata"/> representing
+    /// an example of the response type for all builders produced by <paramref name="builder"/>.
+    /// </summary>
+    /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
+    /// <param name="summary">A string representing a summary of the example.</param>
+    /// <param name="description">A string representing a detailed description of the example.</param>
+    /// <param name="externalValue">A string pointing to a reference of the example.</param>
+    /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
+    public static RouteHandlerBuilder WithResponseExample(this RouteHandlerBuilder builder, string summary, string description, string externalValue)
+    {
+        builder.WithMetadata(new ExampleAttribute(summary, description, externalValue));
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds <see cref="IDescriptionMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
+    /// produced by <paramref name="builder"/>.
+    /// </summary>
+    /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
+    /// <param name="description">A string representing a detailed description of the endpoint.</param>
+    /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
+    public static RouteHandlerBuilder WithDescription(this RouteHandlerBuilder builder, string description)
+    {
+        builder.WithMetadata(new DescriptionAttribute(description));
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds <see cref="ISummaryMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
+    /// produced by <paramref name="builder"/>.
+    /// </summary>
+    /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
+    /// <param name="summary">A string representation a brief description of the endpoint.</param>
+    /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
+    public static RouteHandlerBuilder WithSummary(this RouteHandlerBuilder builder, string summary)
+    {
+        builder.WithMetadata(new SummaryAttribute(summary));
         return builder;
     }
 

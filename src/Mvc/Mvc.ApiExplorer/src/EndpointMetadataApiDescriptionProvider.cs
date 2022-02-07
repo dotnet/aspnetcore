@@ -102,7 +102,7 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
 
         foreach (var parameter in methodInfo.GetParameters())
         {
-            var parameterDescription = CreateApiParameterDescription(parameter, routeEndpoint.RoutePattern);
+            var parameterDescription = CreateApiParameterDescription(parameter, routeEndpoint);
 
             if (parameterDescription is null)
             {
@@ -155,8 +155,9 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
         return apiDescription;
     }
 
-    private ApiParameterDescription? CreateApiParameterDescription(ParameterInfo parameter, RoutePattern pattern)
+    private ApiParameterDescription? CreateApiParameterDescription(ParameterInfo parameter, RouteEndpoint endpoint)
     {
+        var pattern = endpoint.RoutePattern;
         var (source, name, allowEmpty, paramType) = GetBindingSourceAndName(parameter, pattern);
 
         // Services are ignored because they are not request parameters.
@@ -171,6 +172,11 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
         var isOptional = parameter.HasDefaultValue || nullability.ReadState != NullabilityState.NotNull || allowEmpty;
         var parameterDescriptor = CreateParameterDescriptor(parameter);
         var routeInfo = CreateParameterRouteInfo(pattern, parameter, isOptional);
+        // Process any value examples for this parameter that are marked as attributes
+        var examplesInAttributes = parameter.GetCustomAttributes().OfType<IExampleMetadata>();
+        // Process any example values for this parameter that are registered via an extension method
+        var examplesInMetadata = endpoint.Metadata.OfType<IExampleMetadata>().Where(metadata => metadata.ParameterName == name);
+        var parameterDescriptionAttribute = parameter.GetCustomAttribute<Http.DescriptionAttribute>();
 
         return new ApiParameterDescription
         {
@@ -181,7 +187,9 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
             Type = parameter.ParameterType,
             IsRequired = !isOptional,
             ParameterDescriptor = parameterDescriptor,
-            RouteInfo = routeInfo
+            RouteInfo = routeInfo,
+            Examples = examplesInMetadata.Concat(examplesInAttributes),
+            Description = parameterDescriptionAttribute?.Description
         };
     }
 
@@ -312,6 +320,7 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
         // and types added via the extension methods (which implement IProducesResponseTypeMetadata).
         var responseProviderMetadata = endpointMetadata.GetOrderedMetadata<IApiResponseMetadataProvider>();
         var producesResponseMetadata = endpointMetadata.GetOrderedMetadata<IProducesResponseTypeMetadata>();
+        var examplesMetadata = endpointMetadata.GetOrderedMetadata<IExampleMetadata>();
         var errorMetadata = endpointMetadata.GetMetadata<ProducesErrorResponseTypeAttribute>();
         var defaultErrorType = errorMetadata?.Type ?? typeof(void);
         var contentTypes = new MediaTypeCollection();
@@ -333,6 +342,11 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
                 if (apiResponseType.Type is null || apiResponseType.Type == typeof(void))
                 {
                     apiResponseType.Type = responseType;
+                }
+
+                if (examplesMetadata is not null)
+                {
+                    apiResponseType.Examples = examplesMetadata.ToArray();
                 }
 
                 apiResponseType.ModelMetadata = CreateModelMetadata(apiResponseType.Type);
@@ -359,6 +373,11 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
             // Set the default response type only when none has already been set explicitly with metadata.
             var defaultApiResponseType = CreateDefaultApiResponseType(responseType);
 
+            if (examplesMetadata is not null)
+            {
+                defaultApiResponseType.Examples = examplesMetadata.ToArray();
+            }
+
             if (contentTypes.Count > 0)
             {
                 // If metadata provided us with response formats, use that instead of the default.
@@ -383,6 +402,7 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
             var apiResponseType = new ApiResponseType
             {
                 Type = metadata.Type,
+                Description = metadata.Description,
                 StatusCode = statusCode,
             };
 

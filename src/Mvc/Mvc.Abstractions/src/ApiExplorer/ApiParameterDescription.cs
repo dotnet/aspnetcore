@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Http.Metadata;
 
 namespace Microsoft.AspNetCore.Mvc.ApiExplorer;
 
@@ -63,4 +64,14 @@ public class ApiParameterDescription
     /// Gets or sets the default value for a parameter.
     /// </summary>
     public object? DefaultValue { get; set; }
+
+    /// <summary>
+    /// Gets or sets a collection of examples associated with the parameter.
+    /// </summary>
+    public IEnumerable<IExampleMetadata>? Examples { get; set; } = default!;
+
+    /// <summary>
+    /// Gets or sets the description associated with the parameter.
+    /// </summary>
+    public string? Description { get; set; } = default!;
 }

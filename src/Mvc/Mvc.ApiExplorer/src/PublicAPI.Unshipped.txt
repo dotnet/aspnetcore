@@ -1,1 +1,9 @@
 #nullable enable
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterDescription.Examples.get -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Http.Metadata.IExampleMetadata!>? (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterDescription.Examples.set -> void (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseType.Examples.get -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Http.Metadata.IExampleMetadata!>? (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseType.Examples.set -> void (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterDescription.Description.get -> string? (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterDescription.Description.set -> void (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseType.Description.get -> string? (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseType.Description.set -> void (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
