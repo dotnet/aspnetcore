@@ -468,6 +468,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         [ConditionalFact]
         [RequiresNewHandler]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/40036")]
         public async Task StartupTimeoutIsApplied()
         {
             // From what we can tell, this failure is due to ungraceful shutdown.
