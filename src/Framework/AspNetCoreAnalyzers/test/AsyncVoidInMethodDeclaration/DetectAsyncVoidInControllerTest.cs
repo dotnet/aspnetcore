@@ -37,6 +37,7 @@ public class Program { public static void Main() {}}
     [Theory]
     [InlineData("Controller")]
     [InlineData("ControllerBase")]
+    [InlineData("MyCustomController")]
     public async Task AsyncVoidDiagnosted_ControllerDetectedByAncestor(string ancestor)
     {
         var source = TestSource.Read($@"
@@ -49,6 +50,8 @@ public class Home : {ancestor}
     {{
     }}
 }}
+
+public abstract class MyCustomController {{}}
 
 public class Program {{ public static void Main() {{}} }}
 ");

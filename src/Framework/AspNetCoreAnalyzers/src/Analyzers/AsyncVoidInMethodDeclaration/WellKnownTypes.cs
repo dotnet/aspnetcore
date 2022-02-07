@@ -18,6 +18,12 @@ internal sealed class WellKnownTypes
             return false;
         }
 
+        const string ControllerBaseInstance = "Microsoft.AspNetCore.Mvc.ControllerBase";
+        if (compilation.GetTypeByMetadataName(ControllerBaseInstance) is not { } controllerBaseInstance)
+        {
+            return false;
+        }
+
         const string IActionFilter = "Microsoft.AspNetCore.Mvc.Filters.IActionFilter";
         if (compilation.GetTypeByMetadataName(IActionFilter) is not { } actionFilterInstance)
         {
@@ -27,6 +33,7 @@ internal sealed class WellKnownTypes
         wellKnownTypes = new WellKnownTypes
         {
             ControllerInstance = controllerInstance,
+            ControllerBaseInstance = controllerBaseInstance,
             IActionFilter = actionFilterInstance
         };
 
@@ -34,6 +41,8 @@ internal sealed class WellKnownTypes
     }
 
     public INamedTypeSymbol ControllerInstance { get; private init; }
+
+    public INamedTypeSymbol ControllerBaseInstance { get; private init; }
 
     public INamedTypeSymbol IActionFilter { get; private init; }
 }

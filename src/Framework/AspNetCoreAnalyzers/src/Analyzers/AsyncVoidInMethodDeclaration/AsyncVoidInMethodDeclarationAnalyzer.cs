@@ -108,14 +108,19 @@ public class AsyncVoidInMethodDeclarationAnalyzer : DiagnosticAnalyzer
     private static bool IsInheritFromController(INamedTypeSymbol? typeSymbol, WellKnownTypes wellKnownTypes)
     {
         const string ControllerSignSuffix = "Controller";
-        INamedTypeSymbol lookupType = wellKnownTypes.ControllerInstance;
 
-        if (SymbolEqualityComparer.Default.Equals(lookupType, typeSymbol) || (typeSymbol?.Name.EndsWith(ControllerSignSuffix, StringComparison.Ordinal) ?? false))
+        // check if a class inherits from Microsoft.AspNetCore.Mvc.ControllerBase or Microsoft.AspNetCore.Mvc.Controller
+        ImmutableArray<INamedTypeSymbol> lookupTypes = ImmutableArray.Create(wellKnownTypes.ControllerInstance, wellKnownTypes.ControllerBaseInstance);
+        for (int i = 0; i < lookupTypes.Length; i++)
         {
-            return true;
+            if (SymbolEqualityComparer.Default.Equals(lookupTypes[i], typeSymbol))
+            {
+                return true;
+            }
         }
 
-        return false;
+        // a base class could be a custom controller, so that check base class suffix
+        return typeSymbol?.Name.EndsWith(ControllerSignSuffix, StringComparison.Ordinal) ?? false;
     }
 
     private static Diagnostic CreateDiagnostic(SyntaxNode syntaxNode)
