@@ -494,6 +494,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/40038")]
         public void ActivityListenersAreCalled()
         {
             var hostingApplication = CreateApplication(out var features);
