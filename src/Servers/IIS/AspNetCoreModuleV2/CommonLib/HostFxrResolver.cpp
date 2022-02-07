@@ -147,7 +147,7 @@ HostFxrResolver::GetHostFxrParameters(
 
             arguments.insert(arguments.begin(), dotnetExePath);
             fs::path oldDotnetExePath = GetAbsolutePathToDotnet(applicationPhysicalPath, expandedProcessPath);
-            if (!equals_ignore_case(oldDotnetExePath.c_str(), dotnetExePath.c_str()) {
+            if (!equals_ignore_case(oldDotnetExePath.c_str(), dotnetExePath.c_str())) {
                 LOG_INFOF(L"MISMATCH oldDotnetExePath '%ls'", oldDotnetExePath.c_str());
                 throw InvalidOperationException(L"dotnetExePath mismatch");
             }
