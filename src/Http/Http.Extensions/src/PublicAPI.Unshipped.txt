@@ -1,3 +1,9 @@
 #nullable enable
 Microsoft.Extensions.DependencyInjection.RouteHandlerJsonServiceExtensions
 static Microsoft.Extensions.DependencyInjection.RouteHandlerJsonServiceExtensions.ConfigureRouteHandlerJsonOptions(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Http.Json.JsonOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+Microsoft.AspNetCore.Http.DescriptionAttribute
+Microsoft.AspNetCore.Http.DescriptionAttribute.DescriptionAttribute(string! description) -> void
+Microsoft.AspNetCore.Http.DescriptionAttribute.Description.get -> string!
+Microsoft.AspNetCore.Http.SummaryAttribute
+Microsoft.AspNetCore.Http.SummaryAttribute.SummaryAttribute(string! summary) -> void
+Microsoft.AspNetCore.Http.SummaryAttribute.Summary.get -> string!

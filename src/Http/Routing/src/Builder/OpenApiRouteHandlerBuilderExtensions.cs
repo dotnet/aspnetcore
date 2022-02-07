@@ -209,6 +209,32 @@ public static class OpenApiRouteHandlerBuilderExtensions
         return builder;
     }
 
+    /// <summary>
+    /// Adds <see cref="IDescriptionMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
+    /// produced by <paramref name="builder"/>.
+    /// </summary>
+    /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
+    /// <param name="description">A string representing a detailed description of the endpoint.</param>
+    /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
+    public static RouteHandlerBuilder WithDescription(this RouteHandlerBuilder builder, string description)
+    {
+        builder.WithMetadata(new DescriptionAttribute(description));
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds <see cref="ISummaryMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
+    /// produced by <paramref name="builder"/>.
+    /// </summary>
+    /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
+    /// <param name="summary">A string representation a brief description of the endpoint.</param>
+    /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
+    public static RouteHandlerBuilder WithSummary(this RouteHandlerBuilder builder, string summary)
+    {
+        builder.WithMetadata(new SummaryAttribute(summary));
+        return builder;
+    }
+
     private static string[] GetAllContentTypes(string contentType, string[] additionalContentTypes)
     {
         var allContentTypes = new string[additionalContentTypes.Length + 1];
