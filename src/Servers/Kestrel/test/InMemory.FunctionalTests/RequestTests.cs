@@ -1084,6 +1084,43 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
+        public async Task ContentLengthReadAsyncPipeReaderReadsCompletedBody()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            await using (var server = new TestServer(async httpContext =>
+            {
+                using var ms1 = new MemoryStream();
+                using var ms2 = new MemoryStream();
+
+                // Read the body completely, and ensure the second read doesn't fail
+                await httpContext.Request.BodyReader.CopyToAsync(ms1);
+                await httpContext.Request.BodyReader.CopyToAsync(ms2);
+
+                Assert.Equal(22, ms1.ToArray().Length);
+                Assert.Empty(ms2.ToArray());
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "POST / HTTP/1.0",
+                        "Host:",
+                        "Content-Length: 22",
+                        "",
+                        "MyVariableOne=ValueOne");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        "Content-Length: 0",
+                        "Connection: close",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Fact]
         public async Task ContentLengthReadAsyncSingleBytesAtATime()
         {
             var testContext = new TestServiceContext(LoggerFactory);
