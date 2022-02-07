@@ -4,8 +4,8 @@
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing.Template;
-using Resources = Microsoft.AspNetCore.Mvc.Core.Resources;
 using Microsoft.Extensions.DependencyInjection;
+using Resources = Microsoft.AspNetCore.Mvc.Core.Resources;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 
@@ -113,7 +113,7 @@ public class InferParameterBindingInfoConvention : IActionModelConvention
     {
         if (IsComplexTypeParameter(parameter))
         {
-            if (_serviceProviderIsService?.IsService(parameter.ParameterType) == true)
+            if (_serviceProviderIsService?.IsService(parameter.ParameterType) is true)
             {
                 return BindingSource.Services;
             }
