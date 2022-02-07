@@ -49,9 +49,10 @@ internal class ApiBehaviorApplicationModelProvider : IApplicationModelProvider
 
         if (!options.SuppressInferBindingSourcesForParameters)
         {
-            var convention = options.DisableImplicitFromServiceParameters ?
-                        new InferParameterBindingInfoConvention(modelMetadataProvider) :
-                        new InferParameterBindingInfoConvention(modelMetadataProvider, serviceProvider.GetService<IServiceProviderIsService>());
+            var serviceProviderIsService = serviceProvider.GetService<IServiceProviderIsService>();
+            var convention = options.DisableImplicitFromServicesParameters || serviceProviderIsService == null ?
+                new InferParameterBindingInfoConvention(modelMetadataProvider) :
+                new InferParameterBindingInfoConvention(modelMetadataProvider, serviceProviderIsService);
             ActionModelConventions.Add(convention);
         }
     }

@@ -142,7 +142,7 @@ public class ApiBehaviorApplicationModelProviderTest
     public void Constructor_DoesNotInferServicesParameterBindingInfoConvention_IfSuppressInferBindingSourcesForParametersIsSet()
     {
         // Arrange
-        var provider = GetProvider(new ApiBehaviorOptions { DisableImplicitFromServiceParameters = true });
+        var provider = GetProvider(new ApiBehaviorOptions { DisableImplicitFromServicesParameters = true });
 
         // Act & Assert
         var convention = (InferParameterBindingInfoConvention)Assert.Single(provider.ActionModelConventions, c => c is InferParameterBindingInfoConvention);

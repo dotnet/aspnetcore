@@ -42,7 +42,7 @@ public class ApiBehaviorOptions : IEnumerable<ICompatibilitySwitch>
     /// Parameters that appear as route values, are assumed to be bound from the path (<see cref="BindingSource.Path"/>).
     /// Parameters of type <see cref="IFormFile"/> and <see cref="IFormFileCollection"/> are assumed to be bound from form.
     /// Parameters that are complex (<see cref="ModelMetadata.IsComplexType"/>) and are registered in the DI Container (<see cref="IServiceCollection"/>) are assumed to be bound from the services <see cref="BindingSource.Services"/>, unless this
-    /// option is explicitly disabled <see cref="DisableImplicitFromServiceParameters"/>.
+    /// option is explicitly disabled <see cref="DisableImplicitFromServicesParameters"/>.
     /// Parameters that are complex (<see cref="ModelMetadata.IsComplexType"/>) are assumed to be bound from the body (<see cref="BindingSource.Body"/>).
     /// All other parameters are assumed to be bound from the query.
     /// </para>
@@ -50,13 +50,10 @@ public class ApiBehaviorOptions : IEnumerable<ICompatibilitySwitch>
     public bool SuppressInferBindingSourcesForParameters { get; set; }
 
     /// <summary>
-    /// When <see langword="false"/>, <see cref="IServiceProviderIsService"/> determines if a action parameter will be injected from the DI container.
-    /// Parameters can be explicitly marked with an attribute that implements <see cref="IFromServiceMetadata"/> with or without this option set.
+    /// Gets or sets a value that determines if parameters are inferred to be from services.
+    /// This property is only applicable when <see cref="SuppressInferBindingSourcesForParameters" /> is <see langword="false" />.
     /// </summary>
-    /// <remarks>
-    /// False by default.action method arguments will be resolved from a DI container if possible.
-    /// </remarks>
-    public bool DisableImplicitFromServiceParameters { get; set; }
+    public bool DisableImplicitFromServicesParameters { get; set; }
 
     /// <summary>
     /// Gets or sets a value that determines if an <c>multipart/form-data</c> consumes action constraint is added to parameters
