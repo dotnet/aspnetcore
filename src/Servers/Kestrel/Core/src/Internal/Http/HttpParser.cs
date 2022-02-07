@@ -168,18 +168,17 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
             Vector128<byte> search = Vector128.LoadUnsafe(ref searchSpace, offset);
 
             // pipeline SIMD operations
-            Vector128<byte> cmp0 = Vector128.Equals(crVector, search);
-            Vector128<byte> cmp1 = Vector128.Equals(lfVector, search);
-            Vector128<byte> cmp2 = Vector128.Equals(tbVector, search);
-            Vector128<byte> cmp3 = Vector128.Equals(wsVector, search);
-            Vector128<byte> cmp4 = Vector128.Equals(clVector, search);
+            Vector128<byte> cmp0 = Vector128.Equals(search, crVector);
+            Vector128<byte> cmp1 = Vector128.Equals(search, lfVector);
+            Vector128<byte> cmp2 = Vector128.Equals(search, tbVector);
+            Vector128<byte> cmp3 = Vector128.Equals(search, wsVector);
+            Vector128<byte> cmp4 = Vector128.Equals(search, clVector);
 
             // For some reason JIT may still re-order some :'(
-            Vector128<byte> or01 = cmp0 | cmp1;
-            Vector128<byte> or23 = cmp2 | cmp3;
-            Vector128<byte> orAll = or01 | cmp4 | or23;
+            Vector128<byte> orAll = (cmp0 | cmp1) | (cmp2 | cmp3) | cmp4;
 
-            if (orAll != Vector128<byte>.Zero)
+            uint mask = orAll.ExtractMostSignificantBits();
+            if (mask != 0)
             {
                 goto FOUND;
             }
@@ -196,13 +195,9 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
                 // with the current one in order to avoid SCALAR fallback
                 offset = ulenMinusVector;
             }
-            continue;
 
         FOUND:
-            return (int)(offset +
-                (nuint)BitOperations.TrailingZeroCount(orAll.ExtractMostSignificantBits()));
-
-
+            return (int)(offset + (nuint)BitOperations.TrailingZeroCount(mask));
         } while (true);
 
     SCALAR:
@@ -245,52 +240,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
         nuint ulen = (nuint)length;
         nuint offset = 0;
 
-        // most inputs will be longer than 16 bytes so
-        // let's prioritize SSE/NEON path
-        if (!Vector128.IsHardwareAccelerated || ulen < (nuint)Vector128<byte>.Count)
-        {
-            goto SCALAR;
-        }
-
-        if (Vector256.IsHardwareAccelerated || ulen < (nuint)Vector256<byte>.Count)
-        {
-            Vector256<byte> crVector = Vector256.Create(ByteCR);
-            Vector256<byte> lfVector = Vector256.Create(ByteLF);
-
-            nuint ulenMinusVector = ulen - (nuint)Vector256<byte>.Count;
-            do
-            {
-                Vector256<byte> search = Vector256.LoadUnsafe(ref searchSpace, offset);
-                Vector256<byte> cmp0 = Vector256.Equals(crVector, search);
-                Vector256<byte> cmp1 = Vector256.Equals(lfVector, search);
-                Vector256<byte> cmpAll = cmp0 | cmp1;
-
-                if (cmpAll != Vector256<byte>.Zero)
-                {
-                    goto FOUND;
-                }
-
-                offset += (nuint)Vector256<byte>.Count;
-                if (offset == ulen)
-                {
-                    // we're done
-                    return -1;
-                }
-                if (offset > ulenMinusVector)
-                {
-                    // not enough space for the next 128bit vector so let's overlap
-                    // with the current one in order to avoid SCALAR fallback
-                    offset = ulenMinusVector;
-                }
-                continue;
-
-            FOUND:
-                return (int)(offset +
-                    (nuint)BitOperations.TrailingZeroCount(cmpAll.ExtractMostSignificantBits()));
-
-            } while (true);
-        }
-        else
+        if (Vector128.IsHardwareAccelerated && ulen > (nuint)Vector128<byte>.Count)
         {
             Vector128<byte> crVector = Vector128.Create(ByteCR);
             Vector128<byte> lfVector = Vector128.Create(ByteLF);
@@ -315,6 +265,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
                     // we're done
                     return -1;
                 }
+
                 if (offset > ulenMinusVector)
                 {
                     // not enough space for the next 128bit vector so let's overlap
@@ -324,13 +275,10 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
                 continue;
 
             FOUND:
-                return (int)(offset +
-                    (nuint)BitOperations.TrailingZeroCount(cmpAll.ExtractMostSignificantBits()));
-
+                return (int)(offset + (nuint)BitOperations.TrailingZeroCount(cmpAll.ExtractMostSignificantBits()));
             } while (true);
         }
 
-    SCALAR:
         for (; offset < ulen; offset++)
         {
             // if (val == '\r' || val == '\n' || val == '\t' || val == ' ' || val == ':')
