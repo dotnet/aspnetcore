@@ -79,4 +79,13 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Error,
         isEnabledByDefault: true,
         helpLinkUri: "https://aka.ms/aspnet/analyzers");
+
+    internal static readonly DiagnosticDescriptor AvoidAsyncVoidInMethodDeclaration = new(
+        "ASP0011",
+        "Do not use 'async void' in controller method declaration",
+        "Consider converting to 'async Task'",
+        "Usage",
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        helpLinkUri: "https://aka.ms/aspnet/analyzers");
 }
