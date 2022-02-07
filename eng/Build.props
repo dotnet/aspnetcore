@@ -50,8 +50,12 @@
     <!-- Project selection can be overridden on the command line by passing in -projects. -->
     <When Condition="'$(ProjectToBuild)' != ''">
       <ItemGroup>
-        <ProjectToBuild Include="$(ProjectToBuild)" Exclude="@(ProjectToExclude);$(RepoRoot)**\bin\**\*;$(RepoRoot)**\obj\**\*">
-          <RestoreInParallel Condition="'%(Extension)' == '.npmproj'">false</RestoreInParallel>
+        <ProjectToBuild Include="$(ProjectToBuild)"
+            Exclude="@(ProjectToExclude);$(RepoRoot)**\bin\**\*;$(RepoRoot)**\obj\**\*">
+          <BuildInParallel Condition=" '%(Extension)' == '.npmproj' ">false</BuildInParallel>
+          <RestoreInParallel Condition=" '%(Extension)' == '.npmproj' ">false</RestoreInParallel>
+          <!-- Also do not build in parallel w/in npm projects. -->
+          <AdditionalProperties Condition=" '%(Extension)' == '.npmproj' ">BuildInParallel=false</AdditionalProperties>
         </ProjectToBuild>
       </ItemGroup>
     </When>
@@ -115,9 +119,10 @@
         <NodeJsProjects Include="
                           $(RepoRoot)src\Components\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj;
                           $(RepoRoot)src\SignalR\**\*.npmproj;
-                          $(RepoRoot)src\Middleware\**\*.npmproj;
                           $(RepoRoot)src\JSInterop\**\*.npmproj;
                           "
+                        AdditionalProperties="BuildInParallel=false"
+                        BuildInParallel="false"
                         RestoreInParallel="false"
                         Exclude="@(ProjectToExclude)" />
 

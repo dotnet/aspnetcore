@@ -34,6 +34,12 @@
     <!-- Turn off unused usings warning for multi-targeted projects. Fixing them using ifdefs looks worse than ignoring the warnings. -->
     <NoWarn Condition="'$(TargetFrameworks)' != ''">$(NoWarn);IDE0005</NoWarn>
 
+    <!--
+      Turn off ConfigureAwait analyzer rule in the projects that are exclusively meant to run in ASP.NET Core or Blazor contexts.
+      Since we don't have a good way to detect this, we'll use the presence of ns2.0 as a proxy.
+     -->
+    <NoWarn Condition="'$(_IsSrcProject)' != 'true' OR !$(TargetFrameworks.Contains('netstandard'))">$(NoWarn);CA2007</NoWarn>
+
     <!-- Enable .NET code style analysis during build for src projects. -->
     <EnforceCodeStyleInBuild Condition="'$(EnforceCodeStyleInBuild)' == ''">true</EnforceCodeStyleInBuild>
 

@@ -53,7 +53,7 @@ public static class ExceptionAssert
         // The 'testCode' Task might execute asynchronously in a different thread making it hard to enforce the thread culture.
         // The correct way to verify exception messages in such a scenario would be to run the task synchronously inside of a
         // culture enforced block.
-        var ex = await Assert.ThrowsAsync<TException>(testCode);
+        var ex = await Assert.ThrowsAsync<TException>(testCode).ConfigureAwait(false);
         VerifyExceptionMessage(ex, exceptionMessage);
         return ex;
     }
@@ -117,7 +117,7 @@ public static class ExceptionAssert
         string exceptionMessage)
         where TException : ArgumentException
     {
-        var ex = await Assert.ThrowsAsync<TException>(testCode);
+        var ex = await Assert.ThrowsAsync<TException>(testCode).ConfigureAwait(false);
         if (paramName != null)
         {
             Assert.Equal(paramName, ex.ParamName);

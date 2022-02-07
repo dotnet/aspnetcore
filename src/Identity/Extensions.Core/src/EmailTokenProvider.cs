@@ -20,9 +20,9 @@ public class EmailTokenProvider<TUser> : TotpSecurityStampBasedTokenProvider<TUs
     /// <returns>True if the user has an email address set, otherwise false.</returns>
     public override async Task<bool> CanGenerateTwoFactorTokenAsync(UserManager<TUser> manager, TUser user)
     {
-        var email = await manager.GetEmailAsync(user);
+        var email = await manager.GetEmailAsync(user).ConfigureAwait(false);
 
-        return !string.IsNullOrWhiteSpace(email) && await manager.IsEmailConfirmedAsync(user);
+        return !string.IsNullOrWhiteSpace(email) && await manager.IsEmailConfirmedAsync(user).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -35,7 +35,7 @@ public class EmailTokenProvider<TUser> : TotpSecurityStampBasedTokenProvider<TUs
     public override async Task<string> GetUserModifierAsync(string purpose, UserManager<TUser> manager,
         TUser user)
     {
-        var email = await manager.GetEmailAsync(user);
+        var email = await manager.GetEmailAsync(user).ConfigureAwait(false);
 
         return $"Email:{purpose}:{email}";
     }
