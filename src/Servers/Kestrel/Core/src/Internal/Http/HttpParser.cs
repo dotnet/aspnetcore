@@ -179,10 +179,9 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
             Vector128<byte> or23 = cmp2 | cmp3;
             Vector128<byte> orAll = or01 | cmp4 | or23;
 
-            uint matches = orAll.ExtractMostSignificantBits();
-            if (matches != 0)
+            if (orAll != Vector128<byte>.Zero)
             {
-                return (int)(offset + (nuint)BitOperations.TrailingZeroCount(matches));
+                goto FOUND;
             }
 
             offset += (nuint)Vector128<byte>.Count;
@@ -197,6 +196,13 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
                 // with the current one in order to avoid SCALAR fallback
                 offset = ulenMinusVector;
             }
+            continue;
+
+        FOUND:
+            return (int)(offset +
+                (nuint)BitOperations.TrailingZeroCount(orAll.ExtractMostSignificantBits()));
+
+
         } while (true);
 
     SCALAR:
@@ -246,36 +252,83 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
             goto SCALAR;
         }
 
-        Vector128<byte> crVector = Vector128.Create(ByteCR);
-        Vector128<byte> lfVector = Vector128.Create(ByteLF);
-
-        nuint ulenMinusVector = ulen - (nuint)Vector128<byte>.Count;
-
-        do
+        if (Vector256.IsHardwareAccelerated || ulen < (nuint)Vector256<byte>.Count)
         {
-            Vector128<byte> search = Vector128.LoadUnsafe(ref searchSpace, offset);
-            Vector128<byte> cmp0 = Vector128.Equals(crVector, search);
-            Vector128<byte> cmp1 = Vector128.Equals(lfVector, search);
+            Vector256<byte> crVector = Vector256.Create(ByteCR);
+            Vector256<byte> lfVector = Vector256.Create(ByteLF);
 
-            uint matches = (cmp0 | cmp1).ExtractMostSignificantBits();
-            if (matches != 0)
+            nuint ulenMinusVector = ulen - (nuint)Vector256<byte>.Count;
+            do
             {
-                return (int)(offset + (nuint)BitOperations.TrailingZeroCount(matches));
-            }
+                Vector256<byte> search = Vector256.LoadUnsafe(ref searchSpace, offset);
+                Vector256<byte> cmp0 = Vector256.Equals(crVector, search);
+                Vector256<byte> cmp1 = Vector256.Equals(lfVector, search);
+                Vector256<byte> cmpAll = cmp0 | cmp1;
 
-            offset += (nuint)Vector128<byte>.Count;
-            if (offset == ulen)
+                if (cmpAll != Vector256<byte>.Zero)
+                {
+                    goto FOUND;
+                }
+
+                offset += (nuint)Vector256<byte>.Count;
+                if (offset == ulen)
+                {
+                    // we're done
+                    return -1;
+                }
+                if (offset > ulenMinusVector)
+                {
+                    // not enough space for the next 128bit vector so let's overlap
+                    // with the current one in order to avoid SCALAR fallback
+                    offset = ulenMinusVector;
+                }
+                continue;
+
+            FOUND:
+                return (int)(offset +
+                    (nuint)BitOperations.TrailingZeroCount(cmpAll.ExtractMostSignificantBits()));
+
+            } while (true);
+        }
+        else
+        {
+            Vector128<byte> crVector = Vector128.Create(ByteCR);
+            Vector128<byte> lfVector = Vector128.Create(ByteLF);
+
+            nuint ulenMinusVector = ulen - (nuint)Vector128<byte>.Count;
+
+            do
             {
-                // we're done
-                return -1;
-            }
-            if (offset > ulenMinusVector)
-            {
-                // not enough space for the next 128bit vector so let's overlap
-                // with the current one in order to avoid SCALAR fallback
-                offset = ulenMinusVector;
-            }
-        } while (true);
+                Vector128<byte> search = Vector128.LoadUnsafe(ref searchSpace, offset);
+                Vector128<byte> cmp0 = Vector128.Equals(crVector, search);
+                Vector128<byte> cmp1 = Vector128.Equals(lfVector, search);
+                Vector128<byte> cmpAll = cmp0 | cmp1;
+
+                if (cmpAll != Vector128<byte>.Zero)
+                {
+                    goto FOUND;
+                }
+
+                offset += (nuint)Vector128<byte>.Count;
+                if (offset == ulen)
+                {
+                    // we're done
+                    return -1;
+                }
+                if (offset > ulenMinusVector)
+                {
+                    // not enough space for the next 128bit vector so let's overlap
+                    // with the current one in order to avoid SCALAR fallback
+                    offset = ulenMinusVector;
+                }
+                continue;
+
+            FOUND:
+                return (int)(offset +
+                    (nuint)BitOperations.TrailingZeroCount(cmpAll.ExtractMostSignificantBits()));
+
+            } while (true);
+        }
 
     SCALAR:
         for (; offset < ulen; offset++)
