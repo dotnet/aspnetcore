@@ -334,7 +334,7 @@ public class OpaqueUpgradeTests
 
                 // Send an HTTP GET request
                 StringBuilder builder = new StringBuilder();
-                builder.Append("connect");
+                builder.Append("GET");
                 builder.Append(" ");
                 builder.Append(uri.PathAndQuery);
                 builder.Append(" HTTP/1.0");
@@ -351,7 +351,7 @@ public class OpaqueUpgradeTests
                 await stream.WriteAsync(requestBytes, 0, requestBytes.Length);
 
                 var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => upgrade.Task);
-                Assert.Equal("Upgrade is not valid on connections targeting HTTP/1.0 or lower.", ex.Message);
+                Assert.Equal("Upgrade requires HTTP/1.1.", ex.Message);
 
                 // Read the response headers, fail if it's not a 101
                 ex = await Assert.ThrowsAsync<InvalidOperationException>(() => ParseResponseAsync(stream));
