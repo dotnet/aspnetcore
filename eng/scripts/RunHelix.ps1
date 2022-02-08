@@ -52,7 +52,8 @@ $env:BUILD_REPOSITORY_NAME="aspnetcore"
 $env:SYSTEM_TEAMPROJECT="aspnetcore"
 
 Write-Host -ForegroundColor Yellow "If running tests that need the shared Fx, run './build -pack -all' before this."
-Write-Host -ForegroundColor Yellow "And if packing for a different platform, add '/p:CrossgenOutput=false'."
+Write-Host -ForegroundColor Yellow "If everything is up-to-date, add '/p:NoBuild=true' to this command."
+Write-Host -ForegroundColor Yellow "Or, if only the test project is out-of-date, add '/p:BuildProjectReferences=false'."
 
 $HelixQueues = $HelixQueues -replace ";", "%3B"
 dotnet msbuild $Project /t:Helix /p:TargetArchitecture="$TargetArchitecture" `
