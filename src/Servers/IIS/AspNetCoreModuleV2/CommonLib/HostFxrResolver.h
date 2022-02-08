@@ -50,6 +50,14 @@ private:
     );
 
     static
+        BOOL
+        TryGetHostFxrPath(
+            std::filesystem::path& hostFxrDllPath,
+            const std::filesystem::path& dotnetRoot,
+            const std::filesystem::path& applicationPath
+        );
+
+    static
     VOID
     FindDotNetFolders(
         const std::filesystem::path& path,
