@@ -43,7 +43,7 @@ public readonly struct HostString : IEquatable<HostString>
         }
 
         int index;
-        if (host.IndexOf('[') == -1
+        if (!host.Contains('[')
             && (index = host.IndexOf(':')) >= 0
             && index < host.Length - 1
             && host.IndexOf(':', index + 1) >= 0)
@@ -162,7 +162,7 @@ public readonly struct HostString : IEquatable<HostString>
         if (!string.IsNullOrEmpty(uriComponent))
         {
             int index;
-            if (uriComponent.IndexOf('[') >= 0)
+            if (uriComponent.Contains('['))
             {
                 // IPv6 in brackets [::1], maybe with port
             }
@@ -172,7 +172,7 @@ public readonly struct HostString : IEquatable<HostString>
             {
                 // IPv6 without brackets ::1 is the only type of host with 2 or more colons
             }
-            else if (uriComponent.IndexOf("xn--", StringComparison.Ordinal) >= 0)
+            else if (uriComponent.Contains("xn--", StringComparison.Ordinal))
             {
                 // Contains punycode
                 if (index >= 0)

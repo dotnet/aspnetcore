@@ -8,10 +8,6 @@ namespace Microsoft.AspNetCore.Components.Analyzers;
 [System.Diagnostics.CodeAnalysis.SuppressMessage("MicrosoftCodeAnalysisReleaseTracking", "RS2008:Enable analyzer release tracking")]
 internal static class DiagnosticDescriptors
 {
-    // Note: The Razor Compiler (including Components features) use the RZ prefix for diagnostics, so there's currently
-    // no change of clashing between that and the BL prefix used here.
-    //
-    // Tracking https://github.com/dotnet/aspnetcore/issues/10382 to rationalize this
     public static readonly DiagnosticDescriptor ComponentParameterSettersShouldBePublic = new DiagnosticDescriptor(
         "BL0001",
         new LocalizableResourceString(nameof(Resources.ComponentParameterSettersShouldBePublic_Title), Resources.ResourceManager, typeof(Resources)),
@@ -65,4 +61,12 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         description: new LocalizableResourceString(nameof(Resources.DoNotUseRenderTreeTypes_Description), Resources.ResourceManager, typeof(Resources)));
+
+    public static readonly DiagnosticDescriptor ComponentParametersShouldBeAutoProperties = new(
+        "BL0007",
+        new LocalizableResourceString(nameof(Resources.ComponentParametersShouldBeAutoProperties_Title), Resources.ResourceManager, typeof(Resources)),
+        new LocalizableResourceString(nameof(Resources.ComponentParametersShouldBeAutoProperties_Message), Resources.ResourceManager, typeof(Resources)),
+        "Usage",
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
 }

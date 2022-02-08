@@ -84,10 +84,10 @@ public class DefaultAuthorizationService : IAuthorizationService
         }
 
         var authContext = _contextFactory.CreateContext(requirements, user, resource);
-        var handlers = await _handlers.GetHandlersAsync(authContext);
+        var handlers = await _handlers.GetHandlersAsync(authContext).ConfigureAwait(false);
         foreach (var handler in handlers)
         {
-            await handler.HandleAsync(authContext);
+            await handler.HandleAsync(authContext).ConfigureAwait(false);
             if (!_options.InvokeHandlersAfterFailure && authContext.HasFailed)
             {
                 break;
@@ -123,11 +123,11 @@ public class DefaultAuthorizationService : IAuthorizationService
             throw new ArgumentNullException(nameof(policyName));
         }
 
-        var policy = await _policyProvider.GetPolicyAsync(policyName);
+        var policy = await _policyProvider.GetPolicyAsync(policyName).ConfigureAwait(false);
         if (policy == null)
         {
             throw new InvalidOperationException($"No policy found: {policyName}.");
         }
-        return await this.AuthorizeAsync(user, resource, policy);
+        return await this.AuthorizeAsync(user, resource, policy).ConfigureAwait(false);
     }
 }

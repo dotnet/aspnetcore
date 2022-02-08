@@ -83,6 +83,10 @@ public class ContactApiController : Controller
         return foo;
     }
 
+    [HttpGet("[action]/{id}")]
+    public ActionResult<Contact> ActionWithInferredFromServicesParameter(int id, ContactsRepository repository)
+        => repository.GetContact(id) ?? new Contact() { ContactId = id };
+
     [HttpGet("[action]")]
     public ActionResult<int> ActionReturningStatusCodeResult()
     {
