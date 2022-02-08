@@ -975,6 +975,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                 if (endHeaders)
                 {
+                    _currentHeadersStream.OnHeadersComplete();
+                    
                     StartStream();
                     ResetRequestHeaderParsingState();
                 }
