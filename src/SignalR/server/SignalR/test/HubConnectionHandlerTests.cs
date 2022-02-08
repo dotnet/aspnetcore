@@ -4695,7 +4695,7 @@ public class HubConnectionHandlerTests : VerifiableLoggedTest
             provider.AddSignalR(options =>
             {
                 options.EnableDetailedErrors = true;
-                options.DisableImplicitFromServiceParameters = true;
+                options.DisableImplicitFromServicesParameters = true;
             });
             provider.AddSingleton<Service1>();
         });
@@ -4738,10 +4738,10 @@ public class HubConnectionHandlerTests : VerifiableLoggedTest
             provider.AddSignalR(options =>
             {
                 options.EnableDetailedErrors = true;
-                options.DisableImplicitFromServiceParameters = true;
+                options.DisableImplicitFromServicesParameters = true;
             }).AddHubOptions<ServicesHub>(options =>
             {
-                options.DisableImplicitFromServiceParameters = false;
+                options.DisableImplicitFromServicesParameters = false;
             });
             provider.AddSingleton<Service1>();
         });
@@ -4763,7 +4763,7 @@ public class HubConnectionHandlerTests : VerifiableLoggedTest
             provider.AddSignalR(options =>
             {
                 options.EnableDetailedErrors = true;
-                options.DisableImplicitFromServiceParameters = true;
+                options.DisableImplicitFromServicesParameters = true;
             });
             provider.AddSingleton<Service1>();
             provider.AddSingleton<Service2>();
