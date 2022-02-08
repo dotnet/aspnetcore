@@ -11,7 +11,7 @@
      </ProjectConfiguration> 
      <ProjectConfiguration Include="Debug|ARM64"> 
        <Configuration>Debug</Configuration> 
-       <Platform>ARMf64</Platform> 
+       <Platform>ARM64</Platform> 
      </ProjectConfiguration> 
      <ProjectConfiguration Include="Release|Win32"> 
        <Configuration>Release</Configuration> 
