@@ -87,6 +87,9 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             throw new ArgumentNullException(nameof(loggerFactory));
         }
 
+        // Even though IComponentActivator is not marked as nullable, we do allow null because that's how the framework internally indicates
+        // that we should use default activation logic.
+
         _serviceProvider = serviceProvider;
         _logger = loggerFactory.CreateLogger<Renderer>();
         _componentFactory = new ComponentFactory(componentActivator);

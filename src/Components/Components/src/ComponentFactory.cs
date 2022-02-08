@@ -15,7 +15,7 @@ internal sealed class ComponentFactory
     private const BindingFlags _injectablePropertyBindingFlags
         = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
-    private static readonly ConcurrentDictionary<Type, (Action<IServiceProvider, IComponent> propertyInitializers, ObjectFactory? componentInitializer)> _cachedInitializers = new();
+    private static readonly ConcurrentDictionary<Type, ComponentInitializer> _cachedInitializers = new();
     private readonly IComponentActivator? _componentActivator;
 
     public ComponentFactory(IComponentActivator? componentActivator)
@@ -47,14 +47,11 @@ internal sealed class ComponentFactory
                 throw new ArgumentException($"The type {componentType.FullName} does not implement {nameof(IComponent)}.", nameof(componentType));
             }
 
-            initializer = (CreatePropertyInitializer(componentType), ActivatorUtilities.CreateFactory(componentType, Type.EmptyTypes));
+            initializer = new(CreatePropertyInitializer(componentType), ActivatorUtilities.CreateFactory(componentType, Type.EmptyTypes));
             _cachedInitializers.TryAdd(componentType, initializer);
         }
 
-        var (propertyInitializer, componentInitializer) = initializer;
-        var component = (IComponent)componentInitializer!.Invoke(serviceProvider, Array.Empty<object?>());
-        propertyInitializer(serviceProvider, component);
-        return component;
+        return initializer.CreateDefault(serviceProvider);
     }
 
     private static IComponent InstantiateWithActivator(IComponentActivator componentActivator, IServiceProvider serviceProvider, [DynamicallyAccessedMembers(Component)] Type componentType)
@@ -74,13 +71,11 @@ internal sealed class ComponentFactory
         // still produce the correct result.
         if (!_cachedInitializers.TryGetValue(componentType, out var initializer))
         {
-            initializer = (CreatePropertyInitializer(componentType), componentInitializer: null);
+            initializer = new(CreatePropertyInitializer(componentType));
             _cachedInitializers.TryAdd(componentType, initializer);
         }
 
-        var (propertyInitializer, _) = initializer;
-
-        propertyInitializer(serviceProvider, component);
+        initializer.ActivateProperties(serviceProvider, component);
         return component;
     }
 
@@ -122,6 +117,31 @@ internal sealed class ComponentFactory
 
                 setter.SetValue(component, serviceInstance);
             }
+        }
+    }
+
+    private readonly struct ComponentInitializer
+    {
+        private readonly Action<IServiceProvider, IComponent> _propertyInitializer;
+
+        private readonly ObjectFactory? _componentFactory;
+
+        public ComponentInitializer(Action<IServiceProvider, IComponent> propertyInitializer, ObjectFactory? componentFactory = null)
+        {
+            _propertyInitializer = propertyInitializer;
+            _componentFactory = componentFactory;
+        }
+
+        public IComponent CreateDefault(IServiceProvider serviceProvider)
+        {
+            var component = (IComponent)_componentFactory!(serviceProvider, Array.Empty<object?>());
+            ActivateProperties(serviceProvider, component);
+            return component;
+        }
+
+        public void ActivateProperties(IServiceProvider serviceProvider, IComponent component)
+        {
+            _propertyInitializer(serviceProvider, component);
         }
     }
 }
