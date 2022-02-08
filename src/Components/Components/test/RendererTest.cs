@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.ExceptionServices;
+using Microsoft.AspNetCore.Components.CompilerServices;
 using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -3040,6 +3041,199 @@ public class RendererTest
             && edit.RemovedAttributeName == "disabled");
 
         await renderTask;
+    }
+
+    [Fact]
+    public async Task BindWithSynchronousSetter_Lambda()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        var component = new OuterEventComponent();
+        var value = "value";
+        component.RenderFragment = (builder) =>
+        {
+            builder.OpenElement(0, "input");
+            builder.AddAttribute(1, "onchange", EventCallback.Factory.CreateBinder(
+            component,
+            RuntimeHelpers.CreateInferredEventCallback(component, __value => value = __value, value),
+            value));
+            builder.CloseElement();
+        };
+        var componentId = renderer.AssignRootComponentId(component);
+        await component.TriggerRenderAsync();
+        var checkboxChangeEventHandlerId = renderer.Batches.Single()
+            .ReferenceFrames
+            .First(frame => frame.FrameType == RenderTreeFrameType.Attribute && frame.AttributeEventHandlerId != 0)
+            .AttributeEventHandlerId;
+
+        // Act: Trigger change event
+        var eventArgs = new ChangeEventArgs { Value = "hello" };
+        var renderTask = renderer.DispatchEventAsync(checkboxChangeEventHandlerId, eventArgs);
+        await renderTask;
+
+        // Assert
+        Assert.Equal("hello", value);
+    }
+
+    [Fact]
+    public async Task BindWithAsynchronousSetter_MethodGroupToDelegate()
+    {
+        // This test represents https://github.com/dotnet/blazor/issues/624
+
+        // Arrange: Rendered with textbox enabled
+        var renderer = new TestRenderer();
+        var component = new OuterEventComponent();
+        var value = "value";
+        async Task SetValue(string __value)
+        {
+            value = __value;
+            await Task.CompletedTask;
+        }
+        component.RenderFragment = (builder) =>
+        {
+            builder.OpenElement(0, "input");
+            builder.AddAttribute(1, "onchange", EventCallback.Factory.CreateBinder(
+            component,
+            RuntimeHelpers.CreateInferredEventCallback(component, SetValue, value),
+            value));
+            builder.CloseElement();
+        };
+        var componentId = renderer.AssignRootComponentId(component);
+        await component.TriggerRenderAsync();
+        var checkboxChangeEventHandlerId = renderer.Batches.Single()
+            .ReferenceFrames
+            .First(frame => frame.FrameType == RenderTreeFrameType.Attribute && frame.AttributeEventHandlerId != 0)
+            .AttributeEventHandlerId;
+
+        // Act: Trigger change event
+        var eventArgs = new ChangeEventArgs { Value = "hello" };
+        var renderTask = renderer.DispatchEventAsync(checkboxChangeEventHandlerId, eventArgs);
+        await renderTask;
+
+        // Assert
+        Assert.Equal("hello", value);
+    }
+
+    [Fact]
+    public async Task BindWithAsynchronousSetter_ExistingEventCallback()
+    {
+        // This test represents https://github.com/dotnet/blazor/issues/624
+
+        // Arrange: Rendered with textbox enabled
+        var renderer = new TestRenderer();
+        var component = new OuterEventComponent();
+#nullable enable
+        var value = "value";
+        var eventCallback = new EventCallback<string?>(component, (string? __value) =>
+        {
+            value = __value;
+        });
+#nullable disable
+        component.RenderFragment = (builder) =>
+        {
+            builder.OpenElement(0, "input");
+            builder.AddAttribute(1, "onchange", EventCallback.Factory.CreateBinder(
+            component,
+            RuntimeHelpers.CreateInferredEventCallback(component, eventCallback, value),
+            value));
+            builder.CloseElement();
+        };
+        var componentId = renderer.AssignRootComponentId(component);
+        await component.TriggerRenderAsync();
+        var checkboxChangeEventHandlerId = renderer.Batches.Single()
+            .ReferenceFrames
+            .First(frame => frame.FrameType == RenderTreeFrameType.Attribute && frame.AttributeEventHandlerId != 0)
+            .AttributeEventHandlerId;
+
+        // Act: Trigger change event
+        var eventArgs = new ChangeEventArgs { Value = "hello" };
+        var renderTask = renderer.DispatchEventAsync(checkboxChangeEventHandlerId, eventArgs);
+        await renderTask;
+
+        // Assert
+        Assert.Equal("hello", value);
+    }
+
+    [Fact]
+    public async Task BindWithAfter()
+    {
+        // This test represents https://github.com/dotnet/blazor/issues/624
+
+        // Arrange: Rendered with textbox enabled
+        var renderer = new TestRenderer();
+        var component = new OuterEventComponent();
+        string value = "value";
+        component.RenderFragment = (builder) =>
+        {
+            builder.OpenElement(0, "input");
+            builder.AddAttribute(1, "onchange", EventCallback.Factory.CreateBinder(
+            component,
+            RuntimeHelpers.CreateInferredEventCallback(
+                component,
+                async __value =>
+                {
+                    value = __value;
+                    await EventCallback.Factory.Create(component, () => Task.CompletedTask).InvokeAsync();
+                },
+                value),
+            value));
+            builder.CloseElement();
+        };
+        var componentId = renderer.AssignRootComponentId(component);
+        await component.TriggerRenderAsync();
+        var checkboxChangeEventHandlerId = renderer.Batches.Single()
+            .ReferenceFrames
+            .First(frame => frame.FrameType == RenderTreeFrameType.Attribute && frame.AttributeEventHandlerId != 0)
+            .AttributeEventHandlerId;
+
+        // Act: Trigger change event
+        var eventArgs = new ChangeEventArgs { Value = "hello" };
+        var renderTask = renderer.DispatchEventAsync(checkboxChangeEventHandlerId, eventArgs);
+        await renderTask;
+
+        // Assert
+        Assert.Equal("hello", value);
+    }
+
+    [Fact]
+    public async Task BindWithAfter_Action()
+    {
+        // This test represents https://github.com/dotnet/blazor/issues/624
+
+        // Arrange: Rendered with textbox enabled
+        var renderer = new TestRenderer();
+        var component = new OuterEventComponent();
+        string value = "value";
+        component.RenderFragment = (builder) =>
+        {
+            builder.OpenElement(0, "input");
+            builder.AddAttribute(1, "onchange", EventCallback.Factory.CreateBinder(
+            component,
+            RuntimeHelpers.CreateInferredEventCallback(
+                component,
+                async __value =>
+                {
+                    value = __value;
+                    await EventCallback.Factory.Create(component, () => { }).InvokeAsync();
+                },
+                value),
+            value));
+            builder.CloseElement();
+        };
+        var componentId = renderer.AssignRootComponentId(component);
+        await component.TriggerRenderAsync();
+        var checkboxChangeEventHandlerId = renderer.Batches.Single()
+            .ReferenceFrames
+            .First(frame => frame.FrameType == RenderTreeFrameType.Attribute && frame.AttributeEventHandlerId != 0)
+            .AttributeEventHandlerId;
+
+        // Act: Trigger change event
+        var eventArgs = new ChangeEventArgs { Value = "hello" };
+        var renderTask = renderer.DispatchEventAsync(checkboxChangeEventHandlerId, eventArgs);
+        await renderTask;
+
+        // Assert
+        Assert.Equal("hello", value);
     }
 
     [Fact]

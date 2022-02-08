@@ -200,6 +200,57 @@ public sealed class EventCallbackFactory
 
     /// <summary>
     /// Creates an <see cref="EventCallback"/> for the provided <paramref name="receiver"/> and
+    /// <paramref name="callback"/>.
+    /// </summary>
+    /// <param name="receiver">The event receiver.</param>
+    /// <param name="callback">The event callback.</param>
+    /// <returns>The <see cref="EventCallback"/>.</returns>
+    public EventCallback<TValue> CreateSetter<TValue>(object receiver, Action<TValue> callback)
+    {
+        if (receiver == null)
+        {
+            throw new ArgumentNullException(nameof(receiver));
+        }
+
+        return CreateCore<TValue>(receiver, callback);
+    }
+
+    /// <summary>
+    /// Creates an <see cref="EventCallback"/> for the provided <paramref name="receiver"/> and
+    /// <paramref name="callback"/>.
+    /// </summary>
+    /// <param name="receiver">The event receiver.</param>
+    /// <param name="callback">The event callback.</param>
+    /// <returns>The <see cref="EventCallback"/>.</returns>
+    public EventCallback<TValue> CreateSetter<TValue>(object receiver, Func<TValue, Task> callback)
+    {
+        if (receiver == null)
+        {
+            throw new ArgumentNullException(nameof(receiver));
+        }
+
+        return CreateCore<TValue>(receiver, callback);
+    }
+
+    /// <summary>
+    /// Creates an <see cref="EventCallback"/> for the provided <paramref name="receiver"/> and
+    /// <paramref name="callback"/>.
+    /// </summary>
+    /// <param name="receiver">The event receiver.</param>
+    /// <param name="callback">The event callback.</param>
+    /// <returns>The <see cref="EventCallback"/>.</returns>
+    public EventCallback<TValue> CreateSetter<TValue>(object receiver, EventCallback<TValue> callback)
+    {
+        if (receiver == null)
+        {
+            throw new ArgumentNullException(nameof(receiver));
+        }
+
+        return callback;
+    }
+
+    /// <summary>
+    /// Creates an <see cref="EventCallback"/> for the provided <paramref name="receiver"/> and
     /// <paramref name="callback"/>. For internal framework use only.
     /// </summary>
     /// <param name="receiver"></param>
