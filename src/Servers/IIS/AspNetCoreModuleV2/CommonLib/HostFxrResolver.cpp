@@ -96,11 +96,14 @@ HostFxrResolver::GetHostFxrParameters(
                 get_hostfxr_parameters params;
                 params.size = sizeof(get_hostfxr_parameters);
                 params.assembly_path = applicationPhysicalPath.c_str();
-                params.dotnet_root = expandedProcessPath.parent_path().c_str();
+
+                fs::path expandedProcessPathParent = expandedProcessPath.parent_path();
+                params.dotnet_root = expandedProcessPathParent.c_str();
                 LOG_INFOF(L"hostfxr.dotnet_root: '%ls'", params.dotnet_root);
                 LOG_INFOF(L"hostfxr.assembly_path: '%ls'", params.assembly_path);
 
                 result = get_hostfxr_path(hostfxrPath.data(), &size, &params);
+                LOG_INFOF(L"get_hostfxr_path returned %x", result);
             }
             else
             {
@@ -113,20 +116,21 @@ HostFxrResolver::GetHostFxrParameters(
             else
             {
                 // Try get_hostfxr_path again with dotnet absolute path as dotnet_root
-                LOG_INFOF(L"get_hostfxr_path failed %d, trying again with dotnet path as dotnet root.", result);
+                LOG_INFOF(L"Trying get_hostfxr_path with dotnet path as dotnet root");
                 dotnetExePath = GetAbsolutePathToDotnet(applicationPhysicalPath, expandedProcessPath);
 
+                fs::path dotnetExePathParent = dotnetExePath.parent_path();
                 get_hostfxr_parameters params;
                 params.size = sizeof(get_hostfxr_parameters);
                 params.assembly_path = applicationPhysicalPath.c_str();
-                params.dotnet_root = dotnetExePath.parent_path().c_str();
+                params.dotnet_root = dotnetExePathParent.c_str();
                 LOG_INFOF(L"hostfxr.dotnet_root: '%ls'", params.dotnet_root);
                 LOG_INFOF(L"hostfxr.assembly_path: '%ls'", params.assembly_path);
 
                 result = get_hostfxr_path(hostfxrPath.data(), &size, &params);
                 if (result != 0) {
-                    LOG_INFOF(L"get_hostfxr_path failed with dotnet path as dotnet root (%d)", result);
-                    throw InvalidOperationException(format(L"get_hostfxr_path failed '%d'", result));
+                    LOG_INFOF(L"get_hostfxr_path failed with dotnet path as dotnet root (%x)", result);
+                    throw InvalidOperationException(format(L"get_hostfxr_path failed '%x'", result));
                 }
             }
 
