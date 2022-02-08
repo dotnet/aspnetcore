@@ -2,9 +2,7 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
   
   <PropertyGroup>
-    <BundledNETCoreAppPackageVersion></BundledNETCoreAppPackageVersion>
     <KestrelSharedSourceRoot>$(MSBuildThisFileDirectory)..\Kestrel\shared\</KestrelSharedSourceRoot>
-
     <HostArchDir>$(Platform)</HostArchDir>
     <HostArchDir Condition="'$(Platform)' == 'Win32'">x86</HostArchDir>
     <HostArchDir Condition="'$(Platform)' == 'AnyCPU'">x64</HostArchDir>
