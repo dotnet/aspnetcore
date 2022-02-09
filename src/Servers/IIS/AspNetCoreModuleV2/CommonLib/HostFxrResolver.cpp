@@ -11,9 +11,7 @@
 #include "Environment.h"
 #include "StringHelpers.h"
 #include "RegistryKey.h"
-//#include "ModuleHelpers.h"
-//#include "GlobalVersionUtility.h"
-//
+
 #define NETHOST_USE_AS_STATIC
 #include <nethost.h>
 
@@ -83,9 +81,6 @@ HostFxrResolver::GetHostFxrParameters(
         BOOL gotHostFxrPath = FALSE;
         if (dotnetExePath.empty())
         {
-
-            // REVIEW TODO: do we need to throw if we aren't in shim?
-
             // skip when dotnet launched from path case
             if (!equals_ignore_case(expandedProcessPath, L"dotnet.exe")) {
                 fs::path expandedProcessPathParent = expandedProcessPath.parent_path();
@@ -127,11 +122,11 @@ HostFxrResolver::GetHostFxrParameters(
         //    LOG_INFOF(L"MISMATCH oldDotnetExePath '%ls'", oldDotnetExePath.c_str());
         //    throw InvalidOperationException(L"dotnetExePath mismatch");
         //}
-        fs::path oldhostFxrDllPath = GetAbsolutePathToHostFxr(dotnetExePath);
-        if (!equals_ignore_case(oldhostFxrDllPath.c_str(), hostFxrDllPath.c_str())) {
-            LOG_INFOF(L"MISMATCH oldhostFxrDllPath '%ls'", oldhostFxrDllPath.c_str());
-            throw InvalidOperationException(L"oldhostFxrDllPath mismatch");
-        }
+        //fs::path oldhostFxrDllPath = GetAbsolutePathToHostFxr(dotnetExePath);
+        //if (!equals_ignore_case(oldhostFxrDllPath.c_str(), hostFxrDllPath.c_str())) {
+        //    LOG_INFOF(L"MISMATCH oldhostFxrDllPath '%ls'", oldhostFxrDllPath.c_str());
+        //    throw InvalidOperationException(L"oldhostFxrDllPath mismatch");
+        //}
 
         arguments.push_back(dotnetExePath);
         AppendArguments(
@@ -192,11 +187,21 @@ HostFxrResolver::GetHostFxrParameters(
                 if (dotnetExePath.empty())
                 {
                     dotnetExePath = GetAbsolutePathToDotnet(applicationPhysicalPath, L"dotnet");
-
-                    // USE HOSTFXR CODE HERE
-
                 }
-                hostFxrDllPath = GetAbsolutePathToHostFxr(dotnetExePath);
+
+                fs::path dotnetExePathParent = dotnetExePath.parent_path();
+                if (!TryGetHostFxrPath(hostFxrDllPath, dotnetExePathParent, applicationPhysicalPath)) {
+                    throw InvalidOperationException(format(L"get_hostfxr_path failed"));
+                }
+
+                //hostFxrDllPath = GetAbsolutePathToHostFxr(dotnetExePath);
+
+                fs::path oldhostFxrDllPath = GetAbsolutePathToHostFxr(dotnetExePath);
+                if (!equals_ignore_case(oldhostFxrDllPath.c_str(), hostFxrDllPath.c_str())) {
+                    LOG_INFOF(L"MISMATCH oldhostFxrDllPath '%ls'", oldhostFxrDllPath.c_str());
+                    throw InvalidOperationException(L"oldhostFxrDllPath mismatch");
+                }
+
 
                 // For portable with launcher apps we need dotnet.exe to be argv[0] and .dll be argv[1]
                 arguments.push_back(dotnetExePath);
