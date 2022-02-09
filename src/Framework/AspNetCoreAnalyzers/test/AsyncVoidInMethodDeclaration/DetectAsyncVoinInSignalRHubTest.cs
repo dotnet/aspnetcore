@@ -72,6 +72,36 @@ public class Program {{ public static void Main() {{}} }}
     [Theory]
     [InlineData("Hub")]
     [InlineData("Hub<IChatClient>")]
+    public async Task AsyncVoidDiagnosted_SignalRHubDetectedByAncestorThroughHierarchy(string ancestor)
+    {
+        var source = TestSource.Read($@"
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.SignalR;
+
+namespace SignalRChat.Hubs;
+public class ChatHub : {ancestor}
+{{
+}}
+
+public class StatusHub : ChatHub
+{{
+    public async void SendMessage(string user, string message)
+    {{
+    }}
+}}
+
+public interface IChatClient {{ }}
+
+public class Program {{ public static void Main() {{}} }}
+");
+        var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+        var diagnostic = Assert.Single(diagnostics);
+        Assert.Same(DiagnosticDescriptors.AvoidAsyncVoidInMethodDeclaration, diagnostic.Descriptor);
+    }
+
+    [Theory]
+    [InlineData("Hub")]
+    [InlineData("Hub<IChatClient>")]
     public async Task AsyncVoidNotDiagnosted_SignalRHubDetectedByAncestor(string ancestor)
     {
         var source = TestSource.Read($@"
@@ -82,6 +112,29 @@ namespace SignalRChat.Hubs;
 public class ChatHub : {ancestor}
 {{
     public async Task SendMessage(string user, string message)
+    {{
+    }}
+}}
+
+public interface IChatClient {{ }}
+
+public class Program {{ public static void Main() {{}} }}
+");
+        var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+        Assert.Empty(diagnostics);
+    }
+
+    [Fact]
+    public async Task AsyncVoidNotDiagnosted_SignalRHubNotDetected()
+    {
+        var source = TestSource.Read($@"
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.SignalR;
+
+namespace SignalRChat.Hubs;
+public class ChatHub : IChatClient
+{{
+    public async void SendMessage(string user, string message)
     {{
     }}
 }}
