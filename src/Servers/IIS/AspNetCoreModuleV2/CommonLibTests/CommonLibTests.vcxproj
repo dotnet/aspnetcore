@@ -47,11 +47,8 @@
     <IsTestProject>true</IsTestProject>
     <DisableArcadeTestFramework>true</DisableArcadeTestFramework>
   </PropertyGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <PropertyGroup Label="Configuration">
-    <VCToolsVersion />
-  </PropertyGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <Import Project="$(VCTargetsPath16)\Microsoft.Cpp.Default.props" />
+  <Import Project="$(VCTargetsPath16)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings" />
   <ImportGroup Label="Shared" />
   <ImportGroup Label="PropertySheets" />
