@@ -5,6 +5,7 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
@@ -76,6 +77,67 @@ public class WebSocketsTests
             await SendMessage(cws, mesage);
             await ReceiveMessage(cws, mesage);
         }
+    }
+
+    [ConditionalFact]
+    public async Task Http1_0_Request_NotUpgradable()
+    {
+        Uri uri = new Uri(_requestUri + "WebSocketNotUpgradable");
+        using TcpClient client = new TcpClient();
+
+        await client.ConnectAsync(uri.Host, uri.Port);
+        NetworkStream stream = client.GetStream();
+
+        await SendHttp10Request(stream, uri);
+
+        StreamReader reader = new StreamReader(stream);
+        string statusLine = await reader.ReadLineAsync();
+        string[] parts = statusLine.Split(' ');
+        if (int.Parse(parts[1], CultureInfo.InvariantCulture) != 200)
+        {
+            throw new InvalidOperationException("The response status code was incorrect: " + statusLine);
+        }
+    }
+
+    [ConditionalFact]
+    public async Task Http1_0_Request_UpgradeErrors()
+    {
+        Uri uri = new Uri(_requestUri + "WebSocketUpgradeFails");
+        using TcpClient client = new TcpClient();
+
+        await client.ConnectAsync(uri.Host, uri.Port);
+        NetworkStream stream = client.GetStream();
+
+        await SendHttp10Request(stream, uri);
+
+        StreamReader reader = new StreamReader(stream);
+        string statusLine = await reader.ReadLineAsync();
+        string[] parts = statusLine.Split(' ');
+        if (int.Parse(parts[1], CultureInfo.InvariantCulture) != 200)
+        {
+            throw new InvalidOperationException("The response status code was incorrect: " + statusLine);
+        }
+    }
+
+    private async Task SendHttp10Request(NetworkStream stream, Uri uri)
+    {
+        // Send an HTTP GET request
+        StringBuilder builder = new StringBuilder();
+        builder.Append("GET");
+        builder.Append(" ");
+        builder.Append(uri.PathAndQuery);
+        builder.Append(" HTTP/1.0");
+        builder.AppendLine();
+
+        builder.Append("Host: ");
+        builder.Append(uri.Host);
+        builder.Append(':');
+        builder.Append(uri.Port);
+        builder.AppendLine();
+
+        builder.AppendLine();
+        var requestBytes = Encoding.ASCII.GetBytes(builder.ToString());
+        await stream.WriteAsync(requestBytes, 0, requestBytes.Length);
     }
 
     private async Task SendMessage(ClientWebSocket webSocket, string message)

@@ -25,7 +25,6 @@ public partial class Startup
     {
         app.Run(context =>
         {
-
             var upgradeFeature = context.Features.Get<IHttpUpgradeFeature>();
             Assert.False(upgradeFeature.IsUpgradableRequest);
             return Task.CompletedTask;
@@ -36,7 +35,6 @@ public partial class Startup
     {
         app.Run(context =>
         {
-
             var upgradeFeature = context.Features.Get<IHttpUpgradeFeature>();
             Assert.True(upgradeFeature.IsUpgradableRequest);
             return Task.CompletedTask;
@@ -47,7 +45,6 @@ public partial class Startup
     {
         app.Run(async context =>
         {
-
             var singleByteArray = new byte[1];
             Assert.Equal(0, await context.Request.Body.ReadAsync(singleByteArray, 0, 1));
 
@@ -75,7 +72,6 @@ public partial class Startup
     {
         app.Run(async context =>
         {
-
             var messages = new List<string>();
 
             context.Response.OnStarting(() =>
@@ -89,6 +85,16 @@ public partial class Startup
             messages.Add("Upgraded");
 
             await SendMessages(ws, messages.ToArray());
+        });
+    }
+
+    private void WebSocketUpgradeFails(IApplicationBuilder app)
+    {
+        app.Run(async context =>
+        {
+            var upgradeFeature = context.Features.Get<IHttpUpgradeFeature>();
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => upgradeFeature.UpgradeAsync());
+            Assert.Equal("Upgrade requires HTTP/1.1.", ex.Message);
         });
     }
 
