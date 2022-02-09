@@ -43,12 +43,12 @@
       !temporary! e.g. https://dotnetbuilds.blob.core.windows.net/internal/Runtime/6.0.2-servicing.22060.12/dotnet-runtime-6.0.2-win-x86.zip?{token}
     -->
     <HelixCorrelationPayload Include="dotnet-cli"
-        Condition="'$(SYSTEM_TEAMPROJECT)' == 'internal'">
+        Condition="'$(SYSTEM_TEAMPROJECT)' == 'internal'"
         Destination="dotnet-cli"
         Uri="https://dotnetbuilds.blob.core.windows.net/internal/Runtime/$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-$(DotNetCliRuntime)$(ArchiveExtension)$([System.Environment]::GetEnvironmentVariable('DotNetBuildsInternalReadSasToken'))" />
       
     <AdditionalDotNetPackage Include="$(MicrosoftNETCoreBrowserDebugHostTransportVersion)"
-                             Condition="'$(SYSTEM_TEAMPROJECT)' == 'internal'">
+                             Condition="'$(SYSTEM_TEAMPROJECT)' != 'internal'">
       <PackageType>runtime</PackageType>
     </AdditionalDotNetPackage>
   </ItemGroup>
