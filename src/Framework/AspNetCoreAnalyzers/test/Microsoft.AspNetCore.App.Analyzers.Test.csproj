@@ -18,6 +18,7 @@
     <Reference Include="Microsoft.AspNetCore" />
     <Reference Include="Microsoft.AspNetCore.Mvc" />
     <Reference Include="Microsoft.AspNetCore.Http.Results" />
+    <Reference Include="Microsoft.AspNetCore.SignalR" />
     <Reference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing.XUnit" />
   </ItemGroup>
 

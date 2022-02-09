@@ -30,11 +30,18 @@ internal sealed class WellKnownTypes
             return false;
         }
 
+        const string SignalRHub = "Microsoft.AspNetCore.SignalR.Hub";
+        if (compilation.GetTypeByMetadataName(SignalRHub) is not { } signalRHub)
+        {
+            return false;
+        }
+
         wellKnownTypes = new WellKnownTypes
         {
             ControllerInstance = controllerInstance,
             ControllerBaseInstance = controllerBaseInstance,
-            IActionFilter = actionFilterInstance
+            IActionFilter = actionFilterInstance,
+            SignalRHub = signalRHub
         };
 
         return true;
@@ -45,4 +52,6 @@ internal sealed class WellKnownTypes
     public INamedTypeSymbol ControllerBaseInstance { get; private init; }
 
     public INamedTypeSymbol IActionFilter { get; private init; }
+
+    public INamedTypeSymbol SignalRHub { get; private init; }
 }

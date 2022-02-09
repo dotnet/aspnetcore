@@ -40,7 +40,8 @@ public partial class AsyncVoidInMethodDeclarationAnalyzer : DiagnosticAnalyzer
                 }
 
                 if (IsController(classDeclaration, classContext, wellKnownTypes)
-                    || IsActionFilter(classDeclaration, classContext, wellKnownTypes))
+                    || IsActionFilter(classDeclaration, classContext, wellKnownTypes)
+                    || IsSignalRHub(classDeclaration, classContext, wellKnownTypes))
                 {
                     // scan for methods with async void signature
                     for (int i = 0; i < classDeclaration.Members.Count; i++)
