@@ -17,7 +17,7 @@ public enum TransferFormat
     Binary = 0x01,
 
     /// <summary>
-    /// A text output format.
+    /// A text transport format.
     /// </summary>
     Text = 0x02
 }
