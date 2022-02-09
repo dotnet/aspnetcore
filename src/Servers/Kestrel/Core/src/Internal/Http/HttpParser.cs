@@ -12,17 +12,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using BadHttpRequestException = Microsoft.AspNetCore.Http.BadHttpRequestException;
 
 /// <summary>
-/// This API supports the framework infrastructure and is not intended to be used
+/// This API supports framework infrastructure and is not intended to be used
 /// directly from application code.
 /// </summary>
-/// <typeparam name="TRequestHandler">This API supports the framework infrastructure and is not intended to be used
+/// <typeparam name="TRequestHandler">This API supports framework infrastructure and is not intended to be used
 /// directly from application code.</typeparam>
 public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TRequestHandler : IHttpHeadersHandler, IHttpRequestLineHandler
 {
     private readonly bool _showErrorDetails;
 
     /// <summary>
-    /// This API supports the framework infrastructure and is not intended to be used
+    /// This API supports framework infrastructure and is not intended to be used
     /// directly from application code.
     /// </summary>
     public HttpParser() : this(showErrorDetails: true)
@@ -30,7 +30,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
     }
 
     /// <summary>
-    /// This API supports the framework infrastructure and is not intended to be used
+    /// This API supports framework infrastructure and is not intended to be used
     /// directly from application code.
     /// </summary>
     public HttpParser(bool showErrorDetails)
@@ -49,7 +49,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
     private const int MinTlsRequestSize = 1; // We need at least 1 byte to check for a proper TLS request line
 
     /// <summary>
-    /// This API supports the framework infrastructure and is not intended to be used
+    /// This API supports framework infrastructure and is not intended to be used
     /// directly from application code.
     /// </summary>
     public bool ParseRequestLine(TRequestHandler handler, ref SequenceReader<byte> reader)
@@ -156,7 +156,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
     }
 
     /// <summary>
-    /// This API supports the framework infrastructure and is not intended to be used
+    /// This API supports framework infrastructure and is not intended to be used
     /// directly from application code.
     /// </summary>
     public bool ParseHeaders(TRequestHandler handler, ref SequenceReader<byte> reader)

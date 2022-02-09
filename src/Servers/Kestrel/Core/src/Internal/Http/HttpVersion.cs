@@ -4,37 +4,37 @@
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 /// <summary>
-/// This API supports the framework infrastructure and is not intended to be used
+/// This API supports framework infrastructure and is not intended to be used
 /// directly from application code.
 /// </summary>
 public enum HttpVersion : sbyte
 {
     /// <summary>
-    /// This API supports the framework infrastructure and is not intended to be used
+    /// This API supports framework infrastructure and is not intended to be used
     /// directly from application code.
     /// </summary>
     Unknown = -1,
 
     /// <summary>
-    /// This API supports the framework infrastructure and is not intended to be used
+    /// This API supports framework infrastructure and is not intended to be used
     /// directly from application code.
     /// </summary>
     Http10 = 0,
 
     /// <summary>
-    /// This API supports the framework infrastructure and is not intended to be used
+    /// This API supports framework infrastructure and is not intended to be used
     /// directly from application code.
     /// </summary>
     Http11 = 1,
 
     /// <summary>
-    /// This API supports the framework infrastructure and is not intended to be used
+    /// This API supports framework infrastructure and is not intended to be used
     /// directly from application code.
     /// </summary>
     Http2 = 2,
 
     /// <summary>
-    /// This API supports the framework infrastructure and is not intended to be used
+    /// This API supports framework infrastructure and is not intended to be used
     /// directly from application code.
     /// </summary>
     Http3 = 3
