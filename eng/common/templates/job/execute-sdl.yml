@@ -29,14 +29,6 @@ parameters:
   # Optional: download a list of pipeline artifacts. 'downloadArtifacts' controls build artifacts,
   # not pipeline artifacts, so doesn't affect the use of this parameter.
   pipelineArtifactNames: []
-  # Optional: location and ID of the AzDO build that the build/pipeline artifacts should be
-  # downloaded from. By default, uses runtime expressions to decide based on the variables set by
-  # the 'setupMaestroVars' dependency. Overriding this parameter is necessary if SDL tasks are
-  # running without Maestro++/BAR involved, or to download artifacts from a specific existing build
-  # to iterate quickly on SDL changes.
-  AzDOProjectName: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOProjectName'] ]
-  AzDOPipelineId: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOPipelineId'] ]
-  AzDOBuildId: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOBuildId'] ]
 
 jobs:
 - job: Run_SDL
@@ -54,20 +46,25 @@ jobs:
     # The Guardian version specified in 'eng/common/sdl/packages.config'. This value must be kept in
     # sync with the packages.config file.
     - name: DefaultGuardianVersion
-      value: 0.53.3
+      value: 0.110.1
     - name: GuardianVersion
       value: ${{ coalesce(parameters.overrideGuardianVersion, '$(DefaultGuardianVersion)') }}
     - name: GuardianPackagesConfigFile
       value: $(Build.SourcesDirectory)\eng\common\sdl\packages.config
   pool:
-    # To extract archives (.tar.gz, .zip), we need access to "tar", added in Windows 10/2019.
-    ${{ if eq(parameters.extractArchiveArtifacts, 'false') }}:
-      vmImage: windows-2019
-    ${{ if ne(parameters.extractArchiveArtifacts, 'false') }}:
-      vmImage: windows-2019
+    # We don't use the collection uri here because it might vary (.visualstudio.com vs. dev.azure.com)
+    ${{ if eq(variables['System.TeamProject'], 'DevDiv') }}:
+      name: VSEngSS-MicroBuild2022-1ES
+      demands: Cmd
+    # If it's not devdiv, it's dnceng
+    ${{ if ne(variables['System.TeamProject'], 'DevDiv') }}:
+      name: NetCore1ESPool-Internal
+      demands: ImageOverride -equals Build.Server.Amd64.VS2019
   steps:
   - checkout: self
     clean: true
+
+  - template: /eng/common/templates/post-build/setup-maestro-vars.yml
 
   - ${{ if ne(parameters.downloadArtifacts, 'false')}}:
     - ${{ if ne(parameters.artifactNames, '') }}:

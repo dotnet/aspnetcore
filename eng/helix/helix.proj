@@ -1,5 +1,18 @@
 <Project Sdk="Microsoft.DotNet.Helix.Sdk" DefaultTargets="Test" TreatAsLocalProperty="ProjectToBuild">
 
+  <!-- 
+    TEMPORARY workaround while we wait for https://github.com/dotnet/arcade/issues/8336 to be addressed.
+    When the runtime version we're ingesting was built publicly, or we're building in public CI, IsPublicRuntime should be true, 
+    causing us to use the normal workflow of downloading it from the public location in Helix.
+    When the runtime was built internally (which necessarily also means we're building in the internal project), IsPublicRuntime should be false, 
+    causing us to pass the right Sas token to get Helx to download it from the internal location.
+    Once https://github.com/dotnet/arcade/issues/8336, we only need to set AdditionalDotNetPackage below,
+    not HelixCorrelationPayload.
+  -->
+  <PropertyGroup>
+    <IsPublicRuntime>false</IsPublicRuntime>
+  </PropertyGroup>
+
   <PropertyGroup>
     <!--
       When invoking helix.proj for the whole repo with build.cmd, ProjectToBuild will be set to the path to this project.
@@ -43,8 +56,14 @@
       !temporary! e.g. https://dotnetbuilds.blob.core.windows.net/internal/Runtime/6.0.2-servicing.22060.12/dotnet-runtime-6.0.2-win-x86.zip?{token}
     -->
     <HelixCorrelationPayload Include="dotnet-cli"
+        Condition="'$(SYSTEM_TEAMPROJECT)' == 'internal' AND '$(IsPublicRuntime)' == 'false'"
         Destination="dotnet-cli"
         Uri="https://dotnetbuilds.blob.core.windows.net/internal/Runtime/$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-$(DotNetCliRuntime)$(ArchiveExtension)$([System.Environment]::GetEnvironmentVariable('DotNetBuildsInternalReadSasToken'))" />
+      
+    <AdditionalDotNetPackage Include="$(MicrosoftNETCoreBrowserDebugHostTransportVersion)"
+                             Condition="'$(SYSTEM_TEAMPROJECT)' != 'internal' OR '$(IsPublicRuntime)' == 'true'">
+      <PackageType>runtime</PackageType>
+    </AdditionalDotNetPackage>
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(ContinuousIntegrationBuild)' == 'true' ">
