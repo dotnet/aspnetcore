@@ -4,7 +4,7 @@
 namespace Microsoft.AspNetCore.Razor.TagHelpers;
 
 /// <summary>
-/// Determines how a HTML attribute value appears in markup.
+/// Determines how an HTML attribute value appears in markup.
 /// </summary>
 public enum HtmlAttributeValueStyle
 {
