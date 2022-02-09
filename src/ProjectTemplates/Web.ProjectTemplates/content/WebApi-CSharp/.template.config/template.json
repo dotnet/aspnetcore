@@ -291,7 +291,6 @@
       "type": "parameter",
       "datatype": "bool",
       "defaultValue": "false",
-      "displayName": "Use minimal APIs (check to use controllers)",
       "description": "Whether to use minimal APIs instead of controllers."
     },
     "Framework": {
@@ -356,7 +355,6 @@
       "type": "parameter",
       "dataType": "bool",
       "defaultValue": "false",
-      "displayName": "Disable OpenAPI Support",
       "description": "Disable OpenAPI (Swagger) support"
     },
     "EnableOpenAPI": {
