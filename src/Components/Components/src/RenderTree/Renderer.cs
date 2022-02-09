@@ -64,7 +64,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to be used when initializing components.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
     public Renderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
-        : this(serviceProvider, loggerFactory, GetComponentActivatorOrDefault(serviceProvider))
+        : this(serviceProvider, loggerFactory, GetComponentActivatorOrDefault(serviceProvider)!)
     {
         // This overload is provided for back-compatibility
     }
@@ -87,10 +87,8 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             throw new ArgumentNullException(nameof(loggerFactory));
         }
 
-        if (componentActivator is null)
-        {
-            throw new ArgumentNullException(nameof(componentActivator));
-        }
+        // Even though IComponentActivator is not marked as nullable, we do allow null because that's how the framework internally indicates
+        // that we should use default activation logic.
 
         _serviceProvider = serviceProvider;
         _logger = loggerFactory.CreateLogger<Renderer>();
@@ -99,10 +97,9 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
 
     internal HotReloadManager HotReloadManager { get; set; } = HotReloadManager.Default;
 
-    private static IComponentActivator GetComponentActivatorOrDefault(IServiceProvider serviceProvider)
+    private static IComponentActivator? GetComponentActivatorOrDefault(IServiceProvider serviceProvider)
     {
-        return serviceProvider.GetService<IComponentActivator>()
-            ?? DefaultComponentActivator.Instance;
+        return serviceProvider.GetService<IComponentActivator>();
     }
 
     /// <summary>
