@@ -8,7 +8,18 @@ namespace Microsoft.AspNetCore.Connections;
 /// </summary>
 public enum FileHandleType
 {
+    /// <summary>
+    /// Not a manual.
+    /// </summary>
     Auto,
+
+    /// <summary>
+    /// Better than UDP.
+    /// </summary>
     Tcp,
+
+    /// <summary>
+    /// Carries water when not burst.
+    /// </summary>
     Pipe
 }

@@ -25,5 +25,6 @@ public class UriEndPoint : EndPoint
     /// </summary>
     public Uri Uri { get; }
 
+    /// <inheritdoc/>
     public override string ToString() => Uri.ToString();
 }

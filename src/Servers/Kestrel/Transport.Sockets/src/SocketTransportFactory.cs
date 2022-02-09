@@ -16,6 +16,11 @@ public sealed class SocketTransportFactory : IConnectionListenerFactory
     private readonly SocketTransportOptions _options;
     private readonly ILoggerFactory _logger;
 
+    /// <summary>
+    /// Initializes a new instance of <see cref="SocketTransportFactory"/>.
+    /// </summary>
+    /// <param name="options">The transport options.</param>
+    /// <param name="loggerFactory">The logger factory.</param>
     public SocketTransportFactory(
         IOptions<SocketTransportOptions> options,
         ILoggerFactory loggerFactory)
@@ -34,6 +39,7 @@ public sealed class SocketTransportFactory : IConnectionListenerFactory
         _logger = loggerFactory;
     }
 
+    /// <inheritdoc />
     public ValueTask<IConnectionListener> BindAsync(EndPoint endpoint, CancellationToken cancellationToken = default)
     {
         var transport = new SocketConnectionListener(endpoint, _options, _logger);
