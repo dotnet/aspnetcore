@@ -57,6 +57,7 @@ private:
             const std::filesystem::path& applicationPath
         );
 
+#if false
     static
     VOID
     FindDotNetFolders(
@@ -69,6 +70,7 @@ private:
     FindHighestDotNetVersion(
         std::vector<std::wstring> & vFolders
     );
+#endif
 
     static
     std::filesystem::path
@@ -76,11 +78,13 @@ private:
         const std::filesystem::path& hostfxrPath
     );
 
+#if false
     static
     std::filesystem::path
     GetAbsolutePathToHostFxr(
         const std::filesystem::path & dotnetPath
     );
+#endif
 
     static
     std::optional<std::filesystem::path>

@@ -194,13 +194,13 @@ HostFxrResolver::GetHostFxrParameters(
                     throw InvalidOperationException(format(L"get_hostfxr_path failed"));
                 }
 
+                // REMOVE: DEBUGGING code
                 //hostFxrDllPath = GetAbsolutePathToHostFxr(dotnetExePath);
-
-                fs::path oldhostFxrDllPath = GetAbsolutePathToHostFxr(dotnetExePath);
-                if (!equals_ignore_case(oldhostFxrDllPath.c_str(), hostFxrDllPath.c_str())) {
-                    LOG_INFOF(L"MISMATCH oldhostFxrDllPath '%ls'", oldhostFxrDllPath.c_str());
-                    throw InvalidOperationException(L"oldhostFxrDllPath mismatch");
-                }
+                //fs::path oldhostFxrDllPath = GetAbsolutePathToHostFxr(dotnetExePath);
+                //if (!equals_ignore_case(oldhostFxrDllPath.c_str(), hostFxrDllPath.c_str())) {
+                //    LOG_INFOF(L"MISMATCH oldhostFxrDllPath '%ls'", oldhostFxrDllPath.c_str());
+                //    throw InvalidOperationException(L"oldhostFxrDllPath mismatch");
+                //}
 
 
                 // For portable with launcher apps we need dotnet.exe to be argv[0] and .dll be argv[1]
@@ -426,6 +426,7 @@ HostFxrResolver::GetAbsolutePathToDotnetFromHostfxr(const fs::path& hostfxrPath)
     return hostfxrPath.parent_path().parent_path().parent_path().parent_path() / "dotnet.exe";
 }
 
+#if false
 fs::path
 HostFxrResolver::GetAbsolutePathToHostFxr(
     const fs::path & dotnetPath
@@ -459,6 +460,7 @@ HostFxrResolver::GetAbsolutePathToHostFxr(
     LOG_INFOF(L"hostfxr.dll located at '%ls'", hostFxrPath.c_str());
     return hostFxrPath;
 }
+#endif
 
 //
 // Tries to call where.exe to find the location of dotnet.exe.
@@ -617,6 +619,7 @@ HostFxrResolver::GetAbsolutePathToDotnetFromProgramFiles()
     return is_regular_file(programFilesDotnet) ? std::make_optional(programFilesDotnet) : std::nullopt;
 }
 
+#if false
 std::wstring
 HostFxrResolver::FindHighestDotNetVersion(
     _In_ std::vector<std::wstring> & vFolders
@@ -655,3 +658,4 @@ HostFxrResolver::FindDotNetFolders(
         pvFolders.emplace_back(data.cFileName);
     } while (FindNextFileW(handle, &data));
 }
+#endif
