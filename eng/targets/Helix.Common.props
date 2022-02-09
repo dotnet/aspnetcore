@@ -62,4 +62,11 @@
   <ItemGroup Condition="'$(TargetArchitecture)' == 'arm64' AND '$(IsHelixDaily)' == 'true' AND '$(_UseHelixOpenQueues)' == 'true' AND '$(IsWindowsOnlyTest)' != 'true'">
     <HelixAvailableTargetQueue Include="Windows.10.Arm64v8.Open" Platform="Windows" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <IsWindowsHelixQueue>false</IsWindowsHelixQueue>
+    <IsWindowsHelixQueue Condition="$(HelixTargetQueue.Contains('Windows')) or $(HelixTargetQueue.Contains('windows'))">true</IsWindowsHelixQueue>
+    <IsMacHelixQueue>false</IsMacHelixQueue>
+    <IsMacHelixQueue Condition="$(HelixTargetQueue.Contains('OSX')) or $(HelixTargetQueue.Contains('macOs'))">true</IsMacHelixQueue>
+  </PropertyGroup>
 </Project>
