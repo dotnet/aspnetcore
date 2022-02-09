@@ -37,11 +37,13 @@
   "symbols": {
     "namespace": {
       "description": "namespace for the generated code",
+      "displayName": "Namespace",
       "replaces": "MyApp.Namespace",
       "type": "parameter"
     },
     "no-pagemodel": {
       "description": "create page without a PageModel",
+      "displayName": "Exclude PageModel",
       "type": "parameter",
       "datatype": "bool",
       "defaultValue": "false"
