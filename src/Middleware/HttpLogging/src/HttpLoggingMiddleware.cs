@@ -141,14 +141,14 @@ internal sealed class HttpLoggingMiddleware
                 originalBodyFeature = context.Features.Get<IHttpResponseBodyFeature>()!;
 
                 // TODO pool these.
-                responseBufferingStream = new ResponseBufferingStream(originalBodyFeature,
+                responseBufferingStream = new ResponseBufferingStream(originalBodyFeature.Stream,
                     options.ResponseBodyLogLimit,
                     _logger,
                     context,
                     options.MediaTypeOptions.MediaTypeStates,
                     options);
 
-                streamResponseBodyFeature = new StreamResponseBodyFeature(responseBufferingStream);
+                streamResponseBodyFeature = new StreamResponseBodyFeature(responseBufferingStream, originalBodyFeature);
                 context.Features.Set<IHttpResponseBodyFeature>(streamResponseBodyFeature);
             }
             await _next(context);

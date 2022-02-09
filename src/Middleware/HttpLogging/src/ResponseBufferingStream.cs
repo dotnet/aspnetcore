@@ -5,7 +5,6 @@ using System.Buffers;
 using System.IO.Pipelines;
 using System.Text;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 using static Microsoft.AspNetCore.HttpLogging.MediaTypeOptions;
 
@@ -14,9 +13,8 @@ namespace Microsoft.AspNetCore.HttpLogging;
 /// <summary>
 /// Stream that buffers reads
 /// </summary>
-internal sealed class ResponseBufferingStream : Stream, IHttpResponseBodyFeature
+internal sealed class ResponseBufferingStream : Stream
 {
-    private readonly IHttpResponseBodyFeature _innerBodyFeature;
     private readonly Stream _innerStream;
     private readonly int _limit;
     private PipeWriter? _pipeAdapter;
@@ -30,15 +28,14 @@ internal sealed class ResponseBufferingStream : Stream, IHttpResponseBodyFeature
 
     private static readonly StreamPipeWriterOptions _pipeWriterOptions = new StreamPipeWriterOptions(leaveOpen: true);
 
-    internal ResponseBufferingStream(IHttpResponseBodyFeature innerBodyFeature,
+    internal ResponseBufferingStream(Stream innerStream,
         int limit,
         ILogger logger,
         HttpContext context,
         List<MediaTypeState> encodings,
         HttpLoggingOptions options)
     {
-        _innerBodyFeature = innerBodyFeature;
-        _innerStream = innerBodyFeature.Stream;
+        _innerStream = innerStream;
         _limit = limit;
         _context = context;
         _encodings = encodings;
@@ -216,28 +213,6 @@ internal sealed class ResponseBufferingStream : Stream, IHttpResponseBodyFeature
             MediaTypeHelpers.TryGetEncodingForMediaType(_context.Response.ContentType, _encodings, out _encoding);
             FirstWrite = true;
         }
-    }
-
-    public void DisableBuffering()
-    {
-        _innerBodyFeature.DisableBuffering();
-    }
-
-    public Task SendFileAsync(string path, long offset, long? count, CancellationToken cancellation)
-    {
-        OnFirstWrite();
-        return _innerBodyFeature.SendFileAsync(path, offset, count, cancellation);
-    }
-
-    public Task StartAsync(CancellationToken token = default)
-    {
-        OnFirstWrite();
-        return _innerBodyFeature.StartAsync(token);
-    }
-
-    public async Task CompleteAsync()
-    {
-        await _innerBodyFeature.CompleteAsync();
     }
 
     protected override void Dispose(bool disposing)
