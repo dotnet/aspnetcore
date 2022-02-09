@@ -14,10 +14,6 @@
     <HelixTimeout>00:30:00</HelixTimeout>
     <HelixTimeout Condition="$(HelixTargetQueue.StartsWith('Windows.10.Amd64'))">00:40:00</HelixTimeout>
     <RunQuarantinedTests>false</RunQuarantinedTests>
-    <IsWindowsHelixQueue>false</IsWindowsHelixQueue>
-    <IsWindowsHelixQueue Condition="$(HelixTargetQueue.Contains('Windows')) or $(HelixTargetQueue.Contains('windows'))">true</IsWindowsHelixQueue>
-    <IsMacHelixQueue>false</IsMacHelixQueue>
-    <IsMacHelixQueue Condition="$(HelixTargetQueue.Contains('OSX')) or $(HelixTargetQueue.Contains('macOs'))">true</IsMacHelixQueue>
     <HelixTestName>$(MSBuildProjectName)--$(TargetFramework)</HelixTestName>
     <LoggingTestingDisableFileLogging Condition="'$(IsHelixJob)' == 'true'">false</LoggingTestingDisableFileLogging>
     <NodeVersion>14.17.6</NodeVersion>
