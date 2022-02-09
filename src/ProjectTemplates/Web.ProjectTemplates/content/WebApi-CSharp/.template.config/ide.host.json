@@ -37,11 +37,24 @@
   "symbolInfo": [
     {
       "id": "DisableOpenAPI",
-      "isVisible": true
+      "name": {
+        "text": "Enable _OpenAPI support"
+      },
+      "description": {
+        "text": "Enables OpenAPI (Swagger) support"
+      },
+      "invertBoolean": true,
+      "isVisible": true,
+      "defaultValue": true
     },
     {
       "id": "UseMinimalAPIs",
-      "isVisible": true
+      "name": {
+        "text": "Use controllers (uncheck to use minimal APIs)"
+      },
+      "invertBoolean": true,
+      "isVisible": true,
+      "defaultValue": true
     }
   ],
   "disableHttpsSymbol": "NoHttps"

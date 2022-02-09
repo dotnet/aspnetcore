@@ -2,8 +2,6 @@
   "version": "1.0.0.0",
   "strings": {
     "name": "ASP.NET Core Web API",
-    "description": "A project template for creating an ASP.NET Core application with an example Controller for a RESTful HTTP service. This template can also be used for ASP.NET Core MVC Views and Controllers.",
-    "parameter.DisableOpenAPI.displayName": "Disable OpenAPI Support",
-    "parameter.UseMinimalAPIs.displayName": "Use minimal APIs (check to use controllers)"
+    "description": "A project template for creating an ASP.NET Core application with an example Controller for a RESTful HTTP service. This template can also be used for ASP.NET Core MVC Views and Controllers."
   }
 }
