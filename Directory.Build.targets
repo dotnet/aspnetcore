@@ -24,8 +24,8 @@
   </PropertyGroup>
 
   <PropertyGroup Label="Resx settings">
-    <GenerateResxSource Condition="$(GenerateResxSource) == ''">true</GenerateResxSource>
-    <GenerateResxSourceEmitFormatMethods Condition="$(GenerateResxSourceEmitFormatMethods) == ''">true</GenerateResxSourceEmitFormatMethods>
+    <GenerateResxSource Condition="'$(GenerateResxSource)' == ''">true</GenerateResxSource>
+    <GenerateResxSourceEmitFormatMethods Condition="'$(GenerateResxSourceEmitFormatMethods)' == ''">true</GenerateResxSourceEmitFormatMethods>
   </PropertyGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />

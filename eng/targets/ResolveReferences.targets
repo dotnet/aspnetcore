@@ -118,7 +118,7 @@
         Text="Cannot reference &quot;%(Identity)&quot;. This dependency is not in the shared framework. See docs/SharedFramework.md for instructions on how to modify what is in the shared framework." />
 
     <Error
-        Condition=" '$(EnableCustomReferenceResolution)' == 'true' AND @(ProjectReferenceProvider->WithMetadataValue('DirectUse', '1')->Count()) != 0 "
+        Condition=" '$(EnableCustomReferenceResolution)' == 'true' AND' @(ProjectReferenceProvider->WithMetadataValue('DirectUse', '1')->Count())' != '0' "
         Text="Cannot reference &quot;%(Identity)&quot; with a ProjectReference item; use a Reference item." />
   </Target>
 
@@ -200,7 +200,7 @@
     </ItemGroup>
 
     <Error
-        Condition="'$(DisablePackageReferenceRestrictions)' != 'true' AND @(_ExplicitPackageReference->Count()) != 0"
+        Condition="'$(DisablePackageReferenceRestrictions)' != 'true' AND '@(_ExplicitPackageReference->Count())' != '0'"
         Text="PackageReference items are not allowed. Use &lt;Reference&gt; instead to replace the reference to @(_ExplicitPackageReference, ', '). See docs/ReferenceResolution.md for more details." />
 
     <ItemGroup>
@@ -213,7 +213,7 @@
         Text="Reference to '%(UnusedBaselinePackageReference.Identity)' was removed since the last stable release of this package. This could be a breaking change. See docs/ReferenceResolution.md for instructions on how to update changes to references or suppress this warning if the error was intentional." />
 
     <Error
-        Condition=" '$(IsServicingBuild)' == 'true' AND @(UnusedBaselinePackageReference->Count()) != 0 "
+        Condition=" '$(IsServicingBuild)' == 'true' AND '@(UnusedBaselinePackageReference->Count())' != '0' "
         Code="BUILD002"
         Text="Package references changed since the last release. This could be a breaking change and is not allowed in a servicing update. References removed:%0A - @(UnusedBaselinePackageReference, '%0A - ')" />
 
@@ -229,15 +229,15 @@
       Because this metadata has different semantics, cannot convert one to the other.
     -->
     <Warning
-      Condition=" @(PackageReference->HasMetadata('Private')->Count()) != 0 "
+      Condition=" '@(PackageReference->HasMetadata('Private')->Count())' != '0' "
       Code="BUILD004"
       Text="%25(Private) metadata should not be applied to the %(Identity) package reference. Did you mean %25(PrivateAssets)?" />
     <Warning
-      Condition=" @(ProjectReference->HasMetadata('PrivateAssets')->Count()) != 0 "
+      Condition=" '@(ProjectReference->HasMetadata('PrivateAssets')->Count())' != '0' "
       Code="BUILD005"
       Text="%25(PrivateAssets) metadata should not be applied to the %(Identity) project reference. Did you mean %25(Private)?" />
     <Warning
-      Condition=" @(Reference->HasMetadata('PrivateAssets')->Count()) != 0 "
+      Condition=" '@(Reference->HasMetadata('PrivateAssets')->Count())' != '0' "
       Code="BUILD006"
       Text="%25(PrivateAssets) metadata should not be applied to the %(Identity) assembly reference. Did you mean %25(Private)?" />
   </Target>
@@ -245,7 +245,7 @@
   <PropertyGroup>
     <_CompileTfmUsingReferenceAssemblies>false</_CompileTfmUsingReferenceAssemblies>
     <_CompileTfmUsingReferenceAssemblies
-        Condition=" '$(CompileUsingReferenceAssemblies)' != false AND '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' ">true</_CompileTfmUsingReferenceAssemblies>
+        Condition=" '$(CompileUsingReferenceAssemblies)' != 'false' AND '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' ">true</_CompileTfmUsingReferenceAssemblies>
   </PropertyGroup>
 
   <!--
