@@ -36,16 +36,10 @@
   "symbolInfo": [
     {
       "id": "Hosted",
-      "name": {
-        "text": "ASP.NET Core _hosted"
-      },
       "isVisible": "true"
     },
     {
       "id": "PWA",
-      "name": {
-        "text": "_Progressive Web Application"
-      },
       "isVisible": "true"
     }
   ]

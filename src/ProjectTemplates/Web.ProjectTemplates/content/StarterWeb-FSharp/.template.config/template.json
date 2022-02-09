@@ -39,11 +39,13 @@
       "type": "parameter",
       "datatype": "bool",
       "defaultValue": "false",
+      "displayName": "Exclude Launch Settings",
       "description": "Whether to exclude launchSettings.json from the generated template."
     },
     "kestrelHttpPort": {
       "type": "parameter",
       "datatype": "integer",
+      "displayName": "Kestrel HTTP Port",
       "description": "Port number to use for the HTTP endpoint in launchSettings.json."
     },
     "kestrelHttpPortGenerated": {
@@ -66,6 +68,7 @@
     "kestrelHttpsPort": {
       "type": "parameter",
       "datatype": "integer",
+      "displayName": "Kestrel HTTPS Port",
       "description": "Port number to use for the HTTPS endpoint in launchSettings.json. This option is only applicable when the parameter no-https is not used (no-https will be ignored if either IndividualAuth or OrganizationalAuth is used)."
     },
     "kestrelHttpsPortGenerated": {
@@ -88,6 +91,7 @@
     "iisHttpPort": {
       "type": "parameter",
       "datatype": "integer",
+      "displayName": "IIS HTTP Port",
       "description": "Port number to use for the IIS Express HTTP endpoint in launchSettings.json."
     },
     "iisHttpPortGenerated": {
@@ -106,6 +110,7 @@
     "iisHttpsPort": {
       "type": "parameter",
       "datatype": "integer",
+      "displayName": "IIS HTTPS Port",
       "description": "Port number to use for the IIS Express HTTPS endpoint in launchSettings.json. This option is only applicable when the parameter no-https is not used (no-https will be ignored if either IndividualAuth or OrganizationalAuth is used)."
     },
     "iisHttpsPortGenerated": {
@@ -127,6 +132,7 @@
     },
     "Framework": {
       "type": "parameter",
+      "displayName": "Framework",
       "description": "The target framework for the project.",
       "datatype": "choice",
       "choices": [
@@ -149,6 +155,7 @@
     "skipRestore": {
       "type": "parameter",
       "datatype": "bool",
+      "displayName": "Skip Restore",
       "description": "If specified, skips the automatic restore of the project on create.",
       "defaultValue": "false"
     },
@@ -156,6 +163,7 @@
       "type": "parameter",
       "datatype": "bool",
       "defaultValue": "false",
+      "displayName": "No HTTPS",
       "description": "Whether to turn off HTTPS. This option only applies if Individual, IndividualB2C, SingleOrg, or MultiOrg aren't used for --auth."
     }
   },
