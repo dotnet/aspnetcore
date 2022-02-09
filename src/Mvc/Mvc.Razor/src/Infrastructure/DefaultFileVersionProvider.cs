@@ -61,7 +61,7 @@ internal class DefaultFileVersionProvider : IFileVersionProvider
             return path;
         }
 
-        if (Cache.TryGetValue(path, out string value))
+        if (Cache.TryGetValue<string>(path, out var value) && value is not null)
         {
             return value;
         }
@@ -90,7 +90,7 @@ internal class DefaultFileVersionProvider : IFileVersionProvider
         }
 
         cacheEntryOptions.SetSize(value.Length * sizeof(char));
-        value = Cache.Set(path, value, cacheEntryOptions);
+        Cache.Set(path, value, cacheEntryOptions);
         return value;
     }
 
