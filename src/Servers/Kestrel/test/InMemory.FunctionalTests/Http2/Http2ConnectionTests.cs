@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Net.Http;
 using System.Net.Http.HPack;
 using System.Net.Security;
+using System.Reflection;
 using System.Security.Authentication;
 using System.Text;
 using Microsoft.AspNetCore.Connections;
@@ -203,6 +204,73 @@ public class Http2ConnectionTests : Http2TestBase
         Assert.Same(contentType1, contentType2);
         Assert.Same(authority1, authority2);
         Assert.Same(path1, path2);
+
+        await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
+    }
+
+    [Fact]
+    public async Task RequestHeaderStringReuse_MultipleStreams_KnownHeaderClearedIfNotReused()
+    {
+        const BindingFlags privateFlags = BindingFlags.NonPublic | BindingFlags.Instance;
+
+        IEnumerable<KeyValuePair<string, string>> requestHeaders1 = new[]
+        {
+            new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(HeaderNames.Path, "/hello"),
+            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            new KeyValuePair<string, string>(HeaderNames.ContentType, "application/json")
+        };
+
+        // Note: No content-type
+        IEnumerable<KeyValuePair<string, string>> requestHeaders2 = new[]
+        {
+            new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(HeaderNames.Path, "/hello"),
+            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80")
+        };
+
+        await InitializeConnectionAsync(_noopApplication);
+
+        await StartStreamAsync(1, requestHeaders1, endStream: true);
+
+        await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 36,
+            withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+            withStreamId: 1);
+
+        // TriggerTick will trigger the stream to be returned to the pool so we can assert it
+        TriggerTick();
+
+        // Stream has been returned to the pool
+        Assert.Equal(1, _connection.StreamPool.Count);
+        Assert.True(_connection.StreamPool.TryPeek(out var stream1));
+
+        // Hacky but required because header references is private.
+        var headerReferences1 = typeof(HttpRequestHeaders).GetField("_headers", privateFlags).GetValue(stream1.RequestHeaders);
+        var contentTypeValue1 = (StringValues)headerReferences1.GetType().GetField("_ContentType").GetValue(headerReferences1);
+
+        await StartStreamAsync(3, requestHeaders2, endStream: true);
+
+        await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 6,
+            withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+            withStreamId: 3);
+
+        // TriggerTick will trigger the stream to be returned to the pool so we can assert it
+        TriggerTick();
+
+        // Stream has been returned to the pool
+        Assert.Equal(1, _connection.StreamPool.Count);
+        Assert.True(_connection.StreamPool.TryPeek(out var stream2));
+
+        // Hacky but required because header references is private.
+        var headerReferences2 = typeof(HttpRequestHeaders).GetField("_headers", privateFlags).GetValue(stream2.RequestHeaders);
+        var contentTypeValue2 = (StringValues)headerReferences2.GetType().GetField("_ContentType").GetValue(headerReferences2);
+
+        Assert.Equal("application/json", contentTypeValue1);
+        Assert.Equal(StringValues.Empty, contentTypeValue2);
 
         await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
     }
