@@ -16,8 +16,8 @@ public static class WebHostBuilderQuicExtensions
     /// <summary>
     /// Specify Quic as the transport to be used by Kestrel.
     /// </summary>
-    /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/>. to configure.</param>
-    /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
+    /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to configure.</param>
+    /// <returns>Returns <paramref name="hostBuilder"/>.</returns>
     public static IWebHostBuilder UseQuic(this IWebHostBuilder hostBuilder)
     {
         if (QuicImplementationProviders.Default.IsSupported)
@@ -34,7 +34,7 @@ public static class WebHostBuilderQuicExtensions
     /// <summary>
     /// Specify Quic as the transport to be used by Kestrel.
     /// </summary>
-    /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/>. to configure.</param>
+    /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to configure.</param>
     /// <param name="configureOptions">A callback to configure transport options.</param>
     /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
     public static IWebHostBuilder UseQuic(this IWebHostBuilder hostBuilder, Action<QuicTransportOptions> configureOptions)

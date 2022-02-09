@@ -17,7 +17,7 @@ public sealed class SocketTransportFactory : IConnectionListenerFactory
     private readonly ILoggerFactory _logger;
 
     /// <summary>
-    /// Initializes a new instance of <see cref="SocketTransportFactory"/>.
+    /// Initializes a new instance of the <see cref="SocketTransportFactory"/> class.
     /// </summary>
     /// <param name="options">The transport options.</param>
     /// <param name="loggerFactory">The logger factory.</param>

@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core;
 public enum HttpProtocols
 {
     /// <summary>
-    /// A missing HTTP protocol version.
+    /// No HTTP protocol version was specified.
     /// </summary>
     None = 0x0,
 
@@ -35,7 +35,7 @@ public enum HttpProtocols
     Http3 = 0x4,
 
     /// <summary>
-    /// The <see cref="Http1"/>, <see cref="Http2"/> and <see cref="Http3"/> protocol versions.
+    /// The <see cref="Http1"/>, <see cref="Http2"/>, and <see cref="Http3"/> protocol versions.
     /// </summary>
     Http1AndHttp2AndHttp3 = Http1 | Http2 | Http3
 }
