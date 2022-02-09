@@ -1079,6 +1079,8 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
 
             if (endHeaders)
             {
+                _currentHeadersStream.OnHeadersComplete();
+
                 StartStream();
                 ResetRequestHeaderParsingState();
             }
