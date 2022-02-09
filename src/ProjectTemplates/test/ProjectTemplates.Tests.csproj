@@ -22,6 +22,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Grab all shipping packages. -->
+    <HelixContent Include="$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\*$(SharedFxVersion).nupkg" />
+
     <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)CertificateGeneration\**\*.cs" LinkBase="shared\CertificateGeneration" />
   </ItemGroup>

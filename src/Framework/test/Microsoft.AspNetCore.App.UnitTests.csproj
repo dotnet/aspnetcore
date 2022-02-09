@@ -9,6 +9,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Grab App.Ref and App.Runtime packages. -->
+    <HelixContent Include="$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\Microsoft.AspNetCore.App.*$(SharedFxVersion).nupkg" />
+
     <!-- Ignore aspnetcorev2_inprocess because tests expect only managed assemblies in this item group. -->
     <_SharedFrameworkBinariesFromRepo Include="@(AspNetCoreAppReference);@(AspNetCoreAppReferenceAndPackage)" />
 

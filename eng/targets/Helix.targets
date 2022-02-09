@@ -51,10 +51,6 @@
   <PropertyGroup Condition=" $(TestDependsOnAspNetRuntime) AND !$(TestDependsOnAspNetPackages) ">
     <TestDependsOnAspNetPackages>true</TestDependsOnAspNetPackages>
   </PropertyGroup>
-  <ItemGroup Condition=" $(TestDependsOnAspNetPackages) ">
-    <!-- Grab all shipping packages. -->
-    <HelixContent Include="$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\*$(SharedFxVersion).nupkg" />
-  </ItemGroup>
 
   <ItemGroup>
     <!-- Java test projects do not use xUnit. -->
