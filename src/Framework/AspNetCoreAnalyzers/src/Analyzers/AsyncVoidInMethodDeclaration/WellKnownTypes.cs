@@ -36,12 +36,19 @@ internal sealed class WellKnownTypes
             return false;
         }
 
+        const string PageModel = "Microsoft.AspNetCore.Mvc.RazorPages.PageModel";
+        if (compilation.GetTypeByMetadataName(PageModel) is not { } pageModel)
+        {
+            return false;
+        }
+
         wellKnownTypes = new WellKnownTypes
         {
             ControllerInstance = controllerInstance,
             ControllerBaseInstance = controllerBaseInstance,
             IActionFilter = actionFilterInstance,
-            SignalRHub = signalRHub
+            SignalRHub = signalRHub,
+            PageModel = pageModel
         };
 
         return true;
@@ -54,4 +61,6 @@ internal sealed class WellKnownTypes
     public INamedTypeSymbol IActionFilter { get; private init; }
 
     public INamedTypeSymbol SignalRHub { get; private init; }
+
+    public INamedTypeSymbol PageModel { get; private init; }
 }

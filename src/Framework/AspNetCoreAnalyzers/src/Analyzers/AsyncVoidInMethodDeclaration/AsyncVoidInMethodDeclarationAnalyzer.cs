@@ -48,10 +48,21 @@ public partial class AsyncVoidInMethodDeclarationAnalyzer : DiagnosticAnalyzer
                     {
                         if (classDeclaration.Members[i] is MethodDeclarationSyntax methodDeclarationSyntax)
                         {
-                            var methodType = methodDeclarationSyntax.ReturnType;
-                            var methodModifier = methodDeclarationSyntax.Modifiers;
-
-                            if (string.Equals(methodType.ToString(), "void") && string.Equals(methodModifier[1].ToString(), "async"))
+                            if (ShouldFireDiagnostic(methodDeclarationSyntax))
+                            {
+                                classContext.ReportDiagnostic(CreateDiagnostic(classDeclaration));
+                            }
+                        }
+                    }
+                }
+                else if (IsRazorPage(classDeclaration, classContext, wellKnownTypes))
+                {
+                    // search only for methods that follow a pattern: 'On + HttpMethodName'
+                    for (int i = 0; i < classDeclaration.Members.Count; i++)
+                    {
+                        if ((classDeclaration.Members[i] is MethodDeclarationSyntax methodDeclarationSyntax) && IsRazorPageHandlerMethod(methodDeclarationSyntax))
+                        {
+                            if (ShouldFireDiagnostic(methodDeclarationSyntax))
                             {
                                 classContext.ReportDiagnostic(CreateDiagnostic(classDeclaration));
                             }
@@ -60,6 +71,15 @@ public partial class AsyncVoidInMethodDeclarationAnalyzer : DiagnosticAnalyzer
                 }
             }, SyntaxKind.ClassDeclaration);
         });
+    }
+
+    private static bool ShouldFireDiagnostic(MethodDeclarationSyntax methodDeclarationSyntax)
+    {
+        // TODO: make method more nice
+        var methodType = methodDeclarationSyntax.ReturnType;
+        var methodModifier = methodDeclarationSyntax.Modifiers;
+
+        return string.Equals(methodType.ToString(), "void") && string.Equals(methodModifier[1].ToString(), "async");
     }
 
     private static Diagnostic CreateDiagnostic(SyntaxNode syntaxNode)
