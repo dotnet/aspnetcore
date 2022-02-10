@@ -621,7 +621,8 @@ public class UserManager<TUser> : IDisposable where TUser : class
     public virtual string? NormalizeEmail(string? email)
         => (KeyNormalizer == null) ? email : KeyNormalizer.NormalizeEmail(email);
 
-    private string ProtectPersonalData(string data)
+    [return: NotNullIfNotNull("data")]
+    private string? ProtectPersonalData(string? data)
     {
         if (Options.Stores.ProtectPersonalData)
         {
@@ -649,7 +650,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// </summary>
     /// <param name="user">The user whose name should be retrieved.</param>
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the name for the specified <paramref name="user"/>.</returns>
-    public virtual async Task<string> GetUserNameAsync(TUser user)
+    public virtual async Task<string?> GetUserNameAsync(TUser user)
     {
         ThrowIfDisposed();
         if (user == null)
@@ -665,7 +666,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// <param name="user">The user whose name should be set.</param>
     /// <param name="userName">The user name to set.</param>
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
-    public virtual async Task<IdentityResult> SetUserNameAsync(TUser user, string userName)
+    public virtual async Task<IdentityResult> SetUserNameAsync(TUser user, string? userName)
     {
         ThrowIfDisposed();
         if (user == null)
@@ -2149,7 +2150,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// <param name="tokenName">The name of the token.</param>
     /// <param name="tokenValue">The value of the token.</param>
     /// <returns>Whether the user was successfully updated.</returns>
-    public virtual async Task<IdentityResult> SetAuthenticationTokenAsync(TUser user, string loginProvider, string tokenName, string tokenValue)
+    public virtual async Task<IdentityResult> SetAuthenticationTokenAsync(TUser user, string loginProvider, string tokenName, string? tokenValue)
     {
         ThrowIfDisposed();
         var store = GetAuthenticationTokenStore();

@@ -65,12 +65,12 @@ public class IdentityUser<TKey> where TKey : IEquatable<TKey>
     /// Gets or sets the user name for this user.
     /// </summary>
     [ProtectedPersonalData]
-    public virtual string UserName { get; set; } = default!;
+    public virtual string? UserName { get; set; }
 
     /// <summary>
     /// Gets or sets the normalized user name for this user.
     /// </summary>
-    public virtual string NormalizedUserName { get; set; } = default!;
+    public virtual string? NormalizedUserName { get; set; }
 
     /// <summary>
     /// Gets or sets the email address for this user.
@@ -103,7 +103,7 @@ public class IdentityUser<TKey> where TKey : IEquatable<TKey>
     /// <summary>
     /// A random value that must change whenever a user is persisted to the store
     /// </summary>
-    public virtual string ConcurrencyStamp { get; set; } = Guid.NewGuid().ToString();
+    public virtual string? ConcurrencyStamp { get; set; } = Guid.NewGuid().ToString();
 
     /// <summary>
     /// Gets or sets a telephone number for the user.
@@ -148,5 +148,5 @@ public class IdentityUser<TKey> where TKey : IEquatable<TKey>
     /// Returns the username for this user.
     /// </summary>
     public override string ToString()
-        => UserName;
+        => UserName ?? string.Empty;
 }

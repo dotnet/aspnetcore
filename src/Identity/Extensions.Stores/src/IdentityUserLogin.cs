@@ -24,7 +24,7 @@ public class IdentityUserLogin<TKey> where TKey : IEquatable<TKey>
     /// <summary>
     /// Gets or sets the friendly name used in a UI for this login.
     /// </summary>
-    public virtual string ProviderDisplayName { get; set; } = default!;
+    public virtual string? ProviderDisplayName { get; set; }
 
     /// <summary>
     /// Gets or sets the primary key of the user associated with this login.

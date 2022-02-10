@@ -7,8 +7,6 @@
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;identity;membership</PackageTags>
-    <NoWarn>$(NoWarn);RS0036</NoWarn>
-
   </PropertyGroup>
 
   <ItemGroup>

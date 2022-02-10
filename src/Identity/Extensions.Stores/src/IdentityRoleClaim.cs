@@ -25,12 +25,12 @@ public class IdentityRoleClaim<TKey> where TKey : IEquatable<TKey>
     /// <summary>
     /// Gets or sets the claim type for this claim.
     /// </summary>
-    public virtual string ClaimType { get; set; } = default!;
+    public virtual string? ClaimType { get; set; }
 
     /// <summary>
     /// Gets or sets the claim value for this claim.
     /// </summary>
-    public virtual string ClaimValue { get; set; } = default!;
+    public virtual string? ClaimValue { get; set; }
 
     /// <summary>
     /// Constructs a new claim with the type and value.
@@ -38,7 +38,7 @@ public class IdentityRoleClaim<TKey> where TKey : IEquatable<TKey>
     /// <returns>The <see cref="Claim"/> that was produced.</returns>
     public virtual Claim ToClaim()
     {
-        return new Claim(ClaimType, ClaimValue);
+        return new Claim(ClaimType!, ClaimValue!);
     }
 
     /// <summary>
@@ -47,7 +47,7 @@ public class IdentityRoleClaim<TKey> where TKey : IEquatable<TKey>
     /// <param name="other">The claim to initialize from.</param>
     public virtual void InitializeFromClaim(Claim? other)
     {
-        ClaimType = other?.Type!;
-        ClaimValue = other?.Value!;
+        ClaimType = other?.Type;
+        ClaimValue = other?.Value;
     }
 }

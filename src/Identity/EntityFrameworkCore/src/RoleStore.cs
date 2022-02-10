@@ -220,7 +220,7 @@ public class RoleStore<TRole, TContext, TKey, TUserRole, TRoleClaim> :
     /// <param name="role">The role whose name should be returned.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
     /// <returns>A <see cref="Task{TResult}"/> that contains the name of the role.</returns>
-    public virtual Task<string> GetRoleNameAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
+    public virtual Task<string?> GetRoleNameAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
@@ -238,7 +238,7 @@ public class RoleStore<TRole, TContext, TKey, TUserRole, TRoleClaim> :
     /// <param name="roleName">The name of the role.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
-    public virtual Task SetRoleNameAsync(TRole role, string roleName, CancellationToken cancellationToken = default(CancellationToken))
+    public virtual Task SetRoleNameAsync(TRole role, string? roleName, CancellationToken cancellationToken = default(CancellationToken))
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
@@ -311,7 +311,7 @@ public class RoleStore<TRole, TContext, TKey, TUserRole, TRoleClaim> :
     /// <param name="role">The role whose normalized name should be retrieved.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
     /// <returns>A <see cref="Task{TResult}"/> that contains the name of the role.</returns>
-    public virtual Task<string> GetNormalizedRoleNameAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
+    public virtual Task<string?> GetNormalizedRoleNameAsync(TRole role, CancellationToken cancellationToken = default(CancellationToken))
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
@@ -329,7 +329,7 @@ public class RoleStore<TRole, TContext, TKey, TUserRole, TRoleClaim> :
     /// <param name="normalizedName">The normalized name to set</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
-    public virtual Task SetNormalizedRoleNameAsync(TRole role, string normalizedName, CancellationToken cancellationToken = default(CancellationToken))
+    public virtual Task SetNormalizedRoleNameAsync(TRole role, string? normalizedName, CancellationToken cancellationToken = default(CancellationToken))
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
@@ -371,7 +371,7 @@ public class RoleStore<TRole, TContext, TKey, TUserRole, TRoleClaim> :
             throw new ArgumentNullException(nameof(role));
         }
 
-        return await RoleClaims.Where(rc => rc.RoleId.Equals(role.Id)).Select(c => new Claim(c.ClaimType, c.ClaimValue)).ToListAsync(cancellationToken);
+        return await RoleClaims.Where(rc => rc.RoleId.Equals(role.Id)).Select(c => new Claim(c.ClaimType!, c.ClaimValue!)).ToListAsync(cancellationToken);
     }
 
     /// <summary>

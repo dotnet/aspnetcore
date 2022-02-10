@@ -25,12 +25,12 @@ public class IdentityUserClaim<TKey> where TKey : IEquatable<TKey>
     /// <summary>
     /// Gets or sets the claim type for this claim.
     /// </summary>
-    public virtual string ClaimType { get; set; } = default!;
+    public virtual string? ClaimType { get; set; }
 
     /// <summary>
     /// Gets or sets the claim value for this claim.
     /// </summary>
-    public virtual string ClaimValue { get; set; } = default!;
+    public virtual string? ClaimValue { get; set; }
 
     /// <summary>
     /// Converts the entity into a Claim instance.
@@ -38,7 +38,7 @@ public class IdentityUserClaim<TKey> where TKey : IEquatable<TKey>
     /// <returns></returns>
     public virtual Claim ToClaim()
     {
-        return new Claim(ClaimType, ClaimValue);
+        return new Claim(ClaimType!, ClaimValue!);
     }
 
     /// <summary>

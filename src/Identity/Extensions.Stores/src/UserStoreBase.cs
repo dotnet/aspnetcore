@@ -98,7 +98,7 @@ public abstract class UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserTo
     /// <param name="name">The name of the user token.</param>
     /// <param name="value">The value of the user token.</param>
     /// <returns></returns>
-    protected virtual TUserToken CreateUserToken(TUser user, string loginProvider, string name, string value)
+    protected virtual TUserToken CreateUserToken(TUser user, string loginProvider, string name, string? value)
     {
         return new TUserToken
         {
@@ -132,7 +132,7 @@ public abstract class UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserTo
     /// <param name="user">The user whose name should be retrieved.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the name for the specified <paramref name="user"/>.</returns>
-    public virtual Task<string> GetUserNameAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
+    public virtual Task<string?> GetUserNameAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
@@ -150,7 +150,7 @@ public abstract class UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserTo
     /// <param name="userName">The user name to set.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
-    public virtual Task SetUserNameAsync(TUser user, string userName, CancellationToken cancellationToken = default(CancellationToken))
+    public virtual Task SetUserNameAsync(TUser user, string? userName, CancellationToken cancellationToken = default(CancellationToken))
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
@@ -168,7 +168,7 @@ public abstract class UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserTo
     /// <param name="user">The user whose normalized name should be retrieved.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the normalized user name for the specified <paramref name="user"/>.</returns>
-    public virtual Task<string> GetNormalizedUserNameAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
+    public virtual Task<string?> GetNormalizedUserNameAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
@@ -186,7 +186,7 @@ public abstract class UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserTo
     /// <param name="normalizedName">The normalized name to set.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
-    public virtual Task SetNormalizedUserNameAsync(TUser user, string normalizedName, CancellationToken cancellationToken = default(CancellationToken))
+    public virtual Task SetNormalizedUserNameAsync(TUser user, string? normalizedName, CancellationToken cancellationToken = default(CancellationToken))
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
@@ -915,7 +915,7 @@ public abstract class UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserTo
     /// <param name="value">The value of the token.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
-    public virtual async Task SetTokenAsync(TUser user, string loginProvider, string name, string value, CancellationToken cancellationToken)
+    public virtual async Task SetTokenAsync(TUser user, string loginProvider, string name, string? value, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();

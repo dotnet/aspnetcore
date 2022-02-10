@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading;
@@ -242,7 +243,8 @@ public class RoleManager<TRole> : IDisposable where TRole : class
     /// </summary>
     /// <param name="key">The value to normalize.</param>
     /// <returns>A normalized representation of the specified <paramref name="key"/>.</returns>
-    public virtual string NormalizeKey(string key)
+    [return: NotNullIfNotNull("key")]
+    public virtual string? NormalizeKey(string? key)
     {
         return (KeyNormalizer == null) ? key : KeyNormalizer.NormalizeName(key);
     }
@@ -269,7 +271,7 @@ public class RoleManager<TRole> : IDisposable where TRole : class
     /// The <see cref="Task"/> that represents the asynchronous operation, containing the name of the
     /// specified <paramref name="role"/>.
     /// </returns>
-    public virtual Task<string> GetRoleNameAsync(TRole role)
+    public virtual Task<string?> GetRoleNameAsync(TRole role)
     {
         ThrowIfDisposed();
         return Store.GetRoleNameAsync(role, CancellationToken);
@@ -284,7 +286,7 @@ public class RoleManager<TRole> : IDisposable where TRole : class
     /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/>
     /// of the operation.
     /// </returns>
-    public virtual async Task<IdentityResult> SetRoleNameAsync(TRole role, string name)
+    public virtual async Task<IdentityResult> SetRoleNameAsync(TRole role, string? name)
     {
         ThrowIfDisposed();
 

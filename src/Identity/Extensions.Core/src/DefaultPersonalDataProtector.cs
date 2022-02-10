@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Identity;
 
@@ -30,8 +31,9 @@ public class DefaultPersonalDataProtector : IPersonalDataProtector
     /// </summary>
     /// <param name="data">The data to unprotect.</param>
     /// <returns>The unprotected data.</returns>
-    public virtual string Unprotect(string data)
+    public virtual string? Unprotect(string? data)
     {
+        Debug.Assert(data != null);
         var split = data.IndexOf(':');
         if (split == -1 || split == data.Length - 1)
         {
@@ -47,7 +49,7 @@ public class DefaultPersonalDataProtector : IPersonalDataProtector
     /// </summary>
     /// <param name="data">The data to protect.</param>
     /// <returns>The protected data.</returns>
-    public virtual string Protect(string data)
+    public virtual string? Protect(string? data)
     {
         var current = _keyRing.CurrentKeyId;
         return current + ":" + _encryptor.Protect(current, data);
