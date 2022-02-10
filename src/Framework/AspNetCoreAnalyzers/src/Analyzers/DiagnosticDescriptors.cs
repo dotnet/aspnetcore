@@ -85,7 +85,7 @@ internal static class DiagnosticDescriptors
         "Do not use 'async void' in controller method declaration",
         "Consider converting to 'async Task'",
         "Usage",
-        DiagnosticSeverity.Warning,
+        DiagnosticSeverity.Error,
         isEnabledByDefault: true,
         helpLinkUri: "https://aka.ms/aspnet/analyzers");
 }

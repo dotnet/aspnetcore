@@ -81,7 +81,7 @@ public partial class AsyncVoidInMethodDeclarationAnalyzer : DiagnosticAnalyzer
 
     private static T? GetDeclaredSymbol<T>(SyntaxNodeAnalysisContext context, SyntaxNode syntax) where T : class
     {
-        return context.SemanticModel.GetDeclaredSymbol(syntax) as T;
+        return context.SemanticModel.GetDeclaredSymbol(syntax, context.CancellationToken) as T;
     }
 
     private static bool ShouldFireDiagnostic(MethodDeclarationSyntax methodDeclarationSyntax)
