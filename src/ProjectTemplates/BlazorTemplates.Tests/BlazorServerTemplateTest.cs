@@ -25,9 +25,8 @@ public class BlazorServerTemplateTest : BlazorTemplateTest
 
     public override string ProjectType { get; } = "blazorserver";
 
-    [Theory]
+    [Theory(Skip = "https://github.com/dotnet/aspnetcore/issues/30761")]
     [InlineData(BrowserKind.Chromium)]
-    [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/30761")]
     public async Task BlazorServerTemplateWorks_NoAuth(BrowserKind browserKind)
     {
         var project = await CreateBuildPublishAsync("blazorservernoauth" + browserKind);
@@ -81,9 +80,8 @@ public class BlazorServerTemplateTest : BlazorTemplateTest
     public static IEnumerable<object[]> BlazorServerTemplateWorks_IndividualAuthData =>
             BrowserManager.WithBrowsers(new[] { BrowserKind.Chromium }, true, false);
 
-    [Theory]
+    [Theory(Skip = "https://github.com/dotnet/aspnetcore/issues/30882")]
     [MemberData(nameof(BlazorServerTemplateWorks_IndividualAuthData))]
-    [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/30882")]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/30825", Queues = "All.OSX")]
     public async Task BlazorServerTemplateWorks_IndividualAuth(BrowserKind browserKind, bool useLocalDB)
     {
@@ -182,13 +180,12 @@ public class BlazorServerTemplateTest : BlazorTemplateTest
         Assert.Equal(5, await page.Locator("p+table>tbody>tr").CountAsync());
     }
 
-    [Theory]
+    [Theory(Skip = "https://github.com/dotnet/aspnetcore/issues/30882")]
     [InlineData("IndividualB2C", null)]
     [InlineData("IndividualB2C", new string[] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
     [InlineData("SingleOrg", null)]
     [InlineData("SingleOrg", new string[] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
     [InlineData("SingleOrg", new string[] { "--calls-graph" })]
-    [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/30882")]
     public Task BlazorServerTemplate_IdentityWeb_BuildAndPublish(string auth, string[] args)
         => CreateBuildPublishAsync("blazorserveridweb" + Guid.NewGuid().ToString().Substring(0, 10).ToLowerInvariant(), auth, args);
 

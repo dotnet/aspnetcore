@@ -23,9 +23,8 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
 
     public override string ProjectType { get; } = "blazorwasm";
 
-    [Theory]
+    [Theory(Skip = "https://github.com/dotnet/aspnetcore/issues/30882")]
     [InlineData(BrowserKind.Chromium)]
-    [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/30882")]
     public async Task BlazorWasmStandaloneTemplate_Works(BrowserKind browserKind)
     {
         var project = await CreateBuildPublishAsync("blazorstandalone" + browserKind);
@@ -60,9 +59,8 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
         return page;
     }
 
-    [Theory]
+    [Theory(Skip = "https://github.com/dotnet/aspnetcore/issues/30882")]
     [InlineData(BrowserKind.Chromium)]
-    [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/30882")]
     public async Task BlazorWasmHostedTemplate_Works(BrowserKind browserKind)
     {
         var project = await CreateBuildPublishAsync("blazorhosted" + BrowserKind.Chromium, args: new[] { "--hosted" }, serverProject: true);
@@ -109,9 +107,8 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
         Assert.Equal(expectedEncoding, response.Content.Headers.ContentEncoding.Single());
     }
 
-    [Theory]
+    [Theory(Skip = "https://github.com/dotnet/aspnetcore/issues/30882")]
     [InlineData(BrowserKind.Chromium)]
-    [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/30882")]
     public async Task BlazorWasmStandalonePwaTemplate_Works(BrowserKind browserKind)
     {
         var project = await CreateBuildPublishAsync("blazorstandalonepwa", args: new[] { "--pwa" });
@@ -145,9 +142,8 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
         }
     }
 
-    [Theory]
+    [Theory(Skip = "https://github.com/dotnet/aspnetcore/issues/30882")]
     [InlineData(BrowserKind.Chromium)]
-    [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/30882")]
     public async Task BlazorWasmHostedPwaTemplate_Works(BrowserKind browserKind)
     {
         var project = await CreateBuildPublishAsync("blazorhostedpwa", args: new[] { "--hosted", "--pwa" }, serverProject: true);
@@ -216,18 +212,16 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
         Assert.True(serviceWorkerContents.Contains($"/* Manifest version: {serviceWorkerAssetsManifestVersion} */", StringComparison.Ordinal));
     }
 
-    [ConditionalTheory]
+    [ConditionalTheory(Skip = "https://github.com/dotnet/aspnetcore/issues/30882")]
     [InlineData(BrowserKind.Chromium)]
     // LocalDB doesn't work on non Windows platforms
     [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-    [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/30882")]
     public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithLocalDB(BrowserKind browserKind)
         => BlazorWasmHostedTemplate_IndividualAuth_Works(browserKind, true);
 
     // This test depends on BlazorWasmTemplate_CreateBuildPublish_IndividualAuthNoLocalDb running first
-    [Theory]
+    [Theory(Skip = "https://github.com/dotnet/aspnetcore/issues/30882")]
     [InlineData(BrowserKind.Chromium)]
-    [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/30882")]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/30825", Queues = "All.OSX")]
     public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithOutLocalDB(BrowserKind browserKind)
         => BlazorWasmHostedTemplate_IndividualAuth_Works(browserKind, false);
@@ -379,9 +373,8 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
         public string[] Arguments { get; }
     }
 
-    [Theory]
+    [Theory(Skip = "https://github.com/dotnet/aspnetcore/issues/37782")]
     [MemberData(nameof(TemplateData))]
-    [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/37782")]
     public Task BlazorWasmHostedTemplate_AzureActiveDirectoryTemplate_Works(TemplateInstance instance)
         => CreateBuildPublishAsync(instance.Name, args: instance.Arguments, targetFramework: "netstandard2.1");
 
