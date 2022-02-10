@@ -194,7 +194,7 @@ internal sealed partial class SocketConnection : TransportConnection
                     break;
                 }
 
-                bool IsNormalCompletion(TransferResult result)
+                bool IsNormalCompletion(SocketOperationResult result)
                 {
                     if (!result.HasError)
                     {
