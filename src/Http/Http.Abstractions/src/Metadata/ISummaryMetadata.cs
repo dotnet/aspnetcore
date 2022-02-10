@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Http.Metadata;
 /// <summary>
 /// Defines a contract used to specify a summary in <see cref="Endpoint.Metadata"/>.
 /// </summary>
-public interface ISummaryMetadata
+public interface IEndpointSummaryMetadata
 {
     /// <summary>
     /// Gets the summary associated with the endpoint.

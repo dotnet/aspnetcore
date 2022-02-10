@@ -9,13 +9,13 @@ namespace Microsoft.AspNetCore.Http;
 /// Specifies a summary in <see cref="Endpoint.Metadata"/>.
 /// </summary>
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Delegate, Inherited = false, AllowMultiple = false)]
-public sealed class SummaryAttribute : Attribute, ISummaryMetadata
+public sealed class EndpointSummaryAttribute : Attribute, IEndpointSummaryMetadata
 {
     /// <summary>
-    /// Initializes an instance of the <see cref="SummaryAttribute"/>.
+    /// Initializes an instance of the <see cref="EndpointSummaryAttribute"/>.
     /// </summary>
     /// <param name="summary">The summary associated with the endpoint or parameter.</param>
-    public SummaryAttribute(string summary)
+    public EndpointSummaryAttribute(string summary)
     {
         Summary = summary;
     }

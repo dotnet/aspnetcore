@@ -210,7 +210,7 @@ public static class OpenApiRouteHandlerBuilderExtensions
     }
 
     /// <summary>
-    /// Adds <see cref="IDescriptionMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
+    /// Adds <see cref="IEndpointDescriptionMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
     /// produced by <paramref name="builder"/>.
     /// </summary>
     /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
@@ -218,12 +218,12 @@ public static class OpenApiRouteHandlerBuilderExtensions
     /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
     public static RouteHandlerBuilder WithDescription(this RouteHandlerBuilder builder, string description)
     {
-        builder.WithMetadata(new DescriptionAttribute(description));
+        builder.WithMetadata(new EndpointDescriptionAttribute(description));
         return builder;
     }
 
     /// <summary>
-    /// Adds <see cref="ISummaryMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
+    /// Adds <see cref="IEndpointSummaryMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
     /// produced by <paramref name="builder"/>.
     /// </summary>
     /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
@@ -231,7 +231,7 @@ public static class OpenApiRouteHandlerBuilderExtensions
     /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
     public static RouteHandlerBuilder WithSummary(this RouteHandlerBuilder builder, string summary)
     {
-        builder.WithMetadata(new SummaryAttribute(summary));
+        builder.WithMetadata(new EndpointSummaryAttribute(summary));
         return builder;
     }
 

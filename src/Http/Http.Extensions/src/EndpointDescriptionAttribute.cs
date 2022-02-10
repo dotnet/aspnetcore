@@ -14,13 +14,13 @@ namespace Microsoft.AspNetCore.Http;
 /// behavior.
 /// </remarks>
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Delegate, Inherited = false, AllowMultiple = false)]
-public sealed class DescriptionAttribute : Attribute, IDescriptionMetadata
+public sealed class EndpointDescriptionAttribute : Attribute, IEndpointDescriptionMetadata
 {
     /// <summary>
-    /// Initializes an instance of the <see cref="DescriptionAttribute"/>.
+    /// Initializes an instance of the <see cref="EndpointDescriptionAttribute"/>.
     /// </summary>
     /// <param name="description">The description associated with the endpoint or parameter.</param>
-    public DescriptionAttribute(string description)
+    public EndpointDescriptionAttribute(string description)
     {
         Description = description;
     }
