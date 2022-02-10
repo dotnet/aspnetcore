@@ -221,8 +221,8 @@ internal sealed partial class SocketConnection : TransportConnection
                     if (IsConnectionAbortError(result.SocketError!.SocketErrorCode))
                     {
                         // This exception should always be ignored because _shutdownReason should be set.
-                        error = result.SocketError!; 
-                        
+                        error = result.SocketError!;
+
                         if (!_socketDisposed)
                         {
                             // This is unexpected if the socket hasn't been disposed yet.
@@ -301,7 +301,7 @@ internal sealed partial class SocketConnection : TransportConnection
 
                         break;
                     }
-                    
+
                     // We don't return to the pool if there was an exception, and
                     // we keep the _sender assigned so that we can dispose it in StartAsync.
                     _socketSenderPool.Return(_sender);

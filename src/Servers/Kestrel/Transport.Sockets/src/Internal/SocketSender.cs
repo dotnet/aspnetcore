@@ -34,8 +34,8 @@ internal sealed class SocketSender : SocketAwaitableEventArgs
         var bytesTransferred = BytesTransferred;
         var error = SocketError;
 
-        return error == SocketError.Success 
-            ? new ValueTask<SocketOperationResult>(new SocketOperationResult(bytesTransferred)) 
+        return error == SocketError.Success
+            ? new ValueTask<SocketOperationResult>(new SocketOperationResult(bytesTransferred))
             : new ValueTask<SocketOperationResult>(new SocketOperationResult(CreateException(error)))
             ;
     }
@@ -69,8 +69,8 @@ internal sealed class SocketSender : SocketAwaitableEventArgs
         var bytesTransferred = BytesTransferred;
         var error = SocketError;
 
-        return error == SocketError.Success 
-            ? new ValueTask<SocketOperationResult>(new SocketOperationResult(bytesTransferred)) 
+        return error == SocketError.Success
+            ? new ValueTask<SocketOperationResult>(new SocketOperationResult(bytesTransferred))
             : new ValueTask<SocketOperationResult>(new SocketOperationResult(CreateException(error)))
             ;
     }
