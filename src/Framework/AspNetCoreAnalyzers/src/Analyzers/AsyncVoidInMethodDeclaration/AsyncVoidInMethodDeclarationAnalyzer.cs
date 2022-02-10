@@ -32,51 +32,58 @@ public partial class AsyncVoidInMethodDeclarationAnalyzer : DiagnosticAnalyzer
                 return;
             }
 
-            compilationStartContext.RegisterSyntaxNodeAction(classContext =>
-            {
-                if (classContext.Node is not ClassDeclarationSyntax classDeclaration)
-                {
-                    return;
-                }
-
-                var classSymbol = GetDeclaredSymbol<ITypeSymbol>(classContext, classDeclaration);
-
-                if (IsController(classSymbol, wellKnownTypes)
-                    || IsActionFilter(classSymbol, wellKnownTypes)
-                    || IsSignalRHub(classSymbol, wellKnownTypes))
-                {
-                    // scan for methods with async void signature
-                    for (int i = 0; i < classDeclaration.Members.Count; i++)
-                    {
-                        if (classDeclaration.Members[i] is MethodDeclarationSyntax methodDeclarationSyntax)
-                        {
-                            if (ShouldFireDiagnostic(methodDeclarationSyntax))
-                            {
-                                classContext.ReportDiagnostic(CreateDiagnostic(classDeclaration));
-                            }
-                        }
-                    }
-                }
-                else if (IsRazorPage(classSymbol, wellKnownTypes))
-                {
-                    // search only for methods that follow a pattern: 'On + HttpMethodName'
-                    for (int i = 0; i < classDeclaration.Members.Count; i++)
-                    {
-                        if (classDeclaration.Members[i] is MethodDeclarationSyntax methodDeclarationSyntax)
-                        {
-                            var methodSymbol = GetDeclaredSymbol<IMethodSymbol>(classContext,methodDeclarationSyntax);
-                            if (IsRazorPageHandlerMethod(methodSymbol, wellKnownTypes))
-                            {
-                                if (ShouldFireDiagnostic(methodDeclarationSyntax))
-                                {
-                                    classContext.ReportDiagnostic(CreateDiagnostic(classDeclaration));
-                                }
-                            }
-                        }
-                    }
-                }
-            }, SyntaxKind.ClassDeclaration);
+            InitializeWorker(compilationStartContext, wellKnownTypes);
         });
+    }
+
+    private static void InitializeWorker(CompilationStartAnalysisContext compilationStartContext, WellKnownTypes wellKnownTypes)
+    {
+        compilationStartContext.RegisterSyntaxNodeAction(classContext =>
+        {
+            if (classContext.Node is not ClassDeclarationSyntax classDeclaration)
+            {
+                return;
+            }
+
+            var classSymbol = GetDeclaredSymbol<ITypeSymbol>(classContext, classDeclaration);
+
+            if (IsController(classSymbol, wellKnownTypes) || IsSignalRHub(classSymbol, wellKnownTypes))
+            {
+                // scan for methods with async void signature
+                for (int i = 0; i < classDeclaration.Members.Count; i++)
+                {
+                    if (classDeclaration.Members[i] is not MethodDeclarationSyntax methodDeclarationSyntax)
+                    {
+                        continue;
+                    }
+
+                    if (ShouldFireDiagnostic(methodDeclarationSyntax))
+                    {
+                        classContext.ReportDiagnostic(CreateDiagnostic(classDeclaration));
+                    }
+                }
+            }
+            else if (IsRazorPage(classSymbol, wellKnownTypes) || IsMvcFilter(classSymbol, wellKnownTypes))
+            {
+                // search only for methods that follow a pattern: 'On + HttpMethodName'
+                for (int i = 0; i < classDeclaration.Members.Count; i++)
+                {
+                    if (classDeclaration.Members[i] is not MethodDeclarationSyntax methodDeclarationSyntax)
+                    {
+                        continue;
+                    }
+
+                    var methodSymbol = GetDeclaredSymbol<IMethodSymbol>(classContext,methodDeclarationSyntax);
+                    if (IsRazorPageHandlerMethod(methodSymbol, wellKnownTypes) || IsFilterMethod())
+                    {
+                        if (ShouldFireDiagnostic(methodDeclarationSyntax))
+                        {
+                            classContext.ReportDiagnostic(CreateDiagnostic(classDeclaration));
+                        }
+                    }
+                }
+            }
+        }, SyntaxKind.ClassDeclaration);
     }
 
     private static T? GetDeclaredSymbol<T>(SyntaxNodeAnalysisContext context, SyntaxNode syntax) where T : class

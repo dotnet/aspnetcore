@@ -7,12 +7,15 @@ namespace Microsoft.AspNetCore.Analyzers.AsyncVoidInMethodDeclaration;
 
 public partial class AsyncVoidInMethodDeclarationAnalyzer
 {
-    private static bool IsActionFilter(ITypeSymbol? classSymbol, WellKnownTypes wellKnownTypes) // TODO method unstable
+    private static bool IsMvcFilter(ITypeSymbol? classSymbol, WellKnownTypes wellKnownTypes) // TODO method unstable
     {
-        // An ActionFilter class definition inherits from IActionFilter interface
-
-        // classSymbol?.BaseType || classSymbol?.Interfaces
+        // TODO: use all possible interfaces defined in wellknowntypes to detect
         return ((classSymbol?.AllInterfaces.Contains(wellKnownTypes.IActionFilter) ?? false)
             || SymbolEqualityComparer.Default.Equals(wellKnownTypes.IActionFilter, classSymbol?.BaseType));
+    }
+
+    private static bool IsFilterMethod()
+    {
+        return false;
     }
 }

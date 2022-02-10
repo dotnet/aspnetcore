@@ -36,6 +36,30 @@ internal sealed class WellKnownTypes
             return false;
         }
 
+        const string IAuthorizationFilter = "Microsoft.AspNetCore.Mvc.Filters.IAuthorizationFilter";
+        if (compilation.GetTypeByMetadataName(IAuthorizationFilter) is not { } authorizationFilterInstance)
+        {
+            return false;
+        }
+
+        const string IExceptionFilter = "Microsoft.AspNetCore.Mvc.Filters.IExceptionFilter";
+        if (compilation.GetTypeByMetadataName(IExceptionFilter) is not { } exceptionFilterInstance)
+        {
+            return false;
+        }
+
+        const string IResourceFilter = "Microsoft.AspNetCore.Mvc.Filters.IResourceFilter";
+        if (compilation.GetTypeByMetadataName(IResourceFilter) is not { } resourceFilterInstance)
+        {
+            return false;
+        }
+
+        const string IResultFilter = "Microsoft.AspNetCore.Mvc.Filters.IResultFilter";
+        if (compilation.GetTypeByMetadataName(IResultFilter) is not { } resultFilterInstance)
+        {
+            return false;
+        }
+
         const string SignalRHub = "Microsoft.AspNetCore.SignalR.Hub";
         if (compilation.GetTypeByMetadataName(SignalRHub) is not { } signalRHub)
         {
@@ -60,6 +84,10 @@ internal sealed class WellKnownTypes
             ApiControllerAttribute = apiControllerAttribute,
             ControllerAttribute = controllerAttribute,
             IActionFilter = actionFilterInstance,
+            IAuthorizationFilter = authorizationFilterInstance,
+            IExceptionFilter = exceptionFilterInstance,
+            IResourceFilter = resourceFilterInstance,
+            IResultFilter = resultFilterInstance,
             SignalRHub = signalRHub,
             PageModel = pageModel,
             NonHandlerAttribute = nonHandlerAttribute,
@@ -75,6 +103,14 @@ internal sealed class WellKnownTypes
     public INamedTypeSymbol ControllerAttribute { get; private init; }
 
     public INamedTypeSymbol IActionFilter { get; private init; }
+
+    public INamedTypeSymbol IAuthorizationFilter { get; private init; }
+
+    public INamedTypeSymbol IExceptionFilter { get; private init; }
+
+    public INamedTypeSymbol IResourceFilter { get; private init; }
+
+    public INamedTypeSymbol IResultFilter { get; private init; }
 
     public INamedTypeSymbol SignalRHub { get; private init; }
 
