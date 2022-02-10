@@ -26,7 +26,7 @@ public static class IdentityEntityFrameworkBuilderExtensions
         return builder;
     }
 
-    private static void AddStores(IServiceCollection services, Type userType, Type roleType, Type contextType)
+    private static void AddStores(IServiceCollection services, Type userType, Type? roleType, Type contextType)
     {
         var identityUserType = FindGenericBaseType(userType, typeof(IdentityUser<>));
         if (identityUserType == null)
@@ -89,12 +89,11 @@ public static class IdentityEntityFrameworkBuilderExtensions
             }
             services.TryAddScoped(typeof(IUserStore<>).MakeGenericType(userType), userStoreType);
         }
-
     }
 
-    private static Type FindGenericBaseType(Type currentType, Type genericBaseType)
+    private static Type? FindGenericBaseType(Type currentType, Type genericBaseType)
     {
-        var type = currentType;
+        Type? type = currentType;
         while (type != null)
         {
             var genericType = type.IsGenericType ? type.GetGenericTypeDefinition() : null;

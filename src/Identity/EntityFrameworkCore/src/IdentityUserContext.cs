@@ -78,24 +78,24 @@ public abstract class IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, T
     /// <summary>
     /// Gets or sets the <see cref="DbSet{TEntity}"/> of Users.
     /// </summary>
-    public virtual DbSet<TUser> Users { get; set; }
+    public virtual DbSet<TUser> Users { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the <see cref="DbSet{TEntity}"/> of User claims.
     /// </summary>
-    public virtual DbSet<TUserClaim> UserClaims { get; set; }
+    public virtual DbSet<TUserClaim> UserClaims { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the <see cref="DbSet{TEntity}"/> of User logins.
     /// </summary>
-    public virtual DbSet<TUserLogin> UserLogins { get; set; }
+    public virtual DbSet<TUserLogin> UserLogins { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the <see cref="DbSet{TEntity}"/> of User tokens.
     /// </summary>
-    public virtual DbSet<TUserToken> UserTokens { get; set; }
+    public virtual DbSet<TUserToken> UserTokens { get; set; } = default!;
 
-    private StoreOptions GetStoreOptions() => this.GetService<IDbContextOptions>()
+    private StoreOptions? GetStoreOptions() => this.GetService<IDbContextOptions>()
                         .Extensions.OfType<CoreOptionsExtension>()
                         .FirstOrDefault()?.ApplicationServiceProvider
                         ?.GetService<IOptions<IdentityOptions>>()
@@ -118,7 +118,7 @@ public abstract class IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, T
         var storeOptions = GetStoreOptions();
         var maxKeyLength = storeOptions?.MaxLengthForKeys ?? 0;
         var encryptPersonalData = storeOptions?.ProtectPersonalData ?? false;
-        PersonalDataConverter converter = null;
+        PersonalDataConverter? converter = null;
 
         builder.Entity<TUser>(b =>
         {

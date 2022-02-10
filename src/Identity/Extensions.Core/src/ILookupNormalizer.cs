@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace Microsoft.AspNetCore.Identity;
 
 /// <summary>
@@ -13,13 +15,14 @@ public interface ILookupNormalizer
     /// </summary>
     /// <param name="name">The key to normalize.</param>
     /// <returns>A normalized representation of the specified <paramref name="name"/>.</returns>
-    string NormalizeName(string name);
+    [return: NotNullIfNotNull("name")]
+    string? NormalizeName(string? name);
 
     /// <summary>
     /// Returns a normalized representation of the specified <paramref name="email"/>.
     /// </summary>
     /// <param name="email">The email to normalize.</param>
     /// <returns>A normalized representation of the specified <paramref name="email"/>.</returns>
-    string NormalizeEmail(string email);
-
+    [return: NotNullIfNotNull("email")]
+    string? NormalizeEmail(string? email);
 }

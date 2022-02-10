@@ -14,7 +14,7 @@ public class IdentityError
     /// <value>
     /// The code for this error.
     /// </value>
-    public string Code { get; set; }
+    public string Code { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the description for this error.
@@ -22,5 +22,5 @@ public class IdentityError
     /// <value>
     /// The description for this error.
     /// </value>
-    public string Description { get; set; }
+    public string Description { get; set; } = default!;
 }

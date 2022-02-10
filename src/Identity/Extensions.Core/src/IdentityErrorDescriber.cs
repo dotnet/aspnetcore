@@ -96,7 +96,7 @@ public class IdentityErrorDescriber
     /// </summary>
     /// <param name="userName">The user name that is invalid.</param>
     /// <returns>An <see cref="IdentityError"/> indicating the specified user <paramref name="userName"/> is invalid.</returns>
-    public virtual IdentityError InvalidUserName(string userName)
+    public virtual IdentityError InvalidUserName(string? userName)
     {
         return new IdentityError
         {
@@ -110,7 +110,7 @@ public class IdentityErrorDescriber
     /// </summary>
     /// <param name="email">The email that is invalid.</param>
     /// <returns>An <see cref="IdentityError"/> indicating the specified <paramref name="email"/> is invalid.</returns>
-    public virtual IdentityError InvalidEmail(string email)
+    public virtual IdentityError InvalidEmail(string? email)
     {
         return new IdentityError
         {
@@ -152,7 +152,7 @@ public class IdentityErrorDescriber
     /// </summary>
     /// <param name="role">The invalid role.</param>
     /// <returns>An <see cref="IdentityError"/> indicating the specific role <paramref name="role"/> name is invalid.</returns>
-    public virtual IdentityError InvalidRoleName(string role)
+    public virtual IdentityError InvalidRoleName(string? role)
     {
         return new IdentityError
         {
