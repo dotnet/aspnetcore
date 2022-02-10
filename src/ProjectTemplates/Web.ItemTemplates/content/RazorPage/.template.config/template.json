@@ -37,7 +37,6 @@
   "symbols": {
     "namespace": {
       "description": "namespace for the generated code",
-      "displayName": "Namespace",
       "replaces": "MyApp.Namespace",
       "type": "parameter"
     },
