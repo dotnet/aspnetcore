@@ -38,7 +38,8 @@
     {
       "id": "DisableOpenAPI",
       "name": {
-        "text": "Enable _OpenAPI support"
+        "text": "Enable _OpenAPI support",
+        "overrideDefaultText": true
       },
       "description": {
         "text": "Enables OpenAPI (Swagger) support"
@@ -50,7 +51,8 @@
     {
       "id": "UseMinimalAPIs",
       "name": {
-        "text": "Use controllers (uncheck to use minimal APIs)"
+        "text": "Use controllers (uncheck to use minimal APIs)",
+        "overrideDefaultText": true
       },
       "invertBoolean": true,
       "isVisible": true,
