@@ -146,6 +146,21 @@ public abstract class ApiBehaviorTestBase<TStartup> : IClassFixture<MvcTestFixtu
     }
 
     [Fact]
+    public async Task ActionsWithApiBehavior_InferFromServicesParameters()
+    {
+        // Arrange
+        var id = 1;
+        var url = $"/contact/ActionWithInferredFromServicesParameter/{id}";
+        var response = await Client.GetAsync(url);
+
+        // Assert
+        await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+        var result = JsonConvert.DeserializeObject<Contact>(await response.Content.ReadAsStringAsync());
+        Assert.NotNull(result);
+        Assert.Equal(id, result.ContactId);
+    }
+
+    [Fact]
     public async Task ActionsWithApiBehavior_InferQueryAndRouteParameters()
     {
         // Arrange

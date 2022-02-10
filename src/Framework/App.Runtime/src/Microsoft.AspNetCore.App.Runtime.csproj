@@ -113,6 +113,12 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
     <NativePlatform>$(TargetArchitecture)</NativePlatform>
     <NativePlatform Condition=" '$(NativePlatform)' == 'x86' ">Win32</NativePlatform>
+
+    <!--
+      Package is needed when publishing for Helix tests. Set GeneratePackageOnBuild here, though sometimes
+      unnecessary, to avoid distinct references to this project.
+    -->
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>

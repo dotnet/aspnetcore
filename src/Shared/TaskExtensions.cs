@@ -80,12 +80,12 @@ static class TaskExtensions
         // or the debugger is attached
         if (task.IsCompleted || Debugger.IsAttached)
         {
-            return await task;
+            return await task.ConfigureAwait(false);
         }
 #if NET6_0_OR_GREATER
         try
         {
-            return await task.WaitAsync(timeout);
+            return await task.WaitAsync(timeout).ConfigureAwait(false);
         }
         catch (TimeoutException ex) when (ex.Source == typeof(TaskExtensions).Namespace)
         {
@@ -93,10 +93,10 @@ static class TaskExtensions
         }
 #else
         var cts = new CancellationTokenSource();
-        if (task == await Task.WhenAny(task, Task.Delay(timeout, cts.Token)))
+        if (task == await Task.WhenAny(task, Task.Delay(timeout, cts.Token)).ConfigureAwait(false))
         {
             cts.Cancel();
-            return await task;
+            return await task.ConfigureAwait(false);
         }
         else
         {
@@ -114,13 +114,13 @@ static class TaskExtensions
         // or the debugger is attached
         if (task.IsCompleted || Debugger.IsAttached)
         {
-            await task;
+            await task.ConfigureAwait(false);
             return;
         }
 #if NET6_0_OR_GREATER
         try
         {
-            await task.WaitAsync(timeout);
+            await task.WaitAsync(timeout).ConfigureAwait(false);
         }
         catch (TimeoutException ex) when (ex.Source == typeof(TaskExtensions).Namespace)
         {
@@ -128,10 +128,10 @@ static class TaskExtensions
         }
 #else
         var cts = new CancellationTokenSource();
-        if (task == await Task.WhenAny(task, Task.Delay(timeout, cts.Token)))
+        if (task == await Task.WhenAny(task, Task.Delay(timeout, cts.Token)).ConfigureAwait(false))
         {
             cts.Cancel();
-            await task;
+            await task.ConfigureAwait(false);
         }
         else
         {

@@ -70,7 +70,7 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
             _maximumMessageSize = _hubOptions.MaximumReceiveMessageSize;
             _enableDetailedErrors = _hubOptions.EnableDetailedErrors ?? _enableDetailedErrors;
             _maxParallelInvokes = _hubOptions.MaximumParallelInvocationsPerClient;
-            disableImplicitFromServiceParameters = _hubOptions.DisableImplicitFromServiceParameters;
+            disableImplicitFromServiceParameters = _hubOptions.DisableImplicitFromServicesParameters;
 
             if (_hubOptions.HubFilters != null)
             {
@@ -82,7 +82,7 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
             _maximumMessageSize = _globalHubOptions.MaximumReceiveMessageSize;
             _enableDetailedErrors = _globalHubOptions.EnableDetailedErrors ?? _enableDetailedErrors;
             _maxParallelInvokes = _globalHubOptions.MaximumParallelInvocationsPerClient;
-            disableImplicitFromServiceParameters = _globalHubOptions.DisableImplicitFromServiceParameters;
+            disableImplicitFromServiceParameters = _globalHubOptions.DisableImplicitFromServicesParameters;
 
             if (_globalHubOptions.HubFilters != null)
             {

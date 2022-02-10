@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel;
@@ -6,7 +6,9 @@ using System.Reflection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Moq;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 
@@ -478,6 +480,24 @@ Environment.NewLine + "int b";
     }
 
     [Fact]
+    public void InferBindingSourceForParameter_ReturnsServicesForComplexTypesRegisteredInDI()
+    {
+        // Arrange
+        var actionName = nameof(ParameterBindingController.ServiceParameter);
+        var parameter = GetParameterModel(typeof(ParameterBindingController), actionName);
+        // Using any built-in type defined in the Test action
+        var serviceProvider = Mock.Of<IServiceProviderIsService>(s => s.IsService(typeof(IApplicationModelProvider)) == true);
+        var convention = GetConvention(serviceProviderIsService: serviceProvider);
+
+        // Act
+        var result = convention.InferBindingSourceForParameter(parameter);
+
+        // Assert
+        Assert.True(convention.IsInferForServiceParametersEnabled);
+        Assert.Same(BindingSource.Services, result);
+    }
+
+    [Fact]
     public void PreservesBindingSourceInference_ForFromQueryParameter_WithDefaultName()
     {
         // Arrange
@@ -732,10 +752,12 @@ Environment.NewLine + "int b";
     }
 
     private static InferParameterBindingInfoConvention GetConvention(
-        IModelMetadataProvider modelMetadataProvider = null)
+        IModelMetadataProvider modelMetadataProvider = null,
+        IServiceProviderIsService serviceProviderIsService = null)
     {
         modelMetadataProvider = modelMetadataProvider ?? new EmptyModelMetadataProvider();
-        return new InferParameterBindingInfoConvention(modelMetadataProvider);
+        serviceProviderIsService = serviceProviderIsService ?? Mock.Of<IServiceProviderIsService>(s => s.IsService(It.IsAny<Type>()) == false);
+        return new InferParameterBindingInfoConvention(modelMetadataProvider, serviceProviderIsService);
     }
 
     private static ApplicationModelProviderContext GetContext(
@@ -871,6 +893,8 @@ Environment.NewLine + "int b";
         public IActionResult CollectionOfSimpleTypes(IList<int> parameter) => null;
 
         public IActionResult CollectionOfComplexTypes(IList<TestModel> parameter) => null;
+
+        public IActionResult ServiceParameter(IApplicationModelProvider parameter) => null;
     }
 
     [ApiController]

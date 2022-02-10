@@ -108,13 +108,13 @@ internal partial class RuntimeViewCompiler : IViewCompiler
 
         // Attempt to lookup the cache entry using the passed in path. This will succeed if the path is already
         // normalized and a cache entry exists.
-        if (_cache.TryGetValue(relativePath, out Task<CompiledViewDescriptor> cachedResult))
+        if (_cache.TryGetValue<Task<CompiledViewDescriptor>>(relativePath, out var cachedResult) && cachedResult is not null)
         {
             return cachedResult;
         }
 
         var normalizedPath = GetNormalizedPath(relativePath);
-        if (_cache.TryGetValue(normalizedPath, out cachedResult))
+        if (_cache.TryGetValue(normalizedPath, out cachedResult) && cachedResult is not null)
         {
             return cachedResult;
         }
@@ -136,7 +136,7 @@ internal partial class RuntimeViewCompiler : IViewCompiler
         lock (_cacheLock)
         {
             // Double-checked locking to handle a possible race.
-            if (_cache.TryGetValue(normalizedPath, out Task<CompiledViewDescriptor> result))
+            if (_cache.TryGetValue<Task<CompiledViewDescriptor>>(normalizedPath, out var result) && result is not null)
             {
                 return result;
             }

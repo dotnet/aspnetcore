@@ -57,6 +57,12 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <!-- PlatformManifest.txt is written in App.Runtime's GenerateSharedFxDepsFile target but not used here when servicing. -->
     <ReferencePlatformManifestPath Condition="'$(IsServicingBuild)' != 'true'">$(PlatformManifestOutputPath)</ReferencePlatformManifestPath>
     <ReferencePlatformManifestPath Condition="'$(IsServicingBuild)' == 'true'">$(RepoRoot)eng\PlatformManifest.txt</ReferencePlatformManifestPath>
+
+    <!--
+      Package is needed when publishing for Helix tests. Set GeneratePackageOnBuild here, though sometimes
+      unnecessary, to avoid distinct references to this project.
+    -->
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>

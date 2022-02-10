@@ -76,10 +76,10 @@ public class BlobLoggerProvider : BatchingLoggerProvider
                     writer.Write(logEvent.Message);
                 }
 
-                await writer.FlushAsync();
+                await writer.FlushAsync().ConfigureAwait(false);
                 var tryGetBuffer = stream.TryGetBuffer(out var buffer);
                 System.Diagnostics.Debug.Assert(tryGetBuffer);
-                await blob.AppendAsync(buffer, cancellationToken);
+                await blob.AppendAsync(buffer, cancellationToken).ConfigureAwait(false);
             }
         }
     }
