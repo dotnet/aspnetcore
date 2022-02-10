@@ -307,7 +307,7 @@
       "type": "parameter",
       "datatype": "bool",
       "defaultValue": "false",
-      "displayName": "ASP.NET Core Hosted",
+      "displayName": "ASP.NET Core _Hosted",
       "description": "If specified, includes an ASP.NET Core host for the Blazor WebAssembly app."
     },
     "auth": {
@@ -508,7 +508,7 @@
       "type": "parameter",
       "datatype": "bool",
       "defaultValue": "false",
-      "displayName": "Progressive Web Application",
+      "displayName": "_Progressive Web Application",
       "description": "If specified, produces a Progressive Web Application (PWA) supporting installation and offline use."
     },
     "OrganizationalAuth": {
