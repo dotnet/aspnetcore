@@ -18,7 +18,7 @@
     </AssemblyAttribute>
   </ItemGroup>
 
-  <Target Name="PrepareForTest" BeforeTargets="GetAssemblyAttributes" Condition="$(DesignTimeBuild) != true">
+  <Target Name="PrepareForTest" BeforeTargets="GetAssemblyAttributes" Condition=" '$(DesignTimeBuild)' != 'true' ">
     <PropertyGroup>
       <TestTemplateCreationFolder>$([MSBuild]::NormalizePath('$(OutputPath)$(TestTemplateCreationFolder)'))</TestTemplateCreationFolder>
       <CustomTemplateHivePath>$(TestTemplateCreationFolder)\Hives\$([System.Guid]::NewGuid())\.templateengine</CustomTemplateHivePath>

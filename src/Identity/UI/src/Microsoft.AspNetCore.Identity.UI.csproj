@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
     <Description>ASP.NET Core Identity UI is the default Razor Pages built-in UI for the ASP.NET Core Identity framework.</Description>
@@ -8,14 +8,24 @@
     <PackageTags>aspnetcore;identity;membership;razorpages</PackageTags>
     <EnableDefaultRazorGenerateItems>false</EnableDefaultRazorGenerateItems>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
-    <StaticWebAssetBasePath>Identity</StaticWebAssetBasePath>
+
     <PackageThirdPartyNoticesFile>$(MSBuildThisFileDirectory)THIRD-PARTY-NOTICES.TXT</PackageThirdPartyNoticesFile>
     <Nullable>disable</Nullable>
+
+    <StaticWebAssetBasePath>Identity</StaticWebAssetBasePath>
+    <ProvideApplicationPartFactoryAttributeTypeName>Microsoft.AspNetCore.Mvc.ApplicationParts.NullApplicationPartFactory, Microsoft.AspNetCore.Mvc.Core</ProvideApplicationPartFactoryAttributeTypeName>
+    <GenerateStaticWebAssetsPackTargetsDependsOn>_GenerateIdentityUIPackItems;$(GenerateStaticWebAssetsPackTargetsDependsOn)</GenerateStaticWebAssetsPackTargetsDependsOn>
+    <DisableStaticWebAssetsBuildPropsFileGeneration>true</DisableStaticWebAssetsBuildPropsFileGeneration>
+    <StaticWebAssetsDisableProjectBuildPropsFileGeneration>true</StaticWebAssetsDisableProjectBuildPropsFileGeneration>
+    <StaticWebAssetsDisableProjectBuildMultiTargetingPropsFileGeneration>true</StaticWebAssetsDisableProjectBuildMultiTargetingPropsFileGeneration>
+    <StaticWebAssetsDisableProjectBuildTransitivePropsFileGeneration>true</StaticWebAssetsDisableProjectBuildTransitivePropsFileGeneration>
+    <StaticWebAssetsGetBuildAssetsTargets>GetIdentityUIAssets</StaticWebAssetsGetBuildAssetsTargets>
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Remove="@(Content)" />
-    <Content Include="wwwroot\**\*" Pack="true" />
+    <None Include="build\*" Pack="true" PackagePath="build\" />
+    <None Include="buildMultiTargeting\*" Pack="true" PackagePath="buildMultiTargeting\" />
+    <None Include="buildTransitive\*" Pack="true" PackagePath="buildTransitive\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -28,10 +38,83 @@
 
   <Target Name="SetupRazorInputs" BeforeTargets="ResolveRazorGenerateInputs">
     <ItemGroup>
-      <_RazorGenerate Include="Areas\Identity\Pages\V5\**\*.cshtml" />
+      <_RazorGenerate Include="Areas\Identity\Pages\**\*.cshtml" />
 
       <RazorGenerate Include="@(_RazorGenerate)" Link="Areas\Identity\Pages\%(RecursiveDir)%(Filename)%(Extension)" />
     </ItemGroup>
   </Target>
 
+  <Target Name="GetIdentityUIAssets" Returns="@(ReferenceAsset)">
+    <PropertyGroup>
+      <_ReferenceAssetContentRoot Condition="'$(IdentityDefaultUIFramework)' == 'Bootstrap5'">assets/V5</_ReferenceAssetContentRoot>
+      <_ReferenceAssetContentRoot Condition="'$(IdentityDefaultUIFramework)' == 'Bootstrap4'">assets/V4</_ReferenceAssetContentRoot>
+    </PropertyGroup>
+    <ItemGroup>
+      <ReferenceAssetCandidates Condition="'$(IdentityDefaultUIFramework)' == 'Bootstrap5'" Include="assets\V5\**" />
+      <ReferenceAssetCandidates Condition="'$(IdentityDefaultUIFramework)' == 'Bootstrap4'" Include="assets\V4\**" />
+      <ReferenceAssetCandidates>
+        <RelativePath>%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
+        <ContentRoot>$([System.IO.Path]::GetFullPath($(_ReferenceAssetContentRoot)))</ContentRoot>
+      </ReferenceAssetCandidates>
+    </ItemGroup>
+    <DefineStaticWebAssets
+      Condition="'@(ReferenceAssetCandidates->Count())' != '0'"
+      CandidateAssets="@(ReferenceAssetCandidates)"
+      SourceId="$(PackageId)"
+      SourceType="Project"
+      AssetKind="All"
+      BasePath="$(StaticWebAssetBasePath)"
+    >
+      <Output TaskParameter="Assets" ItemName="ReferenceAsset" />
+    </DefineStaticWebAssets>
+    <ItemGroup>
+      <ReferenceAsset>
+        <ResultType>StaticWebAsset</ResultType>
+      </ReferenceAsset>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_GenerateIdentityUIPackItems">
+    <ItemGroup>
+      <V4AssetsCandidates Include="assets\V4\**" />
+      <V4AssetsCandidates>
+        <RelativePath>%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
+      </V4AssetsCandidates>
+      <V5AssetsCandidates Include="assets\V5\**" />
+      <V5AssetsCandidates>
+        <RelativePath>%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
+      </V5AssetsCandidates>
+    </ItemGroup>
+    <DefineStaticWebAssets Condition="'@(V4AssetsCandidates-&gt;Count())' != '0'" CandidateAssets="@(V4AssetsCandidates)" SourceId="$(PackageId)" SourceType="Discovered" AssetKind="All" ContentRoot="assets/V4" BasePath="$(StaticWebAssetBasePath)">
+      <Output TaskParameter="Assets" ItemName="V4Assets" />
+    </DefineStaticWebAssets>
+    <DefineStaticWebAssets Condition="'@(V5AssetsCandidates-&gt;Count())' != '0'" CandidateAssets="@(V5AssetsCandidates)" SourceId="$(PackageId)" SourceType="Discovered" AssetKind="All" ContentRoot="assets/V5" BasePath="$(StaticWebAssetBasePath)">
+      <Output TaskParameter="Assets" ItemName="V5Assets" />
+    </DefineStaticWebAssets>
+
+    <GenerateStaticWebAsssetsPropsFile StaticWebAssets="@(V4Assets)" PackagePathPrefix="staticwebassets/V4" TargetPropsFilePath="$(IntermediateOutputPath)IdentityUI.V4.targets" />
+    <GenerateStaticWebAsssetsPropsFile StaticWebAssets="@(V5Assets)" PackagePathPrefix="staticwebassets/V5" TargetPropsFilePath="$(IntermediateOutputPath)IdentityUI.V5.targets" />
+
+    <ComputeStaticWebAssetsTargetPaths Assets="@(V4Assets)" PathPrefix="staticwebassets/V4" AdjustPathsForPack="true">
+      <Output TaskParameter="AssetsWithTargetPath" ItemName="_PackV4Asset" />
+    </ComputeStaticWebAssetsTargetPaths>
+    <ComputeStaticWebAssetsTargetPaths Assets="@(V5Assets)" PathPrefix="staticwebassets/V5" AdjustPathsForPack="true">
+      <Output TaskParameter="AssetsWithTargetPath" ItemName="_PackV5Asset" />
+    </ComputeStaticWebAssetsTargetPaths>
+
+    <ItemGroup>
+      <TfmSpecificPackageFile Include="$(IntermediateOutputPath)IdentityUI.V4.targets">
+        <PackagePath>build\Microsoft.AspNetCore.StaticWebAssets.V4.targets</PackagePath>
+      </TfmSpecificPackageFile>
+      <TfmSpecificPackageFile Include="%(_PackV4Asset.Identity)">
+        <PackagePath>%(_PackV4Asset.TargetPath)</PackagePath>
+      </TfmSpecificPackageFile>
+      <TfmSpecificPackageFile Include="$(IntermediateOutputPath)IdentityUI.V5.targets">
+        <PackagePath>build\Microsoft.AspNetCore.StaticWebAssets.V5.targets</PackagePath>
+      </TfmSpecificPackageFile>
+      <TfmSpecificPackageFile Include="%(_PackV5Asset.Identity)">
+        <PackagePath>%(_PackV5Asset.TargetPath)</PackagePath>
+      </TfmSpecificPackageFile>
+    </ItemGroup>
+  </Target>
 </Project>

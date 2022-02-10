@@ -1,7 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Components.Server.CircuitOptions.RootComponents.get -> Microsoft.AspNetCore.Components.Server.CircuitRootComponentOptions!
-Microsoft.AspNetCore.Components.Server.CircuitRootComponentOptions
-Microsoft.AspNetCore.Components.Server.CircuitRootComponentOptions.CircuitRootComponentOptions() -> void
-Microsoft.AspNetCore.Components.Server.CircuitRootComponentOptions.JSComponents.get -> Microsoft.AspNetCore.Components.Web.JSComponentConfigurationStore!
-Microsoft.AspNetCore.Components.Server.CircuitRootComponentOptions.MaxJSRootComponents.get -> int
-Microsoft.AspNetCore.Components.Server.CircuitRootComponentOptions.MaxJSRootComponents.set -> void

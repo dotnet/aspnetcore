@@ -1,11 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Reflection;
-using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.ViewComponentConventionsTestClasses;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ViewComponents
 {
@@ -148,7 +145,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponentConventionsTestClasses
     public class CaseInsensitiveNamingConventionVIEWCOMPONENT
     {
     }
-
 
     [ViewComponent]
     public class WithAttribute

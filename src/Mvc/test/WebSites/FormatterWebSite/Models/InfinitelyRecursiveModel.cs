@@ -1,29 +1,27 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Newtonsoft.Json;
 
-namespace FormatterWebSite
+namespace FormatterWebSite;
+
+public class InfinitelyRecursiveModel
 {
-    public class InfinitelyRecursiveModel
+    [JsonConverter(typeof(StringIdentifierConverter))]
+    public RecursiveIdentifier Id { get; set; }
+
+    private class StringIdentifierConverter : JsonConverter
     {
-        [JsonConverter(typeof(StringIdentifierConverter))]
-        public RecursiveIdentifier Id { get; set; }
+        public override bool CanConvert(Type objectType) => objectType == typeof(RecursiveIdentifier);
 
-        private class StringIdentifierConverter : JsonConverter
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            public override bool CanConvert(Type objectType) => objectType == typeof(RecursiveIdentifier);
+            return new RecursiveIdentifier(reader.Value.ToString());
+        }
 
-            public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-            {
-                return new RecursiveIdentifier(reader.Value.ToString());
-            }
-
-            public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
-            {
-                throw new NotImplementedException();
-            }
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            throw new NotImplementedException();
         }
     }
 }

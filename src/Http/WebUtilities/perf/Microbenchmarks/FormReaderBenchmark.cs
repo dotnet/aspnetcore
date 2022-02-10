@@ -2,48 +2,42 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
-using System.Collections.Generic;
-using System.IO;
 using System.IO.Pipelines;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
-using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNetCore.WebUtilities
+namespace Microsoft.AspNetCore.WebUtilities;
+
+public class FormReaderBenchmark
 {
-    public class FormReaderBenchmark
+    [Benchmark]
+    public async Task ReadSmallFormAsyncStream()
     {
-        [Benchmark]
-        public async Task ReadSmallFormAsyncStream()
-        {
-            var bytes = Encoding.UTF8.GetBytes("foo=bar&baz=boo");
-            var stream = new MemoryStream(bytes);
+        var bytes = Encoding.UTF8.GetBytes("foo=bar&baz=boo");
+        var stream = new MemoryStream(bytes);
 
-            for (var i = 0; i < 1000; i++)
-            {
-                var formReader = new FormReader(stream);
-                await formReader.ReadFormAsync();
-                stream.Position = 0;
-            }
+        for (var i = 0; i < 1000; i++)
+        {
+            var formReader = new FormReader(stream);
+            await formReader.ReadFormAsync();
+            stream.Position = 0;
         }
+    }
 
-        [Benchmark]
-        public async Task ReadSmallFormAsyncPipe()
+    [Benchmark]
+    public async Task ReadSmallFormAsyncPipe()
+    {
+        var pipe = new Pipe();
+        var bytes = Encoding.UTF8.GetBytes("foo=bar&baz=boo");
+
+        for (var i = 0; i < 1000; i++)
         {
-            var pipe = new Pipe();
-            var bytes = Encoding.UTF8.GetBytes("foo=bar&baz=boo");
-
-            for (var i = 0; i < 1000; i++)
-            {
-                pipe.Writer.Write(bytes);
-                pipe.Writer.Complete();
-                var formReader = new FormPipeReader(pipe.Reader);
-                await formReader.ReadFormAsync();
-                pipe.Reader.Complete();
-                pipe.Reset();
-            }
+            pipe.Writer.Write(bytes);
+            pipe.Writer.Complete();
+            var formReader = new FormPipeReader(pipe.Reader);
+            await formReader.ReadFormAsync();
+            pipe.Reader.Complete();
+            pipe.Reset();
         }
     }
 }

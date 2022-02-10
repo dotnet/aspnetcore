@@ -1,101 +1,98 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.SignalR.Internal
+namespace Microsoft.AspNetCore.SignalR.Internal;
+
+internal class HubFilterFactory : IHubFilter
 {
-    internal class HubFilterFactory : IHubFilter
+    private readonly ObjectFactory _objectFactory;
+
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+    private readonly Type _filterType;
+
+    public HubFilterFactory([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type filterType)
     {
-        private readonly ObjectFactory _objectFactory;
+        _objectFactory = ActivatorUtilities.CreateFactory(filterType, Array.Empty<Type>());
+        _filterType = filterType;
+    }
 
-        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-        private readonly Type _filterType;
+    public async ValueTask<object?> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object?>> next)
+    {
+        var (filter, owned) = GetFilter(invocationContext.ServiceProvider);
 
-        public HubFilterFactory([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type filterType)
+        try
         {
-            _objectFactory = ActivatorUtilities.CreateFactory(filterType, Array.Empty<Type>());
-            _filterType = filterType;
+            return await filter.InvokeMethodAsync(invocationContext, next);
         }
-
-        public async ValueTask<object?> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object?>> next)
+        finally
         {
-            var (filter, owned) = GetFilter(invocationContext.ServiceProvider);
-
-            try
+            if (owned)
             {
-                return await filter.InvokeMethodAsync(invocationContext, next);
-            }
-            finally
-            {
-                if (owned)
-                {
-                    await DisposeFilter(filter);
-                }
+                await DisposeFilter(filter);
             }
         }
+    }
 
-        public async Task OnConnectedAsync(HubLifetimeContext context, Func<HubLifetimeContext, Task> next)
+    public async Task OnConnectedAsync(HubLifetimeContext context, Func<HubLifetimeContext, Task> next)
+    {
+        var (filter, owned) = GetFilter(context.ServiceProvider);
+
+        try
         {
-            var (filter, owned) = GetFilter(context.ServiceProvider);
-
-            try
+            await filter.OnConnectedAsync(context, next);
+        }
+        finally
+        {
+            if (owned)
             {
-                await filter.OnConnectedAsync(context, next);
-            }
-            finally
-            {
-                if (owned)
-                {
-                    await DisposeFilter(filter);
-                }
+                await DisposeFilter(filter);
             }
         }
+    }
 
-        public async Task OnDisconnectedAsync(HubLifetimeContext context, Exception? exception, Func<HubLifetimeContext, Exception?, Task> next)
+    public async Task OnDisconnectedAsync(HubLifetimeContext context, Exception? exception, Func<HubLifetimeContext, Exception?, Task> next)
+    {
+        var (filter, owned) = GetFilter(context.ServiceProvider);
+
+        try
         {
-            var (filter, owned) = GetFilter(context.ServiceProvider);
-
-            try
+            await filter.OnDisconnectedAsync(context, exception, next);
+        }
+        finally
+        {
+            if (owned)
             {
-                await filter.OnDisconnectedAsync(context, exception, next);
-            }
-            finally
-            {
-                if (owned)
-                {
-                    await DisposeFilter(filter);
-                }
+                await DisposeFilter(filter);
             }
         }
+    }
 
-        private static ValueTask DisposeFilter(IHubFilter filter)
+    private static ValueTask DisposeFilter(IHubFilter filter)
+    {
+        if (filter is IAsyncDisposable asyncDispsable)
         {
-            if (filter is IAsyncDisposable asyncDispsable)
-            {
-                return asyncDispsable.DisposeAsync();
-            }
-            if (filter is IDisposable disposable)
-            {
-                disposable.Dispose();
-            }
-            return default;
+            return asyncDispsable.DisposeAsync();
+        }
+        if (filter is IDisposable disposable)
+        {
+            disposable.Dispose();
+        }
+        return default;
+    }
+
+    private (IHubFilter, bool) GetFilter(IServiceProvider serviceProvider)
+    {
+        var owned = false;
+        var filter = (IHubFilter?)serviceProvider.GetService(_filterType);
+        if (filter == null)
+        {
+            filter = (IHubFilter)_objectFactory.Invoke(serviceProvider, Array.Empty<object>());
+            owned = true;
         }
 
-        private (IHubFilter, bool) GetFilter(IServiceProvider serviceProvider)
-        {
-            var owned = false;
-            var filter = (IHubFilter?)serviceProvider.GetService(_filterType);
-            if (filter == null)
-            {
-                filter = (IHubFilter)_objectFactory.Invoke(serviceProvider, Array.Empty<object>());
-                owned = true;
-            }
-
-            return (filter, owned);
-        }
+        return (filter, owned);
     }
 }

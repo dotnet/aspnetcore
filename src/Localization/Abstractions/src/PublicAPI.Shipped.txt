@@ -5,8 +5,8 @@ Microsoft.Extensions.Localization.IStringLocalizer.this[string! name, params obj
 Microsoft.Extensions.Localization.IStringLocalizer.this[string! name].get -> Microsoft.Extensions.Localization.LocalizedString!
 Microsoft.Extensions.Localization.IStringLocalizer<T>
 Microsoft.Extensions.Localization.IStringLocalizerFactory
-Microsoft.Extensions.Localization.IStringLocalizerFactory.Create(System.Type! resourceSource) -> Microsoft.Extensions.Localization.IStringLocalizer!
 Microsoft.Extensions.Localization.IStringLocalizerFactory.Create(string! baseName, string! location) -> Microsoft.Extensions.Localization.IStringLocalizer!
+Microsoft.Extensions.Localization.IStringLocalizerFactory.Create(System.Type! resourceSource) -> Microsoft.Extensions.Localization.IStringLocalizer!
 Microsoft.Extensions.Localization.LocalizedString
 Microsoft.Extensions.Localization.LocalizedString.LocalizedString(string! name, string! value) -> void
 Microsoft.Extensions.Localization.LocalizedString.LocalizedString(string! name, string! value, bool resourceNotFound) -> void

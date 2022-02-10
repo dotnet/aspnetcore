@@ -4,65 +4,63 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
+namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator;
+
+internal partial class HubServerProxyGenerator
 {
-    internal partial class HubServerProxyGenerator
+    public class SourceGenerationSpec
     {
-        public class SourceGenerationSpec
-        {
-            public string? GetterNamespace;
-            public string? GetterClassName;
-            public string? GetterMethodName;
-            public string? GetterTypeParameterName;
-            public string? GetterHubConnectionParameterName;
-            public string? GetterMethodAccessibility;
-            public string? GetterClassAccessibility;
-            public List<ClassSpec> Classes = new();
-        }
+        public string? GetterNamespace;
+        public string? GetterClassName;
+        public string? GetterMethodName;
+        public string? GetterTypeParameterName;
+        public string? GetterHubConnectionParameterName;
+        public string? GetterMethodAccessibility;
+        public string? GetterClassAccessibility;
+        public List<ClassSpec> Classes = new();
+    }
 
-        public class ClassSpec
-        {
-            public string FullyQualifiedInterfaceTypeName;
-            public string ClassTypeName;
-            public List<MethodSpec> Methods = new();
-            public Location CallSite;
-        }
+    public class ClassSpec
+    {
+        public string FullyQualifiedInterfaceTypeName;
+        public string ClassTypeName;
+        public List<MethodSpec> Methods = new();
+        public Location CallSite;
+    }
 
-        public class MethodSpec
-        {
-            public string Name;
-            public string FullyQualifiedReturnTypeName;
-            public List<ArgumentSpec> Arguments = new();
-            public SupportClassification Support;
-            public string? SupportHint;
-            public StreamSpec Stream;
-            public string? InnerReturnTypeName;
-            public bool IsReturnTypeValueTask => FullyQualifiedReturnTypeName
-                .StartsWith("System.Threading.Tasks.ValueTask", StringComparison.Ordinal);
-        }
+    public class MethodSpec
+    {
+        public string Name;
+        public string FullyQualifiedReturnTypeName;
+        public List<ArgumentSpec> Arguments = new();
+        public SupportClassification Support;
+        public string? SupportHint;
+        public StreamSpec Stream;
+        public string? InnerReturnTypeName;
+        public bool IsReturnTypeValueTask => FullyQualifiedReturnTypeName
+            .StartsWith("System.Threading.Tasks.ValueTask", StringComparison.Ordinal);
+    }
 
-        [Flags]
-        public enum StreamSpec
-        {
-            None = 0,
-            ClientToServer = 1,
-            ServerToClient = 2,
-            AsyncEnumerable = 4,
-            Bidirectional = ClientToServer | ServerToClient
-        }
+    [Flags]
+    public enum StreamSpec
+    {
+        None = 0,
+        ClientToServer = 1,
+        ServerToClient = 2,
+        AsyncEnumerable = 4,
+        Bidirectional = ClientToServer | ServerToClient
+    }
 
-        public enum SupportClassification
-        {
-            Supported,
-            UnsupportedReturnType
-        }
+    public enum SupportClassification
+    {
+        Supported,
+        UnsupportedReturnType
+    }
 
-        public class ArgumentSpec
-        {
-            public string Name;
-            public string FullyQualifiedTypeName;
-        }
+    public class ArgumentSpec
+    {
+        public string Name;
+        public string FullyQualifiedTypeName;
     }
 }

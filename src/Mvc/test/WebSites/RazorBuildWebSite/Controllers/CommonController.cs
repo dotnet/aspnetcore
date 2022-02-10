@@ -3,13 +3,12 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace RazorBuildWebSite.Controllers
+namespace RazorBuildWebSite.Controllers;
+
+public class CommonController : Controller
 {
-    public class CommonController : Controller
+    public new ActionResult View()
     {
-        public new ActionResult View()
-        {
-            return base.View("CommonView");
-        }
+        return base.View("CommonView");
     }
 }

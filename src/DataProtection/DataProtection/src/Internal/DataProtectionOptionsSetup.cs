@@ -4,20 +4,19 @@
 using System;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.DataProtection.Internal
+namespace Microsoft.AspNetCore.DataProtection.Internal;
+
+internal class DataProtectionOptionsSetup : IConfigureOptions<DataProtectionOptions>
 {
-    internal class DataProtectionOptionsSetup : IConfigureOptions<DataProtectionOptions>
+    private readonly IServiceProvider _services;
+
+    public DataProtectionOptionsSetup(IServiceProvider provider)
     {
-        private readonly IServiceProvider _services;
+        _services = provider;
+    }
 
-        public DataProtectionOptionsSetup(IServiceProvider provider)
-        {
-            _services = provider;
-        }
-
-        public void Configure(DataProtectionOptions options)
-        {
-            options.ApplicationDiscriminator = _services.GetApplicationUniqueIdentifier();
-        }
+    public void Configure(DataProtectionOptions options)
+    {
+        options.ApplicationDiscriminator = _services.GetApplicationUniqueIdentifier();
     }
 }

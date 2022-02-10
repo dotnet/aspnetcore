@@ -1,1 +1,0 @@
-TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersInSection.cshtml(15,5): Error RZ2002: Section blocks ("@section Header { ... }") cannot be nested.  Only one level of section blocks are allowed.

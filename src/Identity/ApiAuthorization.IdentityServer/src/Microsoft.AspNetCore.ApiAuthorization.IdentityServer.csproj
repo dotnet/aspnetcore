@@ -24,11 +24,6 @@
     <Reference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
     <Reference Include="Microsoft.AspNetCore.Identity.UI" />
     <Reference Include="Newtonsoft.Json" />
-    <SuppressBaselineReference Include="IdentityServer4.AspNetIdentity" />
-    <SuppressBaselineReference Include="IdentityServer4.EntityFramework" />
-    <SuppressBaselineReference Include="IdentityServer4.EntityFramework.Storage" />
-    <SuppressBaselineReference Include="IdentityServer4" />
-    <SuppressBaselineReference Include="IdentityServer4.Storage" />
 
     <!-- These references don't matter as they'll be replaced by the shared framework reference -->
     <Reference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />

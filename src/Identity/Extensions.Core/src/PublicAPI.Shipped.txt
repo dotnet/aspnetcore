@@ -1,129 +1,8 @@
 #nullable enable
-Microsoft.AspNetCore.Identity.AuthenticatorTokenProvider<TUser>.AuthenticatorTokenProvider() -> void
-Microsoft.AspNetCore.Identity.ClaimsIdentityOptions
-Microsoft.AspNetCore.Identity.ClaimsIdentityOptions.ClaimsIdentityOptions() -> void
-Microsoft.AspNetCore.Identity.DefaultPersonalDataProtector
-Microsoft.AspNetCore.Identity.DefaultUserConfirmation<TUser>.DefaultUserConfirmation() -> void
-Microsoft.AspNetCore.Identity.EmailTokenProvider<TUser>.EmailTokenProvider() -> void
-Microsoft.AspNetCore.Identity.ILookupNormalizer
-Microsoft.AspNetCore.Identity.ILookupProtector
-Microsoft.AspNetCore.Identity.ILookupProtectorKeyRing
-Microsoft.AspNetCore.Identity.IPersonalDataProtector
-Microsoft.AspNetCore.Identity.IdentityBuilder
-Microsoft.AspNetCore.Identity.IdentityError
-Microsoft.AspNetCore.Identity.IdentityError.IdentityError() -> void
-Microsoft.AspNetCore.Identity.IdentityErrorDescriber
-Microsoft.AspNetCore.Identity.IdentityErrorDescriber.IdentityErrorDescriber() -> void
-Microsoft.AspNetCore.Identity.IdentityOptions
-Microsoft.AspNetCore.Identity.IdentityOptions.IdentityOptions() -> void
-Microsoft.AspNetCore.Identity.IdentityResult
-Microsoft.AspNetCore.Identity.IdentityResult.IdentityResult() -> void
-Microsoft.AspNetCore.Identity.IdentityResult.Succeeded.get -> bool
-Microsoft.AspNetCore.Identity.IdentityResult.Succeeded.set -> void
-Microsoft.AspNetCore.Identity.LockoutOptions
-Microsoft.AspNetCore.Identity.LockoutOptions.AllowedForNewUsers.get -> bool
-Microsoft.AspNetCore.Identity.LockoutOptions.AllowedForNewUsers.set -> void
-Microsoft.AspNetCore.Identity.LockoutOptions.DefaultLockoutTimeSpan.get -> System.TimeSpan
-Microsoft.AspNetCore.Identity.LockoutOptions.DefaultLockoutTimeSpan.set -> void
-Microsoft.AspNetCore.Identity.LockoutOptions.LockoutOptions() -> void
-Microsoft.AspNetCore.Identity.LockoutOptions.MaxFailedAccessAttempts.get -> int
-Microsoft.AspNetCore.Identity.LockoutOptions.MaxFailedAccessAttempts.set -> void
-Microsoft.AspNetCore.Identity.PasswordHasherCompatibilityMode
-Microsoft.AspNetCore.Identity.PasswordHasherCompatibilityMode.IdentityV2 = 0 -> Microsoft.AspNetCore.Identity.PasswordHasherCompatibilityMode
-Microsoft.AspNetCore.Identity.PasswordHasherCompatibilityMode.IdentityV3 = 1 -> Microsoft.AspNetCore.Identity.PasswordHasherCompatibilityMode
-Microsoft.AspNetCore.Identity.PasswordHasherOptions
-Microsoft.AspNetCore.Identity.PasswordHasherOptions.CompatibilityMode.get -> Microsoft.AspNetCore.Identity.PasswordHasherCompatibilityMode
-Microsoft.AspNetCore.Identity.PasswordHasherOptions.CompatibilityMode.set -> void
-Microsoft.AspNetCore.Identity.PasswordHasherOptions.IterationCount.get -> int
-Microsoft.AspNetCore.Identity.PasswordHasherOptions.IterationCount.set -> void
-Microsoft.AspNetCore.Identity.PasswordHasherOptions.PasswordHasherOptions() -> void
-Microsoft.AspNetCore.Identity.PasswordOptions
-Microsoft.AspNetCore.Identity.PasswordOptions.PasswordOptions() -> void
-Microsoft.AspNetCore.Identity.PasswordOptions.RequireDigit.get -> bool
-Microsoft.AspNetCore.Identity.PasswordOptions.RequireDigit.set -> void
-Microsoft.AspNetCore.Identity.PasswordOptions.RequireLowercase.get -> bool
-Microsoft.AspNetCore.Identity.PasswordOptions.RequireLowercase.set -> void
-Microsoft.AspNetCore.Identity.PasswordOptions.RequireNonAlphanumeric.get -> bool
-Microsoft.AspNetCore.Identity.PasswordOptions.RequireNonAlphanumeric.set -> void
-Microsoft.AspNetCore.Identity.PasswordOptions.RequireUppercase.get -> bool
-Microsoft.AspNetCore.Identity.PasswordOptions.RequireUppercase.set -> void
-Microsoft.AspNetCore.Identity.PasswordOptions.RequiredLength.get -> int
-Microsoft.AspNetCore.Identity.PasswordOptions.RequiredLength.set -> void
-Microsoft.AspNetCore.Identity.PasswordOptions.RequiredUniqueChars.get -> int
-Microsoft.AspNetCore.Identity.PasswordOptions.RequiredUniqueChars.set -> void
-Microsoft.AspNetCore.Identity.PasswordVerificationResult
-Microsoft.AspNetCore.Identity.PasswordVerificationResult.Failed = 0 -> Microsoft.AspNetCore.Identity.PasswordVerificationResult
-Microsoft.AspNetCore.Identity.PasswordVerificationResult.Success = 1 -> Microsoft.AspNetCore.Identity.PasswordVerificationResult
-Microsoft.AspNetCore.Identity.PasswordVerificationResult.SuccessRehashNeeded = 2 -> Microsoft.AspNetCore.Identity.PasswordVerificationResult
-Microsoft.AspNetCore.Identity.PersonalDataAttribute
-Microsoft.AspNetCore.Identity.PersonalDataAttribute.PersonalDataAttribute() -> void
-Microsoft.AspNetCore.Identity.PhoneNumberTokenProvider<TUser>.PhoneNumberTokenProvider() -> void
-Microsoft.AspNetCore.Identity.ProtectedPersonalDataAttribute
-Microsoft.AspNetCore.Identity.ProtectedPersonalDataAttribute.ProtectedPersonalDataAttribute() -> void
-Microsoft.AspNetCore.Identity.RoleManager<TRole>.Dispose() -> void
-Microsoft.AspNetCore.Identity.RoleManager<TRole>.ThrowIfDisposed() -> void
-Microsoft.AspNetCore.Identity.SignInOptions
-Microsoft.AspNetCore.Identity.SignInOptions.RequireConfirmedAccount.get -> bool
-Microsoft.AspNetCore.Identity.SignInOptions.RequireConfirmedAccount.set -> void
-Microsoft.AspNetCore.Identity.SignInOptions.RequireConfirmedEmail.get -> bool
-Microsoft.AspNetCore.Identity.SignInOptions.RequireConfirmedEmail.set -> void
-Microsoft.AspNetCore.Identity.SignInOptions.RequireConfirmedPhoneNumber.get -> bool
-Microsoft.AspNetCore.Identity.SignInOptions.RequireConfirmedPhoneNumber.set -> void
-Microsoft.AspNetCore.Identity.SignInOptions.SignInOptions() -> void
-Microsoft.AspNetCore.Identity.SignInResult
-Microsoft.AspNetCore.Identity.SignInResult.IsLockedOut.get -> bool
-Microsoft.AspNetCore.Identity.SignInResult.IsLockedOut.set -> void
-Microsoft.AspNetCore.Identity.SignInResult.IsNotAllowed.get -> bool
-Microsoft.AspNetCore.Identity.SignInResult.IsNotAllowed.set -> void
-Microsoft.AspNetCore.Identity.SignInResult.RequiresTwoFactor.get -> bool
-Microsoft.AspNetCore.Identity.SignInResult.RequiresTwoFactor.set -> void
-Microsoft.AspNetCore.Identity.SignInResult.SignInResult() -> void
-Microsoft.AspNetCore.Identity.SignInResult.Succeeded.get -> bool
-Microsoft.AspNetCore.Identity.SignInResult.Succeeded.set -> void
-Microsoft.AspNetCore.Identity.StoreOptions
-Microsoft.AspNetCore.Identity.StoreOptions.MaxLengthForKeys.get -> int
-Microsoft.AspNetCore.Identity.StoreOptions.MaxLengthForKeys.set -> void
-Microsoft.AspNetCore.Identity.StoreOptions.ProtectPersonalData.get -> bool
-Microsoft.AspNetCore.Identity.StoreOptions.ProtectPersonalData.set -> void
-Microsoft.AspNetCore.Identity.StoreOptions.StoreOptions() -> void
-Microsoft.AspNetCore.Identity.TokenOptions
-Microsoft.AspNetCore.Identity.TokenOptions.TokenOptions() -> void
-Microsoft.AspNetCore.Identity.TokenProviderDescriptor
-Microsoft.AspNetCore.Identity.TotpSecurityStampBasedTokenProvider<TUser>.TotpSecurityStampBasedTokenProvider() -> void
-Microsoft.AspNetCore.Identity.UpperInvariantLookupNormalizer
-Microsoft.AspNetCore.Identity.UpperInvariantLookupNormalizer.UpperInvariantLookupNormalizer() -> void
-Microsoft.AspNetCore.Identity.UserLoginInfo
-Microsoft.AspNetCore.Identity.UserManager<TUser>.Dispose() -> void
-Microsoft.AspNetCore.Identity.UserManager<TUser>.ThrowIfDisposed() -> void
-Microsoft.AspNetCore.Identity.UserOptions
-Microsoft.AspNetCore.Identity.UserOptions.RequireUniqueEmail.get -> bool
-Microsoft.AspNetCore.Identity.UserOptions.RequireUniqueEmail.set -> void
-Microsoft.AspNetCore.Identity.UserOptions.UserOptions() -> void
-Microsoft.Extensions.DependencyInjection.IdentityServiceCollectionExtensions
-System.Security.Claims.PrincipalExtensions
-virtual Microsoft.AspNetCore.Identity.PasswordValidator<TUser>.IsDigit(char c) -> bool
-virtual Microsoft.AspNetCore.Identity.PasswordValidator<TUser>.IsLetterOrDigit(char c) -> bool
-virtual Microsoft.AspNetCore.Identity.PasswordValidator<TUser>.IsLower(char c) -> bool
-virtual Microsoft.AspNetCore.Identity.PasswordValidator<TUser>.IsUpper(char c) -> bool
-virtual Microsoft.AspNetCore.Identity.RoleManager<TRole>.CancellationToken.get -> System.Threading.CancellationToken
-virtual Microsoft.AspNetCore.Identity.RoleManager<TRole>.Dispose(bool disposing) -> void
-virtual Microsoft.AspNetCore.Identity.RoleManager<TRole>.SupportsQueryableRoles.get -> bool
-virtual Microsoft.AspNetCore.Identity.RoleManager<TRole>.SupportsRoleClaims.get -> bool
-virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.CancellationToken.get -> System.Threading.CancellationToken
-virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.Dispose(bool disposing) -> void
-virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SupportsQueryableUsers.get -> bool
-virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SupportsUserAuthenticationTokens.get -> bool
-virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SupportsUserAuthenticatorKey.get -> bool
-virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SupportsUserClaim.get -> bool
-virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SupportsUserEmail.get -> bool
-virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SupportsUserLockout.get -> bool
-virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SupportsUserLogin.get -> bool
-virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SupportsUserPassword.get -> bool
-virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SupportsUserPhoneNumber.get -> bool
-virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SupportsUserRole.get -> bool
-virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SupportsUserSecurityStamp.get -> bool
-virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SupportsUserTwoFactor.get -> bool
-virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SupportsUserTwoFactorRecoveryCodes.get -> bool
+~abstract Microsoft.AspNetCore.Identity.TotpSecurityStampBasedTokenProvider<TUser>.CanGenerateTwoFactorTokenAsync(Microsoft.AspNetCore.Identity.UserManager<TUser> manager, TUser user) -> System.Threading.Tasks.Task<bool>
+~const Microsoft.AspNetCore.Identity.UserManager<TUser>.ChangePhoneNumberTokenPurpose = "ChangePhoneNumber" -> string
+~const Microsoft.AspNetCore.Identity.UserManager<TUser>.ConfirmEmailTokenPurpose = "EmailConfirmation" -> string
+~const Microsoft.AspNetCore.Identity.UserManager<TUser>.ResetPasswordTokenPurpose = "ResetPassword" -> string
 ~Microsoft.AspNetCore.Identity.AuthenticatorTokenProvider<TUser>
 ~Microsoft.AspNetCore.Identity.ClaimsIdentityOptions.EmailClaimType.get -> string
 ~Microsoft.AspNetCore.Identity.ClaimsIdentityOptions.EmailClaimType.set -> void
@@ -138,6 +17,30 @@ virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SupportsUserTwoFactorRe
 ~Microsoft.AspNetCore.Identity.DefaultPersonalDataProtector.DefaultPersonalDataProtector(Microsoft.AspNetCore.Identity.ILookupProtectorKeyRing keyRing, Microsoft.AspNetCore.Identity.ILookupProtector protector) -> void
 ~Microsoft.AspNetCore.Identity.DefaultUserConfirmation<TUser>
 ~Microsoft.AspNetCore.Identity.EmailTokenProvider<TUser>
+~Microsoft.AspNetCore.Identity.IdentityBuilder.IdentityBuilder(System.Type user, Microsoft.Extensions.DependencyInjection.IServiceCollection services) -> void
+~Microsoft.AspNetCore.Identity.IdentityBuilder.IdentityBuilder(System.Type user, System.Type role, Microsoft.Extensions.DependencyInjection.IServiceCollection services) -> void
+~Microsoft.AspNetCore.Identity.IdentityBuilder.RoleType.get -> System.Type
+~Microsoft.AspNetCore.Identity.IdentityBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection
+~Microsoft.AspNetCore.Identity.IdentityBuilder.UserType.get -> System.Type
+~Microsoft.AspNetCore.Identity.IdentityError.Code.get -> string
+~Microsoft.AspNetCore.Identity.IdentityError.Code.set -> void
+~Microsoft.AspNetCore.Identity.IdentityError.Description.get -> string
+~Microsoft.AspNetCore.Identity.IdentityError.Description.set -> void
+~Microsoft.AspNetCore.Identity.IdentityOptions.ClaimsIdentity.get -> Microsoft.AspNetCore.Identity.ClaimsIdentityOptions
+~Microsoft.AspNetCore.Identity.IdentityOptions.ClaimsIdentity.set -> void
+~Microsoft.AspNetCore.Identity.IdentityOptions.Lockout.get -> Microsoft.AspNetCore.Identity.LockoutOptions
+~Microsoft.AspNetCore.Identity.IdentityOptions.Lockout.set -> void
+~Microsoft.AspNetCore.Identity.IdentityOptions.Password.get -> Microsoft.AspNetCore.Identity.PasswordOptions
+~Microsoft.AspNetCore.Identity.IdentityOptions.Password.set -> void
+~Microsoft.AspNetCore.Identity.IdentityOptions.SignIn.get -> Microsoft.AspNetCore.Identity.SignInOptions
+~Microsoft.AspNetCore.Identity.IdentityOptions.SignIn.set -> void
+~Microsoft.AspNetCore.Identity.IdentityOptions.Stores.get -> Microsoft.AspNetCore.Identity.StoreOptions
+~Microsoft.AspNetCore.Identity.IdentityOptions.Stores.set -> void
+~Microsoft.AspNetCore.Identity.IdentityOptions.Tokens.get -> Microsoft.AspNetCore.Identity.TokenOptions
+~Microsoft.AspNetCore.Identity.IdentityOptions.Tokens.set -> void
+~Microsoft.AspNetCore.Identity.IdentityOptions.User.get -> Microsoft.AspNetCore.Identity.UserOptions
+~Microsoft.AspNetCore.Identity.IdentityOptions.User.set -> void
+~Microsoft.AspNetCore.Identity.IdentityResult.Errors.get -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Identity.IdentityError>
 ~Microsoft.AspNetCore.Identity.ILookupNormalizer.NormalizeEmail(string email) -> string
 ~Microsoft.AspNetCore.Identity.ILookupNormalizer.NormalizeName(string name) -> string
 ~Microsoft.AspNetCore.Identity.ILookupProtector.Protect(string keyId, string data) -> string
@@ -181,14 +84,14 @@ virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SupportsUserTwoFactorRe
 ~Microsoft.AspNetCore.Identity.IUserAuthenticatorKeyStore<TUser>
 ~Microsoft.AspNetCore.Identity.IUserAuthenticatorKeyStore<TUser>.GetAuthenticatorKeyAsync(TUser user, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<string>
 ~Microsoft.AspNetCore.Identity.IUserAuthenticatorKeyStore<TUser>.SetAuthenticatorKeyAsync(TUser user, string key, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task
+~Microsoft.AspNetCore.Identity.IUserClaimsPrincipalFactory<TUser>
+~Microsoft.AspNetCore.Identity.IUserClaimsPrincipalFactory<TUser>.CreateAsync(TUser user) -> System.Threading.Tasks.Task<System.Security.Claims.ClaimsPrincipal>
 ~Microsoft.AspNetCore.Identity.IUserClaimStore<TUser>
 ~Microsoft.AspNetCore.Identity.IUserClaimStore<TUser>.AddClaimsAsync(TUser user, System.Collections.Generic.IEnumerable<System.Security.Claims.Claim> claims, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task
 ~Microsoft.AspNetCore.Identity.IUserClaimStore<TUser>.GetClaimsAsync(TUser user, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IList<System.Security.Claims.Claim>>
 ~Microsoft.AspNetCore.Identity.IUserClaimStore<TUser>.GetUsersForClaimAsync(System.Security.Claims.Claim claim, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IList<TUser>>
 ~Microsoft.AspNetCore.Identity.IUserClaimStore<TUser>.RemoveClaimsAsync(TUser user, System.Collections.Generic.IEnumerable<System.Security.Claims.Claim> claims, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task
 ~Microsoft.AspNetCore.Identity.IUserClaimStore<TUser>.ReplaceClaimAsync(TUser user, System.Security.Claims.Claim claim, System.Security.Claims.Claim newClaim, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task
-~Microsoft.AspNetCore.Identity.IUserClaimsPrincipalFactory<TUser>
-~Microsoft.AspNetCore.Identity.IUserClaimsPrincipalFactory<TUser>.CreateAsync(TUser user) -> System.Threading.Tasks.Task<System.Security.Claims.ClaimsPrincipal>
 ~Microsoft.AspNetCore.Identity.IUserConfirmation<TUser>
 ~Microsoft.AspNetCore.Identity.IUserConfirmation<TUser>.IsConfirmedAsync(Microsoft.AspNetCore.Identity.UserManager<TUser> manager, TUser user) -> System.Threading.Tasks.Task<bool>
 ~Microsoft.AspNetCore.Identity.IUserEmailStore<TUser>
@@ -254,30 +157,6 @@ virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SupportsUserTwoFactorRe
 ~Microsoft.AspNetCore.Identity.IUserTwoFactorTokenProvider<TUser>.ValidateAsync(string purpose, string token, Microsoft.AspNetCore.Identity.UserManager<TUser> manager, TUser user) -> System.Threading.Tasks.Task<bool>
 ~Microsoft.AspNetCore.Identity.IUserValidator<TUser>
 ~Microsoft.AspNetCore.Identity.IUserValidator<TUser>.ValidateAsync(Microsoft.AspNetCore.Identity.UserManager<TUser> manager, TUser user) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult>
-~Microsoft.AspNetCore.Identity.IdentityBuilder.IdentityBuilder(System.Type user, Microsoft.Extensions.DependencyInjection.IServiceCollection services) -> void
-~Microsoft.AspNetCore.Identity.IdentityBuilder.IdentityBuilder(System.Type user, System.Type role, Microsoft.Extensions.DependencyInjection.IServiceCollection services) -> void
-~Microsoft.AspNetCore.Identity.IdentityBuilder.RoleType.get -> System.Type
-~Microsoft.AspNetCore.Identity.IdentityBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection
-~Microsoft.AspNetCore.Identity.IdentityBuilder.UserType.get -> System.Type
-~Microsoft.AspNetCore.Identity.IdentityError.Code.get -> string
-~Microsoft.AspNetCore.Identity.IdentityError.Code.set -> void
-~Microsoft.AspNetCore.Identity.IdentityError.Description.get -> string
-~Microsoft.AspNetCore.Identity.IdentityError.Description.set -> void
-~Microsoft.AspNetCore.Identity.IdentityOptions.ClaimsIdentity.get -> Microsoft.AspNetCore.Identity.ClaimsIdentityOptions
-~Microsoft.AspNetCore.Identity.IdentityOptions.ClaimsIdentity.set -> void
-~Microsoft.AspNetCore.Identity.IdentityOptions.Lockout.get -> Microsoft.AspNetCore.Identity.LockoutOptions
-~Microsoft.AspNetCore.Identity.IdentityOptions.Lockout.set -> void
-~Microsoft.AspNetCore.Identity.IdentityOptions.Password.get -> Microsoft.AspNetCore.Identity.PasswordOptions
-~Microsoft.AspNetCore.Identity.IdentityOptions.Password.set -> void
-~Microsoft.AspNetCore.Identity.IdentityOptions.SignIn.get -> Microsoft.AspNetCore.Identity.SignInOptions
-~Microsoft.AspNetCore.Identity.IdentityOptions.SignIn.set -> void
-~Microsoft.AspNetCore.Identity.IdentityOptions.Stores.get -> Microsoft.AspNetCore.Identity.StoreOptions
-~Microsoft.AspNetCore.Identity.IdentityOptions.Stores.set -> void
-~Microsoft.AspNetCore.Identity.IdentityOptions.Tokens.get -> Microsoft.AspNetCore.Identity.TokenOptions
-~Microsoft.AspNetCore.Identity.IdentityOptions.Tokens.set -> void
-~Microsoft.AspNetCore.Identity.IdentityOptions.User.get -> Microsoft.AspNetCore.Identity.UserOptions
-~Microsoft.AspNetCore.Identity.IdentityOptions.User.set -> void
-~Microsoft.AspNetCore.Identity.IdentityResult.Errors.get -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Identity.IdentityError>
 ~Microsoft.AspNetCore.Identity.PasswordHasher<TUser>
 ~Microsoft.AspNetCore.Identity.PasswordHasher<TUser>.PasswordHasher(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Identity.PasswordHasherOptions> optionsAccessor = null) -> void
 ~Microsoft.AspNetCore.Identity.PasswordValidator<TUser>
@@ -350,10 +229,6 @@ virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SupportsUserTwoFactorRe
 ~Microsoft.AspNetCore.Identity.UserValidator<TUser>
 ~Microsoft.AspNetCore.Identity.UserValidator<TUser>.Describer.get -> Microsoft.AspNetCore.Identity.IdentityErrorDescriber
 ~Microsoft.AspNetCore.Identity.UserValidator<TUser>.UserValidator(Microsoft.AspNetCore.Identity.IdentityErrorDescriber errors = null) -> void
-~abstract Microsoft.AspNetCore.Identity.TotpSecurityStampBasedTokenProvider<TUser>.CanGenerateTwoFactorTokenAsync(Microsoft.AspNetCore.Identity.UserManager<TUser> manager, TUser user) -> System.Threading.Tasks.Task<bool>
-~const Microsoft.AspNetCore.Identity.UserManager<TUser>.ChangePhoneNumberTokenPurpose = "ChangePhoneNumber" -> string
-~const Microsoft.AspNetCore.Identity.UserManager<TUser>.ConfirmEmailTokenPurpose = "EmailConfirmation" -> string
-~const Microsoft.AspNetCore.Identity.UserManager<TUser>.ResetPasswordTokenPurpose = "ResetPassword" -> string
 ~override Microsoft.AspNetCore.Identity.EmailTokenProvider<TUser>.CanGenerateTwoFactorTokenAsync(Microsoft.AspNetCore.Identity.UserManager<TUser> manager, TUser user) -> System.Threading.Tasks.Task<bool>
 ~override Microsoft.AspNetCore.Identity.EmailTokenProvider<TUser>.GetUserModifierAsync(string purpose, Microsoft.AspNetCore.Identity.UserManager<TUser> manager, TUser user) -> System.Threading.Tasks.Task<string>
 ~override Microsoft.AspNetCore.Identity.IdentityResult.ToString() -> string
@@ -371,11 +246,11 @@ virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SupportsUserTwoFactorRe
 ~static Microsoft.AspNetCore.Identity.UserManager<TUser>.GetChangeEmailTokenPurpose(string newEmail) -> string
 ~static Microsoft.Extensions.DependencyInjection.IdentityServiceCollectionExtensions.AddIdentityCore<TUser>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services) -> Microsoft.AspNetCore.Identity.IdentityBuilder
 ~static Microsoft.Extensions.DependencyInjection.IdentityServiceCollectionExtensions.AddIdentityCore<TUser>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.Identity.IdentityOptions> setupAction) -> Microsoft.AspNetCore.Identity.IdentityBuilder
-~static System.Security.Claims.PrincipalExtensions.FindFirstValue(this System.Security.Claims.ClaimsPrincipal principal, string claimType) -> string
 ~static readonly Microsoft.AspNetCore.Identity.TokenOptions.DefaultAuthenticatorProvider -> string
 ~static readonly Microsoft.AspNetCore.Identity.TokenOptions.DefaultEmailProvider -> string
 ~static readonly Microsoft.AspNetCore.Identity.TokenOptions.DefaultPhoneProvider -> string
 ~static readonly Microsoft.AspNetCore.Identity.TokenOptions.DefaultProvider -> string
+~static System.Security.Claims.PrincipalExtensions.FindFirstValue(this System.Security.Claims.ClaimsPrincipal principal, string claimType) -> string
 ~virtual Microsoft.AspNetCore.Identity.AuthenticatorTokenProvider<TUser>.CanGenerateTwoFactorTokenAsync(Microsoft.AspNetCore.Identity.UserManager<TUser> manager, TUser user) -> System.Threading.Tasks.Task<bool>
 ~virtual Microsoft.AspNetCore.Identity.AuthenticatorTokenProvider<TUser>.GenerateAsync(string purpose, Microsoft.AspNetCore.Identity.UserManager<TUser> manager, TUser user) -> System.Threading.Tasks.Task<string>
 ~virtual Microsoft.AspNetCore.Identity.AuthenticatorTokenProvider<TUser>.ValidateAsync(string purpose, string token, Microsoft.AspNetCore.Identity.UserManager<TUser> manager, TUser user) -> System.Threading.Tasks.Task<bool>
@@ -387,9 +262,9 @@ virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SupportsUserTwoFactorRe
 ~virtual Microsoft.AspNetCore.Identity.IdentityBuilder.AddPasswordValidator<TValidator>() -> Microsoft.AspNetCore.Identity.IdentityBuilder
 ~virtual Microsoft.AspNetCore.Identity.IdentityBuilder.AddPersonalDataProtection<TProtector, TKeyRing>() -> Microsoft.AspNetCore.Identity.IdentityBuilder
 ~virtual Microsoft.AspNetCore.Identity.IdentityBuilder.AddRoleManager<TRoleManager>() -> Microsoft.AspNetCore.Identity.IdentityBuilder
+~virtual Microsoft.AspNetCore.Identity.IdentityBuilder.AddRoles<TRole>() -> Microsoft.AspNetCore.Identity.IdentityBuilder
 ~virtual Microsoft.AspNetCore.Identity.IdentityBuilder.AddRoleStore<TStore>() -> Microsoft.AspNetCore.Identity.IdentityBuilder
 ~virtual Microsoft.AspNetCore.Identity.IdentityBuilder.AddRoleValidator<TRole>() -> Microsoft.AspNetCore.Identity.IdentityBuilder
-~virtual Microsoft.AspNetCore.Identity.IdentityBuilder.AddRoles<TRole>() -> Microsoft.AspNetCore.Identity.IdentityBuilder
 ~virtual Microsoft.AspNetCore.Identity.IdentityBuilder.AddTokenProvider(string providerName, System.Type provider) -> Microsoft.AspNetCore.Identity.IdentityBuilder
 ~virtual Microsoft.AspNetCore.Identity.IdentityBuilder.AddTokenProvider<TProvider>(string providerName) -> Microsoft.AspNetCore.Identity.IdentityBuilder
 ~virtual Microsoft.AspNetCore.Identity.IdentityBuilder.AddUserConfirmation<TUserConfirmation>() -> Microsoft.AspNetCore.Identity.IdentityBuilder
@@ -538,3 +413,128 @@ virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SupportsUserTwoFactorRe
 ~virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.VerifyTwoFactorTokenAsync(TUser user, string tokenProvider, string token) -> System.Threading.Tasks.Task<bool>
 ~virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.VerifyUserTokenAsync(TUser user, string tokenProvider, string purpose, string token) -> System.Threading.Tasks.Task<bool>
 ~virtual Microsoft.AspNetCore.Identity.UserValidator<TUser>.ValidateAsync(Microsoft.AspNetCore.Identity.UserManager<TUser> manager, TUser user) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult>
+Microsoft.AspNetCore.Identity.AuthenticatorTokenProvider<TUser>.AuthenticatorTokenProvider() -> void
+Microsoft.AspNetCore.Identity.ClaimsIdentityOptions
+Microsoft.AspNetCore.Identity.ClaimsIdentityOptions.ClaimsIdentityOptions() -> void
+Microsoft.AspNetCore.Identity.DefaultPersonalDataProtector
+Microsoft.AspNetCore.Identity.DefaultUserConfirmation<TUser>.DefaultUserConfirmation() -> void
+Microsoft.AspNetCore.Identity.EmailTokenProvider<TUser>.EmailTokenProvider() -> void
+Microsoft.AspNetCore.Identity.IdentityBuilder
+Microsoft.AspNetCore.Identity.IdentityError
+Microsoft.AspNetCore.Identity.IdentityError.IdentityError() -> void
+Microsoft.AspNetCore.Identity.IdentityErrorDescriber
+Microsoft.AspNetCore.Identity.IdentityErrorDescriber.IdentityErrorDescriber() -> void
+Microsoft.AspNetCore.Identity.IdentityOptions
+Microsoft.AspNetCore.Identity.IdentityOptions.IdentityOptions() -> void
+Microsoft.AspNetCore.Identity.IdentityResult
+Microsoft.AspNetCore.Identity.IdentityResult.IdentityResult() -> void
+Microsoft.AspNetCore.Identity.IdentityResult.Succeeded.get -> bool
+Microsoft.AspNetCore.Identity.IdentityResult.Succeeded.set -> void
+Microsoft.AspNetCore.Identity.ILookupNormalizer
+Microsoft.AspNetCore.Identity.ILookupProtector
+Microsoft.AspNetCore.Identity.ILookupProtectorKeyRing
+Microsoft.AspNetCore.Identity.IPersonalDataProtector
+Microsoft.AspNetCore.Identity.LockoutOptions
+Microsoft.AspNetCore.Identity.LockoutOptions.AllowedForNewUsers.get -> bool
+Microsoft.AspNetCore.Identity.LockoutOptions.AllowedForNewUsers.set -> void
+Microsoft.AspNetCore.Identity.LockoutOptions.DefaultLockoutTimeSpan.get -> System.TimeSpan
+Microsoft.AspNetCore.Identity.LockoutOptions.DefaultLockoutTimeSpan.set -> void
+Microsoft.AspNetCore.Identity.LockoutOptions.LockoutOptions() -> void
+Microsoft.AspNetCore.Identity.LockoutOptions.MaxFailedAccessAttempts.get -> int
+Microsoft.AspNetCore.Identity.LockoutOptions.MaxFailedAccessAttempts.set -> void
+Microsoft.AspNetCore.Identity.PasswordHasherCompatibilityMode
+Microsoft.AspNetCore.Identity.PasswordHasherCompatibilityMode.IdentityV2 = 0 -> Microsoft.AspNetCore.Identity.PasswordHasherCompatibilityMode
+Microsoft.AspNetCore.Identity.PasswordHasherCompatibilityMode.IdentityV3 = 1 -> Microsoft.AspNetCore.Identity.PasswordHasherCompatibilityMode
+Microsoft.AspNetCore.Identity.PasswordHasherOptions
+Microsoft.AspNetCore.Identity.PasswordHasherOptions.CompatibilityMode.get -> Microsoft.AspNetCore.Identity.PasswordHasherCompatibilityMode
+Microsoft.AspNetCore.Identity.PasswordHasherOptions.CompatibilityMode.set -> void
+Microsoft.AspNetCore.Identity.PasswordHasherOptions.IterationCount.get -> int
+Microsoft.AspNetCore.Identity.PasswordHasherOptions.IterationCount.set -> void
+Microsoft.AspNetCore.Identity.PasswordHasherOptions.PasswordHasherOptions() -> void
+Microsoft.AspNetCore.Identity.PasswordOptions
+Microsoft.AspNetCore.Identity.PasswordOptions.PasswordOptions() -> void
+Microsoft.AspNetCore.Identity.PasswordOptions.RequireDigit.get -> bool
+Microsoft.AspNetCore.Identity.PasswordOptions.RequireDigit.set -> void
+Microsoft.AspNetCore.Identity.PasswordOptions.RequiredLength.get -> int
+Microsoft.AspNetCore.Identity.PasswordOptions.RequiredLength.set -> void
+Microsoft.AspNetCore.Identity.PasswordOptions.RequiredUniqueChars.get -> int
+Microsoft.AspNetCore.Identity.PasswordOptions.RequiredUniqueChars.set -> void
+Microsoft.AspNetCore.Identity.PasswordOptions.RequireLowercase.get -> bool
+Microsoft.AspNetCore.Identity.PasswordOptions.RequireLowercase.set -> void
+Microsoft.AspNetCore.Identity.PasswordOptions.RequireNonAlphanumeric.get -> bool
+Microsoft.AspNetCore.Identity.PasswordOptions.RequireNonAlphanumeric.set -> void
+Microsoft.AspNetCore.Identity.PasswordOptions.RequireUppercase.get -> bool
+Microsoft.AspNetCore.Identity.PasswordOptions.RequireUppercase.set -> void
+Microsoft.AspNetCore.Identity.PasswordVerificationResult
+Microsoft.AspNetCore.Identity.PasswordVerificationResult.Failed = 0 -> Microsoft.AspNetCore.Identity.PasswordVerificationResult
+Microsoft.AspNetCore.Identity.PasswordVerificationResult.Success = 1 -> Microsoft.AspNetCore.Identity.PasswordVerificationResult
+Microsoft.AspNetCore.Identity.PasswordVerificationResult.SuccessRehashNeeded = 2 -> Microsoft.AspNetCore.Identity.PasswordVerificationResult
+Microsoft.AspNetCore.Identity.PersonalDataAttribute
+Microsoft.AspNetCore.Identity.PersonalDataAttribute.PersonalDataAttribute() -> void
+Microsoft.AspNetCore.Identity.PhoneNumberTokenProvider<TUser>.PhoneNumberTokenProvider() -> void
+Microsoft.AspNetCore.Identity.ProtectedPersonalDataAttribute
+Microsoft.AspNetCore.Identity.ProtectedPersonalDataAttribute.ProtectedPersonalDataAttribute() -> void
+Microsoft.AspNetCore.Identity.RoleManager<TRole>.Dispose() -> void
+Microsoft.AspNetCore.Identity.RoleManager<TRole>.ThrowIfDisposed() -> void
+Microsoft.AspNetCore.Identity.SignInOptions
+Microsoft.AspNetCore.Identity.SignInOptions.RequireConfirmedAccount.get -> bool
+Microsoft.AspNetCore.Identity.SignInOptions.RequireConfirmedAccount.set -> void
+Microsoft.AspNetCore.Identity.SignInOptions.RequireConfirmedEmail.get -> bool
+Microsoft.AspNetCore.Identity.SignInOptions.RequireConfirmedEmail.set -> void
+Microsoft.AspNetCore.Identity.SignInOptions.RequireConfirmedPhoneNumber.get -> bool
+Microsoft.AspNetCore.Identity.SignInOptions.RequireConfirmedPhoneNumber.set -> void
+Microsoft.AspNetCore.Identity.SignInOptions.SignInOptions() -> void
+Microsoft.AspNetCore.Identity.SignInResult
+Microsoft.AspNetCore.Identity.SignInResult.IsLockedOut.get -> bool
+Microsoft.AspNetCore.Identity.SignInResult.IsLockedOut.set -> void
+Microsoft.AspNetCore.Identity.SignInResult.IsNotAllowed.get -> bool
+Microsoft.AspNetCore.Identity.SignInResult.IsNotAllowed.set -> void
+Microsoft.AspNetCore.Identity.SignInResult.RequiresTwoFactor.get -> bool
+Microsoft.AspNetCore.Identity.SignInResult.RequiresTwoFactor.set -> void
+Microsoft.AspNetCore.Identity.SignInResult.SignInResult() -> void
+Microsoft.AspNetCore.Identity.SignInResult.Succeeded.get -> bool
+Microsoft.AspNetCore.Identity.SignInResult.Succeeded.set -> void
+Microsoft.AspNetCore.Identity.StoreOptions
+Microsoft.AspNetCore.Identity.StoreOptions.MaxLengthForKeys.get -> int
+Microsoft.AspNetCore.Identity.StoreOptions.MaxLengthForKeys.set -> void
+Microsoft.AspNetCore.Identity.StoreOptions.ProtectPersonalData.get -> bool
+Microsoft.AspNetCore.Identity.StoreOptions.ProtectPersonalData.set -> void
+Microsoft.AspNetCore.Identity.StoreOptions.StoreOptions() -> void
+Microsoft.AspNetCore.Identity.TokenOptions
+Microsoft.AspNetCore.Identity.TokenOptions.TokenOptions() -> void
+Microsoft.AspNetCore.Identity.TokenProviderDescriptor
+Microsoft.AspNetCore.Identity.TotpSecurityStampBasedTokenProvider<TUser>.TotpSecurityStampBasedTokenProvider() -> void
+Microsoft.AspNetCore.Identity.UpperInvariantLookupNormalizer
+Microsoft.AspNetCore.Identity.UpperInvariantLookupNormalizer.UpperInvariantLookupNormalizer() -> void
+Microsoft.AspNetCore.Identity.UserLoginInfo
+Microsoft.AspNetCore.Identity.UserManager<TUser>.Dispose() -> void
+Microsoft.AspNetCore.Identity.UserManager<TUser>.ThrowIfDisposed() -> void
+Microsoft.AspNetCore.Identity.UserOptions
+Microsoft.AspNetCore.Identity.UserOptions.RequireUniqueEmail.get -> bool
+Microsoft.AspNetCore.Identity.UserOptions.RequireUniqueEmail.set -> void
+Microsoft.AspNetCore.Identity.UserOptions.UserOptions() -> void
+Microsoft.Extensions.DependencyInjection.IdentityServiceCollectionExtensions
+System.Security.Claims.PrincipalExtensions
+virtual Microsoft.AspNetCore.Identity.PasswordValidator<TUser>.IsDigit(char c) -> bool
+virtual Microsoft.AspNetCore.Identity.PasswordValidator<TUser>.IsLetterOrDigit(char c) -> bool
+virtual Microsoft.AspNetCore.Identity.PasswordValidator<TUser>.IsLower(char c) -> bool
+virtual Microsoft.AspNetCore.Identity.PasswordValidator<TUser>.IsUpper(char c) -> bool
+virtual Microsoft.AspNetCore.Identity.RoleManager<TRole>.CancellationToken.get -> System.Threading.CancellationToken
+virtual Microsoft.AspNetCore.Identity.RoleManager<TRole>.Dispose(bool disposing) -> void
+virtual Microsoft.AspNetCore.Identity.RoleManager<TRole>.SupportsQueryableRoles.get -> bool
+virtual Microsoft.AspNetCore.Identity.RoleManager<TRole>.SupportsRoleClaims.get -> bool
+virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.CancellationToken.get -> System.Threading.CancellationToken
+virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.Dispose(bool disposing) -> void
+virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SupportsQueryableUsers.get -> bool
+virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SupportsUserAuthenticationTokens.get -> bool
+virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SupportsUserAuthenticatorKey.get -> bool
+virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SupportsUserClaim.get -> bool
+virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SupportsUserEmail.get -> bool
+virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SupportsUserLockout.get -> bool
+virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SupportsUserLogin.get -> bool
+virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SupportsUserPassword.get -> bool
+virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SupportsUserPhoneNumber.get -> bool
+virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SupportsUserRole.get -> bool
+virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SupportsUserSecurityStamp.get -> bool
+virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SupportsUserTwoFactor.get -> bool
+virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SupportsUserTwoFactorRecoveryCodes.get -> bool

@@ -1,66 +1,61 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using Xunit;
+namespace Microsoft.AspNetCore.Mvc.ModelBinding;
 
-namespace Microsoft.AspNetCore.Mvc.ModelBinding
+public class ModelBinderProviderExtensionsTest
 {
-    public class ModelBinderProviderExtensionsTest
+    [Fact]
+    public void RemoveType_RemovesAllOfType()
     {
-        [Fact]
-        public void RemoveType_RemovesAllOfType()
-        {
-            // Arrange
-            var list = new List<IModelBinderProvider>
+        // Arrange
+        var list = new List<IModelBinderProvider>
             {
                 new FooModelBinderProvider(),
                 new BarModelBinderProvider(),
                 new FooModelBinderProvider()
             };
 
-            // Act
-            list.RemoveType(typeof(FooModelBinderProvider));
+        // Act
+        list.RemoveType(typeof(FooModelBinderProvider));
 
-            // Assert
-            var provider = Assert.Single(list);
-            Assert.IsType<BarModelBinderProvider>(provider);
-        }
+        // Assert
+        var provider = Assert.Single(list);
+        Assert.IsType<BarModelBinderProvider>(provider);
+    }
 
-        [Fact]
-        public void GenericRemoveType_RemovesAllOfType()
-        {
-            // Arrange
-            var list = new List<IModelBinderProvider>
+    [Fact]
+    public void GenericRemoveType_RemovesAllOfType()
+    {
+        // Arrange
+        var list = new List<IModelBinderProvider>
             {
                 new FooModelBinderProvider(),
                 new BarModelBinderProvider(),
                 new FooModelBinderProvider()
             };
 
-            // Act
-            list.RemoveType<FooModelBinderProvider>();
+        // Act
+        list.RemoveType<FooModelBinderProvider>();
 
-            // Assert
-            var provider = Assert.Single(list);
-            Assert.IsType<BarModelBinderProvider>(provider);
-        }
+        // Assert
+        var provider = Assert.Single(list);
+        Assert.IsType<BarModelBinderProvider>(provider);
+    }
 
-        private class FooModelBinderProvider : IModelBinderProvider
+    private class FooModelBinderProvider : IModelBinderProvider
+    {
+        public IModelBinder GetBinder(ModelBinderProviderContext context)
         {
-            public IModelBinder GetBinder(ModelBinderProviderContext context)
-            {
-                throw new NotImplementedException();
-            }
+            throw new NotImplementedException();
         }
+    }
 
-        private class BarModelBinderProvider : IModelBinderProvider
+    private class BarModelBinderProvider : IModelBinderProvider
+    {
+        public IModelBinder GetBinder(ModelBinderProviderContext context)
         {
-            public IModelBinder GetBinder(ModelBinderProviderContext context)
-            {
-                throw new NotImplementedException();
-            }
+            throw new NotImplementedException();
         }
     }
 }

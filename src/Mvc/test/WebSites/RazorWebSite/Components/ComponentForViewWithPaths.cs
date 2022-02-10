@@ -3,14 +3,13 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace MvcSample.Web.Components
+namespace MvcSample.Web.Components;
+
+[ViewComponent(Name = "ComponentForViewWithPaths")]
+public class ComponentForViewWithPaths : ViewComponent
 {
-    [ViewComponent(Name = "ComponentForViewWithPaths")]
-    public class ComponentForViewWithPaths : ViewComponent
+    public IViewComponentResult Invoke()
     {
-        public IViewComponentResult Invoke()
-        {
-            return View();
-        }
+        return View();
     }
 }

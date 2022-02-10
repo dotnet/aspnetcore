@@ -36,8 +36,7 @@ internal sealed class SocketSender : SocketAwaitableEventArgs
 
         return error == SocketError.Success
             ? new ValueTask<SocketOperationResult>(new SocketOperationResult(bytesTransferred))
-            : new ValueTask<SocketOperationResult>(new SocketOperationResult(CreateException(error)))
-            ;
+            : new ValueTask<SocketOperationResult>(new SocketOperationResult(CreateException(error)));
     }
 
     public void Reset()
@@ -71,8 +70,7 @@ internal sealed class SocketSender : SocketAwaitableEventArgs
 
         return error == SocketError.Success
             ? new ValueTask<SocketOperationResult>(new SocketOperationResult(bytesTransferred))
-            : new ValueTask<SocketOperationResult>(new SocketOperationResult(CreateException(error)))
-            ;
+            : new ValueTask<SocketOperationResult>(new SocketOperationResult(CreateException(error)));
     }
 
     private void SetBufferList(in ReadOnlySequence<byte> buffer)

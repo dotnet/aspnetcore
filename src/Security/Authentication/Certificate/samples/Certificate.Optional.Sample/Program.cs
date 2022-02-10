@@ -1,47 +1,61 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Net;
-using Microsoft.AspNetCore.Hosting;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
-using Microsoft.Extensions.Hosting;
 
-namespace Certificate.Optional.Sample
+namespace Certificate.Optional.Sample;
+
+public class Program
 {
-    public class Program
+    public const string HostWithoutCert = "127.0.0.1";
+    public const string HostWithCert = "127.0.0.2";
+
+    public static void Main(string[] args)
     {
-        public const string HostWithoutCert = "127.0.0.1";
-        public const string HostWithCert = "127.0.0.2";
+        CreateHostBuilder(args).Build().Run();
+    }
 
-        public static void Main(string[] args)
-        {
-            CreateHostBuilder(args).Build().Run();
-        }
+    public static IHostBuilder CreateHostBuilder(string[] args) =>
+        Host.CreateDefaultBuilder(args)
+            .ConfigureWebHostDefaults(webBuilder =>
+            {
+                // load the self-signed certificate issued for 127.0.0.1 and 127.0.0.2 domains
+                // https://docs.microsoft.com/en-us/dotnet/core/additional-tools/self-signed-certificates-guide
+                var serverCertificate = CertificateLoader.LoadFromStoreCert(
+                    "localhost", "My", StoreLocation.CurrentUser,
+                    allowInvalid: true);
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder =>
+                webBuilder.UseStartup<Startup>();
+                webBuilder.ConfigureKestrel((context, options) =>
                 {
-                    webBuilder.UseStartup<Startup>();
-                    webBuilder.ConfigureKestrel((context, options) =>
+                    options.ListenAnyIP(5001, listenOptions =>
                     {
-                        // Kestrel can't have different ssl settings for different hosts on the same IP because there's no way to change them based on SNI.
-                        // https://github.com/dotnet/runtime/issues/31097
-                        options.Listen(IPAddress.Parse(HostWithoutCert), 5001, listenOptions =>
+                        listenOptions.UseHttps(new TlsHandshakeCallbackOptions()
                         {
-                            listenOptions.UseHttps(httpsOptions =>
+                            OnConnection = connectionContext =>
                             {
-                                httpsOptions.ClientCertificateMode = ClientCertificateMode.NoCertificate;
-                            });
-                        });
-                        options.Listen(IPAddress.Parse(HostWithCert), 5001, listenOptions =>
-                        {
-                            listenOptions.UseHttps(httpsOptions =>
-                            {
-                                httpsOptions.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
-                            });
+                                // allow the tls connection without a client certificate
+                                if (connectionContext.ClientHelloInfo.ServerName.Equals(HostWithoutCert, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    return new ValueTask<SslServerAuthenticationOptions>(new SslServerAuthenticationOptions()
+                                    {
+                                        ServerCertificate = serverCertificate,
+                                        ClientCertificateRequired = false
+                                    });
+                                }
+
+                                // require a client certificate to access 127.0.0.2
+                                return new ValueTask<SslServerAuthenticationOptions>(new SslServerAuthenticationOptions()
+                                {
+                                    ClientCertificateRequired = true,
+                                    ServerCertificate = serverCertificate,
+                                    RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => certificate is not null
+                                });
+                            }
                         });
                     });
                 });
-    }
+            });
 }

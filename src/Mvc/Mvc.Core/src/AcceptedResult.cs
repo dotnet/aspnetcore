@@ -1,89 +1,86 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Mvc
+namespace Microsoft.AspNetCore.Mvc;
+
+/// <summary>
+/// An <see cref="ActionResult"/> that returns an Accepted (202) response with a Location header.
+/// </summary>
+[DefaultStatusCode(DefaultStatusCode)]
+public class AcceptedResult : ObjectResult
 {
+    private const int DefaultStatusCode = StatusCodes.Status202Accepted;
+
     /// <summary>
-    /// An <see cref="ActionResult"/> that returns an Accepted (202) response with a Location header.
+    /// Initializes a new instance of the <see cref="AcceptedResult"/> class with the values
+    /// provided.
     /// </summary>
-    [DefaultStatusCode(DefaultStatusCode)]
-    public class AcceptedResult : ObjectResult
+    public AcceptedResult()
+        : base(value: null)
     {
-        private const int DefaultStatusCode = StatusCodes.Status202Accepted;
+        StatusCode = DefaultStatusCode;
+    }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AcceptedResult"/> class with the values
-        /// provided.
-        /// </summary>
-        public AcceptedResult()
-            : base(value: null)
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AcceptedResult"/> class with the values
+    /// provided.
+    /// </summary>
+    /// <param name="location">The location at which the status of requested content can be monitored.</param>
+    /// <param name="value">The value to format in the entity body.</param>
+    public AcceptedResult(string? location, [ActionResultObjectValue] object? value)
+        : base(value)
+    {
+        Location = location;
+        StatusCode = DefaultStatusCode;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AcceptedResult"/> class with the values
+    /// provided.
+    /// </summary>
+    /// <param name="locationUri">The location at which the status of requested content can be monitored.</param>
+    /// <param name="value">The value to format in the entity body.</param>
+    public AcceptedResult(Uri locationUri, [ActionResultObjectValue] object? value)
+        : base(value)
+    {
+        if (locationUri == null)
         {
-            StatusCode = DefaultStatusCode;
+            throw new ArgumentNullException(nameof(locationUri));
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AcceptedResult"/> class with the values
-        /// provided.
-        /// </summary>
-        /// <param name="location">The location at which the status of requested content can be monitored.</param>
-        /// <param name="value">The value to format in the entity body.</param>
-        public AcceptedResult(string? location, [ActionResultObjectValue] object? value)
-            : base(value)
+        if (locationUri.IsAbsoluteUri)
         {
-            Location = location;
-            StatusCode = DefaultStatusCode;
+            Location = locationUri.AbsoluteUri;
+        }
+        else
+        {
+            Location = locationUri.GetComponents(UriComponents.SerializationInfoString, UriFormat.UriEscaped);
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AcceptedResult"/> class with the values
-        /// provided.
-        /// </summary>
-        /// <param name="locationUri">The location at which the status of requested content can be monitored.</param>
-        /// <param name="value">The value to format in the entity body.</param>
-        public AcceptedResult(Uri locationUri, [ActionResultObjectValue] object? value)
-            : base(value)
+        StatusCode = DefaultStatusCode;
+    }
+
+    /// <summary>
+    /// Gets or sets the location at which the status of the requested content can be monitored.
+    /// </summary>
+    public string? Location { get; set; }
+
+    /// <inheritdoc />
+    public override void OnFormatting(ActionContext context)
+    {
+        if (context == null)
         {
-            if (locationUri == null)
-            {
-                throw new ArgumentNullException(nameof(locationUri));
-            }
-
-            if (locationUri.IsAbsoluteUri)
-            {
-                Location = locationUri.AbsoluteUri;
-            }
-            else
-            {
-                Location = locationUri.GetComponents(UriComponents.SerializationInfoString, UriFormat.UriEscaped);
-            }
-
-            StatusCode = DefaultStatusCode;
+            throw new ArgumentNullException(nameof(context));
         }
 
-        /// <summary>
-        /// Gets or sets the location at which the status of the requested content can be monitored.
-        /// </summary>
-        public string? Location { get; set; }
+        base.OnFormatting(context);
 
-        /// <inheritdoc />
-        public override void OnFormatting(ActionContext context)
+        if (!string.IsNullOrEmpty(Location))
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            base.OnFormatting(context);
-
-            if (!string.IsNullOrEmpty(Location))
-            {
-                context.HttpContext.Response.Headers.Location = Location;
-            }
+            context.HttpContext.Response.Headers.Location = Location;
         }
     }
 }

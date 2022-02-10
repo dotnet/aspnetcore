@@ -1,35 +1,41 @@
 #nullable enable
-Microsoft.AspNetCore.Identity.IdentityRole
-Microsoft.AspNetCore.Identity.IdentityRole.IdentityRole() -> void
-Microsoft.AspNetCore.Identity.IdentityRole<TKey>.IdentityRole() -> void
-Microsoft.AspNetCore.Identity.IdentityRoleClaim<TKey>.IdentityRoleClaim() -> void
-Microsoft.AspNetCore.Identity.IdentityUser
-Microsoft.AspNetCore.Identity.IdentityUser.IdentityUser() -> void
-Microsoft.AspNetCore.Identity.IdentityUser<TKey>.IdentityUser() -> void
-Microsoft.AspNetCore.Identity.IdentityUserClaim<TKey>.IdentityUserClaim() -> void
-Microsoft.AspNetCore.Identity.IdentityUserLogin<TKey>.IdentityUserLogin() -> void
-Microsoft.AspNetCore.Identity.IdentityUserRole<TKey>.IdentityUserRole() -> void
-Microsoft.AspNetCore.Identity.IdentityUserToken<TKey>.IdentityUserToken() -> void
-Microsoft.AspNetCore.Identity.RoleStoreBase<TRole, TKey, TUserRole, TRoleClaim>.Dispose() -> void
-Microsoft.AspNetCore.Identity.RoleStoreBase<TRole, TKey, TUserRole, TRoleClaim>.ThrowIfDisposed() -> void
-Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.Dispose() -> void
-Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.ThrowIfDisposed() -> void
-virtual Microsoft.AspNetCore.Identity.IdentityRoleClaim<TKey>.Id.get -> int
-virtual Microsoft.AspNetCore.Identity.IdentityRoleClaim<TKey>.Id.set -> void
-virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.AccessFailedCount.get -> int
-virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.AccessFailedCount.set -> void
-virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.EmailConfirmed.get -> bool
-virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.EmailConfirmed.set -> void
-virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.LockoutEnabled.get -> bool
-virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.LockoutEnabled.set -> void
-virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.LockoutEnd.get -> System.DateTimeOffset?
-virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.LockoutEnd.set -> void
-virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.PhoneNumberConfirmed.get -> bool
-virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.PhoneNumberConfirmed.set -> void
-virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.TwoFactorEnabled.get -> bool
-virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.TwoFactorEnabled.set -> void
-virtual Microsoft.AspNetCore.Identity.IdentityUserClaim<TKey>.Id.get -> int
-virtual Microsoft.AspNetCore.Identity.IdentityUserClaim<TKey>.Id.set -> void
+~abstract Microsoft.AspNetCore.Identity.RoleStoreBase<TRole, TKey, TUserRole, TRoleClaim>.AddClaimAsync(TRole role, System.Security.Claims.Claim claim, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task
+~abstract Microsoft.AspNetCore.Identity.RoleStoreBase<TRole, TKey, TUserRole, TRoleClaim>.CreateAsync(TRole role, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult>
+~abstract Microsoft.AspNetCore.Identity.RoleStoreBase<TRole, TKey, TUserRole, TRoleClaim>.DeleteAsync(TRole role, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult>
+~abstract Microsoft.AspNetCore.Identity.RoleStoreBase<TRole, TKey, TUserRole, TRoleClaim>.FindByIdAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<TRole>
+~abstract Microsoft.AspNetCore.Identity.RoleStoreBase<TRole, TKey, TUserRole, TRoleClaim>.FindByNameAsync(string normalizedName, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<TRole>
+~abstract Microsoft.AspNetCore.Identity.RoleStoreBase<TRole, TKey, TUserRole, TRoleClaim>.GetClaimsAsync(TRole role, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IList<System.Security.Claims.Claim>>
+~abstract Microsoft.AspNetCore.Identity.RoleStoreBase<TRole, TKey, TUserRole, TRoleClaim>.RemoveClaimAsync(TRole role, System.Security.Claims.Claim claim, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task
+~abstract Microsoft.AspNetCore.Identity.RoleStoreBase<TRole, TKey, TUserRole, TRoleClaim>.Roles.get -> System.Linq.IQueryable<TRole>
+~abstract Microsoft.AspNetCore.Identity.RoleStoreBase<TRole, TKey, TUserRole, TRoleClaim>.UpdateAsync(TRole role, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult>
+~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.AddClaimsAsync(TUser user, System.Collections.Generic.IEnumerable<System.Security.Claims.Claim> claims, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task
+~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.AddLoginAsync(TUser user, Microsoft.AspNetCore.Identity.UserLoginInfo login, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task
+~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.AddUserTokenAsync(TUserToken token) -> System.Threading.Tasks.Task
+~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.CreateAsync(TUser user, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult>
+~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.DeleteAsync(TUser user, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult>
+~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.FindByEmailAsync(string normalizedEmail, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<TUser>
+~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.FindByIdAsync(string userId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<TUser>
+~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.FindByNameAsync(string normalizedUserName, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<TUser>
+~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.FindTokenAsync(TUser user, string loginProvider, string name, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<TUserToken>
+~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.FindUserAsync(TKey userId, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<TUser>
+~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.FindUserLoginAsync(string loginProvider, string providerKey, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<TUserLogin>
+~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.FindUserLoginAsync(TKey userId, string loginProvider, string providerKey, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<TUserLogin>
+~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.GetClaimsAsync(TUser user, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IList<System.Security.Claims.Claim>>
+~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.GetLoginsAsync(TUser user, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IList<Microsoft.AspNetCore.Identity.UserLoginInfo>>
+~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.GetUsersForClaimAsync(System.Security.Claims.Claim claim, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IList<TUser>>
+~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.RemoveClaimsAsync(TUser user, System.Collections.Generic.IEnumerable<System.Security.Claims.Claim> claims, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task
+~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.RemoveLoginAsync(TUser user, string loginProvider, string providerKey, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task
+~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.RemoveUserTokenAsync(TUserToken token) -> System.Threading.Tasks.Task
+~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.ReplaceClaimAsync(TUser user, System.Security.Claims.Claim claim, System.Security.Claims.Claim newClaim, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task
+~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.UpdateAsync(TUser user, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult>
+~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.Users.get -> System.Linq.IQueryable<TUser>
+~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>.AddToRoleAsync(TUser user, string normalizedRoleName, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task
+~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>.FindRoleAsync(string normalizedRoleName, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<TRole>
+~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>.FindUserRoleAsync(TKey userId, TKey roleId, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<TUserRole>
+~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>.GetRolesAsync(TUser user, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IList<string>>
+~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>.GetUsersInRoleAsync(string normalizedRoleName, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IList<TUser>>
+~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>.IsInRoleAsync(TUser user, string normalizedRoleName, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<bool>
+~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>.RemoveFromRoleAsync(TUser user, string normalizedRoleName, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task
 ~Microsoft.AspNetCore.Identity.IdentityRole.IdentityRole(string roleName) -> void
 ~Microsoft.AspNetCore.Identity.IdentityRole<TKey>
 ~Microsoft.AspNetCore.Identity.IdentityRole<TKey>.IdentityRole(string roleName) -> void
@@ -51,43 +57,6 @@ virtual Microsoft.AspNetCore.Identity.IdentityUserClaim<TKey>.Id.set -> void
 ~Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.UserStoreBase(Microsoft.AspNetCore.Identity.IdentityErrorDescriber describer) -> void
 ~Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>
 ~Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>.UserStoreBase(Microsoft.AspNetCore.Identity.IdentityErrorDescriber describer) -> void
-~abstract Microsoft.AspNetCore.Identity.RoleStoreBase<TRole, TKey, TUserRole, TRoleClaim>.AddClaimAsync(TRole role, System.Security.Claims.Claim claim, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task
-~abstract Microsoft.AspNetCore.Identity.RoleStoreBase<TRole, TKey, TUserRole, TRoleClaim>.CreateAsync(TRole role, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult>
-~abstract Microsoft.AspNetCore.Identity.RoleStoreBase<TRole, TKey, TUserRole, TRoleClaim>.DeleteAsync(TRole role, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult>
-~abstract Microsoft.AspNetCore.Identity.RoleStoreBase<TRole, TKey, TUserRole, TRoleClaim>.FindByIdAsync(string id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<TRole>
-~abstract Microsoft.AspNetCore.Identity.RoleStoreBase<TRole, TKey, TUserRole, TRoleClaim>.FindByNameAsync(string normalizedName, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<TRole>
-~abstract Microsoft.AspNetCore.Identity.RoleStoreBase<TRole, TKey, TUserRole, TRoleClaim>.GetClaimsAsync(TRole role, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IList<System.Security.Claims.Claim>>
-~abstract Microsoft.AspNetCore.Identity.RoleStoreBase<TRole, TKey, TUserRole, TRoleClaim>.RemoveClaimAsync(TRole role, System.Security.Claims.Claim claim, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task
-~abstract Microsoft.AspNetCore.Identity.RoleStoreBase<TRole, TKey, TUserRole, TRoleClaim>.Roles.get -> System.Linq.IQueryable<TRole>
-~abstract Microsoft.AspNetCore.Identity.RoleStoreBase<TRole, TKey, TUserRole, TRoleClaim>.UpdateAsync(TRole role, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult>
-~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.AddClaimsAsync(TUser user, System.Collections.Generic.IEnumerable<System.Security.Claims.Claim> claims, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task
-~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.AddLoginAsync(TUser user, Microsoft.AspNetCore.Identity.UserLoginInfo login, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task
-~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.AddUserTokenAsync(TUserToken token) -> System.Threading.Tasks.Task
-~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.CreateAsync(TUser user, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult>
-~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.DeleteAsync(TUser user, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult>
-~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.FindByEmailAsync(string normalizedEmail, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<TUser>
-~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.FindByIdAsync(string userId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<TUser>
-~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.FindByNameAsync(string normalizedUserName, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<TUser>
-~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.FindTokenAsync(TUser user, string loginProvider, string name, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<TUserToken>
-~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.FindUserAsync(TKey userId, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<TUser>
-~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.FindUserLoginAsync(TKey userId, string loginProvider, string providerKey, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<TUserLogin>
-~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.FindUserLoginAsync(string loginProvider, string providerKey, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<TUserLogin>
-~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.GetClaimsAsync(TUser user, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IList<System.Security.Claims.Claim>>
-~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.GetLoginsAsync(TUser user, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IList<Microsoft.AspNetCore.Identity.UserLoginInfo>>
-~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.GetUsersForClaimAsync(System.Security.Claims.Claim claim, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IList<TUser>>
-~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.RemoveClaimsAsync(TUser user, System.Collections.Generic.IEnumerable<System.Security.Claims.Claim> claims, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task
-~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.RemoveLoginAsync(TUser user, string loginProvider, string providerKey, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task
-~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.RemoveUserTokenAsync(TUserToken token) -> System.Threading.Tasks.Task
-~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.ReplaceClaimAsync(TUser user, System.Security.Claims.Claim claim, System.Security.Claims.Claim newClaim, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task
-~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.UpdateAsync(TUser user, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult>
-~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.Users.get -> System.Linq.IQueryable<TUser>
-~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>.AddToRoleAsync(TUser user, string normalizedRoleName, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task
-~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>.FindRoleAsync(string normalizedRoleName, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<TRole>
-~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>.FindUserRoleAsync(TKey userId, TKey roleId, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<TUserRole>
-~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>.GetRolesAsync(TUser user, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IList<string>>
-~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>.GetUsersInRoleAsync(string normalizedRoleName, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IList<TUser>>
-~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>.IsInRoleAsync(TUser user, string normalizedRoleName, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<bool>
-~abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>.RemoveFromRoleAsync(TUser user, string normalizedRoleName, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task
 ~override Microsoft.AspNetCore.Identity.IdentityRole<TKey>.ToString() -> string
 ~override Microsoft.AspNetCore.Identity.IdentityUser<TKey>.ToString() -> string
 ~virtual Microsoft.AspNetCore.Identity.IdentityRole<TKey>.ConcurrencyStamp.get -> string
@@ -204,3 +173,34 @@ virtual Microsoft.AspNetCore.Identity.IdentityUserClaim<TKey>.Id.set -> void
 ~virtual Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.SetTwoFactorEnabledAsync(TUser user, bool enabled, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task
 ~virtual Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.SetUserNameAsync(TUser user, string userName, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task
 ~virtual Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>.CreateUserRole(TUser user, TRole role) -> TUserRole
+Microsoft.AspNetCore.Identity.IdentityRole
+Microsoft.AspNetCore.Identity.IdentityRole.IdentityRole() -> void
+Microsoft.AspNetCore.Identity.IdentityRole<TKey>.IdentityRole() -> void
+Microsoft.AspNetCore.Identity.IdentityRoleClaim<TKey>.IdentityRoleClaim() -> void
+Microsoft.AspNetCore.Identity.IdentityUser
+Microsoft.AspNetCore.Identity.IdentityUser.IdentityUser() -> void
+Microsoft.AspNetCore.Identity.IdentityUser<TKey>.IdentityUser() -> void
+Microsoft.AspNetCore.Identity.IdentityUserClaim<TKey>.IdentityUserClaim() -> void
+Microsoft.AspNetCore.Identity.IdentityUserLogin<TKey>.IdentityUserLogin() -> void
+Microsoft.AspNetCore.Identity.IdentityUserRole<TKey>.IdentityUserRole() -> void
+Microsoft.AspNetCore.Identity.IdentityUserToken<TKey>.IdentityUserToken() -> void
+Microsoft.AspNetCore.Identity.RoleStoreBase<TRole, TKey, TUserRole, TRoleClaim>.Dispose() -> void
+Microsoft.AspNetCore.Identity.RoleStoreBase<TRole, TKey, TUserRole, TRoleClaim>.ThrowIfDisposed() -> void
+Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.Dispose() -> void
+Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.ThrowIfDisposed() -> void
+virtual Microsoft.AspNetCore.Identity.IdentityRoleClaim<TKey>.Id.get -> int
+virtual Microsoft.AspNetCore.Identity.IdentityRoleClaim<TKey>.Id.set -> void
+virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.AccessFailedCount.get -> int
+virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.AccessFailedCount.set -> void
+virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.EmailConfirmed.get -> bool
+virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.EmailConfirmed.set -> void
+virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.LockoutEnabled.get -> bool
+virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.LockoutEnabled.set -> void
+virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.LockoutEnd.get -> System.DateTimeOffset?
+virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.LockoutEnd.set -> void
+virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.PhoneNumberConfirmed.get -> bool
+virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.PhoneNumberConfirmed.set -> void
+virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.TwoFactorEnabled.get -> bool
+virtual Microsoft.AspNetCore.Identity.IdentityUser<TKey>.TwoFactorEnabled.set -> void
+virtual Microsoft.AspNetCore.Identity.IdentityUserClaim<TKey>.Id.get -> int
+virtual Microsoft.AspNetCore.Identity.IdentityUserClaim<TKey>.Id.set -> void

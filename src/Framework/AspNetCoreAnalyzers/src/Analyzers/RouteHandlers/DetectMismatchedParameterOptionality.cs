@@ -3,9 +3,7 @@
 
 using System;
 using System.Linq;
-using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
 
@@ -84,7 +82,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
                 return false;
             }
 
-            findStartBrace:
+        findStartBrace:
             var startIndex = _routeTemplate.IndexOf('{');
             if (startIndex == -1)
             {
@@ -100,7 +98,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
 
             var tokenStart = startIndex + 1;
 
-            findEndBrace:
+        findEndBrace:
             var endIndex = IndexOf(_routeTemplate, tokenStart, '}');
             if (endIndex == -1)
             {

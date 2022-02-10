@@ -55,6 +55,9 @@ case $cpuname in
   aarch64)
     buildarch=arm64
     ;;
+  loongarch64)
+    buildarch=loongarch64
+    ;;
   amd64|x86_64)
     buildarch=x64
     ;;

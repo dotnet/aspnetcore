@@ -1,29 +1,27 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
+namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
+
+internal class MvcRazorRuntimeCompilationOptionsSetup : IConfigureOptions<MvcRazorRuntimeCompilationOptions>
 {
-    internal class MvcRazorRuntimeCompilationOptionsSetup : IConfigureOptions<MvcRazorRuntimeCompilationOptions>
+    private readonly IWebHostEnvironment _hostingEnvironment;
+
+    public MvcRazorRuntimeCompilationOptionsSetup(IWebHostEnvironment hostingEnvironment)
     {
-        private readonly IWebHostEnvironment _hostingEnvironment;
+        _hostingEnvironment = hostingEnvironment ?? throw new ArgumentNullException(nameof(hostingEnvironment));
+    }
 
-        public MvcRazorRuntimeCompilationOptionsSetup(IWebHostEnvironment hostingEnvironment)
+    public void Configure(MvcRazorRuntimeCompilationOptions options)
+    {
+        if (options == null)
         {
-            _hostingEnvironment = hostingEnvironment ?? throw new ArgumentNullException(nameof(hostingEnvironment));
+            throw new ArgumentNullException(nameof(options));
         }
 
-        public void Configure(MvcRazorRuntimeCompilationOptions options)
-        {
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
-
-            options.FileProviders.Add(_hostingEnvironment.ContentRootFileProvider);
-        }
+        options.FileProviders.Add(_hostingEnvironment.ContentRootFileProvider);
     }
 }

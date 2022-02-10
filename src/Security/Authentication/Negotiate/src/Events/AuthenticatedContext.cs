@@ -3,21 +3,20 @@
 
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Authentication.Negotiate
+namespace Microsoft.AspNetCore.Authentication.Negotiate;
+
+/// <summary>
+/// State for the Authenticated event.
+/// </summary>
+public class AuthenticatedContext : ResultContext<NegotiateOptions>
 {
     /// <summary>
-    /// State for the Authenticated event.
+    /// Creates a new <see cref="AuthenticatedContext"/>.
     /// </summary>
-    public class AuthenticatedContext : ResultContext<NegotiateOptions>
-    {
-        /// <summary>
-        /// Creates a new <see cref="AuthenticatedContext"/>.
-        /// </summary>
-        /// <inheritdoc />
-        public AuthenticatedContext(
-            HttpContext context,
-            AuthenticationScheme scheme,
-            NegotiateOptions options)
-            : base(context, scheme, options) { }
-    }
+    /// <inheritdoc />
+    public AuthenticatedContext(
+        HttpContext context,
+        AuthenticationScheme scheme,
+        NegotiateOptions options)
+        : base(context, scheme, options) { }
 }

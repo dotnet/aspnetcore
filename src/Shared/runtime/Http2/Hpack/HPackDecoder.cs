@@ -118,7 +118,7 @@ namespace System.Net.Http.HPack
             _headerValueOctets = new byte[DefaultStringOctetsSize];
         }
 
-        public void Decode(in ReadOnlySequence<byte> data, bool endHeaders, IHttpHeadersHandler handler)
+        public void Decode(in ReadOnlySequence<byte> data, bool endHeaders, IHttpStreamHeadersHandler handler)
         {
             foreach (ReadOnlyMemory<byte> segment in data)
             {
@@ -128,13 +128,13 @@ namespace System.Net.Http.HPack
             CheckIncompleteHeaderBlock(endHeaders);
         }
 
-        public void Decode(ReadOnlySpan<byte> data, bool endHeaders, IHttpHeadersHandler handler)
+        public void Decode(ReadOnlySpan<byte> data, bool endHeaders, IHttpStreamHeadersHandler handler)
         {
             DecodeInternal(data, handler);
             CheckIncompleteHeaderBlock(endHeaders);
         }
 
-        private void DecodeInternal(ReadOnlySpan<byte> data, IHttpHeadersHandler handler)
+        private void DecodeInternal(ReadOnlySpan<byte> data, IHttpStreamHeadersHandler handler)
         {
             int currentIndex = 0;
 
@@ -206,7 +206,7 @@ namespace System.Net.Http.HPack
             }
         }
 
-        private void ParseHeaderValueLength(ReadOnlySpan<byte> data, ref int currentIndex, IHttpHeadersHandler handler)
+        private void ParseHeaderValueLength(ReadOnlySpan<byte> data, ref int currentIndex, IHttpStreamHeadersHandler handler)
         {
             if (currentIndex < data.Length)
             {
@@ -236,7 +236,7 @@ namespace System.Net.Http.HPack
             }
         }
 
-        private void ParseHeaderNameLengthContinue(ReadOnlySpan<byte> data, ref int currentIndex, IHttpHeadersHandler handler)
+        private void ParseHeaderNameLengthContinue(ReadOnlySpan<byte> data, ref int currentIndex, IHttpStreamHeadersHandler handler)
         {
             if (TryDecodeInteger(data, ref currentIndex, out int intResult))
             {
@@ -249,7 +249,7 @@ namespace System.Net.Http.HPack
             }
         }
 
-        private void ParseHeaderValueLengthContinue(ReadOnlySpan<byte> data, ref int currentIndex, IHttpHeadersHandler handler)
+        private void ParseHeaderValueLengthContinue(ReadOnlySpan<byte> data, ref int currentIndex, IHttpStreamHeadersHandler handler)
         {
             if (TryDecodeInteger(data, ref currentIndex, out int intResult))
             {
@@ -261,7 +261,7 @@ namespace System.Net.Http.HPack
             }
         }
 
-        private void ParseHeaderFieldIndex(ReadOnlySpan<byte> data, ref int currentIndex, IHttpHeadersHandler handler)
+        private void ParseHeaderFieldIndex(ReadOnlySpan<byte> data, ref int currentIndex, IHttpStreamHeadersHandler handler)
         {
             if (TryDecodeInteger(data, ref currentIndex, out int intResult))
             {
@@ -269,7 +269,7 @@ namespace System.Net.Http.HPack
             }
         }
 
-        private void ParseHeaderNameIndex(ReadOnlySpan<byte> data, ref int currentIndex, IHttpHeadersHandler handler)
+        private void ParseHeaderNameIndex(ReadOnlySpan<byte> data, ref int currentIndex, IHttpStreamHeadersHandler handler)
         {
             if (TryDecodeInteger(data, ref currentIndex, out int intResult))
             {
@@ -278,7 +278,7 @@ namespace System.Net.Http.HPack
             }
         }
 
-        private void ParseHeaderNameLength(ReadOnlySpan<byte> data, ref int currentIndex, IHttpHeadersHandler handler)
+        private void ParseHeaderNameLength(ReadOnlySpan<byte> data, ref int currentIndex, IHttpStreamHeadersHandler handler)
         {
             if (currentIndex < data.Length)
             {
@@ -304,7 +304,7 @@ namespace System.Net.Http.HPack
             }
         }
 
-        private void Parse(ReadOnlySpan<byte> data, ref int currentIndex, IHttpHeadersHandler handler)
+        private void Parse(ReadOnlySpan<byte> data, ref int currentIndex, IHttpStreamHeadersHandler handler)
         {
             if (currentIndex < data.Length)
             {
@@ -388,7 +388,7 @@ namespace System.Net.Http.HPack
             }
         }
 
-        private void ParseLiteralHeaderField(ReadOnlySpan<byte> data, ref int currentIndex, byte b, byte mask, byte indexPrefix, bool index, IHttpHeadersHandler handler)
+        private void ParseLiteralHeaderField(ReadOnlySpan<byte> data, ref int currentIndex, byte b, byte mask, byte indexPrefix, bool index, IHttpStreamHeadersHandler handler)
         {
             _headersObserved = true;
 
@@ -415,7 +415,7 @@ namespace System.Net.Http.HPack
             }
         }
 
-        private void ParseHeaderName(ReadOnlySpan<byte> data, ref int currentIndex, IHttpHeadersHandler handler)
+        private void ParseHeaderName(ReadOnlySpan<byte> data, ref int currentIndex, IHttpStreamHeadersHandler handler)
         {
             // Read remaining chars, up to the length of the current data
             int count = Math.Min(_stringLength - _stringIndex, data.Length - currentIndex);
@@ -430,6 +430,11 @@ namespace System.Net.Http.HPack
                 currentIndex += count;
 
                 _state = State.HeaderValueLength;
+                ParseHeaderValueLength(data, ref currentIndex, handler);
+            }
+            else if (count == 0)
+            {
+                // no-op
             }
             else
             {
@@ -447,7 +452,7 @@ namespace System.Net.Http.HPack
             }
         }
 
-        private void ParseHeaderValue(ReadOnlySpan<byte> data, ref int currentIndex, IHttpHeadersHandler handler)
+        private void ParseHeaderValue(ReadOnlySpan<byte> data, ref int currentIndex, IHttpStreamHeadersHandler handler)
         {
             // Read remaining chars, up to the length of the current data
             int count = Math.Min(_stringLength - _stringIndex, data.Length - currentIndex);
@@ -491,7 +496,7 @@ namespace System.Net.Http.HPack
             }
         }
 
-        private void ProcessHeaderValue(ReadOnlySpan<byte> data, IHttpHeadersHandler handler)
+        private void ProcessHeaderValue(ReadOnlySpan<byte> data, IHttpStreamHeadersHandler handler)
         {
             ReadOnlySpan<byte> headerValueSpan = _headerValueRange == null
                 ? _headerValueOctets.AsSpan(0, _headerValueLength)
@@ -503,7 +508,7 @@ namespace System.Net.Http.HPack
 
                 if (_index)
                 {
-                    _dynamicTable.Insert(H2StaticTable.Get(_headerStaticIndex - 1).Name, headerValueSpan);
+                    _dynamicTable.Insert(_headerStaticIndex, H2StaticTable.Get(_headerStaticIndex - 1).Name, headerValueSpan);
                 }
             }
             else
@@ -534,7 +539,7 @@ namespace System.Net.Http.HPack
             }
         }
 
-        private void OnIndexedHeaderField(int index, IHttpHeadersHandler handler)
+        private void OnIndexedHeaderField(int index, IHttpStreamHeadersHandler handler)
         {
             if (index <= H2StaticTable.Count)
             {
@@ -543,7 +548,7 @@ namespace System.Net.Http.HPack
             else
             {
                 ref readonly HeaderField header = ref GetDynamicHeader(index);
-                handler.OnHeader(header.Name, header.Value);
+                handler.OnDynamicIndexedHeader(header.StaticTableIndex, header.Name, header.Value);
             }
 
             _state = State.Ready;

@@ -1,70 +1,68 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Builder
+namespace Microsoft.AspNetCore.Builder;
+
+/// <summary>
+/// Extension methods for the DefaultFilesMiddleware
+/// </summary>
+public static class DefaultFilesExtensions
 {
     /// <summary>
-    /// Extension methods for the DefaultFilesMiddleware
+    /// Enables default file mapping on the current path
     /// </summary>
-    public static class DefaultFilesExtensions
+    /// <param name="app"></param>
+    /// <returns></returns>
+    public static IApplicationBuilder UseDefaultFiles(this IApplicationBuilder app)
     {
-        /// <summary>
-        /// Enables default file mapping on the current path
-        /// </summary>
-        /// <param name="app"></param>
-        /// <returns></returns>
-        public static IApplicationBuilder UseDefaultFiles(this IApplicationBuilder app)
+        if (app == null)
         {
-            if (app == null)
-            {
-                throw new ArgumentNullException(nameof(app));
-            }
-
-            return app.UseMiddleware<DefaultFilesMiddleware>();
+            throw new ArgumentNullException(nameof(app));
         }
 
-        /// <summary>
-        /// Enables default file mapping for the given request path
-        /// </summary>
-        /// <param name="app"></param>
-        /// <param name="requestPath">The relative request path.</param>
-        /// <returns></returns>
-        public static IApplicationBuilder UseDefaultFiles(this IApplicationBuilder app, string requestPath)
-        {
-            if (app == null)
-            {
-                throw new ArgumentNullException(nameof(app));
-            }
+        return app.UseMiddleware<DefaultFilesMiddleware>();
+    }
 
-            return app.UseDefaultFiles(new DefaultFilesOptions
-            {
-                RequestPath = new PathString(requestPath)
-            });
+    /// <summary>
+    /// Enables default file mapping for the given request path
+    /// </summary>
+    /// <param name="app"></param>
+    /// <param name="requestPath">The relative request path.</param>
+    /// <returns></returns>
+    public static IApplicationBuilder UseDefaultFiles(this IApplicationBuilder app, string requestPath)
+    {
+        if (app == null)
+        {
+            throw new ArgumentNullException(nameof(app));
         }
 
-        /// <summary>
-        /// Enables default file mapping with the given options
-        /// </summary>
-        /// <param name="app"></param>
-        /// <param name="options"></param>
-        /// <returns></returns>
-        public static IApplicationBuilder UseDefaultFiles(this IApplicationBuilder app, DefaultFilesOptions options)
+        return app.UseDefaultFiles(new DefaultFilesOptions
         {
-            if (app == null)
-            {
-                throw new ArgumentNullException(nameof(app));
-            }
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
+            RequestPath = new PathString(requestPath)
+        });
+    }
 
-            return app.UseMiddleware<DefaultFilesMiddleware>(Options.Create(options));
+    /// <summary>
+    /// Enables default file mapping with the given options
+    /// </summary>
+    /// <param name="app"></param>
+    /// <param name="options"></param>
+    /// <returns></returns>
+    public static IApplicationBuilder UseDefaultFiles(this IApplicationBuilder app, DefaultFilesOptions options)
+    {
+        if (app == null)
+        {
+            throw new ArgumentNullException(nameof(app));
         }
+        if (options == null)
+        {
+            throw new ArgumentNullException(nameof(options));
+        }
+
+        return app.UseMiddleware<DefaultFilesMiddleware>(Options.Create(options));
     }
 }

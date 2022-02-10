@@ -3,79 +3,76 @@
 
 #nullable enable
 
-using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Mvc
+namespace Microsoft.AspNetCore.Mvc;
+
+/// <summary>
+/// An <see cref="IActionResult"/> which renders a view component to the response.
+/// </summary>
+public class ViewComponentResult : ActionResult, IStatusCodeActionResult
 {
     /// <summary>
-    /// An <see cref="IActionResult"/> which renders a view component to the response.
+    /// Gets or sets the arguments provided to the view component.
     /// </summary>
-    public class ViewComponentResult : ActionResult, IStatusCodeActionResult
+    public object? Arguments { get; set; }
+
+    /// <summary>
+    /// Gets or sets the HTTP status code.
+    /// </summary>
+    public int? StatusCode { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the view component to invoke. Will be ignored if <see cref="ViewComponentType"/>
+    /// is set to a non-<c>null</c> value.
+    /// </summary>
+    public string? ViewComponentName { get; set; }
+
+    /// <summary>
+    /// Gets or sets the type of the view component to invoke.
+    /// </summary>
+    public Type? ViewComponentType { get; set; }
+
+    /// <summary>
+    /// Get the view data model.
+    /// </summary>
+    public object? Model => ViewData?.Model;
+
+    /// <summary>
+    /// Gets or sets the <see cref="ViewDataDictionary"/> for this result.
+    /// </summary>
+    public ViewDataDictionary ViewData { get; set; } = default!;
+
+    /// <summary>
+    /// Gets or sets the <see cref="ITempDataDictionary"/> for this result.
+    /// </summary>
+    public ITempDataDictionary TempData { get; set; } = default!;
+
+    /// <summary>
+    /// Gets or sets the Content-Type header for the response.
+    /// </summary>
+    public string? ContentType { get; set; }
+
+    /// <inheritdoc />
+    public override Task ExecuteResultAsync(ActionContext context)
     {
-        /// <summary>
-        /// Gets or sets the arguments provided to the view component.
-        /// </summary>
-        public object? Arguments { get; set; }
-
-        /// <summary>
-        /// Gets or sets the HTTP status code.
-        /// </summary>
-        public int? StatusCode { get; set; }
-
-        /// <summary>
-        /// Gets or sets the name of the view component to invoke. Will be ignored if <see cref="ViewComponentType"/>
-        /// is set to a non-<c>null</c> value.
-        /// </summary>
-        public string? ViewComponentName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the type of the view component to invoke.
-        /// </summary>
-        public Type? ViewComponentType { get; set; }
-
-        /// <summary>
-        /// Get the view data model.
-        /// </summary>
-        public object? Model => ViewData?.Model;
-
-        /// <summary>
-        /// Gets or sets the <see cref="ViewDataDictionary"/> for this result.
-        /// </summary>
-        public ViewDataDictionary ViewData { get; set; } = default!;
-
-        /// <summary>
-        /// Gets or sets the <see cref="ITempDataDictionary"/> for this result.
-        /// </summary>
-        public ITempDataDictionary TempData { get; set; } = default!;
-
-        /// <summary>
-        /// Gets or sets the Content-Type header for the response.
-        /// </summary>
-        public string? ContentType { get; set; }
-
-        /// <inheritdoc />
-        public override Task ExecuteResultAsync(ActionContext context)
+        if (context == null)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            var services = context.HttpContext.RequestServices;
-            var executor = services.GetService<IActionResultExecutor<ViewComponentResult>>();
-            if (executor == null)
-            {
-                throw new InvalidOperationException(Mvc.Core.Resources.FormatUnableToFindServices(
-                    nameof(IServiceCollection),
-                    "AddControllersWithViews()",
-                    "ConfigureServices(...)"));
-            }
-
-            return executor.ExecuteAsync(context, this);
+            throw new ArgumentNullException(nameof(context));
         }
+
+        var services = context.HttpContext.RequestServices;
+        var executor = services.GetService<IActionResultExecutor<ViewComponentResult>>();
+        if (executor == null)
+        {
+            throw new InvalidOperationException(Mvc.Core.Resources.FormatUnableToFindServices(
+                nameof(IServiceCollection),
+                "AddControllersWithViews()",
+                "ConfigureServices(...)"));
+        }
+
+        return executor.ExecuteAsync(context, this);
     }
 }

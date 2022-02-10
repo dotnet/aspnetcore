@@ -3,14 +3,13 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace MvcSample.Web.Components
+namespace MvcSample.Web.Components;
+
+[ViewComponent(Name = "ComponentThatSetsTitle")]
+public class ComponentThatSetsTitle : ViewComponent
 {
-    [ViewComponent(Name = "ComponentThatSetsTitle")]
-    public class ComponentThatSetsTitle : ViewComponent
+    public IViewComponentResult Invoke()
     {
-        public IViewComponentResult Invoke()
-        {
-            return View();
-        }
+        return View();
     }
 }

@@ -3,28 +3,27 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.DataProtection
+namespace Microsoft.AspNetCore.DataProtection;
+
+internal static class ArraySegmentExtensions
 {
-    internal static class ArraySegmentExtensions
+    public static byte[] AsStandaloneArray(this ArraySegment<byte> arraySegment)
     {
-        public static byte[] AsStandaloneArray(this ArraySegment<byte> arraySegment)
+        // Fast-track: Don't need to duplicate the array.
+        if (arraySegment.Offset == 0 && arraySegment.Count == arraySegment.Array!.Length)
         {
-            // Fast-track: Don't need to duplicate the array.
-            if (arraySegment.Offset == 0 && arraySegment.Count == arraySegment.Array!.Length)
-            {
-                return arraySegment.Array;
-            }
-
-            var retVal = new byte[arraySegment.Count];
-            Buffer.BlockCopy(arraySegment.Array!, arraySegment.Offset, retVal, 0, retVal.Length);
-            return retVal;
+            return arraySegment.Array;
         }
 
-        public static void Validate<T>(this ArraySegment<T> arraySegment)
-        {
-            // Since ArraySegment<T> is a struct, it can be improperly initialized or torn.
-            // We call the ctor again to make sure the instance data is valid.
-            var unused = new ArraySegment<T>(arraySegment.Array!, arraySegment.Offset, arraySegment.Count);
-        }
+        var retVal = new byte[arraySegment.Count];
+        Buffer.BlockCopy(arraySegment.Array!, arraySegment.Offset, retVal, 0, retVal.Length);
+        return retVal;
+    }
+
+    public static void Validate<T>(this ArraySegment<T> arraySegment)
+    {
+        // Since ArraySegment<T> is a struct, it can be improperly initialized or torn.
+        // We call the ctor again to make sure the instance data is valid.
+        _ = new ArraySegment<T>(arraySegment.Array!, arraySegment.Offset, arraySegment.Count);
     }
 }

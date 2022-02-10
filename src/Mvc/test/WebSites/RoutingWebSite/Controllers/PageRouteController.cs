@@ -3,26 +3,25 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace RoutingWebSite
+namespace RoutingWebSite;
+
+public class PageRouteController
 {
-    public class PageRouteController
+    private readonly TestResponseGenerator _generator;
+
+    public PageRouteController(TestResponseGenerator generator)
     {
-        private readonly TestResponseGenerator _generator;
+        _generator = generator;
+    }
 
-        public PageRouteController(TestResponseGenerator generator)
-        {
-            _generator = generator;
-        }
+    public IActionResult ConventionalRoute(string page)
+    {
+        return _generator.Generate("/PageRoute/ConventionalRoute/" + page);
+    }
 
-        public IActionResult ConventionalRoute(string page)
-        {
-            return _generator.Generate("/PageRoute/ConventionalRoute/" + page);
-        }
-
-        [HttpGet("/PageRoute/Attribute/{page}")]
-        public IActionResult AttributeRoute(string page)
-        {
-            return _generator.Generate("/PageRoute/Attribute/" + page);
-        }
+    [HttpGet("/PageRoute/Attribute/{page}")]
+    public IActionResult AttributeRoute(string page)
+    {
+        return _generator.Generate("/PageRoute/Attribute/" + page);
     }
 }

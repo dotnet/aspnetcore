@@ -3,11 +3,11 @@
 
 using BenchmarkDotNet.Attributes;
 
-namespace Microsoft.AspNetCore.WebSockets.Microbenchmarks
+namespace Microsoft.AspNetCore.WebSockets.Microbenchmarks;
+
+public class HandshakeBenchmark
 {
-    public class HandshakeBenchmark
-    {
-        private readonly string[] _requestKeys = {
+    private readonly string[] _requestKeys = {
             "F8/qpj9RYr2/sIymdDvlmw==",
             "PyQi8nyMkKnI7JKiAJ/IrA==",
             "CUe0z8ItSBRtgJlPqP1+SQ==",
@@ -20,22 +20,21 @@ namespace Microsoft.AspNetCore.WebSockets.Microbenchmarks
             "EUwBrmmwivd5czsxz9eRzQ==",
         };
 
-        [Benchmark(OperationsPerInvoke = 10)]
-        public void CreateResponseKey()
+    [Benchmark(OperationsPerInvoke = 10)]
+    public void CreateResponseKey()
+    {
+        foreach (var key in _requestKeys)
         {
-            foreach (var key in _requestKeys)
-            {
-                HandshakeHelpers.CreateResponseKey(key);
-            }
+            HandshakeHelpers.CreateResponseKey(key);
         }
+    }
 
-        [Benchmark(OperationsPerInvoke = 10)]
-        public void IsRequestKeyValid()
+    [Benchmark(OperationsPerInvoke = 10)]
+    public void IsRequestKeyValid()
+    {
+        foreach (var key in _requestKeys)
         {
-            foreach (var key in _requestKeys)
-            {
-                HandshakeHelpers.IsRequestKeyValid(key);
-            }
+            HandshakeHelpers.IsRequestKeyValid(key);
         }
     }
 }

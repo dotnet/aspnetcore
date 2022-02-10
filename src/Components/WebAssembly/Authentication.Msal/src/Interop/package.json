@@ -27,5 +27,8 @@
   },
   "dependencies": {
     "@azure/msal-browser": "^2.16.1"
+  },
+  "resolutions": {
+    "ansi-regex": "5.0.1"
   }
 }

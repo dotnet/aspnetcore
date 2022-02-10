@@ -2,12 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
-using Microsoft.AspNetCore.Builder;
 
-namespace Microsoft.AspNetCore.Identity.Test
+namespace Microsoft.AspNetCore.Identity.Test;
+
+public class ApiConsistencyTest : ApiConsistencyTestBase
 {
-    public class ApiConsistencyTest : ApiConsistencyTestBase
-    {
-        protected override Assembly TargetAssembly => typeof(IdentityOptions).Assembly;
-    }
+    protected override Assembly TargetAssembly => typeof(IdentityOptions).Assembly;
 }

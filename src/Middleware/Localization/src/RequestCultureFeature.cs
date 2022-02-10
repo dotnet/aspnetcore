@@ -1,35 +1,32 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
+namespace Microsoft.AspNetCore.Localization;
 
-namespace Microsoft.AspNetCore.Localization
+/// <summary>
+/// Provides the current request's culture information.
+/// </summary>
+public class RequestCultureFeature : IRequestCultureFeature
 {
     /// <summary>
-    /// Provides the current request's culture information.
+    /// Creates a new <see cref="RequestCultureFeature"/> with the specified <see cref="Localization.RequestCulture"/>.
     /// </summary>
-    public class RequestCultureFeature : IRequestCultureFeature
+    /// <param name="requestCulture">The <see cref="Localization.RequestCulture"/>.</param>
+    /// <param name="provider">The <see cref="IRequestCultureProvider"/>.</param>
+    public RequestCultureFeature(RequestCulture requestCulture, IRequestCultureProvider? provider)
     {
-        /// <summary>
-        /// Creates a new <see cref="RequestCultureFeature"/> with the specified <see cref="Localization.RequestCulture"/>.
-        /// </summary>
-        /// <param name="requestCulture">The <see cref="Localization.RequestCulture"/>.</param>
-        /// <param name="provider">The <see cref="IRequestCultureProvider"/>.</param>
-        public RequestCultureFeature(RequestCulture requestCulture, IRequestCultureProvider? provider)
+        if (requestCulture == null)
         {
-            if (requestCulture == null)
-            {
-                throw new ArgumentNullException(nameof(requestCulture));
-            }
-
-            RequestCulture = requestCulture;
-            Provider = provider;
+            throw new ArgumentNullException(nameof(requestCulture));
         }
 
-        /// <inheritdoc />
-        public RequestCulture RequestCulture { get; }
-
-        /// <inheritdoc />
-        public IRequestCultureProvider? Provider { get; }
+        RequestCulture = requestCulture;
+        Provider = provider;
     }
+
+    /// <inheritdoc />
+    public RequestCulture RequestCulture { get; }
+
+    /// <inheritdoc />
+    public IRequestCultureProvider? Provider { get; }
 }

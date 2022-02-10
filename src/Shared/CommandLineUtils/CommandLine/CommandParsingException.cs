@@ -3,16 +3,15 @@
 
 using System;
 
-namespace Microsoft.Extensions.CommandLineUtils
-{
-    internal class CommandParsingException : Exception
-    {
-        public CommandParsingException(CommandLineApplication command, string message)
-            : base(message)
-        {
-            Command = command;
-        }
+namespace Microsoft.Extensions.CommandLineUtils;
 
-        public CommandLineApplication Command { get; }
+internal class CommandParsingException : Exception
+{
+    public CommandParsingException(CommandLineApplication command, string message)
+        : base(message)
+    {
+        Command = command;
     }
+
+    public CommandLineApplication Command { get; }
 }

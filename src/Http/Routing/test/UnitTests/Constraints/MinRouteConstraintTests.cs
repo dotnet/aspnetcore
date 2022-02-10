@@ -2,26 +2,24 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Routing.Constraints;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Routing.Tests
+namespace Microsoft.AspNetCore.Routing.Tests;
+
+public class MinRouteConstraintTests
 {
-    public class MinRouteConstraintTests
+    [Theory]
+    [InlineData(3, 4, true)]
+    [InlineData(3, 3, true)]
+    [InlineData(3, 2, false)]
+    public void MinRouteConstraint_ApplyConstraint(long min, int parameterValue, bool expected)
     {
-        [Theory]
-        [InlineData(3, 4, true)]
-        [InlineData(3, 3, true)]
-        [InlineData(3, 2, false)]
-        public void MinRouteConstraint_ApplyConstraint(long min, int parameterValue, bool expected)
-        {
-            // Arrange
-            var constraint = new MinRouteConstraint(min);
+        // Arrange
+        var constraint = new MinRouteConstraint(min);
 
-            // Act
-            var actual = ConstraintsTestHelper.TestConstraint(constraint, parameterValue);
+        // Act
+        var actual = ConstraintsTestHelper.TestConstraint(constraint, parameterValue);
 
-            // Assert
-            Assert.Equal(expected, actual);
-        }
+        // Assert
+        Assert.Equal(expected, actual);
     }
 }

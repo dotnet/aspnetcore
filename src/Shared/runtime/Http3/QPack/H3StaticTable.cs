@@ -27,6 +27,7 @@ namespace System.Net.Http.QPack
         public const int MethodOptions = 19;
         public const int MethodPost = 20;
         public const int MethodPut = 21;
+        public const int SchemeHttp = 22;
         public const int SchemeHttps = 23;
         public const int Status103 = 24;
         public const int Status200 = 25;

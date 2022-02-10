@@ -1,30 +1,28 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.Extensions.DependencyInjection
+namespace Microsoft.Extensions.DependencyInjection;
+
+/// <summary>
+/// Sets up MVC default options for <see cref="RouteOptions"/>.
+/// </summary>
+internal class MvcCoreRouteOptionsSetup : IConfigureOptions<RouteOptions>
 {
     /// <summary>
-    /// Sets up MVC default options for <see cref="RouteOptions"/>.
+    /// Configures the <see cref="RouteOptions"/>.
     /// </summary>
-    internal class MvcCoreRouteOptionsSetup : IConfigureOptions<RouteOptions>
+    /// <param name="options">The <see cref="RouteOptions"/>.</param>
+    public void Configure(RouteOptions options)
     {
-        /// <summary>
-        /// Configures the <see cref="RouteOptions"/>.
-        /// </summary>
-        /// <param name="options">The <see cref="RouteOptions"/>.</param>
-        public void Configure(RouteOptions options)
+        if (options == null)
         {
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
-
-            options.ConstraintMap.Add("exists", typeof(KnownRouteValueConstraint));
+            throw new ArgumentNullException(nameof(options));
         }
+
+        options.ConstraintMap.Add("exists", typeof(KnownRouteValueConstraint));
     }
 }

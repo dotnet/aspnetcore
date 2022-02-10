@@ -6,25 +6,24 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
 
-namespace Microsoft.AspNetCore.SignalR.Tests
+namespace Microsoft.AspNetCore.SignalR.Tests;
+
+public class VerifiableLoggedTest : LoggedTest
 {
-    public class VerifiableLoggedTest : LoggedTest
+    public VerifiableLoggedTest()
     {
-        public VerifiableLoggedTest()
-        {
-            // Ensures this isn't null in case the logged test framework
-            // doesn't initialize it correctly.
-            LoggerFactory = NullLoggerFactory.Instance;
-        }
+        // Ensures this isn't null in case the logged test framework
+        // doesn't initialize it correctly.
+        LoggerFactory = NullLoggerFactory.Instance;
+    }
 
-        public virtual VerifyNoErrorsScope StartVerifiableLog(Func<WriteContext, bool> expectedErrorsFilter = null)
-        {
-            return CreateScope(expectedErrorsFilter);
-        }
+    public virtual VerifyNoErrorsScope StartVerifiableLog(Func<WriteContext, bool> expectedErrorsFilter = null)
+    {
+        return CreateScope(expectedErrorsFilter);
+    }
 
-        private VerifyNoErrorsScope CreateScope(Func<WriteContext, bool> expectedErrorsFilter = null)
-        {
-            return new VerifyNoErrorsScope(LoggerFactory, wrappedDisposable: null, expectedErrorsFilter);
-        }
+    private VerifyNoErrorsScope CreateScope(Func<WriteContext, bool> expectedErrorsFilter = null)
+    {
+        return new VerifyNoErrorsScope(LoggerFactory, wrappedDisposable: null, expectedErrorsFilter);
     }
 }

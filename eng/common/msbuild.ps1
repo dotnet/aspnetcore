@@ -6,6 +6,7 @@ Param(
   [switch] $ci,
   [switch] $prepareMachine,
   [switch] $excludePrereleaseVS,
+  [string] $msbuildEngine = $null,
   [Parameter(ValueFromRemainingArguments=$true)][String[]]$extraArgs
 )
 

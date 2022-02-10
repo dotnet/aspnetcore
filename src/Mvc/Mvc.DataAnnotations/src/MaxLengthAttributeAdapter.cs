@@ -1,48 +1,46 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.Localization;
 
-namespace Microsoft.AspNetCore.Mvc.DataAnnotations
+namespace Microsoft.AspNetCore.Mvc.DataAnnotations;
+
+internal class MaxLengthAttributeAdapter : AttributeAdapterBase<MaxLengthAttribute>
 {
-    internal class MaxLengthAttributeAdapter : AttributeAdapterBase<MaxLengthAttribute>
+    private readonly string _max;
+
+    public MaxLengthAttributeAdapter(MaxLengthAttribute attribute, IStringLocalizer? stringLocalizer)
+        : base(attribute, stringLocalizer)
     {
-        private readonly string _max;
+        _max = Attribute.Length.ToString(CultureInfo.InvariantCulture);
+    }
 
-        public MaxLengthAttributeAdapter(MaxLengthAttribute attribute, IStringLocalizer? stringLocalizer)
-            : base(attribute, stringLocalizer)
+    public override void AddValidation(ClientModelValidationContext context)
+    {
+        if (context == null)
         {
-            _max = Attribute.Length.ToString(CultureInfo.InvariantCulture);
+            throw new ArgumentNullException(nameof(context));
         }
 
-        public override void AddValidation(ClientModelValidationContext context)
-        {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+        MergeAttribute(context.Attributes, "data-val", "true");
+        MergeAttribute(context.Attributes, "data-val-maxlength", GetErrorMessage(context));
+        MergeAttribute(context.Attributes, "data-val-maxlength-max", _max);
+    }
 
-            MergeAttribute(context.Attributes, "data-val", "true");
-            MergeAttribute(context.Attributes, "data-val-maxlength", GetErrorMessage(context));
-            MergeAttribute(context.Attributes, "data-val-maxlength-max", _max);
+    /// <inheritdoc />
+    public override string GetErrorMessage(ModelValidationContextBase validationContext)
+    {
+        if (validationContext == null)
+        {
+            throw new ArgumentNullException(nameof(validationContext));
         }
 
-        /// <inheritdoc />
-        public override string GetErrorMessage(ModelValidationContextBase validationContext)
-        {
-            if (validationContext == null)
-            {
-                throw new ArgumentNullException(nameof(validationContext));
-            }
-
-            return GetErrorMessage(
-                validationContext.ModelMetadata,
-                validationContext.ModelMetadata.GetDisplayName(),
-                Attribute.Length);
-        }
+        return GetErrorMessage(
+            validationContext.ModelMetadata,
+            validationContext.ModelMetadata.GetDisplayName(),
+            Attribute.Length);
     }
 }

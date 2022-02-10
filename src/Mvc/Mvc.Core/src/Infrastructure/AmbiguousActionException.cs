@@ -3,34 +3,32 @@
 
 #nullable enable
 
-using System;
 using System.Runtime.Serialization;
 
-namespace Microsoft.AspNetCore.Mvc.Infrastructure
+namespace Microsoft.AspNetCore.Mvc.Infrastructure;
+
+/// <summary>
+/// An exception which indicates multiple matches in action selection.
+/// </summary>
+[Serializable]
+public class AmbiguousActionException : InvalidOperationException
 {
     /// <summary>
-    /// An exception which indicates multiple matches in action selection.
+    /// Creates a new instance of <see cref="AmbiguousActionException" />.
     /// </summary>
-    [Serializable]
-    public class AmbiguousActionException : InvalidOperationException
+    /// <param name="message">The exception message.</param>
+    public AmbiguousActionException(string? message)
+        : base(message)
     {
-        /// <summary>
-        /// Creates a new instance of <see cref="AmbiguousActionException" />.
-        /// </summary>
-        /// <param name="message">The exception message.</param>
-        public AmbiguousActionException(string? message)
-            : base(message)
-        {
-        }
+    }
 
-        /// <summary>
-        /// Framework infrastructure. Do not call directly.
-        /// </summary>
-        /// <param name="info"></param>
-        /// <param name="context"></param>
-        protected AmbiguousActionException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
+    /// <summary>
+    /// Framework infrastructure. Do not call directly.
+    /// </summary>
+    /// <param name="info"></param>
+    /// <param name="context"></param>
+    protected AmbiguousActionException(SerializationInfo info, StreamingContext context)
+        : base(info, context)
+    {
     }
 }

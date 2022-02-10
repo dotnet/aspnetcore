@@ -7,28 +7,26 @@
 // Microsoft.AspNetCore.App, thus preventing it from being used anywhere ASP.NET Core isn't supported (such as
 // various platforms that .NET MAUI runs on, such as Android and iOS).
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.AspNetCore.Components.WebView
+namespace Microsoft.AspNetCore.Components.WebView;
+
+/// <summary>
+/// Provides a mapping between file extensions and MIME types.
+/// </summary>
+internal class FileExtensionContentTypeProvider : IContentTypeProvider
 {
+    // Notes:
+    // - This table was initially copied from IIS and has many legacy entries we will maintain for backwards compatibility.
+    // - We only plan to add new entries where we expect them to be applicable to a majority of developers such as being
+    // used in the project templates.
+    #region Extension mapping table
     /// <summary>
-    /// Provides a mapping between file extensions and MIME types.
+    /// Creates a new provider with a set of default mappings.
     /// </summary>
-    internal class FileExtensionContentTypeProvider : IContentTypeProvider
-    {
-        // Notes:
-        // - This table was initially copied from IIS and has many legacy entries we will maintain for backwards compatibility.
-        // - We only plan to add new entries where we expect them to be applicable to a majority of developers such as being
-        // used in the project templates.
-        #region Extension mapping table
-        /// <summary>
-        /// Creates a new provider with a set of default mappings.
-        /// </summary>
-        public FileExtensionContentTypeProvider()
-            : this(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-            {
+    public FileExtensionContentTypeProvider()
+        : this(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
                 { ".323", "text/h323" },
                 { ".3g2", "video/3gpp2" },
                 { ".3gp2", "video/3gpp2" },
@@ -409,65 +407,64 @@ namespace Microsoft.AspNetCore.Components.WebView
                 { ".xwd", "image/x-xwindowdump" },
                 { ".z", "application/x-compress" },
                 { ".zip", "application/x-zip-compressed" },
-            })
+        })
+    {
+    }
+    #endregion
+
+    /// <summary>
+    /// Creates a lookup engine using the provided mapping.
+    /// It is recommended that the IDictionary instance use StringComparer.OrdinalIgnoreCase.
+    /// </summary>
+    /// <param name="mapping"></param>
+    public FileExtensionContentTypeProvider(IDictionary<string, string> mapping)
+    {
+        if (mapping == null)
         {
+            throw new ArgumentNullException(nameof(mapping));
         }
-        #endregion
+        Mappings = mapping;
+    }
 
-        /// <summary>
-        /// Creates a lookup engine using the provided mapping.
-        /// It is recommended that the IDictionary instance use StringComparer.OrdinalIgnoreCase.
-        /// </summary>
-        /// <param name="mapping"></param>
-        public FileExtensionContentTypeProvider(IDictionary<string, string> mapping)
+    /// <summary>
+    /// The cross reference table of file extensions and content-types.
+    /// </summary>
+    public IDictionary<string, string> Mappings { get; private set; }
+
+    /// <summary>
+    /// Given a file path, determine the MIME type
+    /// </summary>
+    /// <param name="subpath">A file path</param>
+    /// <param name="contentType">The resulting MIME type</param>
+    /// <returns>True if MIME type could be determined</returns>
+    public bool TryGetContentType(string subpath, [MaybeNullWhen(false)] out string contentType)
+    {
+        var extension = GetExtension(subpath);
+        if (extension == null)
         {
-            if (mapping == null)
-            {
-                throw new ArgumentNullException(nameof(mapping));
-            }
-            Mappings = mapping;
+            contentType = null;
+            return false;
         }
+        return Mappings.TryGetValue(extension, out contentType);
+    }
 
-        /// <summary>
-        /// The cross reference table of file extensions and content-types.
-        /// </summary>
-        public IDictionary<string, string> Mappings { get; private set; }
+    private static string? GetExtension(string path)
+    {
+        // Don't use Path.GetExtension as that may throw an exception if there are
+        // invalid characters in the path. Invalid characters should be handled
+        // by the FileProviders
 
-        /// <summary>
-        /// Given a file path, determine the MIME type
-        /// </summary>
-        /// <param name="subpath">A file path</param>
-        /// <param name="contentType">The resulting MIME type</param>
-        /// <returns>True if MIME type could be determined</returns>
-        public bool TryGetContentType(string subpath, [MaybeNullWhen(false)] out string contentType)
+        if (string.IsNullOrWhiteSpace(path))
         {
-            var extension = GetExtension(subpath);
-            if (extension == null)
-            {
-                contentType = null;
-                return false;
-            }
-            return Mappings.TryGetValue(extension, out contentType);
+            return null;
         }
 
-        private static string? GetExtension(string path)
+        int index = path.LastIndexOf('.');
+        if (index < 0)
         {
-            // Don't use Path.GetExtension as that may throw an exception if there are
-            // invalid characters in the path. Invalid characters should be handled
-            // by the FileProviders
-
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                return null;
-            }
-
-            int index = path.LastIndexOf('.');
-            if (index < 0)
-            {
-                return null;
-            }
-
-            return path.Substring(index);
+            return null;
         }
+
+        return path.Substring(index);
     }
 }

@@ -17,7 +17,8 @@
     <Content Include="$(KestrelSharedSourceRoot)test\TestCertificates\*.key" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="$(RepoRoot)src\Shared\Buffers.MemoryPool\*.cs" LinkBase="MemoryPool" />
     <Compile Include="$(KestrelSharedSourceRoot)\CorrelationIdGenerator.cs" Link="Internal\CorrelationIdGenerator.cs" />
-    <Compile Include="$(SharedSourceRoot)test\Shared.Tests\runtime\**\*.cs" Link="Shared\runtime\%(Filename)%(Extension)" />
+    <Compile Include="$(SharedSourceRoot)test\Shared.Tests\runtime\Http2\*.cs" LinkBase="Shared\runtime\Http2" />
+    <Compile Include="$(SharedSourceRoot)test\Shared.Tests\runtime\Http3\*.cs" LinkBase="Shared\runtime\Http3" />
   </ItemGroup>
 
   <ItemGroup>

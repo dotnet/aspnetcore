@@ -4,28 +4,27 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
+namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests;
+
+public class EchoHub : Hub
 {
-    public class EchoHub : Hub
+    public string Echo(string message)
     {
-        public string Echo(string message)
-        {
-            return message;
-        }
+        return message;
+    }
 
-        public Task EchoGroup(string groupName, string message)
-        {
-            return Clients.Group(groupName).SendAsync("Echo", message);
-        }
+    public Task EchoGroup(string groupName, string message)
+    {
+        return Clients.Group(groupName).SendAsync("Echo", message);
+    }
 
-        public Task EchoUser(string userName, string message)
-        {
-            return Clients.User(userName).SendAsync("Echo", message);
-        }
+    public Task EchoUser(string userName, string message)
+    {
+        return Clients.User(userName).SendAsync("Echo", message);
+    }
 
-        public Task AddSelfToGroup(string groupName)
-        {
-            return Groups.AddToGroupAsync(Context.ConnectionId, groupName);
-        }
+    public Task AddSelfToGroup(string groupName)
+    {
+        return Groups.AddToGroupAsync(Context.ConnectionId, groupName);
     }
 }

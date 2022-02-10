@@ -1,48 +1,46 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 
-namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
+namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
+
+internal class DynamicPageEndpointSelectorCache
 {
-    internal class DynamicPageEndpointSelectorCache
+    private readonly ConcurrentDictionary<int, EndpointDataSource> _dataSourceCache = new();
+    private readonly ConcurrentDictionary<int, DynamicPageEndpointSelector> _endpointSelectorCache = new();
+
+    public void AddDataSource(PageActionEndpointDataSource dataSource)
     {
-        private readonly ConcurrentDictionary<int, EndpointDataSource> _dataSourceCache = new();
-        private readonly ConcurrentDictionary<int, DynamicPageEndpointSelector> _endpointSelectorCache = new();
+        _dataSourceCache.GetOrAdd(dataSource.DataSourceId, dataSource);
+    }
 
-        public void AddDataSource(PageActionEndpointDataSource dataSource)
+    // For testing purposes only
+    internal void AddDataSource(EndpointDataSource dataSource, int key) =>
+        _dataSourceCache.GetOrAdd(key, dataSource);
+
+    public DynamicPageEndpointSelector? GetEndpointSelector(Endpoint endpoint)
+    {
+        if (endpoint?.Metadata == null)
         {
-            _dataSourceCache.GetOrAdd(dataSource.DataSourceId, dataSource);
+            return null;
         }
 
-        // For testing purposes only
-        internal void AddDataSource(EndpointDataSource dataSource, int key) =>
-            _dataSourceCache.GetOrAdd(key, dataSource);
+        var dataSourceId = endpoint.Metadata.GetMetadata<PageEndpointDataSourceIdMetadata>();
+        Debug.Assert(dataSourceId is not null);
+        return _endpointSelectorCache.GetOrAdd(dataSourceId.Id, key => EnsureDataSource(key));
+    }
 
-        public DynamicPageEndpointSelector? GetEndpointSelector(Endpoint endpoint)
+    private DynamicPageEndpointSelector EnsureDataSource(int key)
+    {
+        if (!_dataSourceCache.TryGetValue(key, out var dataSource))
         {
-            if (endpoint?.Metadata == null)
-            {
-                return null;
-            }
-
-            var dataSourceId = endpoint.Metadata.GetMetadata<PageEndpointDataSourceIdMetadata>();
-            Debug.Assert(dataSourceId is not null);
-            return _endpointSelectorCache.GetOrAdd(dataSourceId.Id, key => EnsureDataSource(key));
+            throw new InvalidOperationException($"Data source with key '{key}' not registered.");
         }
 
-        private DynamicPageEndpointSelector EnsureDataSource(int key)
-        {
-            if (!_dataSourceCache.TryGetValue(key, out var dataSource))
-            {
-                throw new InvalidOperationException($"Data source with key '{key}' not registered.");
-            }
-
-            return new DynamicPageEndpointSelector(dataSource);
-        }
+        return new DynamicPageEndpointSelector(dataSource);
     }
 }

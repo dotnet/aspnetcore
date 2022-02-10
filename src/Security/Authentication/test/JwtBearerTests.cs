@@ -1,6 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.IdentityModel.Tokens.Jwt;
+using System.Net;
+using System.Net.Http;
+using System.Reflection;
+using System.Security.Claims;
+using System.Text;
+using System.Text.Json;
+using System.Xml.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -8,1020 +16,1008 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
-using System;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Reflection;
-using System.Security.Claims;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
-using System.Xml.Linq;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Authentication.JwtBearer
+namespace Microsoft.AspNetCore.Authentication.JwtBearer;
+
+public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
 {
-    public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
+    protected override string DefaultScheme => JwtBearerDefaults.AuthenticationScheme;
+    protected override Type HandlerType => typeof(JwtBearerHandler);
+    protected override bool SupportsSignIn { get => false; }
+    protected override bool SupportsSignOut { get => false; }
+
+    protected override void RegisterAuth(AuthenticationBuilder services, Action<JwtBearerOptions> configure)
     {
-        protected override string DefaultScheme => JwtBearerDefaults.AuthenticationScheme;
-        protected override Type HandlerType => typeof(JwtBearerHandler);
-        protected override bool SupportsSignIn { get => false; }
-        protected override bool SupportsSignOut { get => false; }
-
-        protected override void RegisterAuth(AuthenticationBuilder services, Action<JwtBearerOptions> configure)
+        services.AddJwtBearer(o =>
         {
-            services.AddJwtBearer(o =>
-            {
-                ConfigureDefaults(o);
-                configure.Invoke(o);
-            });
-        }
+            ConfigureDefaults(o);
+            configure.Invoke(o);
+        });
+    }
 
-        private void ConfigureDefaults(JwtBearerOptions o)
+    private void ConfigureDefaults(JwtBearerOptions o)
+    {
+    }
+
+    [Fact]
+    public async Task BearerTokenValidation()
+    {
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(new string('a', 128)));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var claims = new[]
         {
-        }
-
-        [Fact]
-        public async Task BearerTokenValidation()
-        {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(new string('a', 128)));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var claims = new[]
-            {
                 new Claim(ClaimTypes.NameIdentifier, "Bob")
             };
 
-            var token = new JwtSecurityToken(
-                issuer: "issuer.contoso.com",
-                audience: "audience.contoso.com",
-                claims: claims,
-                expires: DateTime.Now.AddMinutes(30),
-                signingCredentials: creds);
+        var token = new JwtSecurityToken(
+            issuer: "issuer.contoso.com",
+            audience: "audience.contoso.com",
+            claims: claims,
+            expires: DateTime.Now.AddMinutes(30),
+            signingCredentials: creds);
 
-            var tokenText = new JwtSecurityTokenHandler().WriteToken(token);
+        var tokenText = new JwtSecurityTokenHandler().WriteToken(token);
 
-            using var host = await CreateHost(o =>
-            {
-                o.TokenValidationParameters = new TokenValidationParameters()
-                {
-                    ValidIssuer = "issuer.contoso.com",
-                    ValidAudience = "audience.contoso.com",
-                    IssuerSigningKey = key,
-                };
-            });
-
-            var newBearerToken = "Bearer " + tokenText;
-            using var server = host.GetTestServer();
-            var response = await SendAsync(server, "http://example.com/oauth", newBearerToken);
-            Assert.Equal(HttpStatusCode.OK, response.Response.StatusCode);
-        }
-
-        [Fact]
-        public async Task SaveBearerToken()
+        using var host = await CreateHost(o =>
         {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(new string('a', 128)));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var claims = new[]
+            o.TokenValidationParameters = new TokenValidationParameters()
             {
+                ValidIssuer = "issuer.contoso.com",
+                ValidAudience = "audience.contoso.com",
+                IssuerSigningKey = key,
+            };
+        });
+
+        var newBearerToken = "Bearer " + tokenText;
+        using var server = host.GetTestServer();
+        var response = await SendAsync(server, "http://example.com/oauth", newBearerToken);
+        Assert.Equal(HttpStatusCode.OK, response.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task SaveBearerToken()
+    {
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(new string('a', 128)));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var claims = new[]
+        {
                 new Claim(ClaimTypes.NameIdentifier, "Bob")
             };
 
-            var token = new JwtSecurityToken(
-                issuer: "issuer.contoso.com",
-                audience: "audience.contoso.com",
-                claims: claims,
-                expires: DateTime.Now.AddMinutes(30),
-                signingCredentials: creds);
+        var token = new JwtSecurityToken(
+            issuer: "issuer.contoso.com",
+            audience: "audience.contoso.com",
+            claims: claims,
+            expires: DateTime.Now.AddMinutes(30),
+            signingCredentials: creds);
 
-            var tokenText = new JwtSecurityTokenHandler().WriteToken(token);
+        var tokenText = new JwtSecurityTokenHandler().WriteToken(token);
 
-            using var host = await CreateHost(o =>
+        using var host = await CreateHost(o =>
+        {
+            o.SaveToken = true;
+            o.TokenValidationParameters = new TokenValidationParameters()
             {
-                o.SaveToken = true;
-                o.TokenValidationParameters = new TokenValidationParameters()
-                {
-                    ValidIssuer = "issuer.contoso.com",
-                    ValidAudience = "audience.contoso.com",
-                    IssuerSigningKey = key,
-                };
-            });
+                ValidIssuer = "issuer.contoso.com",
+                ValidAudience = "audience.contoso.com",
+                IssuerSigningKey = key,
+            };
+        });
 
-            var newBearerToken = "Bearer " + tokenText;
-            using var server = host.GetTestServer();
-            var response = await SendAsync(server, "http://example.com/token", newBearerToken);
-            Assert.Equal(HttpStatusCode.OK, response.Response.StatusCode);
-            Assert.Equal(tokenText, await response.Response.Content.ReadAsStringAsync());
-        }
+        var newBearerToken = "Bearer " + tokenText;
+        using var server = host.GetTestServer();
+        var response = await SendAsync(server, "http://example.com/token", newBearerToken);
+        Assert.Equal(HttpStatusCode.OK, response.Response.StatusCode);
+        Assert.Equal(tokenText, await response.Response.Content.ReadAsStringAsync());
+    }
 
-        [Fact]
-        public void MapInboundClaimsDefaultsToTrue()
+    [Fact]
+    public void MapInboundClaimsDefaultsToTrue()
+    {
+        var options = new JwtBearerOptions();
+        Assert.True(options.MapInboundClaims);
+        var jwtHandler = options.SecurityTokenValidators.First() as JwtSecurityTokenHandler;
+        Assert.NotNull(jwtHandler);
+        Assert.True(jwtHandler.MapInboundClaims);
+    }
+
+    [Fact]
+    public void MapInboundClaimsCanBeSetToFalse()
+    {
+        var options = new JwtBearerOptions();
+        options.MapInboundClaims = false;
+        Assert.False(options.MapInboundClaims);
+        var jwtHandler = options.SecurityTokenValidators.First() as JwtSecurityTokenHandler;
+        Assert.NotNull(jwtHandler);
+        Assert.False(jwtHandler.MapInboundClaims);
+    }
+
+    [Fact]
+    public async Task SignInThrows()
+    {
+        using var host = await CreateHost();
+        using var server = host.GetTestServer();
+        var transaction = await server.SendAsync("https://example.com/signIn");
+        Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task SignOutThrows()
+    {
+        using var host = await CreateHost();
+        using var server = host.GetTestServer();
+        var transaction = await server.SendAsync("https://example.com/signOut");
+        Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task ThrowAtAuthenticationFailedEvent()
+    {
+        using var host = await CreateHost(o =>
         {
-            var options = new JwtBearerOptions();
-            Assert.True(options.MapInboundClaims);
-            var jwtHandler = options.SecurityTokenValidators.First() as JwtSecurityTokenHandler;
-            Assert.NotNull(jwtHandler);
-            Assert.True(jwtHandler.MapInboundClaims);
-        }
-
-        [Fact]
-        public void MapInboundClaimsCanBeSetToFalse()
-        {
-            var options = new JwtBearerOptions();
-            options.MapInboundClaims = false;
-            Assert.False(options.MapInboundClaims);
-            var jwtHandler = options.SecurityTokenValidators.First() as JwtSecurityTokenHandler;
-            Assert.NotNull(jwtHandler);
-            Assert.False(jwtHandler.MapInboundClaims);
-        }
-
-        [Fact]
-        public async Task SignInThrows()
-        {
-            using var host = await CreateHost();
-            using var server = host.GetTestServer();
-            var transaction = await server.SendAsync("https://example.com/signIn");
-            Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
-        }
-
-        [Fact]
-        public async Task SignOutThrows()
-        {
-            using var host = await CreateHost();
-            using var server = host.GetTestServer();
-            var transaction = await server.SendAsync("https://example.com/signOut");
-            Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
-        }
-
-        [Fact]
-        public async Task ThrowAtAuthenticationFailedEvent()
-        {
-            using var host = await CreateHost(o =>
+            o.Events = new JwtBearerEvents
             {
-                o.Events = new JwtBearerEvents
-                {
-                    OnAuthenticationFailed = context =>
-                    {
-                        context.Response.StatusCode = 401;
-                        throw new Exception();
-                    },
-                    OnMessageReceived = context =>
-                    {
-                        context.Token = "something";
-                        return Task.FromResult(0);
-                    }
-                };
-                o.SecurityTokenValidators.Clear();
-                o.SecurityTokenValidators.Insert(0, new InvalidTokenValidator());
-            },
-            async (context, next) =>
-            {
-                try
-                {
-                    await next();
-                    Assert.False(true, "Expected exception is not thrown");
-                }
-                catch (Exception)
+                OnAuthenticationFailed = context =>
                 {
                     context.Response.StatusCode = 401;
-                    await context.Response.WriteAsync("i got this");
-                }
-            });
-
-            using var server = host.GetTestServer();
-            var transaction = await server.SendAsync("https://example.com/signIn");
-
-            Assert.Equal(HttpStatusCode.Unauthorized, transaction.Response.StatusCode);
-        }
-
-        [Fact]
-        public async Task CustomHeaderReceived()
-        {
-            using var host = await CreateHost(o =>
-            {
-                o.Events = new JwtBearerEvents()
+                    throw new Exception();
+                },
+                OnMessageReceived = context =>
                 {
-                    OnMessageReceived = context =>
+                    context.Token = "something";
+                    return Task.FromResult(0);
+                }
+            };
+            o.SecurityTokenValidators.Clear();
+            o.SecurityTokenValidators.Insert(0, new InvalidTokenValidator());
+        },
+        async (context, next) =>
+        {
+            try
+            {
+                await next();
+                Assert.False(true, "Expected exception is not thrown");
+            }
+            catch (Exception)
+            {
+                context.Response.StatusCode = 401;
+                await context.Response.WriteAsync("i got this");
+            }
+        });
+
+        using var server = host.GetTestServer();
+        var transaction = await server.SendAsync("https://example.com/signIn");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, transaction.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task CustomHeaderReceived()
+    {
+        using var host = await CreateHost(o =>
+        {
+            o.Events = new JwtBearerEvents()
+            {
+                OnMessageReceived = context =>
+                {
+                    var claims = new[]
                     {
-                        var claims = new[]
-                        {
                             new Claim(ClaimTypes.NameIdentifier, "Bob le Magnifique"),
                             new Claim(ClaimTypes.Email, "bob@contoso.com"),
                             new Claim(ClaimsIdentity.DefaultNameClaimType, "bob")
-                        };
+                    };
 
-                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity(claims, context.Scheme.Name));
-                        context.Success();
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity(claims, context.Scheme.Name));
+                    context.Success();
 
-                        return Task.FromResult<object>(null);
-                    }
-                };
-            });
+                    return Task.FromResult<object>(null);
+                }
+            };
+        });
 
-            using var server = host.GetTestServer();
-            var response = await SendAsync(server, "http://example.com/oauth", "someHeader someblob");
-            Assert.Equal(HttpStatusCode.OK, response.Response.StatusCode);
-            Assert.Equal("Bob le Magnifique", response.ResponseText);
-        }
+        using var server = host.GetTestServer();
+        var response = await SendAsync(server, "http://example.com/oauth", "someHeader someblob");
+        Assert.Equal(HttpStatusCode.OK, response.Response.StatusCode);
+        Assert.Equal("Bob le Magnifique", response.ResponseText);
+    }
 
-        [Fact]
-        public async Task NoHeaderReceived()
+    [Fact]
+    public async Task NoHeaderReceived()
+    {
+        using var host = await CreateHost();
+        using var server = host.GetTestServer();
+        var response = await SendAsync(server, "http://example.com/oauth");
+        Assert.Equal(HttpStatusCode.Unauthorized, response.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task HeaderWithoutBearerReceived()
+    {
+        using var host = await CreateHost();
+        using var server = host.GetTestServer();
+        var response = await SendAsync(server, "http://example.com/oauth", "Token");
+        Assert.Equal(HttpStatusCode.Unauthorized, response.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task UnrecognizedTokenReceived()
+    {
+        using var host = await CreateHost();
+        using var server = host.GetTestServer();
+        var response = await SendAsync(server, "http://example.com/oauth", "Bearer someblob");
+        Assert.Equal(HttpStatusCode.Unauthorized, response.Response.StatusCode);
+        Assert.Equal("", response.ResponseText);
+    }
+
+    [Fact]
+    public async Task InvalidTokenReceived()
+    {
+        using var host = await CreateHost(options =>
         {
-            using var host = await CreateHost();
-            using var server = host.GetTestServer();
-            var response = await SendAsync(server, "http://example.com/oauth");
-            Assert.Equal(HttpStatusCode.Unauthorized, response.Response.StatusCode);
-        }
+            options.SecurityTokenValidators.Clear();
+            options.SecurityTokenValidators.Add(new InvalidTokenValidator());
+        });
 
-        [Fact]
-        public async Task HeaderWithoutBearerReceived()
-        {
-            using var host = await CreateHost();
-            using var server = host.GetTestServer();
-            var response = await SendAsync(server, "http://example.com/oauth", "Token");
-            Assert.Equal(HttpStatusCode.Unauthorized, response.Response.StatusCode);
-        }
+        using var server = host.GetTestServer();
+        var response = await SendAsync(server, "http://example.com/oauth", "Bearer someblob");
+        Assert.Equal(HttpStatusCode.Unauthorized, response.Response.StatusCode);
+        Assert.Equal("Bearer error=\"invalid_token\"", response.Response.Headers.WwwAuthenticate.First().ToString());
+        Assert.Equal("", response.ResponseText);
+    }
 
-        [Fact]
-        public async Task UnrecognizedTokenReceived()
+    [Theory]
+    [InlineData(typeof(SecurityTokenInvalidAudienceException), "The audience '(null)' is invalid")]
+    [InlineData(typeof(SecurityTokenInvalidIssuerException), "The issuer '(null)' is invalid")]
+    [InlineData(typeof(SecurityTokenNoExpirationException), "The token has no expiration")]
+    [InlineData(typeof(SecurityTokenInvalidLifetimeException), "The token lifetime is invalid; NotBefore: '(null)', Expires: '(null)'")]
+    [InlineData(typeof(SecurityTokenNotYetValidException), "The token is not valid before '01/01/0001 00:00:00'")]
+    [InlineData(typeof(SecurityTokenExpiredException), "The token expired at '01/01/0001 00:00:00'")]
+    [InlineData(typeof(SecurityTokenInvalidSignatureException), "The signature is invalid")]
+    [InlineData(typeof(SecurityTokenSignatureKeyNotFoundException), "The signature key was not found")]
+    public async Task ExceptionReportedInHeaderForAuthenticationFailures(Type errorType, string message)
+    {
+        using var host = await CreateHost(options =>
         {
-            using var host = await CreateHost();
-            using var server = host.GetTestServer();
-            var response = await SendAsync(server, "http://example.com/oauth", "Bearer someblob");
-            Assert.Equal(HttpStatusCode.Unauthorized, response.Response.StatusCode);
-            Assert.Equal("", response.ResponseText);
-        }
+            options.SecurityTokenValidators.Clear();
+            options.SecurityTokenValidators.Add(new InvalidTokenValidator(errorType));
+        });
 
-        [Fact]
-        public async Task InvalidTokenReceived()
+        using var server = host.GetTestServer();
+        var response = await SendAsync(server, "http://example.com/oauth", "Bearer someblob");
+        Assert.Equal(HttpStatusCode.Unauthorized, response.Response.StatusCode);
+        Assert.Equal($"Bearer error=\"invalid_token\", error_description=\"{message}\"", response.Response.Headers.WwwAuthenticate.First().ToString());
+        Assert.Equal("", response.ResponseText);
+    }
+
+    [Theory]
+    [InlineData(typeof(SecurityTokenInvalidAudienceException), "The audience 'Bad Audience' is invalid")]
+    [InlineData(typeof(SecurityTokenInvalidIssuerException), "The issuer 'Bad Issuer' is invalid")]
+    [InlineData(typeof(SecurityTokenInvalidLifetimeException), "The token lifetime is invalid; NotBefore: '01/15/2001 00:00:00', Expires: '02/20/2000 00:00:00'")]
+    [InlineData(typeof(SecurityTokenNotYetValidException), "The token is not valid before '01/15/2045 00:00:00'")]
+    [InlineData(typeof(SecurityTokenExpiredException), "The token expired at '02/20/2000 00:00:00'")]
+    public async Task ExceptionReportedInHeaderWithDetailsForAuthenticationFailures(Type errorType, string message)
+    {
+        using var host = await CreateHost(options =>
         {
-            using var host = await CreateHost(options =>
+            options.SecurityTokenValidators.Clear();
+            options.SecurityTokenValidators.Add(new DetailedInvalidTokenValidator(errorType));
+        });
+
+        using var server = host.GetTestServer();
+        var response = await SendAsync(server, "http://example.com/oauth", "Bearer someblob");
+        Assert.Equal(HttpStatusCode.Unauthorized, response.Response.StatusCode);
+        Assert.Equal($"Bearer error=\"invalid_token\", error_description=\"{message}\"", response.Response.Headers.WwwAuthenticate.First().ToString());
+        Assert.Equal("", response.ResponseText);
+    }
+
+    [Theory]
+    [InlineData(typeof(ArgumentException))]
+    public async Task ExceptionNotReportedInHeaderForOtherFailures(Type errorType)
+    {
+        using var host = await CreateHost(options =>
+        {
+            options.SecurityTokenValidators.Clear();
+            options.SecurityTokenValidators.Add(new InvalidTokenValidator(errorType));
+        });
+
+        using var server = host.GetTestServer();
+        var response = await SendAsync(server, "http://example.com/oauth", "Bearer someblob");
+        Assert.Equal(HttpStatusCode.Unauthorized, response.Response.StatusCode);
+        Assert.Equal("Bearer error=\"invalid_token\"", response.Response.Headers.WwwAuthenticate.First().ToString());
+        Assert.Equal("", response.ResponseText);
+    }
+
+    [Fact]
+    public async Task ExceptionsReportedInHeaderForMultipleAuthenticationFailures()
+    {
+        using var host = await CreateHost(options =>
+        {
+            options.SecurityTokenValidators.Clear();
+            options.SecurityTokenValidators.Add(new InvalidTokenValidator(typeof(SecurityTokenInvalidAudienceException)));
+            options.SecurityTokenValidators.Add(new InvalidTokenValidator(typeof(SecurityTokenSignatureKeyNotFoundException)));
+        });
+
+        using var server = host.GetTestServer();
+        var response = await SendAsync(server, "http://example.com/oauth", "Bearer someblob");
+        Assert.Equal(HttpStatusCode.Unauthorized, response.Response.StatusCode);
+        Assert.Equal("Bearer error=\"invalid_token\", error_description=\"The audience '(null)' is invalid; The signature key was not found\"",
+            response.Response.Headers.WwwAuthenticate.First().ToString());
+        Assert.Equal("", response.ResponseText);
+    }
+
+    [Theory]
+    [InlineData("custom_error", "custom_description", "custom_uri")]
+    [InlineData("custom_error", "custom_description", null)]
+    [InlineData("custom_error", null, null)]
+    [InlineData(null, "custom_description", "custom_uri")]
+    [InlineData(null, "custom_description", null)]
+    [InlineData(null, null, "custom_uri")]
+    public async Task ExceptionsReportedInHeaderExposesUserDefinedError(string error, string description, string uri)
+    {
+        using var host = await CreateHost(options =>
+        {
+            options.Events = new JwtBearerEvents
             {
-                options.SecurityTokenValidators.Clear();
-                options.SecurityTokenValidators.Add(new InvalidTokenValidator());
-            });
-
-            using var server = host.GetTestServer();
-            var response = await SendAsync(server, "http://example.com/oauth", "Bearer someblob");
-            Assert.Equal(HttpStatusCode.Unauthorized, response.Response.StatusCode);
-            Assert.Equal("Bearer error=\"invalid_token\"", response.Response.Headers.WwwAuthenticate.First().ToString());
-            Assert.Equal("", response.ResponseText);
-        }
-
-        [Theory]
-        [InlineData(typeof(SecurityTokenInvalidAudienceException), "The audience '(null)' is invalid")]
-        [InlineData(typeof(SecurityTokenInvalidIssuerException), "The issuer '(null)' is invalid")]
-        [InlineData(typeof(SecurityTokenNoExpirationException), "The token has no expiration")]
-        [InlineData(typeof(SecurityTokenInvalidLifetimeException), "The token lifetime is invalid; NotBefore: '(null)', Expires: '(null)'")]
-        [InlineData(typeof(SecurityTokenNotYetValidException), "The token is not valid before '01/01/0001 00:00:00'")]
-        [InlineData(typeof(SecurityTokenExpiredException), "The token expired at '01/01/0001 00:00:00'")]
-        [InlineData(typeof(SecurityTokenInvalidSignatureException), "The signature is invalid")]
-        [InlineData(typeof(SecurityTokenSignatureKeyNotFoundException), "The signature key was not found")]
-        public async Task ExceptionReportedInHeaderForAuthenticationFailures(Type errorType, string message)
-        {
-            using var host = await CreateHost(options =>
-            {
-                options.SecurityTokenValidators.Clear();
-                options.SecurityTokenValidators.Add(new InvalidTokenValidator(errorType));
-            });
-
-            using var server = host.GetTestServer();
-            var response = await SendAsync(server, "http://example.com/oauth", "Bearer someblob");
-            Assert.Equal(HttpStatusCode.Unauthorized, response.Response.StatusCode);
-            Assert.Equal($"Bearer error=\"invalid_token\", error_description=\"{message}\"", response.Response.Headers.WwwAuthenticate.First().ToString());
-            Assert.Equal("", response.ResponseText);
-        }
-
-        [Theory]
-        [InlineData(typeof(SecurityTokenInvalidAudienceException), "The audience 'Bad Audience' is invalid")]
-        [InlineData(typeof(SecurityTokenInvalidIssuerException), "The issuer 'Bad Issuer' is invalid")]
-        [InlineData(typeof(SecurityTokenInvalidLifetimeException), "The token lifetime is invalid; NotBefore: '01/15/2001 00:00:00', Expires: '02/20/2000 00:00:00'")]
-        [InlineData(typeof(SecurityTokenNotYetValidException), "The token is not valid before '01/15/2045 00:00:00'")]
-        [InlineData(typeof(SecurityTokenExpiredException), "The token expired at '02/20/2000 00:00:00'")]
-        public async Task ExceptionReportedInHeaderWithDetailsForAuthenticationFailures(Type errorType, string message)
-        {
-            using var host = await CreateHost(options =>
-            {
-                options.SecurityTokenValidators.Clear();
-                options.SecurityTokenValidators.Add(new DetailedInvalidTokenValidator(errorType));
-            });
-
-            using var server = host.GetTestServer();
-            var response = await SendAsync(server, "http://example.com/oauth", "Bearer someblob");
-            Assert.Equal(HttpStatusCode.Unauthorized, response.Response.StatusCode);
-            Assert.Equal($"Bearer error=\"invalid_token\", error_description=\"{message}\"", response.Response.Headers.WwwAuthenticate.First().ToString());
-            Assert.Equal("", response.ResponseText);
-        }
-
-        [Theory]
-        [InlineData(typeof(ArgumentException))]
-        public async Task ExceptionNotReportedInHeaderForOtherFailures(Type errorType)
-        {
-            using var host = await CreateHost(options =>
-            {
-                options.SecurityTokenValidators.Clear();
-                options.SecurityTokenValidators.Add(new InvalidTokenValidator(errorType));
-            });
-
-            using var server = host.GetTestServer();
-            var response = await SendAsync(server, "http://example.com/oauth", "Bearer someblob");
-            Assert.Equal(HttpStatusCode.Unauthorized, response.Response.StatusCode);
-            Assert.Equal("Bearer error=\"invalid_token\"", response.Response.Headers.WwwAuthenticate.First().ToString());
-            Assert.Equal("", response.ResponseText);
-        }
-
-        [Fact]
-        public async Task ExceptionsReportedInHeaderForMultipleAuthenticationFailures()
-        {
-            using var host = await CreateHost(options =>
-            {
-                options.SecurityTokenValidators.Clear();
-                options.SecurityTokenValidators.Add(new InvalidTokenValidator(typeof(SecurityTokenInvalidAudienceException)));
-                options.SecurityTokenValidators.Add(new InvalidTokenValidator(typeof(SecurityTokenSignatureKeyNotFoundException)));
-            });
-
-            using var server = host.GetTestServer();
-            var response = await SendAsync(server, "http://example.com/oauth", "Bearer someblob");
-            Assert.Equal(HttpStatusCode.Unauthorized, response.Response.StatusCode);
-            Assert.Equal("Bearer error=\"invalid_token\", error_description=\"The audience '(null)' is invalid; The signature key was not found\"",
-                response.Response.Headers.WwwAuthenticate.First().ToString());
-            Assert.Equal("", response.ResponseText);
-        }
-
-        [Theory]
-        [InlineData("custom_error", "custom_description", "custom_uri")]
-        [InlineData("custom_error", "custom_description", null)]
-        [InlineData("custom_error", null, null)]
-        [InlineData(null, "custom_description", "custom_uri")]
-        [InlineData(null, "custom_description", null)]
-        [InlineData(null, null, "custom_uri")]
-        public async Task ExceptionsReportedInHeaderExposesUserDefinedError(string error, string description, string uri)
-        {
-            using var host = await CreateHost(options =>
-            {
-                options.Events = new JwtBearerEvents
+                OnChallenge = context =>
                 {
-                    OnChallenge = context =>
-                    {
-                        context.Error = error;
-                        context.ErrorDescription = description;
-                        context.ErrorUri = uri;
+                    context.Error = error;
+                    context.ErrorDescription = description;
+                    context.ErrorUri = uri;
 
-                        return Task.FromResult(0);
-                    }
-                };
-            });
+                    return Task.FromResult(0);
+                }
+            };
+        });
 
-            using var server = host.GetTestServer();
-            var response = await SendAsync(server, "http://example.com/oauth", "Bearer someblob");
-            Assert.Equal(HttpStatusCode.Unauthorized, response.Response.StatusCode);
-            Assert.Equal("", response.ResponseText);
+        using var server = host.GetTestServer();
+        var response = await SendAsync(server, "http://example.com/oauth", "Bearer someblob");
+        Assert.Equal(HttpStatusCode.Unauthorized, response.Response.StatusCode);
+        Assert.Equal("", response.ResponseText);
 
-            var builder = new StringBuilder(JwtBearerDefaults.AuthenticationScheme);
+        var builder = new StringBuilder(JwtBearerDefaults.AuthenticationScheme);
 
+        if (!string.IsNullOrEmpty(error))
+        {
+            builder.Append(" error=\"");
+            builder.Append(error);
+            builder.Append("\"");
+        }
+        if (!string.IsNullOrEmpty(description))
+        {
             if (!string.IsNullOrEmpty(error))
             {
-                builder.Append(" error=\"");
-                builder.Append(error);
-                builder.Append("\"");
+                builder.Append(",");
             }
-            if (!string.IsNullOrEmpty(description))
+
+            builder.Append(" error_description=\"");
+            builder.Append(description);
+            builder.Append('\"');
+        }
+        if (!string.IsNullOrEmpty(uri))
+        {
+            if (!string.IsNullOrEmpty(error) ||
+                !string.IsNullOrEmpty(description))
             {
-                if (!string.IsNullOrEmpty(error))
+                builder.Append(",");
+            }
+
+            builder.Append(" error_uri=\"");
+            builder.Append(uri);
+            builder.Append('\"');
+        }
+
+        Assert.Equal(builder.ToString(), response.Response.Headers.WwwAuthenticate.First().ToString());
+    }
+
+    [Fact]
+    public async Task ExceptionNotReportedInHeaderWhenIncludeErrorDetailsIsFalse()
+    {
+        using var host = await CreateHost(o =>
+        {
+            o.IncludeErrorDetails = false;
+        });
+
+        using var server = host.GetTestServer();
+        var response = await SendAsync(server, "http://example.com/oauth", "Bearer someblob");
+        Assert.Equal(HttpStatusCode.Unauthorized, response.Response.StatusCode);
+        Assert.Equal("Bearer", response.Response.Headers.WwwAuthenticate.First().ToString());
+        Assert.Equal("", response.ResponseText);
+    }
+
+    [Fact]
+    public async Task ExceptionNotReportedInHeaderWhenTokenWasMissing()
+    {
+        using var host = await CreateHost();
+
+        using var server = host.GetTestServer();
+        var response = await SendAsync(server, "http://example.com/oauth");
+        Assert.Equal(HttpStatusCode.Unauthorized, response.Response.StatusCode);
+        Assert.Equal("Bearer", response.Response.Headers.WwwAuthenticate.First().ToString());
+        Assert.Equal("", response.ResponseText);
+    }
+
+    [Fact]
+    public async Task CustomTokenValidated()
+    {
+        using var host = await CreateHost(options =>
+        {
+            options.Events = new JwtBearerEvents()
+            {
+                OnTokenValidated = context =>
                 {
-                    builder.Append(",");
+                    // Retrieve the NameIdentifier claim from the identity
+                    // returned by the custom security token validator.
+                    var identity = (ClaimsIdentity)context.Principal.Identity;
+                    var identifier = identity.FindFirst(ClaimTypes.NameIdentifier);
+
+                    Assert.Equal("Bob le Tout Puissant", identifier.Value);
+
+                    // Remove the existing NameIdentifier claim and replace it
+                    // with a new one containing a different value.
+                    identity.RemoveClaim(identifier);
+                    // Make sure to use a different name identifier
+                    // than the one defined by BlobTokenValidator.
+                    identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Bob le Magnifique"));
+
+                    return Task.FromResult<object>(null);
                 }
+            };
+            options.SecurityTokenValidators.Clear();
+            options.SecurityTokenValidators.Add(new BlobTokenValidator(JwtBearerDefaults.AuthenticationScheme));
+        });
 
-                builder.Append(" error_description=\"");
-                builder.Append(description);
-                builder.Append('\"');
-            }
-            if (!string.IsNullOrEmpty(uri))
+        using var server = host.GetTestServer();
+        var response = await SendAsync(server, "http://example.com/oauth", "Bearer someblob");
+        Assert.Equal(HttpStatusCode.OK, response.Response.StatusCode);
+        Assert.Equal("Bob le Magnifique", response.ResponseText);
+    }
+
+    [Fact]
+    public async Task RetrievingTokenFromAlternateLocation()
+    {
+        using var host = await CreateHost(options =>
+        {
+            options.Events = new JwtBearerEvents()
             {
-                if (!string.IsNullOrEmpty(error) ||
-                    !string.IsNullOrEmpty(description))
+                OnMessageReceived = context =>
                 {
-                    builder.Append(",");
+                    context.Token = "CustomToken";
+                    return Task.FromResult<object>(null);
                 }
+            };
+            options.SecurityTokenValidators.Clear();
+            options.SecurityTokenValidators.Add(new BlobTokenValidator("JWT", token =>
+            {
+                Assert.Equal("CustomToken", token);
+            }));
+        });
 
-                builder.Append(" error_uri=\"");
-                builder.Append(uri);
-                builder.Append('\"');
-            }
+        using var server = host.GetTestServer();
+        var response = await SendAsync(server, "http://example.com/oauth", "Bearer Token");
+        Assert.Equal(HttpStatusCode.OK, response.Response.StatusCode);
+        Assert.Equal("Bob le Tout Puissant", response.ResponseText);
+    }
 
-            Assert.Equal(builder.ToString(), response.Response.Headers.WwwAuthenticate.First().ToString());
-        }
-
-        [Fact]
-        public async Task ExceptionNotReportedInHeaderWhenIncludeErrorDetailsIsFalse()
+    [Fact]
+    public async Task EventOnMessageReceivedSkip_NoMoreEventsExecuted()
+    {
+        using var host = await CreateHost(options =>
         {
-            using var host = await CreateHost(o =>
+            options.Events = new JwtBearerEvents()
             {
-                o.IncludeErrorDetails = false;
-            });
+                OnMessageReceived = context =>
+                {
+                    context.NoResult();
+                    return Task.FromResult(0);
+                },
+                OnTokenValidated = context =>
+                {
+                    throw new NotImplementedException();
+                },
+                OnAuthenticationFailed = context =>
+                {
+                    throw new NotImplementedException(context.Exception.ToString());
+                },
+                OnChallenge = context =>
+                {
+                    throw new NotImplementedException();
+                },
+            };
+        });
 
-            using var server = host.GetTestServer();
-            var response = await SendAsync(server, "http://example.com/oauth", "Bearer someblob");
-            Assert.Equal(HttpStatusCode.Unauthorized, response.Response.StatusCode);
-            Assert.Equal("Bearer", response.Response.Headers.WwwAuthenticate.First().ToString());
-            Assert.Equal("", response.ResponseText);
-        }
+        using var server = host.GetTestServer();
+        var response = await SendAsync(server, "http://example.com/checkforerrors", "Bearer Token");
+        Assert.Equal(HttpStatusCode.OK, response.Response.StatusCode);
+        Assert.Equal(string.Empty, response.ResponseText);
+    }
 
-        [Fact]
-        public async Task ExceptionNotReportedInHeaderWhenTokenWasMissing()
+    [Fact]
+    public async Task EventOnMessageReceivedReject_NoMoreEventsExecuted()
+    {
+        using var host = await CreateHost(options =>
         {
-            using var host = await CreateHost();
+            options.Events = new JwtBearerEvents()
+            {
+                OnMessageReceived = context =>
+                {
+                    context.Fail("Authentication was aborted from user code.");
+                    context.Response.StatusCode = StatusCodes.Status202Accepted;
+                    return Task.FromResult(0);
+                },
+                OnTokenValidated = context =>
+                {
+                    throw new NotImplementedException();
+                },
+                OnAuthenticationFailed = context =>
+                {
+                    throw new NotImplementedException(context.Exception.ToString());
+                },
+                OnChallenge = context =>
+                {
+                    throw new NotImplementedException();
+                },
+            };
+        });
 
-            using var server = host.GetTestServer();
-            var response = await SendAsync(server, "http://example.com/oauth");
-            Assert.Equal(HttpStatusCode.Unauthorized, response.Response.StatusCode);
-            Assert.Equal("Bearer", response.Response.Headers.WwwAuthenticate.First().ToString());
-            Assert.Equal("", response.ResponseText);
-        }
-
-        [Fact]
-        public async Task CustomTokenValidated()
+        using var server = host.GetTestServer();
+        var exception = await Assert.ThrowsAsync<Exception>(delegate
         {
-            using var host = await CreateHost(options =>
-            {
-                options.Events = new JwtBearerEvents()
-                {
-                    OnTokenValidated = context =>
-                    {
-                        // Retrieve the NameIdentifier claim from the identity
-                        // returned by the custom security token validator.
-                        var identity = (ClaimsIdentity)context.Principal.Identity;
-                        var identifier = identity.FindFirst(ClaimTypes.NameIdentifier);
+            return SendAsync(server, "http://example.com/checkforerrors", "Bearer Token");
+        });
 
-                        Assert.Equal("Bob le Tout Puissant", identifier.Value);
+        Assert.Equal("Authentication was aborted from user code.", exception.InnerException.Message);
+    }
 
-                        // Remove the existing NameIdentifier claim and replace it
-                        // with a new one containing a different value.
-                        identity.RemoveClaim(identifier);
-                        // Make sure to use a different name identifier
-                        // than the one defined by BlobTokenValidator.
-                        identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Bob le Magnifique"));
-
-                        return Task.FromResult<object>(null);
-                    }
-                };
-                options.SecurityTokenValidators.Clear();
-                options.SecurityTokenValidators.Add(new BlobTokenValidator(JwtBearerDefaults.AuthenticationScheme));
-            });
-
-            using var server = host.GetTestServer();
-            var response = await SendAsync(server, "http://example.com/oauth", "Bearer someblob");
-            Assert.Equal(HttpStatusCode.OK, response.Response.StatusCode);
-            Assert.Equal("Bob le Magnifique", response.ResponseText);
-        }
-
-        [Fact]
-        public async Task RetrievingTokenFromAlternateLocation()
+    [Fact]
+    public async Task EventOnTokenValidatedSkip_NoMoreEventsExecuted()
+    {
+        using var host = await CreateHost(options =>
         {
-            using var host = await CreateHost(options =>
+            options.Events = new JwtBearerEvents()
             {
-                options.Events = new JwtBearerEvents()
+                OnTokenValidated = context =>
                 {
-                    OnMessageReceived = context =>
-                    {
-                        context.Token = "CustomToken";
-                        return Task.FromResult<object>(null);
-                    }
-                };
-                options.SecurityTokenValidators.Clear();
-                options.SecurityTokenValidators.Add(new BlobTokenValidator("JWT", token =>
+                    context.NoResult();
+                    return Task.FromResult(0);
+                },
+                OnAuthenticationFailed = context =>
                 {
-                    Assert.Equal("CustomToken", token);
-                }));
-            });
+                    throw new NotImplementedException(context.Exception.ToString());
+                },
+                OnChallenge = context =>
+                {
+                    throw new NotImplementedException();
+                },
+            };
+            options.SecurityTokenValidators.Clear();
+            options.SecurityTokenValidators.Add(new BlobTokenValidator("JWT"));
+        });
 
-            using var server = host.GetTestServer();
-            var response = await SendAsync(server, "http://example.com/oauth", "Bearer Token");
-            Assert.Equal(HttpStatusCode.OK, response.Response.StatusCode);
-            Assert.Equal("Bob le Tout Puissant", response.ResponseText);
-        }
+        using var server = host.GetTestServer();
+        var response = await SendAsync(server, "http://example.com/checkforerrors", "Bearer Token");
+        Assert.Equal(HttpStatusCode.OK, response.Response.StatusCode);
+        Assert.Equal(string.Empty, response.ResponseText);
+    }
 
-        [Fact]
-        public async Task EventOnMessageReceivedSkip_NoMoreEventsExecuted()
+    [Fact]
+    public async Task EventOnTokenValidatedReject_NoMoreEventsExecuted()
+    {
+        using var host = await CreateHost(options =>
         {
-            using var host = await CreateHost(options =>
+            options.Events = new JwtBearerEvents()
             {
-                options.Events = new JwtBearerEvents()
+                OnTokenValidated = context =>
                 {
-                    OnMessageReceived = context =>
-                    {
-                        context.NoResult();
-                        return Task.FromResult(0);
-                    },
-                    OnTokenValidated = context =>
-                    {
-                        throw new NotImplementedException();
-                    },
-                    OnAuthenticationFailed = context =>
-                    {
-                        throw new NotImplementedException(context.Exception.ToString());
-                    },
-                    OnChallenge = context =>
-                    {
-                        throw new NotImplementedException();
-                    },
-                };
-            });
+                    context.Fail("Authentication was aborted from user code.");
+                    context.Response.StatusCode = StatusCodes.Status202Accepted;
+                    return Task.FromResult(0);
+                },
+                OnAuthenticationFailed = context =>
+                {
+                    throw new NotImplementedException(context.Exception.ToString());
+                },
+                OnChallenge = context =>
+                {
+                    throw new NotImplementedException();
+                },
+            };
+            options.SecurityTokenValidators.Clear();
+            options.SecurityTokenValidators.Add(new BlobTokenValidator("JWT"));
+        });
 
-            using var server = host.GetTestServer();
-            var response = await SendAsync(server, "http://example.com/checkforerrors", "Bearer Token");
-            Assert.Equal(HttpStatusCode.OK, response.Response.StatusCode);
-            Assert.Equal(string.Empty, response.ResponseText);
-        }
-
-        [Fact]
-        public async Task EventOnMessageReceivedReject_NoMoreEventsExecuted()
+        using var server = host.GetTestServer();
+        var exception = await Assert.ThrowsAsync<Exception>(delegate
         {
-            using var host = await CreateHost(options =>
-            {
-                options.Events = new JwtBearerEvents()
-                {
-                    OnMessageReceived = context =>
-                    {
-                        context.Fail("Authentication was aborted from user code.");
-                        context.Response.StatusCode = StatusCodes.Status202Accepted;
-                        return Task.FromResult(0);
-                    },
-                    OnTokenValidated = context =>
-                    {
-                        throw new NotImplementedException();
-                    },
-                    OnAuthenticationFailed = context =>
-                    {
-                        throw new NotImplementedException(context.Exception.ToString());
-                    },
-                    OnChallenge = context =>
-                    {
-                        throw new NotImplementedException();
-                    },
-                };
-            });
+            return SendAsync(server, "http://example.com/checkforerrors", "Bearer Token");
+        });
 
-            using var server = host.GetTestServer();
-            var exception = await Assert.ThrowsAsync<Exception>(delegate
-            {
-                return SendAsync(server, "http://example.com/checkforerrors", "Bearer Token");
-            });
+        Assert.Equal("Authentication was aborted from user code.", exception.InnerException.Message);
+    }
 
-            Assert.Equal("Authentication was aborted from user code.", exception.InnerException.Message);
-        }
-
-        [Fact]
-        public async Task EventOnTokenValidatedSkip_NoMoreEventsExecuted()
+    [Fact]
+    public async Task EventOnAuthenticationFailedSkip_NoMoreEventsExecuted()
+    {
+        using var host = await CreateHost(options =>
         {
-            using var host = await CreateHost(options =>
+            options.Events = new JwtBearerEvents()
             {
-                options.Events = new JwtBearerEvents()
+                OnTokenValidated = context =>
                 {
-                    OnTokenValidated = context =>
-                    {
-                        context.NoResult();
-                        return Task.FromResult(0);
-                    },
-                    OnAuthenticationFailed = context =>
-                    {
-                        throw new NotImplementedException(context.Exception.ToString());
-                    },
-                    OnChallenge = context =>
-                    {
-                        throw new NotImplementedException();
-                    },
-                };
-                options.SecurityTokenValidators.Clear();
-                options.SecurityTokenValidators.Add(new BlobTokenValidator("JWT"));
-            });
+                    throw new Exception("Test Exception");
+                },
+                OnAuthenticationFailed = context =>
+                {
+                    context.NoResult();
+                    return Task.FromResult(0);
+                },
+                OnChallenge = context =>
+                {
+                    throw new NotImplementedException();
+                },
+            };
+            options.SecurityTokenValidators.Clear();
+            options.SecurityTokenValidators.Add(new BlobTokenValidator("JWT"));
+        });
 
-            using var server = host.GetTestServer();
-            var response = await SendAsync(server, "http://example.com/checkforerrors", "Bearer Token");
-            Assert.Equal(HttpStatusCode.OK, response.Response.StatusCode);
-            Assert.Equal(string.Empty, response.ResponseText);
-        }
+        using var server = host.GetTestServer();
+        var response = await SendAsync(server, "http://example.com/checkforerrors", "Bearer Token");
+        Assert.Equal(HttpStatusCode.OK, response.Response.StatusCode);
+        Assert.Equal(string.Empty, response.ResponseText);
+    }
 
-        [Fact]
-        public async Task EventOnTokenValidatedReject_NoMoreEventsExecuted()
+    [Fact]
+    public async Task EventOnAuthenticationFailedReject_NoMoreEventsExecuted()
+    {
+        using var host = await CreateHost(options =>
         {
-            using var host = await CreateHost(options =>
+            options.Events = new JwtBearerEvents()
             {
-                options.Events = new JwtBearerEvents()
+                OnTokenValidated = context =>
                 {
-                    OnTokenValidated = context =>
-                    {
-                        context.Fail("Authentication was aborted from user code.");
-                        context.Response.StatusCode = StatusCodes.Status202Accepted;
-                        return Task.FromResult(0);
-                    },
-                    OnAuthenticationFailed = context =>
-                    {
-                        throw new NotImplementedException(context.Exception.ToString());
-                    },
-                    OnChallenge = context =>
-                    {
-                        throw new NotImplementedException();
-                    },
-                };
-                options.SecurityTokenValidators.Clear();
-                options.SecurityTokenValidators.Add(new BlobTokenValidator("JWT"));
-            });
+                    throw new Exception("Test Exception");
+                },
+                OnAuthenticationFailed = context =>
+                {
+                    context.Fail("Authentication was aborted from user code.");
+                    context.Response.StatusCode = StatusCodes.Status202Accepted;
+                    return Task.FromResult(0);
+                },
+                OnChallenge = context =>
+                {
+                    throw new NotImplementedException();
+                },
+            };
+            options.SecurityTokenValidators.Clear();
+            options.SecurityTokenValidators.Add(new BlobTokenValidator("JWT"));
+        });
 
-            using var server = host.GetTestServer();
-            var exception = await Assert.ThrowsAsync<Exception>(delegate
-            {
-                return SendAsync(server, "http://example.com/checkforerrors", "Bearer Token");
-            });
-
-            Assert.Equal("Authentication was aborted from user code.", exception.InnerException.Message);
-        }
-
-        [Fact]
-        public async Task EventOnAuthenticationFailedSkip_NoMoreEventsExecuted()
+        using var server = host.GetTestServer();
+        var exception = await Assert.ThrowsAsync<Exception>(delegate
         {
-            using var host = await CreateHost(options =>
-            {
-                options.Events = new JwtBearerEvents()
-                {
-                    OnTokenValidated = context =>
-                    {
-                        throw new Exception("Test Exception");
-                    },
-                    OnAuthenticationFailed = context =>
-                    {
-                        context.NoResult();
-                        return Task.FromResult(0);
-                    },
-                    OnChallenge = context =>
-                    {
-                        throw new NotImplementedException();
-                    },
-                };
-                options.SecurityTokenValidators.Clear();
-                options.SecurityTokenValidators.Add(new BlobTokenValidator("JWT"));
-            });
+            return SendAsync(server, "http://example.com/checkforerrors", "Bearer Token");
+        });
 
-            using var server = host.GetTestServer();
-            var response = await SendAsync(server, "http://example.com/checkforerrors", "Bearer Token");
-            Assert.Equal(HttpStatusCode.OK, response.Response.StatusCode);
-            Assert.Equal(string.Empty, response.ResponseText);
-        }
+        Assert.Equal("Authentication was aborted from user code.", exception.InnerException.Message);
+    }
 
-        [Fact]
-        public async Task EventOnAuthenticationFailedReject_NoMoreEventsExecuted()
+    [Fact]
+    public async Task EventOnChallengeSkip_ResponseNotModified()
+    {
+        using var host = await CreateHost(o =>
         {
-            using var host = await CreateHost(options =>
+            o.Events = new JwtBearerEvents()
             {
-                options.Events = new JwtBearerEvents()
+                OnChallenge = context =>
                 {
-                    OnTokenValidated = context =>
-                    {
-                        throw new Exception("Test Exception");
-                    },
-                    OnAuthenticationFailed = context =>
-                    {
-                        context.Fail("Authentication was aborted from user code.");
-                        context.Response.StatusCode = StatusCodes.Status202Accepted;
-                        return Task.FromResult(0);
-                    },
-                    OnChallenge = context =>
-                    {
-                        throw new NotImplementedException();
-                    },
-                };
-                options.SecurityTokenValidators.Clear();
-                options.SecurityTokenValidators.Add(new BlobTokenValidator("JWT"));
-            });
+                    context.HandleResponse();
+                    return Task.FromResult(0);
+                },
+            };
+        });
 
-            using var server = host.GetTestServer();
-            var exception = await Assert.ThrowsAsync<Exception>(delegate
-            {
-                return SendAsync(server, "http://example.com/checkforerrors", "Bearer Token");
-            });
+        using var server = host.GetTestServer();
+        var response = await SendAsync(server, "http://example.com/unauthorized", "Bearer Token");
+        Assert.Equal(HttpStatusCode.OK, response.Response.StatusCode);
+        Assert.Empty(response.Response.Headers.WwwAuthenticate);
+        Assert.Equal(string.Empty, response.ResponseText);
+    }
 
-            Assert.Equal("Authentication was aborted from user code.", exception.InnerException.Message);
-        }
+    [Fact]
+    public async Task EventOnForbidden_ResponseNotModified()
+    {
+        var tokenData = CreateStandardTokenAndKey();
 
-        [Fact]
-        public async Task EventOnChallengeSkip_ResponseNotModified()
+        using var host = await CreateHost(o =>
         {
-            using var host = await CreateHost(o =>
+            o.TokenValidationParameters = new TokenValidationParameters()
             {
-                o.Events = new JwtBearerEvents()
-                {
-                    OnChallenge = context =>
-                    {
-                        context.HandleResponse();
-                        return Task.FromResult(0);
-                    },
-                };
-            });
+                ValidIssuer = "issuer.contoso.com",
+                ValidAudience = "audience.contoso.com",
+                IssuerSigningKey = tokenData.key,
+            };
+        });
+        var newBearerToken = "Bearer " + tokenData.tokenText;
+        using var server = host.GetTestServer();
+        var response = await SendAsync(server, "http://example.com/forbidden", newBearerToken);
+        Assert.Equal(HttpStatusCode.Forbidden, response.Response.StatusCode);
+    }
 
-            using var server = host.GetTestServer();
-            var response = await SendAsync(server, "http://example.com/unauthorized", "Bearer Token");
-            Assert.Equal(HttpStatusCode.OK, response.Response.StatusCode);
-            Assert.Empty(response.Response.Headers.WwwAuthenticate);
-            Assert.Equal(string.Empty, response.ResponseText);
-        }
-
-        [Fact]
-        public async Task EventOnForbidden_ResponseNotModified()
+    [Fact]
+    public async Task EventOnForbiddenSkip_ResponseNotModified()
+    {
+        var tokenData = CreateStandardTokenAndKey();
+        using var host = await CreateHost(o =>
         {
-            var tokenData = CreateStandardTokenAndKey();
-
-            using var host = await CreateHost(o =>
+            o.TokenValidationParameters = new TokenValidationParameters()
             {
-                o.TokenValidationParameters = new TokenValidationParameters()
+                ValidIssuer = "issuer.contoso.com",
+                ValidAudience = "audience.contoso.com",
+                IssuerSigningKey = tokenData.key,
+            };
+            o.Events = new JwtBearerEvents()
+            {
+                OnForbidden = context =>
                 {
-                    ValidIssuer = "issuer.contoso.com",
-                    ValidAudience = "audience.contoso.com",
-                    IssuerSigningKey = tokenData.key,
-                };
-            });
-            var newBearerToken = "Bearer " + tokenData.tokenText;
-            using var server = host.GetTestServer();
-            var response = await SendAsync(server, "http://example.com/forbidden", newBearerToken);
-            Assert.Equal(HttpStatusCode.Forbidden, response.Response.StatusCode);
-        }
+                    return Task.FromResult(0);
+                }
+            };
+        });
+        var newBearerToken = "Bearer " + tokenData.tokenText;
+        using var server = host.GetTestServer();
+        var response = await SendAsync(server, "http://example.com/forbidden", newBearerToken);
+        Assert.Equal(HttpStatusCode.Forbidden, response.Response.StatusCode);
+    }
 
-        [Fact]
-        public async Task EventOnForbiddenSkip_ResponseNotModified()
+    [Fact]
+    public async Task EventOnForbidden_ResponseModified()
+    {
+        var tokenData = CreateStandardTokenAndKey();
+        using var host = await CreateHost(o =>
         {
-            var tokenData = CreateStandardTokenAndKey();
-            using var host = await CreateHost(o =>
+            o.TokenValidationParameters = new TokenValidationParameters()
             {
-                o.TokenValidationParameters = new TokenValidationParameters()
+                ValidIssuer = "issuer.contoso.com",
+                ValidAudience = "audience.contoso.com",
+                IssuerSigningKey = tokenData.key,
+            };
+            o.Events = new JwtBearerEvents()
+            {
+                OnForbidden = context =>
                 {
-                    ValidIssuer = "issuer.contoso.com",
-                    ValidAudience = "audience.contoso.com",
-                    IssuerSigningKey = tokenData.key,
-                };
-                o.Events = new JwtBearerEvents()
-                {
-                    OnForbidden = context =>
-                    {
-                        return Task.FromResult(0);
-                    }
-                };
-            });
-            var newBearerToken = "Bearer " + tokenData.tokenText;
-            using var server = host.GetTestServer();
-            var response = await SendAsync(server, "http://example.com/forbidden", newBearerToken);
-            Assert.Equal(HttpStatusCode.Forbidden, response.Response.StatusCode);
-        }
+                    context.Response.StatusCode = 418;
+                    return context.Response.WriteAsync("You Shall Not Pass");
+                }
+            };
+        });
+        var newBearerToken = "Bearer " + tokenData.tokenText;
+        using var server = host.GetTestServer();
+        var response = await SendAsync(server, "http://example.com/forbidden", newBearerToken);
+        Assert.Equal(418, (int)response.Response.StatusCode);
+        Assert.Equal("You Shall Not Pass", await response.Response.Content.ReadAsStringAsync());
+    }
 
-        [Fact]
-        public async Task EventOnForbidden_ResponseModified()
+    [Fact]
+    public async Task ExpirationAndIssuedSetOnAuthenticateResult()
+    {
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(new string('a', 128)));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var claims = new[]
         {
-            var tokenData = CreateStandardTokenAndKey();
-            using var host = await CreateHost(o =>
-            {
-                o.TokenValidationParameters = new TokenValidationParameters()
-                {
-                    ValidIssuer = "issuer.contoso.com",
-                    ValidAudience = "audience.contoso.com",
-                    IssuerSigningKey = tokenData.key,
-                };
-                o.Events = new JwtBearerEvents()
-                {
-                    OnForbidden = context =>
-                    {
-                        context.Response.StatusCode = 418;
-                        return context.Response.WriteAsync("You Shall Not Pass");
-                    }
-                };
-            });
-            var newBearerToken = "Bearer " + tokenData.tokenText;
-            using var server = host.GetTestServer();
-            var response = await SendAsync(server, "http://example.com/forbidden", newBearerToken);
-            Assert.Equal(418, (int)response.Response.StatusCode);
-            Assert.Equal("You Shall Not Pass", await response.Response.Content.ReadAsStringAsync());
-        }
-
-        [Fact]
-        public async Task ExpirationAndIssuedSetOnAuthenticateResult()
-        {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(new string('a', 128)));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var claims = new[]
-            {
                 new Claim(ClaimTypes.NameIdentifier, "Bob")
             };
 
-            var token = new JwtSecurityToken(
-                issuer: "issuer.contoso.com",
-                audience: "audience.contoso.com",
-                claims: claims,
-                notBefore: DateTime.Now.AddMinutes(-10),
-                expires: DateTime.Now.AddMinutes(30),
-                signingCredentials: creds);
+        var token = new JwtSecurityToken(
+            issuer: "issuer.contoso.com",
+            audience: "audience.contoso.com",
+            claims: claims,
+            notBefore: DateTime.Now.AddMinutes(-10),
+            expires: DateTime.Now.AddMinutes(30),
+            signingCredentials: creds);
 
-            var tokenText = new JwtSecurityTokenHandler().WriteToken(token);
+        var tokenText = new JwtSecurityTokenHandler().WriteToken(token);
 
-            using var host = await CreateHost(o =>
-            {
-                o.SaveToken = true;
-                o.TokenValidationParameters = new TokenValidationParameters()
-                {
-                    ValidIssuer = "issuer.contoso.com",
-                    ValidAudience = "audience.contoso.com",
-                    IssuerSigningKey = key,
-                };
-            });
-
-            var newBearerToken = "Bearer " + tokenText;
-            using var server = host.GetTestServer();
-            var response = await SendAsync(server, "http://example.com/expiration", newBearerToken);
-            Assert.Equal(HttpStatusCode.OK, response.Response.StatusCode);
-            var responseBody = await response.Response.Content.ReadAsStringAsync();
-            using var dom = JsonDocument.Parse(responseBody);
-            Assert.NotEqual(DateTimeOffset.MinValue, token.ValidTo);
-            Assert.NotEqual(DateTimeOffset.MinValue, token.ValidFrom);
-            Assert.Equal(token.ValidTo, dom.RootElement.GetProperty("expires").GetDateTimeOffset());
-            Assert.Equal(token.ValidFrom, dom.RootElement.GetProperty("issued").GetDateTimeOffset());
-        }
-
-        [Fact]
-        public async Task ExpirationAndIssuedNullWhenMinOrMaxValue()
+        using var host = await CreateHost(o =>
         {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(new string('a', 128)));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var claims = new[]
+            o.SaveToken = true;
+            o.TokenValidationParameters = new TokenValidationParameters()
             {
+                ValidIssuer = "issuer.contoso.com",
+                ValidAudience = "audience.contoso.com",
+                IssuerSigningKey = key,
+            };
+        });
+
+        var newBearerToken = "Bearer " + tokenText;
+        using var server = host.GetTestServer();
+        var response = await SendAsync(server, "http://example.com/expiration", newBearerToken);
+        Assert.Equal(HttpStatusCode.OK, response.Response.StatusCode);
+        var responseBody = await response.Response.Content.ReadAsStringAsync();
+        using var dom = JsonDocument.Parse(responseBody);
+        Assert.NotEqual(DateTimeOffset.MinValue, token.ValidTo);
+        Assert.NotEqual(DateTimeOffset.MinValue, token.ValidFrom);
+        Assert.Equal(token.ValidTo, dom.RootElement.GetProperty("expires").GetDateTimeOffset());
+        Assert.Equal(token.ValidFrom, dom.RootElement.GetProperty("issued").GetDateTimeOffset());
+    }
+
+    [Fact]
+    public async Task ExpirationAndIssuedNullWhenMinOrMaxValue()
+    {
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(new string('a', 128)));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var claims = new[]
+        {
                 new Claim(ClaimTypes.NameIdentifier, "Bob")
             };
 
-            var token = new JwtSecurityToken(
-                issuer: "issuer.contoso.com",
-                audience: "audience.contoso.com",
-                claims: claims,
-                expires: DateTime.MaxValue,
-                signingCredentials: creds);
+        var token = new JwtSecurityToken(
+            issuer: "issuer.contoso.com",
+            audience: "audience.contoso.com",
+            claims: claims,
+            expires: DateTime.MaxValue,
+            signingCredentials: creds);
 
-            var tokenText = new JwtSecurityTokenHandler().WriteToken(token);
+        var tokenText = new JwtSecurityTokenHandler().WriteToken(token);
 
-            using var host = await CreateHost(o =>
+        using var host = await CreateHost(o =>
+        {
+            o.SaveToken = true;
+            o.TokenValidationParameters = new TokenValidationParameters()
             {
-                o.SaveToken = true;
-                o.TokenValidationParameters = new TokenValidationParameters()
+                ValidIssuer = "issuer.contoso.com",
+                ValidAudience = "audience.contoso.com",
+                IssuerSigningKey = key,
+            };
+        });
+
+        var newBearerToken = "Bearer " + tokenText;
+        using var server = host.GetTestServer();
+        var response = await SendAsync(server, "http://example.com/expiration", newBearerToken);
+        Assert.Equal(HttpStatusCode.OK, response.Response.StatusCode);
+        var responseBody = await response.Response.Content.ReadAsStringAsync();
+        using var dom = JsonDocument.Parse(responseBody);
+        Assert.Equal(JsonValueKind.Null, dom.RootElement.GetProperty("expires").ValueKind);
+        Assert.Equal(JsonValueKind.Null, dom.RootElement.GetProperty("issued").ValueKind);
+    }
+
+    class InvalidTokenValidator : ISecurityTokenValidator
+    {
+        public InvalidTokenValidator()
+        {
+            ExceptionType = typeof(SecurityTokenException);
+        }
+
+        public InvalidTokenValidator(Type exceptionType)
+        {
+            ExceptionType = exceptionType;
+        }
+
+        public Type ExceptionType { get; set; }
+
+        public bool CanValidateToken => true;
+
+        public int MaximumTokenSizeInBytes
+        {
+            get { throw new NotImplementedException(); }
+            set { throw new NotImplementedException(); }
+        }
+
+        public bool CanReadToken(string securityToken) => true;
+
+        public ClaimsPrincipal ValidateToken(string securityToken, TokenValidationParameters validationParameters, out SecurityToken validatedToken)
+        {
+            var constructor = ExceptionType.GetTypeInfo().GetConstructor(new[] { typeof(string) });
+            var exception = (Exception)constructor.Invoke(new[] { ExceptionType.Name });
+            throw exception;
+        }
+    }
+
+    class DetailedInvalidTokenValidator : ISecurityTokenValidator
+    {
+        public DetailedInvalidTokenValidator()
+        {
+            ExceptionType = typeof(SecurityTokenException);
+        }
+
+        public DetailedInvalidTokenValidator(Type exceptionType)
+        {
+            ExceptionType = exceptionType;
+        }
+
+        public Type ExceptionType { get; set; }
+
+        public bool CanValidateToken => true;
+
+        public int MaximumTokenSizeInBytes
+        {
+            get { throw new NotImplementedException(); }
+            set { throw new NotImplementedException(); }
+        }
+
+        public bool CanReadToken(string securityToken) => true;
+
+        public ClaimsPrincipal ValidateToken(string securityToken, TokenValidationParameters validationParameters, out SecurityToken validatedToken)
+        {
+            if (ExceptionType == typeof(SecurityTokenInvalidAudienceException))
+            {
+                throw new SecurityTokenInvalidAudienceException("SecurityTokenInvalidAudienceException") { InvalidAudience = "Bad Audience" };
+            }
+            if (ExceptionType == typeof(SecurityTokenInvalidIssuerException))
+            {
+                throw new SecurityTokenInvalidIssuerException("SecurityTokenInvalidIssuerException") { InvalidIssuer = "Bad Issuer" };
+            }
+            if (ExceptionType == typeof(SecurityTokenInvalidLifetimeException))
+            {
+                throw new SecurityTokenInvalidLifetimeException("SecurityTokenInvalidLifetimeException")
                 {
-                    ValidIssuer = "issuer.contoso.com",
-                    ValidAudience = "audience.contoso.com",
-                    IssuerSigningKey = key,
+                    NotBefore = new DateTime(2001, 1, 15),
+                    Expires = new DateTime(2000, 2, 20),
                 };
-            });
-
-            var newBearerToken = "Bearer " + tokenText;
-            using var server = host.GetTestServer();
-            var response = await SendAsync(server, "http://example.com/expiration", newBearerToken);
-            Assert.Equal(HttpStatusCode.OK, response.Response.StatusCode);
-            var responseBody = await response.Response.Content.ReadAsStringAsync();
-            using var dom = JsonDocument.Parse(responseBody);
-            Assert.Equal(JsonValueKind.Null, dom.RootElement.GetProperty("expires").ValueKind);
-            Assert.Equal(JsonValueKind.Null, dom.RootElement.GetProperty("issued").ValueKind);
-        }
-
-        class InvalidTokenValidator : ISecurityTokenValidator
-        {
-            public InvalidTokenValidator()
-            {
-                ExceptionType = typeof(SecurityTokenException);
             }
-
-            public InvalidTokenValidator(Type exceptionType)
+            if (ExceptionType == typeof(SecurityTokenNotYetValidException))
             {
-                ExceptionType = exceptionType;
+                throw new SecurityTokenNotYetValidException("SecurityTokenNotYetValidException")
+                {
+                    NotBefore = new DateTime(2045, 1, 15),
+                };
             }
-
-            public Type ExceptionType { get; set; }
-
-            public bool CanValidateToken => true;
-
-            public int MaximumTokenSizeInBytes
+            if (ExceptionType == typeof(SecurityTokenExpiredException))
             {
-                get { throw new NotImplementedException(); }
-                set { throw new NotImplementedException(); }
+                throw new SecurityTokenExpiredException("SecurityTokenExpiredException")
+                {
+                    Expires = new DateTime(2000, 2, 20),
+                };
             }
-
-            public bool CanReadToken(string securityToken) => true;
-
-            public ClaimsPrincipal ValidateToken(string securityToken, TokenValidationParameters validationParameters, out SecurityToken validatedToken)
+            else
             {
-                var constructor = ExceptionType.GetTypeInfo().GetConstructor(new[] { typeof(string) });
-                var exception = (Exception)constructor.Invoke(new[] { ExceptionType.Name });
-                throw exception;
+                throw new NotImplementedException(ExceptionType.Name);
             }
         }
+    }
 
-        class DetailedInvalidTokenValidator : ISecurityTokenValidator
+    class BlobTokenValidator : ISecurityTokenValidator
+    {
+        private readonly Action<string> _tokenValidator;
+
+        public BlobTokenValidator(string authenticationScheme)
         {
-            public DetailedInvalidTokenValidator()
+            AuthenticationScheme = authenticationScheme;
+
+        }
+        public BlobTokenValidator(string authenticationScheme, Action<string> tokenValidator)
+        {
+            AuthenticationScheme = authenticationScheme;
+            _tokenValidator = tokenValidator;
+        }
+
+        public string AuthenticationScheme { get; }
+
+        public bool CanValidateToken => true;
+
+        public int MaximumTokenSizeInBytes
+        {
+            get
             {
-                ExceptionType = typeof(SecurityTokenException);
+                throw new NotImplementedException();
             }
-
-            public DetailedInvalidTokenValidator(Type exceptionType)
+            set
             {
-                ExceptionType = exceptionType;
-            }
-
-            public Type ExceptionType { get; set; }
-
-            public bool CanValidateToken => true;
-
-            public int MaximumTokenSizeInBytes
-            {
-                get { throw new NotImplementedException(); }
-                set { throw new NotImplementedException(); }
-            }
-
-            public bool CanReadToken(string securityToken) => true;
-
-            public ClaimsPrincipal ValidateToken(string securityToken, TokenValidationParameters validationParameters, out SecurityToken validatedToken)
-            {
-                if (ExceptionType == typeof(SecurityTokenInvalidAudienceException))
-                {
-                    throw new SecurityTokenInvalidAudienceException("SecurityTokenInvalidAudienceException") { InvalidAudience = "Bad Audience" };
-                }
-                if (ExceptionType == typeof(SecurityTokenInvalidIssuerException))
-                {
-                    throw new SecurityTokenInvalidIssuerException("SecurityTokenInvalidIssuerException") { InvalidIssuer = "Bad Issuer" };
-                }
-                if (ExceptionType == typeof(SecurityTokenInvalidLifetimeException))
-                {
-                    throw new SecurityTokenInvalidLifetimeException("SecurityTokenInvalidLifetimeException")
-                    {
-                        NotBefore = new DateTime(2001, 1, 15),
-                        Expires = new DateTime(2000, 2, 20),
-                    };
-                }
-                if (ExceptionType == typeof(SecurityTokenNotYetValidException))
-                {
-                    throw new SecurityTokenNotYetValidException("SecurityTokenNotYetValidException")
-                    {
-                        NotBefore = new DateTime(2045, 1, 15),
-                    };
-                }
-                if (ExceptionType == typeof(SecurityTokenExpiredException))
-                {
-                    throw new SecurityTokenExpiredException("SecurityTokenExpiredException")
-                    {
-                        Expires = new DateTime(2000, 2, 20),
-                    };
-                }
-                else
-                {
-                    throw new NotImplementedException(ExceptionType.Name);
-                }
+                throw new NotImplementedException();
             }
         }
 
-        class BlobTokenValidator : ISecurityTokenValidator
+        public bool CanReadToken(string securityToken) => true;
+
+        public ClaimsPrincipal ValidateToken(string securityToken, TokenValidationParameters validationParameters, out SecurityToken validatedToken)
         {
-            private readonly Action<string> _tokenValidator;
+            validatedToken = new TestSecurityToken();
+            _tokenValidator?.Invoke(securityToken);
 
-            public BlobTokenValidator(string authenticationScheme)
+            var claims = new[]
             {
-                AuthenticationScheme = authenticationScheme;
-
-            }
-            public BlobTokenValidator(string authenticationScheme, Action<string> tokenValidator)
-            {
-                AuthenticationScheme = authenticationScheme;
-                _tokenValidator = tokenValidator;
-            }
-
-            public string AuthenticationScheme { get; }
-
-            public bool CanValidateToken => true;
-
-            public int MaximumTokenSizeInBytes
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-                set
-                {
-                    throw new NotImplementedException();
-                }
-            }
-
-            public bool CanReadToken(string securityToken) => true;
-
-            public ClaimsPrincipal ValidateToken(string securityToken, TokenValidationParameters validationParameters, out SecurityToken validatedToken)
-            {
-                validatedToken = new TestSecurityToken();
-                _tokenValidator?.Invoke(securityToken);
-
-                var claims = new[]
-                {
                     // Make sure to use a different name identifier
                     // than the one defined by CustomTokenValidated.
                     new Claim(ClaimTypes.NameIdentifier, "Bob le Tout Puissant"),
@@ -1029,144 +1025,143 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                     new Claim(ClaimsIdentity.DefaultNameClaimType, "bob"),
                 };
 
-                return new ClaimsPrincipal(new ClaimsIdentity(claims, AuthenticationScheme));
-            }
+            return new ClaimsPrincipal(new ClaimsIdentity(claims, AuthenticationScheme));
         }
+    }
 
-        private static async Task<IHost> CreateHost(Action<JwtBearerOptions> options = null, Func<HttpContext, Func<Task>, Task> handlerBeforeAuth = null)
-        {
-            var host = new HostBuilder()
-                .ConfigureWebHost(builder =>
-                    builder.UseTestServer()
-                        .Configure(app =>
+    private static async Task<IHost> CreateHost(Action<JwtBearerOptions> options = null, Func<HttpContext, Func<Task>, Task> handlerBeforeAuth = null)
+    {
+        var host = new HostBuilder()
+            .ConfigureWebHost(builder =>
+                builder.UseTestServer()
+                    .Configure(app =>
+                    {
+                        if (handlerBeforeAuth != null)
                         {
-                            if (handlerBeforeAuth != null)
-                            {
-                                app.Use(handlerBeforeAuth);
-                            }
+                            app.Use(handlerBeforeAuth);
+                        }
 
-                            app.UseAuthentication();
-                            app.Use(async (context, next) =>
+                        app.UseAuthentication();
+                        app.Use(async (context, next) =>
+                        {
+                            if (context.Request.Path == new PathString("/checkforerrors"))
                             {
-                                if (context.Request.Path == new PathString("/checkforerrors"))
+                                var result = await context.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme); // this used to be "Automatic"
+                                if (result.Failure != null)
                                 {
-                                    var result = await context.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme); // this used to be "Automatic"
-                                    if (result.Failure != null)
-                                    {
-                                        throw new Exception("Failed to authenticate", result.Failure);
-                                    }
+                                    throw new Exception("Failed to authenticate", result.Failure);
+                                }
+                                return;
+                            }
+                            else if (context.Request.Path == new PathString("/oauth"))
+                            {
+                                if (context.User == null ||
+                                    context.User.Identity == null ||
+                                    !context.User.Identity.IsAuthenticated)
+                                {
+                                    context.Response.StatusCode = 401;
+                                    // REVIEW: no more automatic challenge
+                                    await context.ChallengeAsync(JwtBearerDefaults.AuthenticationScheme);
                                     return;
                                 }
-                                else if (context.Request.Path == new PathString("/oauth"))
-                                {
-                                    if (context.User == null ||
-                                        context.User.Identity == null ||
-                                        !context.User.Identity.IsAuthenticated)
-                                    {
-                                        context.Response.StatusCode = 401;
-                                        // REVIEW: no more automatic challenge
-                                        await context.ChallengeAsync(JwtBearerDefaults.AuthenticationScheme);
-                                        return;
-                                    }
 
-                                    var identifier = context.User.FindFirst(ClaimTypes.NameIdentifier);
-                                    if (identifier == null)
-                                    {
-                                        context.Response.StatusCode = 500;
-                                        return;
-                                    }
+                                var identifier = context.User.FindFirst(ClaimTypes.NameIdentifier);
+                                if (identifier == null)
+                                {
+                                    context.Response.StatusCode = 500;
+                                    return;
+                                }
 
-                                    await context.Response.WriteAsync(identifier.Value);
-                                }
-                                else if (context.Request.Path == new PathString("/token"))
-                                {
-                                    var token = await context.GetTokenAsync("access_token");
-                                    await context.Response.WriteAsync(token);
-                                }
-                                else if (context.Request.Path == new PathString("/unauthorized"))
-                                {
-                                    // Simulate Authorization failure
-                                    var result = await context.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
-                                    await context.ChallengeAsync(JwtBearerDefaults.AuthenticationScheme);
-                                }
-                                else if (context.Request.Path == new PathString("/forbidden"))
-                                {
-                                    // Simulate Forbidden
-                                    await context.ForbidAsync(JwtBearerDefaults.AuthenticationScheme);
-                                }
-                                else if (context.Request.Path == new PathString("/signIn"))
-                                {
-                                    await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignInAsync(JwtBearerDefaults.AuthenticationScheme, new ClaimsPrincipal()));
-                                }
-                                else if (context.Request.Path == new PathString("/signOut"))
-                                {
-                                    await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignOutAsync(JwtBearerDefaults.AuthenticationScheme));
-                                }
-                                else if (context.Request.Path == new PathString("/expiration"))
-                                {
-                                    var authenticationResult = await context.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
-                                    await context.Response.WriteAsJsonAsync(
-                                        new { Expires = authenticationResult.Properties?.ExpiresUtc, Issued = authenticationResult.Properties?.IssuedUtc });
-                                }
-                                else
-                                {
-                                    await next(context);
-                                }
-                            });
-                        })
-                        .ConfigureServices(services => services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options)))
-                .Build();
+                                await context.Response.WriteAsync(identifier.Value);
+                            }
+                            else if (context.Request.Path == new PathString("/token"))
+                            {
+                                var token = await context.GetTokenAsync("access_token");
+                                await context.Response.WriteAsync(token);
+                            }
+                            else if (context.Request.Path == new PathString("/unauthorized"))
+                            {
+                                // Simulate Authorization failure
+                                var result = await context.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
+                                await context.ChallengeAsync(JwtBearerDefaults.AuthenticationScheme);
+                            }
+                            else if (context.Request.Path == new PathString("/forbidden"))
+                            {
+                                // Simulate Forbidden
+                                await context.ForbidAsync(JwtBearerDefaults.AuthenticationScheme);
+                            }
+                            else if (context.Request.Path == new PathString("/signIn"))
+                            {
+                                await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignInAsync(JwtBearerDefaults.AuthenticationScheme, new ClaimsPrincipal()));
+                            }
+                            else if (context.Request.Path == new PathString("/signOut"))
+                            {
+                                await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignOutAsync(JwtBearerDefaults.AuthenticationScheme));
+                            }
+                            else if (context.Request.Path == new PathString("/expiration"))
+                            {
+                                var authenticationResult = await context.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
+                                await context.Response.WriteAsJsonAsync(
+                                    new { Expires = authenticationResult.Properties?.ExpiresUtc, Issued = authenticationResult.Properties?.IssuedUtc });
+                            }
+                            else
+                            {
+                                await next(context);
+                            }
+                        });
+                    })
+                    .ConfigureServices(services => services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options)))
+            .Build();
 
-            await host.StartAsync();
-            return host;
+        await host.StartAsync();
+        return host;
+    }
+
+    // TODO: see if we can share the TestExtensions SendAsync method (only diff is auth header)
+    private static async Task<Transaction> SendAsync(TestServer server, string uri, string authorizationHeader = null)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, uri);
+        if (!string.IsNullOrEmpty(authorizationHeader))
+        {
+            request.Headers.Add("Authorization", authorizationHeader);
         }
 
-        // TODO: see if we can share the TestExtensions SendAsync method (only diff is auth header)
-        private static async Task<Transaction> SendAsync(TestServer server, string uri, string authorizationHeader = null)
+        var transaction = new Transaction
         {
-            var request = new HttpRequestMessage(HttpMethod.Get, uri);
-            if (!string.IsNullOrEmpty(authorizationHeader))
-            {
-                request.Headers.Add("Authorization", authorizationHeader);
-            }
+            Request = request,
+            Response = await server.CreateClient().SendAsync(request),
+        };
 
-            var transaction = new Transaction
-            {
-                Request = request,
-                Response = await server.CreateClient().SendAsync(request),
-            };
+        transaction.ResponseText = await transaction.Response.Content.ReadAsStringAsync();
 
-            transaction.ResponseText = await transaction.Response.Content.ReadAsStringAsync();
-
-            if (transaction.Response.Content != null &&
-                transaction.Response.Content.Headers.ContentType != null &&
-                transaction.Response.Content.Headers.ContentType.MediaType == "text/xml")
-            {
-                transaction.ResponseElement = XElement.Parse(transaction.ResponseText);
-            }
-
-            return transaction;
+        if (transaction.Response.Content != null &&
+            transaction.Response.Content.Headers.ContentType != null &&
+            transaction.Response.Content.Headers.ContentType.MediaType == "text/xml")
+        {
+            transaction.ResponseElement = XElement.Parse(transaction.ResponseText);
         }
 
-        private static (string tokenText, SymmetricSecurityKey key) CreateStandardTokenAndKey()
-        {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(new string('a', 128)));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        return transaction;
+    }
 
-            var claims = new[]
-            {
+    private static (string tokenText, SymmetricSecurityKey key) CreateStandardTokenAndKey()
+    {
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(new string('a', 128)));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var claims = new[]
+        {
                 new Claim(ClaimTypes.NameIdentifier, "Bob")
             };
 
-            var token = new JwtSecurityToken(
-                issuer: "issuer.contoso.com",
-                audience: "audience.contoso.com",
-                claims: claims,
-                expires: DateTime.Now.AddMinutes(30),
-                signingCredentials: creds);
+        var token = new JwtSecurityToken(
+            issuer: "issuer.contoso.com",
+            audience: "audience.contoso.com",
+            claims: claims,
+            expires: DateTime.Now.AddMinutes(30),
+            signingCredentials: creds);
 
-            var tokenText = new JwtSecurityTokenHandler().WriteToken(token);
-            return (tokenText, key);
-        }
+        var tokenText = new JwtSecurityTokenHandler().WriteToken(token);
+        return (tokenText, key);
     }
 }

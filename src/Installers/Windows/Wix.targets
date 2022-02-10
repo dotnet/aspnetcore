@@ -22,7 +22,7 @@
 
   <PropertyGroup Condition="'$(OutputType)' == 'package'">
     <InstallDir>$(ProductName)</InstallDir>
-    <DepProviderKey>Microsoft.$(ProductNameShort)_$(Platform)_$(Lang),v$(PackageVersion)</DepProviderKey>
+    <DepProviderKey>Microsoft.$(ProductNameShort)_$(Platform)_$(Lang),v$(_GeneratedPackageVersion)</DepProviderKey>
     <DefineConstants>$(DefineConstants);DepProviderKey=$(DepProviderKey)</DefineConstants>
   </PropertyGroup>
 
@@ -45,10 +45,17 @@
   <Target Name="GenerateGUIDs" BeforeTargets="BeforeBuild" DependsOnTargets="_GeneratePackageGuids;_GenerateBundleGuids" Condition=" '$(DisableGuidGeneration)' != 'true' " />
 
   <Target Name="_GeneratePackageGuids" Condition="'$(OutputType)' == 'package'">
-    <GenerateGuid NamespaceGuid="$(NamespaceGuid)" Values="$(ProductNameShort);$(GuidInputs)">
+    <GenerateGuid Condition="'$(OutputName)' != '$(HostOptionsName)'" NamespaceGuid="$(NamespaceGuid)" Values="$(ProductNameShort);$(GuidInputs)">
       <Output TaskParameter="Guid" PropertyName="ProductCode" />
     </GenerateGuid>
-    <GenerateGuid NamespaceGuid="$(NamespaceGuid)" Values="$(ProductNameShort);$(GuidInputs);$(OutputType)">
+    <GenerateGuid Condition="'$(OutputName)' != '$(HostOptionsName)'" NamespaceGuid="$(NamespaceGuid)" Values="$(ProductNameShort);$(GuidInputs);$(OutputType)">
+      <Output TaskParameter="Guid" PropertyName="UpgradeCode" />
+    </GenerateGuid>
+
+    <GenerateGuid Condition="'$(OutputName)' == '$(HostOptionsName)'" NamespaceGuid="$(NamespaceGuid)" Values="$(ProductNameShort);$(Version)">
+      <Output TaskParameter="Guid" PropertyName="ProductCode" />
+    </GenerateGuid>
+    <GenerateGuid Condition="'$(OutputName)' == '$(HostOptionsName)'" NamespaceGuid="$(NamespaceGuid)" Values="$(ProductNameShort);$(AspNetCoreMajorMinorVersion);$(OutputType)">
       <Output TaskParameter="Guid" PropertyName="UpgradeCode" />
     </GenerateGuid>
 

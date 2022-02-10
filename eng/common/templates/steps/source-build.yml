@@ -23,7 +23,7 @@ steps:
     # In addition, add an msbuild argument to copy the WIP from the repo to the target build location.
     # This is because SetupNuGetSources.sh will alter the current NuGet.config file, and we need to preserve those
     # changes.
-    $internalRestoreArgs=
+    internalRestoreArgs=
     if [ '$(dn-bot-dnceng-artifact-feeds-rw)' != '$''(dn-bot-dnceng-artifact-feeds-rw)' ]; then
       # Temporarily work around https://github.com/dotnet/arcade/issues/7709
       chmod +x $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh
@@ -43,8 +43,8 @@ steps:
     # In that case, add variables to allow the download of internal runtimes if the specified versions are not found
     # in the default public locations.
     internalRuntimeDownloadArgs=
-    if [ '$(dotnetclimsrc-read-sas-token-base64)' != '$''(dotnetclimsrc-read-sas-token-base64)' ]; then
-      internalRuntimeDownloadArgs='/p:DotNetRuntimeSourceFeed=https://dotnetclimsrc.blob.core.windows.net/dotnet /p:DotNetRuntimeSourceFeedKey=$(dotnetclimsrc-read-sas-token-base64) --runtimesourcefeed https://dotnetclimsrc.blob.core.windows.net/dotnet --runtimesourcefeedkey $(dotnetclimsrc-read-sas-token-base64)'
+    if [ '$(dotnetbuilds-internal-container-read-token-base64)' != '$''(dotnetbuilds-internal-container-read-token-base64)' ]; then
+      internalRuntimeDownloadArgs='/p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64) --runtimesourcefeed https://dotnetbuilds.blob.core.windows.net/internal --runtimesourcefeedkey $(dotnetbuilds-internal-container-read-token-base64)'
     fi
 
     buildConfig=Release

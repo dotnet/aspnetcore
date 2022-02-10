@@ -5,8 +5,6 @@ parameters:
   sourceIndexBuildCommand: powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "eng/common/build.ps1 -restore -build -binarylog -ci"
   preSteps: []
   binlogPath: artifacts/log/Debug/Build.binlog
-  pool:
-    vmImage: 'windows-2019'
   condition: ''
   dependsOn: ''
 
@@ -24,7 +22,13 @@ jobs:
   - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
     - group: source-dot-net stage1 variables
 
-  pool: ${{ parameters.pool }}
+  pool:
+    ${{ if eq(variables['System.TeamProject'], 'public') }}:
+      name: NetCore1ESPool-Public
+      demands: ImageOverride -equals Build.Server.Amd64.VS2019.Open
+    ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+      name: NetCore1ESPool-Internal
+      demands: ImageOverride -equals Build.Server.Amd64.VS2019
   steps:
   - ${{ each preStep in parameters.preSteps }}:
     - ${{ preStep }}

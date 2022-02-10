@@ -3,23 +3,22 @@
 
 using Microsoft.Extensions.Configuration;
 
-namespace Microsoft.AspNetCore.Builder
+namespace Microsoft.AspNetCore.Builder;
+
+internal sealed class TrackingChainedConfigurationSource : IConfigurationSource
 {
-    internal sealed class TrackingChainedConfigurationSource : IConfigurationSource
+    private readonly ChainedConfigurationSource _chainedConfigurationSource = new();
+
+    public TrackingChainedConfigurationSource(ConfigurationManager configManager)
     {
-        private readonly ChainedConfigurationSource _chainedConfigurationSource = new();
+        _chainedConfigurationSource.Configuration = configManager;
+    }
 
-        public TrackingChainedConfigurationSource(ConfigurationManager configManager)
-        {
-            _chainedConfigurationSource.Configuration = configManager;
-        }
+    public IConfigurationProvider? BuiltProvider { get; set; }
 
-        public IConfigurationProvider? BuiltProvider { get; set; }
-
-        public IConfigurationProvider Build(IConfigurationBuilder builder)
-        {
-            BuiltProvider = _chainedConfigurationSource.Build(builder);
-            return BuiltProvider;
-        }
+    public IConfigurationProvider Build(IConfigurationBuilder builder)
+    {
+        BuiltProvider = _chainedConfigurationSource.Build(builder);
+        return BuiltProvider;
     }
 }

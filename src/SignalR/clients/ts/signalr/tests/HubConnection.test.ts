@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+import { AbortError } from "../src/Errors";
 import { HubConnection, HubConnectionState } from "../src/HubConnection";
 import { IConnection } from "../src/IConnection";
 import { HubMessage, IHubProtocol, MessageType } from "../src/IHubProtocol";
@@ -391,7 +392,10 @@ describe("HubConnection", () => {
                     await connection.stop();
                     try {
                         await startPromise;
-                    } catch { }
+                    } catch (e) {
+                        expect(e).toBeInstanceOf(AbortError);
+                        expect((e as AbortError).message).toBe("The underlying connection was closed before the hub handshake could complete.");
+                    }
                 } finally {
                     await hubConnection.stop();
                 }
@@ -802,6 +806,26 @@ describe("HubConnection", () => {
             "Server returned handshake error: Error!");
         });
 
+        it("connection stopped before handshake completes",async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection(false);
+                const hubConnection = createHubConnection(connection, logger);
+
+                let startCompleted = false;
+                const startPromise = hubConnection.start().then(() => startCompleted = true);
+                expect(startCompleted).toBe(false);
+
+                await hubConnection.stop()
+
+                try {
+                    await startPromise
+                } catch (e) {
+                    expect(e).toBeInstanceOf(AbortError);
+                    expect((e as AbortError).message).toBe("The connection was stopped before the hub handshake could complete.");
+                }
+            }, "The connection was stopped before the hub handshake could complete.");
+        });
+
         it("stop on close message", async () => {
             await VerifyLogger.run(async (logger) => {
                 const connection = new TestConnection();
@@ -913,6 +937,52 @@ describe("HubConnection", () => {
 
                     expect(numInvocations).toBe(1);
                 } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
+        it("unsubscribing dynamically doesn't affect the current invocation loop", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const eventToTrack = "eventName";
+
+                const connection = new TestConnection();
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    await hubConnection.start();
+
+                    let numInvocations1 = 0;
+                    let numInvocations2 = 0;
+                    const callback1 = () => {
+                        hubConnection.off(eventToTrack, callback1);
+                        numInvocations1++;
+                    }
+                    const callback2 = () => numInvocations2++;
+
+                    hubConnection.on(eventToTrack, callback1);
+                    hubConnection.on(eventToTrack, callback2);
+
+                    connection.receive({
+                        arguments: [],
+                        nonblocking: true,
+                        target: eventToTrack,
+                        type: MessageType.Invocation,
+                    });
+
+                    expect(numInvocations1).toBe(1);
+                    expect(numInvocations2).toBe(1);
+
+                    connection.receive({
+                        arguments: [],
+                        nonblocking: true,
+                        target: eventToTrack,
+                        type: MessageType.Invocation,
+                    });
+
+                    expect(numInvocations1).toBe(1);
+                    expect(numInvocations2).toBe(2);
+                }
+                finally {
                     await hubConnection.stop();
                 }
             });

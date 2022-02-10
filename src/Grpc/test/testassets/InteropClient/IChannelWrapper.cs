@@ -21,26 +21,25 @@ using System.Threading.Tasks;
 using Grpc.Core;
 using Grpc.Net.Client;
 
-namespace InteropTestsClient
+namespace InteropTestsClient;
+
+public interface IChannelWrapper
 {
-    public interface IChannelWrapper
+    ChannelBase Channel { get; }
+    Task ShutdownAsync();
+}
+
+public class GrpcChannelWrapper : IChannelWrapper
+{
+    public ChannelBase Channel { get; }
+
+    public GrpcChannelWrapper(GrpcChannel channel)
     {
-        ChannelBase Channel { get; }
-        Task ShutdownAsync();
+        Channel = channel;
     }
 
-    public class GrpcChannelWrapper : IChannelWrapper
+    public Task ShutdownAsync()
     {
-        public ChannelBase Channel { get; }
-
-        public GrpcChannelWrapper(GrpcChannel channel)
-        {
-            Channel = channel;
-        }
-
-        public Task ShutdownAsync()
-        {
-            return Task.CompletedTask;
-        }
+        return Task.CompletedTask;
     }
 }

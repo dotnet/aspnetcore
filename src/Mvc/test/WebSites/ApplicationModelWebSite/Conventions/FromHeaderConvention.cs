@@ -1,22 +1,20 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 
-namespace ApplicationModelWebSite
+namespace ApplicationModelWebSite;
+
+public class FromHeaderConvention : IActionModelConvention
 {
-    public class FromHeaderConvention : IActionModelConvention
+    public void Apply(ActionModel action)
     {
-        public void Apply(ActionModel action)
+        foreach (var param in action.Parameters)
         {
-            foreach (var param in action.Parameters)
+            if (param.Attributes.Any(p => p.GetType() == typeof(FromHeaderAttribute)))
             {
-                if (param.Attributes.Any(p => p.GetType() == typeof(FromHeaderAttribute)))
-                {
-                    param.Action.Properties["source"] = "From Header";
-                }
+                param.Action.Properties["source"] = "From Header";
             }
         }
     }

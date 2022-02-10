@@ -3,13 +3,12 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace RazorPagesWebSite.Components
+namespace RazorPagesWebSite.Components;
+
+public class ViewDataViewComponent : ViewComponent
 {
-    public class ViewDataViewComponent : ViewComponent
+    public IViewComponentResult Invoke()
     {
-        public IViewComponentResult Invoke()
-        {
-            return View();
-        }
+        return View();
     }
 }

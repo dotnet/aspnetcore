@@ -4,22 +4,24 @@
         <PackageGroup Id="PG_DOTNET_REDIST_LTS_BUNDLE">
             <RollbackBoundary Id="RB_DOTNET_REDIST_LTS_BUNDLE" />
 
+            <!-- OPT_NO_RUNTIME could be unset at this point, which we explicitly treat as 'false' -->
             <ExePackage Id="DotNetRedistLts_x64" SourceFile="$(var.DepsPath)\$(var.DotNetRedistLtsInstallerx64)"
                         Name="$(var.DotNetRedistLtsInstallerx64)"
                         Compressed="yes"
                         Vital="yes"
-                        InstallCondition="VersionNT64 AND (NOT OPT_NO_RUNTIME)"
+                        InstallCondition="VersionNT64 AND (NOT OPT_NO_RUNTIME OR OPT_NO_RUNTIME=&quot;0&quot;)"
                         InstallCommand="/quiet /norestart"
                         RepairCommand="/quiet /repair"
                         Permanent="yes"
                         DetectCondition="DotNetRedistLtsProductVersion_x64 = v$(var.DotNetRedistLtsInstallerProductVersionx64)">
             </ExePackage>
 
+            <!-- OPT_NO_X86 could be unset at this point, which we explicitly treat as 'false' -->
             <ExePackage Id="DotNetRedistLts_x86" SourceFile="$(var.DepsPath)\$(var.DotNetRedistLtsInstallerx86)"
                         Name="$(var.DotNetRedistLtsInstallerx86)"
                         Compressed="yes"
                         Vital="yes"
-                        InstallCondition="(NOT OPT_NO_RUNTIME) AND (NOT OPT_NO_X86)"
+                        InstallCondition="(NOT OPT_NO_RUNTIME OR OPT_NO_RUNTIME=&quot;0&quot;) AND (NOT OPT_NO_X86 OR OPT_NO_X86=&quot;0&quot;)"
                         InstallCommand="/quiet /norestart"
                         RepairCommand="/quiet /repair"
                         Permanent="yes"

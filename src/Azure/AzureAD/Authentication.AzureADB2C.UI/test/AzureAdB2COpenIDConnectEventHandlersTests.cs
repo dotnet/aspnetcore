@@ -1,175 +1,169 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
-using Microsoft.Net.Http.Headers;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Authentication.AzureADB2C.UI
+namespace Microsoft.AspNetCore.Authentication.AzureADB2C.UI;
+
+public class AzureADB2COpenIDConnectEventHandlersTests
 {
-    public class AzureADB2COpenIDConnectEventHandlersTests
+    [Fact]
+    public async Task OnRedirectToIdentityProviderHandler_DoesNothingForTheDefaultPolicy()
     {
-        [Fact]
-        public async Task OnRedirectToIdentityProviderHandler_DoesNothingForTheDefaultPolicy()
-        {
-            // Arrange
-            var handlers = new AzureADB2COpenIDConnectEventHandlers(
-                AzureADB2CDefaults.AuthenticationScheme,
-                new AzureADB2COptions() { SignUpSignInPolicyId = "B2C_1_SiUpIn" });
+        // Arrange
+        var handlers = new AzureADB2COpenIDConnectEventHandlers(
+            AzureADB2CDefaults.AuthenticationScheme,
+            new AzureADB2COptions() { SignUpSignInPolicyId = "B2C_1_SiUpIn" });
 
-            var authenticationProperties = new AuthenticationProperties(new Dictionary<string, string>
+        var authenticationProperties = new AuthenticationProperties(new Dictionary<string, string>
+        {
+            [AzureADB2CDefaults.PolicyKey] = "B2C_1_SiUpIn"
+        });
+        var redirectContext = new RedirectContext(
+            new DefaultHttpContext(),
+            new AuthenticationScheme(AzureADB2CDefaults.AuthenticationScheme, "", typeof(OpenIdConnectHandler)),
+            new OpenIdConnectOptions(),
+            authenticationProperties)
+        {
+            ProtocolMessage = new OpenIdConnectMessage
             {
-                [AzureADB2CDefaults.PolicyKey] = "B2C_1_SiUpIn"
-            });
-            var redirectContext = new RedirectContext(
-                new DefaultHttpContext(),
-                new AuthenticationScheme(AzureADB2CDefaults.AuthenticationScheme, "", typeof(OpenIdConnectHandler)),
-                new OpenIdConnectOptions(),
-                authenticationProperties)
+                Scope = OpenIdConnectScope.OpenId,
+                ResponseType = OpenIdConnectResponseType.Code,
+                IssuerAddress = "https://login.microsoftonline.com/tfp/domain.onmicrosoft.com/B2C_1_SiUpIn/v2.0"
+            }
+        };
+
+        // Act
+        await handlers.OnRedirectToIdentityProvider(redirectContext);
+
+        // Assert
+        Assert.Equal(OpenIdConnectScope.OpenId, redirectContext.ProtocolMessage.Scope);
+        Assert.Equal(OpenIdConnectResponseType.Code, redirectContext.ProtocolMessage.ResponseType);
+        Assert.Equal(
+            "https://login.microsoftonline.com/tfp/domain.onmicrosoft.com/B2C_1_SiUpIn/v2.0",
+            redirectContext.ProtocolMessage.IssuerAddress);
+        Assert.True(authenticationProperties.Items.ContainsKey(AzureADB2CDefaults.PolicyKey));
+    }
+
+    [Fact]
+    public async Task OnRedirectToIdentityProviderHandler_UpdatesRequestForOtherPolicies()
+    {
+        // Arrange
+
+        var handlers = new AzureADB2COpenIDConnectEventHandlers(
+            AzureADB2CDefaults.AuthenticationScheme,
+            new AzureADB2COptions() { SignUpSignInPolicyId = "B2C_1_SiUpIn" });
+
+        var authenticationProperties = new AuthenticationProperties(new Dictionary<string, string>
+        {
+            [AzureADB2CDefaults.PolicyKey] = "B2C_1_EP"
+        });
+        var redirectContext = new RedirectContext(
+            new DefaultHttpContext(),
+            new AuthenticationScheme(AzureADB2CDefaults.AuthenticationScheme, "", typeof(OpenIdConnectHandler)),
+            new OpenIdConnectOptions(),
+            authenticationProperties)
+        {
+            ProtocolMessage = new OpenIdConnectMessage
             {
-                ProtocolMessage = new OpenIdConnectMessage
-                {
-                    Scope = OpenIdConnectScope.OpenId,
-                    ResponseType = OpenIdConnectResponseType.Code,
-                    IssuerAddress = "https://login.microsoftonline.com/tfp/domain.onmicrosoft.com/B2C_1_SiUpIn/v2.0"
-                }
-            };
+                Scope = OpenIdConnectScope.OpenId,
+                ResponseType = OpenIdConnectResponseType.Code,
+                IssuerAddress = "https://login.microsoftonline.com/tfp/domain.onmicrosoft.com/B2C_1_EP/v2.0"
+            }
+        };
 
-            // Act
-            await handlers.OnRedirectToIdentityProvider(redirectContext);
+        // Act
+        await handlers.OnRedirectToIdentityProvider(redirectContext);
 
-            // Assert
-            Assert.Equal(OpenIdConnectScope.OpenId, redirectContext.ProtocolMessage.Scope);
-            Assert.Equal(OpenIdConnectResponseType.Code, redirectContext.ProtocolMessage.ResponseType);
-            Assert.Equal(
-                "https://login.microsoftonline.com/tfp/domain.onmicrosoft.com/B2C_1_SiUpIn/v2.0",
-                redirectContext.ProtocolMessage.IssuerAddress);
-            Assert.True(authenticationProperties.Items.ContainsKey(AzureADB2CDefaults.PolicyKey));
-        }
+        // Assert
+        Assert.Equal(OpenIdConnectScope.OpenIdProfile, redirectContext.ProtocolMessage.Scope);
+        Assert.Equal(OpenIdConnectResponseType.IdToken, redirectContext.ProtocolMessage.ResponseType);
+        Assert.Equal(
+            "https://login.microsoftonline.com/tfp/domain.onmicrosoft.com/b2c_1_ep/v2.0",
+            redirectContext.ProtocolMessage.IssuerAddress);
+        Assert.False(authenticationProperties.Items.ContainsKey(AzureADB2CDefaults.PolicyKey));
+    }
 
-        [Fact]
-        public async Task OnRedirectToIdentityProviderHandler_UpdatesRequestForOtherPolicies()
-        {
-            // Arrange
+    [Fact]
+    public async Task OnRemoteError_HandlesResponseWhenTryingToResetPasswordFromTheLoginPage()
+    {
+        // Arrange
 
-            var handlers = new AzureADB2COpenIDConnectEventHandlers(
+        var handlers = new AzureADB2COpenIDConnectEventHandlers(
+            AzureADB2CDefaults.AuthenticationScheme,
+            new AzureADB2COptions() { SignUpSignInPolicyId = "B2C_1_SiUpIn" });
+
+        var remoteFailureContext = new RemoteFailureContext(
+            new DefaultHttpContext(),
+            new AuthenticationScheme(
                 AzureADB2CDefaults.AuthenticationScheme,
-                new AzureADB2COptions() { SignUpSignInPolicyId = "B2C_1_SiUpIn" });
+                displayName: null,
+                handlerType: typeof(OpenIdConnectHandler)),
+            new OpenIdConnectOptions(),
+            new OpenIdConnectProtocolException("AADB2C90118"));
 
-            var authenticationProperties = new AuthenticationProperties(new Dictionary<string, string>
-            {
-                [AzureADB2CDefaults.PolicyKey] = "B2C_1_EP"
-            });
-            var redirectContext = new RedirectContext(
-                new DefaultHttpContext(),
-                new AuthenticationScheme(AzureADB2CDefaults.AuthenticationScheme, "", typeof(OpenIdConnectHandler)),
-                new OpenIdConnectOptions(),
-                authenticationProperties)
-            {
-                ProtocolMessage = new OpenIdConnectMessage
-                {
-                    Scope = OpenIdConnectScope.OpenId,
-                    ResponseType = OpenIdConnectResponseType.Code,
-                    IssuerAddress = "https://login.microsoftonline.com/tfp/domain.onmicrosoft.com/B2C_1_EP/v2.0"
-                }
-            };
+        // Act
+        await handlers.OnRemoteFailure(remoteFailureContext);
 
-            // Act
-            await handlers.OnRedirectToIdentityProvider(redirectContext);
+        // Assert
+        Assert.Equal(StatusCodes.Status302Found, remoteFailureContext.Response.StatusCode);
+        Assert.Equal("/AzureADB2C/Account/ResetPassword/AzureADB2C", remoteFailureContext.Response.Headers.Location);
+        Assert.True(remoteFailureContext.Result.Handled);
+    }
 
-            // Assert
-            Assert.Equal(OpenIdConnectScope.OpenIdProfile, redirectContext.ProtocolMessage.Scope);
-            Assert.Equal(OpenIdConnectResponseType.IdToken, redirectContext.ProtocolMessage.ResponseType);
-            Assert.Equal(
-                "https://login.microsoftonline.com/tfp/domain.onmicrosoft.com/b2c_1_ep/v2.0",
-                redirectContext.ProtocolMessage.IssuerAddress);
-            Assert.False(authenticationProperties.Items.ContainsKey(AzureADB2CDefaults.PolicyKey));
-        }
+    [Fact]
+    public async Task OnRemoteError_HandlesResponseWhenUserCancelsFlowFromTheAzureADB2CUserInterface()
+    {
+        // Arrange
 
-        [Fact]
-        public async Task OnRemoteError_HandlesResponseWhenTryingToResetPasswordFromTheLoginPage()
-        {
-            // Arrange
+        var handlers = new AzureADB2COpenIDConnectEventHandlers(
+            AzureADB2CDefaults.AuthenticationScheme,
+            new AzureADB2COptions() { SignUpSignInPolicyId = "B2C_1_SiUpIn" });
 
-            var handlers = new AzureADB2COpenIDConnectEventHandlers(
+        var remoteFailureContext = new RemoteFailureContext(
+            new DefaultHttpContext(),
+            new AuthenticationScheme(
                 AzureADB2CDefaults.AuthenticationScheme,
-                new AzureADB2COptions() { SignUpSignInPolicyId = "B2C_1_SiUpIn" });
+                displayName: null,
+                handlerType: typeof(OpenIdConnectHandler)),
+            new OpenIdConnectOptions(),
+            new OpenIdConnectProtocolException("access_denied"));
 
-            var remoteFailureContext = new RemoteFailureContext(
-                new DefaultHttpContext(),
-                new AuthenticationScheme(
-                    AzureADB2CDefaults.AuthenticationScheme,
-                    displayName: null,
-                    handlerType: typeof(OpenIdConnectHandler)),
-                new OpenIdConnectOptions(),
-                new OpenIdConnectProtocolException("AADB2C90118"));
+        // Act
+        await handlers.OnRemoteFailure(remoteFailureContext);
 
-            // Act
-            await handlers.OnRemoteFailure(remoteFailureContext);
+        // Assert
+        Assert.Equal(StatusCodes.Status302Found, remoteFailureContext.Response.StatusCode);
+        Assert.Equal("/", remoteFailureContext.Response.Headers.Location);
+        Assert.True(remoteFailureContext.Result.Handled);
+    }
 
-            // Assert
-            Assert.Equal(StatusCodes.Status302Found, remoteFailureContext.Response.StatusCode);
-            Assert.Equal("/AzureADB2C/Account/ResetPassword/AzureADB2C", remoteFailureContext.Response.Headers.Location);
-            Assert.True(remoteFailureContext.Result.Handled);
-        }
+    [Fact]
+    public async Task OnRemoteError_HandlesResponseWhenErrorIsUnknown()
+    {
+        // Arrange
 
-        [Fact]
-        public async Task OnRemoteError_HandlesResponseWhenUserCancelsFlowFromTheAzureADB2CUserInterface()
-        {
-            // Arrange
+        var handlers = new AzureADB2COpenIDConnectEventHandlers(
+            AzureADB2CDefaults.AuthenticationScheme,
+            new AzureADB2COptions() { SignUpSignInPolicyId = "B2C_1_SiUpIn" });
 
-            var handlers = new AzureADB2COpenIDConnectEventHandlers(
+        var remoteFailureContext = new RemoteFailureContext(
+            new DefaultHttpContext(),
+            new AuthenticationScheme(
                 AzureADB2CDefaults.AuthenticationScheme,
-                new AzureADB2COptions() { SignUpSignInPolicyId = "B2C_1_SiUpIn" });
+                displayName: null,
+                handlerType: typeof(OpenIdConnectHandler)),
+            new OpenIdConnectOptions(),
+            new OpenIdConnectProtocolException("some_other_error"));
 
-            var remoteFailureContext = new RemoteFailureContext(
-                new DefaultHttpContext(),
-                new AuthenticationScheme(
-                    AzureADB2CDefaults.AuthenticationScheme,
-                    displayName: null,
-                    handlerType: typeof(OpenIdConnectHandler)),
-                new OpenIdConnectOptions(),
-                new OpenIdConnectProtocolException("access_denied"));
+        // Act
+        await handlers.OnRemoteFailure(remoteFailureContext);
 
-            // Act
-            await handlers.OnRemoteFailure(remoteFailureContext);
-
-            // Assert
-            Assert.Equal(StatusCodes.Status302Found, remoteFailureContext.Response.StatusCode);
-            Assert.Equal("/", remoteFailureContext.Response.Headers.Location);
-            Assert.True(remoteFailureContext.Result.Handled);
-        }
-
-        [Fact]
-        public async Task OnRemoteError_HandlesResponseWhenErrorIsUnknown()
-        {
-            // Arrange
-
-            var handlers = new AzureADB2COpenIDConnectEventHandlers(
-                AzureADB2CDefaults.AuthenticationScheme,
-                new AzureADB2COptions() { SignUpSignInPolicyId = "B2C_1_SiUpIn" });
-
-            var remoteFailureContext = new RemoteFailureContext(
-                new DefaultHttpContext(),
-                new AuthenticationScheme(
-                    AzureADB2CDefaults.AuthenticationScheme,
-                    displayName: null,
-                    handlerType: typeof(OpenIdConnectHandler)),
-                new OpenIdConnectOptions(),
-                new OpenIdConnectProtocolException("some_other_error"));
-
-            // Act
-            await handlers.OnRemoteFailure(remoteFailureContext);
-
-            // Assert
-            Assert.Equal(StatusCodes.Status302Found, remoteFailureContext.Response.StatusCode);
-            Assert.Equal("/AzureADB2C/Account/Error", remoteFailureContext.Response.Headers.Location);
-            Assert.True(remoteFailureContext.Result.Handled);
-        }
+        // Assert
+        Assert.Equal(StatusCodes.Status302Found, remoteFailureContext.Response.StatusCode);
+        Assert.Equal("/AzureADB2C/Account/Error", remoteFailureContext.Response.Headers.Location);
+        Assert.True(remoteFailureContext.Result.Handled);
     }
 }

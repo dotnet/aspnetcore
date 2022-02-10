@@ -4,10 +4,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace RazorPagesWebSite
+namespace RazorPagesWebSite;
+
+public class RedirectFromModel : PageModel
 {
-    public class RedirectFromModel : PageModel
-    {
-        public IActionResult OnGet() => RedirectToPage("/Pages/Redirects/Redirect", new { id = 12});
-    }
+    public IActionResult OnGet() => RedirectToPage("/Pages/Redirects/Redirect", new { id = 12 });
 }

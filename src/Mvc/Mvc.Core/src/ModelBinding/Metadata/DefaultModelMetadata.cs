@@ -3,582 +3,582 @@
 
 #nullable enable
 
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
-namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
+namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
+
+/// <summary>
+/// A default <see cref="ModelMetadata"/> implementation.
+/// </summary>
+public class DefaultModelMetadata : ModelMetadata
 {
+    private readonly IModelMetadataProvider _provider;
+    private readonly ICompositeMetadataDetailsProvider _detailsProvider;
+    private readonly DefaultMetadataDetails _details;
+
+    // Default message provider for all DefaultModelMetadata instances; cloned before exposing to
+    // IBindingMetadataProvider instances to ensure customizations are not accidentally shared.
+    private readonly DefaultModelBindingMessageProvider _modelBindingMessageProvider;
+
+    private ReadOnlyDictionary<object, object>? _additionalValues;
+    private ModelMetadata? _elementMetadata;
+    private ModelMetadata? _constructorMetadata;
+    private bool? _isBindingRequired;
+    private bool? _isReadOnly;
+    private bool? _isRequired;
+    private ModelPropertyCollection? _properties;
+    private bool? _validateChildren;
+    private bool? _hasValidators;
+    private ReadOnlyCollection<object>? _validatorMetadata;
+
     /// <summary>
-    /// A default <see cref="ModelMetadata"/> implementation.
+    /// Creates a new <see cref="DefaultModelMetadata"/>.
     /// </summary>
-    public class DefaultModelMetadata : ModelMetadata
+    /// <param name="provider">The <see cref="IModelMetadataProvider"/>.</param>
+    /// <param name="detailsProvider">The <see cref="ICompositeMetadataDetailsProvider"/>.</param>
+    /// <param name="details">The <see cref="DefaultMetadataDetails"/>.</param>
+    public DefaultModelMetadata(
+        IModelMetadataProvider provider,
+        ICompositeMetadataDetailsProvider detailsProvider,
+        DefaultMetadataDetails details)
+        : this(provider, detailsProvider, details, new DefaultModelBindingMessageProvider())
     {
-        private readonly IModelMetadataProvider _provider;
-        private readonly ICompositeMetadataDetailsProvider _detailsProvider;
-        private readonly DefaultMetadataDetails _details;
+    }
 
-        // Default message provider for all DefaultModelMetadata instances; cloned before exposing to
-        // IBindingMetadataProvider instances to ensure customizations are not accidentally shared.
-        private readonly DefaultModelBindingMessageProvider _modelBindingMessageProvider;
-
-        private ReadOnlyDictionary<object, object>? _additionalValues;
-        private ModelMetadata? _elementMetadata;
-        private ModelMetadata? _constructorMetadata;
-        private bool? _isBindingRequired;
-        private bool? _isReadOnly;
-        private bool? _isRequired;
-        private ModelPropertyCollection? _properties;
-        private bool? _validateChildren;
-        private bool? _hasValidators;
-        private ReadOnlyCollection<object>? _validatorMetadata;
-
-        /// <summary>
-        /// Creates a new <see cref="DefaultModelMetadata"/>.
-        /// </summary>
-        /// <param name="provider">The <see cref="IModelMetadataProvider"/>.</param>
-        /// <param name="detailsProvider">The <see cref="ICompositeMetadataDetailsProvider"/>.</param>
-        /// <param name="details">The <see cref="DefaultMetadataDetails"/>.</param>
-        public DefaultModelMetadata(
-            IModelMetadataProvider provider,
-            ICompositeMetadataDetailsProvider detailsProvider,
-            DefaultMetadataDetails details)
-            : this(provider, detailsProvider, details, new DefaultModelBindingMessageProvider())
+    /// <summary>
+    /// Creates a new <see cref="DefaultModelMetadata"/>.
+    /// </summary>
+    /// <param name="provider">The <see cref="IModelMetadataProvider"/>.</param>
+    /// <param name="detailsProvider">The <see cref="ICompositeMetadataDetailsProvider"/>.</param>
+    /// <param name="details">The <see cref="DefaultMetadataDetails"/>.</param>
+    /// <param name="modelBindingMessageProvider">The <see cref="Metadata.DefaultModelBindingMessageProvider"/>.</param>
+    public DefaultModelMetadata(
+        IModelMetadataProvider provider,
+        ICompositeMetadataDetailsProvider detailsProvider,
+        DefaultMetadataDetails details,
+        DefaultModelBindingMessageProvider modelBindingMessageProvider)
+        : base(details.Key)
+    {
+        if (provider == null)
         {
+            throw new ArgumentNullException(nameof(provider));
         }
 
-        /// <summary>
-        /// Creates a new <see cref="DefaultModelMetadata"/>.
-        /// </summary>
-        /// <param name="provider">The <see cref="IModelMetadataProvider"/>.</param>
-        /// <param name="detailsProvider">The <see cref="ICompositeMetadataDetailsProvider"/>.</param>
-        /// <param name="details">The <see cref="DefaultMetadataDetails"/>.</param>
-        /// <param name="modelBindingMessageProvider">The <see cref="Metadata.DefaultModelBindingMessageProvider"/>.</param>
-        public DefaultModelMetadata(
-            IModelMetadataProvider provider,
-            ICompositeMetadataDetailsProvider detailsProvider,
-            DefaultMetadataDetails details,
-            DefaultModelBindingMessageProvider modelBindingMessageProvider)
-            : base(details.Key)
+        if (detailsProvider == null)
         {
-            if (provider == null)
-            {
-                throw new ArgumentNullException(nameof(provider));
-            }
-
-            if (detailsProvider == null)
-            {
-                throw new ArgumentNullException(nameof(detailsProvider));
-            }
-
-            if (details == null)
-            {
-                throw new ArgumentNullException(nameof(details));
-            }
-
-            if (modelBindingMessageProvider == null)
-            {
-                throw new ArgumentNullException(nameof(modelBindingMessageProvider));
-            }
-
-            _provider = provider;
-            _detailsProvider = detailsProvider;
-            _details = details;
-            _modelBindingMessageProvider = modelBindingMessageProvider;
+            throw new ArgumentNullException(nameof(detailsProvider));
         }
 
-        /// <summary>
-        /// Gets the set of attributes for the current instance.
-        /// </summary>
-        public ModelAttributes Attributes => _details.ModelAttributes;
-
-        /// <inheritdoc />
-        public override ModelMetadata? ContainerMetadata => _details.ContainerMetadata;
-
-        /// <summary>
-        /// Gets the <see cref="Metadata.BindingMetadata"/> for the current instance.
-        /// </summary>
-        /// <remarks>
-        /// Accessing this property will populate the <see cref="Metadata.BindingMetadata"/> if necessary.
-        /// </remarks>
-        public BindingMetadata BindingMetadata
+        if (details == null)
         {
-            get
-            {
-                if (_details.BindingMetadata == null)
-                {
-                    var context = new BindingMetadataProviderContext(Identity, _details.ModelAttributes);
-
-                    // Provide a unique ModelBindingMessageProvider instance so providers' customizations are per-type.
-                    context.BindingMetadata.ModelBindingMessageProvider =
-                        new DefaultModelBindingMessageProvider(_modelBindingMessageProvider);
-
-                    _detailsProvider.CreateBindingMetadata(context);
-                    _details.BindingMetadata = context.BindingMetadata;
-                }
-
-                return _details.BindingMetadata;
-            }
+            throw new ArgumentNullException(nameof(details));
         }
 
-        /// <summary>
-        /// Gets the <see cref="Metadata.DisplayMetadata"/> for the current instance.
-        /// </summary>
-        /// <remarks>
-        /// Accessing this property will populate the <see cref="Metadata.DisplayMetadata"/> if necessary.
-        /// </remarks>
-        public DisplayMetadata DisplayMetadata
+        if (modelBindingMessageProvider == null)
         {
-            get
-            {
-                if (_details.DisplayMetadata == null)
-                {
-                    var context = new DisplayMetadataProviderContext(Identity, _details.ModelAttributes);
-                    _detailsProvider.CreateDisplayMetadata(context);
-                    _details.DisplayMetadata = context.DisplayMetadata;
-                }
-
-                return _details.DisplayMetadata;
-            }
+            throw new ArgumentNullException(nameof(modelBindingMessageProvider));
         }
 
-        /// <summary>
-        /// Gets the <see cref="Metadata.ValidationMetadata"/> for the current instance.
-        /// </summary>
-        /// <remarks>
-        /// Accessing this property will populate the <see cref="Metadata.ValidationMetadata"/> if necessary.
-        /// </remarks>
-        public ValidationMetadata ValidationMetadata
-        {
-            get
-            {
-                if (_details.ValidationMetadata == null)
-                {
-                    var context = new ValidationMetadataProviderContext(Identity, _details.ModelAttributes);
-                    _detailsProvider.CreateValidationMetadata(context);
-                    _details.ValidationMetadata = context.ValidationMetadata;
-                }
+        _provider = provider;
+        _detailsProvider = detailsProvider;
+        _details = details;
+        _modelBindingMessageProvider = modelBindingMessageProvider;
+    }
 
-                return _details.ValidationMetadata;
+    /// <summary>
+    /// Gets the set of attributes for the current instance.
+    /// </summary>
+    public ModelAttributes Attributes => _details.ModelAttributes;
+
+    /// <inheritdoc />
+    public override ModelMetadata? ContainerMetadata => _details.ContainerMetadata;
+
+    /// <summary>
+    /// Gets the <see cref="Metadata.BindingMetadata"/> for the current instance.
+    /// </summary>
+    /// <remarks>
+    /// Accessing this property will populate the <see cref="Metadata.BindingMetadata"/> if necessary.
+    /// </remarks>
+    public BindingMetadata BindingMetadata
+    {
+        get
+        {
+            if (_details.BindingMetadata == null)
+            {
+                var context = new BindingMetadataProviderContext(Identity, _details.ModelAttributes);
+
+                // Provide a unique ModelBindingMessageProvider instance so providers' customizations are per-type.
+                context.BindingMetadata.ModelBindingMessageProvider =
+                    new DefaultModelBindingMessageProvider(_modelBindingMessageProvider);
+
+                _detailsProvider.CreateBindingMetadata(context);
+                _details.BindingMetadata = context.BindingMetadata;
+            }
+
+            return _details.BindingMetadata;
+        }
+    }
+
+    /// <summary>
+    /// Gets the <see cref="Metadata.DisplayMetadata"/> for the current instance.
+    /// </summary>
+    /// <remarks>
+    /// Accessing this property will populate the <see cref="Metadata.DisplayMetadata"/> if necessary.
+    /// </remarks>
+    public DisplayMetadata DisplayMetadata
+    {
+        get
+        {
+            if (_details.DisplayMetadata == null)
+            {
+                var context = new DisplayMetadataProviderContext(Identity, _details.ModelAttributes);
+                _detailsProvider.CreateDisplayMetadata(context);
+                _details.DisplayMetadata = context.DisplayMetadata;
+            }
+
+            return _details.DisplayMetadata;
+        }
+    }
+
+    /// <summary>
+    /// Gets the <see cref="Metadata.ValidationMetadata"/> for the current instance.
+    /// </summary>
+    /// <remarks>
+    /// Accessing this property will populate the <see cref="Metadata.ValidationMetadata"/> if necessary.
+    /// </remarks>
+    public ValidationMetadata ValidationMetadata
+    {
+        get
+        {
+            if (_details.ValidationMetadata == null)
+            {
+                var context = new ValidationMetadataProviderContext(Identity, _details.ModelAttributes);
+                _detailsProvider.CreateValidationMetadata(context);
+                _details.ValidationMetadata = context.ValidationMetadata;
+            }
+
+            return _details.ValidationMetadata;
+        }
+    }
+
+    /// <inheritdoc />
+    public override IReadOnlyDictionary<object, object> AdditionalValues
+    {
+        get
+        {
+            if (_additionalValues == null)
+            {
+                _additionalValues = new ReadOnlyDictionary<object, object>(DisplayMetadata.AdditionalValues);
+            }
+
+            return _additionalValues;
+        }
+    }
+
+    /// <inheritdoc />
+    public override BindingSource? BindingSource => BindingMetadata.BindingSource;
+
+    /// <inheritdoc />
+    public override string? BinderModelName => BindingMetadata.BinderModelName;
+
+    /// <inheritdoc />
+    public override Type? BinderType => BindingMetadata.BinderType;
+
+    /// <inheritdoc />
+    public override bool ConvertEmptyStringToNull => DisplayMetadata.ConvertEmptyStringToNull;
+
+    /// <inheritdoc />
+    public override string? DataTypeName => DisplayMetadata.DataTypeName;
+
+    /// <inheritdoc />
+    public override string? Description
+    {
+        get
+        {
+            if (DisplayMetadata.Description == null)
+            {
+                return null;
+            }
+
+            return DisplayMetadata.Description();
+        }
+    }
+
+    /// <inheritdoc />
+    public override string? DisplayFormatString => DisplayMetadata.DisplayFormatStringProvider();
+
+    /// <inheritdoc />
+    public override string? DisplayName
+    {
+        get
+        {
+            if (DisplayMetadata.DisplayName == null)
+            {
+                return null;
+            }
+
+            return DisplayMetadata.DisplayName();
+        }
+    }
+
+    /// <inheritdoc />
+    public override string? EditFormatString => DisplayMetadata.EditFormatStringProvider();
+
+    /// <inheritdoc />
+    public override ModelMetadata? ElementMetadata
+    {
+        get
+        {
+            if (_elementMetadata == null && ElementType != null)
+            {
+                _elementMetadata = _provider.GetMetadataForType(ElementType);
+            }
+
+            return _elementMetadata;
+        }
+    }
+
+    /// <inheritdoc />
+    public override IEnumerable<KeyValuePair<EnumGroupAndName, string>>? EnumGroupedDisplayNamesAndValues
+        => DisplayMetadata.EnumGroupedDisplayNamesAndValues;
+
+    /// <inheritdoc />
+    public override IReadOnlyDictionary<string, string>? EnumNamesAndValues => DisplayMetadata.EnumNamesAndValues;
+
+    /// <inheritdoc />
+    public override bool HasNonDefaultEditFormat => DisplayMetadata.HasNonDefaultEditFormat;
+
+    /// <inheritdoc />
+    public override bool HideSurroundingHtml => DisplayMetadata.HideSurroundingHtml;
+
+    /// <inheritdoc />
+    public override bool HtmlEncode => DisplayMetadata.HtmlEncode;
+
+    /// <inheritdoc />
+    public override bool IsBindingAllowed
+    {
+        get
+        {
+            if (MetadataKind == ModelMetadataKind.Type)
+            {
+                return true;
+            }
+            else
+            {
+                return BindingMetadata.IsBindingAllowed;
             }
         }
+    }
 
-        /// <inheritdoc />
-        public override IReadOnlyDictionary<object, object> AdditionalValues
+    /// <inheritdoc />
+    public override bool IsBindingRequired
+    {
+        get
         {
-            get
-            {
-                if (_additionalValues == null)
-                {
-                    _additionalValues = new ReadOnlyDictionary<object, object>(DisplayMetadata.AdditionalValues);
-                }
-
-                return _additionalValues;
-            }
-        }
-
-        /// <inheritdoc />
-        public override BindingSource? BindingSource => BindingMetadata.BindingSource;
-
-        /// <inheritdoc />
-        public override string? BinderModelName => BindingMetadata.BinderModelName;
-
-        /// <inheritdoc />
-        public override Type? BinderType => BindingMetadata.BinderType;
-
-        /// <inheritdoc />
-        public override bool ConvertEmptyStringToNull => DisplayMetadata.ConvertEmptyStringToNull;
-
-        /// <inheritdoc />
-        public override string? DataTypeName => DisplayMetadata.DataTypeName;
-
-        /// <inheritdoc />
-        public override string? Description
-        {
-            get
-            {
-                if (DisplayMetadata.Description == null)
-                {
-                    return null;
-                }
-
-                return DisplayMetadata.Description();
-            }
-        }
-
-        /// <inheritdoc />
-        public override string? DisplayFormatString => DisplayMetadata.DisplayFormatStringProvider();
-
-        /// <inheritdoc />
-        public override string? DisplayName
-        {
-            get
-            {
-                if (DisplayMetadata.DisplayName == null)
-                {
-                    return null;
-                }
-
-                return DisplayMetadata.DisplayName();
-            }
-        }
-
-        /// <inheritdoc />
-        public override string? EditFormatString => DisplayMetadata.EditFormatStringProvider();
-
-        /// <inheritdoc />
-        public override ModelMetadata? ElementMetadata
-        {
-            get
-            {
-                if (_elementMetadata == null && ElementType != null)
-                {
-                    _elementMetadata = _provider.GetMetadataForType(ElementType);
-                }
-
-                return _elementMetadata;
-            }
-        }
-
-        /// <inheritdoc />
-        public override IEnumerable<KeyValuePair<EnumGroupAndName, string>>? EnumGroupedDisplayNamesAndValues
-            => DisplayMetadata.EnumGroupedDisplayNamesAndValues;
-
-        /// <inheritdoc />
-        public override IReadOnlyDictionary<string, string>? EnumNamesAndValues => DisplayMetadata.EnumNamesAndValues;
-
-        /// <inheritdoc />
-        public override bool HasNonDefaultEditFormat => DisplayMetadata.HasNonDefaultEditFormat;
-
-        /// <inheritdoc />
-        public override bool HideSurroundingHtml => DisplayMetadata.HideSurroundingHtml;
-
-        /// <inheritdoc />
-        public override bool HtmlEncode => DisplayMetadata.HtmlEncode;
-
-        /// <inheritdoc />
-        public override bool IsBindingAllowed
-        {
-            get
+            if (!_isBindingRequired.HasValue)
             {
                 if (MetadataKind == ModelMetadataKind.Type)
                 {
-                    return true;
+                    _isBindingRequired = false;
                 }
                 else
                 {
-                    return BindingMetadata.IsBindingAllowed;
+                    _isBindingRequired = BindingMetadata.IsBindingRequired;
                 }
             }
+
+            return _isBindingRequired.Value;
         }
+    }
 
-        /// <inheritdoc />
-        public override bool IsBindingRequired
+    /// <inheritdoc />
+    public override bool IsEnum => DisplayMetadata.IsEnum;
+
+    /// <inheritdoc />
+    public override bool IsFlagsEnum => DisplayMetadata.IsFlagsEnum;
+
+    /// <inheritdoc />
+    public override bool IsReadOnly
+    {
+        get
         {
-            get
+            if (!_isReadOnly.HasValue)
             {
-                if (!_isBindingRequired.HasValue)
+                if (MetadataKind == ModelMetadataKind.Type)
                 {
-                    if (MetadataKind == ModelMetadataKind.Type)
-                    {
-                        _isBindingRequired = false;
-                    }
-                    else
-                    {
-                        _isBindingRequired = BindingMetadata.IsBindingRequired;
-                    }
+                    _isReadOnly = false;
                 }
-
-                return _isBindingRequired.Value;
+                else if (BindingMetadata.IsReadOnly.HasValue)
+                {
+                    _isReadOnly = BindingMetadata.IsReadOnly;
+                }
+                else
+                {
+                    _isReadOnly = _details.PropertySetter == null;
+                }
             }
+
+            return _isReadOnly.Value;
         }
+    }
 
-        /// <inheritdoc />
-        public override bool IsEnum => DisplayMetadata.IsEnum;
-
-        /// <inheritdoc />
-        public override bool IsFlagsEnum => DisplayMetadata.IsFlagsEnum;
-
-        /// <inheritdoc />
-        public override bool IsReadOnly
+    /// <inheritdoc />
+    public override bool IsRequired
+    {
+        get
         {
-            get
+            if (!_isRequired.HasValue)
             {
-                if (!_isReadOnly.HasValue)
+                if (ValidationMetadata.IsRequired.HasValue)
                 {
-                    if (MetadataKind == ModelMetadataKind.Type)
-                    {
-                        _isReadOnly = false;
-                    }
-                    else if (BindingMetadata.IsReadOnly.HasValue)
-                    {
-                        _isReadOnly = BindingMetadata.IsReadOnly;
-                    }
-                    else
-                    {
-                        _isReadOnly = _details.PropertySetter == null;
-                    }
+                    _isRequired = ValidationMetadata.IsRequired;
                 }
-
-                return _isReadOnly.Value;
+                else
+                {
+                    // Default to IsRequired = true for non-Nullable<T> value types.
+                    _isRequired = !IsReferenceOrNullableType;
+                }
             }
+
+            return _isRequired.Value;
         }
+    }
 
-        /// <inheritdoc />
-        public override bool IsRequired
+    /// <inheritdoc />
+    public override ModelBindingMessageProvider ModelBindingMessageProvider =>
+        BindingMetadata.ModelBindingMessageProvider!;
+
+    /// <inheritdoc />
+    public override string? NullDisplayText => DisplayMetadata.NullDisplayTextProvider();
+
+    /// <inheritdoc />
+    public override int Order => DisplayMetadata.Order;
+
+    /// <inheritdoc />
+    public override string? Placeholder
+    {
+        get
         {
-            get
+            if (DisplayMetadata.Placeholder == null)
             {
-                if (!_isRequired.HasValue)
-                {
-                    if (ValidationMetadata.IsRequired.HasValue)
-                    {
-                        _isRequired = ValidationMetadata.IsRequired;
-                    }
-                    else
-                    {
-                        // Default to IsRequired = true for non-Nullable<T> value types.
-                        _isRequired = !IsReferenceOrNullableType;
-                    }
-                }
-
-                return _isRequired.Value;
+                return null;
             }
+
+            return DisplayMetadata.Placeholder();
         }
+    }
 
-        /// <inheritdoc />
-        public override ModelBindingMessageProvider ModelBindingMessageProvider =>
-            BindingMetadata.ModelBindingMessageProvider!;
-
-        /// <inheritdoc />
-        public override string? NullDisplayText => DisplayMetadata.NullDisplayTextProvider();
-
-        /// <inheritdoc />
-        public override int Order => DisplayMetadata.Order;
-
-        /// <inheritdoc />
-        public override string? Placeholder
+    /// <inheritdoc />
+    public override ModelPropertyCollection Properties
+    {
+        get
         {
-            get
+            if (_properties == null)
             {
-                if (DisplayMetadata.Placeholder == null)
-                {
-                    return null;
-                }
-
-                return DisplayMetadata.Placeholder();
+                var properties = _provider.GetMetadataForProperties(ModelType);
+                properties = properties.OrderBy(p => p.Order);
+                _properties = new ModelPropertyCollection(properties);
             }
+
+            return _properties;
         }
+    }
 
-        /// <inheritdoc />
-        public override ModelPropertyCollection Properties
+    /// <inheritdoc />
+    public override ModelMetadata? BoundConstructor
+    {
+        get
         {
-            get
+            if (BindingMetadata.BoundConstructor == null)
             {
-                if (_properties == null)
-                {
-                    var properties = _provider.GetMetadataForProperties(ModelType);
-                    properties = properties.OrderBy(p => p.Order);
-                    _properties = new ModelPropertyCollection(properties);
-                }
-
-                return _properties;
+                return null;
             }
-        }
 
-        /// <inheritdoc />
-        public override ModelMetadata? BoundConstructor
-        {
-            get
+            if (_constructorMetadata == null)
             {
-                if (BindingMetadata.BoundConstructor == null)
-                {
-                    return null;
-                }
-
-                if (_constructorMetadata == null)
-                {
-                    var modelMetadataProvider = (ModelMetadataProvider)_provider;
-                    _constructorMetadata = modelMetadataProvider.GetMetadataForConstructor(BindingMetadata.BoundConstructor, ModelType);
-                }
-
-                return _constructorMetadata;
+                var modelMetadataProvider = (ModelMetadataProvider)_provider;
+                _constructorMetadata = modelMetadataProvider.GetMetadataForConstructor(BindingMetadata.BoundConstructor, ModelType);
             }
+
+            return _constructorMetadata;
         }
+    }
 
-        /// <inheritdoc/>
-        public override IReadOnlyList<ModelMetadata>? BoundConstructorParameters => _details.BoundConstructorParameters;
+    /// <inheritdoc/>
+    public override IReadOnlyList<ModelMetadata>? BoundConstructorParameters => _details.BoundConstructorParameters;
 
-        /// <inheritdoc />
-        public override IPropertyFilterProvider? PropertyFilterProvider => BindingMetadata.PropertyFilterProvider;
+    /// <inheritdoc />
+    public override IPropertyFilterProvider? PropertyFilterProvider => BindingMetadata.PropertyFilterProvider;
 
-        /// <inheritdoc />
-        public override bool ShowForDisplay => DisplayMetadata.ShowForDisplay;
+    /// <inheritdoc />
+    public override bool ShowForDisplay => DisplayMetadata.ShowForDisplay;
 
-        /// <inheritdoc />
-        public override bool ShowForEdit => DisplayMetadata.ShowForEdit;
+    /// <inheritdoc />
+    public override bool ShowForEdit => DisplayMetadata.ShowForEdit;
 
-        /// <inheritdoc />
-        public override string? SimpleDisplayProperty => DisplayMetadata.SimpleDisplayProperty;
+    /// <inheritdoc />
+    public override string? SimpleDisplayProperty => DisplayMetadata.SimpleDisplayProperty;
 
-        /// <inheritdoc />
-        public override string? TemplateHint => DisplayMetadata.TemplateHint;
+    /// <inheritdoc />
+    public override string? TemplateHint => DisplayMetadata.TemplateHint;
 
-        /// <inheritdoc />
-        public override IPropertyValidationFilter? PropertyValidationFilter => ValidationMetadata.PropertyValidationFilter;
+    /// <inheritdoc />
+    public override IPropertyValidationFilter? PropertyValidationFilter => ValidationMetadata.PropertyValidationFilter;
 
-        /// <inheritdoc />
-        public override bool ValidateChildren
+    /// <inheritdoc />
+    public override bool ValidateChildren
+    {
+        get
         {
-            get
+            if (!_validateChildren.HasValue)
             {
-                if (!_validateChildren.HasValue)
+                if (ValidationMetadata.ValidateChildren.HasValue)
                 {
-                    if (ValidationMetadata.ValidateChildren.HasValue)
-                    {
-                        _validateChildren = ValidationMetadata.ValidateChildren.Value;
-                    }
-                    else if (IsComplexType || IsEnumerableType)
-                    {
-                        _validateChildren = true;
-                    }
-                    else
-                    {
-                        _validateChildren = false;
-                    }
+                    _validateChildren = ValidationMetadata.ValidateChildren.Value;
                 }
-
-                return _validateChildren.Value;
-            }
-        }
-
-        /// <inheritdoc />
-        public override bool? HasValidators
-        {
-            get
-            {
-                if (!_hasValidators.HasValue)
+                else if (IsComplexType || IsEnumerableType)
                 {
-                    var visited = new HashSet<DefaultModelMetadata>();
-
-                    _hasValidators = CalculateHasValidators(visited, this);
+                    _validateChildren = true;
                 }
-
-                return _hasValidators.Value;
+                else
+                {
+                    _validateChildren = false;
+                }
             }
+
+            return _validateChildren.Value;
+        }
+    }
+
+    /// <inheritdoc />
+    public override bool? HasValidators
+    {
+        get
+        {
+            if (!_hasValidators.HasValue)
+            {
+                var visited = new HashSet<DefaultModelMetadata>();
+
+                _hasValidators = CalculateHasValidators(visited, this);
+            }
+
+            return _hasValidators.Value;
+        }
+    }
+
+    internal override bool PropertyHasValidators => ValidationMetadata.PropertyHasValidators;
+
+    /// <inheritdoc />
+    internal override string? ValidationModelName => ValidationMetadata.ValidationModelName;
+
+    internal static bool CalculateHasValidators(HashSet<DefaultModelMetadata> visited, ModelMetadata metadata)
+    {
+        RuntimeHelpers.EnsureSufficientExecutionStack();
+
+        if (metadata?.GetType() != typeof(DefaultModelMetadata))
+        {
+            // The calculation is valid only for DefaultModelMetadata instances. Null, other ModelMetadata instances
+            // or subtypes of DefaultModelMetadata will be treated as always requiring validation.
+            return true;
         }
 
-        internal override bool PropertyHasValidators => ValidationMetadata.PropertyHasValidators;
+        var defaultModelMetadata = (DefaultModelMetadata)metadata;
 
-        internal static bool CalculateHasValidators(HashSet<DefaultModelMetadata> visited, ModelMetadata metadata)
+        if (defaultModelMetadata._hasValidators.HasValue)
         {
-            RuntimeHelpers.EnsureSufficientExecutionStack();
+            // Return a previously calculated value if available.
+            return defaultModelMetadata._hasValidators.Value;
+        }
 
-            if (metadata?.GetType() != typeof(DefaultModelMetadata))
+        if (defaultModelMetadata.ValidationMetadata.HasValidators != false)
+        {
+            // Either the ModelMetadata instance has some validators (HasValidators = true) or it is non-deterministic (HasValidators = null).
+            // In either case, assume it has validators.
+            return true;
+        }
+
+        // Before inspecting properties or elements of a collection, ensure we do not have a cycle.
+        // Consider a model like so
+        //
+        // Employee { BusinessDivision Division; int Id; string Name; }
+        // BusinessDivision { int Id; List<Employee> Employees }
+        //
+        // If we get to the Employee element from Employee.Division.Employees, we can return false for that instance
+        // and allow other properties of BusinessDivision and Employee to determine if it has validators.
+        if (!visited.Add(defaultModelMetadata))
+        {
+            return false;
+        }
+
+        // We have inspected the current element. Inspect properties or elements that may contribute to this value.
+        if (defaultModelMetadata.IsEnumerableType)
+        {
+            if (CalculateHasValidators(visited, defaultModelMetadata.ElementMetadata!))
             {
-                // The calculation is valid only for DefaultModelMetadata instances. Null, other ModelMetadata instances
-                // or subtypes of DefaultModelMetadata will be treated as always requiring validation.
                 return true;
             }
-
-            var defaultModelMetadata = (DefaultModelMetadata)metadata;
-
-            if (defaultModelMetadata._hasValidators.HasValue)
+        }
+        else if (defaultModelMetadata.IsComplexType)
+        {
+            var parameters = defaultModelMetadata.BoundConstructor?.BoundConstructorParameters ?? Array.Empty<ModelMetadata>();
+            foreach (var parameter in parameters)
             {
-                // Return a previously calculated value if available.
-                return defaultModelMetadata._hasValidators.Value;
-            }
-
-            if (defaultModelMetadata.ValidationMetadata.HasValidators != false)
-            {
-                // Either the ModelMetadata instance has some validators (HasValidators = true) or it is non-deterministic (HasValidators = null).
-                // In either case, assume it has validators.
-                return true;
-            }
-
-            // Before inspecting properties or elements of a collection, ensure we do not have a cycle.
-            // Consider a model like so
-            //
-            // Employee { BusinessDivision Division; int Id; string Name; }
-            // BusinessDivision { int Id; List<Employee> Employees }
-            //
-            // If we get to the Employee element from Employee.Division.Employees, we can return false for that instance
-            // and allow other properties of BusinessDivision and Employee to determine if it has validators.
-            if (!visited.Add(defaultModelMetadata))
-            {
-                return false;
-            }
-
-            // We have inspected the current element. Inspect properties or elements that may contribute to this value.
-            if (defaultModelMetadata.IsEnumerableType)
-            {
-                if (CalculateHasValidators(visited, defaultModelMetadata.ElementMetadata!))
+                if (CalculateHasValidators(visited, parameter))
                 {
                     return true;
                 }
             }
-            else if (defaultModelMetadata.IsComplexType)
+
+            foreach (var property in defaultModelMetadata.BoundProperties)
             {
-                var parameters = defaultModelMetadata.BoundConstructor?.BoundConstructorParameters ?? Array.Empty<ModelMetadata>();
-                foreach (var parameter in parameters)
+                if (CalculateHasValidators(visited, property))
                 {
-                    if (CalculateHasValidators(visited, parameter))
-                    {
-                        return true;
-                    }
+                    return true;
                 }
-
-                foreach (var property in defaultModelMetadata.BoundProperties)
-                {
-                    if (CalculateHasValidators(visited, property))
-                    {
-                        return true;
-                    }
-                }
-            }
-
-            // We've come this far. The ModelMetadata does not have any validation
-            return false;
-        }
-
-        /// <inheritdoc />
-        public override IReadOnlyList<object> ValidatorMetadata
-        {
-            get
-            {
-                if (_validatorMetadata == null)
-                {
-                    _validatorMetadata = new ReadOnlyCollection<object>(ValidationMetadata.ValidatorMetadata);
-                }
-
-                return _validatorMetadata;
             }
         }
 
-        /// <inheritdoc />
-        public override Func<object, object?>? PropertyGetter => _details.PropertyGetter;
+        // We've come this far. The ModelMetadata does not have any validation
+        return false;
+    }
 
-        /// <inheritdoc />
-        public override Action<object, object?>? PropertySetter => _details.PropertySetter;
-
-        /// <inheritdoc/>
-        public override Func<object?[], object>? BoundConstructorInvoker => _details.BoundConstructorInvoker;
-
-        internal DefaultMetadataDetails Details => _details;
-
-        /// <inheritdoc />
-        public override ModelMetadata GetMetadataForType(Type modelType)
+    /// <inheritdoc />
+    public override IReadOnlyList<object> ValidatorMetadata
+    {
+        get
         {
-            return _provider.GetMetadataForType(modelType);
-        }
+            if (_validatorMetadata == null)
+            {
+                _validatorMetadata = new ReadOnlyCollection<object>(ValidationMetadata.ValidatorMetadata);
+            }
 
-        /// <inheritdoc />
-        public override IEnumerable<ModelMetadata> GetMetadataForProperties(Type modelType)
-        {
-            return _provider.GetMetadataForProperties(modelType);
+            return _validatorMetadata;
         }
+    }
+
+    /// <inheritdoc />
+    public override Func<object, object?>? PropertyGetter => _details.PropertyGetter;
+
+    /// <inheritdoc />
+    public override Action<object, object?>? PropertySetter => _details.PropertySetter;
+
+    /// <inheritdoc/>
+    public override Func<object?[], object>? BoundConstructorInvoker => _details.BoundConstructorInvoker;
+
+    internal DefaultMetadataDetails Details => _details;
+
+    /// <inheritdoc />
+    public override ModelMetadata GetMetadataForType(Type modelType)
+    {
+        return _provider.GetMetadataForType(modelType);
+    }
+
+    /// <inheritdoc />
+    public override IEnumerable<ModelMetadata> GetMetadataForProperties(Type modelType)
+    {
+        return _provider.GetMetadataForProperties(modelType);
     }
 }

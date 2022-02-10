@@ -4,18 +4,17 @@
 using System;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Internal
+namespace Microsoft.AspNetCore.Internal;
+
+internal readonly struct FileResultInfo
 {
-    internal readonly struct FileResultInfo
-    {
-        public string ContentType { get; init; }
+    public string ContentType { get; init; }
 
-        public string FileDownloadName { get; init; }
+    public string FileDownloadName { get; init; }
 
-        public DateTimeOffset? LastModified { get; init; }
+    public DateTimeOffset? LastModified { get; init; }
 
-        public EntityTagHeaderValue? EntityTag { get; init; }
+    public EntityTagHeaderValue? EntityTag { get; init; }
 
-        public bool EnableRangeProcessing { get; init; }
-    }
+    public bool EnableRangeProcessing { get; init; }
 }

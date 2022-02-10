@@ -1,7 +1,12 @@
 <Project>
   <PropertyGroup>
     <IsTestAssetProject>true</IsTestAssetProject>
+    <!--
+      Test websites are referenced by FunctionalTests but aren't consumed as StaticWebAssets.
+      We do not want the path mangling (e.g. _content/MyClassLib) that comes with SWA.
+    -->
+    <StaticWebAssetsEnabled>false</StaticWebAssetsEnabled>
   </PropertyGroup>
-  <!-- Skip the parent folder to prevent getting test package references. -->
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\..\, Directory.Build.props))\Directory.Build.props" />
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
 </Project>

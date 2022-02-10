@@ -3,9 +3,8 @@
 
 using Microsoft.AspNetCore.Authorization;
 
-namespace CustomAuthorizationFailureResponse.Authorization.Requirements
+namespace CustomAuthorizationFailureResponse.Authorization.Requirements;
+
+public class SampleRequirement : IAuthorizationRequirement
 {
-    public class SampleRequirement : IAuthorizationRequirement
-    {
-    }
 }

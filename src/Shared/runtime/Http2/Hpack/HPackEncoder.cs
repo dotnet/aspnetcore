@@ -44,36 +44,31 @@ namespace System.Net.Http.HPack
         public static bool EncodeStatusHeader(int statusCode, Span<byte> destination, out int bytesWritten)
         {
             // Bytes written depend on whether the status code value maps directly to an index
-            switch (statusCode)
+            if (H2StaticTable.TryGetStatusIndex(statusCode, out var index))
             {
-                case 200:
-                case 204:
-                case 206:
-                case 304:
-                case 400:
-                case 404:
-                case 500:
-                    // Status codes which exist in the HTTP/2 StaticTable.
-                    return EncodeIndexedHeaderField(H2StaticTable.GetStatusIndex(statusCode), destination, out bytesWritten);
-                default:
-                    // If the status code doesn't have a static index then we need to include the full value.
-                    // Write a status index and then the number bytes as a string literal.
-                    if (!EncodeLiteralHeaderFieldWithoutIndexing(H2StaticTable.Status200, destination, out var nameLength))
-                    {
-                        bytesWritten = 0;
-                        return false;
-                    }
+                // Status codes which exist in the HTTP/2 StaticTable.
+                return EncodeIndexedHeaderField(index, destination, out bytesWritten);
+            }
+            else
+            {
+                // If the status code doesn't have a static index then we need to include the full value.
+                // Write a status index and then the number bytes as a string literal.
+                if (!EncodeLiteralHeaderFieldWithoutIndexing(H2StaticTable.Status200, destination, out var nameLength))
+                {
+                    bytesWritten = 0;
+                    return false;
+                }
 
-                    var statusBytes = StatusCodes.ToStatusBytes(statusCode);
+                var statusBytes = StatusCodes.ToStatusBytes(statusCode);
 
-                    if (!EncodeStringLiteral(statusBytes, destination.Slice(nameLength), out var valueLength))
-                    {
-                        bytesWritten = 0;
-                        return false;
-                    }
+                if (!EncodeStringLiteral(statusBytes, destination.Slice(nameLength), out var valueLength))
+                {
+                    bytesWritten = 0;
+                    return false;
+                }
 
-                    bytesWritten = nameLength + valueLength;
-                    return true;
+                bytesWritten = nameLength + valueLength;
+                return true;
             }
         }
 

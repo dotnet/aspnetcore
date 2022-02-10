@@ -1,14 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
+namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite;
 
-namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite
+internal class FlagParser
 {
-    internal class FlagParser
-    {
-        private readonly IDictionary<string, FlagType> _ruleFlagLookup = new Dictionary<string, FlagType>(StringComparer.OrdinalIgnoreCase) {
+    private readonly IDictionary<string, FlagType> _ruleFlagLookup = new Dictionary<string, FlagType>(StringComparer.OrdinalIgnoreCase) {
             { "b", FlagType.EscapeBackreference},
             { "c", FlagType.Chain },
             { "chain", FlagType.Chain},
@@ -55,44 +52,43 @@ namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite
             { "type", FlagType.Type },
         };
 
-        public Flags Parse(string flagString)
+    public Flags Parse(string flagString)
+    {
+        if (string.IsNullOrEmpty(flagString))
         {
-            if (string.IsNullOrEmpty(flagString))
-            {
-                throw new ArgumentException("Argument cannot be null or empty string.", nameof(flagString));
-            }
-
-            // Check that flags are contained within []
-            // Guaranteed to have a length of at least 1 here, so this will never throw for indexing.
-            if (!(flagString[0] == '[' && flagString[flagString.Length - 1] == ']'))
-            {
-                throw new FormatException("Flags should start and end with square brackets: [flags]");
-            }
-
-            // Lexing esque step to split all flags.
-            // Invalid syntax to have any spaces.
-            var tokens = flagString.Substring(1, flagString.Length - 2).Split(',');
-            var flags = new Flags();
-            foreach (var token in tokens)
-            {
-                var hasPayload = token.Split('=');
-
-                FlagType flag;
-                if (!_ruleFlagLookup.TryGetValue(hasPayload[0], out flag))
-                {
-                    throw new FormatException($"Unrecognized flag: '{hasPayload[0]}'");
-                }
-
-                if (hasPayload.Length == 2)
-                {
-                    flags.SetFlag(flag, hasPayload[1]);
-                }
-                else
-                {
-                    flags.SetFlag(flag, string.Empty);
-                }
-            }
-            return flags;
+            throw new ArgumentException("Argument cannot be null or empty string.", nameof(flagString));
         }
+
+        // Check that flags are contained within []
+        // Guaranteed to have a length of at least 1 here, so this will never throw for indexing.
+        if (!(flagString[0] == '[' && flagString[flagString.Length - 1] == ']'))
+        {
+            throw new FormatException("Flags should start and end with square brackets: [flags]");
+        }
+
+        // Lexing esque step to split all flags.
+        // Invalid syntax to have any spaces.
+        var tokens = flagString.Substring(1, flagString.Length - 2).Split(',');
+        var flags = new Flags();
+        foreach (var token in tokens)
+        {
+            var hasPayload = token.Split('=');
+
+            FlagType flag;
+            if (!_ruleFlagLookup.TryGetValue(hasPayload[0], out flag))
+            {
+                throw new FormatException($"Unrecognized flag: '{hasPayload[0]}'");
+            }
+
+            if (hasPayload.Length == 2)
+            {
+                flags.SetFlag(flag, hasPayload[1]);
+            }
+            else
+            {
+                flags.SetFlag(flag, string.Empty);
+            }
+        }
+        return flags;
     }
 }

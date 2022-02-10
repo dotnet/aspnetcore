@@ -6,91 +6,90 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace Microsoft.AspNetCore.Analyzers
+namespace Microsoft.AspNetCore.Analyzers;
+
+internal class UseAuthorizationAnalyzer
 {
-    internal class UseAuthorizationAnalyzer
+    private readonly StartupAnalysis _context;
+
+    public UseAuthorizationAnalyzer(StartupAnalysis context)
     {
-        private readonly StartupAnalysis _context;
+        _context = context;
+    }
 
-        public UseAuthorizationAnalyzer(StartupAnalysis context)
+    public void AnalyzeSymbol(SymbolAnalysisContext context)
+    {
+        Debug.Assert(context.Symbol.Kind == SymbolKind.NamedType);
+
+        var type = (INamedTypeSymbol)context.Symbol;
+
+        foreach (var middlewareAnalysis in _context.GetRelatedAnalyses<MiddlewareAnalysis>(type))
         {
-            _context = context;
-        }
+            MiddlewareItem? useAuthorizationItem = default;
+            MiddlewareItem? useRoutingItem = default;
+            MiddlewareItem? useEndpoint = default;
 
-        public void AnalyzeSymbol(SymbolAnalysisContext context)
-        {
-            Debug.Assert(context.Symbol.Kind == SymbolKind.NamedType);
-
-            var type = (INamedTypeSymbol)context.Symbol;
-
-            foreach (var middlewareAnalysis in _context.GetRelatedAnalyses<MiddlewareAnalysis>(type))
+            var length = middlewareAnalysis.Middleware.Length;
+            for (var i = length - 1; i >= 0; i--)
             {
-                MiddlewareItem? useAuthorizationItem = default;
-                MiddlewareItem? useRoutingItem = default;
-                MiddlewareItem? useEndpoint = default;
+                var middlewareItem = middlewareAnalysis.Middleware[i];
+                var middleware = middlewareItem.UseMethod.Name;
 
-                var length = middlewareAnalysis.Middleware.Length;
-                for (var i = length - 1; i >= 0; i-- )
+                if (middleware == "UseAuthorization")
                 {
-                    var middlewareItem = middlewareAnalysis.Middleware[i];
-                    var middleware = middlewareItem.UseMethod.Name;
-
-                    if (middleware == "UseAuthorization")
+                    if (useRoutingItem != null && useAuthorizationItem == null)
                     {
-                        if (useRoutingItem != null && useAuthorizationItem == null)
-                        {
-                            // This looks like
-                            //
-                            //  app.UseAuthorization();
-                            //  ...
-                            //  app.UseRouting();
-                            //  app.UseEndpoints(...);
+                        // This looks like
+                        //
+                        //  app.UseAuthorization();
+                        //  ...
+                        //  app.UseRouting();
+                        //  app.UseEndpoints(...);
 
-                            context.ReportDiagnostic(Diagnostic.Create(
-                                StartupAnalyzer.Diagnostics.IncorrectlyConfiguredAuthorizationMiddleware,
-                                middlewareItem.Operation.Syntax.GetLocation(),
-                                middlewareItem.UseMethod.Name));
-                        }
-
-                        useAuthorizationItem = middlewareItem;
+                        context.ReportDiagnostic(Diagnostic.Create(
+                            StartupAnalyzer.Diagnostics.IncorrectlyConfiguredAuthorizationMiddleware,
+                            middlewareItem.Operation.Syntax.GetLocation(),
+                            middlewareItem.UseMethod.Name));
                     }
-                    else if (middleware == "UseEndpoints")
+
+                    useAuthorizationItem = middlewareItem;
+                }
+                else if (middleware == "UseEndpoints")
+                {
+                    if (useAuthorizationItem != null)
                     {
-                        if (useAuthorizationItem != null)
-                        {
-                            // This configuration looks like
-                            //
-                            //  app.UseRouting();
-                            //  app.UseEndpoints(...);
-                            //  ...
-                            //  app.UseAuthorization();
-                            //
+                        // This configuration looks like
+                        //
+                        //  app.UseRouting();
+                        //  app.UseEndpoints(...);
+                        //  ...
+                        //  app.UseAuthorization();
+                        //
 
-                            context.ReportDiagnostic(Diagnostic.Create(
-                                StartupAnalyzer.Diagnostics.IncorrectlyConfiguredAuthorizationMiddleware,
-                                useAuthorizationItem.Operation.Syntax.GetLocation(),
-                                middlewareItem.UseMethod.Name));
-                        }
-
-                        useEndpoint = middlewareItem;
+                        context.ReportDiagnostic(Diagnostic.Create(
+                            StartupAnalyzer.Diagnostics.IncorrectlyConfiguredAuthorizationMiddleware,
+                            useAuthorizationItem.Operation.Syntax.GetLocation(),
+                            middlewareItem.UseMethod.Name));
                     }
-                    else if (middleware == "UseRouting")
+
+                    useEndpoint = middlewareItem;
+                }
+                else if (middleware == "UseRouting")
+                {
+                    if (useEndpoint is null)
                     {
-                        if (useEndpoint is null)
-                        {
-                            // We're likely here because the middleware uses an expression chain e.g.
-                            // app.UseRouting()
-                            //   .UseAuthorization()
-                            //   .UseEndpoints(..));
-                            // This analyzer expects MiddlewareItem instances to appear in the order in which they appear in source
-                            // which unfortunately isn't true for chained calls (the operations appear in reverse order).
-                            // We'll avoid doing any analysis in this event and rely on the runtime guardrails.
-                            // We'll use https://github.com/dotnet/aspnetcore/issues/16648 to track addressing this in a future milestone
-                            return;
-                        }
-
-                        useRoutingItem = middlewareItem;
+                        // We're likely here because the middleware uses an expression chain e.g.
+                        // app.UseRouting()
+                        //   .UseAuthorization()
+                        //   .UseEndpoints(..));
+                        // This analyzer expects MiddlewareItem instances to appear in the order in which they appear in source
+                        // which unfortunately isn't true for chained calls (the operations appear in reverse order).
+                        // We'll avoid doing any analysis in this event and rely on the runtime guardrails.
+                        // We'll use https://github.com/dotnet/aspnetcore/issues/16648 to track addressing this in a future milestone
+                        return;
                     }
+
+                    useRoutingItem = middlewareItem;
                 }
             }
         }

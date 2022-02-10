@@ -5,21 +5,21 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace CodeGenerator
-{
-    public static class FeatureCollectionGenerator
-    {
-        public static string GenerateFile(string namespaceName, string className, string[] allFeatures, string[] implementedFeatures, string extraUsings, string fallbackFeatures)
-        {
-            // NOTE: This list MUST always match the set of feature interfaces implemented by TransportConnection.
-            // See also: src/Kestrel/Http/TransportConnection.FeatureCollection.cs
-            var features = allFeatures.Select((type, index) => new KnownFeature
-            {
-                Name = type,
-                Index = index
-            });
+namespace CodeGenerator;
 
-            var s = $@"// Licensed to the .NET Foundation under one or more agreements.
+public static class FeatureCollectionGenerator
+{
+    public static string GenerateFile(string namespaceName, string className, string[] allFeatures, string[] implementedFeatures, string extraUsings, string fallbackFeatures)
+    {
+        // NOTE: This list MUST always match the set of feature interfaces implemented by TransportConnection.
+        // See also: src/Kestrel/Http/TransportConnection.FeatureCollection.cs
+        var features = allFeatures.Select((type, index) => new KnownFeature
+        {
+            Name = type,
+            Index = index
+        });
+
+        var s = $@"// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -212,18 +212,17 @@ namespace {namespaceName}
 }}
 ";
 
-            return s;
-        }
+        return s;
+    }
 
-        static string Each<T>(IEnumerable<T> values, Func<T, string> formatter)
-        {
-            return values.Any() ? values.Select(formatter).Aggregate((a, b) => a + b) : "";
-        }
+    static string Each<T>(IEnumerable<T> values, Func<T, string> formatter)
+    {
+        return values.Any() ? values.Select(formatter).Aggregate((a, b) => a + b) : "";
+    }
 
-        private class KnownFeature
-        {
-            public string Name;
-            public int Index;
-        }
+    private class KnownFeature
+    {
+        public string Name;
+        public int Index;
     }
 }

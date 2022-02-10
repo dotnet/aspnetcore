@@ -3,11 +3,11 @@
 
 using Microsoft.CodeAnalysis;
 
-namespace Microsoft.AspNetCore.Analyzers
+namespace Microsoft.AspNetCore.Analyzers;
+
+public class StartupFactsTest
 {
-    public class StartupFactsTest
-    {
-        private const string BasicStartup = @"
+    private const string BasicStartup = @"
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupFactsTest
         }
     }
 }";
-        private const string EnvironmentStartup = @"
+    private const string EnvironmentStartup = @"
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupFactsTest
     }
 }
 ";
-        private const string NotAStartupClass = @"
+    private const string NotAStartupClass = @"
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -98,140 +98,138 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupFactsTest
         }
     }
 }";
-        private static readonly Dictionary<string, string> TestSources = new Dictionary<string, string>
+    private static readonly Dictionary<string, string> TestSources = new Dictionary<string, string>
+    {
+        [nameof(BasicStartup)] = BasicStartup,
+        [nameof(EnvironmentStartup)] = EnvironmentStartup,
+        [nameof(NotAStartupClass)] = NotAStartupClass,
+    };
+
+    [Theory]
+    [InlineData(nameof(BasicStartup), "ConfigureServices")]
+    [InlineData(nameof(EnvironmentStartup), "ConfigureDevelopmentServices")]
+    [InlineData(nameof(EnvironmentStartup), "configurePRODUCTIONservices")]
+    public void IsConfigureServices_FindsConfigureServicesMethod(string source, string methodName)
+    {
+        // Arrange
+        var compilation = TestCompilation.Create(TestSources[source]);
+        var symbols = new StartupSymbols(compilation);
+
+        var type = (INamedTypeSymbol)compilation.GetSymbolsWithName(source).Single();
+        var methods = type.GetMembers(methodName).Cast<IMethodSymbol>();
+
+        foreach (var method in methods)
         {
-            [nameof(BasicStartup)] = BasicStartup,
-            [nameof(EnvironmentStartup)] = EnvironmentStartup,
-            [nameof(NotAStartupClass)] = NotAStartupClass,
-        };
-
-
-        [Theory]
-        [InlineData(nameof(BasicStartup), "ConfigureServices")]
-        [InlineData(nameof(EnvironmentStartup), "ConfigureDevelopmentServices")]
-        [InlineData(nameof(EnvironmentStartup), "configurePRODUCTIONservices")]
-        public void IsConfigureServices_FindsConfigureServicesMethod(string source, string methodName)
-        {
-            // Arrange
-            var compilation = TestCompilation.Create(TestSources[source]);
-            var symbols = new StartupSymbols(compilation);
-
-            var type = (INamedTypeSymbol)compilation.GetSymbolsWithName(source).Single();
-            var methods = type.GetMembers(methodName).Cast<IMethodSymbol>();
-
-            foreach (var method in methods)
-            {
-                // Act
-                var result = StartupFacts.IsConfigureServices(symbols, method);
-
-                // Assert
-                Assert.True(result);
-            }
-        }
-
-        [Theory]
-        [InlineData(nameof(NotAStartupClass), "ConfigureServices")]
-        [InlineData(nameof(NotAStartupClass), "ConfigureSrvces")]
-
-        // This is an interesting case where a method follows both naming conventions.
-        [InlineData(nameof(EnvironmentStartup), "ConfigureDevelopmentServices2")]
-        public void IsConfigureServices_RejectsNonConfigureServicesMethod(string source, string methodName)
-        {
-            // Arrange
-            var compilation = TestCompilation.Create(TestSources[source]);
-            var symbols = new StartupSymbols(compilation);
-
-            var type = (INamedTypeSymbol)compilation.GetSymbolsWithName(source).Single();
-            var methods = type.GetMembers(methodName).Cast<IMethodSymbol>();
-
-            foreach (var method in methods)
-            {
-                // Act
-                var result = StartupFacts.IsConfigureServices(symbols, method);
-
-                // Assert
-                Assert.False(result);
-            }
-        }
-
-        [Theory]
-        [InlineData(nameof(BasicStartup), "Configure")]
-        [InlineData(nameof(EnvironmentStartup), "configurePRODUCTION")]
-        [InlineData(nameof(EnvironmentStartup), "ConfigureDevelopmentServices2")]
-        public void IsConfigure_FindsConfigureMethod(string source, string methodName)
-        {
-            // Arrange
-            var compilation = TestCompilation.Create(TestSources[source]);
-            var symbols = new StartupSymbols(compilation);
-
-            var type = (INamedTypeSymbol)compilation.GetSymbolsWithName(source).Single();
-            var methods = type.GetMembers(methodName).Cast<IMethodSymbol>();
-
-            foreach (var method in methods)
-            {
-                // Act
-                var result = StartupFacts.IsConfigure(symbols, method);
-
-                // Assert
-                Assert.True(result);
-            }
-        }
-
-        [Theory]
-        [InlineData(nameof(NotAStartupClass), "Configure")]
-        [InlineData(nameof(NotAStartupClass), "Configur")]
-        public void IsConfigure_RejectsNonConfigureMethod(string source, string methodName)
-        {
-            // Arrange
-            var compilation = TestCompilation.Create(TestSources[source]);
-            var symbols = new StartupSymbols(compilation);
-
-            var type = (INamedTypeSymbol)compilation.GetSymbolsWithName(source).Single();
-            var methods = type.GetMembers(methodName).Cast<IMethodSymbol>();
-
-            foreach (var method in methods)
-            {
-                // Act
-                var result = StartupFacts.IsConfigure(symbols, method);
-
-                // Assert
-                Assert.False(result);
-            }
-        }
-
-        [Theory]
-        [InlineData(nameof(BasicStartup))]
-        [InlineData(nameof(EnvironmentStartup))]
-        public void IsStartupClass_FindsStartupClass(string source)
-        {
-            // Arrange
-            var compilation = TestCompilation.Create(TestSources[source]);
-            var symbols = new StartupSymbols(compilation);
-
-            var type = (INamedTypeSymbol)compilation.GetSymbolsWithName(source).Single();
-
             // Act
-            var result = StartupFacts.IsStartupClass(symbols, type);
+            var result = StartupFacts.IsConfigureServices(symbols, method);
 
             // Assert
             Assert.True(result);
         }
+    }
 
-        [Theory]
-        [InlineData(nameof(NotAStartupClass))]
-        public void IsStartupClass_RejectsNotStartupClass(string source)
+    [Theory]
+    [InlineData(nameof(NotAStartupClass), "ConfigureServices")]
+    [InlineData(nameof(NotAStartupClass), "ConfigureSrvces")]
+
+    // This is an interesting case where a method follows both naming conventions.
+    [InlineData(nameof(EnvironmentStartup), "ConfigureDevelopmentServices2")]
+    public void IsConfigureServices_RejectsNonConfigureServicesMethod(string source, string methodName)
+    {
+        // Arrange
+        var compilation = TestCompilation.Create(TestSources[source]);
+        var symbols = new StartupSymbols(compilation);
+
+        var type = (INamedTypeSymbol)compilation.GetSymbolsWithName(source).Single();
+        var methods = type.GetMembers(methodName).Cast<IMethodSymbol>();
+
+        foreach (var method in methods)
         {
-            // Arrange
-            var compilation = TestCompilation.Create(TestSources[source]);
-            var symbols = new StartupSymbols(compilation);
-
-            var type = (INamedTypeSymbol)compilation.GetSymbolsWithName(source).Single();
-
             // Act
-            var result = StartupFacts.IsStartupClass(symbols, type);
+            var result = StartupFacts.IsConfigureServices(symbols, method);
 
             // Assert
             Assert.False(result);
         }
+    }
+
+    [Theory]
+    [InlineData(nameof(BasicStartup), "Configure")]
+    [InlineData(nameof(EnvironmentStartup), "configurePRODUCTION")]
+    [InlineData(nameof(EnvironmentStartup), "ConfigureDevelopmentServices2")]
+    public void IsConfigure_FindsConfigureMethod(string source, string methodName)
+    {
+        // Arrange
+        var compilation = TestCompilation.Create(TestSources[source]);
+        var symbols = new StartupSymbols(compilation);
+
+        var type = (INamedTypeSymbol)compilation.GetSymbolsWithName(source).Single();
+        var methods = type.GetMembers(methodName).Cast<IMethodSymbol>();
+
+        foreach (var method in methods)
+        {
+            // Act
+            var result = StartupFacts.IsConfigure(symbols, method);
+
+            // Assert
+            Assert.True(result);
+        }
+    }
+
+    [Theory]
+    [InlineData(nameof(NotAStartupClass), "Configure")]
+    [InlineData(nameof(NotAStartupClass), "Configur")]
+    public void IsConfigure_RejectsNonConfigureMethod(string source, string methodName)
+    {
+        // Arrange
+        var compilation = TestCompilation.Create(TestSources[source]);
+        var symbols = new StartupSymbols(compilation);
+
+        var type = (INamedTypeSymbol)compilation.GetSymbolsWithName(source).Single();
+        var methods = type.GetMembers(methodName).Cast<IMethodSymbol>();
+
+        foreach (var method in methods)
+        {
+            // Act
+            var result = StartupFacts.IsConfigure(symbols, method);
+
+            // Assert
+            Assert.False(result);
+        }
+    }
+
+    [Theory]
+    [InlineData(nameof(BasicStartup))]
+    [InlineData(nameof(EnvironmentStartup))]
+    public void IsStartupClass_FindsStartupClass(string source)
+    {
+        // Arrange
+        var compilation = TestCompilation.Create(TestSources[source]);
+        var symbols = new StartupSymbols(compilation);
+
+        var type = (INamedTypeSymbol)compilation.GetSymbolsWithName(source).Single();
+
+        // Act
+        var result = StartupFacts.IsStartupClass(symbols, type);
+
+        // Assert
+        Assert.True(result);
+    }
+
+    [Theory]
+    [InlineData(nameof(NotAStartupClass))]
+    public void IsStartupClass_RejectsNotStartupClass(string source)
+    {
+        // Arrange
+        var compilation = TestCompilation.Create(TestSources[source]);
+        var symbols = new StartupSymbols(compilation);
+
+        var type = (INamedTypeSymbol)compilation.GetSymbolsWithName(source).Single();
+
+        // Act
+        var result = StartupFacts.IsStartupClass(symbols, type);
+
+        // Assert
+        Assert.False(result);
     }
 }

@@ -8,8 +8,8 @@
   "generatorVersions": "[1.0.0.0-*)",
   "description": "An empty project template for creating an ASP.NET Core application. This template does not have any content in it.",
   "groupIdentity": "Microsoft.Web.Empty",
-  "precedence": "8000",
-  "identity": "Microsoft.Web.Empty.FSharp.6.0",
+  "precedence": "9000",
+  "identity": "Microsoft.Web.Empty.FSharp.7.0",
   "shortName": "web",
   "tags": {
     "language": "F#",
@@ -162,6 +162,7 @@
   "defaultName": "WebApplication",
   "postActions": [
     {
+      "id": "restore",
       "condition": "(!skipRestore)",
       "description": "Restore NuGet packages required by this project.",
       "manualInstructions": [

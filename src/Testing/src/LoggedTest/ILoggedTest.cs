@@ -3,23 +3,21 @@
 
 using System;
 using System.Reflection;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Testing
+namespace Microsoft.AspNetCore.Testing;
+
+public interface ILoggedTest : IDisposable
 {
-    public interface ILoggedTest : IDisposable
-    {
-        ILogger Logger { get; }
+    ILogger Logger { get; }
 
-        ILoggerFactory LoggerFactory { get; }
+    ILoggerFactory LoggerFactory { get; }
 
-        ITestOutputHelper TestOutputHelper { get; }
+    ITestOutputHelper TestOutputHelper { get; }
 
-        // For back compat
-        IDisposable StartLog(out ILoggerFactory loggerFactory, LogLevel minLogLevel, string testName);
+    // For back compat
+    IDisposable StartLog(out ILoggerFactory loggerFactory, LogLevel minLogLevel, string testName);
 
-        void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper);
-    }
+    void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper);
 }

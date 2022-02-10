@@ -1,64 +1,61 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Reflection;
 
-namespace Microsoft.AspNetCore.Components.Routing
+namespace Microsoft.AspNetCore.Components.Routing;
+
+internal readonly struct RouteKey : IEquatable<RouteKey>
 {
-    internal readonly struct RouteKey : IEquatable<RouteKey>
+    public readonly Assembly? AppAssembly;
+    public readonly HashSet<Assembly>? AdditionalAssemblies;
+
+    public RouteKey(Assembly appAssembly, IEnumerable<Assembly> additionalAssemblies)
     {
-        public readonly Assembly? AppAssembly;
-        public readonly HashSet<Assembly>? AdditionalAssemblies;
+        AppAssembly = appAssembly;
+        AdditionalAssemblies = additionalAssemblies is null ? null : new HashSet<Assembly>(additionalAssemblies);
+    }
 
-        public RouteKey(Assembly appAssembly, IEnumerable<Assembly> additionalAssemblies)
+    public override bool Equals(object? obj)
+    {
+        return obj is RouteKey other && Equals(other);
+    }
+
+    public bool Equals(RouteKey other)
+    {
+        if (!Equals(AppAssembly, other.AppAssembly))
         {
-            AppAssembly = appAssembly;
-            AdditionalAssemblies = additionalAssemblies is null ? null : new HashSet<Assembly>(additionalAssemblies);
+            return false;
         }
 
-        public override bool Equals(object? obj)
+        if (AdditionalAssemblies is null && other.AdditionalAssemblies is null)
         {
-            return obj is RouteKey other && Equals(other);
+            return true;
         }
 
-        public bool Equals(RouteKey other)
+        if (AdditionalAssemblies is null || other.AdditionalAssemblies is null)
         {
-            if (!Equals(AppAssembly, other.AppAssembly))
-            {
-                return false;
-            }
-
-            if (AdditionalAssemblies is null && other.AdditionalAssemblies is null)
-            {
-                return true;
-            }
-
-            if (AdditionalAssemblies is null || other.AdditionalAssemblies is null)
-            {
-                return false;
-            }
-
-            return AdditionalAssemblies.Count == other.AdditionalAssemblies.Count &&
-                AdditionalAssemblies.SetEquals(other.AdditionalAssemblies);
+            return false;
         }
 
-        public override int GetHashCode()
+        return AdditionalAssemblies.Count == other.AdditionalAssemblies.Count &&
+            AdditionalAssemblies.SetEquals(other.AdditionalAssemblies);
+    }
+
+    public override int GetHashCode()
+    {
+        if (AppAssembly is null)
         {
-            if (AppAssembly is null)
-            {
-                return 0;
-            }
-
-            if (AdditionalAssemblies is null)
-            {
-                return AppAssembly.GetHashCode();
-            }
-
-            // Producing a hash code that includes individual assemblies requires it to have a stable order.
-            // We'll avoid the cost of sorting and simply include the number of assemblies instead.
-            return HashCode.Combine(AppAssembly, AdditionalAssemblies.Count);
+            return 0;
         }
+
+        if (AdditionalAssemblies is null)
+        {
+            return AppAssembly.GetHashCode();
+        }
+
+        // Producing a hash code that includes individual assemblies requires it to have a stable order.
+        // We'll avoid the cost of sorting and simply include the number of assemblies instead.
+        return HashCode.Combine(AppAssembly, AdditionalAssemblies.Count);
     }
 }

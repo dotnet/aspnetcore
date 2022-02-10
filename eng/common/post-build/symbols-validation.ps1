@@ -134,17 +134,17 @@ $CountMissingSymbols = {
         # Save the output and get diagnostic output
         $output = & $dotnetSymbolExe --symbols --modules $WindowsPdbVerificationParam $TargetServerParam $FullPath -o $SymbolsPath --diagnostics | Out-String
 
-        if (Test-Path $PdbPath) {
-          return 'PDB'
+        if ((Test-Path $PdbPath) -and (Test-path $SymbolPath)) {
+          return 'Module and PDB for Module'
         }
-        elseif (Test-Path $NGenPdb) {
-          return 'NGen PDB'
+        elseif ((Test-Path $NGenPdb) -and (Test-Path $PdbPath) -and (Test-Path $SymbolPath)) {
+          return 'Dll, PDB and NGen PDB'
         }
-        elseif (Test-Path $SODbg) {
-          return 'DBG for SO'
+        elseif ((Test-Path $SODbg) -and (Test-Path $SymbolPath)) {
+          return 'So and DBG for SO'
         }  
-        elseif (Test-Path $DylibDwarf) {
-          return 'Dwarf for Dylib'
+        elseif ((Test-Path $DylibDwarf) -and (Test-Path $SymbolPath)) {
+          return 'Dylib and Dwarf for Dylib'
         }  
         elseif (Test-Path $SymbolPath) {
           return 'Module'

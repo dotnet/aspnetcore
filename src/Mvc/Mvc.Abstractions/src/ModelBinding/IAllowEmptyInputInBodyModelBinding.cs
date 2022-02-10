@@ -1,10 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Mvc.ModelBinding
+namespace Microsoft.AspNetCore.Mvc.ModelBinding;
+
+internal interface IConfigureEmptyBodyBehavior
 {
-    internal interface IConfigureEmptyBodyBehavior
-    {
-        public EmptyBodyBehavior EmptyBodyBehavior { get; }
-    }
+    public EmptyBodyBehavior EmptyBodyBehavior { get; }
 }

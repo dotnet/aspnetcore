@@ -4,20 +4,23 @@
     <HelixPreCommand Condition="'$(IsWindowsHelixQueue)' != 'true' AND '$(IsMacHelixQueue)' != 'true'" Include="./installjdk.sh 10.0.2 x64 &amp;&amp; if [ &quot;%24JAVA_HOME&quot; = &quot;&quot; ]%3B then export JAVA_HOME=%24PWD/java%3B fi" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TestDependsOnMssql)' == 'true' AND '$(IsWindowsHelixQueue)' == 'true' AND '$(TargetArchitecture)' != 'arm64'">
+  <ItemGroup Condition="'$(TestDependsOnMssql)' == 'true' AND '$(IsWindowsHelixQueue)' == 'true' AND '$(IsArm64HelixQueue)' != 'true'">
     <HelixPreCommand Include="call RunPowershell.cmd mssql\InstallSqlServerLocalDB.ps1 || exit /b 1" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <_TestingArchitecture>x64</_TestingArchitecture>
+    <_TestingArchitecture Condition=" '$(IsArm64HelixQueue)' == 'true' ">arm64</_TestingArchitecture>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(TestDependsOnPlaywright)' == 'true'">
     <SkipHelixQueues>
-      $(HelixQueueAlpine312);
+      $(HelixQueueAlpine314);
       $(HelixQueueDebian11);
       $(HelixQueueFedora34);
       $(HelixQueueMariner);
       Redhat.7.Amd64.Open;
       Ubuntu.2004.Amd64.Open;
-      Windows.7.Amd64.Open;
-      Windows.81.Amd64.Open;
     </SkipHelixQueues>
     <SkipHelixArm>true</SkipHelixArm>
   </PropertyGroup>
@@ -37,7 +40,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TestDependsOnNode)' == 'true' AND '$(IsWindowsHelixQueue)' == 'false'">
-    <HelixPreCommand Include="./installnode.sh $(NodeVersion) $(TargetArchitecture)" />
+    <HelixPreCommand Include="./installnode.sh $(NodeVersion) $(_TestingArchitecture)" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TestDependsOnNode)' == 'true' AND '$(IsWindowsHelixQueue)' == 'true'">
@@ -105,6 +108,19 @@
     <PackageReference Include="XunitXml.TestLogger" Version="2.1.26" />
   </ItemGroup>
 
+  <Choose>
+    <When Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' OR '$(IsWindowsOnlyTest)' == 'true' ">
+      <ItemGroup>
+        <HelixProjectPlatform Include="Windows" />
+      </ItemGroup>
+    </When>
+    <Otherwise>
+      <ItemGroup>
+        <HelixProjectPlatform Include="@(HelixAvailablePlatform)" />
+      </ItemGroup>
+    </Otherwise>
+  </Choose>
+
   <Target Name="_SetCreateHelixPayload">
     <PropertyGroup>
       <_SelectedPlatforms>@(HelixProjectPlatform)</_SelectedPlatforms>
@@ -125,7 +141,7 @@
 
     <PropertyGroup>
       <BuildHelixPayload Condition="'@(_HelixApplicableTargetQueue->Count())' == '0'">false</BuildHelixPayload>
-      <BuildHelixPayload Condition="'$(TargetArchitecture)' == 'arm64' AND '$(SkipHelixArm)' == 'true'">false</BuildHelixPayload>
+      <BuildHelixPayload Condition="'$(IsArm64HelixQueue)' == 'true' AND '$(SkipHelixArm)' == 'true'">false</BuildHelixPayload>
       <BuildHelixPayload Condition="$(HelixTargetQueue.StartsWith('%28Alpine.')) AND '$(SkipHelixAlpine)' == 'true'">false</BuildHelixPayload>
       <BuildHelixPayload Condition="$(SkipHelixQueues.Contains('$(HelixTargetQueue)'))">false</BuildHelixPayload>
     </PropertyGroup>
@@ -190,9 +206,9 @@
           When the targeting pack builds, it has exactly the same version as the shared framework. Passing
           SharedFxVersion because that's needed even when the targeting pack isn't building.
         -->
-        <Command Condition="$(IsWindowsHelixQueue)">call runtests.cmd $(TargetFileName) $(SharedFxVersion) $(_HelixFriendlyNameTargetQueue) $(TargetArchitecture) $(RunQuarantinedTests) $(DotnetEfVersion) $(HelixTimeout) $(TestDependsOnPlaywright)</Command>
-        <Command Condition="!$(IsWindowsHelixQueue)">./runtests.sh $(TargetFileName) $(SharedFxVersion) $(_HelixFriendlyNameTargetQueue) $(TargetArchitecture) $(RunQuarantinedTests) $(DotnetEfVersion) $(HelixTimeout) $(TestDependsOnPlaywright)</Command>
-        <Command Condition="$(HelixCommand) != ''">$(HelixCommand)</Command>
+        <Command Condition="$(IsWindowsHelixQueue)">call runtests.cmd $(TargetFileName) $(SharedFxVersion) $(_HelixFriendlyNameTargetQueue) $(_TestingArchitecture) $(RunQuarantinedTests) $(DotnetEfVersion) $(HelixTimeout) $(TestDependsOnPlaywright)</Command>
+        <Command Condition="!$(IsWindowsHelixQueue)">./runtests.sh $(TargetFileName) $(SharedFxVersion) $(_HelixFriendlyNameTargetQueue) $(_TestingArchitecture) $(RunQuarantinedTests) $(DotnetEfVersion) $(HelixTimeout) $(TestDependsOnPlaywright)</Command>
+        <Command Condition="'$(HelixCommand)' != ''">$(HelixCommand)</Command>
         <Timeout>$(HelixTimeout)</Timeout>
       </HelixWorkItem>
     </ItemGroup>

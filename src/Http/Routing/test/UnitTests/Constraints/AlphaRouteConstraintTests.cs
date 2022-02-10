@@ -2,31 +2,29 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Routing.Constraints;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Routing.Tests
+namespace Microsoft.AspNetCore.Routing.Tests;
+
+public class AlphaRouteConstraintTests
 {
-    public class AlphaRouteConstraintTests
+    [Theory]
+    [InlineData("alpha", true)]
+    [InlineData("a1pha", false)]
+    [InlineData("ALPHA", true)]
+    [InlineData("A1PHA", false)]
+    [InlineData("alPHA", true)]
+    [InlineData("A1pHA", false)]
+    [InlineData("AlpHA╥", false)]
+    [InlineData("", true)]
+    public void AlphaRouteConstraintTest(string parameterValue, bool expected)
     {
-        [Theory]
-        [InlineData("alpha", true)]
-        [InlineData("a1pha", false)]
-        [InlineData("ALPHA", true)]
-        [InlineData("A1PHA", false)]
-        [InlineData("alPHA", true)]
-        [InlineData("A1pHA", false)]
-        [InlineData("AlpHA╥", false)]
-        [InlineData("", true)]
-        public void AlphaRouteConstraintTest(string parameterValue, bool expected)
-        {
-            // Arrange
-            var constraint = new AlphaRouteConstraint();
+        // Arrange
+        var constraint = new AlphaRouteConstraint();
 
-            // Act
-            var actual = ConstraintsTestHelper.TestConstraint(constraint, parameterValue);
+        // Act
+        var actual = ConstraintsTestHelper.TestConstraint(constraint, parameterValue);
 
-            // Assert
-            Assert.Equal(expected, actual);
-        }
+        // Assert
+        Assert.Equal(expected, actual);
     }
 }

@@ -32,13 +32,13 @@ internal sealed partial class SocketConnection : TransportConnection
     private readonly bool _waitForData;
 
     internal SocketConnection(Socket socket,
-                                MemoryPool<byte> memoryPool,
-                                PipeScheduler transportScheduler,
-                                ILogger logger,
-                                SocketSenderPool socketSenderPool,
-                                PipeOptions inputOptions,
-                                PipeOptions outputOptions,
-                                bool waitForData = true)
+                              MemoryPool<byte> memoryPool,
+                              PipeScheduler transportScheduler,
+                              ILogger logger,
+                              SocketSenderPool socketSenderPool,
+                              PipeOptions inputOptions,
+                              PipeOptions outputOptions,
+                              bool waitForData = true)
     {
         Debug.Assert(socket != null);
         Debug.Assert(memoryPool != null);
@@ -118,7 +118,6 @@ internal sealed partial class SocketConnection : TransportConnection
             {
                 await _sendingTask;
             }
-
         }
         catch (Exception ex)
         {
@@ -408,15 +407,15 @@ internal sealed partial class SocketConnection : TransportConnection
     private static bool IsConnectionResetError(SocketError errorCode)
     {
         return errorCode == SocketError.ConnectionReset ||
-                errorCode == SocketError.Shutdown ||
-                (errorCode == SocketError.ConnectionAborted && OperatingSystem.IsWindows());
+               errorCode == SocketError.Shutdown ||
+               (errorCode == SocketError.ConnectionAborted && OperatingSystem.IsWindows());
     }
 
     private static bool IsConnectionAbortError(SocketError errorCode)
     {
         // Calling Dispose after ReceiveAsync can cause an "InvalidArgument" error on *nix.
         return errorCode == SocketError.OperationAborted ||
-                errorCode == SocketError.Interrupted ||
-                (errorCode == SocketError.InvalidArgument && !OperatingSystem.IsWindows());
+               errorCode == SocketError.Interrupted ||
+               (errorCode == SocketError.InvalidArgument && !OperatingSystem.IsWindows());
     }
 }

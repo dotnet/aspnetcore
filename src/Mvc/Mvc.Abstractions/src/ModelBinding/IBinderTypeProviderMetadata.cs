@@ -1,18 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
+namespace Microsoft.AspNetCore.Mvc.ModelBinding;
 
-namespace Microsoft.AspNetCore.Mvc.ModelBinding
+/// <summary>
+/// Provides a <see cref="Type"/> which implements <see cref="IModelBinder"/>.
+/// </summary>
+public interface IBinderTypeProviderMetadata : IBindingSourceMetadata
 {
     /// <summary>
-    /// Provides a <see cref="Type"/> which implements <see cref="IModelBinder"/>.
+    /// A <see cref="Type"/> which implements either <see cref="IModelBinder"/>.
     /// </summary>
-    public interface IBinderTypeProviderMetadata : IBindingSourceMetadata
-    {
-        /// <summary>
-        /// A <see cref="Type"/> which implements either <see cref="IModelBinder"/>.
-        /// </summary>
-        Type? BinderType { get; }
-    }
+    Type? BinderType { get; }
 }

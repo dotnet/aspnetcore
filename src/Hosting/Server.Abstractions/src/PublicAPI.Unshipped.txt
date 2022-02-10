@@ -1,5 +1,1 @@
 #nullable enable
-*REMOVED*Microsoft.AspNetCore.Hosting.Server.Abstractions.IHostContextContainer<TContext>.HostContext.get -> TContext
-*REMOVED*Microsoft.AspNetCore.Hosting.Server.IHttpApplication<TContext>.DisposeContext(TContext context, System.Exception! exception) -> void
-Microsoft.AspNetCore.Hosting.Server.Abstractions.IHostContextContainer<TContext>.HostContext.get -> TContext?
-Microsoft.AspNetCore.Hosting.Server.IHttpApplication<TContext>.DisposeContext(TContext context, System.Exception? exception) -> void

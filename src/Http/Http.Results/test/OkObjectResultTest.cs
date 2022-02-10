@@ -1,46 +1,41 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Http.Result
+namespace Microsoft.AspNetCore.Http.Result;
+
+public class OkObjectResultTest
 {
-    public class OkObjectResultTest
+    [Fact]
+    public async Task OkObjectResult_SetsStatusCodeAndValue()
     {
-        [Fact]
-        public async Task OkObjectResult_SetsStatusCodeAndValue()
-        {
-            // Arrange
-            var result = new OkObjectResult("Hello world");
-            var httpContext = GetHttpContext();
+        // Arrange
+        var result = new OkObjectResult("Hello world");
+        var httpContext = GetHttpContext();
 
-            // Act
-            await result.ExecuteAsync(httpContext);
+        // Act
+        await result.ExecuteAsync(httpContext);
 
-            // Assert
-            Assert.Equal(StatusCodes.Status200OK, httpContext.Response.StatusCode);
-        }
+        // Assert
+        Assert.Equal(StatusCodes.Status200OK, httpContext.Response.StatusCode);
+    }
 
-        private static HttpContext GetHttpContext()
-        {
-            var httpContext = new DefaultHttpContext();
-            httpContext.Request.PathBase = new PathString("");
-            httpContext.Response.Body = new MemoryStream();
-            httpContext.RequestServices = CreateServices();
-            return httpContext;
-        }
+    private static HttpContext GetHttpContext()
+    {
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.PathBase = new PathString("");
+        httpContext.Response.Body = new MemoryStream();
+        httpContext.RequestServices = CreateServices();
+        return httpContext;
+    }
 
-        private static IServiceProvider CreateServices()
-        {
-            var services = new ServiceCollection();
-            services.AddSingleton<ILoggerFactory, NullLoggerFactory>();
-            return services.BuildServiceProvider();
-        }
+    private static IServiceProvider CreateServices()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<ILoggerFactory, NullLoggerFactory>();
+        return services.BuildServiceProvider();
     }
 }

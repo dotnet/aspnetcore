@@ -1,4 +1,6 @@
-﻿#nullable enable
+#nullable enable
+abstract Microsoft.AspNetCore.Components.Server.RevalidatingServerAuthenticationStateProvider.RevalidationInterval.get -> System.TimeSpan
+abstract Microsoft.AspNetCore.Components.Server.RevalidatingServerAuthenticationStateProvider.ValidateAuthenticationStateAsync(Microsoft.AspNetCore.Components.Authorization.AuthenticationState! authenticationState, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<bool>!
 Microsoft.AspNetCore.Builder.ComponentEndpointConventionBuilder
 Microsoft.AspNetCore.Builder.ComponentEndpointConventionBuilder.Add(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>! convention) -> void
 Microsoft.AspNetCore.Builder.ComponentEndpointRouteBuilderExtensions
@@ -14,6 +16,12 @@ Microsoft.AspNetCore.Components.Server.CircuitOptions.JSInteropDefaultCallTimeou
 Microsoft.AspNetCore.Components.Server.CircuitOptions.JSInteropDefaultCallTimeout.set -> void
 Microsoft.AspNetCore.Components.Server.CircuitOptions.MaxBufferedUnacknowledgedRenderBatches.get -> int
 Microsoft.AspNetCore.Components.Server.CircuitOptions.MaxBufferedUnacknowledgedRenderBatches.set -> void
+Microsoft.AspNetCore.Components.Server.CircuitOptions.RootComponents.get -> Microsoft.AspNetCore.Components.Server.CircuitRootComponentOptions!
+Microsoft.AspNetCore.Components.Server.CircuitRootComponentOptions
+Microsoft.AspNetCore.Components.Server.CircuitRootComponentOptions.CircuitRootComponentOptions() -> void
+Microsoft.AspNetCore.Components.Server.CircuitRootComponentOptions.JSComponents.get -> Microsoft.AspNetCore.Components.Web.JSComponentConfigurationStore!
+Microsoft.AspNetCore.Components.Server.CircuitRootComponentOptions.MaxJSRootComponents.get -> int
+Microsoft.AspNetCore.Components.Server.CircuitRootComponentOptions.MaxJSRootComponents.set -> void
 Microsoft.AspNetCore.Components.Server.Circuits.Circuit
 Microsoft.AspNetCore.Components.Server.Circuits.Circuit.Id.get -> string!
 Microsoft.AspNetCore.Components.Server.Circuits.CircuitHandler
@@ -40,13 +48,11 @@ Microsoft.Extensions.DependencyInjection.ComponentServiceCollectionExtensions
 Microsoft.Extensions.DependencyInjection.IServerSideBlazorBuilder
 Microsoft.Extensions.DependencyInjection.IServerSideBlazorBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 Microsoft.Extensions.DependencyInjection.ServerSideBlazorBuilderExtensions
-abstract Microsoft.AspNetCore.Components.Server.RevalidatingServerAuthenticationStateProvider.RevalidationInterval.get -> System.TimeSpan
-abstract Microsoft.AspNetCore.Components.Server.RevalidatingServerAuthenticationStateProvider.ValidateAuthenticationStateAsync(Microsoft.AspNetCore.Components.Authorization.AuthenticationState! authenticationState, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<bool>!
 override Microsoft.AspNetCore.Components.Server.ServerAuthenticationStateProvider.GetAuthenticationStateAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Authorization.AuthenticationState!>!
 static Microsoft.AspNetCore.Builder.ComponentEndpointRouteBuilderExtensions.MapBlazorHub(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints) -> Microsoft.AspNetCore.Builder.ComponentEndpointConventionBuilder!
-static Microsoft.AspNetCore.Builder.ComponentEndpointRouteBuilderExtensions.MapBlazorHub(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, System.Action<Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions!>! configureOptions) -> Microsoft.AspNetCore.Builder.ComponentEndpointConventionBuilder!
 static Microsoft.AspNetCore.Builder.ComponentEndpointRouteBuilderExtensions.MapBlazorHub(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! path) -> Microsoft.AspNetCore.Builder.ComponentEndpointConventionBuilder!
 static Microsoft.AspNetCore.Builder.ComponentEndpointRouteBuilderExtensions.MapBlazorHub(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! path, System.Action<Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions!>! configureOptions) -> Microsoft.AspNetCore.Builder.ComponentEndpointConventionBuilder!
+static Microsoft.AspNetCore.Builder.ComponentEndpointRouteBuilderExtensions.MapBlazorHub(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, System.Action<Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions!>! configureOptions) -> Microsoft.AspNetCore.Builder.ComponentEndpointConventionBuilder!
 static Microsoft.Extensions.DependencyInjection.ComponentServiceCollectionExtensions.AddServerSideBlazor(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Components.Server.CircuitOptions!>? configure = null) -> Microsoft.Extensions.DependencyInjection.IServerSideBlazorBuilder!
 static Microsoft.Extensions.DependencyInjection.ServerSideBlazorBuilderExtensions.AddCircuitOptions(this Microsoft.Extensions.DependencyInjection.IServerSideBlazorBuilder! builder, System.Action<Microsoft.AspNetCore.Components.Server.CircuitOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServerSideBlazorBuilder!
 static Microsoft.Extensions.DependencyInjection.ServerSideBlazorBuilderExtensions.AddHubOptions(this Microsoft.Extensions.DependencyInjection.IServerSideBlazorBuilder! builder, System.Action<Microsoft.AspNetCore.SignalR.HubOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServerSideBlazorBuilder!

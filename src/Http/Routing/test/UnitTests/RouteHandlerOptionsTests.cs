@@ -1,81 +1,75 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Routing
+namespace Microsoft.AspNetCore.Routing;
+
+public class RouteHandlerOptionsTests
 {
-    public class RouteHandlerOptionsTests
+    [Theory]
+    [InlineData("Development", true)]
+    [InlineData("DEVELOPMENT", true)]
+    [InlineData("Production", false)]
+    [InlineData("Custom", false)]
+    public void ThrowOnBadRequestIsTrueIfInDevelopmentEnvironmentFalseOtherwise(string environmentName, bool expectedThrowOnBadRequest)
     {
-        [Theory]
-        [InlineData("Development", true)]
-        [InlineData("DEVELOPMENT", true)]
-        [InlineData("Production", false)]
-        [InlineData("Custom", false)]
-        public void ThrowOnBadRequestIsTrueIfInDevelopmentEnvironmentFalseOtherwise(string environmentName, bool expectedThrowOnBadRequest)
+        var services = new ServiceCollection();
+        services.AddOptions();
+        services.AddRouting();
+        services.AddSingleton<IHostEnvironment>(new HostEnvironment
         {
-            var services = new ServiceCollection();
-            services.AddOptions();
-            services.AddRouting();
-            services.AddSingleton<IHostEnvironment>(new HostEnvironment
-            {
-                EnvironmentName = environmentName,
-            });
-            var serviceProvider = services.BuildServiceProvider();
+            EnvironmentName = environmentName,
+        });
+        var serviceProvider = services.BuildServiceProvider();
 
-            var options = serviceProvider.GetRequiredService<IOptions<RouteHandlerOptions>>().Value;
-            Assert.Equal(expectedThrowOnBadRequest, options.ThrowOnBadRequest);
-        }
+        var options = serviceProvider.GetRequiredService<IOptions<RouteHandlerOptions>>().Value;
+        Assert.Equal(expectedThrowOnBadRequest, options.ThrowOnBadRequest);
+    }
 
-        [Fact]
-        public void ThrowOnBadRequestIsNotOverwrittenIfNotInDevelopmentEnvironment()
+    [Fact]
+    public void ThrowOnBadRequestIsNotOverwrittenIfNotInDevelopmentEnvironment()
+    {
+        var services = new ServiceCollection();
+
+        services.Configure<RouteHandlerOptions>(options =>
         {
-            var services = new ServiceCollection();
+            options.ThrowOnBadRequest = true;
+        });
 
-            services.Configure<RouteHandlerOptions>(options =>
-            {
-                options.ThrowOnBadRequest = true;
-            });
-
-            services.AddSingleton<IHostEnvironment>(new HostEnvironment
-            {
-                EnvironmentName = "Production",
-            });
-
-            services.AddOptions();
-            services.AddRouting();
-
-            var serviceProvider = services.BuildServiceProvider();
-
-            var options = serviceProvider.GetRequiredService<IOptions<RouteHandlerOptions>>().Value;
-            Assert.True(options.ThrowOnBadRequest);
-        }
-
-        [Fact]
-        public void RouteHandlerOptionsFailsToResolveWithoutHostEnvironment()
+        services.AddSingleton<IHostEnvironment>(new HostEnvironment
         {
-            var services = new ServiceCollection();
-            services.AddOptions();
-            services.AddRouting();
-            var serviceProvider = services.BuildServiceProvider();
+            EnvironmentName = "Production",
+        });
 
-            Assert.Throws<InvalidOperationException>(() => serviceProvider.GetRequiredService<IOptions<RouteHandlerOptions>>());
-        }
+        services.AddOptions();
+        services.AddRouting();
 
-        private class HostEnvironment : IHostEnvironment
-        {
-            public string ApplicationName { get; set; }
-            public IFileProvider ContentRootFileProvider { get; set; }
-            public string ContentRootPath { get; set; }
-            public string EnvironmentName { get; set; }
-        }
+        var serviceProvider = services.BuildServiceProvider();
+
+        var options = serviceProvider.GetRequiredService<IOptions<RouteHandlerOptions>>().Value;
+        Assert.True(options.ThrowOnBadRequest);
+    }
+
+    [Fact]
+    public void RouteHandlerOptionsFailsToResolveWithoutHostEnvironment()
+    {
+        var services = new ServiceCollection();
+        services.AddOptions();
+        services.AddRouting();
+        var serviceProvider = services.BuildServiceProvider();
+
+        Assert.Throws<InvalidOperationException>(() => serviceProvider.GetRequiredService<IOptions<RouteHandlerOptions>>());
+    }
+
+    private class HostEnvironment : IHostEnvironment
+    {
+        public string ApplicationName { get; set; }
+        public IFileProvider ContentRootFileProvider { get; set; }
+        public string ContentRootPath { get; set; }
+        public string EnvironmentName { get; set; }
     }
 }

@@ -21,203 +21,202 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
+namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests;
+
+public class HubProtocolVersionTestsCollection : ICollectionFixture<InProcessTestServer<VersionStartup>>
 {
-    public class HubProtocolVersionTestsCollection : ICollectionFixture<InProcessTestServer<VersionStartup>>
+    public const string Name = nameof(HubProtocolVersionTestsCollection);
+}
+
+[Collection(HubProtocolVersionTestsCollection.Name)]
+public class HubProtocolVersionTests : FunctionalTestBase
+{
+    [Theory]
+    [MemberData(nameof(TransportTypes))]
+    public async Task ClientUsingOldCallWithOriginalProtocol(HttpTransportType transportType)
     {
-        public const string Name = nameof(HubProtocolVersionTestsCollection);
+        await using (var server = await StartServer<VersionStartup>())
+        {
+            var connectionBuilder = new HubConnectionBuilder()
+                .WithLoggerFactory(LoggerFactory)
+                .WithUrl(server.Url + "/version", transportType);
+
+            var connection = connectionBuilder.Build();
+
+            try
+            {
+                await connection.StartAsync().DefaultTimeout();
+
+                var result = await connection.InvokeAsync<string>(nameof(VersionHub.Echo), "Hello World!").DefaultTimeout();
+
+                Assert.Equal("Hello World!", result);
+            }
+            catch (Exception ex)
+            {
+                LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                throw;
+            }
+            finally
+            {
+                await connection.DisposeAsync().DefaultTimeout();
+            }
+        }
     }
 
-    [Collection(HubProtocolVersionTestsCollection.Name)]
-    public class HubProtocolVersionTests : FunctionalTestBase
+    [Theory]
+    [MemberData(nameof(TransportTypes))]
+    public async Task ClientUsingOldCallWithNewProtocol(HttpTransportType transportType)
     {
-        [Theory]
-        [MemberData(nameof(TransportTypes))]
-        public async Task ClientUsingOldCallWithOriginalProtocol(HttpTransportType transportType)
+        await using (var server = await StartServer<VersionStartup>())
         {
-            await using (var server = await StartServer<VersionStartup>())
+            var connectionBuilder = new HubConnectionBuilder()
+                .WithLoggerFactory(LoggerFactory)
+                .WithUrl(server.Url + "/version", transportType);
+            connectionBuilder.Services.AddSingleton<IHubProtocol>(new VersionedJsonHubProtocol(1000));
+
+            var connection = connectionBuilder.Build();
+
+            try
             {
-                var connectionBuilder = new HubConnectionBuilder()
-                    .WithLoggerFactory(LoggerFactory)
-                    .WithUrl(server.Url + "/version", transportType);
+                await connection.StartAsync().DefaultTimeout();
 
-                var connection = connectionBuilder.Build();
+                var result = await connection.InvokeAsync<string>(nameof(VersionHub.Echo), "Hello World!").DefaultTimeout();
 
-                try
-                {
-                    await connection.StartAsync().DefaultTimeout();
-
-                    var result = await connection.InvokeAsync<string>(nameof(VersionHub.Echo), "Hello World!").DefaultTimeout();
-
-                    Assert.Equal("Hello World!", result);
-                }
-                catch (Exception ex)
-                {
-                    LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
-                    throw;
-                }
-                finally
-                {
-                    await connection.DisposeAsync().DefaultTimeout();
-                }
+                Assert.Equal("Hello World!", result);
+            }
+            catch (Exception ex)
+            {
+                LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                throw;
+            }
+            finally
+            {
+                await connection.DisposeAsync().DefaultTimeout();
             }
         }
+    }
 
-        [Theory]
-        [MemberData(nameof(TransportTypes))]
-        public async Task ClientUsingOldCallWithNewProtocol(HttpTransportType transportType)
+    [Theory]
+    [MemberData(nameof(TransportTypes))]
+    public async Task ClientUsingNewCallWithNewProtocol(HttpTransportType transportType)
+    {
+        await using (var server = await StartServer<VersionStartup>())
         {
-            await using (var server = await StartServer<VersionStartup>())
+            var httpConnectionFactory = new HttpConnectionFactory(
+                Options.Create(new HttpConnectionOptions
+                {
+                    Transports = transportType,
+                    DefaultTransferFormat = TransferFormat.Text
+                }),
+                LoggerFactory);
+            var tcs = new TaskCompletionSource();
+
+            var proxyConnectionFactory = new ProxyConnectionFactory(httpConnectionFactory);
+
+            var connectionBuilder = new HubConnectionBuilder()
+                .WithUrl(new Uri(server.Url + "/version"))
+                .WithLoggerFactory(LoggerFactory);
+            connectionBuilder.Services.AddSingleton<IHubProtocol>(new VersionedJsonHubProtocol(1000));
+            connectionBuilder.Services.AddSingleton<IConnectionFactory>(proxyConnectionFactory);
+
+            var connection = connectionBuilder.Build();
+            connection.On("NewProtocolMethodClient", () =>
             {
-                var connectionBuilder = new HubConnectionBuilder()
-                    .WithLoggerFactory(LoggerFactory)
-                    .WithUrl(server.Url + "/version", transportType);
-                connectionBuilder.Services.AddSingleton<IHubProtocol>(new VersionedJsonHubProtocol(1000));
+                tcs.SetResult();
+            });
 
-                var connection = connectionBuilder.Build();
+            try
+            {
+                await connection.StartAsync().DefaultTimeout();
 
-                try
+                // Task should already have been awaited in StartAsync
+                var connectionContext = await proxyConnectionFactory.ConnectTask.DefaultTimeout();
+
+                // Simulate a new call from the client
+                var messageToken = new JObject
                 {
-                    await connection.StartAsync().DefaultTimeout();
+                    ["type"] = int.MaxValue
+                };
 
-                    var result = await connection.InvokeAsync<string>(nameof(VersionHub.Echo), "Hello World!").DefaultTimeout();
+                connectionContext.Transport.Output.Write(Encoding.UTF8.GetBytes(messageToken.ToString()));
+                connectionContext.Transport.Output.Write(new[] { (byte)0x1e });
+                await connectionContext.Transport.Output.FlushAsync().DefaultTimeout();
 
-                    Assert.Equal("Hello World!", result);
-                }
-                catch (Exception ex)
-                {
-                    LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
-                    throw;
-                }
-                finally
-                {
-                    await connection.DisposeAsync().DefaultTimeout();
-                }
+                await tcs.Task.DefaultTimeout();
+            }
+            catch (Exception ex)
+            {
+                LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                throw;
+            }
+            finally
+            {
+                await connection.DisposeAsync().DefaultTimeout();
             }
         }
+    }
 
-        [Theory]
-        [MemberData(nameof(TransportTypes))]
-        public async Task ClientUsingNewCallWithNewProtocol(HttpTransportType transportType)
+    [Theory]
+    [MemberData(nameof(TransportTypes))]
+    [LogLevel(LogLevel.Trace)]
+    public async Task ClientWithUnsupportedProtocolVersionDoesNotConnect(HttpTransportType transportType)
+    {
+        bool ExpectedErrors(WriteContext writeContext)
         {
-            await using (var server = await StartServer<VersionStartup>())
-            {
-                var httpConnectionFactory = new HttpConnectionFactory(
-                    Options.Create(new HttpConnectionOptions
-                    {
-                        Transports = transportType,
-                        DefaultTransferFormat = TransferFormat.Text
-                    }),
-                    LoggerFactory);
-                var tcs = new TaskCompletionSource();
-
-                var proxyConnectionFactory = new ProxyConnectionFactory(httpConnectionFactory);
-
-                var connectionBuilder = new HubConnectionBuilder()
-                    .WithUrl(new Uri(server.Url + "/version"))
-                    .WithLoggerFactory(LoggerFactory);
-                connectionBuilder.Services.AddSingleton<IHubProtocol>(new VersionedJsonHubProtocol(1000));
-                connectionBuilder.Services.AddSingleton<IConnectionFactory>(proxyConnectionFactory);
-
-                var connection = connectionBuilder.Build();
-                connection.On("NewProtocolMethodClient", () =>
-                {
-                    tcs.SetResult();
-                });
-
-                try
-                {
-                    await connection.StartAsync().DefaultTimeout();
-
-                    // Task should already have been awaited in StartAsync
-                    var connectionContext = await proxyConnectionFactory.ConnectTask.DefaultTimeout();
-
-                    // Simulate a new call from the client
-                    var messageToken = new JObject
-                    {
-                        ["type"] = int.MaxValue
-                    };
-
-                    connectionContext.Transport.Output.Write(Encoding.UTF8.GetBytes(messageToken.ToString()));
-                    connectionContext.Transport.Output.Write(new[] { (byte)0x1e });
-                    await connectionContext.Transport.Output.FlushAsync().DefaultTimeout();
-
-                    await tcs.Task.DefaultTimeout();
-                }
-                catch (Exception ex)
-                {
-                    LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
-                    throw;
-                }
-                finally
-                {
-                    await connection.DisposeAsync().DefaultTimeout();
-                }
-            }
+            return writeContext.LoggerName == typeof(HubConnection).FullName;
         }
 
-        [Theory]
-        [MemberData(nameof(TransportTypes))]
-        [LogLevel(LogLevel.Trace)]
-        public async Task ClientWithUnsupportedProtocolVersionDoesNotConnect(HttpTransportType transportType)
+        await using (var server = await StartServer<VersionStartup>(ExpectedErrors))
         {
-            bool ExpectedErrors(WriteContext writeContext)
+            var connectionBuilder = new HubConnectionBuilder()
+                .WithLoggerFactory(LoggerFactory)
+                .WithUrl(server.Url + "/version", transportType);
+            connectionBuilder.Services.AddSingleton<IHubProtocol>(new VersionedJsonHubProtocol(int.MaxValue));
+
+            var connection = connectionBuilder.Build();
+
+            try
             {
-                return writeContext.LoggerName == typeof(HubConnection).FullName;
+                await ExceptionAssert.ThrowsAsync<HubException>(
+                    () => connection.StartAsync(),
+                    "Unable to complete handshake with the server due to an error: The server does not support version 2147483647 of the 'json' protocol.").DefaultTimeout();
             }
-
-            await using (var server = await StartServer<VersionStartup>(ExpectedErrors))
+            catch (Exception ex)
             {
-                var connectionBuilder = new HubConnectionBuilder()
-                    .WithLoggerFactory(LoggerFactory)
-                    .WithUrl(server.Url + "/version", transportType);
-                connectionBuilder.Services.AddSingleton<IHubProtocol>(new VersionedJsonHubProtocol(int.MaxValue));
-
-                var connection = connectionBuilder.Build();
-
-                try
-                {
-                    await ExceptionAssert.ThrowsAsync<HubException>(
-                        () => connection.StartAsync(),
-                        "Unable to complete handshake with the server due to an error: The server does not support version 2147483647 of the 'json' protocol.").DefaultTimeout();
-                }
-                catch (Exception ex)
-                {
-                    LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
-                    throw;
-                }
-                finally
-                {
-                    await connection.DisposeAsync().DefaultTimeout();
-                }
+                LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                throw;
+            }
+            finally
+            {
+                await connection.DisposeAsync().DefaultTimeout();
             }
         }
+    }
 
-        private class ProxyConnectionFactory : IConnectionFactory
+    private class ProxyConnectionFactory : IConnectionFactory
+    {
+        private readonly IConnectionFactory _innerFactory;
+        public ValueTask<ConnectionContext> ConnectTask { get; private set; }
+
+        public ProxyConnectionFactory(IConnectionFactory innerFactory)
         {
-            private readonly IConnectionFactory _innerFactory;
-            public ValueTask<ConnectionContext> ConnectTask { get; private set; }
-
-            public ProxyConnectionFactory(IConnectionFactory innerFactory)
-            {
-                _innerFactory = innerFactory;
-            }
-
-            public ValueTask<ConnectionContext> ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken = default)
-            {
-                ConnectTask = _innerFactory.ConnectAsync(endPoint, cancellationToken);
-                return ConnectTask;
-            }
+            _innerFactory = innerFactory;
         }
 
-        public static IEnumerable<object[]> TransportTypes()
+        public ValueTask<ConnectionContext> ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken = default)
         {
-            if (TestHelpers.IsWebSocketsSupported())
-            {
-                yield return new object[] { HttpTransportType.WebSockets };
-            }
-            yield return new object[] { HttpTransportType.ServerSentEvents };
-            yield return new object[] { HttpTransportType.LongPolling };
+            ConnectTask = _innerFactory.ConnectAsync(endPoint, cancellationToken);
+            return ConnectTask;
         }
+    }
+
+    public static IEnumerable<object[]> TransportTypes()
+    {
+        if (TestHelpers.IsWebSocketsSupported())
+        {
+            yield return new object[] { HttpTransportType.WebSockets };
+        }
+        yield return new object[] { HttpTransportType.ServerSentEvents };
+        yield return new object[] { HttpTransportType.LongPolling };
     }
 }

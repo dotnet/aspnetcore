@@ -1,8 +1,0 @@
-Markup span at (0:0,0 [5] ) (Accepts:Any) - Parent: Tag block at (0:0,0 [5] )
-Markup span at (5:0,5 [4] ) (Accepts:None) - Parent: HtmlComment block at (5:0,5 [13] )
-Markup span at (9:0,9 [1] ) (Accepts:Whitespace) - Parent: HtmlComment block at (5:0,5 [13] )
-Transition span at (10:0,10 [1] ) (Accepts:None) - Parent: Expression block at (10:0,10 [4] )
-Code span at (11:0,11 [3] ) (Accepts:NonWhitespace) - Parent: Expression block at (10:0,10 [4] )
-Markup span at (14:0,14 [1] ) (Accepts:Whitespace) - Parent: HtmlComment block at (5:0,5 [13] )
-Markup span at (15:0,15 [3] ) (Accepts:None) - Parent: HtmlComment block at (5:0,5 [13] )
-Markup span at (18:0,18 [6] ) (Accepts:Any) - Parent: Tag block at (18:0,18 [6] )

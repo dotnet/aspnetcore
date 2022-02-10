@@ -6,53 +6,52 @@ using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Tools.Internal;
 
-namespace Microsoft.Extensions.SecretManager.Tools.Internal
+namespace Microsoft.Extensions.SecretManager.Tools.Internal;
+
+internal class MsBuildProjectFinder
 {
-    internal class MsBuildProjectFinder
+    private readonly string _directory;
+
+    public MsBuildProjectFinder(string directory)
     {
-        private readonly string _directory;
+        Ensure.NotNullOrEmpty(directory, nameof(directory));
 
-        public MsBuildProjectFinder(string directory)
+        _directory = directory;
+    }
+
+    public string FindMsBuildProject(string project)
+    {
+        var projectPath = project ?? _directory;
+
+        if (!Path.IsPathRooted(projectPath))
         {
-            Ensure.NotNullOrEmpty(directory, nameof(directory));
-
-            _directory = directory;
+            projectPath = Path.Combine(_directory, projectPath);
         }
 
-        public string FindMsBuildProject(string project)
+        if (Directory.Exists(projectPath))
         {
-            var projectPath = project ?? _directory;
+            var projects = Directory.EnumerateFileSystemEntries(projectPath, "*.*proj", SearchOption.TopDirectoryOnly)
+                .Where(f => !".xproj".Equals(Path.GetExtension(f), StringComparison.OrdinalIgnoreCase))
+                .ToList();
 
-            if (!Path.IsPathRooted(projectPath))
+            if (projects.Count > 1)
             {
-                projectPath = Path.Combine(_directory, projectPath);
+                throw new FileNotFoundException(Resources.FormatError_MultipleProjectsFound(projectPath));
             }
 
-            if (Directory.Exists(projectPath))
+            if (projects.Count == 0)
             {
-                var projects = Directory.EnumerateFileSystemEntries(projectPath, "*.*proj", SearchOption.TopDirectoryOnly)
-                    .Where(f => !".xproj".Equals(Path.GetExtension(f), StringComparison.OrdinalIgnoreCase))
-                    .ToList();
-
-                if (projects.Count > 1)
-                {
-                    throw new FileNotFoundException(Resources.FormatError_MultipleProjectsFound(projectPath));
-                }
-
-                if (projects.Count == 0)
-                {
-                    throw new FileNotFoundException(Resources.FormatError_NoProjectsFound(projectPath));
-                }
-
-                return projects[0];
+                throw new FileNotFoundException(Resources.FormatError_NoProjectsFound(projectPath));
             }
 
-            if (!File.Exists(projectPath))
-            {
-                throw new FileNotFoundException(Resources.FormatError_ProjectPath_NotFound(projectPath));
-            }
-
-            return projectPath;
+            return projects[0];
         }
+
+        if (!File.Exists(projectPath))
+        {
+            throw new FileNotFoundException(Resources.FormatError_ProjectPath_NotFound(projectPath));
+        }
+
+        return projectPath;
     }
 }

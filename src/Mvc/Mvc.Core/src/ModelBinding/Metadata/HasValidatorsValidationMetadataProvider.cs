@@ -3,69 +3,66 @@
 
 #nullable enable
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 
-namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
-{
-    internal class HasValidatorsValidationMetadataProvider : IValidationMetadataProvider
-    {
-        private readonly bool _hasOnlyMetadataBasedValidators;
-        private readonly IMetadataBasedModelValidatorProvider[]? _validatorProviders;
+namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
-        public HasValidatorsValidationMetadataProvider(IList<IModelValidatorProvider> modelValidatorProviders)
+internal class HasValidatorsValidationMetadataProvider : IValidationMetadataProvider
+{
+    private readonly bool _hasOnlyMetadataBasedValidators;
+    private readonly IMetadataBasedModelValidatorProvider[]? _validatorProviders;
+
+    public HasValidatorsValidationMetadataProvider(IList<IModelValidatorProvider> modelValidatorProviders)
+    {
+        if (modelValidatorProviders.Count > 0 && modelValidatorProviders.All(p => p is IMetadataBasedModelValidatorProvider))
         {
-            if (modelValidatorProviders.Count > 0 && modelValidatorProviders.All(p => p is IMetadataBasedModelValidatorProvider))
-            {
-                _hasOnlyMetadataBasedValidators = true;
-                _validatorProviders = modelValidatorProviders.Cast<IMetadataBasedModelValidatorProvider>().ToArray();
-            }
+            _hasOnlyMetadataBasedValidators = true;
+            _validatorProviders = modelValidatorProviders.Cast<IMetadataBasedModelValidatorProvider>().ToArray();
+        }
+    }
+
+    public void CreateValidationMetadata(ValidationMetadataProviderContext context)
+    {
+        if (context == null)
+        {
+            throw new ArgumentNullException(nameof(context));
         }
 
-        public void CreateValidationMetadata(ValidationMetadataProviderContext context)
+        if (!_hasOnlyMetadataBasedValidators)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            return;
+        }
 
-            if (!_hasOnlyMetadataBasedValidators)
+        for (var i = 0; i < _validatorProviders!.Length; i++)
+        {
+            var provider = _validatorProviders[i];
+            if (provider.HasValidators(context.Key.ModelType, context.ValidationMetadata.ValidatorMetadata))
             {
-                return;
-            }
+                context.ValidationMetadata.HasValidators = true;
 
-            for (var i = 0; i < _validatorProviders!.Length; i++)
-            {
-                var provider = _validatorProviders[i];
-                if (provider.HasValidators(context.Key.ModelType, context.ValidationMetadata.ValidatorMetadata))
+                if (context.Key.MetadataKind == ModelMetadataKind.Property)
                 {
-                    context.ValidationMetadata.HasValidators = true;
+                    // For properties, additionally determine that if there's validators defined exclusively
+                    // from property attributes. This is later used to produce a error for record types
+                    // where a record type property that is bound as a parameter defines validation attributes.
 
-                    if (context.Key.MetadataKind == ModelMetadataKind.Property)
+                    if (context.PropertyAttributes is not IList<object> propertyAttributes)
                     {
-                        // For properties, additionally determine that if there's validators defined exclusively
-                        // from property attributes. This is later used to produce a error for record types
-                        // where a record type property that is bound as a parameter defines validation attributes.
+                        propertyAttributes = context.PropertyAttributes!.ToList();
+                    }
 
-                        if (context.PropertyAttributes is not IList<object> propertyAttributes)
-                        {
-                            propertyAttributes = context.PropertyAttributes!.ToList();
-                        }
-
-                        if (provider.HasValidators(typeof(object), propertyAttributes))
-                        {
-                            context.ValidationMetadata.PropertyHasValidators = true;
-                        }
+                    if (provider.HasValidators(typeof(object), propertyAttributes))
+                    {
+                        context.ValidationMetadata.PropertyHasValidators = true;
                     }
                 }
             }
+        }
 
-            if (context.ValidationMetadata.HasValidators == null)
-            {
-                context.ValidationMetadata.HasValidators = false;
-            }
+        if (context.ValidationMetadata.HasValidators == null)
+        {
+            context.ValidationMetadata.HasValidators = false;
         }
     }
 }

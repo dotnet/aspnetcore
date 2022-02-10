@@ -1,60 +1,57 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
-using System.Threading.Tasks;
 using Microsoft.JSInterop;
 
-namespace BasicTestApp.InteropTest
+namespace BasicTestApp.InteropTest;
+
+public class DotNetStreamReferenceInterop
 {
-    public class DotNetStreamReferenceInterop
+    [JSInvokable]
+    public static DotNetStreamReference GetDotNetStreamReference()
     {
-        [JSInvokable]
-        public static DotNetStreamReference GetDotNetStreamReference()
+        var data = new byte[100000];
+        for (var i = 0; i < data.Length; i++)
         {
-            var data = new byte[100000];
-            for (var i = 0; i < data.Length; i++)
-            {
-                data[i] = (byte)(i % 256);
-            }
-
-            var dataStream = new MemoryStream(data);
-            var streamRef = new DotNetStreamReference(dataStream);
-            return streamRef;
+            data[i] = (byte)(i % 256);
         }
 
-        [JSInvokable]
-        public static Task<DotNetStreamReference> GetDotNetStreamReferenceAsync()
+        var dataStream = new MemoryStream(data);
+        var streamRef = new DotNetStreamReference(dataStream);
+        return streamRef;
+    }
+
+    [JSInvokable]
+    public static Task<DotNetStreamReference> GetDotNetStreamReferenceAsync()
+    {
+        return Task.FromResult(GetDotNetStreamReference());
+    }
+
+    [JSInvokable]
+    public static DotNetStreamReferenceWrapper GetDotNetStreamWrapperReference()
+    {
+        var wrapper = new DotNetStreamReferenceWrapper()
         {
-            return Task.FromResult(GetDotNetStreamReference());
-        }
+            StrVal = "somestr",
+            DotNetStreamReferenceVal = GetDotNetStreamReference(),
+            IntVal = 25,
+        };
 
-        [JSInvokable]
-        public static DotNetStreamReferenceWrapper GetDotNetStreamWrapperReference()
-        {
-            var wrapper = new DotNetStreamReferenceWrapper()
-            {
-                StrVal = "somestr",
-                DotNetStreamReferenceVal = GetDotNetStreamReference(),
-                IntVal = 25,
-            };
+        return wrapper;
+    }
 
-            return wrapper;
-        }
+    [JSInvokable]
+    public static Task<DotNetStreamReferenceWrapper> GetDotNetStreamWrapperReferenceAsync()
+    {
+        return Task.FromResult(GetDotNetStreamWrapperReference());
+    }
 
-        [JSInvokable]
-        public static Task<DotNetStreamReferenceWrapper> GetDotNetStreamWrapperReferenceAsync()
-        {
-            return Task.FromResult(GetDotNetStreamWrapperReference());
-        }
+    public class DotNetStreamReferenceWrapper
+    {
+        public string StrVal { get; set; }
 
-        public class DotNetStreamReferenceWrapper
-        {
-            public string StrVal { get; set; }
+        public DotNetStreamReference DotNetStreamReferenceVal { get; set; }
 
-            public DotNetStreamReference DotNetStreamReferenceVal { get; set; }
-
-            public int IntVal { get; set; }
-        }
+        public int IntVal { get; set; }
     }
 }

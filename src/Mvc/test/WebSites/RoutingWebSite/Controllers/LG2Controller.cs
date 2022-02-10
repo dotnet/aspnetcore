@@ -3,12 +3,11 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace RoutingWebSite
+namespace RoutingWebSite;
+
+public class LG2Controller : Controller
 {
-    public class LG2Controller : Controller
+    public void SomeAction()
     {
-        public void SomeAction()
-        {
-        }
     }
 }

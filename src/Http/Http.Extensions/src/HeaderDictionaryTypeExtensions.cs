@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -10,165 +8,165 @@ using Microsoft.AspNetCore.Http.Headers;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Http
+namespace Microsoft.AspNetCore.Http;
+
+/// <summary>
+/// Extension methods for accessing strongly typed HTTP request and response
+/// headers.
+/// </summary>
+public static class HeaderDictionaryTypeExtensions
 {
     /// <summary>
-    /// Extension methods for accessing strongly typed HTTP request and response
-    /// headers.
+    /// Gets strongly typed HTTP request headers.
     /// </summary>
-    public static class HeaderDictionaryTypeExtensions
+    /// <param name="request">The <see cref="HttpRequest"/>.</param>
+    /// <returns>The <see cref="RequestHeaders"/>.</returns>
+    public static RequestHeaders GetTypedHeaders(this HttpRequest request)
     {
-        /// <summary>
-        /// Gets strongly typed HTTP request headers.
-        /// </summary>
-        /// <param name="request">The <see cref="HttpRequest"/>.</param>
-        /// <returns>The <see cref="RequestHeaders"/>.</returns>
-        public static RequestHeaders GetTypedHeaders(this HttpRequest request)
+        return new RequestHeaders(request.Headers);
+    }
+
+    /// <summary>
+    /// Gets strongly typed HTTP response headers.
+    /// </summary>
+    /// <param name="response">The <see cref="HttpResponse"/>.</param>
+    /// <returns>The <see cref="ResponseHeaders"/>.</returns>
+    public static ResponseHeaders GetTypedHeaders(this HttpResponse response)
+    {
+        return new ResponseHeaders(response.Headers);
+    }
+
+    // These are all shared helpers used by both RequestHeaders and ResponseHeaders
+
+    internal static DateTimeOffset? GetDate(this IHeaderDictionary headers, string name)
+    {
+        if (headers == null)
         {
-            return new RequestHeaders(request.Headers);
+            throw new ArgumentNullException(nameof(headers));
         }
 
-        /// <summary>
-        /// Gets strongly typed HTTP response headers.
-        /// </summary>
-        /// <param name="response">The <see cref="HttpResponse"/>.</param>
-        /// <returns>The <see cref="ResponseHeaders"/>.</returns>
-        public static ResponseHeaders GetTypedHeaders(this HttpResponse response)
+        if (name == null)
         {
-            return new ResponseHeaders(response.Headers);
+            throw new ArgumentNullException(nameof(name));
         }
 
-        // These are all shared helpers used by both RequestHeaders and ResponseHeaders
+        return headers.Get<DateTimeOffset?>(name);
+    }
 
-        internal static DateTimeOffset? GetDate(this IHeaderDictionary headers, string name)
+    internal static void Set(this IHeaderDictionary headers, string name, object? value)
+    {
+        if (headers == null)
         {
-            if (headers == null)
-            {
-                throw new ArgumentNullException(nameof(headers));
-            }
-
-            if (name == null)
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
-
-            return headers.Get<DateTimeOffset?>(name);
+            throw new ArgumentNullException(nameof(headers));
         }
 
-        internal static void Set(this IHeaderDictionary headers, string name, object? value)
+        if (name == null)
         {
-            if (headers == null)
-            {
-                throw new ArgumentNullException(nameof(headers));
-            }
-
-            if (name == null)
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
-
-            if (value == null)
-            {
-                headers.Remove(name);
-            }
-            else
-            {
-                headers[name] = value.ToString();
-            }
+            throw new ArgumentNullException(nameof(name));
         }
 
-        internal static void SetList<T>(this IHeaderDictionary headers, string name, IList<T>? values)
+        if (value == null)
         {
-            if (headers == null)
-            {
-                throw new ArgumentNullException(nameof(headers));
-            }
+            headers.Remove(name);
+        }
+        else
+        {
+            headers[name] = value.ToString();
+        }
+    }
 
-            if (name == null)
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
+    internal static void SetList<T>(this IHeaderDictionary headers, string name, IList<T>? values)
+    {
+        if (headers == null)
+        {
+            throw new ArgumentNullException(nameof(headers));
+        }
 
-            if (values == null || values.Count == 0)
+        if (name == null)
+        {
+            throw new ArgumentNullException(nameof(name));
+        }
+
+        if (values == null || values.Count == 0)
+        {
+            headers.Remove(name);
+        }
+        else if (values.Count == 1)
+        {
+            headers[name] = new StringValues(values[0]!.ToString());
+        }
+        else
+        {
+            var newValues = new string[values.Count];
+            for (var i = 0; i < values.Count; i++)
             {
-                headers.Remove(name);
+                newValues[i] = values[i]!.ToString()!;
             }
-            else if (values.Count == 1)
-            {
-                headers[name] = new StringValues(values[0]!.ToString());
-            }
-            else
-            {
+            headers[name] = new StringValues(newValues);
+        }
+    }
+
+    /// <summary>
+    /// Appends a sequence of values to <see cref="IHeaderDictionary"/>.
+    /// </summary>
+    /// <typeparam name="T">The type of header value.</typeparam>
+    /// <param name="Headers">The <see cref="IHeaderDictionary"/>.</param>
+    /// <param name="name">The header name.</param>
+    /// <param name="values">The values to append.</param>
+    public static void AppendList<T>(this IHeaderDictionary Headers, string name, IList<T> values)
+    {
+        if (name == null)
+        {
+            throw new ArgumentNullException(nameof(name));
+        }
+
+        if (values == null)
+        {
+            throw new ArgumentNullException(nameof(values));
+        }
+
+        switch (values.Count)
+        {
+            case 0:
+                Headers.Append(name, StringValues.Empty);
+                break;
+            case 1:
+                Headers.Append(name, new StringValues(values[0]!.ToString()));
+                break;
+            default:
                 var newValues = new string[values.Count];
                 for (var i = 0; i < values.Count; i++)
                 {
                     newValues[i] = values[i]!.ToString()!;
                 }
-                headers[name] = new StringValues(newValues);
-            }
+                Headers.Append(name, new StringValues(newValues));
+                break;
         }
+    }
 
-        /// <summary>
-        /// Appends a sequence of values to <see cref="IHeaderDictionary"/>.
-        /// </summary>
-        /// <typeparam name="T">The type of header value.</typeparam>
-        /// <param name="Headers">The <see cref="IHeaderDictionary"/>.</param>
-        /// <param name="name">The header name.</param>
-        /// <param name="values">The values to append.</param>
-        public static void AppendList<T>(this IHeaderDictionary Headers, string name, IList<T> values)
+    internal static void SetDate(this IHeaderDictionary headers, string name, DateTimeOffset? value)
+    {
+        if (headers == null)
         {
-            if (name == null)
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
-
-            if (values == null)
-            {
-                throw new ArgumentNullException(nameof(values));
-            }
-
-            switch (values.Count)
-            {
-                case 0:
-                    Headers.Append(name, StringValues.Empty);
-                    break;
-                case 1:
-                    Headers.Append(name, new StringValues(values[0]!.ToString()));
-                    break;
-                default:
-                    var newValues = new string[values.Count];
-                    for (var i = 0; i < values.Count; i++)
-                    {
-                        newValues[i] = values[i]!.ToString()!;
-                    }
-                    Headers.Append(name, new StringValues(newValues));
-                    break;
-            }
+            throw new ArgumentNullException(nameof(headers));
         }
 
-        internal static void SetDate(this IHeaderDictionary headers, string name, DateTimeOffset? value)
+        if (name == null)
         {
-            if (headers == null)
-            {
-                throw new ArgumentNullException(nameof(headers));
-            }
-
-            if (name == null)
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
-
-            if (value.HasValue)
-            {
-                headers[name] = HeaderUtilities.FormatDate(value.GetValueOrDefault());
-            }
-            else
-            {
-                headers.Remove(name);
-            }
+            throw new ArgumentNullException(nameof(name));
         }
 
-        private static readonly IDictionary<Type, object> KnownParsers = new Dictionary<Type, object>()
+        if (value.HasValue)
+        {
+            headers[name] = HeaderUtilities.FormatDate(value.GetValueOrDefault());
+        }
+        else
+        {
+            headers.Remove(name);
+        }
+    }
+
+    private static readonly IDictionary<Type, object> KnownParsers = new Dictionary<Type, object>()
         {
             { typeof(CacheControlHeaderValue), new Func<string, CacheControlHeaderValue?>(value => { return CacheControlHeaderValue.TryParse(value, out var result) ? result : null; }) },
             { typeof(ContentDispositionHeaderValue), new Func<string, ContentDispositionHeaderValue?>(value => { return ContentDispositionHeaderValue.TryParse(value, out var result) ? result : null; }) },
@@ -181,7 +179,7 @@ namespace Microsoft.AspNetCore.Http
             { typeof(long?), new Func<string, long?>(value => { return HeaderUtilities.TryParseNonNegativeInt64(value, out var result) ? result : null; }) },
         };
 
-        private static readonly IDictionary<Type, object> KnownListParsers = new Dictionary<Type, object>()
+    private static readonly IDictionary<Type, object> KnownListParsers = new Dictionary<Type, object>()
         {
             { typeof(MediaTypeHeaderValue), new Func<IList<string>, IList<MediaTypeHeaderValue>>(value => { return MediaTypeHeaderValue.TryParseList(value, out var result) ? result : Array.Empty<MediaTypeHeaderValue>(); })  },
             { typeof(StringWithQualityHeaderValue), new Func<IList<string>, IList<StringWithQualityHeaderValue>>(value => { return StringWithQualityHeaderValue.TryParseList(value, out var result) ? result : Array.Empty<StringWithQualityHeaderValue>(); })  },
@@ -190,127 +188,126 @@ namespace Microsoft.AspNetCore.Http
             { typeof(SetCookieHeaderValue), new Func<IList<string>, IList<SetCookieHeaderValue>>(value => { return SetCookieHeaderValue.TryParseList(value, out var result) ? result : Array.Empty<SetCookieHeaderValue>(); })  },
         };
 
-        internal static T? Get<T>(this IHeaderDictionary headers, string name)
+    internal static T? Get<T>(this IHeaderDictionary headers, string name)
+    {
+        if (headers == null)
         {
-            if (headers == null)
-            {
-                throw new ArgumentNullException(nameof(headers));
-            }
-
-            var value = headers[name];
-
-            if (StringValues.IsNullOrEmpty(value))
-            {
-                return default(T);
-            }
-
-            if (KnownParsers.TryGetValue(typeof(T), out var temp))
-            {
-                var func = (Func<string, T>)temp;
-                return func(value.ToString());
-            }
-
-            return GetViaReflection<T>(value.ToString());
+            throw new ArgumentNullException(nameof(headers));
         }
 
-        internal static IList<T> GetList<T>(this IHeaderDictionary headers, string name)
+        var value = headers[name];
+
+        if (StringValues.IsNullOrEmpty(value))
         {
-            if (headers == null)
-            {
-                throw new ArgumentNullException(nameof(headers));
-            }
-
-            var values = headers[name];
-
-            return GetList<T>(values);
-        }
-
-        internal static IList<T> GetList<T>(this StringValues values)
-        {
-            if (StringValues.IsNullOrEmpty(values))
-            {
-                return Array.Empty<T>();
-            }
-
-            if (KnownListParsers.TryGetValue(typeof(T), out var temp))
-            {
-                var func = (Func<IList<string>, IList<T>>)temp;
-                return func(values);
-            }
-
-            return GetListViaReflection<T>(values);
-        }
-
-        private static T? GetViaReflection<T>(string value)
-        {
-            // TODO: Cache the reflected type for later? Only if success?
-            var type = typeof(T);
-            var method = type.GetMethods(BindingFlags.Public | BindingFlags.Static)
-                .FirstOrDefault(methodInfo =>
-                {
-                    if (string.Equals("TryParse", methodInfo.Name, StringComparison.Ordinal)
-                        && methodInfo.ReturnParameter.ParameterType.Equals(typeof(bool)))
-                    {
-                        var methodParams = methodInfo.GetParameters();
-                        return methodParams.Length == 2
-                            && methodParams[0].ParameterType.Equals(typeof(string))
-                            && methodParams[1].IsOut
-                            && methodParams[1].ParameterType.Equals(type.MakeByRefType());
-                    }
-                    return false;
-                });
-
-            if (method == null)
-            {
-                throw new NotSupportedException(string.Format(
-                    CultureInfo.CurrentCulture,
-                    "The given type '{0}' does not have a TryParse method with the required signature 'public static bool TryParse(string, out {0}).",
-                    nameof(T)));
-            }
-
-            var parameters = new object?[] { value, null };
-            var success = (bool)method.Invoke(null, parameters)!;
-            if (success)
-            {
-                return (T?)parameters[1];
-            }
             return default(T);
         }
 
-        private static IList<T> GetListViaReflection<T>(StringValues values)
+        if (KnownParsers.TryGetValue(typeof(T), out var temp))
         {
-            // TODO: Cache the reflected type for later? Only if success?
-            var type = typeof(T);
-            var method = type.GetMethods(BindingFlags.Public | BindingFlags.Static)
-                .FirstOrDefault(methodInfo =>
-                {
-                    if (string.Equals("TryParseList", methodInfo.Name, StringComparison.Ordinal)
-                        && methodInfo.ReturnParameter.ParameterType.Equals(typeof(Boolean)))
-                    {
-                        var methodParams = methodInfo.GetParameters();
-                        return methodParams.Length == 2
-                            && methodParams[0].ParameterType.Equals(typeof(IList<string>))
-                            && methodParams[1].IsOut
-                            && methodParams[1].ParameterType.Equals(typeof(IList<T>).MakeByRefType());
-                    }
-                    return false;
-                });
+            var func = (Func<string, T>)temp;
+            return func(value.ToString());
+        }
 
-            if (method == null)
-            {
-                throw new NotSupportedException(string.Format(
-                    CultureInfo.CurrentCulture,
-                    "The given type '{0}' does not have a TryParseList method with the required signature 'public static bool TryParseList(IList<string>, out IList<{0}>).",
-                    nameof(T)));
-            }
+        return GetViaReflection<T>(value.ToString());
+    }
 
-            var parameters = new object?[] { values, null };
-            var success = (bool)method.Invoke(null, parameters)!;
-            if (success)
-            {
-                return (IList<T>)parameters[1]!;
-            }
+    internal static IList<T> GetList<T>(this IHeaderDictionary headers, string name)
+    {
+        if (headers == null)
+        {
+            throw new ArgumentNullException(nameof(headers));
+        }
+
+        var values = headers[name];
+
+        return GetList<T>(values);
+    }
+
+    internal static IList<T> GetList<T>(this StringValues values)
+    {
+        if (StringValues.IsNullOrEmpty(values))
+        {
             return Array.Empty<T>();
         }
+
+        if (KnownListParsers.TryGetValue(typeof(T), out var temp))
+        {
+            var func = (Func<IList<string>, IList<T>>)temp;
+            return func(values);
+        }
+
+        return GetListViaReflection<T>(values);
+    }
+
+    private static T? GetViaReflection<T>(string value)
+    {
+        // TODO: Cache the reflected type for later? Only if success?
+        var type = typeof(T);
+        var method = type.GetMethods(BindingFlags.Public | BindingFlags.Static)
+            .FirstOrDefault(methodInfo =>
+            {
+                if (string.Equals("TryParse", methodInfo.Name, StringComparison.Ordinal)
+                    && methodInfo.ReturnParameter.ParameterType.Equals(typeof(bool)))
+                {
+                    var methodParams = methodInfo.GetParameters();
+                    return methodParams.Length == 2
+                        && methodParams[0].ParameterType.Equals(typeof(string))
+                        && methodParams[1].IsOut
+                        && methodParams[1].ParameterType.Equals(type.MakeByRefType());
+                }
+                return false;
+            });
+
+        if (method == null)
+        {
+            throw new NotSupportedException(string.Format(
+                CultureInfo.CurrentCulture,
+                "The given type '{0}' does not have a TryParse method with the required signature 'public static bool TryParse(string, out {0}).",
+                nameof(T)));
+        }
+
+        var parameters = new object?[] { value, null };
+        var success = (bool)method.Invoke(null, parameters)!;
+        if (success)
+        {
+            return (T?)parameters[1];
+        }
+        return default(T);
+    }
+
+    private static IList<T> GetListViaReflection<T>(StringValues values)
+    {
+        // TODO: Cache the reflected type for later? Only if success?
+        var type = typeof(T);
+        var method = type.GetMethods(BindingFlags.Public | BindingFlags.Static)
+            .FirstOrDefault(methodInfo =>
+            {
+                if (string.Equals("TryParseList", methodInfo.Name, StringComparison.Ordinal)
+                    && methodInfo.ReturnParameter.ParameterType.Equals(typeof(Boolean)))
+                {
+                    var methodParams = methodInfo.GetParameters();
+                    return methodParams.Length == 2
+                        && methodParams[0].ParameterType.Equals(typeof(IList<string>))
+                        && methodParams[1].IsOut
+                        && methodParams[1].ParameterType.Equals(typeof(IList<T>).MakeByRefType());
+                }
+                return false;
+            });
+
+        if (method == null)
+        {
+            throw new NotSupportedException(string.Format(
+                CultureInfo.CurrentCulture,
+                "The given type '{0}' does not have a TryParseList method with the required signature 'public static bool TryParseList(IList<string>, out IList<{0}>).",
+                nameof(T)));
+        }
+
+        var parameters = new object?[] { values, null };
+        var success = (bool)method.Invoke(null, parameters)!;
+        if (success)
+        {
+            return (IList<T>)parameters[1]!;
+        }
+        return Array.Empty<T>();
     }
 }

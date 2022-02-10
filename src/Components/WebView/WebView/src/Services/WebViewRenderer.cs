@@ -2,90 +2,87 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.ExceptionServices;
-using System.Text.Json;
 using Microsoft.AspNetCore.Components.RenderTree;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Components.WebView.Services
+namespace Microsoft.AspNetCore.Components.WebView.Services;
+
+internal class WebViewRenderer : WebRenderer
 {
-    internal class WebViewRenderer : WebRenderer
+    private readonly Queue<UnacknowledgedRenderBatch> _unacknowledgedRenderBatches = new();
+    private readonly Dispatcher _dispatcher;
+    private readonly IpcSender _ipcSender;
+    private long nextRenderBatchId = 1;
+
+    public WebViewRenderer(
+        IServiceProvider serviceProvider,
+        Dispatcher dispatcher,
+        IpcSender ipcSender,
+        ILoggerFactory loggerFactory,
+        WebViewJSRuntime jsRuntime,
+        JSComponentInterop jsComponentInterop) :
+        base(serviceProvider, loggerFactory, jsRuntime.ReadJsonSerializerOptions(), jsComponentInterop)
     {
-        private readonly Queue<UnacknowledgedRenderBatch> _unacknowledgedRenderBatches = new();
-        private readonly Dispatcher _dispatcher;
-        private readonly IpcSender _ipcSender;
-        private long nextRenderBatchId = 1;
+        _dispatcher = dispatcher;
+        _ipcSender = ipcSender;
 
-        public WebViewRenderer(
-            IServiceProvider serviceProvider,
-            Dispatcher dispatcher,
-            IpcSender ipcSender,
-            ILoggerFactory loggerFactory,
-            WebViewJSRuntime jsRuntime,
-            JSComponentInterop jsComponentInterop) :
-            base(serviceProvider, loggerFactory, jsRuntime.ReadJsonSerializerOptions(), jsComponentInterop)
+        ElementReferenceContext = jsRuntime.ElementReferenceContext;
+    }
+
+    public override Dispatcher Dispatcher => _dispatcher;
+
+    protected override void HandleException(Exception exception)
+    {
+        // Notify the JS code so it can show the in-app UI
+        _ipcSender.NotifyUnhandledException(exception);
+
+        // Also rethrow so the AppDomain's UnhandledException handler gets notified
+        ExceptionDispatchInfo.Capture(exception).Throw();
+    }
+
+    protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
+    {
+        var batchId = nextRenderBatchId++;
+        var tcs = new TaskCompletionSource();
+        _unacknowledgedRenderBatches.Enqueue(new UnacknowledgedRenderBatch
         {
-            _dispatcher = dispatcher;
-            _ipcSender = ipcSender;
+            BatchId = batchId,
+            CompletionSource = tcs,
+        });
 
-            ElementReferenceContext = jsRuntime.ElementReferenceContext;
+        _ipcSender.ApplyRenderBatch(batchId, renderBatch);
+        return tcs.Task;
+    }
+
+    protected override void AttachRootComponentToBrowser(int componentId, string domElementSelector)
+    {
+        _ipcSender.AttachToDocument(componentId, domElementSelector);
+    }
+
+    public new int AddRootComponent(Type componentType, string domElementSelector)
+       => base.AddRootComponent(componentType, domElementSelector);
+
+    public new Task RenderRootComponentAsync(int componentId, ParameterView parameters)
+       => base.RenderRootComponentAsync(componentId, parameters);
+
+    public new void RemoveRootComponent(int componentId)
+       => base.RemoveRootComponent(componentId);
+
+    public void NotifyRenderCompleted(long batchId)
+    {
+        var nextUnacknowledgedBatch = _unacknowledgedRenderBatches.Dequeue();
+        if (nextUnacknowledgedBatch.BatchId != batchId)
+        {
+            throw new InvalidOperationException($"Received unexpected acknowledgement for render batch {batchId} (next batch should be {nextUnacknowledgedBatch.BatchId})");
         }
 
-        public override Dispatcher Dispatcher => _dispatcher;
+        nextUnacknowledgedBatch.CompletionSource.SetResult();
+    }
 
-        protected override void HandleException(Exception exception)
-        {
-            // Notify the JS code so it can show the in-app UI
-            _ipcSender.NotifyUnhandledException(exception);
-
-            // Also rethrow so the AppDomain's UnhandledException handler gets notified
-            ExceptionDispatchInfo.Capture(exception).Throw();
-        }
-
-        protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
-        {
-            var batchId = nextRenderBatchId++;
-            var tcs = new TaskCompletionSource();
-            _unacknowledgedRenderBatches.Enqueue(new UnacknowledgedRenderBatch
-            {
-                BatchId = batchId,
-                CompletionSource = tcs,
-            });
-
-            _ipcSender.ApplyRenderBatch(batchId, renderBatch);
-            return tcs.Task;
-        }
-
-        protected override void AttachRootComponentToBrowser(int componentId, string domElementSelector)
-        {
-            _ipcSender.AttachToDocument(componentId, domElementSelector);
-        }
-
-        public new int AddRootComponent(Type componentType, string domElementSelector)
-           => base.AddRootComponent(componentType, domElementSelector);
-
-        public new Task RenderRootComponentAsync(int componentId, ParameterView parameters)
-           => base.RenderRootComponentAsync(componentId, parameters);
-
-        public new void RemoveRootComponent(int componentId)
-           => base.RemoveRootComponent(componentId);
-
-        public void NotifyRenderCompleted(long batchId)
-        {
-            var nextUnacknowledgedBatch = _unacknowledgedRenderBatches.Dequeue();
-            if (nextUnacknowledgedBatch.BatchId != batchId)
-            {
-                throw new InvalidOperationException($"Received unexpected acknowledgement for render batch {batchId} (next batch should be {nextUnacknowledgedBatch.BatchId})");
-            }
-
-            nextUnacknowledgedBatch.CompletionSource.SetResult();
-        }
-
-        record UnacknowledgedRenderBatch
-        {
-            public long BatchId { get; init; }
-            public TaskCompletionSource CompletionSource { get; init; }
-        }
+    record UnacknowledgedRenderBatch
+    {
+        public long BatchId { get; init; }
+        public TaskCompletionSource CompletionSource { get; init; }
     }
 }

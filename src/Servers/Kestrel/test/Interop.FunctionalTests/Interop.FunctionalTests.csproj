@@ -6,7 +6,6 @@
     <TestGroupName>Interop.FunctionalTests</TestGroupName>
     <!-- WebDriver is not strong named, so this test assembly cannot be strong-named either. -->
     <SignAssembly>false</SignAssembly>
-    <SkipHelixArm>true</SkipHelixArm>
     <SkipHelixAlpine>true</SkipHelixAlpine>
   </PropertyGroup>
 

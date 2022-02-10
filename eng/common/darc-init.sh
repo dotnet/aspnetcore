@@ -53,7 +53,7 @@ fi
 function InstallDarcCli {
   local darc_cli_package_name="microsoft.dotnet.darc"
 
-  InitializeDotNetCli
+  InitializeDotNetCli true
   local dotnet_root=$_InitializeDotNetCli
 
   if [ -z "$toolpath" ]; then

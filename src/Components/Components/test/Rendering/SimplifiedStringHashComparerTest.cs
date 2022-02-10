@@ -1,24 +1,21 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Xunit;
+namespace Microsoft.AspNetCore.Components.Rendering;
 
-namespace Microsoft.AspNetCore.Components.Rendering
+public class SimplifiedStringHashComparerTest
 {
-    public class SimplifiedStringHashComparerTest
+    [Fact]
+    public void EqualityIsCaseInsensitive()
     {
-        [Fact]
-        public void EqualityIsCaseInsensitive()
-        {
-            Assert.True(SimplifiedStringHashComparer.Instance.Equals("abc", "ABC"));
-        }
+        Assert.True(SimplifiedStringHashComparer.Instance.Equals("abc", "ABC"));
+    }
 
-        [Fact]
-        public void HashCodesAreCaseInsensitive()
-        {
-            var hash1 = SimplifiedStringHashComparer.Instance.GetHashCode("abc");
-            var hash2 = SimplifiedStringHashComparer.Instance.GetHashCode("ABC");
-            Assert.Equal(hash1, hash2);
-        }
+    [Fact]
+    public void HashCodesAreCaseInsensitive()
+    {
+        var hash1 = SimplifiedStringHashComparer.Instance.GetHashCode("abc");
+        var hash2 = SimplifiedStringHashComparer.Instance.GetHashCode("ABC");
+        Assert.Equal(hash1, hash2);
     }
 }

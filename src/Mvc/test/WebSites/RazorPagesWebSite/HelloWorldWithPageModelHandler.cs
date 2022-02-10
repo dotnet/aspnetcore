@@ -3,20 +3,19 @@
 
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace RazorPagesWebSite
+namespace RazorPagesWebSite;
+
+public class HelloWorldWithPageModelHandler : PageModel
 {
-    public class HelloWorldWithPageModelHandler : PageModel
+    public string Message { get; set; }
+
+    public void OnGet(string message)
     {
-        public string Message { get; set; }
+        Message = message;
+    }
 
-        public void OnGet(string message)
-        {
-            Message = message;
-        }
-
-        public void OnPost()
-        {
-            Message = "You posted!";
-        }
+    public void OnPost()
+    {
+        Message = "You posted!";
     }
 }

@@ -1,66 +1,64 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.ObjectModel;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Mvc.Formatters
+namespace Microsoft.AspNetCore.Mvc.Formatters;
+
+/// <summary>
+/// A collection of media types.
+/// </summary>
+public class MediaTypeCollection : Collection<string>
 {
     /// <summary>
-    /// A collection of media types.
+    /// Adds an object to the end of the <see cref="MediaTypeCollection"/>.
     /// </summary>
-    public class MediaTypeCollection : Collection<string>
+    /// <param name="item">The media type to be added to the end of the <see cref="MediaTypeCollection"/>.</param>
+    public void Add(MediaTypeHeaderValue item)
     {
-        /// <summary>
-        /// Adds an object to the end of the <see cref="MediaTypeCollection"/>.
-        /// </summary>
-        /// <param name="item">The media type to be added to the end of the <see cref="MediaTypeCollection"/>.</param>
-        public void Add(MediaTypeHeaderValue item)
+        if (item == null)
         {
-            if (item == null)
-            {
-                throw new ArgumentNullException(nameof(item));
-            }
-
-            Add(item.ToString());
+            throw new ArgumentNullException(nameof(item));
         }
 
-        /// <summary>
-        /// Inserts an element into the <see cref="MediaTypeCollection"/> at the specified index.
-        /// </summary>
-        /// <param name="index">The zero-based index at which <paramref name="item"/> should be inserted.</param>
-        /// <param name="item">The media type to insert.</param>
-        public void Insert(int index, MediaTypeHeaderValue item)
+        Add(item.ToString());
+    }
+
+    /// <summary>
+    /// Inserts an element into the <see cref="MediaTypeCollection"/> at the specified index.
+    /// </summary>
+    /// <param name="index">The zero-based index at which <paramref name="item"/> should be inserted.</param>
+    /// <param name="item">The media type to insert.</param>
+    public void Insert(int index, MediaTypeHeaderValue item)
+    {
+        if (index < 0 || index > Count)
         {
-            if (index < 0 || index > Count)
-            {
-                throw new ArgumentOutOfRangeException(nameof(index));
-            }
-
-            if (item == null)
-            {
-                throw new ArgumentNullException(nameof(item));
-            }
-
-            Insert(index, item.ToString());
+            throw new ArgumentOutOfRangeException(nameof(index));
         }
 
-        /// <summary>
-        /// Removes the first occurrence of a specific media type from the <see cref="MediaTypeCollection"/>.
-        /// </summary>
-        /// <param name="item"></param>
-        /// <returns><see langword="true" /> if <paramref name="item"/> is successfully removed; otherwise, <see langword="false" />.
-        /// This method also returns <see langword="false" /> if <paramref name="item"/> was not found in the original
-        /// <see cref="MediaTypeCollection"/>.</returns>
-        public bool Remove(MediaTypeHeaderValue item)
+        if (item == null)
         {
-            if (item == null)
-            {
-                throw new ArgumentNullException(nameof(item));
-            }
-
-            return Remove(item.ToString());
+            throw new ArgumentNullException(nameof(item));
         }
+
+        Insert(index, item.ToString());
+    }
+
+    /// <summary>
+    /// Removes the first occurrence of a specific media type from the <see cref="MediaTypeCollection"/>.
+    /// </summary>
+    /// <param name="item"></param>
+    /// <returns><see langword="true" /> if <paramref name="item"/> is successfully removed; otherwise, <see langword="false" />.
+    /// This method also returns <see langword="false" /> if <paramref name="item"/> was not found in the original
+    /// <see cref="MediaTypeCollection"/>.</returns>
+    public bool Remove(MediaTypeHeaderValue item)
+    {
+        if (item == null)
+        {
+            throw new ArgumentNullException(nameof(item));
+        }
+
+        return Remove(item.ToString());
     }
 }

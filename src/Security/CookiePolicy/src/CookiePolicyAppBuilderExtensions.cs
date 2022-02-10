@@ -1,50 +1,48 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Builder
+namespace Microsoft.AspNetCore.Builder;
+
+/// <summary>
+/// Extension methods to add cookie policy capabilities to an HTTP application pipeline.
+/// </summary>
+public static class CookiePolicyAppBuilderExtensions
 {
     /// <summary>
-    /// Extension methods to add cookie policy capabilities to an HTTP application pipeline.
+    /// Adds the <see cref="CookiePolicyMiddleware"/> handler to the specified <see cref="IApplicationBuilder"/>, which enables cookie policy capabilities.
     /// </summary>
-    public static class CookiePolicyAppBuilderExtensions
+    /// <param name="app">The <see cref="IApplicationBuilder"/> to add the handler to.</param>
+    /// <returns>A reference to this instance after the operation has completed.</returns>
+    public static IApplicationBuilder UseCookiePolicy(this IApplicationBuilder app)
     {
-        /// <summary>
-        /// Adds the <see cref="CookiePolicyMiddleware"/> handler to the specified <see cref="IApplicationBuilder"/>, which enables cookie policy capabilities.
-        /// </summary>
-        /// <param name="app">The <see cref="IApplicationBuilder"/> to add the handler to.</param>
-        /// <returns>A reference to this instance after the operation has completed.</returns>
-        public static IApplicationBuilder UseCookiePolicy(this IApplicationBuilder app)
+        if (app == null)
         {
-            if (app == null)
-            {
-                throw new ArgumentNullException(nameof(app));
-            }
-
-            return app.UseMiddleware<CookiePolicyMiddleware>();
+            throw new ArgumentNullException(nameof(app));
         }
 
-        /// <summary>
-        /// Adds the <see cref="CookiePolicyMiddleware"/> handler to the specified <see cref="IApplicationBuilder"/>, which enables cookie policy capabilities.
-        /// </summary>
-        /// <param name="app">The <see cref="IApplicationBuilder"/> to add the handler to.</param>
-        /// <param name="options">A <see cref="CookiePolicyOptions"/> that specifies options for the handler.</param>
-        /// <returns>A reference to this instance after the operation has completed.</returns>
-        public static IApplicationBuilder UseCookiePolicy(this IApplicationBuilder app, CookiePolicyOptions options)
-        {
-            if (app == null)
-            {
-                throw new ArgumentNullException(nameof(app));
-            }
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
+        return app.UseMiddleware<CookiePolicyMiddleware>();
+    }
 
-            return app.UseMiddleware<CookiePolicyMiddleware>(Options.Create(options));
+    /// <summary>
+    /// Adds the <see cref="CookiePolicyMiddleware"/> handler to the specified <see cref="IApplicationBuilder"/>, which enables cookie policy capabilities.
+    /// </summary>
+    /// <param name="app">The <see cref="IApplicationBuilder"/> to add the handler to.</param>
+    /// <param name="options">A <see cref="CookiePolicyOptions"/> that specifies options for the handler.</param>
+    /// <returns>A reference to this instance after the operation has completed.</returns>
+    public static IApplicationBuilder UseCookiePolicy(this IApplicationBuilder app, CookiePolicyOptions options)
+    {
+        if (app == null)
+        {
+            throw new ArgumentNullException(nameof(app));
         }
+        if (options == null)
+        {
+            throw new ArgumentNullException(nameof(options));
+        }
+
+        return app.UseMiddleware<CookiePolicyMiddleware>(Options.Create(options));
     }
 }

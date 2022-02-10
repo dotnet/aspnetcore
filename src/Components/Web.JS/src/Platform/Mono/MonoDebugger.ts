@@ -1,12 +1,16 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 import { WebAssemblyResourceLoader } from '../WebAssemblyResourceLoader';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const currentBrowserIsChrome = (window as any).chrome
   && navigator.userAgent.indexOf('Edge') < 0; // Edge pretends to be Chrome
 
 let hasReferencedPdbs = false;
 let debugBuild = false;
 
-export function hasDebuggingEnabled() {
+export function hasDebuggingEnabled(): boolean {
   return (hasReferencedPdbs || debugBuild) && currentBrowserIsChrome;
 }
 

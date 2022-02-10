@@ -6,7 +6,6 @@
     <PackageTags>$(PackageTags);testing</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <!-- This is actually a library for test projects, not a test project. Treat project as a test asset. -->
-    <IsUnitTestProject>false</IsUnitTestProject>
     <IsTestAssetProject>true</IsTestAssetProject>
     <!-- This package is internal, so we don't generate a package baseline. Always build against the latest dependencies. -->
     <UseLatestPackageReferences>true</UseLatestPackageReferences>

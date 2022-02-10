@@ -1,48 +1,45 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.ResponseCompression
+namespace Microsoft.AspNetCore.ResponseCompression;
+
+/// <summary>
+/// This is a placeholder for the CompressionProviderCollection that allows creating the given type via
+/// an <see cref="IServiceProvider" />.
+/// </summary>
+internal class CompressionProviderFactory : ICompressionProvider
 {
-    /// <summary>
-    /// This is a placeholder for the CompressionProviderCollection that allows creating the given type via
-    /// an <see cref="IServiceProvider" />.
-    /// </summary>
-    internal class CompressionProviderFactory : ICompressionProvider
+    public CompressionProviderFactory(Type providerType)
     {
-        public CompressionProviderFactory(Type providerType)
+        ProviderType = providerType;
+    }
+
+    private Type ProviderType { get; }
+
+    public ICompressionProvider CreateInstance(IServiceProvider serviceProvider)
+    {
+        if (serviceProvider == null)
         {
-            ProviderType = providerType;
+            throw new ArgumentNullException(nameof(serviceProvider));
         }
 
-        private Type ProviderType { get; }
+        return (ICompressionProvider)ActivatorUtilities.CreateInstance(serviceProvider, ProviderType, Type.EmptyTypes);
+    }
 
-        public ICompressionProvider CreateInstance(IServiceProvider serviceProvider)
-        {
-            if (serviceProvider == null)
-            {
-                throw new ArgumentNullException(nameof(serviceProvider));
-            }
+    string ICompressionProvider.EncodingName
+    {
+        get { throw new NotSupportedException(); }
+    }
 
-            return (ICompressionProvider)ActivatorUtilities.CreateInstance(serviceProvider, ProviderType, Type.EmptyTypes);
-        }
+    bool ICompressionProvider.SupportsFlush
+    {
+        get { throw new NotSupportedException(); }
+    }
 
-        string ICompressionProvider.EncodingName
-        {
-            get { throw new NotSupportedException(); }
-        }
-
-        bool ICompressionProvider.SupportsFlush
-        {
-            get { throw new NotSupportedException(); }
-        }
-
-        Stream ICompressionProvider.CreateStream(Stream outputStream)
-        {
-            throw new NotSupportedException();
-        }
+    Stream ICompressionProvider.CreateStream(Stream outputStream)
+    {
+        throw new NotSupportedException();
     }
 }

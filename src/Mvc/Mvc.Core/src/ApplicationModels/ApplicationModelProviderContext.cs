@@ -1,39 +1,36 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Reflection;
 
-namespace Microsoft.AspNetCore.Mvc.ApplicationModels
+namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
+
+/// <summary>
+/// A context object for <see cref="IApplicationModelProvider"/>.
+/// </summary>
+public class ApplicationModelProviderContext
 {
     /// <summary>
-    /// A context object for <see cref="IApplicationModelProvider"/>.
+    /// Initializes a new instance of <see cref="ApplicationModelProviderContext"/>.
     /// </summary>
-    public class ApplicationModelProviderContext
+    /// <param name="controllerTypes">The discovered controller <see cref="TypeInfo"/> instances.</param>
+    public ApplicationModelProviderContext(IEnumerable<TypeInfo> controllerTypes)
     {
-        /// <summary>
-        /// Initializes a new instance of <see cref="ApplicationModelProviderContext"/>.
-        /// </summary>
-        /// <param name="controllerTypes">The discovered controller <see cref="TypeInfo"/> instances.</param>
-        public ApplicationModelProviderContext(IEnumerable<TypeInfo> controllerTypes)
+        if (controllerTypes == null)
         {
-            if (controllerTypes == null)
-            {
-                throw new ArgumentNullException(nameof(controllerTypes));
-            }
-
-            ControllerTypes = controllerTypes;
+            throw new ArgumentNullException(nameof(controllerTypes));
         }
 
-        /// <summary>
-        /// Gets the discovered controller <see cref="TypeInfo"/> instances.
-        /// </summary>
-        public IEnumerable<TypeInfo> ControllerTypes { get; }
-
-        /// <summary>
-        /// Gets the <see cref="ApplicationModel"/>.
-        /// </summary>
-        public ApplicationModel Result { get; } = new ApplicationModel();
+        ControllerTypes = controllerTypes;
     }
+
+    /// <summary>
+    /// Gets the discovered controller <see cref="TypeInfo"/> instances.
+    /// </summary>
+    public IEnumerable<TypeInfo> ControllerTypes { get; }
+
+    /// <summary>
+    /// Gets the <see cref="ApplicationModel"/>.
+    /// </summary>
+    public ApplicationModel Result { get; } = new ApplicationModel();
 }

@@ -5,11 +5,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 
-namespace FunctionalTests
+namespace FunctionalTests;
+
+[Authorize(JwtBearerDefaults.AuthenticationScheme)]
+public class HubWithAuthorization : Hub
 {
-    [Authorize(JwtBearerDefaults.AuthenticationScheme)]
-    public class HubWithAuthorization : Hub
-    {
-        public string Echo(string message) => message;
-    }
+    public string Echo(string message) => message;
 }

@@ -1,77 +1,75 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Microsoft.AspNetCore.Authentication.AzureADB2C.UI
+namespace Microsoft.AspNetCore.Authentication.AzureADB2C.UI;
+
+[Obsolete("This is obsolete and will be removed in a future version. Use Microsoft.Identity.Web instead. See https://aka.ms/ms-identity-web.")]
+internal class AzureADB2COpenIdConnectOptionsConfiguration : IConfigureNamedOptions<OpenIdConnectOptions>
 {
-    [Obsolete("This is obsolete and will be removed in a future version. Use Microsoft.Identity.Web instead. See https://aka.ms/ms-identity-web.")]
-    internal class AzureADB2COpenIdConnectOptionsConfiguration : IConfigureNamedOptions<OpenIdConnectOptions>
+    private readonly IOptions<AzureADB2CSchemeOptions> _schemeOptions;
+    private readonly IOptionsMonitor<AzureADB2COptions> _azureADB2COptions;
+
+    public AzureADB2COpenIdConnectOptionsConfiguration(IOptions<AzureADB2CSchemeOptions> schemeOptions, IOptionsMonitor<AzureADB2COptions> azureADB2COptions)
     {
-        private readonly IOptions<AzureADB2CSchemeOptions> _schemeOptions;
-        private readonly IOptionsMonitor<AzureADB2COptions> _azureADB2COptions;
+        _schemeOptions = schemeOptions;
+        _azureADB2COptions = azureADB2COptions;
+    }
 
-        public AzureADB2COpenIdConnectOptionsConfiguration(IOptions<AzureADB2CSchemeOptions> schemeOptions, IOptionsMonitor<AzureADB2COptions> azureADB2COptions)
+    public void Configure(string name, OpenIdConnectOptions options)
+    {
+        var azureADB2CScheme = GetAzureADB2CScheme(name);
+        var azureADB2COptions = _azureADB2COptions.Get(azureADB2CScheme);
+        if (name != azureADB2COptions.OpenIdConnectSchemeName)
         {
-            _schemeOptions = schemeOptions;
-            _azureADB2COptions = azureADB2COptions;
+            return;
         }
 
-        public void Configure(string name, OpenIdConnectOptions options)
+        options.ClientId = azureADB2COptions.ClientId;
+        options.ClientSecret = azureADB2COptions.ClientSecret;
+        options.Authority = BuildAuthority(azureADB2COptions);
+        options.CallbackPath = azureADB2COptions.CallbackPath ?? options.CallbackPath;
+        options.SignedOutCallbackPath = azureADB2COptions.SignedOutCallbackPath ?? options.SignedOutCallbackPath;
+        options.SignInScheme = azureADB2COptions.CookieSchemeName;
+        options.UseTokenLifetime = true;
+        options.TokenValidationParameters = new TokenValidationParameters { NameClaimType = "name" };
+
+        var handlers = new AzureADB2COpenIDConnectEventHandlers(azureADB2CScheme, azureADB2COptions);
+        options.Events = new OpenIdConnectEvents
         {
-            var azureADB2CScheme = GetAzureADB2CScheme(name);
-            var azureADB2COptions = _azureADB2COptions.Get(azureADB2CScheme);
-            if (name != azureADB2COptions.OpenIdConnectSchemeName)
+            OnRedirectToIdentityProvider = handlers.OnRedirectToIdentityProvider,
+            OnRemoteFailure = handlers.OnRemoteFailure
+        };
+    }
+
+    internal static string BuildAuthority(AzureADB2COptions AzureADB2COptions)
+    {
+        var baseUri = new Uri(AzureADB2COptions.Instance);
+        var pathBase = baseUri.PathAndQuery.TrimEnd('/');
+        var domain = AzureADB2COptions.Domain;
+        var policy = AzureADB2COptions.DefaultPolicy;
+
+        return new Uri(baseUri, new PathString($"{pathBase}/{domain}/{policy}/v2.0")).ToString();
+    }
+
+    private string GetAzureADB2CScheme(string name)
+    {
+        foreach (var mapping in _schemeOptions.Value.OpenIDMappings)
+        {
+            if (mapping.Value.OpenIdConnectScheme == name)
             {
-                return;
+                return mapping.Key;
             }
-
-            options.ClientId = azureADB2COptions.ClientId;
-            options.ClientSecret = azureADB2COptions.ClientSecret;
-            options.Authority = BuildAuthority(azureADB2COptions);
-            options.CallbackPath = azureADB2COptions.CallbackPath ?? options.CallbackPath;
-            options.SignedOutCallbackPath = azureADB2COptions.SignedOutCallbackPath ?? options.SignedOutCallbackPath;
-            options.SignInScheme = azureADB2COptions.CookieSchemeName;
-            options.UseTokenLifetime = true;
-            options.TokenValidationParameters = new TokenValidationParameters { NameClaimType = "name" };
-
-            var handlers = new AzureADB2COpenIDConnectEventHandlers(azureADB2CScheme, azureADB2COptions);
-            options.Events = new OpenIdConnectEvents
-            {
-                OnRedirectToIdentityProvider = handlers.OnRedirectToIdentityProvider,
-                OnRemoteFailure = handlers.OnRemoteFailure
-            };
         }
 
-        internal static string BuildAuthority(AzureADB2COptions AzureADB2COptions)
-        {
-            var baseUri = new Uri(AzureADB2COptions.Instance);
-            var pathBase = baseUri.PathAndQuery.TrimEnd('/');
-            var domain = AzureADB2COptions.Domain;
-            var policy = AzureADB2COptions.DefaultPolicy;
+        return null;
+    }
 
-            return new Uri(baseUri, new PathString($"{pathBase}/{domain}/{policy}/v2.0")).ToString();
-        }
-
-        private string GetAzureADB2CScheme(string name)
-        {
-            foreach (var mapping in _schemeOptions.Value.OpenIDMappings)
-            {
-                if (mapping.Value.OpenIdConnectScheme == name)
-                {
-                    return mapping.Key;
-                }
-            }
-
-            return null;
-        }
-
-        public void Configure(OpenIdConnectOptions options)
-        {
-        }
+    public void Configure(OpenIdConnectOptions options)
+    {
     }
 }

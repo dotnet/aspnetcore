@@ -4,49 +4,48 @@
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 
-namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator
+namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator;
+
+internal partial class HubClientProxyGenerator
 {
-    internal partial class HubClientProxyGenerator
+    public class SourceGenerationSpec
     {
-        public class SourceGenerationSpec
-        {
-            public string? SetterNamespace;
-            public string? SetterClassName;
-            public string? SetterMethodName;
-            public string? SetterTypeParameterName;
-            public string? SetterHubConnectionParameterName;
-            public string? SetterProviderParameterName;
-            public string? SetterMethodAccessibility;
-            public string? SetterClassAccessibility;
-            public List<TypeSpec> Types = new();
-        }
+        public string? SetterNamespace;
+        public string? SetterClassName;
+        public string? SetterMethodName;
+        public string? SetterTypeParameterName;
+        public string? SetterHubConnectionParameterName;
+        public string? SetterProviderParameterName;
+        public string? SetterMethodAccessibility;
+        public string? SetterClassAccessibility;
+        public List<TypeSpec> Types = new();
+    }
 
-        public class TypeSpec
-        {
-            public string TypeName;
-            public List<MethodSpec> Methods = new();
-            public Location CallSite;
-            public string FullyQualifiedTypeName;
-        }
+    public class TypeSpec
+    {
+        public string TypeName;
+        public List<MethodSpec> Methods = new();
+        public Location CallSite;
+        public string FullyQualifiedTypeName;
+    }
 
-        public class MethodSpec
-        {
-            public string Name;
-            public List<ArgumentSpec> Arguments = new();
-            public SupportClassification Support;
-            public string? SupportHint;
-        }
+    public class MethodSpec
+    {
+        public string Name;
+        public List<ArgumentSpec> Arguments = new();
+        public SupportClassification Support;
+        public string? SupportHint;
+    }
 
-        public enum SupportClassification
-        {
-            Supported,
-            UnsupportedReturnType
-        }
+    public enum SupportClassification
+    {
+        Supported,
+        UnsupportedReturnType
+    }
 
-        public class ArgumentSpec
-        {
-            public string Name;
-            public string FullyQualifiedTypeName;
-        }
+    public class ArgumentSpec
+    {
+        public string Name;
+        public string FullyQualifiedTypeName;
     }
 }

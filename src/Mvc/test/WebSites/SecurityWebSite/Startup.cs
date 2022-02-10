@@ -3,42 +3,38 @@
 
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization.Policy;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 
-namespace SecurityWebSite
+namespace SecurityWebSite;
+
+public class Startup
 {
-    public class Startup
+    // This method gets called by the runtime. Use this method to add services to the container.
+    public void ConfigureServices(IServiceCollection services)
     {
-        // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services)
+        // Add framework services.
+        services.AddControllersWithViews();
+        services.AddAntiforgery();
+        services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options =>
         {
-            // Add framework services.
-            services.AddControllersWithViews();
-            services.AddAntiforgery();
-            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options =>
-            {
-                options.LoginPath = "/Home/Login";
-                options.LogoutPath = "/Home/Logout";
-            })
-            .AddCookie("Cookie2");
+            options.LoginPath = "/Home/Login";
+            options.LogoutPath = "/Home/Logout";
+        })
+        .AddCookie("Cookie2");
 
-            services.AddScoped<IPolicyEvaluator, CountingPolicyEvaluator>();
-        }
+        services.AddScoped<IPolicyEvaluator, CountingPolicyEvaluator>();
+    }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app)
+    // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+    public void Configure(IApplicationBuilder app)
+    {
+        app.UseRouting();
+
+        app.UseAuthentication();
+        app.UseAuthorization();
+
+        app.UseEndpoints(endpoints =>
         {
-            app.UseRouting();
-
-            app.UseAuthentication();
-            app.UseAuthorization();
-
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapDefaultControllerRoute();
-            });
-        }
+            endpoints.MapDefaultControllerRoute();
+        });
     }
 }

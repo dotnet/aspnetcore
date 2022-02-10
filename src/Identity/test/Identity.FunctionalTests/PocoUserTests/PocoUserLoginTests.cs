@@ -3,14 +3,12 @@
 
 using Identity.DefaultUI.WebSite;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Identity.FunctionalTests.IdentityUserTests
+namespace Microsoft.AspNetCore.Identity.FunctionalTests.IdentityUserTests;
+
+public class PocoUserLoginTests : LoginTests<PocoUserStartup, IdentityDbContext>
 {
-    public class PocoUserLoginTests : LoginTests<PocoUserStartup, IdentityDbContext>
+    public PocoUserLoginTests(ServerFactory<PocoUserStartup, IdentityDbContext> serverFactory) : base(serverFactory)
     {
-        public PocoUserLoginTests(ServerFactory<PocoUserStartup, IdentityDbContext> serverFactory) : base(serverFactory)
-        {
-        }
     }
 }

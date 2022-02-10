@@ -3,24 +3,23 @@
 
 using Xunit;
 
-namespace Microsoft.Extensions.WebEncoders.Testing
+namespace Microsoft.Extensions.WebEncoders.Testing;
+
+public class HtmlTestEncoderTest
 {
-    public class HtmlTestEncoderTest
+    [Theory]
+    [InlineData("", "")]
+    [InlineData("abcd", "HtmlEncode[[abcd]]")]
+    [InlineData("<<''\"\">>", "HtmlEncode[[<<''\"\">>]]")]
+    public void StringEncode_EncodesAsExpected(string input, string expectedOutput)
     {
-        [Theory]
-        [InlineData("", "")]
-        [InlineData("abcd", "HtmlEncode[[abcd]]")]
-        [InlineData("<<''\"\">>", "HtmlEncode[[<<''\"\">>]]")]
-        public void StringEncode_EncodesAsExpected(string input, string expectedOutput)
-        {
-            // Arrange
-            var encoder = new HtmlTestEncoder();
+        // Arrange
+        var encoder = new HtmlTestEncoder();
 
-            // Act
-            var output = encoder.Encode(input);
+        // Act
+        var output = encoder.Encode(input);
 
-            // Assert
-            Assert.Equal(expectedOutput, output);
-        }
+        // Assert
+        Assert.Equal(expectedOutput, output);
     }
 }

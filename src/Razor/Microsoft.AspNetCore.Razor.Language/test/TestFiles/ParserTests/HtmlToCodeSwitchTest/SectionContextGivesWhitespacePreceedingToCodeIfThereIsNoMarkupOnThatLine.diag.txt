@@ -1,1 +1,0 @@
-(1,4): Error RZ2005: The 'section` directive must appear at the start of the line.

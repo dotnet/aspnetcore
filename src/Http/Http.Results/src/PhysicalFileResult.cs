@@ -1,120 +1,102 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Http.Result
+namespace Microsoft.AspNetCore.Http.Result;
+
+/// <summary>
+/// A <see cref="PhysicalFileResult"/> on execution will write a file from disk to the response
+/// using mechanisms provided by the host.
+/// </summary>
+internal sealed partial class PhysicalFileResult : FileResult, IResult
 {
     /// <summary>
-    /// A <see cref="PhysicalFileResult"/> on execution will write a file from disk to the response
-    /// using mechanisms provided by the host.
+    /// Creates a new <see cref="PhysicalFileResult"/> instance with
+    /// the provided <paramref name="fileName"/> and the provided <paramref name="contentType"/>.
     /// </summary>
-    internal sealed partial class PhysicalFileResult : FileResult, IResult
+    /// <param name="fileName">The path to the file. The path must be an absolute path.</param>
+    /// <param name="contentType">The Content-Type header of the response.</param>
+    public PhysicalFileResult(string fileName, string? contentType)
+        : base(contentType)
     {
-        /// <summary>
-        /// Creates a new <see cref="PhysicalFileResult"/> instance with
-        /// the provided <paramref name="fileName"/> and the provided <paramref name="contentType"/>.
-        /// </summary>
-        /// <param name="fileName">The path to the file. The path must be an absolute path.</param>
-        /// <param name="contentType">The Content-Type header of the response.</param>
-        public PhysicalFileResult(string fileName, string? contentType)
-            : base(contentType)
+        FileName = fileName;
+    }
+
+    /// <summary>
+    /// Gets or sets the path to the file that will be sent back as the response.
+    /// </summary>
+    public string FileName { get; }
+
+    // For testing
+    public Func<string, FileInfoWrapper> GetFileInfoWrapper { get; init; } =
+        static path => new FileInfoWrapper(path);
+
+    protected override ILogger GetLogger(HttpContext httpContext)
+    {
+        return httpContext.RequestServices.GetRequiredService<ILogger<PhysicalFileResult>>();
+    }
+
+    public override Task ExecuteAsync(HttpContext httpContext)
+    {
+        var fileInfo = GetFileInfoWrapper(FileName);
+        if (!fileInfo.Exists)
         {
-            FileName = fileName;
+            throw new FileNotFoundException($"Could not find file: {FileName}", FileName);
         }
 
-        /// <summary>
-        /// Gets or sets the path to the file that will be sent back as the response.
-        /// </summary>
-        public string FileName { get; }
+        LastModified = LastModified ?? fileInfo.LastWriteTimeUtc;
+        FileLength = fileInfo.Length;
 
-        // For testing
-        public Func<string, FileInfoWrapper> GetFileInfoWrapper { get; init; } =
-            static path => new FileInfoWrapper(path);
+        return base.ExecuteAsync(httpContext);
+    }
 
-        public Task ExecuteAsync(HttpContext httpContext)
+    protected override Task ExecuteCoreAsync(HttpContext httpContext, RangeItemHeaderValue? range, long rangeLength)
+    {
+        var response = httpContext.Response;
+        if (!Path.IsPathRooted(FileName))
         {
-            var fileInfo = GetFileInfoWrapper(FileName);
-            if (!fileInfo.Exists)
-            {
-                throw new FileNotFoundException($"Could not find file: {FileName}", FileName);
-            }
-
-            var logger = httpContext.RequestServices.GetRequiredService<ILogger<PhysicalFileResult>>();
-
-            Log.ExecutingFileResult(logger, this, FileName);
-
-            var lastModified = LastModified ?? fileInfo.LastWriteTimeUtc;
-            var fileResultInfo = new FileResultInfo
-            {
-                ContentType = ContentType,
-                EnableRangeProcessing = EnableRangeProcessing,
-                EntityTag = EntityTag,
-                FileDownloadName = FileDownloadName,
-                LastModified = lastModified,
-            };
-
-            var (range, rangeLength, serveBody) = FileResultHelper.SetHeadersAndLog(
-                httpContext,
-                fileResultInfo,
-                fileInfo.Length,
-                EnableRangeProcessing,
-                lastModified,
-                EntityTag,
-                logger);
-
-            if (!serveBody)
-            {
-                return Task.CompletedTask;
-            }
-
-            if (range != null && rangeLength == 0)
-            {
-                return Task.CompletedTask;
-            }
-
-            var response = httpContext.Response;
-            if (!Path.IsPathRooted(FileName))
-            {
-                throw new NotSupportedException($"Path '{FileName}' was not rooted.");
-            }
-
-            if (range != null)
-            {
-                FileResultHelper.Log.WritingRangeToBody(logger);
-            }
-
-            var offset = 0L;
-            var count = (long?)null;
-            if (range != null)
-            {
-                offset = range.From ?? 0L;
-                count = rangeLength;
-            }
-
-            return response.SendFileAsync(
-                FileName,
-                offset: offset,
-                count: count);
+            throw new NotSupportedException($"Path '{FileName}' was not rooted.");
         }
 
-        internal readonly struct FileInfoWrapper
+        var offset = 0L;
+        var count = (long?)null;
+        if (range != null)
         {
-            public FileInfoWrapper(string path)
+            offset = range.From ?? 0L;
+            count = rangeLength;
+        }
+
+        return response.SendFileAsync(
+            FileName,
+            offset: offset,
+            count: count);
+    }
+
+    internal readonly struct FileInfoWrapper
+    {
+        public FileInfoWrapper(string path)
+        {
+            var fileInfo = new FileInfo(path);
+
+            // It means we are dealing with a symlink and need to get the information
+            // from the target file instead.
+            if (fileInfo.Exists && !string.IsNullOrEmpty(fileInfo.LinkTarget))
             {
-                var fileInfo = new FileInfo(path);
-                Exists = fileInfo.Exists;
-                Length = fileInfo.Length;
-                LastWriteTimeUtc = fileInfo.LastWriteTimeUtc;
+                fileInfo = (FileInfo?)fileInfo.ResolveLinkTarget(returnFinalTarget: true) ?? fileInfo;
             }
 
-            public bool Exists { get; init; }
-
-            public long Length { get; init; }
-
-            public DateTimeOffset LastWriteTimeUtc { get; init; }
+            Exists = fileInfo.Exists;
+            Length = fileInfo.Length;
+            LastWriteTimeUtc = fileInfo.LastWriteTimeUtc;
         }
+
+        public bool Exists { get; init; }
+
+        public long Length { get; init; }
+
+        public DateTimeOffset LastWriteTimeUtc { get; init; }
     }
 }

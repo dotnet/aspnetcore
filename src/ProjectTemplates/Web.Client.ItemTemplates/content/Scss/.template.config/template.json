@@ -27,6 +27,7 @@
   },
   "postActions": [
     {
+      "id": "openInEditor",
       "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
       "description": "Opens styleSheet1.scss in the editor",
       "manualInstructions": [ ],

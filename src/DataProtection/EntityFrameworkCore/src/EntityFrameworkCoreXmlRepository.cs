@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.DataProtection.Repositories;
@@ -10,74 +8,73 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.DataProtection.EntityFrameworkCore
+namespace Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
+
+/// <summary>
+/// An <see cref="IXmlRepository"/> backed by an EntityFrameworkCore datastore.
+/// </summary>
+public class EntityFrameworkCoreXmlRepository<TContext> : IXmlRepository
+    where TContext : DbContext, IDataProtectionKeyContext
 {
+    private readonly IServiceProvider _services;
+    private readonly ILogger _logger;
+
     /// <summary>
-    /// An <see cref="IXmlRepository"/> backed by an EntityFrameworkCore datastore.
+    /// Creates a new instance of the <see cref="EntityFrameworkCoreXmlRepository{TContext}"/>.
     /// </summary>
-    public class EntityFrameworkCoreXmlRepository<TContext> : IXmlRepository
-        where TContext : DbContext, IDataProtectionKeyContext
+    /// <param name="services"></param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+    public EntityFrameworkCoreXmlRepository(IServiceProvider services, ILoggerFactory loggerFactory)
     {
-        private readonly IServiceProvider _services;
-        private readonly ILogger _logger;
-
-        /// <summary>
-        /// Creates a new instance of the <see cref="EntityFrameworkCoreXmlRepository{TContext}"/>.
-        /// </summary>
-        /// <param name="services"></param>
-        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
-        public EntityFrameworkCoreXmlRepository(IServiceProvider services, ILoggerFactory loggerFactory)
+        if (loggerFactory == null)
         {
-            if (loggerFactory == null)
-            {
-                throw new ArgumentNullException(nameof(loggerFactory));
-            }
-
-            _logger = loggerFactory.CreateLogger<EntityFrameworkCoreXmlRepository<TContext>>();
-            _services = services ?? throw new ArgumentNullException(nameof(services));
+            throw new ArgumentNullException(nameof(loggerFactory));
         }
 
-        /// <inheritdoc />
-        public virtual IReadOnlyCollection<XElement> GetAllElements()
-        {
-            // forces complete enumeration
-            return GetAllElementsCore().ToList().AsReadOnly();
+        _logger = loggerFactory.CreateLogger<EntityFrameworkCoreXmlRepository<TContext>>();
+        _services = services ?? throw new ArgumentNullException(nameof(services));
+    }
 
-            IEnumerable<XElement> GetAllElementsCore()
-            {
-                using (var scope = _services.CreateScope())
-                {
-                    var context = scope.ServiceProvider.GetRequiredService<TContext>();
+    /// <inheritdoc />
+    public virtual IReadOnlyCollection<XElement> GetAllElements()
+    {
+        // forces complete enumeration
+        return GetAllElementsCore().ToList().AsReadOnly();
 
-                    foreach (var key in context.DataProtectionKeys.AsNoTracking())
-                    {
-                        _logger.ReadingXmlFromKey(key.FriendlyName!, key.Xml);
-
-                        if (!string.IsNullOrEmpty(key.Xml))
-                        {
-                            yield return XElement.Parse(key.Xml);
-                        }
-                    }
-                }
-            }
-        }
-
-        /// <inheritdoc />
-        public void StoreElement(XElement element, string friendlyName)
+        IEnumerable<XElement> GetAllElementsCore()
         {
             using (var scope = _services.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<TContext>();
-                var newKey = new DataProtectionKey()
-                {
-                    FriendlyName = friendlyName,
-                    Xml = element.ToString(SaveOptions.DisableFormatting)
-                };
 
-                context.DataProtectionKeys.Add(newKey);
-                _logger.LogSavingKeyToDbContext(friendlyName, typeof(TContext).Name);
-                context.SaveChanges();
+                foreach (var key in context.DataProtectionKeys.AsNoTracking())
+                {
+                    _logger.ReadingXmlFromKey(key.FriendlyName!, key.Xml);
+
+                    if (!string.IsNullOrEmpty(key.Xml))
+                    {
+                        yield return XElement.Parse(key.Xml);
+                    }
+                }
             }
+        }
+    }
+
+    /// <inheritdoc />
+    public void StoreElement(XElement element, string friendlyName)
+    {
+        using (var scope = _services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<TContext>();
+            var newKey = new DataProtectionKey()
+            {
+                FriendlyName = friendlyName,
+                Xml = element.ToString(SaveOptions.DisableFormatting)
+            };
+
+            context.DataProtectionKeys.Add(newKey);
+            _logger.LogSavingKeyToDbContext(friendlyName, typeof(TContext).Name);
+            context.SaveChanges();
         }
     }
 }

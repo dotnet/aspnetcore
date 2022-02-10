@@ -17,12 +17,12 @@ using Microsoft.Extensions.Logging.Testing;
 using OpenQA.Selenium.Chrome;
 using Xunit;
 
-namespace Interop.FunctionalTests
+namespace Interop.FunctionalTests;
+
+[SkipIfChromeUnavailable]
+public class ChromeTests : LoggedTest
 {
-    [SkipIfChromeUnavailable]
-    public class ChromeTests : LoggedTest
-    {
-        private static readonly string _postHtml =
+    private static readonly string _postHtml =
 @"<!DOCTYPE html>
 <html>
  <head>
@@ -36,18 +36,18 @@ namespace Interop.FunctionalTests
  </body>
 </html>";
 
-        private string NetLogPath { get; set; }
-        private string StartupLogPath { get; set; }
-        private string ShutdownLogPath { get; set; }
-        private string[] ChromeArgs { get; set; }
+    private string NetLogPath { get; set; }
+    private string StartupLogPath { get; set; }
+    private string ShutdownLogPath { get; set; }
+    private string[] ChromeArgs { get; set; }
 
-        private void InitializeArgs()
-        {
-            NetLogPath = Path.Combine(ResolvedLogOutputDirectory, $"{ResolvedTestMethodName}.nl.json");
-            StartupLogPath = Path.Combine(ResolvedLogOutputDirectory, $"{ResolvedTestMethodName}.su.json");
-            ShutdownLogPath = Path.Combine(ResolvedLogOutputDirectory, $"{ResolvedTestMethodName}.sd.json");
+    private void InitializeArgs()
+    {
+        NetLogPath = Path.Combine(ResolvedLogOutputDirectory, $"{ResolvedTestMethodName}.nl.json");
+        StartupLogPath = Path.Combine(ResolvedLogOutputDirectory, $"{ResolvedTestMethodName}.su.json");
+        ShutdownLogPath = Path.Combine(ResolvedLogOutputDirectory, $"{ResolvedTestMethodName}.sd.json");
 
-            ChromeArgs = new[] {
+        ChromeArgs = new[] {
                 $"--headless",
                 $"--no-sandbox",
                 $"--disable-gpu",
@@ -61,81 +61,80 @@ namespace Interop.FunctionalTests
                 $"--trace-shutdown",
                 $"--trace-shutdown-file={ShutdownLogPath}"
             };
-        }
+    }
 
-        [ConditionalTheory(Skip = "Disabling while debugging. https://github.com/dotnet/aspnetcore-internal/issues/1363")]
-        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing SslStream ALPN support: https://github.com/dotnet/runtime/issues/27727")]
-        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win81, SkipReason = "Missing Windows ALPN support: https://en.wikipedia.org/wiki/Application-Layer_Protocol_Negotiation#Support")]
-        [InlineData("", "Interop HTTP/2 GET")]
-        [InlineData("?TestMethod=POST", "Interop HTTP/2 POST")]
-        public async Task Http2(string requestSuffix, string expectedResponse)
-        {
-            InitializeArgs();
+    [ConditionalTheory(Skip = "Disabling while debugging. https://github.com/dotnet/aspnetcore-internal/issues/1363")]
+    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing SslStream ALPN support: https://github.com/dotnet/runtime/issues/27727")]
+    [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win81, SkipReason = "Missing Windows ALPN support: https://en.wikipedia.org/wiki/Application-Layer_Protocol_Negotiation#Support")]
+    [InlineData("", "Interop HTTP/2 GET")]
+    [InlineData("?TestMethod=POST", "Interop HTTP/2 POST")]
+    public async Task Http2(string requestSuffix, string expectedResponse)
+    {
+        InitializeArgs();
 
-            var hostBuilder = new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
-                {
-                    webHostBuilder
-                        .UseKestrel(options =>
+        var hostBuilder = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseKestrel(options =>
+                    {
+                        options.Listen(IPAddress.Loopback, 0, listenOptions =>
                         {
-                            options.Listen(IPAddress.Loopback, 0, listenOptions =>
-                            {
-                                listenOptions.Protocols = HttpProtocols.Http2;
-                                listenOptions.UseHttps(TestResources.GetTestCertificate());
-                            });
-                        })
-                        .Configure(app => app.Run(async context =>
+                            listenOptions.Protocols = HttpProtocols.Http2;
+                            listenOptions.UseHttps(TestResources.GetTestCertificate());
+                        });
+                    })
+                    .Configure(app => app.Run(async context =>
+                    {
+                        if (HttpMethods.IsPost(context.Request.Query["TestMethod"]))
                         {
-                            if (HttpMethods.IsPost(context.Request.Query["TestMethod"]))
-                            {
-                                await context.Response.WriteAsync(_postHtml);
-                            }
-                            else
-                            {
-                                await context.Response.WriteAsync($"Interop {context.Request.Protocol} {context.Request.Method}");
-                            }
-                        }));
-                })
-                .ConfigureServices(AddTestLogging);
+                            await context.Response.WriteAsync(_postHtml);
+                        }
+                        else
+                        {
+                            await context.Response.WriteAsync($"Interop {context.Request.Protocol} {context.Request.Method}");
+                        }
+                    }));
+            })
+            .ConfigureServices(AddTestLogging);
 
-            using (var host = hostBuilder.Build())
-            {
-                await host.StartAsync();
-                var chromeOutput = RunHeadlessChrome($"https://localhost:{host.GetPort()}/{requestSuffix}");
-
-                AssertExpectedResponseOrShowDebugInstructions(expectedResponse, chromeOutput);
-
-                await host.StopAsync();
-            }
-        }
-
-        private string RunHeadlessChrome(string testUrl)
+        using (var host = hostBuilder.Build())
         {
-            var chromeOptions = new ChromeOptions();
-            chromeOptions.AddArguments(ChromeArgs);
+            await host.StartAsync();
+            var chromeOutput = RunHeadlessChrome($"https://localhost:{host.GetPort()}/{requestSuffix}");
 
-            using (var driver = new ChromeDriver(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), chromeOptions))
-            {
-                driver.Navigate().GoToUrl(testUrl);
+            AssertExpectedResponseOrShowDebugInstructions(expectedResponse, chromeOutput);
 
-                return driver.PageSource;
-            }
+            await host.StopAsync();
         }
+    }
 
-        private void AssertExpectedResponseOrShowDebugInstructions(string expectedResponse, string actualResponse)
+    private string RunHeadlessChrome(string testUrl)
+    {
+        var chromeOptions = new ChromeOptions();
+        chromeOptions.AddArguments(ChromeArgs);
+
+        using (var driver = new ChromeDriver(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), chromeOptions))
         {
-            try
-            {
-                Assert.Contains(expectedResponse, actualResponse);
-            }
-            catch
-            {
-                Logger.LogError("Chrome interop tests failed. Please consult the following logs:");
-                Logger.LogError($"Network logs: {NetLogPath}");
-                Logger.LogError($"Startup logs: {StartupLogPath}");
-                Logger.LogError($"Shutdown logs: {ShutdownLogPath}");
-                throw;
-            }
+            driver.Navigate().GoToUrl(testUrl);
+
+            return driver.PageSource;
+        }
+    }
+
+    private void AssertExpectedResponseOrShowDebugInstructions(string expectedResponse, string actualResponse)
+    {
+        try
+        {
+            Assert.Contains(expectedResponse, actualResponse);
+        }
+        catch
+        {
+            Logger.LogError("Chrome interop tests failed. Please consult the following logs:");
+            Logger.LogError($"Network logs: {NetLogPath}");
+            Logger.LogError($"Startup logs: {StartupLogPath}");
+            Logger.LogError($"Shutdown logs: {ShutdownLogPath}");
+            throw;
         }
     }
 }

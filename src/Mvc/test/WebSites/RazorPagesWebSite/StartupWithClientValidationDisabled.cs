@@ -2,39 +2,36 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 
-namespace RazorPagesWebSite
+namespace RazorPagesWebSite;
+
+public class StartupWithClientValidationDisabled
 {
-    public class StartupWithClientValidationDisabled
+    public void ConfigureServices(IServiceCollection services)
     {
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-                .AddCookie(options => options.LoginPath = "/Login");
+        services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+            .AddCookie(options => options.LoginPath = "/Login");
 
-            services.AddRazorPages(options =>
-                {
-                    options.Conventions.AuthorizeFolder("/Admin");
-                });
-
-            services.Configure<MvcViewOptions>(o => o.HtmlHelperOptions.ClientValidationEnabled = false);
-        }
-
-        public void Configure(IApplicationBuilder app)
-        {
-            app.UseRouting();
-
-            app.UseAuthentication();
-            app.UseAuthorization();
-
-            app.UseEndpoints(endpoints =>
+        services.AddRazorPages(options =>
             {
-                endpoints.MapControllers();
-                endpoints.MapRazorPages();
+                options.Conventions.AuthorizeFolder("/Admin");
             });
-        }
+
+        services.Configure<MvcViewOptions>(o => o.HtmlHelperOptions.ClientValidationEnabled = false);
+    }
+
+    public void Configure(IApplicationBuilder app)
+    {
+        app.UseRouting();
+
+        app.UseAuthentication();
+        app.UseAuthorization();
+
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapControllers();
+            endpoints.MapRazorPages();
+        });
     }
 }

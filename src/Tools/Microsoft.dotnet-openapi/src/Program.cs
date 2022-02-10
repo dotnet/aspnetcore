@@ -6,48 +6,47 @@ using System.IO;
 using System.Net.Http;
 using Microsoft.DotNet.Openapi.Tools;
 
-namespace Microsoft.DotNet.OpenApi
+namespace Microsoft.DotNet.OpenApi;
+
+public class Program
 {
-    public class Program
+    public static int Main(string[] args)
     {
-        public static int Main(string[] args)
+        var outputWriter = new StringWriter();
+        var errorWriter = new StringWriter();
+
+        DebugMode.HandleDebugSwitch(ref args);
+
+        try
         {
-            var outputWriter = new StringWriter();
-            var errorWriter = new StringWriter();
+            using var httpClient = new HttpClientWrapper(new HttpClient());
+            var application = new Application(
+                Directory.GetCurrentDirectory(),
+                httpClient,
+                outputWriter,
+                errorWriter);
 
-            DebugMode.HandleDebugSwitch(ref args);
+            var result = application.Execute(args);
 
-            try
-            {
-                using var httpClient = new HttpClientWrapper(new HttpClient());
-                var application = new Application(
-                    Directory.GetCurrentDirectory(),
-                    httpClient,
-                    outputWriter,
-                    errorWriter);
-
-                var result = application.Execute(args);
-
-                return result;
-            }
-            catch (Exception ex)
-            {
-                errorWriter.Write("Unexpected error:");
-                errorWriter.WriteLine(ex.ToString());
-            }
-            finally
-            {
-                var output = outputWriter.ToString();
-                var error = errorWriter.ToString();
-
-                outputWriter.Dispose();
-                errorWriter.Dispose();
-
-                Console.WriteLine(output);
-                Console.Error.WriteLine(error);
-            }
-
-            return 1;
+            return result;
         }
+        catch (Exception ex)
+        {
+            errorWriter.Write("Unexpected error:");
+            errorWriter.WriteLine(ex.ToString());
+        }
+        finally
+        {
+            var output = outputWriter.ToString();
+            var error = errorWriter.ToString();
+
+            outputWriter.Dispose();
+            errorWriter.Dispose();
+
+            Console.WriteLine(output);
+            Console.Error.WriteLine(error);
+        }
+
+        return 1;
     }
 }

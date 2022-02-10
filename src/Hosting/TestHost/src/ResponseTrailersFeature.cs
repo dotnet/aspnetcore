@@ -4,10 +4,9 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 
-namespace Microsoft.AspNetCore.TestHost
+namespace Microsoft.AspNetCore.TestHost;
+
+internal class ResponseTrailersFeature : IHttpResponseTrailersFeature
 {
-    internal class ResponseTrailersFeature : IHttpResponseTrailersFeature
-    {
-        public IHeaderDictionary Trailers { get; set; } = new HeaderDictionary();
-    }
+    public IHeaderDictionary Trailers { get; set; } = new HeaderDictionary();
 }

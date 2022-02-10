@@ -14,48 +14,47 @@ using Xunit;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 
 #if IISEXPRESS_FUNCTIONALS
-namespace Microsoft.AspNetCore.Server.IIS.IISExpress.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.IISExpress.FunctionalTests;
 #elif NEWHANDLER_FUNCTIONALS
-namespace Microsoft.AspNetCore.Server.IIS.NewHandler.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.NewHandler.FunctionalTests;
 #elif NEWSHIM_FUNCTIONALS
-namespace Microsoft.AspNetCore.Server.IIS.NewShim.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.NewShim.FunctionalTests;
 #endif
 
 #else
-namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 #endif
+
+[Collection(PublishedSitesCollection.Name)]
+public class WindowsAuthTests : IISFunctionalTestBase
 {
-    [Collection(PublishedSitesCollection.Name)]
-    public class WindowsAuthTests : IISFunctionalTestBase
+    public WindowsAuthTests(PublishedSitesFixture fixture) : base(fixture)
     {
-        public WindowsAuthTests(PublishedSitesFixture fixture) : base(fixture)
-        {
-        }
+    }
 
-        public static TestMatrix TestVariants
-            => TestMatrix.ForServers(DeployerSelector.ServerType)
-                .WithTfms(Tfm.Default)
-                .WithApplicationTypes(ApplicationType.Portable)
-                .WithAllHostingModels();
+    public static TestMatrix TestVariants
+        => TestMatrix.ForServers(DeployerSelector.ServerType)
+            .WithTfms(Tfm.Default)
+            .WithApplicationTypes(ApplicationType.Portable)
+            .WithAllHostingModels();
 
-        [ConditionalTheory]
-        [RequiresIIS(IISCapability.WindowsAuthentication)]
-        [MemberData(nameof(TestVariants))]
-        public async Task WindowsAuthTest(TestVariant variant)
-        {
-            var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
-            deploymentParameters.SetAnonymousAuth(enabled: false);
-            deploymentParameters.SetWindowsAuth();
+    [ConditionalTheory]
+    [RequiresIIS(IISCapability.WindowsAuthentication)]
+    [MemberData(nameof(TestVariants))]
+    public async Task WindowsAuthTest(TestVariant variant)
+    {
+        var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
+        deploymentParameters.SetAnonymousAuth(enabled: false);
+        deploymentParameters.SetWindowsAuth();
 
-            // The default in hosting sets windows auth to true.
-            var deploymentResult = await DeployAsync(deploymentParameters);
+        // The default in hosting sets windows auth to true.
+        var deploymentResult = await DeployAsync(deploymentParameters);
 
-            var client = deploymentResult.CreateClient(new HttpClientHandler { UseDefaultCredentials = true });
-            var response = await client.GetAsync("/Auth");
-            var responseText = await response.Content.ReadAsStringAsync();
+        var client = deploymentResult.CreateClient(new HttpClientHandler { UseDefaultCredentials = true });
+        var response = await client.GetAsync("/Auth");
+        var responseText = await response.Content.ReadAsStringAsync();
 
-            Assert.StartsWith("Windows:", responseText);
-            Assert.Contains(Environment.UserName, responseText);
-        }
+        Assert.StartsWith("Windows:", responseText);
+        Assert.Contains(Environment.UserName, responseText);
     }
 }

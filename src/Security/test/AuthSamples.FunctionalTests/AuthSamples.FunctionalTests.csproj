@@ -1,25 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsSampleProject>false</IsSampleProject>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <!-- Test asset publishing not working on arm64 https://github.com/dotnet/aspnetcore/issues/11205 -->
-    <SkipHelixArm>true</SkipHelixArm>
   </PropertyGroup>
-
-  <Import Project="$(MvcTestingTargets)" Condition="'$(MvcTestingTargets)' != ''" />
 
   <ItemGroup>
     <ProjectReference Include="$(RepoRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
-    <ProjectReference Include="..\..\samples\Cookies\Cookies.csproj" />
-    <ProjectReference Include="..\..\samples\ClaimsTransformation\ClaimsTransformation.csproj" />
-    <ProjectReference Include="..\..\samples\CustomAuthorizationFailureResponse\CustomAuthorizationFailureResponse.csproj" />
-    <ProjectReference Include="..\..\samples\CustomPolicyProvider\CustomPolicyProvider.csproj" />
-    <ProjectReference Include="..\..\samples\DynamicSchemes\DynamicSchemes.csproj" />
-    <ProjectReference Include="..\..\samples\Identity.ExternalClaims\Identity.ExternalClaims.csproj" />
-    <ProjectReference Include="..\..\samples\PathSchemeSelection\PathSchemeSelection.csproj" />
-    <ProjectReference Include="..\..\samples\StaticFilesAuth\StaticFilesAuth.csproj" />
+    <ProjectReference Include="..\..\samples\*\*.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -28,5 +16,8 @@
     <Reference Include="Microsoft.AspNetCore.TestHost" />
     <Reference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <Reference Include="AngleSharp" />
+    <Reference Include="System.Net.Http" />
   </ItemGroup>
+
+  <Import Project="$(MvcTestingTargets)" Condition="'$(MvcTestingTargets)' != ''" />
 </Project>

@@ -5,92 +5,91 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace System.IO
+namespace System.IO;
+
+public static class StreamExtensions
 {
-    public static class StreamExtensions
+    /// <summary>
+    /// Fill the buffer until the end of the stream.
+    /// </summary>
+    public static async Task<int> FillBufferUntilEndAsync(this Stream stream, byte[] buffer, CancellationToken cancellationToken = default)
     {
-        /// <summary>
-        /// Fill the buffer until the end of the stream.
-        /// </summary>
-        public static async Task<int> FillBufferUntilEndAsync(this Stream stream, byte[] buffer, CancellationToken cancellationToken = default)
+        var offset = 0;
+        int read;
+
+        do
         {
-            var offset = 0;
-            int read;
+            read = await stream.ReadAsync(buffer, offset, buffer.Length - offset, cancellationToken);
+            offset += read;
+        } while (read != 0 && offset < buffer.Length);
 
-            do
-            {
-                read = await stream.ReadAsync(buffer, offset, buffer.Length - offset, cancellationToken);
-                offset += read;
-            } while (read != 0 && offset < buffer.Length);
-
-            if (read != 0)
-            {
-                Assert.Equal(0, await stream.ReadAsync(new byte[1], 0, 1, cancellationToken));
-            }
-
-            return offset;
+        if (read != 0)
+        {
+            Assert.Equal(0, await stream.ReadAsync(new byte[1], 0, 1, cancellationToken));
         }
 
-        public static async Task<int> FillEntireBufferAsync(this Stream stream, byte[] buffer, CancellationToken cancellationToken = default)
+        return offset;
+    }
+
+    public static async Task<int> FillEntireBufferAsync(this Stream stream, byte[] buffer, CancellationToken cancellationToken = default)
+    {
+        var offset = 0;
+        int read;
+
+        do
         {
-            var offset = 0;
-            int read;
+            read = await stream.ReadAsync(buffer, offset, buffer.Length - offset, cancellationToken);
+            offset += read;
+        } while (read != 0 && offset < buffer.Length);
 
-            do
-            {
-                read = await stream.ReadAsync(buffer, offset, buffer.Length - offset, cancellationToken);
-                offset += read;
-            } while (read != 0 && offset < buffer.Length);
+        Assert.True(offset >= buffer.Length);
+        return offset;
+    }
 
-            Assert.True(offset >= buffer.Length);
-            return offset;
-        }
+    public static async Task<byte[]> ReadAtLeastLengthAsync(this Stream stream, int length, int bufferLength = 1024, bool allowEmpty = false, CancellationToken cancellationToken = default)
+    {
+        var buffer = new byte[bufferLength];
+        var data = new List<byte>();
+        var offset = 0;
 
-        public static async Task<byte[]> ReadAtLeastLengthAsync(this Stream stream, int length, int bufferLength = 1024, bool allowEmpty = false, CancellationToken cancellationToken = default)
+        while (offset < length)
         {
-            var buffer = new byte[bufferLength];
-            var data = new List<byte>();
-            var offset = 0;
+            var read = await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken);
+            offset += read;
 
-            while (offset < length)
+            if (read == 0)
             {
-                var read = await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken);
-                offset += read;
-
-                if (read == 0)
+                if (allowEmpty && offset == 0)
                 {
-                    if (allowEmpty && offset == 0)
-                    {
-                        return null;
-                    }
-
-                    throw new Exception("Stream read 0.");
+                    return null;
                 }
 
-                data.AddRange(buffer.AsMemory(0, read).ToArray());
+                throw new Exception("Stream read 0.");
             }
 
-            return data.ToArray();
+            data.AddRange(buffer.AsMemory(0, read).ToArray());
         }
 
-        public static async Task<byte[]> ReadUntilEndAsync(this Stream stream, int bufferLength = 1024, CancellationToken cancellationToken = default)
+        return data.ToArray();
+    }
+
+    public static async Task<byte[]> ReadUntilEndAsync(this Stream stream, int bufferLength = 1024, CancellationToken cancellationToken = default)
+    {
+        var buffer = new byte[bufferLength];
+        var data = new List<byte>();
+        var offset = 0;
+
+        while (true)
         {
-            var buffer = new byte[bufferLength];
-            var data = new List<byte>();
-            var offset = 0;
+            var read = await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken);
+            offset += read;
 
-            while (true)
+            if (read == 0)
             {
-                var read = await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken);
-                offset += read;
-
-                if (read == 0)
-                {
-                    return data.ToArray();
-                }
-
-                data.AddRange(buffer.AsMemory(0, read).ToArray());
+                return data.ToArray();
             }
+
+            data.AddRange(buffer.AsMemory(0, read).ToArray());
         }
     }
 }

@@ -4,28 +4,27 @@
 using System;
 using System.IO;
 
-namespace Microsoft.AspNetCore.Connections
+namespace Microsoft.AspNetCore.Connections;
+
+/// <summary>
+/// An exception thrown when the connection is reset.
+/// </summary>
+public class ConnectionResetException : IOException
 {
     /// <summary>
-    /// An exception thrown when the connection is reset.
+    /// Initializes a new instance of <see cref="ConnectionResetException"/>.
     /// </summary>
-    public class ConnectionResetException : IOException
+    /// <param name="message">The exception message.</param>
+    public ConnectionResetException(string message) : base(message)
     {
-        /// <summary>
-        /// Initializes a new instance of <see cref="ConnectionResetException"/>.
-        /// </summary>
-        /// <param name="message">The exception message.</param>
-        public ConnectionResetException(string message) : base(message)
-        {
-        }
+    }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="ConnectionResetException"/>.
-        /// </summary>
-        /// <param name="message">The exception message.</param>
-        /// <param name="inner">The underlying <see cref="Exception"/>.</param>
-        public ConnectionResetException(string message, Exception inner) : base(message, inner)
-        {
-        }
+    /// <summary>
+    /// Initializes a new instance of <see cref="ConnectionResetException"/>.
+    /// </summary>
+    /// <param name="message">The exception message.</param>
+    /// <param name="inner">The underlying <see cref="Exception"/>.</param>
+    public ConnectionResetException(string message, Exception inner) : base(message, inner)
+    {
     }
 }

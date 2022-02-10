@@ -1,22 +1,19 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 
-namespace Microsoft.AspNetCore
+namespace Microsoft.AspNetCore;
+
+public static class TestData
 {
-    public static class TestData
+    public static List<string> ListedSharedFxAssemblies;
+
+    public static SortedDictionary<string, string> ListedTargetingPackAssemblies;
+
+    static TestData()
     {
-        public static List<string> ListedSharedFxAssemblies;
-
-        public static SortedDictionary<string, string> ListedTargetingPackAssemblies;
-
-        static TestData()
-        {
-            ListedSharedFxAssemblies = new List<string>()
+        ListedSharedFxAssemblies = new List<string>()
             {
                 "aspnetcorev2_inprocess",
                 "Microsoft.AspNetCore",
@@ -152,7 +149,7 @@ namespace Microsoft.AspNetCore
                 "System.Security.Cryptography.Xml",
             };
 
-            ListedTargetingPackAssemblies = new SortedDictionary<string, string>
+        ListedTargetingPackAssemblies = new SortedDictionary<string, string>
             {
                 { "Microsoft.AspNetCore", "7.0.0.0" },
                 { "Microsoft.AspNetCore.Antiforgery", "7.0.0.0" },
@@ -285,37 +282,36 @@ namespace Microsoft.AspNetCore
                 { "System.Security.Cryptography.Xml", "7.0.0.0" },
             };
 
-            if (!VerifyAncmBinary())
-            {
-                ListedSharedFxAssemblies.Remove("aspnetcorev2_inprocess");
-            }
+        if (!VerifyAncmBinary())
+        {
+            ListedSharedFxAssemblies.Remove("aspnetcorev2_inprocess");
         }
-
-        public static string GetSharedFxVersion() => GetTestDataValue("SharedFxVersion");
-
-        public static string GetDefaultNetCoreTargetFramework() => GetTestDataValue("DefaultNetCoreTargetFramework");
-
-        public static string GetMicrosoftNETCoreAppPackageVersion() => GetTestDataValue("MicrosoftNETCoreAppRuntimeVersion");
-
-        public static string GetReferencePackSharedFxVersion() => GetTestDataValue("ReferencePackSharedFxVersion");
-
-        public static string GetRepositoryCommit() => GetTestDataValue("RepositoryCommit");
-
-        public static string GetSharedFxRuntimeIdentifier() => GetTestDataValue("TargetRuntimeIdentifier");
-
-        public static string GetSharedFrameworkBinariesFromRepo() => GetTestDataValue("SharedFrameworkBinariesFromRepo");
-
-        public static string GetSharedFxDependencies() => GetTestDataValue("SharedFxDependencies");
-
-        public static string GetTargetingPackDependencies() => GetTestDataValue("TargetingPackDependencies");
-
-        public static string GetRuntimeTargetingPackDependencies() => GetTestDataValue("RuntimeTargetingPackDependencies");
-
-        public static string GetAspNetCoreTargetingPackDependencies() => GetTestDataValue("AspNetCoreTargetingPackDependencies");
-
-        public static bool VerifyAncmBinary() => string.Equals(GetTestDataValue("VerifyAncmBinary"), "true", StringComparison.OrdinalIgnoreCase);
-
-        public static string GetTestDataValue(string key)
-             => typeof(TestData).Assembly.GetCustomAttributes<TestDataAttribute>().Single(d => d.Key == key).Value;
     }
+
+    public static string GetSharedFxVersion() => GetTestDataValue("SharedFxVersion");
+
+    public static string GetDefaultNetCoreTargetFramework() => GetTestDataValue("DefaultNetCoreTargetFramework");
+
+    public static string GetMicrosoftNETCoreAppPackageVersion() => GetTestDataValue("MicrosoftNETCoreAppRuntimeVersion");
+
+    public static string GetReferencePackSharedFxVersion() => GetTestDataValue("ReferencePackSharedFxVersion");
+
+    public static string GetRepositoryCommit() => GetTestDataValue("RepositoryCommit");
+
+    public static string GetSharedFxRuntimeIdentifier() => GetTestDataValue("TargetRuntimeIdentifier");
+
+    public static string GetSharedFrameworkBinariesFromRepo() => GetTestDataValue("SharedFrameworkBinariesFromRepo");
+
+    public static string GetSharedFxDependencies() => GetTestDataValue("SharedFxDependencies");
+
+    public static string GetTargetingPackDependencies() => GetTestDataValue("TargetingPackDependencies");
+
+    public static string GetRuntimeTargetingPackDependencies() => GetTestDataValue("RuntimeTargetingPackDependencies");
+
+    public static string GetAspNetCoreTargetingPackDependencies() => GetTestDataValue("AspNetCoreTargetingPackDependencies");
+
+    public static bool VerifyAncmBinary() => string.Equals(GetTestDataValue("VerifyAncmBinary"), "true", StringComparison.OrdinalIgnoreCase);
+
+    public static string GetTestDataValue(string key)
+         => typeof(TestData).Assembly.GetCustomAttributes<TestDataAttribute>().Single(d => d.Key == key).Value;
 }

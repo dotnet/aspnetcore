@@ -10,8 +10,8 @@
   "generatorVersions": "[1.0.0.0-*)",
   "description": "A project for creating a Razor class library that targets .NET Standard",
   "groupIdentity": "Microsoft.Web.Razor",
-  "precedence": "8000",
-  "identity": "Microsoft.Web.Razor.Library.CSharp.6.0",
+  "precedence": "9000",
+  "identity": "Microsoft.Web.Razor.Library.CSharp.7.0",
   "shortName": "razorclasslib",
   "tags": {
     "language": "C#",
@@ -83,6 +83,7 @@
   "defaultName": "RazorClassLibrary",
   "postActions": [
     {
+      "id": "restore",
       "condition": "(!skipRestore)",
       "description": "Restore NuGet packages required by this project.",
       "manualInstructions": [
@@ -94,6 +95,7 @@
       "continueOnError": true
     },
     {
+      "id": "openInEditor",
       "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
       "description": "Opens Areas/MyFeature/Pages/Page1.cshtml in the editor",
       "manualInstructions": [],

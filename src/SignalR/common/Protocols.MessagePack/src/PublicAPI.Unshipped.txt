@@ -1,11 +1,1 @@
 #nullable enable
-*REMOVED*~Microsoft.AspNetCore.SignalR.Protocol.MessagePackHubProtocol.Name.get -> string
-*REMOVED*~Microsoft.AspNetCore.SignalR.Protocol.MessagePackHubProtocol.MessagePackHubProtocol(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.SignalR.MessagePackHubProtocolOptions> options) -> void
-*REMOVED*~Microsoft.AspNetCore.SignalR.Protocol.MessagePackHubProtocol.TryParseMessage(ref System.Buffers.ReadOnlySequence<byte> input, Microsoft.AspNetCore.SignalR.IInvocationBinder binder, out Microsoft.AspNetCore.SignalR.Protocol.HubMessage message) -> bool
-*REMOVED*~Microsoft.AspNetCore.SignalR.Protocol.MessagePackHubProtocol.WriteMessage(Microsoft.AspNetCore.SignalR.Protocol.HubMessage message, System.Buffers.IBufferWriter<byte> output) -> void
-*REMOVED*~Microsoft.AspNetCore.SignalR.Protocol.MessagePackHubProtocol.GetMessageBytes(Microsoft.AspNetCore.SignalR.Protocol.HubMessage message) -> System.ReadOnlyMemory<byte>
-Microsoft.AspNetCore.SignalR.Protocol.MessagePackHubProtocol.Name.get -> string!
-~Microsoft.AspNetCore.SignalR.Protocol.MessagePackHubProtocol.MessagePackHubProtocol(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.SignalR.MessagePackHubProtocolOptions!>! options) -> void
-Microsoft.AspNetCore.SignalR.Protocol.MessagePackHubProtocol.TryParseMessage(ref System.Buffers.ReadOnlySequence<byte> input, Microsoft.AspNetCore.SignalR.IInvocationBinder! binder, out Microsoft.AspNetCore.SignalR.Protocol.HubMessage? message) -> bool
-Microsoft.AspNetCore.SignalR.Protocol.MessagePackHubProtocol.WriteMessage(Microsoft.AspNetCore.SignalR.Protocol.HubMessage! message, System.Buffers.IBufferWriter<byte>! output) -> void
-Microsoft.AspNetCore.SignalR.Protocol.MessagePackHubProtocol.GetMessageBytes(Microsoft.AspNetCore.SignalR.Protocol.HubMessage! message) -> System.ReadOnlyMemory<byte>

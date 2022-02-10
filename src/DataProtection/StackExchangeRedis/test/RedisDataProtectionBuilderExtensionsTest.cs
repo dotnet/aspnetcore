@@ -8,25 +8,24 @@ using Moq;
 using StackExchange.Redis;
 using Xunit;
 
-namespace Microsoft.AspNetCore.DataProtection.StackExchangeRedis
+namespace Microsoft.AspNetCore.DataProtection.StackExchangeRedis;
+
+public class RedisDataProtectionBuilderExtensionsTest
 {
-    public class RedisDataProtectionBuilderExtensionsTest
+    [Fact]
+    public void PersistKeysToRedis_UsesRedisXmlRepository()
     {
-        [Fact]
-        public void PersistKeysToRedis_UsesRedisXmlRepository()
-        {
-            // Arrange
-            var connection = Mock.Of<IConnectionMultiplexer>();
-            var serviceCollection = new ServiceCollection();
-            var builder = serviceCollection.AddDataProtection();
+        // Arrange
+        var connection = Mock.Of<IConnectionMultiplexer>();
+        var serviceCollection = new ServiceCollection();
+        var builder = serviceCollection.AddDataProtection();
 
-            // Act
-            builder.PersistKeysToStackExchangeRedis(connection);
-            var services = serviceCollection.BuildServiceProvider();
+        // Act
+        builder.PersistKeysToStackExchangeRedis(connection);
+        var services = serviceCollection.BuildServiceProvider();
 
-            // Assert
-            var options = services.GetRequiredService<IOptions<KeyManagementOptions>>();
-            Assert.IsType<RedisXmlRepository>(options.Value.XmlRepository);
-        }
+        // Assert
+        var options = services.GetRequiredService<IOptions<KeyManagementOptions>>();
+        Assert.IsType<RedisXmlRepository>(options.Value.XmlRepository);
     }
 }

@@ -5,33 +5,32 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-namespace Microsoft.AspNetCore.Mvc
+namespace Microsoft.AspNetCore.Mvc;
+
+/// <summary>
+/// An <see cref="ObjectResult"/> that when executed will produce a Unprocessable Entity (422) response.
+/// </summary>
+[DefaultStatusCode(DefaultStatusCode)]
+public class UnprocessableEntityObjectResult : ObjectResult
 {
+    private const int DefaultStatusCode = StatusCodes.Status422UnprocessableEntity;
+
     /// <summary>
-    /// An <see cref="ObjectResult"/> that when executed will produce a Unprocessable Entity (422) response.
+    /// Creates a new <see cref="UnprocessableEntityObjectResult"/> instance.
     /// </summary>
-    [DefaultStatusCode(DefaultStatusCode)]
-    public class UnprocessableEntityObjectResult : ObjectResult
+    /// <param name="modelState"><see cref="ModelStateDictionary"/> containing the validation errors.</param>
+    public UnprocessableEntityObjectResult([ActionResultObjectValue] ModelStateDictionary modelState)
+        : this(new SerializableError(modelState))
     {
-        private const int DefaultStatusCode = StatusCodes.Status422UnprocessableEntity;
+    }
 
-        /// <summary>
-        /// Creates a new <see cref="UnprocessableEntityObjectResult"/> instance.
-        /// </summary>
-        /// <param name="modelState"><see cref="ModelStateDictionary"/> containing the validation errors.</param>
-        public UnprocessableEntityObjectResult([ActionResultObjectValue] ModelStateDictionary modelState)
-            : this(new SerializableError(modelState))
-        {
-        }
-
-        /// <summary>
-        /// Creates a new <see cref="UnprocessableEntityObjectResult"/> instance.
-        /// </summary>
-        /// <param name="error">Contains errors to be returned to the client.</param>
-        public UnprocessableEntityObjectResult([ActionResultObjectValue] object? error)
-            : base(error)
-        {
-            StatusCode = DefaultStatusCode;
-        }
+    /// <summary>
+    /// Creates a new <see cref="UnprocessableEntityObjectResult"/> instance.
+    /// </summary>
+    /// <param name="error">Contains errors to be returned to the client.</param>
+    public UnprocessableEntityObjectResult([ActionResultObjectValue] object? error)
+        : base(error)
+    {
+        StatusCode = DefaultStatusCode;
     }
 }

@@ -1,6 +1,5 @@
 <!-- Targets for making .vcxproj better. -->
 <Project>
-
   <Import Project="$(MicroBuildPluginDirectory)\MicroBuild.Plugins.*\**\build\MicroBuild.Plugins.*.targets" Condition="'$(DisableMicroBuild)' != 'true' AND '$(MicroBuildPluginDirectory)' != ''" />
 
   <Target Name="GetVcxprojFilesToSign" BeforeTargets="SignFiles">
@@ -12,7 +11,7 @@
   <Target Name="Pack" />
   <Target Name="Restore" />
   <Target Name="ResolveNuGetPackageAssets" />
-  <Target Name="Test" Condition="'$(IsTestProject)' == 'true'" >
+  <Target Name="Test" Condition=" $(IsTestProject) AND '$(SkipNativeTest)' != 'true'" >
     <Warning Condition="'$(TestProjectSkipReason)' != ''" Text="Skipped $(MSBuildProjectFileName): $(TestProjectSkipReason)" />
     <Exec Condition="'$(TestProjectSkipReason)' == ''" Command="&quot;$(TargetPath)&quot;" />
   </Target>
