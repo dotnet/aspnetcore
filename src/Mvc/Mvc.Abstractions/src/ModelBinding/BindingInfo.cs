@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
+using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -247,11 +248,11 @@ public class BindingInfo
         }
 
         // If the EmptyBody behavior is not configured will be inferred
-        // as Allow when the ModelMetadata.IsRequired is false or HasDefaultValue
+        // as Allow when the NullablityState == NullablityStateNull or HasDefaultValue
         // https://github.com/dotnet/aspnetcore/issues/39754
         if (EmptyBodyBehavior == EmptyBodyBehavior.Default &&
                 BindingSource == BindingSource.Body &&
-                (!modelMetadata.IsRequired || modelMetadata.HasDefaultValue))
+                (modelMetadata.NullabilityState == NullablityState.Null || modelMetadata.HasDefaultValue))
         {
             isBindingInfoPresent = true;
             EmptyBodyBehavior = EmptyBodyBehavior.Allow;
