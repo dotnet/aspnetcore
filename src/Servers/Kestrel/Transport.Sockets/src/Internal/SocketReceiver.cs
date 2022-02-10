@@ -4,48 +4,47 @@
 using System.IO.Pipelines;
 using System.Net.Sockets;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal;
+
+internal sealed class SocketReceiver : SocketAwaitableEventArgs
 {
-    internal sealed class SocketReceiver : SocketAwaitableEventArgs
+    public SocketReceiver(PipeScheduler ioScheduler) : base(ioScheduler)
     {
-        public SocketReceiver(PipeScheduler ioScheduler) : base(ioScheduler)
+    }
+
+    public ValueTask<SocketOperationResult> WaitForDataAsync(Socket socket)
+    {
+        SetBuffer(Memory<byte>.Empty);
+
+        if (socket.ReceiveAsync(this))
         {
+            return new ValueTask<SocketOperationResult>(this, 0);
         }
 
-        public ValueTask<SocketOperationResult> WaitForDataAsync(Socket socket)
+        var bytesTransferred = BytesTransferred;
+        var error = SocketError;
+
+        return error == SocketError.Success 
+            ? new ValueTask<SocketOperationResult>(new SocketOperationResult(bytesTransferred)) 
+            : new ValueTask<SocketOperationResult>(new SocketOperationResult(CreateException(error)))
+            ;
+    }
+
+    public ValueTask<SocketOperationResult> ReceiveAsync(Socket socket, Memory<byte> buffer)
+    {
+        SetBuffer(buffer);
+
+        if (socket.ReceiveAsync(this))
         {
-            SetBuffer(Memory<byte>.Empty);
-
-            if (socket.ReceiveAsync(this))
-            {
-                return new ValueTask<SocketOperationResult>(this, 0);
-            }
-
-            var bytesTransferred = BytesTransferred;
-            var error = SocketError;
-
-            return error == SocketError.Success 
-                ? new ValueTask<SocketOperationResult>(new SocketOperationResult(bytesTransferred)) 
-                : new ValueTask<SocketOperationResult>(new SocketOperationResult(CreateException(error)))
-                ;
+            return new ValueTask<SocketOperationResult>(this, 0);
         }
 
-        public ValueTask<SocketOperationResult> ReceiveAsync(Socket socket, Memory<byte> buffer)
-        {
-            SetBuffer(buffer);
+        var bytesTransferred = BytesTransferred;
+        var error = SocketError;
 
-            if (socket.ReceiveAsync(this))
-            {
-                return new ValueTask<SocketOperationResult>(this, 0);
-            }
-
-            var bytesTransferred = BytesTransferred;
-            var error = SocketError;
-
-            return error == SocketError.Success 
-                ? new ValueTask<SocketOperationResult>(new SocketOperationResult(bytesTransferred)) 
-                : new ValueTask<SocketOperationResult>(new SocketOperationResult(CreateException(error)))
-                ;
-        }
+        return error == SocketError.Success 
+            ? new ValueTask<SocketOperationResult>(new SocketOperationResult(bytesTransferred)) 
+            : new ValueTask<SocketOperationResult>(new SocketOperationResult(CreateException(error)))
+            ;
     }
 }

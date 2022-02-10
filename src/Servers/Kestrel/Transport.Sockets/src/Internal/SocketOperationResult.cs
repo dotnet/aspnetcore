@@ -3,26 +3,25 @@
 
 using System.Net.Sockets;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal;
+
+internal readonly struct SocketOperationResult
 {
-    internal readonly struct SocketOperationResult
+    public readonly SocketException? SocketError;
+
+    public readonly int BytesTransferred;
+
+    public readonly bool HasError => SocketError != null;
+
+    public SocketOperationResult(int bytesTransferred)
     {
-        public readonly SocketException? SocketError;
+        SocketError = null;
+        BytesTransferred = bytesTransferred;
+    }
 
-        public readonly int BytesTransferred;
-
-        public readonly bool HasError => SocketError != null;
-
-        public SocketOperationResult(int bytesTransferred)
-        {
-            SocketError = null;
-            BytesTransferred = bytesTransferred;
-        }
-
-        public SocketOperationResult(SocketException exception)
-        {
-            SocketError = exception;
-            BytesTransferred = 0;
-        }
+    public SocketOperationResult(SocketException exception)
+    {
+        SocketError = exception;
+        BytesTransferred = 0;
     }
 }
