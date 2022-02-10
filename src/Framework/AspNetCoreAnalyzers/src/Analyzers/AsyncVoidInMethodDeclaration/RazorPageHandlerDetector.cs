@@ -13,7 +13,6 @@ public partial class AsyncVoidInMethodDeclarationAnalyzer
     private static bool IsRazorPage(ITypeSymbol? classSymbol, WellKnownTypes wellKnownTypes)
     {
         // RazorPage must be inherited from the Microsoft.AspNetCore.Mvc.RazorPages.PageModel
-
         INamedTypeSymbol lookupType = wellKnownTypes.PageModel;
 
         return classSymbol?.BaseType != null && lookupType.IsAssignableFrom(classSymbol?.BaseType!);

@@ -49,7 +49,6 @@ public partial class AsyncVoidInMethodDeclarationAnalyzer : DiagnosticAnalyzer
 
             if (IsController(classSymbol, wellKnownTypes) || IsSignalRHub(classSymbol, wellKnownTypes))
             {
-                // scan for methods with async void signature
                 for (int i = 0; i < classDeclaration.Members.Count; i++)
                 {
                     if (classDeclaration.Members[i] is not MethodDeclarationSyntax methodDeclarationSyntax)
@@ -57,7 +56,8 @@ public partial class AsyncVoidInMethodDeclarationAnalyzer : DiagnosticAnalyzer
                         continue;
                     }
 
-                    if (ShouldFireDiagnostic(methodDeclarationSyntax))
+                    var methodSymbol = GetDeclaredSymbol<IMethodSymbol>(classContext, methodDeclarationSyntax);
+                    if (ShouldFireDiagnostic(methodSymbol))
                     {
                         classContext.ReportDiagnostic(CreateDiagnostic(classDeclaration));
                     }
@@ -65,7 +65,6 @@ public partial class AsyncVoidInMethodDeclarationAnalyzer : DiagnosticAnalyzer
             }
             else if (IsRazorPage(classSymbol, wellKnownTypes) || IsMvcFilter(classSymbol, wellKnownTypes))
             {
-                // search only for methods that follow a pattern: 'On + HttpMethodName'
                 for (int i = 0; i < classDeclaration.Members.Count; i++)
                 {
                     if (classDeclaration.Members[i] is not MethodDeclarationSyntax methodDeclarationSyntax)
@@ -73,13 +72,17 @@ public partial class AsyncVoidInMethodDeclarationAnalyzer : DiagnosticAnalyzer
                         continue;
                     }
 
-                    var methodSymbol = GetDeclaredSymbol<IMethodSymbol>(classContext,methodDeclarationSyntax);
-                    if (IsRazorPageHandlerMethod(methodSymbol, wellKnownTypes) || IsFilterMethod())
+                    var methodSymbol = GetDeclaredSymbol<IMethodSymbol>(classContext, methodDeclarationSyntax);
+
+                    // only search methods that follow a pattern: 'On + HttpMethodName' or 'On + Filter
+                    if (!IsRazorPageHandlerMethod(methodSymbol, wellKnownTypes) && !IsMvcFilterMethod(methodSymbol))
                     {
-                        if (ShouldFireDiagnostic(methodDeclarationSyntax))
-                        {
-                            classContext.ReportDiagnostic(CreateDiagnostic(classDeclaration));
-                        }
+                        continue;
+                    }
+
+                    if (ShouldFireDiagnostic(methodSymbol))
+                    {
+                        classContext.ReportDiagnostic(CreateDiagnostic(classDeclaration));
                     }
                 }
             }
@@ -91,13 +94,9 @@ public partial class AsyncVoidInMethodDeclarationAnalyzer : DiagnosticAnalyzer
         return context.SemanticModel.GetDeclaredSymbol(syntax, context.CancellationToken) as T;
     }
 
-    private static bool ShouldFireDiagnostic(MethodDeclarationSyntax methodDeclarationSyntax)
+    private static bool ShouldFireDiagnostic(IMethodSymbol? methodSymbol)
     {
-        // TODO: make method more nice
-        var methodType = methodDeclarationSyntax.ReturnType;
-        var methodModifier = methodDeclarationSyntax.Modifiers;
-
-        return string.Equals(methodType.ToString(), "void") && string.Equals(methodModifier[1].ToString(), "async");
+        return methodSymbol != null && methodSymbol.IsAsync && methodSymbol.ReturnsVoid;
     }
 
     private static Diagnostic CreateDiagnostic(SyntaxNode syntaxNode)
