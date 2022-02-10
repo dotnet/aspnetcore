@@ -1,7 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "strings": {
-    "name": "Webové rozhraní API pro ASP.NET Core",
-    "description": "Šablona projektu pro vytvoření aplikace ASP.NET Core s ukázkovým kontrolerem pro službu RESTful HTTP. Tato šablona se dá použít i pro zobrazení a kontrolery ASP.NET Core MVC."
-  }
-}

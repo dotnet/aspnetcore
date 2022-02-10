@@ -1,7 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "strings": {
-    "name": "Aplikace Blazor Server",
-    "description": "Šablona projektu pro vytvoření aplikace Blazor Server, která běží na straně serveru uvnitř aplikace ASP.NET Core a zpracovává interakce uživatele přes připojení SignalR. Tato šablona se dá využít pro webové aplikace s propracovanými dynamickými uživatelskými rozhraními (UI)."
-  }
-}
