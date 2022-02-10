@@ -57,34 +57,11 @@ private:
             const std::filesystem::path& applicationPath
         );
 
-#if false
-    static
-    VOID
-    FindDotNetFolders(
-        const std::filesystem::path& path,
-        std::vector<std::wstring> & pvFolders
-    );
-
-    static
-    std::wstring
-    FindHighestDotNetVersion(
-        std::vector<std::wstring> & vFolders
-    );
-#endif
-
     static
     std::filesystem::path
     GetAbsolutePathToDotnetFromHostfxr(
         const std::filesystem::path& hostfxrPath
     );
-
-#if false
-    static
-    std::filesystem::path
-    GetAbsolutePathToHostFxr(
-        const std::filesystem::path & dotnetPath
-    );
-#endif
 
     static
     std::optional<std::filesystem::path>

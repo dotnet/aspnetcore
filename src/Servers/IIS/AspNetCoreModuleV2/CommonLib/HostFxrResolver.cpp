@@ -59,29 +59,10 @@ HostFxrResolver::GetHostFxrParameters(
             throw InvalidOperationException(L"Application arguments are empty.");
         }
 
-        // OLD CODE
-#if false
-        if (dotnetExePath.empty())
-        {
-            dotnetExePath = GetAbsolutePathToDotnet(applicationPhysicalPath, expandedProcessPath);
-        }
-
-        hostFxrDllPath = GetAbsolutePathToHostFxr(dotnetExePath);
-
-        arguments.push_back(dotnetExePath);
-        AppendArguments(
-            expandedApplicationArguments,
-            applicationPhysicalPath,
-            arguments,
-            true);
-#endif
-
-#if true
-        // NEW CODE
         BOOL gotHostFxrPath = FALSE;
         if (dotnetExePath.empty())
         {
-            // skip when dotnet launched from path case
+            // need to find dotnet for get_host_fxr_path when dotnet is launched from the path
             if (!equals_ignore_case(expandedProcessPath, L"dotnet.exe")) {
                 fs::path expandedProcessPathParent = expandedProcessPath.parent_path();
                 gotHostFxrPath = TryGetHostFxrPath(hostFxrDllPath, expandedProcessPathParent, applicationPhysicalPath);
@@ -96,7 +77,7 @@ HostFxrResolver::GetHostFxrParameters(
             }
             else
             {
-                // Get the dotnet absolute path to use as dotnet_root later
+                // Get the dotnet absolute path to use as dotnet_root
                 dotnetExePath = GetAbsolutePathToDotnet(applicationPhysicalPath, expandedProcessPath);
             }
         }
@@ -116,26 +97,12 @@ HostFxrResolver::GetHostFxrParameters(
         LOG_INFOF(L"dotnetExePath '%ls'", dotnetExePath.c_str());
         LOG_INFOF(L"hostFxrDllpath '%ls'", hostFxrDllPath.c_str());
 
-        // DEBUG: Old path for comparision
-        //fs::path oldDotnetExePath = GetAbsolutePathToDotnet(applicationPhysicalPath, expandedProcessPath);
-        //if (!equals_ignore_case(oldDotnetExePath.c_str(), dotnetExePath.c_str())) {
-        //    LOG_INFOF(L"MISMATCH oldDotnetExePath '%ls'", oldDotnetExePath.c_str());
-        //    throw InvalidOperationException(L"dotnetExePath mismatch");
-        //}
-        //fs::path oldhostFxrDllPath = GetAbsolutePathToHostFxr(dotnetExePath);
-        //if (!equals_ignore_case(oldhostFxrDllPath.c_str(), hostFxrDllPath.c_str())) {
-        //    LOG_INFOF(L"MISMATCH oldhostFxrDllPath '%ls'", oldhostFxrDllPath.c_str());
-        //    throw InvalidOperationException(L"oldhostFxrDllPath mismatch");
-        //}
-
         arguments.push_back(dotnetExePath);
         AppendArguments(
             expandedApplicationArguments,
             applicationPhysicalPath,
             arguments,
             true);
-#endif // new code
-
     }
     else
     {
@@ -193,15 +160,6 @@ HostFxrResolver::GetHostFxrParameters(
                 if (!TryGetHostFxrPath(hostFxrDllPath, dotnetExePathParent, applicationPhysicalPath)) {
                     throw InvalidOperationException(format(L"get_hostfxr_path failed"));
                 }
-
-                // REMOVE: DEBUGGING code
-                //hostFxrDllPath = GetAbsolutePathToHostFxr(dotnetExePath);
-                //fs::path oldhostFxrDllPath = GetAbsolutePathToHostFxr(dotnetExePath);
-                //if (!equals_ignore_case(oldhostFxrDllPath.c_str(), hostFxrDllPath.c_str())) {
-                //    LOG_INFOF(L"MISMATCH oldhostFxrDllPath '%ls'", oldhostFxrDllPath.c_str());
-                //    throw InvalidOperationException(L"oldhostFxrDllPath mismatch");
-                //}
-
 
                 // For portable with launcher apps we need dotnet.exe to be argv[0] and .dll be argv[1]
                 arguments.push_back(dotnetExePath);
@@ -426,42 +384,6 @@ HostFxrResolver::GetAbsolutePathToDotnetFromHostfxr(const fs::path& hostfxrPath)
     return hostfxrPath.parent_path().parent_path().parent_path().parent_path() / "dotnet.exe";
 }
 
-#if false
-fs::path
-HostFxrResolver::GetAbsolutePathToHostFxr(
-    const fs::path & dotnetPath
-)
-{
-    std::vector<std::wstring> versionFolders;
-    const auto hostFxrBase = dotnetPath.parent_path() / "host" / "fxr";
-
-    LOG_INFOF(L"Resolving absolute path to hostfxr.dll from '%ls'", dotnetPath.c_str());
-
-    if (!is_directory(hostFxrBase))
-    {
-        throw InvalidOperationException(format(L"Unable to find hostfxr directory at %s", hostFxrBase.c_str()));
-    }
-
-    FindDotNetFolders(hostFxrBase, versionFolders);
-
-    if (versionFolders.empty())
-    {
-        throw InvalidOperationException(format(L"Hostfxr directory '%s' doesn't contain any version subdirectories", hostFxrBase.c_str()));
-    }
-
-    const auto highestVersion = FindHighestDotNetVersion(versionFolders);
-    const auto hostFxrPath = hostFxrBase  / highestVersion / "hostfxr.dll";
-
-    if (!is_regular_file(hostFxrPath))
-    {
-        throw InvalidOperationException(format(L"hostfxr.dll not found at '%s'", hostFxrPath.c_str()));
-    }
-
-    LOG_INFOF(L"hostfxr.dll located at '%ls'", hostFxrPath.c_str());
-    return hostFxrPath;
-}
-#endif
-
 //
 // Tries to call where.exe to find the location of dotnet.exe.
 // Will check that the bitness of dotnet matches the current
@@ -618,44 +540,3 @@ HostFxrResolver::GetAbsolutePathToDotnetFromProgramFiles()
     const auto programFilesDotnet = fs::path(Environment::ExpandEnvironmentVariables(L"%ProgramFiles%")) / "dotnet" / "dotnet.exe";
     return is_regular_file(programFilesDotnet) ? std::make_optional(programFilesDotnet) : std::nullopt;
 }
-
-#if false
-std::wstring
-HostFxrResolver::FindHighestDotNetVersion(
-    _In_ std::vector<std::wstring> & vFolders
-)
-{
-    fx_ver_asp_t max_ver(-1, -1, -1);
-    for (const auto& dir : vFolders)
-    {
-        fx_ver_asp_t fx_ver(-1, -1, -1);
-        if (fx_ver_asp_t::parse(dir, &fx_ver, false))
-        {
-            max_ver = max(max_ver, fx_ver);
-        }
-    }
-
-    return max_ver.as_str();
-}
-
-VOID
-HostFxrResolver::FindDotNetFolders(
-    const std::filesystem::path &path,
-    _Out_ std::vector<std::wstring> &pvFolders
-)
-{
-    WIN32_FIND_DATAW data = {};
-    const auto searchPattern = std::wstring(path) + L"\\*";
-    HandleWrapper<FindFileHandleTraits> handle = FindFirstFileExW(searchPattern.c_str(), FindExInfoStandard, &data, FindExSearchNameMatch, nullptr, 0);
-    if (handle == INVALID_HANDLE_VALUE)
-    {
-        LOG_LAST_ERROR();
-        return;
-    }
-
-    do
-    {
-        pvFolders.emplace_back(data.cFileName);
-    } while (FindNextFileW(handle, &data));
-}
-#endif
