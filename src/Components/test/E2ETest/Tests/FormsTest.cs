@@ -100,6 +100,9 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var appElement = MountTypicalValidationComponent();
         var nameInput = appElement.FindElement(By.ClassName("name")).FindElement(By.TagName("input"));
         var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+        var summaryMessagesAccessor = CreateValidationMessagesAccessor(
+            appElement.FindElement(By.ClassName("all-errors")),
+            ".validation-errors > .validation-message"); // Shows that the default class name for ValidationSummary is validation-errors
 
         // InputText emits unmatched attributes
         Browser.Equal("Enter your name", () => nameInput.GetAttribute("placeholder"));
@@ -115,6 +118,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Equal("modified invalid", () => nameInput.GetAttribute("class"));
         EnsureAttributeValue(nameInput, "aria-invalid", "true");
         Browser.Equal(new[] { "That name is too long" }, messagesAccessor);
+        Browser.True(() => summaryMessagesAccessor().Contains("That name is too long"));
 
         // Can become valid
         nameInput.Clear();
@@ -122,6 +126,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Equal("modified valid", () => nameInput.GetAttribute("class"));
         EnsureAttributeNotRendered(nameInput, "aria-invalid");
         Browser.Empty(messagesAccessor);
+        Browser.False(() => summaryMessagesAccessor().Contains("That name is too long"));
     }
 
     [Fact]
@@ -502,7 +507,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var appElement = MountTypicalValidationComponent();
         var emailContainer = appElement.FindElement(By.ClassName("email"));
         var emailInput = emailContainer.FindElement(By.TagName("input"));
-        var emailMessagesAccessor = CreateValidationMessagesAccessor(emailContainer);
+        var emailMessagesAccessor = CreateValidationMessagesAccessor(emailContainer, ".special-email-css-class-override");
         var submitButton = appElement.FindElement(By.CssSelector("button[type=submit]"));
 
         // Doesn't show messages for other fields
@@ -532,7 +537,6 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var confirmEmailContainer = appElement.FindElement(By.ClassName("confirm-email"));
         var confirmInput = confirmEmailContainer.FindElement(By.TagName("input"));
         var confirmEmailValidationMessage = CreateValidationMessagesAccessor(confirmEmailContainer);
-        CreateValidationMessagesAccessor(emailContainer);
         var submitButton = appElement.FindElement(By.CssSelector("button[type=submit]"));
 
         // Updates on edit
@@ -769,9 +773,46 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
             => appElement.FindElement(By.ClassName("airlines")).FindElements(By.TagName("input"));
     }
 
-    private Func<string[]> CreateValidationMessagesAccessor(IWebElement appElement)
+    [Fact]
+    public void CanHaveModelLevelValidationErrors()
     {
-        return () => appElement.FindElements(By.ClassName("validation-message"))
+        var appElement = Browser.MountTestComponent<ModelLevelValidationComponent>();
+        var isCatCheckbox = appElement.FindElement(By.ClassName("cattiness")).FindElement(By.TagName("input"));
+        var ageInput = appElement.FindElement(By.ClassName("age")).FindElement(By.TagName("input"));
+        var submitButton = appElement.FindElement(By.CssSelector("button[type=submit]"));
+        var modelMessagesAccessor = CreateValidationMessagesAccessor(
+            appElement.FindElement(By.ClassName("model-errors")),
+            "ul.model-summary-custom-class > .validation-message"); // This shows we can override the ul's CSS class
+        var allMessagesAccessor = CreateValidationMessagesAccessor(
+            appElement.FindElement(By.ClassName("all-errors")));
+
+        // Cause a property-level validation error
+        ageInput.Clear();
+        ageInput.SendKeys("-1");
+        submitButton.Click();
+        Browser.Collection(allMessagesAccessor, x => Assert.Equal("Under-zeros should not be filling out forms", x));
+        Browser.Empty(modelMessagesAccessor);
+
+        // Cause a model-level validation error
+        ageInput.Clear();
+        ageInput.SendKeys("10");
+        submitButton.Click();
+        Browser.Collection(allMessagesAccessor, x => Assert.Equal("Sorry, you're not old enough as a non-cat", x));
+        Browser.Collection(modelMessagesAccessor, x => Assert.Equal("Sorry, you're not old enough as a non-cat", x));
+
+        // Become valid
+        isCatCheckbox.Click();
+        submitButton.Click();
+        Browser.Empty(allMessagesAccessor);
+        Browser.Empty(modelMessagesAccessor);
+
+        Func<string[]> logEntries = () => appElement.FindElements(By.ClassName("submission-log-entry")).Select(x => x.Text).ToArray();
+        Browser.Collection(logEntries, x => Assert.Equal("OnValidSubmit", x));
+    }
+
+    private Func<string[]> CreateValidationMessagesAccessor(IWebElement appElement, string messageSelector = ".validation-message")
+    {
+        return () => appElement.FindElements(By.CssSelector(messageSelector))
             .Select(x => x.Text)
             .OrderBy(x => x)
             .ToArray();

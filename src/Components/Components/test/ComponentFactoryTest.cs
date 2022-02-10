@@ -12,7 +12,7 @@ public class ComponentFactoryTest
     {
         // Arrange
         var componentType = typeof(EmptyComponent);
-        var factory = new ComponentFactory(new DefaultComponentActivator());
+        var factory = new ComponentFactory(null);
 
         // Act
         var instance = factory.InstantiateComponent(GetServiceProvider(), componentType);
@@ -23,11 +23,29 @@ public class ComponentFactoryTest
     }
 
     [Fact]
+    public void InstantiateComponent_CreatesInstance_WithTypeActivation()
+    {
+        // Arrange
+        var componentType = typeof(ComponentWithConstructorInjection);
+        var factory = new ComponentFactory(null);
+
+        // Act
+        var instance = factory.InstantiateComponent(GetServiceProvider(), componentType);
+
+        // Assert
+        Assert.NotNull(instance);
+        var component = Assert.IsType<ComponentWithConstructorInjection>(instance);
+        Assert.NotNull(component.Property1);
+        Assert.NotNull(component.Property2);
+        Assert.NotNull(component.Property3); // Property injection should still work.
+    }
+
+    [Fact]
     public void InstantiateComponent_CreatesInstance_NonComponent()
     {
         // Arrange
         var componentType = typeof(List<string>);
-        var factory = new ComponentFactory(new DefaultComponentActivator());
+        var factory = new ComponentFactory(null);
 
         // Assert
         var ex = Assert.Throws<ArgumentException>(() => factory.InstantiateComponent(GetServiceProvider(), componentType));
@@ -95,7 +113,7 @@ public class ComponentFactoryTest
     {
         // Arrange
         var componentType = typeof(ComponentWithNonInjectableProperties);
-        var factory = new ComponentFactory(new DefaultComponentActivator());
+        var factory = new ComponentFactory(null);
 
         // Act
         var instance = factory.InstantiateComponent(GetServiceProvider(), componentType);
@@ -118,6 +136,31 @@ public class ComponentFactoryTest
 
     private class EmptyComponent : IComponent
     {
+        public void Attach(RenderHandle renderHandle)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task SetParametersAsync(ParameterView parameters)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class ComponentWithConstructorInjection : IComponent
+    {
+        public ComponentWithConstructorInjection(TestService1 property1, TestService2 property2)
+        {
+            Property1 = property1;
+            Property2 = property2;
+        }
+
+        public TestService1 Property1 { get; }
+        public TestService2 Property2 { get; }
+
+        [Inject]
+        public TestService2 Property3 { get; set; }
+
         public void Attach(RenderHandle renderHandle)
         {
             throw new NotImplementedException();

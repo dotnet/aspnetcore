@@ -1,12 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
@@ -25,7 +20,6 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
@@ -247,6 +241,39 @@ public class KestrelServerTests
             new LoggerFactory(new[] { new KestrelTestLoggerProvider() }));
 
         StartDummyApplication(server);
+    }
+
+    [Fact]
+    public async Task ListenWithCustomEndpoint_DoesNotThrow()
+    {
+        var options = new KestrelServerOptions();
+        options.ApplicationServices = new ServiceCollection()
+           .AddLogging()
+           .BuildServiceProvider();
+
+        var customEndpoint = new UriEndPoint(new("http://localhost:5000"));
+        options.Listen(customEndpoint, options =>
+        {
+            options.UseHttps(TestResources.GetTestCertificate());
+            options.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
+        });
+
+        var mockTransportFactory = new MockTransportFactory();
+        var mockMultiplexedTransportFactory = new MockMultiplexedTransportFactory();
+
+        using var server = new KestrelServerImpl(
+            Options.Create(options),
+            new List<IConnectionListenerFactory>() { mockTransportFactory },
+            new List<IMultiplexedConnectionListenerFactory>() { mockMultiplexedTransportFactory },
+            new LoggerFactory(new[] { new KestrelTestLoggerProvider() }));
+
+        await server.StartAsync(new DummyApplication(context => Task.CompletedTask), CancellationToken.None);
+
+        var transportEndPoint = Assert.Single(mockTransportFactory.BoundEndPoints);
+        var multiplexedTransportEndPoint = Assert.Single(mockMultiplexedTransportFactory.BoundEndPoints);
+
+        Assert.Same(customEndpoint, transportEndPoint.BoundEndPoint);
+        Assert.Same(customEndpoint, multiplexedTransportEndPoint.BoundEndPoint);
     }
 
     [Fact]

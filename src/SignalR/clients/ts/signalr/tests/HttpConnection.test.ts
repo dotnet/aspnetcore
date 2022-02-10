@@ -7,7 +7,7 @@ import { IHttpConnectionOptions } from "../src/IHttpConnectionOptions";
 import { HttpTransportType, ITransport, TransferFormat } from "../src/ITransport";
 import { getUserAgentHeader } from "../src/Utils";
 
-import { HttpError } from "../src/Errors";
+import { AbortError, HttpError } from "../src/Errors";
 import { ILogger, LogLevel } from "../src/ILogger";
 import { NullLogger } from "../src/Loggers";
 import { EventSourceConstructor, WebSocketConstructor } from "../src/Polyfills";
@@ -161,9 +161,12 @@ describe("HttpConnection", () => {
 
             await stopPromise;
 
-            await expect(startPromise)
-                .rejects
-                .toThrow("The connection was stopped during negotiation.");
+            try {
+                await startPromise
+            } catch (e) {
+                expect(e).toBeInstanceOf(AbortError);
+                expect((e as AbortError).message).toBe("The connection was stopped during negotiation.");
+            }
         },
         "Failed to start the connection: Error: The connection was stopped during negotiation.");
     });

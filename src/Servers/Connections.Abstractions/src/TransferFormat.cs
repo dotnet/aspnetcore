@@ -11,6 +11,13 @@ namespace Microsoft.AspNetCore.Connections;
 [Flags]
 public enum TransferFormat
 {
+    /// <summary>
+    /// A binary transport format.
+    /// </summary>
     Binary = 0x01,
+
+    /// <summary>
+    /// A text transport format.
+    /// </summary>
     Text = 0x02
 }

@@ -42,6 +42,7 @@
     },
     "no-pagemodel": {
       "description": "create page without a PageModel",
+      "displayName": "Exclude PageModel",
       "type": "parameter",
       "datatype": "bool",
       "defaultValue": "false"

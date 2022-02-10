@@ -140,7 +140,7 @@ public class AuthorizationPolicy
                 var useDefaultPolicy = true;
                 if (!string.IsNullOrWhiteSpace(authorizeDatum.Policy))
                 {
-                    var policy = await policyProvider.GetPolicyAsync(authorizeDatum.Policy);
+                    var policy = await policyProvider.GetPolicyAsync(authorizeDatum.Policy).ConfigureAwait(false);
                     if (policy == null)
                     {
                         throw new InvalidOperationException(Resources.FormatException_AuthorizationPolicyNotFound(authorizeDatum.Policy));
@@ -171,7 +171,7 @@ public class AuthorizationPolicy
 
                 if (useDefaultPolicy)
                 {
-                    policyBuilder.Combine(await policyProvider.GetDefaultPolicyAsync());
+                    policyBuilder.Combine(await policyProvider.GetDefaultPolicyAsync().ConfigureAwait(false));
                 }
             }
         }
@@ -179,7 +179,7 @@ public class AuthorizationPolicy
         // If we have no policy by now, use the fallback policy if we have one
         if (policyBuilder == null)
         {
-            var fallbackPolicy = await policyProvider.GetFallbackPolicyAsync();
+            var fallbackPolicy = await policyProvider.GetFallbackPolicyAsync().ConfigureAwait(false);
             if (fallbackPolicy != null)
             {
                 return fallbackPolicy;

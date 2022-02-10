@@ -43,6 +43,7 @@ public class MinDataRate
     /// </summary>
     public TimeSpan GracePeriod { get; }
 
+    /// <inheritdoc />
     public override string ToString()
     {
         return $"Bytes per second: {BytesPerSecond}, Grace Period: {GracePeriod}";

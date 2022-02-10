@@ -14,7 +14,6 @@
       <RelativeFolder>%(Filename)</RelativeFolder>
       <!-- Whether to _only_ publish the test asset into the test project's folders. -->
       <SkipBuild>false</SkipBuild>
-      <AdditionalProperties Condition=" '%(SkipBuild)' == 'true' ">NoBuild=true</AdditionalProperties>
     </TestAssetProjectReference>
   </ItemDefinitionGroup>
 </Project>
