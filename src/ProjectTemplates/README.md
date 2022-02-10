@@ -36,6 +36,8 @@ To build the ProjectTemplates, use one of:
 
 ### Test
 
+#### Running ProjectTemplate tests:
+
 To run ProjectTemplate tests, first ensure the ASP.NET localhost development certificate is installed and trusted.
 Otherwise, you'll get a test error "Certificate error: Navigation blocked".
 
@@ -47,6 +49,12 @@ Then, use one of:
 1. Run templates manually with `custom-hive` and `disable-sdk-templates` to install to a custom location and turn off the built-in templates e.g.
     - `dotnet new -i Microsoft.DotNet.Web.Spa.ProjectTemplates.6.0.6.0.0-dev.nupkg --debug:custom-hive C:\TemplateHive\`
     - `dotnet new angular --auth Individual --debug:disable-sdk-templates --debug:custom-hive C:\TemplateHive\`
+1. Install the templates to an existing Visual Studio installation.
+    1. Pack the ProjectTemplates: `src\ProjectTemplates\build.cmd -pack -configuration Release`
+        - This will produce the `*dev.nupkg` containing the ProjectTemplates at `artifacts\packages\Release\Shipping\Microsoft.DotNet.Web.ProjectTemplates.7.0.7.0.0-dev.nupkg`
+    2. Install ProjectTemplates in local Visual Studio instance: `dotnet new -i "<REPO_PATH>\artifacts\packages\Release\Shipping\Microsoft.DotNet.Web.ProjectTemplates.7.0.7.0.0-dev.nupkg"`
+    3. Run Visual Studio and test out templates manually.
+    4. Uninstall ProjectTemplates from local Visual Studio instance: `dotnet new --uninstall Microsoft.DotNet.Web.ProjectTemplates.7.0`
 
 **Note** ProjectTemplates tests require Visual Studio unless a full build (CI) is performed.
 
