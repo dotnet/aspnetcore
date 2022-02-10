@@ -48,17 +48,6 @@ public partial class AsyncVoidInMethodDeclarationAnalyzer
     {
         const string ControllerSignSuffix = "Controller";
 
-        // check if a class inherits from Microsoft.AspNetCore.Mvc.ControllerBase or Microsoft.AspNetCore.Mvc.Controller
-        ImmutableArray<INamedTypeSymbol> lookupTypes = ImmutableArray.Create(wellKnownTypes.ControllerInstance, wellKnownTypes.ControllerBaseInstance);
-        for (int i = 0; i < lookupTypes.Length; i++)
-        {
-            if (SymbolEqualityComparer.Default.Equals(lookupTypes[i], typeSymbol))
-            {
-                return true;
-            }
-        }
-
-        // a base class could be a custom controller, so that check base class suffix
-        return typeSymbol?.Name.EndsWith(ControllerSignSuffix, StringComparison.Ordinal) ?? false;
+        return typeSymbol != null && wellKnownTypes.ControllerBaseInstance.IsAssignableFrom(typeSymbol) || typeSymbol!.Name.EndsWith(ControllerSignSuffix, StringComparison.Ordinal);
     }
 }

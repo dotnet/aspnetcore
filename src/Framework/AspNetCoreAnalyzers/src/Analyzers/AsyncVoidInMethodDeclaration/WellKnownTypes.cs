@@ -12,14 +12,20 @@ internal sealed class WellKnownTypes
     {
         wellKnownTypes = default;
 
-        const string ControllerInstance = "Microsoft.AspNetCore.Mvc.Controller";
-        if (compilation.GetTypeByMetadataName(ControllerInstance) is not { } controllerInstance)
+        const string ControllerBaseInstance = "Microsoft.AspNetCore.Mvc.ControllerBase";
+        if (compilation.GetTypeByMetadataName(ControllerBaseInstance) is not { } controllerBaseInstance)
         {
             return false;
         }
 
-        const string ControllerBaseInstance = "Microsoft.AspNetCore.Mvc.ControllerBase";
-        if (compilation.GetTypeByMetadataName(ControllerBaseInstance) is not { } controllerBaseInstance)
+        const string ApiControllerAttribute = "Microsoft.AspNetCore.Mvc.ApiControllerAttribute";
+        if (compilation.GetTypeByMetadataName(ApiControllerAttribute) is not { } apiControllerAttribute)
+        {
+            return false;
+        }
+
+        const string ControllerAttribute = "Microsoft.AspNetCore.Mvc.ControllerAttribute";
+        if (compilation.GetTypeByMetadataName(ControllerAttribute) is not { } controllerAttribute)
         {
             return false;
         }
@@ -42,28 +48,31 @@ internal sealed class WellKnownTypes
             return false;
         }
 
-        const string NonHandler = "Microsoft.AspNetCore.Mvc.RazorPages.NonHandlerAttribute";
-        if (compilation.GetTypeByMetadataName(NonHandler) is not { } nonHandler)
+        const string NonHandlerAttribute = "Microsoft.AspNetCore.Mvc.RazorPages.NonHandlerAttribute";
+        if (compilation.GetTypeByMetadataName(NonHandlerAttribute) is not { } nonHandlerAttribute)
         {
             return false;
         }
 
         wellKnownTypes = new WellKnownTypes
         {
-            ControllerInstance = controllerInstance,
             ControllerBaseInstance = controllerBaseInstance,
+            ApiControllerAttribute = apiControllerAttribute,
+            ControllerAttribute = controllerAttribute,
             IActionFilter = actionFilterInstance,
             SignalRHub = signalRHub,
             PageModel = pageModel,
-            NonHandler = nonHandler,
+            NonHandlerAttribute = nonHandlerAttribute,
         };
 
         return true;
     }
 
-    public INamedTypeSymbol ControllerInstance { get; private init; }
-
     public INamedTypeSymbol ControllerBaseInstance { get; private init; }
+
+    public INamedTypeSymbol ApiControllerAttribute { get; private init; }
+
+    public INamedTypeSymbol ControllerAttribute { get; private init; }
 
     public INamedTypeSymbol IActionFilter { get; private init; }
 
@@ -71,5 +80,5 @@ internal sealed class WellKnownTypes
 
     public INamedTypeSymbol PageModel { get; private init; }
 
-    public INamedTypeSymbol NonHandler { get; private init; }
+    public INamedTypeSymbol NonHandlerAttribute { get; private init; }
 }

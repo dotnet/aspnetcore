@@ -31,7 +31,7 @@ public partial class AsyncVoidInMethodDeclarationAnalyzer
         const string OnPost = "onpost";
         const string OnDelete = "ondelete";
 
-        if (methodSymbol?.HasAttribute(wellKnownTypes.NonHandler) ?? false)
+        if (methodSymbol?.HasAttribute(wellKnownTypes.NonHandlerAttribute) ?? false)
         {
             // if method is marked by [NonHandler] don't process it disregarding its' name
             return false;
