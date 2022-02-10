@@ -6,7 +6,7 @@ with the right MSBuild incantations to get output copied to the right place.
 -->
 <Project>
   <!-- IIS native projects only build on Windows with MSBuild.exe -->
-  <ItemGroup Condition="@(NativeProjectReference->Count()) != 0 AND $(BuildNative) ">
+  <ItemGroup Condition="'@(NativeProjectReference->Count())' != '0' AND $(BuildNative) ">
     <!-- TODO: investigate building just one arch at a time. -->
     <ProjectReference Include="@(NativeProjectReference)">
       <!-- Set the arch-->

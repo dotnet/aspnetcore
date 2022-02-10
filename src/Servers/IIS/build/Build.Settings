@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
  <Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
    <PropertyGroup>
-     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">$(MSBuildThisFileDirectory)..\</SolutionDir>
+     <SolutionDir Condition="'$(SolutionDir)' == '' Or '$(SolutionDir)' == '*Undefined*'">$(MSBuildThisFileDirectory)..\</SolutionDir>
      <Configuration Condition="'$(Configuration)'==''">Debug</Configuration>
      <Platform Condition="'$(Platform)' == ''">Win32</Platform>
      <PlatformToolsetVersion Condition=" '$(VisualStudioVersion)' == '17.0' ">v143</PlatformToolsetVersion>

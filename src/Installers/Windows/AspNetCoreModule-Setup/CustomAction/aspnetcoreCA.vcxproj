@@ -2,7 +2,7 @@
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <PropertyGroup>
-    <ANCM-Setup Condition="$(ANCM-Setup) == ''">$(MSBuildThisFileDirectory)..\</ANCM-Setup>
+    <ANCM-Setup Condition="'$(ANCM-Setup)' == ''">$(MSBuildThisFileDirectory)..\</ANCM-Setup>
     <EnableSourceLink>false</EnableSourceLink>
   </PropertyGroup>
 
@@ -10,7 +10,7 @@
     <_IIS-SetupExportsPath>$(ANCM-Setup)IIS-Setup\build\exports.props</_IIS-SetupExportsPath>
   </PropertyGroup>
 
-  <Import Condition="$(IIS-Setup) == '' AND Exists('$(_IIS-SetupExportsPath)')" Project="$(_IIS-SetupExportsPath)" />
+  <Import Condition="'$(IIS-Setup)' == '' AND Exists('$(_IIS-SetupExportsPath)')" Project="$(_IIS-SetupExportsPath)" />
 
   <!-- Build error if submodule dependencies could not be found. -->
   <Import Project="..\build\settings.props" />

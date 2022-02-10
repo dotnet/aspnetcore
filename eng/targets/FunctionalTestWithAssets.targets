@@ -6,7 +6,7 @@
   -->
   <Target Name="PublishTestAssets"
       BeforeTargets="Publish;RunTests;VSTest"
-      Condition=" '@(TestAssetProjectReference->Count())' != 0 ">
+      Condition=" '@(TestAssetProjectReference->Count())' != '0' ">
     <ItemGroup>
       <_ProjectsToPublish Include="@(TestAssetProjectReference)" />
 
