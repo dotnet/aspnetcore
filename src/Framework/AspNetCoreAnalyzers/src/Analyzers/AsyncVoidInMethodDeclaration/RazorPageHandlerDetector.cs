@@ -23,14 +23,19 @@ public partial class AsyncVoidInMethodDeclarationAnalyzer
         return classSymbol?.BaseType != null && lookupType.IsAssignableFrom(classSymbol?.BaseType!);
     }
 
-    private static bool IsRazorPageHandlerMethod(MethodDeclarationSyntax methodDeclarationSyntax)
+    private static bool IsRazorPageHandlerMethod(MethodDeclarationSyntax methodDeclarationSyntax, IMethodSymbol? methodSymbol, WellKnownTypes wellKnownTypes)
     {
         // Check if method name follows On + HttpRequestMethod (currently GET, POST, PUT, DELETE are considered)
-        // TODO: Consider attribute that changes a handler method name
         const string OnGet = "onget";
         const string OnPut = "onput";
         const string OnPost = "onpost";
         const string OnDelete = "ondelete";
+
+        if (methodSymbol?.HasAttribute(wellKnownTypes.NonHandler) ?? false)
+        {
+            // if method is marked by [NonHandler] don't process it disregarding its' name
+            return false;
+        }
 
         string methodName = (methodDeclarationSyntax.Identifier.Value as string) ?? string.Empty;
 

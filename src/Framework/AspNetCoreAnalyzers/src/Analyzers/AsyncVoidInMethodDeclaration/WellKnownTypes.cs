@@ -42,13 +42,20 @@ internal sealed class WellKnownTypes
             return false;
         }
 
+        const string NonHandler = "Microsoft.AspNetCore.Mvc.RazorPages.NonHandlerAttribute";
+        if (compilation.GetTypeByMetadataName(NonHandler) is not { } nonHandler)
+        {
+            return false;
+        }
+
         wellKnownTypes = new WellKnownTypes
         {
             ControllerInstance = controllerInstance,
             ControllerBaseInstance = controllerBaseInstance,
             IActionFilter = actionFilterInstance,
             SignalRHub = signalRHub,
-            PageModel = pageModel
+            PageModel = pageModel,
+            NonHandler = nonHandler,
         };
 
         return true;
@@ -63,4 +70,6 @@ internal sealed class WellKnownTypes
     public INamedTypeSymbol SignalRHub { get; private init; }
 
     public INamedTypeSymbol PageModel { get; private init; }
+
+    public INamedTypeSymbol NonHandler { get; private init; }
 }

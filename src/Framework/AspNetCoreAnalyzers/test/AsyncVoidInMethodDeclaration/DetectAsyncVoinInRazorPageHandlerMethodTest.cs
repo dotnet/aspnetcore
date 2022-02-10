@@ -162,4 +162,26 @@ public class Program { public static void Main() {} }
         var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
         Assert.Empty(diagnostics);
     }
+
+    [Fact]
+    public async Task AsyncVoidNotDiagnosted_RazorPageHandlerWithNonHandlerAttribute()
+    {
+        var source = TestSource.Read(@"
+using Microsoft.AspNetCore.Mvc.RazorPages;
+
+namespace Mvc.Pages;
+
+public class IndexModel : PageModel
+{
+    public IndexModel() {}
+
+    [NonHandler]
+    public async void OnGet() {}
+}
+
+public class Program { public static void Main() {} }
+");
+        var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+        Assert.Empty(diagnostics);
+    }
 }

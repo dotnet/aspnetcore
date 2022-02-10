@@ -60,11 +60,15 @@ public partial class AsyncVoidInMethodDeclarationAnalyzer : DiagnosticAnalyzer
                     // search only for methods that follow a pattern: 'On + HttpMethodName'
                     for (int i = 0; i < classDeclaration.Members.Count; i++)
                     {
-                        if ((classDeclaration.Members[i] is MethodDeclarationSyntax methodDeclarationSyntax) && IsRazorPageHandlerMethod(methodDeclarationSyntax))
+                        if (classDeclaration.Members[i] is MethodDeclarationSyntax methodDeclarationSyntax)
                         {
-                            if (ShouldFireDiagnostic(methodDeclarationSyntax))
+                            var methodSymbol = (IMethodSymbol?)classContext.SemanticModel.GetDeclaredSymbol(methodDeclarationSyntax);
+                            if (IsRazorPageHandlerMethod(methodDeclarationSyntax, methodSymbol, wellKnownTypes))
                             {
-                                classContext.ReportDiagnostic(CreateDiagnostic(classDeclaration));
+                                if (ShouldFireDiagnostic(methodDeclarationSyntax))
+                                {
+                                    classContext.ReportDiagnostic(CreateDiagnostic(classDeclaration));
+                                }
                             }
                         }
                     }
