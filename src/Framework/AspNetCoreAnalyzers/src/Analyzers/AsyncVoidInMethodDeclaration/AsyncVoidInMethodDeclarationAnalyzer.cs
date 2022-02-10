@@ -39,9 +39,11 @@ public partial class AsyncVoidInMethodDeclarationAnalyzer : DiagnosticAnalyzer
                     return;
                 }
 
-                if (IsController(classDeclaration, classContext, wellKnownTypes)
-                    || IsActionFilter(classDeclaration, classContext, wellKnownTypes)
-                    || IsSignalRHub(classDeclaration, classContext, wellKnownTypes))
+                var classSymbol = GetDeclaredSymbol<ITypeSymbol>(classContext, classDeclaration);
+
+                if (IsController(classSymbol, wellKnownTypes)
+                    || IsActionFilter(classSymbol, wellKnownTypes)
+                    || IsSignalRHub(classSymbol, wellKnownTypes))
                 {
                     // scan for methods with async void signature
                     for (int i = 0; i < classDeclaration.Members.Count; i++)
@@ -55,15 +57,15 @@ public partial class AsyncVoidInMethodDeclarationAnalyzer : DiagnosticAnalyzer
                         }
                     }
                 }
-                else if (IsRazorPage(classDeclaration, classContext, wellKnownTypes))
+                else if (IsRazorPage(classSymbol, wellKnownTypes))
                 {
                     // search only for methods that follow a pattern: 'On + HttpMethodName'
                     for (int i = 0; i < classDeclaration.Members.Count; i++)
                     {
                         if (classDeclaration.Members[i] is MethodDeclarationSyntax methodDeclarationSyntax)
                         {
-                            var methodSymbol = (IMethodSymbol?)classContext.SemanticModel.GetDeclaredSymbol(methodDeclarationSyntax);
-                            if (IsRazorPageHandlerMethod(methodDeclarationSyntax, methodSymbol, wellKnownTypes))
+                            var methodSymbol = GetDeclaredSymbol<IMethodSymbol>(classContext,methodDeclarationSyntax);
+                            if (IsRazorPageHandlerMethod(methodSymbol, wellKnownTypes))
                             {
                                 if (ShouldFireDiagnostic(methodDeclarationSyntax))
                                 {
@@ -75,6 +77,11 @@ public partial class AsyncVoidInMethodDeclarationAnalyzer : DiagnosticAnalyzer
                 }
             }, SyntaxKind.ClassDeclaration);
         });
+    }
+
+    private static T? GetDeclaredSymbol<T>(SyntaxNodeAnalysisContext context, SyntaxNode syntax) where T : class
+    {
+        return context.SemanticModel.GetDeclaredSymbol(syntax) as T;
     }
 
     private static bool ShouldFireDiagnostic(MethodDeclarationSyntax methodDeclarationSyntax)

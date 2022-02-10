@@ -3,9 +3,6 @@
 
 using System.Globalization;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.AspNetCore.Analyzers.AsyncVoidInMethodDeclaration;
 
@@ -13,17 +10,16 @@ namespace Microsoft.AspNetCore.Analyzers.AsyncVoidInMethodDeclaration;
 
 public partial class AsyncVoidInMethodDeclarationAnalyzer
 {
-    private static bool IsRazorPage(ClassDeclarationSyntax classDeclaration, SyntaxNodeAnalysisContext context, WellKnownTypes wellKnownTypes)
+    private static bool IsRazorPage(ITypeSymbol? classSymbol, WellKnownTypes wellKnownTypes)
     {
         // RazorPage must be inherited from the Microsoft.AspNetCore.Mvc.RazorPages.PageModel
 
         INamedTypeSymbol lookupType = wellKnownTypes.PageModel;
-        var classSymbol = (ITypeSymbol?)context.SemanticModel.GetDeclaredSymbol(classDeclaration);
 
         return classSymbol?.BaseType != null && lookupType.IsAssignableFrom(classSymbol?.BaseType!);
     }
 
-    private static bool IsRazorPageHandlerMethod(MethodDeclarationSyntax methodDeclarationSyntax, IMethodSymbol? methodSymbol, WellKnownTypes wellKnownTypes)
+    private static bool IsRazorPageHandlerMethod(IMethodSymbol? methodSymbol, WellKnownTypes wellKnownTypes)
     {
         // Check if method name follows On + HttpRequestMethod (currently GET, POST, PUT, DELETE are considered)
         const string OnGet = "onget";
@@ -37,7 +33,7 @@ public partial class AsyncVoidInMethodDeclarationAnalyzer
             return false;
         }
 
-        string methodName = (methodDeclarationSyntax.Identifier.Value as string) ?? string.Empty;
+        var methodName = methodSymbol?.Name ?? string.Empty;
 
         return methodName.StartsWith(OnGet, ignoreCase: true, CultureInfo.InvariantCulture)
             || methodName.StartsWith(OnPost, ignoreCase: true, CultureInfo.InvariantCulture)
