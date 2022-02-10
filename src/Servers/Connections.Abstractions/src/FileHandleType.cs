@@ -9,17 +9,17 @@ namespace Microsoft.AspNetCore.Connections;
 public enum FileHandleType
 {
     /// <summary>
-    /// Not a manual.
+    /// This API is unused and no longer supported.
     /// </summary>
     Auto,
 
     /// <summary>
-    /// Better than UDP.
+    /// This API is unused and no longer supported.
     /// </summary>
     Tcp,
 
     /// <summary>
-    /// Carries water when not burst.
+    /// This API is unused and no longer supported.
     /// </summary>
     Pipe
 }
