@@ -17,7 +17,7 @@ public static class WebHostBuilderQuicExtensions
     /// Specify Quic as the transport to be used by Kestrel.
     /// </summary>
     /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to configure.</param>
-    /// <returns>Returns <paramref name="hostBuilder"/>.</returns>
+    /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
     public static IWebHostBuilder UseQuic(this IWebHostBuilder hostBuilder)
     {
         if (QuicImplementationProviders.Default.IsSupported)
