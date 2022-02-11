@@ -3,10 +3,11 @@
   
   <PropertyGroup>
     <KestrelSharedSourceRoot>$(MSBuildThisFileDirectory)..\Kestrel\shared\</KestrelSharedSourceRoot>
-    <HostArchDir>$(Platform)</HostArchDir>
-    <HostArchDir Condition="'$(Platform)' == 'Win32'">x86</HostArchDir>
-    <HostArchDir Condition="'$(Platform)' == 'AnyCPU'">x64</HostArchDir>
-    <LibNetHostPath>$(NetCoreTargetingPackRoot)\Microsoft.NETCore.App.Host.win-$(HostArchDir)\$(AppHostPackVersion)\runtimes\win-$(HostArchDir)\native</LibNetHostPath>
+    <HostArch>$(Platform)</HostArch>
+    <HostArch Condition="'$(Platform)' == 'Win32'">x86</HostArch>
+    <HostArch Condition="'$(Platform)' == 'AnyCPU'">x64</HostArch>
+    <LibNetHostPath>$(NetCoreTargetingPackRoot)\Microsoft.NETCore.App.Host.win-$(HostArch)\$(AppHostPackVersion)\runtimes\win-$(HostArch)\native</LibNetHostPath>
+    <DebugLibNetHostPath>$(MSBuildThisFileDirectory)\build\libnethost\$(HostArch)\libnethost.lib</DebugLibNetHostPath>
     <!-- This tools version MUST match the same version as runtime uses to compile libnethost.lib -->
     <PlatformToolsetVersion>v142</PlatformToolsetVersion>
   </PropertyGroup>
