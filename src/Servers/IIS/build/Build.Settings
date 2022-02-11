@@ -7,6 +7,7 @@
      <PlatformToolsetVersion>v142</PlatformToolsetVersion>
      <PlatformToolset>$(PlatformToolsetVersion)</PlatformToolset>
      <AspNetCoreModuleTargetName>aspnetcore</AspNetCoreModuleTargetName>
+     <VCToolsVersion>14.29.30133</VCToolsVersion>
    </PropertyGroup>
 
    <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
@@ -57,19 +58,21 @@
 
    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
      <ClCompile>
-       <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <!-- Without a debug version of libnethost.lib we cannot use _DEBUG -->
+       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
      </ClCompile>
    </ItemDefinitionGroup>
 
    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
      <ClCompile>
-       <PreprocessorDefinitions>_WIN64;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <!-- Without a debug version of libnethost.lib we cannot use _DEBUG -->
+       <PreprocessorDefinitions>_WIN64;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
      </ClCompile>
    </ItemDefinitionGroup>
 
    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
      <ClCompile>
-       <PreprocessorDefinitions>WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
      </ClCompile>
      <Link>
        <GenerateDebugInformation>true</GenerateDebugInformation>
