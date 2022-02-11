@@ -1371,11 +1371,11 @@ public static class EventCallbackFactoryBinderExtensions
     }
 
     private static EventCallback<ChangeEventArgs> CreateBinderCore<T>(
-    this EventCallbackFactory factory,
-    object receiver,
-    EventCallback<T> setter,
-    CultureInfo? culture,
-    BindConverter.BindParser<T> converter)
+        this EventCallbackFactory factory,
+        object receiver,
+        EventCallback<T> setter,
+        CultureInfo? culture,
+        BindConverter.BindParser<T> converter)
     {
         Func<ChangeEventArgs, Task> callback = async e =>
         {
@@ -1458,12 +1458,12 @@ public static class EventCallbackFactoryBinderExtensions
     }
 
     private static EventCallback<ChangeEventArgs> CreateBinderCore<T>(
-    this EventCallbackFactory factory,
-    object receiver,
-    EventCallback<T> setter,
-    CultureInfo? culture,
-    string format,
-    BindConverter.BindParserWithFormat<T> converter)
+        this EventCallbackFactory factory,
+        object receiver,
+        EventCallback<T> setter,
+        CultureInfo? culture,
+        string format,
+        BindConverter.BindParserWithFormat<T> converter)
     {
         Func<ChangeEventArgs, Task> callback = async e =>
         {
