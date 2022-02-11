@@ -8,6 +8,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.AspNetCore.Analyzers.AsyncVoidInMethodDeclaration;
 
@@ -85,27 +86,23 @@ public partial class AsyncVoidInMethodDeclarationAnalyzer : DiagnosticAnalyzer
             }
 
             var methodSymbol = GetDeclaredSymbol<IMethodSymbol>(classContext, methodDeclarationSyntax);
-            // check if there is an additional filter for a method and the method pass through it
+            // check if there is an additional filter for a method and the method conforms it
             if (additionalMethodConstraint != null && !additionalMethodConstraint(methodSymbol, wellKnownTypes))
             {
                 continue;
             }
 
-            if (ShouldFireDiagnostic(methodSymbol))
+            if (methodSymbol != null && methodSymbol.IsAsync && methodSymbol.ReturnsVoid)
             {
-                classContext.ReportDiagnostic(CreateDiagnostic(methodDeclarationSyntax));
+                var diagnosticSpan = new TextSpan(
+                    methodDeclarationSyntax.Modifiers.Last().FullSpan.Start,
+                    methodDeclarationSyntax.ReturnType.FullSpan.End - methodDeclarationSyntax.Modifiers.Last().FullSpan.Start);
+
+                var location = Location.Create(methodDeclarationSyntax.SyntaxTree, diagnosticSpan);
+                var diagnostic = Diagnostic.Create(DiagnosticDescriptors.AvoidAsyncVoidInMethodDeclaration, location);
+
+                classContext.ReportDiagnostic(diagnostic);
             }
         }
-    }
-
-    private static bool ShouldFireDiagnostic(IMethodSymbol? methodSymbol)
-    {
-        return methodSymbol != null && methodSymbol.IsAsync && methodSymbol.ReturnsVoid;
-    }
-
-    private static Diagnostic CreateDiagnostic(SyntaxNode syntaxNode)
-    {
-        var location = Location.Create(syntaxNode.SyntaxTree, syntaxNode.FullSpan);
-        return Diagnostic.Create(DiagnosticDescriptors.AvoidAsyncVoidInMethodDeclaration, location);
     }
 }
