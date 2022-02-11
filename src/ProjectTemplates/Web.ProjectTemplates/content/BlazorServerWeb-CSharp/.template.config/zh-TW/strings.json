@@ -1,7 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "strings": {
-    "name": "Blazor Server 應用程式",
-    "description": "用來建立 Blazor Server 應用程式的專案範本，該應用程式會在 ASP.NET Core 應用程式內執行伺服器端，並透過 SignalR 連線處理使用者互動。Web 應用程式具有豐富且動態的使用者介面 (UI) 時，此範本最適用。"
-  }
-}

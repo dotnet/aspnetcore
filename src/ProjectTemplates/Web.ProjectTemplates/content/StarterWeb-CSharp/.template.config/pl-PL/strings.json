@@ -1,7 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "strings": {
-    "name": "Aplikacja internetowa ASP.NET Core (Model-View-Controller)",
-    "description": "Szablon projektu służący do tworzenia aplikacji platformy ASP.NET Core z przykładowymi widokami i kontrolerami platformy ASP.NET Core MVC. Tego szablonu można także użyć dla usług HTTP RESTful."
-  }
-}

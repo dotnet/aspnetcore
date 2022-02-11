@@ -1,7 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "strings": {
-    "name": "ASP.NET Core Web アプリ (Model-View-Controller)",
-    "description": "ASP.NET Core MVC のサンプル ビューとコントローラーで ASP.NET Core アプリケーションを作成するためのプロジェクト テンプレートです。このテンプレートは RESTful HTTP サービスでも使用できます。"
-  }
-}

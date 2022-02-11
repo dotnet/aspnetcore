@@ -1,9 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "strings": {
-    "name": "Aplicación Blazor para WebAssembly",
-    "description": "Plantilla de proyecto para crear una aplicación Blazor que se ejecuta en WebAssembly y que se hospeda de forma opcional en una aplicación de ASP.NET Core. Esta plantilla se puede usar para las aplicaciones web con interfaces de usuario dinámicas enriquecidas (IU).",
-    "parameter.Hosted.name": "ASP.NET Core _hospedado",
-    "parameter.PWA.name": "Aplicación _web progresiva"
-  }
-}

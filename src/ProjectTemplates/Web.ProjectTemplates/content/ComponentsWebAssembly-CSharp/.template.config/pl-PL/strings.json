@@ -1,9 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "strings": {
-    "name": "Aplikacja zestawu WebAssembly platformy Blazor",
-    "description": "Szablon projektu służący do tworzenia aplikacji platformy Blazor, która działa w formacie WebAssembly i jest opcjonalnie hostowana przez aplikację platformy ASP.NET Core. Tego szablonu można używać dla aplikacji internetowych z rozbudowanymi dynamicznymi interfejsami użytkownika.",
-    "parameter.Hosted.name": "_Hostowane na platformie ASP.NET Core",
-    "parameter.PWA.name": "_Progresywna aplikacja internetowa"
-  }
-}
