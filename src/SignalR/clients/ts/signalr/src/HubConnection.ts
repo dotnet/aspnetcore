@@ -653,7 +653,7 @@ export class HubConnection {
                     if (this._connectionState === HubConnectionState.Connected) {
                         try {
                             await this._sendMessage(this._cachedPingMessage);
-                        } catch {
+                        } catch (e) {
                             // We don't care about the error. It should be seen elsewhere in the client.
                             // The connection is probably in a bad or closed state now, cleanup the timer so it stops triggering
                             this._cleanupPingTimer();
