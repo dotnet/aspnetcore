@@ -143,6 +143,11 @@ internal static class RenderTreeDiffBuilder
                             // If we've run out of new items, we must be looking at just an old item, so delete it
                             action = DiffAction.Delete;
                         }
+                        else if (!oldKeyIsInNewTree && (newKey == null))
+                        {
+                            // If the old key not in the tree anymore we prefer deletion of the old element (the following elements will not be recreated and won't lost their state).
+                            action = DiffAction.Delete;
+                        }
                         else
                         {
                             // It's an insertion or a deletion, or both
