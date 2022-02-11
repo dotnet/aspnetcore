@@ -13,19 +13,16 @@ public class DetectAsyncVoidInControllerTest
     public async Task AsyncVoidDiagnosted_ControllerDetectedBySuffix()
     {
         var source = TestSource.Read(@"
-using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
 public class HomeController : Base
 {
     public async void Index()
-    {
-    }
+    {}
 }
 
 public class Base
-{
-}
+{}
 
 public class Program { public static void Main() {}}
 ");
@@ -101,27 +98,62 @@ using Microsoft.AspNetCore.Mvc;
 public class Home : Base
 {
     public async Task Index()
-    {
-    }
+    {}
 }
 
 public class Base : Controller
 {
     public async Task Get()
-    {
-    }
+    {}
 }
 
 public class AuthController : Base
 {
     public async Task Auth()
-    {
-    }
+    {}
 }
 
 public class Program { public static void Main() {}}
 ");
         var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
         Assert.Empty(diagnostics);
+    }
+
+    [Fact]
+    public async Task AsyncVoidDiagnosted_ControllerWithVariousMethodSignatures()
+    {
+        var source = TestSource.Read(@"
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+
+public class HomeController : Base
+{
+    public async Task Index()
+    {}
+
+    protected new async void GenerateCheckpoint()
+    {}
+
+    protected override async void CheckToken()
+    {}
+
+    private async void GetImpl()
+    {}
+}
+
+public abstract class Base
+{
+    protected abstract void CheckToken();
+    protected void GenerateCheckpoint(){}
+}
+
+public class Program { public static void Main() {}}
+");
+        var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+        Assert.Equal(3, diagnostics.Length);
+        Assert.Same(DiagnosticDescriptors.AvoidAsyncVoidInMethodDeclaration, diagnostics[0].Descriptor);
+        Assert.Same(DiagnosticDescriptors.AvoidAsyncVoidInMethodDeclaration, diagnostics[1].Descriptor);
+        Assert.Same(DiagnosticDescriptors.AvoidAsyncVoidInMethodDeclaration, diagnostics[3].Descriptor);
+
     }
 }
