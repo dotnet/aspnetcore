@@ -200,6 +200,36 @@ public class Program {{ public static void Main() {{}} }}
         DoAssert(expectedDiagnosticsNumber, diagnostics);
     }
 
+    [Fact]
+    public async Task AsyncVoidDetected_FilterInheritedFromHierarchy()
+    {
+        var source = TestSource.Read(@"
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Filters;
+
+namespace Mvc.Filters;
+
+public class SomeFilter : IActionFilter
+{
+    public async void OnActionExecuted(ActionExecutedContext context)
+    {}
+
+    public async void OnActionExecuting(ActionExecutingContext context)
+    {}
+}
+
+public class DerivedFilter : SomeFilter
+{
+    public new async void OnActionExecuting(ActionExecutingContext context)
+    {}
+}
+
+public class Program { public static void Main() {} }
+");
+        var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+        DoAssert(3, diagnostics);
+    }
+
     private void DoAssert(int expectedDiagnosticsNumber, CodeAnalysis.Diagnostic[] resultedDisgnostic)
     {
         Assert.Equal(expectedDiagnosticsNumber, resultedDisgnostic.Length);
