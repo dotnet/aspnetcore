@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using Microsoft.CodeAnalysis;
@@ -49,42 +50,18 @@ public partial class AsyncVoidInMethodDeclarationAnalyzer : DiagnosticAnalyzer
 
             if (IsController(classSymbol, wellKnownTypes) || IsSignalRHub(classSymbol, wellKnownTypes))
             {
-                for (int i = 0; i < classDeclaration.Members.Count; i++)
-                {
-                    if (classDeclaration.Members[i] is not MethodDeclarationSyntax methodDeclarationSyntax)
-                    {
-                        continue;
-                    }
-
-                    var methodSymbol = GetDeclaredSymbol<IMethodSymbol>(classContext, methodDeclarationSyntax);
-                    if (ShouldFireDiagnostic(methodSymbol))
-                    {
-                        classContext.ReportDiagnostic(CreateDiagnostic(classDeclaration));
-                    }
-                }
+                // scan all methods in class
+                CheckMembers(classDeclaration.Members, wellKnownTypes, classContext, null);
             }
-            else if (IsRazorPage(classSymbol, wellKnownTypes) || IsMvcFilter(classSymbol, wellKnownTypes))
+            else if (IsRazorPage(classSymbol, wellKnownTypes))
             {
-                for (int i = 0; i < classDeclaration.Members.Count; i++)
-                {
-                    if (classDeclaration.Members[i] is not MethodDeclarationSyntax methodDeclarationSyntax)
-                    {
-                        continue;
-                    }
-
-                    var methodSymbol = GetDeclaredSymbol<IMethodSymbol>(classContext, methodDeclarationSyntax);
-
-                    // only search methods that follow a pattern: 'On + HttpMethodName' or 'On + Filter
-                    if (!IsRazorPageHandlerMethod(methodSymbol, wellKnownTypes) && !IsMvcFilterMethod(methodSymbol))
-                    {
-                        continue;
-                    }
-
-                    if (ShouldFireDiagnostic(methodSymbol))
-                    {
-                        classContext.ReportDiagnostic(CreateDiagnostic(classDeclaration));
-                    }
-                }
+                // only search for methods that follow a pattern: 'On + HttpMethodName'
+                CheckMembers(classDeclaration.Members, wellKnownTypes, classContext, IsRazorPageHandlerMethod);
+            }
+            else if (IsMvcFilter(classSymbol, wellKnownTypes))
+            {
+                // only search for methods that follow a pattern: 'On + Filter
+                CheckMembers(classDeclaration.Members, wellKnownTypes, classContext, IsMvcFilterMethod);
             }
         }, SyntaxKind.ClassDeclaration);
     }
@@ -92,6 +69,33 @@ public partial class AsyncVoidInMethodDeclarationAnalyzer : DiagnosticAnalyzer
     private static T? GetDeclaredSymbol<T>(SyntaxNodeAnalysisContext context, SyntaxNode syntax) where T : class
     {
         return context.SemanticModel.GetDeclaredSymbol(syntax, context.CancellationToken) as T;
+    }
+
+    private static void CheckMembers(
+        SyntaxList<MemberDeclarationSyntax> members,
+        WellKnownTypes wellKnownTypes,
+        SyntaxNodeAnalysisContext classContext,
+        Func<IMethodSymbol?, WellKnownTypes, bool>? additionalMethodConstraint)
+    {
+        for (int i = 0; i < members.Count; i++)
+        {
+            if (members[i] is not MethodDeclarationSyntax methodDeclarationSyntax)
+            {
+                continue;
+            }
+
+            var methodSymbol = GetDeclaredSymbol<IMethodSymbol>(classContext, methodDeclarationSyntax);
+            // check if there is an additional filter for a method and the method pass through it
+            if (additionalMethodConstraint != null && !additionalMethodConstraint(methodSymbol, wellKnownTypes))
+            {
+                continue;
+            }
+
+            if (ShouldFireDiagnostic(methodSymbol))
+            {
+                classContext.ReportDiagnostic(CreateDiagnostic(methodDeclarationSyntax));
+            }
+        }
     }
 
     private static bool ShouldFireDiagnostic(IMethodSymbol? methodSymbol)

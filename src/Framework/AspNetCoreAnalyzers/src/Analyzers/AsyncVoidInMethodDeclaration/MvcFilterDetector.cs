@@ -14,7 +14,7 @@ public partial class AsyncVoidInMethodDeclarationAnalyzer
             || SymbolEqualityComparer.Default.Equals(wellKnownTypes.IActionFilter, classSymbol?.BaseType));
     }
 
-    private static bool IsMvcFilterMethod(IMethodSymbol? methodSymbol)
+    private static bool IsMvcFilterMethod(IMethodSymbol? methodSymbol, WellKnownTypes wellKnownTypes)
     {
         return false;
     }
