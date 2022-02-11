@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.CompilerServices;
+
 namespace Microsoft.AspNetCore.Components.CompilerServices;
 
 /// <summary>
@@ -66,5 +68,60 @@ public static class RuntimeHelpers
     public static EventCallback<T> CreateInferredEventCallback<T>(object receiver, EventCallback<T> callback, T value)
     {
         return EventCallback.Factory.Create<T>(receiver, callback);
+    }
+
+    /// <summary>
+    /// Not intended for use by application code.
+    /// </summary>
+    /// <param name="callback"></param>
+    /// <returns></returns>
+    //
+    // This method is used with `@bind-Value:after` for components. When :after is provided we don't know the
+    // type of the expression provided by the developer or if we can invoke it directly, as it can be a lambda
+    // and unlike in JavaScript, C# doesn't support Immediately Invoked Function Expressions so we need to pass
+    // the expression to this helper method and invoke it inside.
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void InvokeSynchronousDelegate(Action callback)
+    {
+        callback();
+    }
+
+    /// <summary>
+    /// Not intended for use by application code.
+    /// </summary>
+    /// <param name="callback"></param>
+    /// <returns></returns>
+    //
+    // This method is used with `@bind-Value:after` for components. When :after is provided we don't know the
+    // type of the expression provided by the developer or if we can invoke it directly, as it can be a lambda
+    // and unlike in JavaScript, C# doesn't support Immediately Invoked Function Expressions so we need to pass
+    // the expression to this helper method and invoke it inside.
+    // In addition to that, when the receiving target delegate property result is awaitable, we can receive either
+    // an Action or a Func<Task> and we don't have that information at compile time, so we use this helper to
+    // normalize both operations into a Task in the same way we do for EventCallback
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Task InvokeAsynchronousDelegate(Action callback)
+    {
+        callback();
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Not intended for use by application code.
+    /// </summary>
+    /// <param name="callback"></param>
+    /// <returns></returns>
+    //
+    // This method is used with `@bind-Value:after` for components. When :after is provided we don't know the
+    // type of the expression provided by the developer or if we can invoke it directly, as it can be a lambda
+    // and unlike in JavaScript, C# doesn't support Immediately Invoked Function Expressions so we need to pass
+    // the expression to this helper method and invoke it inside.
+    // In addition to that, when the receiving target delegate property result is awaitable, we can receive either
+    // an Action or a Func<Task> and we don't have that information at compile time, so we use this helper to
+    // normalize both operations into a Task in the same way we do for EventCallback
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Task InvokeAsynchronousDelegate(Func<Task> callback)
+    {
+        return callback();
     }
 }
