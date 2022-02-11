@@ -83,7 +83,7 @@ internal static class DiagnosticDescriptors
     internal static readonly DiagnosticDescriptor AvoidAsyncVoidInMethodDeclaration = new(
         "ASP0011",
         "Do not use 'async void' in method declaration",
-        "Void as a return type in an async method is restricted for controller actions, razor page handler, filters, and signar hub methods. Consider converting to 'async Task'",
+        "Void as a return type in an async method is restricted for controller actions, razor page handler, filters, and signalr hub methods. Consider converting to 'async Task'",
         "Usage",
         DiagnosticSeverity.Error,
         isEnabledByDefault: true,
