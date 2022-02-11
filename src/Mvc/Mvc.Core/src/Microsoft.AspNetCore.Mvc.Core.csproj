@@ -28,8 +28,8 @@ Microsoft.AspNetCore.Mvc.RouteAttribute</Description>
     <Compile Include="$(SharedSourceRoot)SecurityHelper\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)ResponseContentTypeHelper.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)ResultsHelpers\*.cs" LinkBase="Shared" />
-    <Compile Include="$(SharedSourceRoot)ProblemDetailsDefaults.cs" LinkBase="Shared"/>
-    <Compile Include="$(SharedSourceRoot)ProblemDetailsJsonConverter.cs" LinkBase="Shared"/>
+    <Compile Include="$(SharedSourceRoot)ProblemDetailsDefaults.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)ProblemDetailsJsonConverter.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)HttpValidationProblemDetailsJsonConverter.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)MediaType\ReadOnlyMediaTypeHeaderValue.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)MediaType\HttpTokenParsingRule.cs" LinkBase="Shared" />
@@ -59,6 +59,10 @@ Microsoft.AspNetCore.Mvc.RouteAttribute</Description>
     <Compile Include="$(SharedSourceRoot)ValueStopwatch\*.cs" />
     <Compile Include="$(SharedSourceRoot)ParameterDefaultValue\*.cs" />
     <Compile Include="$(SharedSourceRoot)TypeNameHelper\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="C:\git\aspnetcore\src\Shared\TypeNameHelper\TypeNameHelper.cs" />
   </ItemGroup>
 
 </Project>

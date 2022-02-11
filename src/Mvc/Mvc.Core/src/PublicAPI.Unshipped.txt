@@ -1,4 +1,10 @@
 #nullable enable
+Microsoft.AspNetCore.Mvc.ModelBinding.Binders.TryParseModelBinder
+Microsoft.AspNetCore.Mvc.ModelBinding.Binders.TryParseModelBinder.BindModelAsync(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext! bindingContext) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Mvc.ModelBinding.Binders.TryParseModelBinder.TryParseModelBinder(System.Type! type, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
+Microsoft.AspNetCore.Mvc.ModelBinding.Binders.TryParseModelBinderProvider
+Microsoft.AspNetCore.Mvc.ModelBinding.Binders.TryParseModelBinderProvider.GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext! context) -> Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder?
+Microsoft.AspNetCore.Mvc.ModelBinding.Binders.TryParseModelBinderProvider.TryParseModelBinderProvider() -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.SystemTextJsonValidationMetadataProvider
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.SystemTextJsonValidationMetadataProvider.CreateDisplayMetadata(Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DisplayMetadataProviderContext! context) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.SystemTextJsonValidationMetadataProvider.CreateValidationMetadata(Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ValidationMetadataProviderContext! context) -> void

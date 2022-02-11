@@ -6,7 +6,9 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
@@ -24,6 +26,8 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
     /// The default value of <see cref="ModelMetadata.Order"/>.
     /// </summary>
     public static readonly int DefaultOrder = 10000;
+
+    private static readonly ParameterBindingMethodCache ParameterBindingMethodCache = new();
 
     private int? _hashCode;
     private IReadOnlyList<ModelMetadata>? _boundProperties;
@@ -476,6 +480,11 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
     public Type UnderlyingOrModelType { get; private set; } = default!;
 
     /// <summary>
+    /// 
+    /// </summary>
+    internal bool HasTryParse { get; private set; } = default!;
+
+    /// <summary>
     /// Gets a value indicating the NullabilityState of the value or reference type.
     /// </summary>
     /// <remarks>
@@ -520,6 +529,8 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
             throw _recordTypeValidatorsOnPropertiesError;
         }
     }
+    internal static Func<ParameterExpression, IFormatProvider, Expression>? FindTryParseMethod(Type modelType)
+        => ParameterBindingMethodCache.FindTryParseMethod(modelType);
 
     [MemberNotNull(nameof(_parameterMapping), nameof(_boundConstructorPropertyMapping))]
     private void CalculateRecordTypeConstructorDetails()
@@ -620,6 +631,7 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
         IsNullableValueType = Nullable.GetUnderlyingType(ModelType) != null;
         IsReferenceOrNullableType = !ModelType.IsValueType || IsNullableValueType;
         UnderlyingOrModelType = Nullable.GetUnderlyingType(ModelType) ?? ModelType;
+        HasTryParse = ParameterBindingMethodCache.HasTryParseMethod(ModelType);
 
         var collectionType = ClosedGenericMatcher.ExtractGenericInterface(ModelType, typeof(ICollection<>));
         IsCollectionType = collectionType != null;

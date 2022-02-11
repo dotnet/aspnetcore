@@ -16,6 +16,11 @@ Microsoft.AspNetCore.Mvc.IActionResult</Description>
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\..\Shared\ParameterBindingMethodCache.cs" Link="ModelBinding\ParameterBindingMethodCache.cs" />
+    <Compile Include="..\..\..\Shared\TypeNameHelper\TypeNameHelper.cs" Link="ModelBinding\TypeNameHelper.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
     <Reference Include="Microsoft.Net.Http.Headers" />
   </ItemGroup>
