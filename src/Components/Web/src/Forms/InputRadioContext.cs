@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Components.Forms;
 /// <summary>
 /// Describes context for an <see cref="InputRadio{TValue}"/> component.
 /// </summary>
-internal class InputRadioContext
+internal sealed class InputRadioContext
 {
     public InputRadioContext? ParentContext { get; }
     public EventCallback<ChangeEventArgs> ChangeEventCallback { get; }
