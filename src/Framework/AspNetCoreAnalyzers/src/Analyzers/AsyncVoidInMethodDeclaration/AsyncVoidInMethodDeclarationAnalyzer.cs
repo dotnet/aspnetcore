@@ -49,7 +49,9 @@ public partial class AsyncVoidInMethodDeclarationAnalyzer : DiagnosticAnalyzer
 
             var classSymbol = GetDeclaredSymbol<ITypeSymbol>(classContext, classDeclaration);
 
-            if (IsController(classSymbol, wellKnownTypes) || IsSignalRHub(classSymbol, wellKnownTypes))
+            if (IsController(classSymbol, wellKnownTypes)
+                || IsSignalRHub(classSymbol, wellKnownTypes)
+                || IsMvcFilter(classSymbol, wellKnownTypes))
             {
                 // scan all methods in class
                 CheckMembers(classDeclaration.Members, wellKnownTypes, classContext, null);
@@ -58,11 +60,6 @@ public partial class AsyncVoidInMethodDeclarationAnalyzer : DiagnosticAnalyzer
             {
                 // only search for methods that follow a pattern: 'On + HttpMethodName'
                 CheckMembers(classDeclaration.Members, wellKnownTypes, classContext, IsRazorPageHandlerMethod);
-            }
-            else if (IsMvcFilter(classSymbol, wellKnownTypes))
-            {
-                // only search for methods that follow a pattern: 'On + Filter
-                CheckMembers(classDeclaration.Members, wellKnownTypes, classContext, IsMvcFilterMethod);
             }
         }, SyntaxKind.ClassDeclaration);
     }

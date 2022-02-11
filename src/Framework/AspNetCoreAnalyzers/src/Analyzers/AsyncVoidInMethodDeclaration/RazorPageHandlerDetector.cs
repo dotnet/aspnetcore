@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
 using System.Globalization;
 using Microsoft.CodeAnalysis;
 
@@ -20,23 +21,26 @@ public partial class AsyncVoidInMethodDeclarationAnalyzer
 
     private static bool IsRazorPageHandlerMethod(IMethodSymbol? methodSymbol, WellKnownTypes wellKnownTypes)
     {
-        // Check if method name follows On + HttpRequestMethod (currently GET, POST, PUT, DELETE are considered)
-        const string OnGet = "onget";
-        const string OnPut = "onput";
-        const string OnPost = "onpost";
-        const string OnDelete = "ondelete";
-
+        // if method is marked by [NonHandler] don't process it disregarding its' name
         if (methodSymbol?.HasAttribute(wellKnownTypes.NonHandlerAttribute) ?? false)
         {
-            // if method is marked by [NonHandler] don't process it disregarding its' name
             return false;
         }
 
         var methodName = methodSymbol?.Name ?? string.Empty;
 
-        return methodName.StartsWith(OnGet, ignoreCase: true, CultureInfo.InvariantCulture)
-            || methodName.StartsWith(OnPost, ignoreCase: true, CultureInfo.InvariantCulture)
-            || methodName.StartsWith(OnPut, ignoreCase: true, CultureInfo.InvariantCulture)
-            || methodName.StartsWith(OnDelete, ignoreCase: true, CultureInfo.InvariantCulture);
+        // Check if method name follows On + HttpRequestMethod (currently GET, POST, PUT, DELETE are considered)
+        var possibleMethodNames = ImmutableArray.Create("onget", "onput", "onpost", "ondelete");
+        bool isMatch = false;
+        for (int i = 0; i < possibleMethodNames.Length; i++)
+        {
+            isMatch |= methodName.StartsWith(possibleMethodNames[i], ignoreCase: true, CultureInfo.InvariantCulture);
+            if (isMatch)
+            {
+                break;
+            }
+        }
+
+        return isMatch;
     }
 }
