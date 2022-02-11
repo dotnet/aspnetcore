@@ -3,12 +3,12 @@
 
 
 "@microsoft/signalr-protocol-msgpack@link:../signalr-protocol-msgpack":
-    version "0.0.0"
-    uid ""
+  version "0.0.0"
+  uid ""
 
 "@microsoft/signalr@link:../signalr":
-    version "0.0.0"
-    uid ""
+  version "0.0.0"
+  uid ""
 
 "@msgpack/msgpack@^2.7.0":
   version "2.7.0"
