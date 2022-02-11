@@ -179,7 +179,7 @@ public class InferParameterBindingInfoConvention : IActionModelConvention
         {
             // Cannot be determine if the parameter is optional since the provider
             // does not provides an option to getMetadata from the parameter info
-            // so, we will the parameter as not optional
+            // so, we will NOT treat the parameter as optional.
             return false;
         }
     }

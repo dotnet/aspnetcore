@@ -43,10 +43,6 @@ public class HomeController : Controller
         => ModelState.IsValid ? Ok() : ValidationProblem();
 
     [HttpPost]
-    public IActionResult RequiredBody([FromBody][Required] DummyClass dummy)
-        => ModelState.IsValid ? Ok() : ValidationProblem();
-
-    [HttpPost]
     public IActionResult OptionalBody([FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] DummyClass dummy)
         => ModelState.IsValid ? Ok() : ValidationProblem();
 
