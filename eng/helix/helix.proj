@@ -1,11 +1,16 @@
 <Project Sdk="Microsoft.DotNet.Helix.Sdk" DefaultTargets="Test" TreatAsLocalProperty="ProjectToBuild">
-
   <PropertyGroup>
     <!--
       When invoking helix.proj for the whole repo with build.cmd, ProjectToBuild will be set to the path to this project.
       This must be reset in order for Build.props to evaluate a list of projects to be tested on Helix.
     -->
     <ProjectToBuild Condition="'$(ProjectToBuild)' == '$(MSBuildProjectFullPath)'"/>
+
+    <!--
+      Do not load NuGet.targets since this project doesn't reference anything from NuGet. Reduces `msbuild`
+      baggage slightly.
+    -->
+    <IsRestoreTargetsFileLoaded>true</IsRestoreTargetsFileLoaded>
   </PropertyGroup>
 
   <Import Project="..\targets\Helix.Common.props" />
@@ -24,7 +29,6 @@
     <IsExternal>true</IsExternal>
     <MaxRetryCount Condition="'$(MaxRetryCount)' == ''">2</MaxRetryCount>
     <HelixAccessToken Condition="'$(_UseHelixOpenQueues)' != 'true'">$(HelixApiAccessToken)</HelixAccessToken>
-    <HelixTestConfigurationFilePath>$(RepoRoot)eng/test-configuration.json</HelixTestConfigurationFilePath>
     <IncludeDotNetCli>true</IncludeDotNetCli>
     <DotNetCliPackageType>sdk</DotNetCliPackageType>
     <DotNetCliVersion>$(NETCoreSdkVersion)</DotNetCliVersion>
@@ -34,7 +38,7 @@
     <OutputPath Condition=" '$(OutputPath)' == '' ">$(RepoRoot)artifacts\bin\$(MSBuildProjectName)\</OutputPath>
   </PropertyGroup>
 
-  <!-- Specify the runtime we need which will be included as a correlation payload -->
+  <!-- Specify the .NET runtime we need which will be included as a correlation payload. -->
   <ItemGroup>
     <!--
       Use the BrowserDebugHost transport package as a sentinel for the non-shipping version of the NETCoreApp shared framework.
@@ -44,23 +48,27 @@
     </AdditionalDotNetPackage>
   </ItemGroup>
 
-  <PropertyGroup Condition=" '$(ContinuousIntegrationBuild)' == 'true' ">
-    <HelixType>ci</HelixType>
-    <!-- Creator is not valid for internal queues -->
-    <Creator Condition="'$(_UseHelixOpenQueues)' == 'true'">aspnetcore</Creator>
-    <HelixBuild>$(BUILD_BUILDNUMBER).$(SYSTEM_JOBATTEMPT)</HelixBuild>
-    <WaitForWorkItemCompletion>true</WaitForWorkItemCompletion>
-    <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
-    <EnableXUnitReporter>true</EnableXUnitReporter>
-  </PropertyGroup>
+  <Choose>
+    <When Condition=" '$(ContinuousIntegrationBuild)' == 'true' ">
+      <PropertyGroup>
+        <!-- Creator is not valid for internal queues -->
+        <Creator Condition="'$(_UseHelixOpenQueues)' == 'true'">aspnetcore</Creator>
 
-  <PropertyGroup Condition=" '$(ContinuousIntegrationBuild)' != 'true' ">
-    <HelixType>dev</HelixType>
-    <!-- Creator is not valid for internal queues -->
-    <Creator Condition="'$(_UseHelixOpenQueues)' == 'true'">$(USERNAME)</Creator>
-    <Creator Condition="'$(USERNAME)' == '' AND '$(_UseHelixOpenQueues)' == 'true'">$(USER)</Creator>
-    <HelixBuild>$([System.DateTime]::Now.ToString('yyyyMMddHHmm'))</HelixBuild>
-  </PropertyGroup>
+        <HelixType>ci</HelixType>
+        <HelixBuild>$(BUILD_BUILDNUMBER).$(SYSTEM_JOBATTEMPT)</HelixBuild>
+      </PropertyGroup>
+    </When>
+    <Otherwise>
+      <PropertyGroup>
+        <!-- Creator is not valid for internal queues -->
+        <Creator Condition="'$(_UseHelixOpenQueues)' == 'true'">$(USERNAME)</Creator>
+        <Creator Condition="'$(USERNAME)' == '' AND '$(_UseHelixOpenQueues)' == 'true'">$(USER)</Creator>
+
+        <HelixType>dev</HelixType>
+        <HelixBuild>$([System.DateTime]::Now.ToString('yyyyMMddHHmm'))</HelixBuild>
+      </PropertyGroup>
+    </Otherwise>
+  </Choose>
 
   <!-- Items with the type "HelixProperties" will become arbitrary JSON associated with the job -->
   <!-- NOTE: These are global to the whole Job, so don't include project-specific content here. -->
@@ -73,10 +81,6 @@
     <HelixProperties Include="branch" Value="$(BUILD_SOURCEBRANCH)" Condition="'$(BUILD_SOURCEBRANCH)' != ''" />
     <HelixProperties Condition="'$(RunQuarantinedTests)' == 'true'" Include="runType" Value="quarantined" />
     <HelixProperties Condition="'$(RunQuarantinedTests)' != 'true'" Include="runType" Value="unquarantined" />
-  </ItemGroup>
-
-  <ItemGroup Condition="Exists('$(HelixTestConfigurationFilePath)')">
-    <HelixCorrelationPayload Include="$(HelixTestConfigurationFilePath)" AsArchive="false" />
   </ItemGroup>
 
   <Target Name="IncludeAspNetRuntime" BeforeTargets="Gather"
@@ -119,12 +123,13 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="Gather" BeforeTargets="Build">
+  <!-- In inner (per-queue) builds, Publish the test projects and create work items. -->
+  <Target Name="Gather" BeforeTargets="BeforeTest" Condition=" '$(HelixTargetQueue)' != '' ">
     <MSBuild Projects="@(ProjectToBuild)"
-              Targets="CreateHelixPayload"
-              SkipNonexistentTargets="true">
+        BuildInParallel="%(ProjectToBuild.BuildInParallel)"
+        Targets="CreateHelixPayload"
+        SkipNonexistentTargets="true">
       <Output TaskParameter="TargetOutputs" ItemName="HelixWorkItem" />
     </MSBuild>
   </Target>
-
 </Project>
