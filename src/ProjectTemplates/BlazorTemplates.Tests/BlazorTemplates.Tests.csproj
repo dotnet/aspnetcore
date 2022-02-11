@@ -9,6 +9,9 @@
     <BaseOutputPath />
     <OutputPath />
 
+    <!-- https://github.com/dotnet/aspnetcore/issues/38818 -->
+    <BuildHelixPayload>false</BuildHelixPayload>
+
     <!-- Properties that affect test runs -->
     <!-- TestTemplateCreationFolder is the folder where the templates will be created. Will point out to $(OutputDir)$(TestTemplateCreationFolder) -->
     <TestTemplateCreationFolder>TestTemplates\</TestTemplateCreationFolder>
