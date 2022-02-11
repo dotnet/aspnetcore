@@ -140,7 +140,10 @@
     </ItemGroup>
 
     <PropertyGroup>
-      <BuildHelixPayload Condition="'@(_HelixApplicableTargetQueue->Count())' == '0'">false</BuildHelixPayload>
+      <!-- Check HelixTargetQueues to allow RunHelix.ps1 to submit jobs anywhere. -->
+      <BuildHelixPayload
+          Condition=" '$(HelixTargetQueues)' == '' AND @(_HelixApplicableTargetQueue->Count()) == 0 ">false</BuildHelixPayload>
+
       <BuildHelixPayload Condition="'$(IsArm64HelixQueue)' == 'true' AND '$(SkipHelixArm)' == 'true'">false</BuildHelixPayload>
       <BuildHelixPayload Condition="$(HelixTargetQueue.StartsWith('%28Alpine.')) AND '$(SkipHelixAlpine)' == 'true'">false</BuildHelixPayload>
       <BuildHelixPayload Condition="$(SkipHelixQueues.Contains('$(HelixTargetQueue)'))">false</BuildHelixPayload>
@@ -214,7 +217,6 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="_CreateHelixPayloadInner" Returns="@(HelixWorkItem)" DependsOnTargets="_SetCreateHelixPayload;_CreateHelixWorkItem">
-  </Target>
-
+  <Target Name="_CreateHelixPayloadInner" Returns="@(HelixWorkItem)"
+      DependsOnTargets="_SetCreateHelixPayload;_CreateHelixWorkItem"/>
 </Project>
