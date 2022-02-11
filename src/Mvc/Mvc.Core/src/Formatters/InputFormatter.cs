@@ -103,7 +103,7 @@ public abstract class InputFormatter : IInputFormatter, IApiRequestFormatMetadat
         // In case the feature is not registered
         hasBody ??= context.HttpContext.Request.ContentLength != 0;
 
-        if (hasBody == false)
+        if (hasBody is false)
         {
             if (context.TreatEmptyInputAsDefaultValue)
             {

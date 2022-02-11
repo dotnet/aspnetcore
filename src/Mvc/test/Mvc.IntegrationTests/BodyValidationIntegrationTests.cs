@@ -596,7 +596,7 @@ public class BodyValidationIntegrationTests
     }
 
     [Theory]
-    [InlineData(typeof(Person5), false, true)]
+    [InlineData(typeof(Person5), false, false)]
     [InlineData(typeof(Person5), true, true)]
     [InlineData(typeof(Person5WithNullableContext), true, false)]
     [InlineData(typeof(Person5WithNullableContext), false, false)]

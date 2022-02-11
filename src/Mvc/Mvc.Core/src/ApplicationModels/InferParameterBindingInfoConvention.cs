@@ -170,8 +170,17 @@ public class InferParameterBindingInfoConvention : IActionModelConvention
             return true;
         }
 
-        // No need for information from attributes on the parameter. Just use its type.
-        var metadata = _modelMetadataProvider.GetMetadataForType(parameter.ParameterInfo.ParameterType);
-        return metadata.NullabilityState == NullabilityState.Null;
+        if (_modelMetadataProvider is ModelMetadataProvider modelMetadataProvider)
+        {
+            var metadata = modelMetadataProvider.GetMetadataForParameter(parameter.ParameterInfo);
+            return metadata.NullabilityState == NullabilityState.Nullable || metadata.IsNullableValueType;
+        }
+        else
+        {
+            // Cannot be determine if the parameter is optional since the provider
+            // does not provides an option to getMetadata from the parameter info
+            // so, we will the parameter as not optional
+            return false;
+        }
     }
 }

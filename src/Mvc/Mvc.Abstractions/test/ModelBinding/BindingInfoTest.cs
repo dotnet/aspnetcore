@@ -264,4 +264,26 @@ public class BindingInfoTest
         Assert.NotNull(bindingInfo);
         Assert.Equal(EmptyBodyBehavior.Allow, bindingInfo.EmptyBodyBehavior);
     }
+
+    [Fact]
+    public void GetBindingInfo_WithAttributesAndModelMetadata_PreserveEmptyBodyDefault_WhenNotNullable()
+    {
+        // Arrange
+        var attributes = new object[]
+        {
+                new ControllerAttribute(),
+                new BindNeverAttribute(),
+                new FromBodyAttribute(),
+        };
+        var modelType = typeof(Guid);
+        var provider = new TestModelMetadataProvider();
+        var modelMetadata = provider.GetMetadataForType(modelType);
+
+        // Act
+        var bindingInfo = BindingInfo.GetBindingInfo(attributes, modelMetadata);
+
+        // Assert
+        Assert.NotNull(bindingInfo);
+        Assert.Equal(EmptyBodyBehavior.Default, bindingInfo.EmptyBodyBehavior);
+    }
 }

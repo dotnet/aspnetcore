@@ -109,7 +109,7 @@ Environment.NewLine + "int b";
 
                 var bindingInfo = parameter.BindingInfo;
                 Assert.NotNull(bindingInfo);
-                Assert.Equal(EmptyBodyBehavior.Allow, bindingInfo.EmptyBodyBehavior);
+                Assert.Equal(EmptyBodyBehavior.Default, bindingInfo.EmptyBodyBehavior);
                 Assert.Same(BindingSource.Body, bindingInfo.BindingSource);
             },
             parameter =>
@@ -123,7 +123,7 @@ Environment.NewLine + "int b";
     }
 
     [Fact]
-    public void InferParameterBindingSources_InfersSourcesFromNonNullable()
+    public void InferParameterBindingSources_InfersSourcesFromRequiredComplexType()
     {
         // Arrange
         var actionName = nameof(ParameterBindingController.RequiredComplexType);
@@ -149,7 +149,33 @@ Environment.NewLine + "int b";
     }
 
     [Fact]
-    public void InferParameterBindingSources_InfersSourcesWithDefaultValue()
+    public void InferParameterBindingSources_InfersSourcesFromNullableComplexType()
+    {
+        // Arrange
+        var actionName = nameof(ParameterBindingController.NullableComplexType);
+        var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+        var convention = GetConvention(modelMetadataProvider);
+        var action = GetActionModel(typeof(ParameterBindingController), actionName, modelMetadataProvider);
+
+        // Act
+        convention.InferParameterBindingSources(action);
+
+        // Assert
+        Assert.Collection(
+            action.Parameters,
+            parameter =>
+            {
+                Assert.Equal("model", parameter.Name);
+
+                var bindingInfo = parameter.BindingInfo;
+                Assert.NotNull(bindingInfo);
+                Assert.Equal(EmptyBodyBehavior.Allow, bindingInfo.EmptyBodyBehavior);
+                Assert.Same(BindingSource.Body, bindingInfo.BindingSource);
+            });
+    }
+
+    [Fact]
+    public void InferParameterBindingSources_InfersSourcesFromComplexTypeWithDefaultValue()
     {
         // Arrange
         var actionName = nameof(ParameterBindingController.ComplexTypeWithDefaultValue);
@@ -903,6 +929,9 @@ Environment.NewLine + "int b";
 #nullable enable
         [HttpPut("parameter-notnull")]
         public IActionResult RequiredComplexType(TestModel model) => new OkResult();
+
+        [HttpPut("parameter-null")]
+        public IActionResult NullableComplexType(TestModel? model) => new OkResult();
 #nullable restore
 
         [HttpPut("parameter-with-default-value")]

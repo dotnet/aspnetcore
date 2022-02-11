@@ -60,6 +60,6 @@ public class NewtonsoftJsonInputFormatterTest : JsonInputFormatterTestBase<Forma
         var response = await Client.PostAsync("http://localhost/JsonFormatter/ReturnInput/", content);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 }

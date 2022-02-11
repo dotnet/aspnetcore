@@ -168,13 +168,21 @@ public class InputFormatterTests : IClassFixture<MvcTestFixture<FormatterWebSite
     }
 
     [Fact]
-    public async Task BodyIsOptionalByDefault()
+    public async Task BodyIsRequiredByDefault()
     {
         // Act
         var response = await Client.PostAsJsonAsync<object>($"Home/{nameof(HomeController.DefaultBody)}", value: null);
 
         // Assert
-        await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+        await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
+        var problemDetails = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
+        Assert.Collection(
+            problemDetails.Errors,
+            kvp =>
+            {
+                Assert.Empty(kvp.Key);
+                Assert.Equal("A non-empty request body is required.", Assert.Single(kvp.Value));
+            });
     }
 
     [Fact]
@@ -224,7 +232,7 @@ public class InputFormatterTests : IClassFixture<MvcTestFixture<FormatterWebSite
     }
 
     [Fact]
-    public async Task BodyIsRequiredByDefaultFailsWithEmptyBody()
+    public async Task BodyIsRequiredByDefaultFailsWithContentLengthZero()
     {
         var content = new ByteArrayContent(Array.Empty<byte>());
         Assert.Null(content.Headers.ContentType);
