@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Http;
 /// The OpenAPI specification supports a description attribute on operations and parameters that
 /// can be used to annotate endpoints with detailed, multiline descriptors of their behavior.
 /// </remarks>
-[AttributeUsage(AttributeTargets.Method | AttributeTargets.Delegate, Inherited = false, AllowMultiple = false)]
+[AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
 public sealed class EndpointDescriptionAttribute : Attribute, IEndpointDescriptionMetadata
 {
     /// <summary>
