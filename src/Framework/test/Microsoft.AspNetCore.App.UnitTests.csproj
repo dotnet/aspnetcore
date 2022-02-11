@@ -4,6 +4,7 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <RootNamespace>Microsoft.AspNetCore</RootNamespace>
     <VerifyAncmBinary Condition="'$(TargetOsName)' == 'win' AND '$(TargetArchitecture)' != 'arm'">true</VerifyAncmBinary>
+    <VerifyPackageAssemblyVersions Condition="'$(VersionSuffixDateStamp)' != ''">true</VerifyPackageAssemblyVersions>
     <TestDependsOnAspNetPackages>true</TestDependsOnAspNetPackages>
     <SkipHelixArm>true</SkipHelixArm>
   </PropertyGroup>
@@ -56,8 +57,20 @@
       <_Parameter2>$(TargetingPackLayoutRoot)</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
+      <_Parameter1>PackageLayoutRoot</_Parameter1>
+      <_Parameter2>$(PackagesLayoutRoot)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
       <_Parameter1>VerifyAncmBinary</_Parameter1>
       <_Parameter2>$(VerifyAncmBinary)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
+      <_Parameter1>VerifyPackageAssemblyVersions</_Parameter1>
+      <_Parameter2>$(VerifyPackageAssemblyVersions)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
+      <_Parameter1>ArtifactsPackagesDir</_Parameter1>
+      <_Parameter2>$(ArtifactsPackagesDir)</_Parameter2>
     </AssemblyAttribute>
   </ItemGroup>
 
@@ -72,6 +85,10 @@
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
+
+  <Target Name="DoThing" BeforeTargets="Test">
+    <Message Importance="High" Text="Hello bitches" />
+  </Target>
 
   <Target Name="GenerateTestData" BeforeTargets="GetAssemblyAttributes" DependsOnTargets="InitializeSourceControlInformation">
     <!-- Use the ref pack logic to compute the list of expected targeting pack content -->
