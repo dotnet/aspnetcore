@@ -82,6 +82,15 @@ public static class EventCallbackFactoryBinderExtensions
         return CreateBinderCore<bool>(factory, receiver, setter, culture, ConvertToBool);
     }
 
+    /// <summary>
+    /// For internal use only.
+    /// </summary>
+    /// <param name="factory"></param>
+    /// <param name="receiver"></param>
+    /// <param name="setter"></param>
+    /// <param name="existingValue"></param>
+    /// <param name="culture"></param>
+    /// <returns></returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
     public static EventCallback<ChangeEventArgs> CreateBinder(
     this EventCallbackFactory factory,
