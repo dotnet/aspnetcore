@@ -80,13 +80,13 @@ public static partial class RequestDelegateFactory
     private static readonly string[] DefaultAcceptsContentType = new[] { "application/json" };
     private static readonly string[] FormFileContentType = new[] { "multipart/form-data" };
 
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
     /// <summary>
     /// Creates a <see cref="RequestDelegate"/> implementation for <paramref name="handler"/>.
     /// </summary>
     /// <param name="handler">A request handler with any number of custom parameters that often produces a response with its return value.</param>
     /// <param name="options">The <see cref="RequestDelegateFactoryOptions"/> used to configure the behavior of the handler.</param>
     /// <returns>The <see cref="RequestDelegateResult"/>.</returns>
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
     public static RequestDelegateResult Create(Delegate handler, RequestDelegateFactoryOptions? options = null)
 #pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
     {
@@ -107,6 +107,7 @@ public static partial class RequestDelegateFactory
         return new RequestDelegateResult(httpContext => targetableRequestDelegate(handler.Target, httpContext), factoryContext.Metadata);
     }
 
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
     /// <summary>
     /// Creates a <see cref="RequestDelegate"/> implementation for <paramref name="methodInfo"/>.
     /// </summary>
@@ -114,7 +115,6 @@ public static partial class RequestDelegateFactory
     /// <param name="targetFactory">Creates the <see langword="this"/> for the non-static method.</param>
     /// <param name="options">The <see cref="RequestDelegateFactoryOptions"/> used to configure the behavior of the handler.</param>
     /// <returns>The <see cref="RequestDelegate"/>.</returns>
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
     public static RequestDelegateResult Create(MethodInfo methodInfo, Func<HttpContext, object>? targetFactory = null, RequestDelegateFactoryOptions? options = null)
 #pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
     {
@@ -1038,52 +1038,40 @@ public static partial class RequestDelegateFactory
 
         // The loop that populates the resulting array values
         var arrayLoop = parameter.ParameterType.IsArray ? Expression.Block(
-                        // param_local = new int[values.Length];
-                        Expression.Assign(argument, Expression.NewArrayBounds(parameter.ParameterType.GetElementType()!, Expression.ArrayLength(stringArrayExpr!))),
-                        // index = 0
-                        Expression.Assign(index, Expression.Constant(0)),
-                        // while (index < values.Length)
-                        Expression.Loop(
+                        Expression.Assign(argument, Expression.NewArrayBounds(parameter.ParameterType.GetElementType()!, Expression.ArrayLength(stringArrayExpr!))), // param_local = new int[values.Length];
+                        Expression.Assign(index, Expression.Constant(0)), // index = 0
+                        Expression.Loop( // while (index < values.Length)
                             Expression.Block(
                                 Expression.IfThenElse(
                                     Expression.LessThan(index, Expression.ArrayLength(stringArrayExpr!)),
-                                        // tempSourceString = values[index];
-                                        Expression.Block(
-                                            Expression.Assign(TempSourceStringExpr, Expression.ArrayIndex(stringArrayExpr!, index)),
-                                            elementTypeOptional ? Expression.IfThen(TempSourceStringIsNotNullOrEmptyExpr, tryParseExpression)
-                                                                : tryParseExpression
-                                        ),
-                                       // else break
-                                       Expression.Break(loopExit)
-                                 ),
-                                 // index++
-                                 Expression.PostIncrementAssign(index)
-                            )
-                        , loopExit)
+                                    Expression.Block(
+                                        Expression.Assign(TempSourceStringExpr, Expression.ArrayIndex(stringArrayExpr!, index)), // tempSourceString = values[index];
+                                        elementTypeOptional ? Expression.IfThen(TempSourceStringIsNotNullOrEmptyExpr, tryParseExpression)
+                                                            : tryParseExpression
+                                    ),
+                                    Expression.Break(loopExit) // else break
+                                ),
+                                Expression.PostIncrementAssign(index) // index++
+                            ),
+                            loopExit)
                     ) : null;
 
         var fullParamCheckBlock = (parameter.ParameterType.IsArray, isOptional) switch
         {
-            // (isArray: true, optional: true)
-            (true, true) =>
-
+            (true, true) => // (isArray: true, optional: true)
             Expression.Block(
                 new[] { index, stringArrayExpr! },
-                // values = httpContext.Request.Query["id"];
-                Expression.Assign(stringArrayExpr!, valueExpression),
+                Expression.Assign(stringArrayExpr!, valueExpression), // values = httpContext.Request.Query["id"];
                 Expression.IfThen(
                     Expression.NotEqual(stringArrayExpr!, Expression.Constant(null)),
                     arrayLoop!
                 )
             ),
 
-            // (isArray: true, optional: false)
-            (true, false) =>
-
+            (true, false) => // (isArray: true, optional: false)
             Expression.Block(
                 new[] { index, stringArrayExpr! },
-                // values = httpContext.Request.Query["id"];
-                Expression.Assign(stringArrayExpr!, valueExpression),
+                Expression.Assign(stringArrayExpr!, valueExpression), // values = httpContext.Request.Query["id"];
                 Expression.IfThenElse(
                     Expression.NotEqual(stringArrayExpr!, Expression.Constant(null)),
                     arrayLoop!,
@@ -1091,25 +1079,16 @@ public static partial class RequestDelegateFactory
                 )
             ),
 
-            // (isArray: false, optional: false)
-            (false, false) =>
-
+            (false, false) => // (isArray: false, optional: false)
             Expression.Block(
-                // tempSourceString = httpContext.RequestValue["id"];
-                Expression.Assign(TempSourceStringExpr, valueExpression),
-                // if (tempSourceString == null) { ... } only produced when parameter is required
-                checkRequiredParaseableParameterBlock,
-                // if (tempSourceString != null) { ... }
-                ifNotNullTryParse),
+                Expression.Assign(TempSourceStringExpr, valueExpression), // tempSourceString = httpContext.RequestValue["id"];
+                checkRequiredParaseableParameterBlock, // if (tempSourceString == null) { ... } only produced when parameter is required
+                ifNotNullTryParse), // if (tempSourceString != null) { ... }
 
-            // (isArray: false, optional: true)
-            (false, true) =>
-
+            (false, true) => // (isArray: false, optional: true)
             Expression.Block(
-                // tempSourceString = httpContext.RequestValue["id"];
-                Expression.Assign(TempSourceStringExpr, valueExpression),
-                // if (tempSourceString != null) { ... }
-                ifNotNullTryParse)
+                Expression.Assign(TempSourceStringExpr, valueExpression), // tempSourceString = httpContext.RequestValue["id"];
+                ifNotNullTryParse) // if (tempSourceString != null) { ... }
         };
 
         factoryContext.ExtraLocals.Add(argument);

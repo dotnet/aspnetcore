@@ -69,11 +69,11 @@ public class ComponentParametersShouldBePublicCodeFixProvider : CodeFixProvider
         for (var i = 0; i < node.Modifiers.Count; i++)
         {
             var modifier = node.Modifiers[i];
+
+            // We also remove public in case the user has written something totally backwards such as private public protected Foo
             if (modifier.IsKind(SyntaxKind.PrivateKeyword) ||
                 modifier.IsKind(SyntaxKind.ProtectedKeyword) ||
                 modifier.IsKind(SyntaxKind.InternalKeyword) ||
-
-                // We also remove public in case the user has written something totally backwards such as private public protected Foo
                 modifier.IsKind(SyntaxKind.PublicKeyword))
             {
                 newModifiers = newModifiers.Remove(modifier);

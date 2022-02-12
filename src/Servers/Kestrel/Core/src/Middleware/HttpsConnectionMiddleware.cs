@@ -492,8 +492,7 @@ internal class HttpsConnectionMiddleware
         {
             var enableHttp2OnWindows81 = AppContext.TryGetSwitch(EnableWindows81Http2, out var enabled) && enabled;
             if (Environment.OSVersion.Version < new Version(6, 3) // Missing ALPN support
-                                                                  // Win8.1 and 2012 R2 don't support the right cipher configuration by default.
-                || (Environment.OSVersion.Version < new Version(10, 0) && !enableHttp2OnWindows81))
+                || (Environment.OSVersion.Version < new Version(10, 0) && !enableHttp2OnWindows81)) // Win8.1 and 2012 R2 don't support the right cipher configuration by default.
             {
                 return true;
             }
@@ -537,9 +536,11 @@ internal class HttpsConnectionMiddleware
         if (httpsOptions.ClientCertificateMode == ClientCertificateMode.AllowCertificate
                 || httpsOptions.ClientCertificateMode == ClientCertificateMode.RequireCertificate)
         {
-            sslServerAuthenticationOptions.ClientCertificateRequired = true; // We have to set this to prompt the client for a cert.
-                                                                             // For AllowCertificate we override the missing cert error in RemoteCertificateValidationCallback,
-                                                                             // except QuicListener doesn't call the callback for missing certs https://github.com/dotnet/runtime/issues/57308.
+            // We have to set this to prompt the client for a cert.
+            // For AllowCertificate we override the missing cert error in RemoteCertificateValidationCallback,
+            // except QuicListener doesn't call the callback for missing certs https://github.com/dotnet/runtime/issues/57308.
+            sslServerAuthenticationOptions.ClientCertificateRequired = true;
+
             sslServerAuthenticationOptions.RemoteCertificateValidationCallback
                 = (object sender, X509Certificate? certificate, X509Chain? chain, SslPolicyErrors sslPolicyErrors) =>
                     RemoteCertificateValidationCallback(httpsOptions.ClientCertificateMode, httpsOptions.ClientCertificateValidation, certificate, chain, sslPolicyErrors);

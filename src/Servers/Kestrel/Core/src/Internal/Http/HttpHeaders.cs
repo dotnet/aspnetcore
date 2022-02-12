@@ -306,10 +306,10 @@ internal abstract partial class HttpHeaders : IHeaderDictionary
         const ulong keepAliveStart = 0x002d_0070_0065_0065; // 4 chars "eep-"
         const ulong keepAliveMiddle = 0x0076_0069_006c_0061; // 4 chars "aliv"
         const ushort keepAliveEnd = 0x0065; // 1 char "e"
-                                            // Upgrade
+        // Upgrade
         const ulong upgradeStart = 0x0061_0072_0067_0070; // 4 chars "pgra"
         const uint upgradeEnd = 0x0065_0064; // 2 chars "de"
-                                             // Close
+        // Close
         const ulong closeEnd = 0x0065_0073_006f_006c; // 4 chars "lose"
 
         var connection = headers.HeaderConnection;

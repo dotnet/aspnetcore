@@ -521,14 +521,14 @@ internal static partial class HttpUtilities
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static bool IsHex(char ch)
     {
-        return IsNumeric(ch)
-            // || ('a' <= ch && ch <= 'f')
-            // || ('A' <= ch && ch <= 'F');
+        // || ('a' <= ch && ch <= 'f')
+        // || ('A' <= ch && ch <= 'F');
 
-            // Lowercase indiscriminately (or with 32)
-            // Subtract start of range 'a'
-            // Cast to uint to change negative numbers to large numbers
-            // Check if less than 6 representing chars 'a' - 'f'
+        // Lowercase indiscriminately (or with 32)
+        // Subtract start of range 'a'
+        // Cast to uint to change negative numbers to large numbers
+        // Check if less than 6 representing chars 'a' - 'f'
+        return IsNumeric(ch)
             || (uint)((ch | 32) - 'a') < 6u;
     }
 

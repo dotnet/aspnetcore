@@ -29,6 +29,7 @@ public static class OpenApiRouteHandlerBuilderExtensions
         return builder;
     }
 
+#pragma warning disable RS0026
     /// <summary>
     /// Adds an <see cref="IProducesResponseTypeMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
     /// produced by <paramref name="builder"/>.
@@ -39,7 +40,6 @@ public static class OpenApiRouteHandlerBuilderExtensions
     /// <param name="contentType">The response content type. Defaults to "application/json".</param>
     /// <param name="additionalContentTypes">Additional response content types the endpoint produces for the supplied status code.</param>
     /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
-#pragma warning disable RS0026
     public static RouteHandlerBuilder Produces<TResponse>(this RouteHandlerBuilder builder,
 #pragma warning restore RS0026
             int statusCode = StatusCodes.Status200OK,
@@ -49,6 +49,7 @@ public static class OpenApiRouteHandlerBuilderExtensions
         return Produces(builder, statusCode, typeof(TResponse), contentType, additionalContentTypes);
     }
 
+#pragma warning disable RS0026
     /// <summary>
     /// Adds an <see cref="IProducesResponseTypeMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
     /// produced by <paramref name="builder"/>.
@@ -59,7 +60,6 @@ public static class OpenApiRouteHandlerBuilderExtensions
     /// <param name="contentType">The response content type. Defaults to "application/json" if responseType is not null, otherwise defaults to null.</param>
     /// <param name="additionalContentTypes">Additional response content types the endpoint produces for the supplied status code.</param>
     /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
-#pragma warning disable RS0026
     public static RouteHandlerBuilder Produces(this RouteHandlerBuilder builder,
 #pragma warning restore RS0026
             int statusCode,

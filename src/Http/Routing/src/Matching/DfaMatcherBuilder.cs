@@ -617,13 +617,13 @@ internal class DfaMatcherBuilder : MatcherBuilder
             }
         }
 
+        // Use the final exit destination when building the policy state.
+        // We don't want to use either of the current destinations because they refer routing states,
+        // and a policy state should never transition back to a routing state.
         states[currentStateIndex] = new DfaState(
             candidates,
             endpointSelectorPolicies?.ToArray() ?? Array.Empty<IEndpointSelectorPolicy>(),
             JumpTableBuilder.Build(currentDefaultDestination, currentExitDestination, pathEntries),
-            // Use the final exit destination when building the policy state.
-            // We don't want to use either of the current destinations because they refer routing states,
-            // and a policy state should never transition back to a routing state.
             BuildPolicy(exitDestination, node.NodeBuilder, policyEntries));
 
         return currentStateIndex;

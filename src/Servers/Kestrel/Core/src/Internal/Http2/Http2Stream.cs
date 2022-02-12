@@ -382,12 +382,14 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
             const int MaxPathBufferStackAllocSize = 256;
 
             // The decoder operates only on raw bytes
+            //
+            // A constant size plus slice generates better code
+            // https://github.com/dotnet/aspnetcore/pull/19273#discussion_r383159929
+            //
+            // TODO - Consider pool here for less than 4096
+            // https://github.com/dotnet/aspnetcore/pull/19273#discussion_r383604184
             Span<byte> pathBuffer = pathSegment.Length <= MaxPathBufferStackAllocSize
-                // A constant size plus slice generates better code
-                // https://github.com/dotnet/aspnetcore/pull/19273#discussion_r383159929
                 ? stackalloc byte[MaxPathBufferStackAllocSize].Slice(0, pathSegment.Length)
-                // TODO - Consider pool here for less than 4096
-                // https://github.com/dotnet/aspnetcore/pull/19273#discussion_r383604184
                 : new byte[pathSegment.Length];
 
             for (var i = 0; i < pathSegment.Length; i++)
@@ -594,14 +596,14 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
         _context.StreamLifetimeHandler.DecrementActiveClientStreamCount();
     }
 
+    // Never pause within the window range. Flow control will prevent more data from being added.
+    // See the assert in OnDataAsync.
     private Pipe CreateRequestBodyPipe()
         => new Pipe(new PipeOptions
         (
             pool: _context.MemoryPool,
             readerScheduler: ServiceContext.Scheduler,
             writerScheduler: PipeScheduler.Inline,
-            // Never pause within the window range. Flow control will prevent more data from being added.
-            // See the assert in OnDataAsync.
             pauseWriterThreshold: _context.ServerPeerSettings.InitialWindowSize + 1,
             resumeWriterThreshold: _context.ServerPeerSettings.InitialWindowSize + 1,
             useSynchronizationContext: false,

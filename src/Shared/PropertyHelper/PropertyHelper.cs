@@ -527,12 +527,8 @@ internal class PropertyHelper
             property.GetMethod != null &&
             property.GetMethod.IsPublic &&
             !property.GetMethod.IsStatic &&
-
-            // PropertyHelper can't work with ref structs.
-            !IsRefStructProperty(property) &&
-
-            // Indexed properties are not useful (or valid) for grabbing properties off an object.
-            property.GetMethod.GetParameters().Length == 0;
+            !IsRefStructProperty(property) && // PropertyHelper can't work with ref structs.
+            property.GetMethod.GetParameters().Length == 0; // Indexed properties are not useful (or valid) for grabbing properties off an object.
     }
 
     // PropertyHelper can't really interact with ref-struct properties since they can't be

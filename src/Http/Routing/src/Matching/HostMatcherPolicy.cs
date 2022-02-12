@@ -116,10 +116,9 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
                 {
                     // Can match any host
                 }
+                // Note that we only slice off the `*`. We want to match the leading `.` also.
                 else if (
                     host.StartsWith(WildcardPrefix) &&
-
-                    // Note that we only slice off the `*`. We want to match the leading `.` also.
                     MemoryExtensions.EndsWith(requestHost, host.Slice(WildcardHost.Length), StringComparison.OrdinalIgnoreCase))
                 {
                     // Matches a suffix wildcard.

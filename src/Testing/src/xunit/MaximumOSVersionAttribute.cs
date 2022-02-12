@@ -34,10 +34,12 @@ public class MaximumOSVersionAttribute : Attribute, ITestCondition
         _targetOS = targetOS;
         _maxVersion = maxVersion;
         _currentOS = currentOS;
+
         // We drop the 4th field because it is not significant and it messes up the comparisons.
+        //
+        // Major and Minor are required by the parser, but if Build isn't specified then it returns -1
+        // which the constructor rejects.
         _currentVersion = new Version(currentVersion.Major, currentVersion.Minor,
-            // Major and Minor are required by the parser, but if Build isn't specified then it returns -1
-            // which the constructor rejects.
             currentVersion.Build == -1 ? 0 : currentVersion.Build);
 
         // Do not skip other OS's, Use OSSkipConditionAttribute or a separate MaximumOsVersionAttribute for that.

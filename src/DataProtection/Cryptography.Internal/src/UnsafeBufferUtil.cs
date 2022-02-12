@@ -155,11 +155,11 @@ internal static unsafe class UnsafeBufferUtil
         }
     }
 
+#if NETSTANDARD2_0
     /// <summary>
     /// Securely clears a memory buffer.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#if NETSTANDARD2_0
     [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 #endif
     public static void SecureZeroMemory(byte* buffer, ulong byteCount)
@@ -176,10 +176,10 @@ internal static unsafe class UnsafeBufferUtil
         }
     }
 
+#if NETSTANDARD2_0
     /// <summary>
     /// Securely clears a memory buffer.
     /// </summary>
-#if NETSTANDARD2_0
     [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 #endif
     public static void SecureZeroMemory(byte* buffer, IntPtr length)

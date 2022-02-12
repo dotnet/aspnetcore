@@ -524,12 +524,12 @@ internal static class ILEmitTrieFactory
             }
 
             // Can't use GetMethod because the parameter is a generic method parameters.
+            // Last Where disambiguates between ReadOnlySpan<> and Span<> - this method is overloaded.
             GetReference = typeof(MemoryMarshal)
                 .GetMethods(BindingFlags.Public | BindingFlags.Static)
                 .Where(m => m.Name == nameof(MemoryMarshal.GetReference))
                 .Where(m => m.GetGenericArguments().Length == 1)
                 .Where(m => m.GetParameters().Length == 1)
-                // Disambiguate between ReadOnlySpan<> and Span<> - this method is overloaded.
                 .Where(m => m.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(ReadOnlySpan<>))
                 .FirstOrDefault()
                 ?.MakeGenericMethod(typeof(char));

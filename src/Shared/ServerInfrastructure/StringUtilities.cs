@@ -541,10 +541,8 @@ internal static class StringUtilities
 
                 // Compare to our all bits true comparision vector
                 if (!AllTrue.Equals(
-                    // BitwiseAnd the two equals together
-                    Vector.BitwiseAnd(
-                        // Check equality for the two widened vectors
-                        Vector.Equals(compare0, vector0),
+                    Vector.BitwiseAnd( // BitwiseAnd the two equals together
+                        Vector.Equals(compare0, vector0), // Check equality for the two widened vectors
                         Vector.Equals(compare1, vector1))))
                 {
                     goto NotEqual;

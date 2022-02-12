@@ -195,9 +195,10 @@ internal class KestrelServerImpl : IServer
                 var addAltSvcHeader = !options.DisableAltSvcHeader && _multiplexedTransportFactory != null;
 
                 // Add the HTTP middleware as the terminal connection middleware
+                // TODO a test fails because it doesn't throw an exception in the right place
+                // when there is no HttpProtocols in KestrelServer, can we remove/change the test?
                 if (hasHttp1 || hasHttp2
-                    || options.Protocols == HttpProtocols.None) // TODO a test fails because it doesn't throw an exception in the right place
-                                                                // when there is no HttpProtocols in KestrelServer, can we remove/change the test?
+                    || options.Protocols == HttpProtocols.None)
                 {
                     if (_transportFactory is null)
                     {

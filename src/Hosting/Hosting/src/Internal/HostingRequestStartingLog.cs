@@ -66,8 +66,8 @@ internal class HostingRequestStartingLog : IReadOnlyList<KeyValuePair<string, ob
     internal string ToStringWithoutPreamble()
         => ToString().Substring(LogPreamble.Length);
 
+    // Encode space as +
     internal static string EscapedValueOrEmptyMarker(string? potentialValue)
-        // Encode space as +
         => potentialValue?.Length > 0 ? potentialValue.Replace(' ', '+') : EmptyEntry;
 
     internal static string ValueOrEmptyMarker<T>(T? potentialValue) where T : struct, IFormattable

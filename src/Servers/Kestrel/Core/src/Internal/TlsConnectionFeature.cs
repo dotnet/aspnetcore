@@ -109,9 +109,9 @@ internal class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicationProt
             return _clientCertTask;
         }
 
+        // Delayed client cert negotiation is not allowed on HTTP/2 (or HTTP/3, but that's implemented elsewhere).
         if (ClientCertificate != null
             || !AllowDelayedClientCertificateNegotation
-            // Delayed client cert negotiation is not allowed on HTTP/2 (or HTTP/3, but that's implemented elsewhere).
             || _sslStream.NegotiatedApplicationProtocol == SslApplicationProtocol.Http2)
         {
             return _clientCertTask = Task.FromResult(ClientCertificate);

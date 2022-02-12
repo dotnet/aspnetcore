@@ -355,8 +355,8 @@ public class KestrelServerLimits
     /// </summary>
     /// <remarks>
     /// </remarks>
+    // Default matches the default IIS minBytesPerSecond
     public MinDataRate? MinRequestBodyDataRate { get; set; } =
-        // Matches the default IIS minBytesPerSecond
         new MinDataRate(bytesPerSecond: 240, gracePeriod: TimeSpan.FromSeconds(5));
 
     /// <summary>
@@ -379,7 +379,7 @@ public class KestrelServerLimits
     /// The connection is aborted if the write has not completed by the time that timer expires.
     /// </para>
     /// </remarks>
+    // Default matches the default IIS minBytesPerSecond
     public MinDataRate? MinResponseDataRate { get; set; } =
-        // Matches the default IIS minBytesPerSecond
         new MinDataRate(bytesPerSecond: 240, gracePeriod: TimeSpan.FromSeconds(5));
 }

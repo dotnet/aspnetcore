@@ -1077,12 +1077,14 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             const int MaxPathBufferStackAllocSize = 256;
 
             // The decoder operates only on raw bytes
+            //
+            // A constant size plus slice generates better code
+            // https://github.com/dotnet/aspnetcore/pull/19273#discussion_r383159929
+            //
+            // TODO - Consider pool here for less than 4096
+            // https://github.com/dotnet/aspnetcore/pull/19273#discussion_r383604184
             Span<byte> pathBuffer = pathSegment.Length <= MaxPathBufferStackAllocSize
-                // A constant size plus slice generates better code
-                // https://github.com/dotnet/aspnetcore/pull/19273#discussion_r383159929
                 ? stackalloc byte[MaxPathBufferStackAllocSize].Slice(0, pathSegment.Length)
-                // TODO - Consider pool here for less than 4096
-                // https://github.com/dotnet/aspnetcore/pull/19273#discussion_r383604184
                 : new byte[pathSegment.Length];
 
             for (var i = 0; i < pathSegment.Length; i++)
@@ -1104,14 +1106,14 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         }
     }
 
+    // Never pause within the window range. Flow control will prevent more data from being added.
+    // See the assert in OnDataAsync.
     private Pipe CreateRequestBodyPipe(uint windowSize)
         => new Pipe(new PipeOptions
         (
             pool: _context.MemoryPool,
             readerScheduler: ServiceContext.Scheduler,
             writerScheduler: PipeScheduler.Inline,
-            // Never pause within the window range. Flow control will prevent more data from being added.
-            // See the assert in OnDataAsync.
             pauseWriterThreshold: windowSize + 1,
             resumeWriterThreshold: windowSize + 1,
             useSynchronizationContext: false,

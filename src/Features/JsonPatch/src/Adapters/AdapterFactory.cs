@@ -16,8 +16,8 @@ public class AdapterFactory : IAdapterFactory
 {
     internal static AdapterFactory Default { get; } = new();
 
-    /// <inheritdoc />
 #pragma warning disable PUB0001
+    /// <inheritdoc />
     public virtual IAdapter Create(object target, IContractResolver contractResolver)
 #pragma warning restore PUB0001
     {

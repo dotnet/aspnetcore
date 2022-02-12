@@ -240,9 +240,9 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
                             // Correctly has a LF, move to next
                             length++;
 
+                            // Exclude the CRLF from the headerLine and parse the header name:value pair
                             if (expectedLF != ByteLF ||
                                 length < 5 ||
-                                // Exclude the CRLF from the headerLine and parse the header name:value pair
                                 !TryTakeSingleHeader(handler, span[..(length - 2)]))
                             {
                                 // Sequence needs to be CRLF and not contain an inner CR not part of terminator.
@@ -336,8 +336,8 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
             RejectRequestHeader(headerSpan[..^1]);
         }
 
+        // Exclude the CRLF from the headerLine and parse the header name:value pair
         if (headerSpan[^1] != ByteLF ||
-            // Exclude the CRLF from the headerLine and parse the header name:value pair
             !TryTakeSingleHeader(handler, headerSpan[..^2]))
         {
             // Sequence needs to be CRLF and not contain an inner CR not part of terminator.

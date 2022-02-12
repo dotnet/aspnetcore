@@ -45,11 +45,11 @@ internal static class Ascii
     public static bool AsciiIgnoreCaseEquals(char charA, char charB)
     {
         const uint AsciiToLower = 0x20;
-        return
-            // Equal when chars are exactly equal
-            charA == charB ||
 
-            // Equal when converted to-lower AND they are letters
+        // Equal when chars are exactly equal
+        //
+        // Equal when converted to-lower AND they are letters
+        return charA == charB ||
             ((charA | AsciiToLower) == (charB | AsciiToLower) && (uint)((charA | AsciiToLower) - 'a') <= (uint)('z' - 'a'));
     }
 

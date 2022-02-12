@@ -289,10 +289,11 @@ public class SqlServerCacheWithDatabaseTest
         var key = Guid.NewGuid().ToString();
         var cache = GetSqlServerCache(GetCacheOptions(testClock));
         var expectedValue = Encoding.UTF8.GetBytes("Hello, World!");
+
+        // Set both sliding and absolute expiration
         await cache.SetAsync(
             key,
             expectedValue,
-            // Set both sliding and absolute expiration
             new DistributedCacheEntryOptions()
             .SetSlidingExpiration(slidingExpiration)
             .SetAbsoluteExpiration(absoluteExpiration));
@@ -519,10 +520,11 @@ public class SqlServerCacheWithDatabaseTest
         var key = Guid.NewGuid().ToString();
         var cache = GetSqlServerCache(GetCacheOptions(testClock));
         var expectedValue = Encoding.UTF8.GetBytes("Hello, World!");
+
+        // Set both sliding and absolute expiration
         await cache.SetAsync(
             key,
             expectedValue,
-            // Set both sliding and absolute expiration
             new DistributedCacheEntryOptions()
             .SetSlidingExpiration(slidingExpiration)
             .SetAbsoluteExpiration(absoluteExpiration));

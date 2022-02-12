@@ -140,9 +140,9 @@ internal sealed class ManifestStaticWebAssetFileProvider : IFileProvider
                     files.RemoveWhere(f => string.Equals(match.Path, f.Name, _fsComparison));
                     var file = _fileProviders[match.ContentRoot].GetFileInfo(match.Path);
 
+                    // else case means that this file was mapped, there is a chance that we added it to the list
+                    // of files by one of the patterns, so we need to replace it with the mapped file.
                     files.Add(string.Equals(child.Key, match.Path, _fsComparison) ? file :
-                        // This means that this file was mapped, there is a chance that we added it to the list
-                        // of files by one of the patterns, so we need to replace it with the mapped file.
                         new StaticWebAssetsFileInfo(child.Key, file));
                 }
             }
