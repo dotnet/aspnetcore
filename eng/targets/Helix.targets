@@ -60,12 +60,10 @@
   -->
   <ItemGroup>
     <!-- Grab all shipping packages. -->
-    <HelixContent
-        Include="$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\*$(SharedFxVersion).nupkg"
+    <HelixContent Include="$(ArtifactsShippingPackagesDir)*$(SharedFxVersion).nupkg"
         Condition=" $(TestDependsOnAspNetPackages) "/>
     <!-- Grab just the App.Ref and App.Runtime packages. -->
-    <HelixContent
-        Include="$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\Microsoft.AspNetCore.App.*$(SharedFxVersion).nupkg"
+    <HelixContent Include="$(ArtifactsShippingPackagesDir)Microsoft.AspNetCore.App.*$(SharedFxVersion).nupkg"
         Condition=" $(TestDependsOnAspNetAppPackages) "/>
   </ItemGroup>
 
