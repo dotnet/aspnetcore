@@ -217,6 +217,9 @@ dotnet_diagnostic.CA2246.severity = warning
 # CA2249: Use string.Contains instead of string.IndexOf to improve readability.
 dotnet_diagnostic.CA2249.severity = warning
 
+# CA1018: Use nameof operator 
+dotnet_diagnostic.CA1507.severity = warning
+
 # IDE0005: Remove unnecessary usings
 dotnet_diagnostic.IDE0005.severity = warning
 
@@ -302,6 +305,8 @@ dotnet_diagnostic.CA2008.severity = suggestion
 dotnet_diagnostic.CA2012.severity = suggestion
 # CA2249: Use string.Contains instead of string.IndexOf to improve readability.
 dotnet_diagnostic.CA2249.severity = suggestion
+# CA2249: Use nameof operator.
+dotnet_diagnostic.CA1507.severity = suggestion
 # IDE0005: Remove unnecessary usings
 dotnet_diagnostic.IDE0005.severity = suggestion
 # IDE0044: Make field readonly
