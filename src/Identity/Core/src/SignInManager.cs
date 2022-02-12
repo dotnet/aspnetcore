@@ -142,17 +142,17 @@ public class SignInManager<TUser> where TUser : class
     {
         if (Options.SignIn.RequireConfirmedEmail && !(await UserManager.IsEmailConfirmedAsync(user)))
         {
-            Logger.LogWarning(EventIds.UserCannotSignInWithoutConfirmedEmail, "User cannot sign in without a confirmed email.");
+            Logger.LogDebug(EventIds.UserCannotSignInWithoutConfirmedEmail, "User cannot sign in without a confirmed email.");
             return false;
         }
         if (Options.SignIn.RequireConfirmedPhoneNumber && !(await UserManager.IsPhoneNumberConfirmedAsync(user)))
         {
-            Logger.LogWarning(EventIds.UserCannotSignInWithoutConfirmedPhoneNumber, "User cannot sign in without a confirmed phone number.");
+            Logger.LogDebug(EventIds.UserCannotSignInWithoutConfirmedPhoneNumber, "User cannot sign in without a confirmed phone number.");
             return false;
         }
         if (Options.SignIn.RequireConfirmedAccount && !(await _confirmation.IsConfirmedAsync(UserManager, user)))
         {
-            Logger.LogWarning(EventIds.UserCannotSignInWithoutConfirmedAccount, "User cannot sign in without a confirmed account.");
+            Logger.LogDebug(EventIds.UserCannotSignInWithoutConfirmedAccount, "User cannot sign in without a confirmed account.");
             return false;
         }
         return true;
@@ -393,7 +393,7 @@ public class SignInManager<TUser> where TUser : class
 
             return SignInResult.Success;
         }
-        Logger.LogWarning(EventIds.InvalidPassword, "User failed to provide the correct password.");
+        Logger.LogDebug(EventIds.InvalidPassword, "User failed to provide the correct password.");
 
         if (UserManager.SupportsUserLockout && lockoutOnFailure)
         {
@@ -840,7 +840,7 @@ public class SignInManager<TUser> where TUser : class
     /// <returns>A locked out SignInResult</returns>
     protected virtual Task<SignInResult> LockedOut(TUser user)
     {
-        Logger.LogWarning(EventIds.UserLockedOut, "User is currently locked out.");
+        Logger.LogDebug(EventIds.UserLockedOut, "User is currently locked out.");
         return Task.FromResult(SignInResult.LockedOut);
     }
 
