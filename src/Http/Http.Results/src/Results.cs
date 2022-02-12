@@ -724,6 +724,11 @@ public static class Results
         => new AcceptedAtRouteResult(routeName, routeValues, value);
 
     /// <summary>
+    /// Produces a empty result response, that when executed will do nothing.
+    /// </summary>
+    public static IResult Empty() => new EmptyResult();
+
+    /// <summary>
     /// Provides a container for external libraries to extend
     /// the default `Results` set with their own samples.
     /// </summary>
