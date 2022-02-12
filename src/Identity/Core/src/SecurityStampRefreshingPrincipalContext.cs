@@ -13,10 +13,10 @@ public class SecurityStampRefreshingPrincipalContext
     /// <summary>
     /// The principal contained in the current cookie.
     /// </summary>
-    public ClaimsPrincipal CurrentPrincipal { get; set; }
+    public ClaimsPrincipal? CurrentPrincipal { get; set; }
 
     /// <summary>
     /// The new principal which should replace the current.
     /// </summary>
-    public ClaimsPrincipal NewPrincipal { get; set; }
+    public ClaimsPrincipal? NewPrincipal { get; set; }
 }

@@ -14,20 +14,20 @@ public class IdentityCookiesBuilder
     /// <summary>
     /// Used to configure the application cookie.
     /// </summary>
-    public OptionsBuilder<CookieAuthenticationOptions> ApplicationCookie { get; set; }
+    public OptionsBuilder<CookieAuthenticationOptions>? ApplicationCookie { get; set; }
 
     /// <summary>
     /// Used to configure the external cookie.
     /// </summary>
-    public OptionsBuilder<CookieAuthenticationOptions> ExternalCookie { get; set; }
+    public OptionsBuilder<CookieAuthenticationOptions>? ExternalCookie { get; set; }
 
     /// <summary>
     /// Used to configure the two factor remember me cookie.
     /// </summary>
-    public OptionsBuilder<CookieAuthenticationOptions> TwoFactorRememberMeCookie { get; set; }
+    public OptionsBuilder<CookieAuthenticationOptions>? TwoFactorRememberMeCookie { get; set; }
 
     /// <summary>
     /// Used to configure the two factor user id cookie.
     /// </summary>
-    public OptionsBuilder<CookieAuthenticationOptions> TwoFactorUserIdCookie { get; set; }
+    public OptionsBuilder<CookieAuthenticationOptions>? TwoFactorUserIdCookie { get; set; }
 }

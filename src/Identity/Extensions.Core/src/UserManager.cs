@@ -1591,7 +1591,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/>
     /// of the operation.
     /// </returns>
-    public virtual async Task<IdentityResult> SetPhoneNumberAsync(TUser user, string phoneNumber)
+    public virtual async Task<IdentityResult> SetPhoneNumberAsync(TUser user, string? phoneNumber)
     {
         ThrowIfDisposed();
         var store = GetPhoneNumberStore();
