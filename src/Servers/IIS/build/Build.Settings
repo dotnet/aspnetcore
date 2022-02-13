@@ -6,8 +6,8 @@
      <Platform Condition="'$(Platform)' == ''">Win32</Platform>
      <PlatformToolsetVersion>v142</PlatformToolsetVersion>
      <PlatformToolset>$(PlatformToolsetVersion)</PlatformToolset>
-     <AspNetCoreModuleTargetName>aspnetcore</AspNetCoreModuleTargetName>
      <VCToolsVersion>14.29.30133</VCToolsVersion>
+     <AspNetCoreModuleTargetName>aspnetcore</AspNetCoreModuleTargetName>
    </PropertyGroup>
 
    <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
