@@ -9,7 +9,7 @@ public class EmptyResultTest
 {
     public async Task EmptyResult_DoesNothing()
     {
-        var emptyResult = new EmptyResult();
+        var emptyResult = EmptyResult.Instance;
 
         // Assert- does not throw.
         await emptyResult.ExecuteAsync(GetHttpContext());

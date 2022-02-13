@@ -9,12 +9,14 @@ namespace Microsoft.AspNetCore.Http;
 /// </summary>
 internal sealed class EmptyResult : IResult
 {
-    private static readonly Task CompletedTask = Task.CompletedTask;
-
     internal static readonly EmptyResult Instance = new();
+
+    private EmptyResult()
+    {
+    }
 
     public Task ExecuteAsync(HttpContext httpContext)
     {
-        return CompletedTask;
+        return Task.CompletedTask;
     }
 }
