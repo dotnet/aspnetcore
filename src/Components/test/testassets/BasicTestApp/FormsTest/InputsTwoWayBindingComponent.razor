@@ -1,0 +1,18 @@
+﻿@using Microsoft.AspNetCore.Components.Forms
+
+<EditForm Model="model">
+    <DerivedInputTextComponent @bind-Value="@model.TextValue" id="derived-input-text" />
+    <DerivedInputDateComponent @bind-Value="@model.DateValue" id="derived-input-date" />
+</EditForm>
+
+<button id="move-focus-button">Move focus</button>
+
+@code
+{
+    private Model model = new Model();
+    private class Model
+    {
+        public string TextValue { get; set; }
+        public DateTime? DateValue { get; set; }
+    }
+}
