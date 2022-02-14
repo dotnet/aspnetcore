@@ -12,7 +12,6 @@ namespace Microsoft.AspNetCore.CookiePolicy;
 
 internal class ResponseCookiesWrapper : IResponseCookies, ITrackingConsentFeature
 {
-    private const string DefaultConsentValue = "yes";
     private readonly ILogger _logger;
     private bool? _isConsentNeeded;
     private bool? _hasConsent;
