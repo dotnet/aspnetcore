@@ -112,9 +112,10 @@
     </PropertyGroup>
 
     <!-- After complaining about missing App.Ref layout, do nothing else in this target.  -->
-    <Warning Text="Targeting path location '$(_AppRefPath)' does not exist."
+    <Message Importance="High"
+        Text="Targeting path location '$(_AppRefPath)' does not exist and tests will use the SDK's bundled runtimes and targeting pack."
         Condition=" !$(_AppRefPathExists) AND '$(DoNotRequireSharedFxHelix)' == true " />
-    <Error Text="Targeting path location '$(_AppRefPath)' does not exist."
+    <Error Text="Targeting path location '$(_AppRefPath)' does not exist and some tests are guaranteed to fail."
         Condition=" !$(_AppRefPathExists) AND '$(DoNotRequireSharedFxHelix)' != true " />
 
     <!-- Grab only the portions of the .dotnet/ tree built in this run and have Helix zip that up. -->
