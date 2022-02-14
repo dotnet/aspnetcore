@@ -492,10 +492,7 @@ public static class EndpointRouteBuilderExtensions
             DisableInferBodyFromParameters = disableInferBodyFromParameters,
         };
 
-        var requestDelegateResult = RequestDelegateFactory.Create(handler, options);
-
         var builder = new RouteEndpointBuilder(
-            requestDelegateResult.RequestDelegate,
             pattern,
             defaultOrder)
         {
@@ -521,12 +518,6 @@ public static class EndpointRouteBuilderExtensions
         // Add delegate attributes as metadata
         var attributes = handler.Method.GetCustomAttributes();
 
-        // Add add request delegate metadata
-        foreach (var metadata in requestDelegateResult.EndpointMetadata)
-        {
-            builder.Metadata.Add(metadata);
-        }
-
         // This can be null if the delegate is a dynamic method or compiled from an expression tree
         if (attributes is not null)
         {
@@ -543,6 +534,18 @@ public static class EndpointRouteBuilderExtensions
             endpoints.DataSources.Add(dataSource);
         }
 
-        return new RouteHandlerBuilder(dataSource.AddEndpointBuilder(builder));
+        var routeHandlerBuilder = new RouteHandlerBuilder(dataSource.AddEndpointBuilder(builder));
+        routeHandlerBuilder.Add(endpointBuilder =>
+        {
+            var filteredRequestDelegateResult = RequestDelegateFactory.Create(handler, options, routeHandlerBuilder.RouteHandlerFilters);
+            // Add add request delegate metadata
+            foreach (var metadata in filteredRequestDelegateResult.EndpointMetadata)
+            {
+                endpointBuilder.Metadata.Add(metadata);
+            }
+            endpointBuilder.RequestDelegate = filteredRequestDelegateResult.RequestDelegate;
+        });
+
+        return routeHandlerBuilder;
     }
 }

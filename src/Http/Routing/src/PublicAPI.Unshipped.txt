@@ -1,4 +1,6 @@
 #nullable enable
+Microsoft.AspNetCore.Http.RouteHandlerFilterExtensions
+Microsoft.AspNetCore.Routing.RouteEndpointBuilder.RouteEndpointBuilder(Microsoft.AspNetCore.Routing.Patterns.RoutePattern! routePattern, int order) -> void
 Microsoft.AspNetCore.Routing.RouteOptions.SetParameterPolicy(string! token, System.Type! type) -> void
 Microsoft.AspNetCore.Routing.RouteOptions.SetParameterPolicy<T>(string! token) -> void
 static Microsoft.AspNetCore.Builder.EndpointRouteBuilderExtensions.MapPatch(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! pattern, System.Delegate! handler) -> Microsoft.AspNetCore.Builder.RouteHandlerBuilder!
@@ -6,3 +8,6 @@ static Microsoft.AspNetCore.Builder.EndpointRouteBuilderExtensions.MapPatch(this
 override Microsoft.AspNetCore.Routing.RouteValuesAddress.ToString() -> string?
 *REMOVED*~Microsoft.AspNetCore.Routing.DefaultInlineConstraintResolver.DefaultInlineConstraintResolver(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Routing.RouteOptions!>! routeOptions, System.IServiceProvider! serviceProvider) -> void
 Microsoft.AspNetCore.Routing.DefaultInlineConstraintResolver.DefaultInlineConstraintResolver(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Routing.RouteOptions!>! routeOptions, System.IServiceProvider! serviceProvider) -> void
+static Microsoft.AspNetCore.Http.RouteHandlerFilterExtensions.AddFilter(this Microsoft.AspNetCore.Builder.RouteHandlerBuilder! builder, Microsoft.AspNetCore.Http.IRouteHandlerFilter! filter) -> Microsoft.AspNetCore.Builder.RouteHandlerBuilder!
+static Microsoft.AspNetCore.Http.RouteHandlerFilterExtensions.AddFilter(this Microsoft.AspNetCore.Builder.RouteHandlerBuilder! builder, System.Func<Microsoft.AspNetCore.Http.RouteHandlerFilterContext!, System.Func<Microsoft.AspNetCore.Http.RouteHandlerFilterContext!, System.Threading.Tasks.ValueTask<object?>>!, System.Threading.Tasks.ValueTask<object?>>! routeHandlerFilter) -> Microsoft.AspNetCore.Builder.RouteHandlerBuilder!
+static Microsoft.AspNetCore.Http.RouteHandlerFilterExtensions.AddFilter<TFilterType>(this Microsoft.AspNetCore.Builder.RouteHandlerBuilder! builder) -> Microsoft.AspNetCore.Builder.RouteHandlerBuilder!
