@@ -61,8 +61,6 @@
 ~Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions.Wreply.set -> void
 ~Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions.Wtrealm.get -> string
 ~Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions.Wtrealm.set -> void
-~Microsoft.AspNetCore.Authentication.WsFederation.WsFederationPostConfigureOptions.PostConfigure(string name, Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions options) -> void
-~Microsoft.AspNetCore.Authentication.WsFederation.WsFederationPostConfigureOptions.WsFederationPostConfigureOptions(Microsoft.AspNetCore.DataProtection.IDataProtectionProvider dataProtection) -> void
 ~override Microsoft.AspNetCore.Authentication.WsFederation.WsFederationHandler.CreateEventsAsync() -> System.Threading.Tasks.Task<object>
 ~override Microsoft.AspNetCore.Authentication.WsFederation.WsFederationHandler.HandleChallengeAsync(Microsoft.AspNetCore.Authentication.AuthenticationProperties properties) -> System.Threading.Tasks.Task
 ~override Microsoft.AspNetCore.Authentication.WsFederation.WsFederationHandler.HandleRemoteAuthenticateAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.HandleRequestResult>
@@ -168,7 +166,7 @@ Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions.WsFederatio
 Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions.Wtrealm.get -> string?
 Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions.Wtrealm.set -> void
 Microsoft.AspNetCore.Authentication.WsFederation.WsFederationPostConfigureOptions
-Microsoft.AspNetCore.Authentication.WsFederation.WsFederationPostConfigureOptions.PostConfigure(string! name, Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions! options) -> void
+Microsoft.AspNetCore.Authentication.WsFederation.WsFederationPostConfigureOptions.PostConfigure(string? name, Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions! options) -> void
 Microsoft.AspNetCore.Authentication.WsFederation.WsFederationPostConfigureOptions.WsFederationPostConfigureOptions(Microsoft.AspNetCore.DataProtection.IDataProtectionProvider! dataProtection) -> void
 Microsoft.Extensions.DependencyInjection.WsFederationExtensions
 override Microsoft.AspNetCore.Authentication.WsFederation.WsFederationHandler.CreateEventsAsync() -> System.Threading.Tasks.Task<object!>!

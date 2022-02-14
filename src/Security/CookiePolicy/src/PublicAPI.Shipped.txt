@@ -1,6 +1,6 @@
 #nullable enable
-~Microsoft.AspNetCore.CookiePolicy.CookiePolicyMiddleware.CookiePolicyMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.CookiePolicyOptions!>! options) -> void
-~Microsoft.AspNetCore.CookiePolicy.CookiePolicyMiddleware.CookiePolicyMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.CookiePolicyOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! factory) -> void
+Microsoft.AspNetCore.CookiePolicy.CookiePolicyMiddleware.CookiePolicyMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.CookiePolicyOptions!>! options) -> void
+Microsoft.AspNetCore.CookiePolicy.CookiePolicyMiddleware.CookiePolicyMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.CookiePolicyOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! factory) -> void
 Microsoft.AspNetCore.Builder.CookiePolicyAppBuilderExtensions
 Microsoft.AspNetCore.Builder.CookiePolicyOptions
 Microsoft.AspNetCore.Builder.CookiePolicyOptions.CheckConsentNeeded.get -> System.Func<Microsoft.AspNetCore.Http.HttpContext!, bool>?

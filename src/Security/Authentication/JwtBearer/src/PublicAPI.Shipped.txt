@@ -76,7 +76,7 @@ Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.TokenValidationPa
 Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.TokenValidationParameters.set -> void
 Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerPostConfigureOptions
 Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerPostConfigureOptions.JwtBearerPostConfigureOptions() -> void
-Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerPostConfigureOptions.PostConfigure(string! name, Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions! options) -> void
+Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerPostConfigureOptions.PostConfigure(string? name, Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions! options) -> void
 Microsoft.AspNetCore.Authentication.JwtBearer.MessageReceivedContext
 Microsoft.AspNetCore.Authentication.JwtBearer.MessageReceivedContext.MessageReceivedContext(Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.AspNetCore.Authentication.AuthenticationScheme! scheme, Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions! options) -> void
 Microsoft.AspNetCore.Authentication.JwtBearer.MessageReceivedContext.Token.get -> string?

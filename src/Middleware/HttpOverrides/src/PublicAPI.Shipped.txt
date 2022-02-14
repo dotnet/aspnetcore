@@ -17,18 +17,15 @@
 ~Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.OriginalProtoHeaderName.set -> void
 ~Microsoft.AspNetCore.Builder.HttpMethodOverrideOptions.FormFieldName.get -> string
 ~Microsoft.AspNetCore.Builder.HttpMethodOverrideOptions.FormFieldName.set -> void
-~Microsoft.AspNetCore.HttpOverrides.CertificateForwardingMiddleware.CertificateForwardingMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.HttpOverrides.CertificateForwardingOptions> options) -> void
-~Microsoft.AspNetCore.HttpOverrides.CertificateForwardingMiddleware.CertificateForwardingMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.HttpOverrides.CertificateForwardingOptions!>! options) -> void
+Microsoft.AspNetCore.HttpOverrides.CertificateForwardingMiddleware.CertificateForwardingMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.HttpOverrides.CertificateForwardingOptions!>! options) -> void
 ~Microsoft.AspNetCore.HttpOverrides.CertificateForwardingMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext httpContext) -> System.Threading.Tasks.Task
 ~Microsoft.AspNetCore.HttpOverrides.CertificateForwardingOptions.CertificateHeader.get -> string
 ~Microsoft.AspNetCore.HttpOverrides.CertificateForwardingOptions.CertificateHeader.set -> void
 ~Microsoft.AspNetCore.HttpOverrides.CertificateForwardingOptions.HeaderConverter -> System.Func<string, System.Security.Cryptography.X509Certificates.X509Certificate2>
 ~Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersMiddleware.ApplyForwarders(Microsoft.AspNetCore.Http.HttpContext context) -> void
-~Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersMiddleware.ForwardedHeadersMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.ForwardedHeadersOptions> options) -> void
-~Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersMiddleware.ForwardedHeadersMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.ForwardedHeadersOptions!>! options) -> void
+Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersMiddleware.ForwardedHeadersMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.ForwardedHeadersOptions!>! options) -> void
 ~Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext context) -> System.Threading.Tasks.Task
-~Microsoft.AspNetCore.HttpOverrides.HttpMethodOverrideMiddleware.HttpMethodOverrideMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.HttpMethodOverrideOptions> options) -> void
-~Microsoft.AspNetCore.HttpOverrides.HttpMethodOverrideMiddleware.HttpMethodOverrideMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.HttpMethodOverrideOptions!>! options) -> void
+Microsoft.AspNetCore.HttpOverrides.HttpMethodOverrideMiddleware.HttpMethodOverrideMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.HttpMethodOverrideOptions!>! options) -> void
 ~Microsoft.AspNetCore.HttpOverrides.HttpMethodOverrideMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext context) -> System.Threading.Tasks.Task
 ~Microsoft.AspNetCore.HttpOverrides.IPNetwork.Contains(System.Net.IPAddress address) -> bool
 ~Microsoft.AspNetCore.HttpOverrides.IPNetwork.IPNetwork(System.Net.IPAddress prefix, int prefixLength) -> void

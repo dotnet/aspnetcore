@@ -1,5 +1,5 @@
 #nullable enable
-~Microsoft.AspNetCore.Routing.DefaultInlineConstraintResolver.DefaultInlineConstraintResolver(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Routing.RouteOptions!>! routeOptions, System.IServiceProvider! serviceProvider) -> void
+Microsoft.AspNetCore.Routing.DefaultInlineConstraintResolver.DefaultInlineConstraintResolver(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Routing.RouteOptions!>! routeOptions, System.IServiceProvider! serviceProvider) -> void
 ~Microsoft.AspNetCore.Routing.Matching.EndpointMetadataComparer<TMetadata>
 ~Microsoft.AspNetCore.Routing.Tree.InboundMatch.Entry.get -> Microsoft.AspNetCore.Routing.Tree.InboundRouteEntry
 ~Microsoft.AspNetCore.Routing.Tree.InboundMatch.Entry.set -> void
