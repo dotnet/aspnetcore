@@ -512,7 +512,7 @@ public class HtmlHelper : IHtmlHelper, IViewContextAware
     /// <param name="modelExplorer">The <see cref="ModelExplorer"/>.</param>
     /// <param name="htmlFieldName">The name of the html field.</param>
     /// <param name="templateName">The name of the template.</param>
-    /// <param name="additionalViewData">The additional view data.</param>
+    /// <param name="additionalViewData">The additional view data, to be merged using <see cref="M:Microsoft.AspNetCore.Mvc.ViewFeatures.HtmlHelper.ObjectToDictionary(System.Object)" /></param>
     /// <returns><see cref="IHtmlContent"/>.</returns>
     protected virtual IHtmlContent GenerateDisplay(
         ModelExplorer modelExplorer,
