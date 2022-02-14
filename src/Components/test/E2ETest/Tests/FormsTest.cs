@@ -736,21 +736,22 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     public void InputTextUpdatesDotNetModelWhenDomValueChanges()
     {
         // Repro for https://github.com/dotnet/aspnetcore/issues/40097
+        // DerivedInputTextComponent changes its value to "24:00:00" whenever "24h" is entered
 
         var appElement = Browser.MountTestComponent<InputsTwoWayBindingComponent>();
         var inputText = appElement.FindElement(By.Id("derived-input-text"));
         var button = appElement.FindElement(By.Id("move-focus-button"));
 
-        // first update
+        // first update - OK
         inputText.SendKeys("24h");
         button.Click();
         Browser.Equal("24:00:00", () => inputText.GetDomProperty("value"));
 
-        // second update
+        // second update - fails if component's .NET model does not update input's element value from DOM (diff does not recognize any change)
         inputText.Click();
-        inputText.SendKeys(Keys.Control + "a");
-        inputText.SendKeys("24h");
-        button.Click();
+        inputText.SendKeys(Keys.Control + "a"); // select all content
+        inputText.SendKeys("24h");              // replace content with new value
+        button.Click();                         // raise onchange event
         Browser.Equal("24:00:00", () => inputText.GetDomProperty("value"));
     }
 
@@ -758,23 +759,47 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     public void InputDateUpdatesDotNetModelWhenDomValueChanges()
     {
         // Repro for https://github.com/dotnet/aspnetcore/issues/40097
+        // DerivedInputDateComponent changes its value to "2020-01-01" whenever "0001-01-01" is entered
 
         var appElement = Browser.MountTestComponent<InputsTwoWayBindingComponent>();
         var inputText = appElement.FindElement(By.Id("derived-input-date"));
         var button = appElement.FindElement(By.Id("move-focus-button"));
 
-        // first update
+        // first update - OK
         inputText.SendKeys("01010001");
         button.Click();
         Browser.Equal("2020-01-01", () => inputText.GetDomProperty("value"));
 
-        // second update
+        // second update - fails if component's .NET model does not update input's element  value from DOM (diff does not recognize any change)
         inputText.Click();
-        inputText.SendKeys(Keys.ArrowRight);
-        inputText.SendKeys(Keys.ArrowRight);
-        inputText.SendKeys("1");
+        inputText.SendKeys(Keys.ArrowRight);        // move from day to month
+        inputText.SendKeys(Keys.ArrowRight);        // mover from month to year
+        inputText.SendKeys("1");                    // set year to 0001
         button.Click();
         Browser.Equal("2020-01-01", () => inputText.GetDomProperty("value"));
+    }
+
+    [Fact]
+    public void InputNumberUpdatesDotNetModelWhenDomValueChanges()
+    {
+        // Repro for https://github.com/dotnet/aspnetcore/issues/40097
+        // DerivedInputNumberComponent changes its value to "0" whenever "1" is entered
+
+        var appElement = Browser.MountTestComponent<InputsTwoWayBindingComponent>();
+        var inputText = appElement.FindElement(By.Id("derived-input-number"));
+        var button = appElement.FindElement(By.Id("move-focus-button"));
+
+        // first update - OK
+        inputText.SendKeys("1");
+        button.Click();
+        Browser.Equal("0", () => inputText.GetDomProperty("value"));
+
+        // second update - fails if component's .NET model does not update input's element  value from DOM (diff does not recognize any change)
+        inputText.Click();
+        inputText.SendKeys(Keys.Control + "a");     // select all content
+        inputText.SendKeys("1");                    // replace content with "1"
+        button.Click();                             // raise onchange event
+        Browser.Equal("0", () => inputText.GetDomProperty("value"));
     }
 
     [Fact]
