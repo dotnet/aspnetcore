@@ -2,6 +2,6 @@
   <PropertyGroup>
     <DefaultNetCoreTargetFramework>${DefaultNetCoreTargetFramework}</DefaultNetCoreTargetFramework>
     <TreatWarningsAsErrors Condition="'$(BuildingInsideVisualStudio)' != 'true'">true</TreatWarningsAsErrors>
-    <AppHostPackVersion Condition=" '$(AppHostPackVersion)' == '' ">${AppHostPackVersion}</AppHostPackVersion>
+    <LibNetHostAppPackVersion Condition=" '$(LibNetHostAppPackVersion)' == '' ">${LibNetHostAppPackVersion}</LibNetHostAppPackVersion>
   </PropertyGroup>
 </Project>
