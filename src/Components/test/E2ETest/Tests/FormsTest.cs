@@ -733,11 +733,11 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     }
 
     [Fact]
-    public void InputTextUpdatesDotNetModelWhenValueChanges()
+    public void InputTextUpdatesDotNetModelWhenDomValueChanges()
     {
         // Repro for https://github.com/dotnet/aspnetcore/issues/40097
 
-        var appElement = Browser.MountTestComponent<TwoWayInputsBindingComponent>();
+        var appElement = Browser.MountTestComponent<InputsTwoWayBindingComponent>();
         var inputText = appElement.FindElement(By.Id("derived-input-text"));
         var button = appElement.FindElement(By.Id("move-focus-button"));
 
@@ -752,6 +752,29 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         inputText.SendKeys("24h");
         button.Click();
         Browser.Equal("24:00:00", () => inputText.GetDomProperty("value"));
+    }
+
+    [Fact]
+    public void InputDateUpdatesDotNetModelWhenDomValueChanges()
+    {
+        // Repro for https://github.com/dotnet/aspnetcore/issues/40097
+
+        var appElement = Browser.MountTestComponent<InputsTwoWayBindingComponent>();
+        var inputText = appElement.FindElement(By.Id("derived-input-date"));
+        var button = appElement.FindElement(By.Id("move-focus-button"));
+
+        // first update
+        inputText.SendKeys("01010001");
+        button.Click();
+        Browser.Equal("2020-01-01", () => inputText.GetDomProperty("value"));
+
+        // second update
+        inputText.Click();
+        inputText.SendKeys(Keys.ArrowRight);
+        inputText.SendKeys(Keys.ArrowRight);
+        inputText.SendKeys("1");
+        button.Click();
+        Browser.Equal("2020-01-01", () => inputText.GetDomProperty("value"));
     }
 
     [Fact]
