@@ -683,6 +683,17 @@ public class CookieConsentTests
         Assert.NotNull(manualCookie.Expires); // Expires may not exactly match to the second.
     }
 
+    [Fact]
+    public void CreateCookiePolicyOptionsWithEmptyConsentCookieValueThrows()
+    {
+        var options = new CookiePolicyOptions();
+
+        var exceptionWhenEmpty = Assert.Throws<ArgumentException>(() => options.ConsentCookieValue = "");
+        var exceptionWhenNull = Assert.Throws<ArgumentException>(() => options.ConsentCookieValue = null);
+        Assert.Equal("Value cannot be null or empty string. (Parameter 'value')", exceptionWhenEmpty.Message);
+        Assert.Equal("Value cannot be null or empty string. (Parameter 'value')", exceptionWhenNull.Message);
+    }
+
     private async Task<HttpContext> RunTestAsync(Action<CookiePolicyOptions> configureOptions, Action<HttpContext> configureRequest, RequestDelegate handleRequest)
     {
         var host = new HostBuilder()
