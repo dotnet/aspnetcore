@@ -36,6 +36,7 @@ public class InputText : InputBase<string?>
         builder.AddAttributeIfNotNullOrEmpty(2, "class", CssClass);
         builder.AddAttribute(3, "value", BindConverter.FormatValue(CurrentValue));
         builder.AddAttribute(4, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
+        builder.SetUpdatesAttributeName("value");
         builder.AddElementReferenceCapture(5, __inputReference => Element = __inputReference);
         builder.CloseElement();
     }

@@ -733,6 +733,28 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     }
 
     [Fact]
+    public void InputTextUpdatesDotNetModelWhenValueChanges()
+    {
+        // Repro for https://github.com/dotnet/aspnetcore/issues/40097
+
+        var appElement = Browser.MountTestComponent<TwoWayInputsBindingComponent>();
+        var inputText = appElement.FindElement(By.Id("derived-input-text"));
+        var button = appElement.FindElement(By.Id("move-focus-button"));
+
+        // first update
+        inputText.SendKeys("24h");
+        button.Click();
+        Browser.Equal("24:00:00", () => inputText.GetDomProperty("value"));
+
+        // second update
+        inputText.Click();
+        inputText.SendKeys(Keys.Control + "a");
+        inputText.SendKeys("24h");
+        button.Click();
+        Browser.Equal("24:00:00", () => inputText.GetDomProperty("value"));
+    }
+
+    [Fact]
     public void InputSelectWorksWithoutEditContext()
     {
         var appElement = Browser.MountTestComponent<InputsWithoutEditForm>();
