@@ -97,7 +97,7 @@ Microsoft.AspNetCore.Authentication.OAuth.OAuthTokenResponse.TokenType.get -> st
 Microsoft.AspNetCore.Authentication.OAuth.OAuthTokenResponse.TokenType.set -> void
 Microsoft.Extensions.DependencyInjection.OAuthExtensions
 Microsoft.Extensions.DependencyInjection.OAuthPostConfigureOptions<TOptions, THandler>.OAuthPostConfigureOptions(Microsoft.AspNetCore.DataProtection.IDataProtectionProvider! dataProtection) -> void
-Microsoft.Extensions.DependencyInjection.OAuthPostConfigureOptions<TOptions, THandler>.PostConfigure(string? name, TOptions! options) -> void
+Microsoft.Extensions.DependencyInjection.OAuthPostConfigureOptions<TOptions, THandler>.PostConfigure(string! name, TOptions! options) -> void
 override Microsoft.AspNetCore.Authentication.OAuth.Claims.CustomJsonClaimAction.Run(System.Text.Json.JsonElement userData, System.Security.Claims.ClaimsIdentity! identity, string! issuer) -> void
 override Microsoft.AspNetCore.Authentication.OAuth.Claims.DeleteClaimAction.Run(System.Text.Json.JsonElement userData, System.Security.Claims.ClaimsIdentity! identity, string! issuer) -> void
 override Microsoft.AspNetCore.Authentication.OAuth.Claims.JsonKeyClaimAction.Run(System.Text.Json.JsonElement userData, System.Security.Claims.ClaimsIdentity! identity, string! issuer) -> void

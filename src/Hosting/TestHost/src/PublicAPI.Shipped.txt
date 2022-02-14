@@ -1,6 +1,6 @@
 #nullable enable
-Microsoft.AspNetCore.TestHost.TestServer.TestServer(System.IServiceProvider! services, Microsoft.AspNetCore.Http.Features.IFeatureCollection! featureCollection, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.TestHost.TestServerOptions!>! optionsAccessor) -> void
-Microsoft.AspNetCore.TestHost.TestServer.TestServer(System.IServiceProvider! services, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.TestHost.TestServerOptions!>! optionsAccessor) -> void
+~Microsoft.AspNetCore.TestHost.TestServer.TestServer(System.IServiceProvider! services, Microsoft.AspNetCore.Http.Features.IFeatureCollection! featureCollection, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.TestHost.TestServerOptions!>! optionsAccessor) -> void
+~Microsoft.AspNetCore.TestHost.TestServer.TestServer(System.IServiceProvider! services, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.TestHost.TestServerOptions!>! optionsAccessor) -> void
 Microsoft.AspNetCore.TestHost.ClientHandler
 Microsoft.AspNetCore.TestHost.HostBuilderTestServerExtensions
 Microsoft.AspNetCore.TestHost.HttpResetTestException

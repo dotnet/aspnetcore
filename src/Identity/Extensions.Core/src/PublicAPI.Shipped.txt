@@ -158,7 +158,7 @@
 ~Microsoft.AspNetCore.Identity.IUserValidator<TUser>
 ~Microsoft.AspNetCore.Identity.IUserValidator<TUser>.ValidateAsync(Microsoft.AspNetCore.Identity.UserManager<TUser> manager, TUser user) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult>
 ~Microsoft.AspNetCore.Identity.PasswordHasher<TUser>
-Microsoft.AspNetCore.Identity.PasswordHasher<TUser>.PasswordHasher(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Identity.PasswordHasherOptions!>? optionsAccessor = null) -> void
+~Microsoft.AspNetCore.Identity.PasswordHasher<TUser>.PasswordHasher(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Identity.PasswordHasherOptions> optionsAccessor = null) -> void
 ~Microsoft.AspNetCore.Identity.PasswordValidator<TUser>
 ~Microsoft.AspNetCore.Identity.PasswordValidator<TUser>.Describer.get -> Microsoft.AspNetCore.Identity.IdentityErrorDescriber
 ~Microsoft.AspNetCore.Identity.PasswordValidator<TUser>.PasswordValidator(Microsoft.AspNetCore.Identity.IdentityErrorDescriber errors = null) -> void
@@ -196,10 +196,10 @@ Microsoft.AspNetCore.Identity.PasswordHasher<TUser>.PasswordHasher(Microsoft.Ext
 ~Microsoft.AspNetCore.Identity.UpperInvariantLookupNormalizer.NormalizeName(string name) -> string
 ~Microsoft.AspNetCore.Identity.UserClaimsPrincipalFactory<TUser, TRole>
 ~Microsoft.AspNetCore.Identity.UserClaimsPrincipalFactory<TUser, TRole>.RoleManager.get -> Microsoft.AspNetCore.Identity.RoleManager<TRole>
-Microsoft.AspNetCore.Identity.UserClaimsPrincipalFactory<TUser, TRole>.UserClaimsPrincipalFactory(Microsoft.AspNetCore.Identity.UserManager<TUser!>! userManager, Microsoft.AspNetCore.Identity.RoleManager<TRole!>! roleManager, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Identity.IdentityOptions!>! options) -> void
+~Microsoft.AspNetCore.Identity.UserClaimsPrincipalFactory<TUser, TRole>.UserClaimsPrincipalFactory(Microsoft.AspNetCore.Identity.UserManager<TUser> userManager, Microsoft.AspNetCore.Identity.RoleManager<TRole> roleManager, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Identity.IdentityOptions> options) -> void
 ~Microsoft.AspNetCore.Identity.UserClaimsPrincipalFactory<TUser>
 ~Microsoft.AspNetCore.Identity.UserClaimsPrincipalFactory<TUser>.Options.get -> Microsoft.AspNetCore.Identity.IdentityOptions
-Microsoft.AspNetCore.Identity.UserClaimsPrincipalFactory<TUser>.UserClaimsPrincipalFactory(Microsoft.AspNetCore.Identity.UserManager<TUser!>! userManager, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Identity.IdentityOptions!>! optionsAccessor) -> void
+~Microsoft.AspNetCore.Identity.UserClaimsPrincipalFactory<TUser>.UserClaimsPrincipalFactory(Microsoft.AspNetCore.Identity.UserManager<TUser> userManager, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Identity.IdentityOptions> optionsAccessor) -> void
 ~Microsoft.AspNetCore.Identity.UserClaimsPrincipalFactory<TUser>.UserManager.get -> Microsoft.AspNetCore.Identity.UserManager<TUser>
 ~Microsoft.AspNetCore.Identity.UserLoginInfo.LoginProvider.get -> string
 ~Microsoft.AspNetCore.Identity.UserLoginInfo.LoginProvider.set -> void
@@ -220,7 +220,7 @@ Microsoft.AspNetCore.Identity.UserClaimsPrincipalFactory<TUser>.UserClaimsPrinci
 ~Microsoft.AspNetCore.Identity.UserManager<TUser>.PasswordValidators.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Identity.IPasswordValidator<TUser>>
 ~Microsoft.AspNetCore.Identity.UserManager<TUser>.Store.get -> Microsoft.AspNetCore.Identity.IUserStore<TUser>
 ~Microsoft.AspNetCore.Identity.UserManager<TUser>.Store.set -> void
-Microsoft.AspNetCore.Identity.UserManager<TUser>.UserManager(Microsoft.AspNetCore.Identity.IUserStore<TUser!>! store, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Identity.IdentityOptions!>! optionsAccessor, Microsoft.AspNetCore.Identity.IPasswordHasher<TUser!>! passwordHasher, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Identity.IUserValidator<TUser!>!>! userValidators, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Identity.IPasswordValidator<TUser!>!>! passwordValidators, Microsoft.AspNetCore.Identity.ILookupNormalizer! keyNormalizer, Microsoft.AspNetCore.Identity.IdentityErrorDescriber! errors, System.IServiceProvider! services, Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Identity.UserManager<TUser!>!>! logger) -> void
+~Microsoft.AspNetCore.Identity.UserManager<TUser>.UserManager(Microsoft.AspNetCore.Identity.IUserStore<TUser> store, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Identity.IdentityOptions> optionsAccessor, Microsoft.AspNetCore.Identity.IPasswordHasher<TUser> passwordHasher, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Identity.IUserValidator<TUser>> userValidators, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Identity.IPasswordValidator<TUser>> passwordValidators, Microsoft.AspNetCore.Identity.ILookupNormalizer keyNormalizer, Microsoft.AspNetCore.Identity.IdentityErrorDescriber errors, System.IServiceProvider services, Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Identity.UserManager<TUser>> logger) -> void
 ~Microsoft.AspNetCore.Identity.UserManager<TUser>.UserValidators.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Identity.IUserValidator<TUser>>
 ~Microsoft.AspNetCore.Identity.UserManager<TUser>.ValidatePasswordAsync(TUser user, string password) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult>
 ~Microsoft.AspNetCore.Identity.UserManager<TUser>.ValidateUserAsync(TUser user) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult>

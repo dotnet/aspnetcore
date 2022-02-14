@@ -139,7 +139,7 @@ Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.UseTokenL
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.UseTokenLifetime.set -> void
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectPostConfigureOptions
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectPostConfigureOptions.OpenIdConnectPostConfigureOptions(Microsoft.AspNetCore.DataProtection.IDataProtectionProvider! dataProtection) -> void
-Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectPostConfigureOptions.PostConfigure(string? name, Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions! options) -> void
+Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectPostConfigureOptions.PostConfigure(string! name, Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions! options) -> void
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectRedirectBehavior
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectRedirectBehavior.FormPost = 1 -> Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectRedirectBehavior
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectRedirectBehavior.RedirectGet = 0 -> Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectRedirectBehavior

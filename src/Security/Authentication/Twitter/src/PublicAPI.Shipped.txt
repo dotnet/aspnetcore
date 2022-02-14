@@ -31,6 +31,8 @@
 ~Microsoft.AspNetCore.Authentication.Twitter.TwitterOptions.StateCookie.set -> void
 ~Microsoft.AspNetCore.Authentication.Twitter.TwitterOptions.StateDataFormat.get -> Microsoft.AspNetCore.Authentication.ISecureDataFormat<Microsoft.AspNetCore.Authentication.Twitter.RequestToken>
 ~Microsoft.AspNetCore.Authentication.Twitter.TwitterOptions.StateDataFormat.set -> void
+~Microsoft.AspNetCore.Authentication.Twitter.TwitterPostConfigureOptions.PostConfigure(string name, Microsoft.AspNetCore.Authentication.Twitter.TwitterOptions options) -> void
+~Microsoft.AspNetCore.Authentication.Twitter.TwitterPostConfigureOptions.TwitterPostConfigureOptions(Microsoft.AspNetCore.DataProtection.IDataProtectionProvider dataProtection) -> void
 ~override Microsoft.AspNetCore.Authentication.Twitter.TwitterHandler.CreateEventsAsync() -> System.Threading.Tasks.Task<object>
 ~override Microsoft.AspNetCore.Authentication.Twitter.TwitterHandler.HandleChallengeAsync(Microsoft.AspNetCore.Authentication.AuthenticationProperties properties) -> System.Threading.Tasks.Task
 ~override Microsoft.AspNetCore.Authentication.Twitter.TwitterHandler.HandleRemoteAuthenticateAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.HandleRequestResult>
@@ -99,7 +101,7 @@ Microsoft.AspNetCore.Authentication.Twitter.TwitterOptions.StateDataFormat.get -
 Microsoft.AspNetCore.Authentication.Twitter.TwitterOptions.StateDataFormat.set -> void
 Microsoft.AspNetCore.Authentication.Twitter.TwitterOptions.TwitterOptions() -> void
 Microsoft.AspNetCore.Authentication.Twitter.TwitterPostConfigureOptions
-Microsoft.AspNetCore.Authentication.Twitter.TwitterPostConfigureOptions.PostConfigure(string? name, Microsoft.AspNetCore.Authentication.Twitter.TwitterOptions! options) -> void
+Microsoft.AspNetCore.Authentication.Twitter.TwitterPostConfigureOptions.PostConfigure(string! name, Microsoft.AspNetCore.Authentication.Twitter.TwitterOptions! options) -> void
 Microsoft.AspNetCore.Authentication.Twitter.TwitterPostConfigureOptions.TwitterPostConfigureOptions(Microsoft.AspNetCore.DataProtection.IDataProtectionProvider! dataProtection) -> void
 Microsoft.Extensions.DependencyInjection.TwitterExtensions
 override Microsoft.AspNetCore.Authentication.Twitter.TwitterHandler.CreateEventsAsync() -> System.Threading.Tasks.Task<object!>!

@@ -1,5 +1,5 @@
 #nullable enable
-Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServer.KestrelServer(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions!>! options, Microsoft.AspNetCore.Connections.IConnectionListenerFactory! transportFactory, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
+~Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServer.KestrelServer(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions!>! options, Microsoft.AspNetCore.Connections.IConnectionListenerFactory! transportFactory, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
 Microsoft.AspNetCore.Hosting.KestrelServerOptionsSystemdExtensions
 Microsoft.AspNetCore.Hosting.ListenOptionsConnectionLoggingExtensions
 Microsoft.AspNetCore.Hosting.ListenOptionsHttpsExtensions

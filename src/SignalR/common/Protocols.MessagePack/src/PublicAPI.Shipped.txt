@@ -1,5 +1,5 @@
 #nullable enable
-Microsoft.AspNetCore.SignalR.Protocol.MessagePackHubProtocol.MessagePackHubProtocol(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.SignalR.MessagePackHubProtocolOptions!>! options) -> void
+~Microsoft.AspNetCore.SignalR.Protocol.MessagePackHubProtocol.MessagePackHubProtocol(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.SignalR.MessagePackHubProtocolOptions!>! options) -> void
 Microsoft.AspNetCore.SignalR.MessagePackHubProtocolOptions
 Microsoft.AspNetCore.SignalR.MessagePackHubProtocolOptions.MessagePackHubProtocolOptions() -> void
 Microsoft.AspNetCore.SignalR.MessagePackHubProtocolOptions.SerializerOptions.get -> MessagePack.MessagePackSerializerOptions!

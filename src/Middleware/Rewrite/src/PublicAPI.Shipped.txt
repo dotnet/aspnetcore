@@ -1,5 +1,5 @@
 #nullable enable
-Microsoft.AspNetCore.Rewrite.RewriteMiddleware.RewriteMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.AspNetCore.Hosting.IWebHostEnvironment! hostingEnvironment, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Rewrite.RewriteOptions!>! options) -> void
+~Microsoft.AspNetCore.Rewrite.RewriteMiddleware.RewriteMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.AspNetCore.Hosting.IWebHostEnvironment! hostingEnvironment, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Rewrite.RewriteOptions!>! options) -> void
 Microsoft.AspNetCore.Builder.RewriteBuilderExtensions
 Microsoft.AspNetCore.Rewrite.ApacheModRewriteOptionsExtensions
 Microsoft.AspNetCore.Rewrite.IISUrlRewriteOptionsExtensions

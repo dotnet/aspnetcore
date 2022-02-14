@@ -18,7 +18,8 @@
 ~Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationMessageHandlerEntryCollection.Add(string headerName) -> void
 ~Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationMessageHandlerOptions.Headers.get -> Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationMessageHandlerEntryCollection
 ~Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationMessageHandlerOptions.Headers.set -> void
-Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationMiddleware.HeaderPropagationMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationOptions!>! options, Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationValues! values) -> void
+~Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationMiddleware.HeaderPropagationMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationOptions> options, Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationValues values) -> void
+~Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationMiddleware.HeaderPropagationMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationOptions!>! options, Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationValues! values) -> void
 ~Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext context) -> System.Threading.Tasks.Task
 ~Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationOptions.Headers.get -> Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationEntryCollection
 ~Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationOptions.Headers.set -> void

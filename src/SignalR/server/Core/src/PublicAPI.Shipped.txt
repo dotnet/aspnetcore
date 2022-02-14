@@ -2,11 +2,11 @@
 ~Microsoft.AspNetCore.SignalR.DefaultHubLifetimeManager<THub>
 ~Microsoft.AspNetCore.SignalR.Hub<T>
 ~Microsoft.AspNetCore.SignalR.HubConnectionHandler<THub>
-Microsoft.AspNetCore.SignalR.HubConnectionHandler<THub>.HubConnectionHandler(Microsoft.AspNetCore.SignalR.HubLifetimeManager<THub!>! lifetimeManager, Microsoft.AspNetCore.SignalR.IHubProtocolResolver! protocolResolver, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.SignalR.HubOptions!>! globalHubOptions, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.SignalR.HubOptions<THub!>!>! hubOptions, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.AspNetCore.SignalR.IUserIdProvider! userIdProvider, Microsoft.Extensions.DependencyInjection.IServiceScopeFactory! serviceScopeFactory) -> void
+~Microsoft.AspNetCore.SignalR.HubConnectionHandler<THub>.HubConnectionHandler(Microsoft.AspNetCore.SignalR.HubLifetimeManager<THub!>! lifetimeManager, Microsoft.AspNetCore.SignalR.IHubProtocolResolver! protocolResolver, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.SignalR.HubOptions!>! globalHubOptions, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.SignalR.HubOptions<THub!>!>! hubOptions, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.AspNetCore.SignalR.IUserIdProvider! userIdProvider, Microsoft.Extensions.DependencyInjection.IServiceScopeFactory! serviceScopeFactory) -> void
 ~Microsoft.AspNetCore.SignalR.HubLifetimeManager<THub>
 ~Microsoft.AspNetCore.SignalR.HubOptions<THub>
 ~Microsoft.AspNetCore.SignalR.HubOptionsSetup<THub>
-Microsoft.AspNetCore.SignalR.HubOptionsSetup<THub>.HubOptionsSetup(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.SignalR.HubOptions!>! options) -> void
+~Microsoft.AspNetCore.SignalR.HubOptionsSetup<THub>.HubOptionsSetup(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.SignalR.HubOptions!>! options) -> void
 ~Microsoft.AspNetCore.SignalR.IHubActivator<THub>
 ~Microsoft.AspNetCore.SignalR.IHubContext<THub, T>
 ~Microsoft.AspNetCore.SignalR.IHubContext<THub>

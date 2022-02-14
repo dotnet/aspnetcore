@@ -97,7 +97,7 @@ Microsoft.AspNetCore.Authentication.Cookies.ITicketStore.RetrieveAsync(string! k
 Microsoft.AspNetCore.Authentication.Cookies.ITicketStore.StoreAsync(Microsoft.AspNetCore.Authentication.AuthenticationTicket! ticket) -> System.Threading.Tasks.Task<string!>!
 Microsoft.AspNetCore.Authentication.Cookies.ITicketStore.StoreAsync(Microsoft.AspNetCore.Authentication.AuthenticationTicket! ticket, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<string!>!
 Microsoft.AspNetCore.Authentication.Cookies.PostConfigureCookieAuthenticationOptions
-Microsoft.AspNetCore.Authentication.Cookies.PostConfigureCookieAuthenticationOptions.PostConfigure(string? name, Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions! options) -> void
+Microsoft.AspNetCore.Authentication.Cookies.PostConfigureCookieAuthenticationOptions.PostConfigure(string! name, Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions! options) -> void
 Microsoft.AspNetCore.Authentication.Cookies.PostConfigureCookieAuthenticationOptions.PostConfigureCookieAuthenticationOptions(Microsoft.AspNetCore.DataProtection.IDataProtectionProvider! dataProtection) -> void
 Microsoft.Extensions.DependencyInjection.CookieExtensions
 override Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationHandler.CreateEventsAsync() -> System.Threading.Tasks.Task<object!>!

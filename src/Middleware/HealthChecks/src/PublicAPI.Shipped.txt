@@ -1,5 +1,6 @@
 #nullable enable
-Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckMiddleware.HealthCheckMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions!>! healthCheckOptions, Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckService! healthCheckService) -> void
+~Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckMiddleware.HealthCheckMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions> healthCheckOptions, Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckService healthCheckService) -> void
+~Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckMiddleware.HealthCheckMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions!>! healthCheckOptions, Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckService! healthCheckService) -> void
 ~Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckMiddleware.InvokeAsync(Microsoft.AspNetCore.Http.HttpContext httpContext) -> System.Threading.Tasks.Task
 ~Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions.Predicate.get -> System.Func<Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration, bool>
 ~Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions.Predicate.set -> void

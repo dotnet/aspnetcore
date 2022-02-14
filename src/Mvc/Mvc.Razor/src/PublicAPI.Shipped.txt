@@ -1,5 +1,5 @@
 #nullable enable
-Microsoft.AspNetCore.Mvc.Razor.RazorViewEngine.RazorViewEngine(Microsoft.AspNetCore.Mvc.Razor.IRazorPageFactoryProvider! pageFactory, Microsoft.AspNetCore.Mvc.Razor.IRazorPageActivator! pageActivator, System.Text.Encodings.Web.HtmlEncoder! htmlEncoder, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.Razor.RazorViewEngineOptions!>! optionsAccessor, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, System.Diagnostics.DiagnosticListener! diagnosticListener) -> void
+~Microsoft.AspNetCore.Mvc.Razor.RazorViewEngine.RazorViewEngine(Microsoft.AspNetCore.Mvc.Razor.IRazorPageFactoryProvider! pageFactory, Microsoft.AspNetCore.Mvc.Razor.IRazorPageActivator! pageActivator, System.Text.Encodings.Web.HtmlEncoder! htmlEncoder, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.Razor.RazorViewEngineOptions!>! optionsAccessor, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, System.Diagnostics.DiagnosticListener! diagnosticListener) -> void
 abstract Microsoft.AspNetCore.Mvc.Razor.RazorPageBase.BeginContext(int position, int length, bool isLiteral) -> void
 abstract Microsoft.AspNetCore.Mvc.Razor.RazorPageBase.EndContext() -> void
 abstract Microsoft.AspNetCore.Mvc.Razor.RazorPageBase.EnsureRenderedBodyOrSections() -> void
