@@ -30,11 +30,23 @@ public class InputRadioGroup<[DynamicallyAccessedMembers(DynamicallyAccessedMemb
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        var groupName = !string.IsNullOrEmpty(Name) ? Name : _defaultGroupName;
-        var fieldClass = EditContext?.FieldCssClass(FieldIdentifier) ?? string.Empty;
-        var changeEventCallback = EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString);
+        // On the first render, we can instantiate the InputRadioContext
+        if (_context is null)
+        {
+            var changeEventCallback = EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString);
+            _context = new InputRadioContext(CascadedContext, changeEventCallback);
+        }
+        else if (_context.ParentContext != CascadedContext)
+        {
+            // This should never be possible in any known usage pattern, but if it happens, we want to know
+            throw new InvalidOperationException("An InputRadioGroup cannot change context after creation");
+        }
 
-        _context = new InputRadioContext(CascadedContext, groupName, CurrentValue, fieldClass, changeEventCallback);
+        // Mutate the InputRadioContext instance in place. Since this is a non-fixed cascading parameter, the descendant
+        // InputRadio/InputRadioGroup components will get notified to re-render and will see the new values.
+        _context.GroupName = !string.IsNullOrEmpty(Name) ? Name : _defaultGroupName;
+        _context.CurrentValue = CurrentValue;
+        _context.FieldClass = EditContext?.FieldCssClass(FieldIdentifier);
     }
 
     /// <inheritdoc />
@@ -42,9 +54,9 @@ public class InputRadioGroup<[DynamicallyAccessedMembers(DynamicallyAccessedMemb
     {
         Debug.Assert(_context != null);
 
+        // Note that we must not set IsFixed=true on the CascadingValue, because the mutations to _context
+        // are what cause the descendant InputRadio components to re-render themselves
         builder.OpenComponent<CascadingValue<InputRadioContext>>(0);
-        builder.SetKey(_context);
-        builder.AddAttribute(1, "IsFixed", true);
         builder.AddAttribute(2, "Value", _context);
         builder.AddAttribute(3, "ChildContent", ChildContent);
         builder.CloseComponent();
