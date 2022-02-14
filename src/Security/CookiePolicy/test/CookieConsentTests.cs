@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Net.Http.Headers;
@@ -683,15 +684,17 @@ public class CookieConsentTests
         Assert.NotNull(manualCookie.Expires); // Expires may not exactly match to the second.
     }
 
-    [Fact]
-    public void CreateCookiePolicyOptionsWithEmptyConsentCookieValueThrows()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void CreateCookiePolicyOptionsWithEmptyConsentCookieValueThrows(string value)
     {
         var options = new CookiePolicyOptions();
 
-        var exceptionWhenEmpty = Assert.Throws<ArgumentException>(() => options.ConsentCookieValue = "");
-        var exceptionWhenNull = Assert.Throws<ArgumentException>(() => options.ConsentCookieValue = null);
-        Assert.Equal("Value cannot be null or empty string. (Parameter 'value')", exceptionWhenEmpty.Message);
-        Assert.Equal("Value cannot be null or empty string. (Parameter 'value')", exceptionWhenNull.Message);
+        ExceptionAssert.ThrowsArgument<ArgumentException>(
+            () => options.ConsentCookieValue = value,
+            "value",
+            "Value cannot be null or empty string.");
     }
 
     private async Task<HttpContext> RunTestAsync(Action<CookiePolicyOptions> configureOptions, Action<HttpContext> configureRequest, RequestDelegate handleRequest)
