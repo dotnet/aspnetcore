@@ -683,51 +683,6 @@ public class CookieConsentTests
         Assert.NotNull(manualCookie.Expires); // Expires may not exactly match to the second.
     }
 
-    [Fact]
-    public async Task CreateConsentCookieMatchesGrantConsentCookieWhenCookieValueIsMissing()
-    {
-        var httpContext = await RunTestAsync(options =>
-        {
-            options.CheckConsentNeeded = context => true;
-            options.ConsentCookieValue = "";
-        },
-        requestContext => { },
-        context =>
-        {
-            var feature = context.Features.Get<ITrackingConsentFeature>();
-            Assert.True(feature.IsConsentNeeded);
-            Assert.False(feature.HasConsent);
-            Assert.False(feature.CanTrack);
-
-            feature.GrantConsent();
-
-            Assert.True(feature.IsConsentNeeded);
-            Assert.True(feature.HasConsent);
-            Assert.True(feature.CanTrack);
-
-            var cookie = feature.CreateConsentCookie();
-            context.Response.Headers["ManualCookie"] = cookie;
-
-            return Task.CompletedTask;
-        });
-
-        var cookies = SetCookieHeaderValue.ParseList(httpContext.Response.Headers.SetCookie);
-        Assert.Equal(1, cookies.Count);
-        var consentCookie = cookies[0];
-        Assert.Equal(".AspNet.Consent", consentCookie.Name);
-        Assert.Equal("yes", consentCookie.Value);
-        Assert.Equal(Net.Http.Headers.SameSiteMode.Unspecified, consentCookie.SameSite);
-        Assert.NotNull(consentCookie.Expires);
-
-        cookies = SetCookieHeaderValue.ParseList(httpContext.Response.Headers["ManualCookie"]);
-        Assert.Equal(1, cookies.Count);
-        var manualCookie = cookies[0];
-        Assert.Equal(consentCookie.Name, manualCookie.Name);
-        Assert.Equal(consentCookie.Value, manualCookie.Value);
-        Assert.Equal(consentCookie.SameSite, manualCookie.SameSite);
-        Assert.NotNull(manualCookie.Expires); // Expires may not exactly match to the second.
-    }
-
     private async Task<HttpContext> RunTestAsync(Action<CookiePolicyOptions> configureOptions, Action<HttpContext> configureRequest, RequestDelegate handleRequest)
     {
         var host = new HostBuilder()
