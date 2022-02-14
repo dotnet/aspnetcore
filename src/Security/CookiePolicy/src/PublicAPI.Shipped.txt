@@ -7,8 +7,6 @@ Microsoft.AspNetCore.Builder.CookiePolicyOptions.CheckConsentNeeded.get -> Syste
 Microsoft.AspNetCore.Builder.CookiePolicyOptions.CheckConsentNeeded.set -> void
 Microsoft.AspNetCore.Builder.CookiePolicyOptions.ConsentCookie.get -> Microsoft.AspNetCore.Http.CookieBuilder!
 Microsoft.AspNetCore.Builder.CookiePolicyOptions.ConsentCookie.set -> void
-Microsoft.AspNetCore.Builder.CookiePolicyOptions.ConsentCookieValue.get -> string!
-Microsoft.AspNetCore.Builder.CookiePolicyOptions.ConsentCookieValue.set -> void
 Microsoft.AspNetCore.Builder.CookiePolicyOptions.CookiePolicyOptions() -> void
 Microsoft.AspNetCore.Builder.CookiePolicyOptions.HttpOnly.get -> Microsoft.AspNetCore.CookiePolicy.HttpOnlyPolicy
 Microsoft.AspNetCore.Builder.CookiePolicyOptions.HttpOnly.set -> void

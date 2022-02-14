@@ -38,9 +38,10 @@ public class CookiePolicyOptions
     };
 
     /// <summary>
-    /// Gets or sets the consent value that is used to track if the user consented to the
-    /// cookie use policy. The default is yes.
+    /// Gets or sets the value for the cookie used to track if the user consented to the
+    /// cookie use policy.
     /// </summary>
+    /// <value>Defaults to <c>yes</c>.</value>
     public string ConsentCookieValue { get; set; } = "yes";
 
     /// <summary>
