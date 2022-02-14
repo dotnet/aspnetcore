@@ -47,6 +47,8 @@
 ~Microsoft.AspNetCore.Cors.Infrastructure.CorsService.EvaluatePolicy(Microsoft.AspNetCore.Http.HttpContext context, string policyName) -> Microsoft.AspNetCore.Cors.Infrastructure.CorsResult
 ~Microsoft.AspNetCore.Cors.Infrastructure.DefaultCorsPolicyProvider.DefaultCorsPolicyProvider(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Cors.Infrastructure.CorsOptions!>! options) -> void
 ~Microsoft.AspNetCore.Cors.Infrastructure.DefaultCorsPolicyProvider.DefaultCorsPolicyProvider(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Cors.Infrastructure.CorsOptions> options) -> void
+~Microsoft.AspNetCore.Cors.Infrastructure.DefaultCorsPolicyProvider.GetPolicyAsync(Microsoft.AspNetCore.Http.HttpContext context, string policyName) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicy>
+~Microsoft.AspNetCore.Cors.Infrastructure.ICorsPolicyMetadata.Policy.get -> Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicy
 ~Microsoft.AspNetCore.Cors.Infrastructure.ICorsPolicyProvider.GetPolicyAsync(Microsoft.AspNetCore.Http.HttpContext context, string policyName) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicy>
 ~Microsoft.AspNetCore.Cors.Infrastructure.ICorsService.ApplyResult(Microsoft.AspNetCore.Cors.Infrastructure.CorsResult result, Microsoft.AspNetCore.Http.HttpResponse response) -> void
 ~Microsoft.AspNetCore.Cors.Infrastructure.ICorsService.EvaluatePolicy(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicy policy) -> Microsoft.AspNetCore.Cors.Infrastructure.CorsResult
