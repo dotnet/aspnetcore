@@ -23,11 +23,6 @@ internal class ResponseCookiesWrapper : IResponseCookies, ITrackingConsentFeatur
         Feature = feature;
         Options = options;
         _logger = logger;
-
-        if (string.IsNullOrWhiteSpace(Options.ConsentCookieValue))
-        {
-            Options.ConsentCookieValue = DefaultConsentValue;
-        }
     }
 
     private HttpContext Context { get; }
