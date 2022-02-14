@@ -3,16 +3,20 @@
 <EditForm Model="model">
     <DerivedInputTextComponent @bind-Value="@model.TextValue" id="derived-input-text" />
     <DerivedInputDateComponent @bind-Value="@model.DateValue" id="derived-input-date" />
+    <DerivedInputNumberComponent @bind-Value="@model.IntValue" id="derived-input-number" />
 </EditForm>
 
 <button id="move-focus-button">Move focus</button>
 
 @code
 {
+    // Repro for https://github.com/dotnet/aspnetcore/issues/40097
+
     private Model model = new Model();
     private class Model
     {
         public string TextValue { get; set; }
         public DateTime? DateValue { get; set; }
+        public int? IntValue { get; set; }
     }
 }
