@@ -1,51 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
  <Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-   <PropertyGroup>
-     <SolutionDir Condition="'$(SolutionDir)' == '' Or '$(SolutionDir)' == '*Undefined*'">$(MSBuildThisFileDirectory)..\</SolutionDir>
-     <Configuration Condition="'$(Configuration)'==''">Debug</Configuration>
-     <Platform Condition="'$(Platform)' == ''">Win32</Platform>
-     <PlatformToolsetVersion>v142</PlatformToolsetVersion>
-     <PlatformToolset>$(PlatformToolsetVersion)</PlatformToolset>
-     <VCToolsVersion>14.29.30133</VCToolsVersion>
+   <PropertyGroup Label="Configuration">
+     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">$(MSBuildThisFileDirectory)..\</SolutionDir>
+     <Keyword>Win32Proj</Keyword>
      <AspNetCoreModuleTargetName>aspnetcore</AspNetCoreModuleTargetName>
    </PropertyGroup>
 
-   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-     <UseDebugLibraries>true</UseDebugLibraries>
-     <WholeProgramOptimization>false</WholeProgramOptimization>
-   </PropertyGroup>
-
-   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-     <UseDebugLibraries>false</UseDebugLibraries>
-     <WholeProgramOptimization>true</WholeProgramOptimization>
-     <CodeAnalysisRuleSet>..\DefaultRules.ruleset</CodeAnalysisRuleSet>
-     <RunCodeAnalysis>false</RunCodeAnalysis>
-     <EnablePREfast>$(RunCodeAnalysis)</EnablePREfast>
-   </PropertyGroup>
+   <Import Project="Build.Common.Settings" />
 
    <ItemDefinitionGroup>
      <ClCompile>
        <PrecompiledHeader>Use</PrecompiledHeader>
+       <WarningLevel>Level4</WarningLevel>
        <TreatWarningAsError Condition="'$(TreatWarningsAsErrors)' != ''">true</TreatWarningAsError>
        <SDLCheck>true</SDLCheck>
        <ControlFlowGuard>Guard</ControlFlowGuard>
+       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+       <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+       <PreprocessKeepComments>false</PreprocessKeepComments>
+       <ExceptionHandling>SyncCThrow</ExceptionHandling>
+       <StructMemberAlignment>8Bytes</StructMemberAlignment>
+       <RuntimeTypeInfo>false</RuntimeTypeInfo>
+       <OmitDefaultLibName>true</OmitDefaultLibName>
+       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
        <StringPooling>true</StringPooling>
+       <CompileAs>CompileAsCpp</CompileAs>
+       <LanguageStandard>stdcpp17</LanguageStandard>
+       <ForcedIncludeFiles>stdafx.h</ForcedIncludeFiles>
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
      </ClCompile>
      <Link>
        <SubSystem>Windows</SubSystem>
-       <GenerateDebugInformation>true</GenerateDebugInformation>
+       <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
+       <AdditionalLibraryDirectories>$(LibNetHostPath)</AdditionalLibraryDirectories>
        <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
        <StripPrivateSymbols>$(OutDir)$(TargetName).pub.pdb</StripPrivateSymbols>
-       <OptimizeReferences>true</OptimizeReferences>
        <EnableCOMDATFolding>true</EnableCOMDATFolding>
        <Profile>true</Profile>
+       <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
+       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
      </Link>
    </ItemDefinitionGroup>
 
    <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
      <ClCompile>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
        <Optimization>Disabled</Optimization>
      </ClCompile>
+     <Link>
+       <GenerateDebugInformation>true</GenerateDebugInformation>
+     </Link>
    </ItemDefinitionGroup>
 
    <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
@@ -54,6 +58,10 @@
        <FunctionLevelLinking>true</FunctionLevelLinking>
        <IntrinsicFunctions>true</IntrinsicFunctions>
      </ClCompile>
+     <Link>
+       <GenerateDebugInformation>false</GenerateDebugInformation>
+       <OptimizeReferences>true</OptimizeReferences>
+     </Link>
    </ItemDefinitionGroup>
 
    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -87,11 +95,5 @@
        <GenerateDebugInformation>true</GenerateDebugInformation>
      </Link>
    </ItemDefinitionGroup>
-
-  <PropertyGroup>
-    <_TwoDigitYear>$([MSBuild]::Subtract($([System.DateTime]::UtcNow.Year), 2000))</_TwoDigitYear>
-    <_ThreeDigitDayOfYear>$([System.DateTime]::UtcNow.DayOfYear.ToString().PadLeft(3, '0'))</_ThreeDigitDayOfYear>
-    <AssemblyBuild>$(_TwoDigitYear)$(_ThreeDigitDayOfYear)</AssemblyBuild>
-  </PropertyGroup>
 
  </Project>
