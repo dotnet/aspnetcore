@@ -1,0 +1,16 @@
+﻿@using Microsoft.AspNetCore.Components.Forms
+
+<EditForm Model="model">
+    <DerivedInputTextComponent @bind-Value="@model.Value" id="derived-input-text" />
+</EditForm>
+
+<button id="move-focus-button" />
+
+@code
+{
+    private Model model = new Model();
+    private class Model
+    {
+        public string Value { get; set; }
+    }
+}
