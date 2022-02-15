@@ -35,7 +35,7 @@ namespace GlobalVersionTests
 
         auto res = GlobalVersionUtility::GetRequestHandlerVersions(tempPath.path().c_str());
         EXPECT_EQ(res.size(), 1);
-        EXPECT_EQ(res.at(0), fx_ver_asp_t(2, 0, 0, std::wstring()));
+        EXPECT_EQ(res.at(0), fx_ver_t(2, 0, 0, std::wstring()));
     }
 
     TEST(GetRequestHandlerVersions, GetFolderPreview)
@@ -45,7 +45,7 @@ namespace GlobalVersionTests
 
         auto res = GlobalVersionUtility::GetRequestHandlerVersions(tempPath.path().c_str());
         EXPECT_EQ(res.size(), 1);
-        EXPECT_EQ(res.at(0), fx_ver_asp_t(2, 0, 0, std::wstring(L"-preview")));
+        EXPECT_EQ(res.at(0), fx_ver_t(2, 0, 0, std::wstring(L"-preview")));
     }
 
     TEST(GetRequestHandlerVersions, GetFolderManyVersions)
@@ -57,9 +57,9 @@ namespace GlobalVersionTests
 
         auto res = GlobalVersionUtility::GetRequestHandlerVersions(tempPath.path().c_str());
         EXPECT_EQ(res.size(), 3);
-        EXPECT_TRUE(std::find(res.begin(), res.end(), fx_ver_asp_t(1, 9, 0, std::wstring())) != std::end(res));
-        EXPECT_TRUE(std::find(res.begin(), res.end(), fx_ver_asp_t(2, 0, 0, std::wstring())) != std::end(res));
-        EXPECT_TRUE(std::find(res.begin(), res.end(), fx_ver_asp_t(2, 1, 0, std::wstring())) != std::end(res));
+        EXPECT_TRUE(std::find(res.begin(), res.end(), fx_ver_t(1, 9, 0, std::wstring())) != std::end(res));
+        EXPECT_TRUE(std::find(res.begin(), res.end(), fx_ver_t(2, 0, 0, std::wstring())) != std::end(res));
+        EXPECT_TRUE(std::find(res.begin(), res.end(), fx_ver_t(2, 1, 0, std::wstring())) != std::end(res));
     }
 
     TEST(FindHighestGlobalVersion, HighestVersionWithSingleFolder)
