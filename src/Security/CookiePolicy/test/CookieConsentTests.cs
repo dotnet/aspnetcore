@@ -691,7 +691,7 @@ public class CookieConsentTests
     {
         var options = new CookiePolicyOptions();
 
-        ExceptionAssert.ThrowsArgument<ArgumentException>(
+        ExceptionAssert.ThrowsArgument(
             () => options.ConsentCookieValue = value,
             "value",
             "Value cannot be null or empty string.");
