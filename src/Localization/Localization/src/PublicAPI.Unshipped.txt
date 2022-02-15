@@ -1,1 +1,3 @@
 #nullable enable
+*REMOVED*~Microsoft.Extensions.Localization.ResourceManagerStringLocalizerFactory.ResourceManagerStringLocalizerFactory(Microsoft.Extensions.Options.IOptions<Microsoft.Extensions.Localization.LocalizationOptions!>! localizationOptions, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
+Microsoft.Extensions.Localization.ResourceManagerStringLocalizerFactory.ResourceManagerStringLocalizerFactory(Microsoft.Extensions.Options.IOptions<Microsoft.Extensions.Localization.LocalizationOptions!>! localizationOptions, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
