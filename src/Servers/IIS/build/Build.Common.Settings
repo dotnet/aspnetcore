@@ -44,6 +44,7 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
 
   <PropertyGroup Label="Configuration">
+     <SolutionDir Condition="'$(SolutionDir)' == '' Or '$(SolutionDir)' == '*Undefined*'">$(MSBuildThisFileDirectory)..\</SolutionDir>
      <Configuration Condition="'$(Configuration)'==''">Debug</Configuration>
      <VCProjectVersion>15.0</VCProjectVersion>
      <VCToolsVersion>14.29.30133</VCToolsVersion>
