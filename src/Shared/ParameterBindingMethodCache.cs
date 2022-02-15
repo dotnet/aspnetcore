@@ -28,7 +28,7 @@ internal sealed class ParameterBindingMethodCache
     private readonly MethodInfo _enumTryParseMethod;
 
     // Since this is shared source, the cache won't be shared between RequestDelegateFactory and the ApiDescriptionProvider sadly :(
-    private readonly ConcurrentDictionary<Type, Func<ParameterExpression, IFormatProvider, Expression>?> _stringMethodCallCache = new();
+    private readonly ConcurrentDictionary<Type, Func<ParameterExpression, Expression, Expression>?> _stringMethodCallCache = new();
     private readonly ConcurrentDictionary<Type, (Func<ParameterInfo, Expression>?, int)> _bindAsyncMethodCallCache = new();
 
     // If IsDynamicCodeSupported is false, we can't use the static Enum.TryParse<T> since there's no easy way for
@@ -52,9 +52,9 @@ internal sealed class ParameterBindingMethodCache
     public bool HasBindAsyncMethod(ParameterInfo parameter) =>
         FindBindAsyncMethod(parameter).Expression is not null;
 
-    public Func<ParameterExpression, IFormatProvider, Expression>? FindTryParseMethod(Type type)
+    public Func<ParameterExpression, Expression, Expression>? FindTryParseMethod(Type type)
     {
-        Func<ParameterExpression, IFormatProvider, Expression>? Finder(Type type)
+        Func<ParameterExpression, Expression, Expression>? Finder(Type type)
         {
             MethodInfo? methodInfo;
 
@@ -111,7 +111,7 @@ internal sealed class ParameterBindingMethodCache
                 return (expression, formatProvider) => Expression.Call(
                     methodInfo!,
                     TempSourceStringExpr,
-                    Expression.Constant(formatProvider),
+                    formatProvider,
                     Expression.Constant(dateTimeStyles),
                     expression);
             }
@@ -122,7 +122,7 @@ internal sealed class ParameterBindingMethodCache
                     methodInfo!,
                     TempSourceStringExpr,
                     Expression.Constant(numberStyle),
-                    Expression.Constant(formatProvider),
+                    formatProvider,
                     expression);
             }
 
@@ -133,7 +133,7 @@ internal sealed class ParameterBindingMethodCache
                 return (expression, formatProvider) => Expression.Call(
                     methodInfo,
                     TempSourceStringExpr,
-                    Expression.Constant(formatProvider),
+                    formatProvider,
                     expression);
             }
 
