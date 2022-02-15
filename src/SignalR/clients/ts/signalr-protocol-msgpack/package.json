@@ -48,5 +48,8 @@
   "devDependencies": {
     "@types/msgpack5": "^3.4.1",
     "buffer": "^5.0.8"
+  },
+  "resolutions": {
+    "url-parse": ">=1.5.0"
   }
 }

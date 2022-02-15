@@ -57,6 +57,9 @@
     <PackageReference Include="System.Net.WebSockets.WebSocketProtocol" Version="4.5.1" >
       <AllowExplicitReference>true</AllowExplicitReference>
     </PackageReference>
+    <PackageReference Include="System.Text.Encodings.Web" Version="4.5.1" >
+      <AllowExplicitReference>true</AllowExplicitReference>
+    </PackageReference>
     <Reference Include="xunit.assert" />
   </ItemGroup>
 

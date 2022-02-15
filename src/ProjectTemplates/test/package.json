@@ -12,5 +12,9 @@
   "license": "Apache-2.0",
   "dependencies": {
     "selenium-standalone": "^6.15.4"
+  },
+  "resolutions": {
+    "lodash": ">=4.17.21",
+    "bl": ">=2.2.1"
   }
 }
