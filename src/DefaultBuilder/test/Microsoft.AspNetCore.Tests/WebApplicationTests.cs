@@ -32,6 +32,28 @@ namespace Microsoft.AspNetCore.Tests;
 public class WebApplicationTests
 {
     [Fact]
+    public async Task WebApplication_SeparateMethodWithHttpContext()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        await using var app = builder.Build();
+
+        static async Task<string> Fails(HttpContext context) => await Task.FromResult("response");
+
+        app.MapGet("/Fails", Fails);
+
+        app.UseRouting();
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+
+        var result = await client.GetAsync("http://localhost/Fails");
+
+        Assert.Equal("response", await result.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
     public async Task WebApplicationBuilderConfiguration_IncludesCommandLineArguments()
     {
         var builder = WebApplication.CreateBuilder(new string[] { "--urls", "http://localhost:5001" });

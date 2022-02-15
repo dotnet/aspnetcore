@@ -38,6 +38,10 @@ public static class EndpointRouteBuilderExtensions
         string pattern,
         RequestDelegate requestDelegate)
     {
+        if (requestDelegate.Method.ReturnType.IsGenericType)
+        {
+            return MapMethods(endpoints, pattern, GetVerb, requestDelegate as Delegate);
+        }
         return MapMethods(endpoints, pattern, GetVerb, requestDelegate);
     }
 
