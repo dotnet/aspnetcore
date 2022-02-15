@@ -22,7 +22,7 @@ public abstract class EmailModel : PageModel
     ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
     ///     directly from your code. This API may change or be removed in future releases.
     /// </summary>
-    public string Email { get; set; }
+    public string? Email { get; set; }
 
     /// <summary>
     ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
@@ -35,14 +35,14 @@ public abstract class EmailModel : PageModel
     ///     directly from your code. This API may change or be removed in future releases.
     /// </summary>
     [TempData]
-    public string StatusMessage { get; set; }
+    public string? StatusMessage { get; set; }
 
     /// <summary>
     ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
     ///     directly from your code. This API may change or be removed in future releases.
     /// </summary>
     [BindProperty]
-    public InputModel Input { get; set; }
+    public InputModel Input { get; set; } = default!;
 
     /// <summary>
     ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
@@ -57,7 +57,7 @@ public abstract class EmailModel : PageModel
         [Required]
         [EmailAddress]
         [Display(Name = "New email")]
-        public string NewEmail { get; set; }
+        public string NewEmail { get; set; } = default!;
     }
 
     /// <summary>
@@ -102,7 +102,7 @@ internal class EmailModel<TUser> : EmailModel where TUser : class
 
         Input = new InputModel
         {
-            NewEmail = email,
+            NewEmail = email!,
         };
 
         IsEmailConfirmed = await _userManager.IsEmailConfirmedAsync(user);
@@ -144,7 +144,7 @@ internal class EmailModel<TUser> : EmailModel where TUser : class
                 "/Account/ConfirmEmailChange",
                 pageHandler: null,
                 values: new { area = "Identity", userId = userId, email = Input.NewEmail, code = code },
-                protocol: Request.Scheme);
+                protocol: Request.Scheme)!;
             await _emailSender.SendEmailAsync(
                 Input.NewEmail,
                 "Confirm your email",
@@ -180,9 +180,9 @@ internal class EmailModel<TUser> : EmailModel where TUser : class
             "/Account/ConfirmEmail",
             pageHandler: null,
             values: new { area = "Identity", userId = userId, code = code },
-            protocol: Request.Scheme);
+            protocol: Request.Scheme)!;
         await _emailSender.SendEmailAsync(
-            email,
+            email!,
             "Confirm your email",
             $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
 

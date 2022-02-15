@@ -10,7 +10,7 @@ internal class IdentityPageModelConvention<TUser> : IPageApplicationModelConvent
 {
     public void Apply(PageApplicationModel model)
     {
-        var defaultUIAttribute = model.ModelType.GetCustomAttribute<IdentityDefaultUIAttribute>();
+        var defaultUIAttribute = model.ModelType?.GetCustomAttribute<IdentityDefaultUIAttribute>();
         if (defaultUIAttribute == null)
         {
             return;

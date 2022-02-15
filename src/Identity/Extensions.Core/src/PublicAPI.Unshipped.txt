@@ -895,7 +895,7 @@ virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SetAuthenticationTokenA
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SetEmailAsync(TUser! user, string? email) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult!>!
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SetLockoutEnabledAsync(TUser! user, bool enabled) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult!>!
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SetLockoutEndDateAsync(TUser! user, System.DateTimeOffset? lockoutEnd) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult!>!
-virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SetPhoneNumberAsync(TUser! user, string! phoneNumber) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult!>!
+virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SetPhoneNumberAsync(TUser! user, string? phoneNumber) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult!>!
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SetTwoFactorEnabledAsync(TUser! user, bool enabled) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult!>!
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SetUserNameAsync(TUser! user, string? userName) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult!>!
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.UpdateAsync(TUser! user) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult!>!
