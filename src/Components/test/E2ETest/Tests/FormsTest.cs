@@ -864,6 +864,44 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     }
 
     [Fact]
+    public void InputSelectUpdatesDotNetModelWhenDomValueChanges()
+    {
+        // Repro for https://github.com/dotnet/aspnetcore/issues/40097
+        // DerivedInputSelectComponent changes its value to DayOfWeek.Monday on any input
+
+        var appElement = Browser.MountTestComponent<InputsTwoWayBindingComponent>();
+        var select = new SelectElement(appElement.FindElement(By.Id("derived-select")));
+        var button = appElement.FindElement(By.Id("move-focus-button"));
+
+        // fails if component's .NET model does not update select-element value from DOM (diff does not recognize any change)
+        select.SelectByValue("Friday");
+        Browser.Equal("Monday", () => select.SelectedOption.Text);
+
+        // any click should be switched to Monday
+        select.SelectByValue("Friday");
+        Browser.Equal("Monday", () => select.SelectedOption.Text);
+    }
+
+    [Fact]
+    public void InputSelectMultipleUpdatesDotNetModelWhenDomValueChanges()
+    {
+        // Repro for https://github.com/dotnet/aspnetcore/issues/40097
+        // DerivedInputSelectMultipleComponent changes its value to DayOfWeek.Monday+Tuesday on any input
+
+        var appElement = Browser.MountTestComponent<InputsTwoWayBindingComponent>();
+        var select = new SelectElement(appElement.FindElement(By.Id("derived-select-multiple")));
+        var button = appElement.FindElement(By.Id("move-focus-button"));
+
+        // fails if component's .NET model does not update select-element value from DOM (diff does not recognize any change)
+        select.SelectByValue("Friday");
+        Browser.Equal("Monday+Tuesday", () => String.Join('+', select.AllSelectedOptions.Select(e => e.Text)));
+
+        // any click should be switched to Monday+Tuesday
+        select.SelectByValue("Monday");
+        Browser.Equal("Monday+Tuesday", () => String.Join('+', select.AllSelectedOptions.Select(e => e.Text)));
+    }
+
+    [Fact]
     public void InputSelectWorksWithoutEditContext()
     {
         var appElement = Browser.MountTestComponent<InputsWithoutEditForm>();

@@ -9,6 +9,15 @@
     <DerivedInputRadioGroupComponent @bind-Value="@model.RadioValue">
         <InputRadio Value="@DayOfWeek.Saturday" id="input-radio-sunday" />
     </DerivedInputRadioGroupComponent>
+    <DerivedInputSelectComponent @bind-Value="@model.SelectValue" id="derived-select">
+        <option value="@DayOfWeek.Friday">Friday</option>
+        <option value="@DayOfWeek.Monday">Monday</option>
+    </DerivedInputSelectComponent>
+    <DerivedInputSelectMultipleComponent @bind-Value="@model.SelectMultipleValue" id="derived-select-multiple">
+        <option value="@DayOfWeek.Friday">Friday</option>
+        <option value="@DayOfWeek.Monday">Monday</option>
+        <option value="@DayOfWeek.Tuesday">Tuesday</option>
+    </DerivedInputSelectMultipleComponent>
 </EditForm>
 
 <button id="move-focus-button">Move focus</button>
@@ -25,5 +34,7 @@
         public int? IntValue { get; set; }
         public bool BoolValue { get; set; }
         public DayOfWeek RadioValue { get; set; } = DayOfWeek.Monday;
+        public DayOfWeek SelectValue { get; set; } = DayOfWeek.Monday;
+        public DayOfWeek[] SelectMultipleValue { get; set; } = DerivedInputSelectMultipleComponent.FixedValue;
     }
 }
