@@ -63,7 +63,8 @@ HostFxrResolver::GetHostFxrParameters(
         if (dotnetExePath.empty())
         {
             // need to find dotnet for get_host_fxr_path when dotnet is launched from the path
-            if (!equals_ignore_case(expandedProcessPath, L"dotnet.exe")) {
+            if (!equals_ignore_case(expandedProcessPath, L"dotnet.exe"))
+            {
                 fs::path expandedProcessPathParent = expandedProcessPath.parent_path();
                 gotHostFxrPath = TryGetHostFxrPath(hostFxrDllPath, expandedProcessPathParent, applicationPhysicalPath);
             }
@@ -157,7 +158,8 @@ HostFxrResolver::GetHostFxrParameters(
                 }
 
                 fs::path dotnetExePathParent = dotnetExePath.parent_path();
-                if (!TryGetHostFxrPath(hostFxrDllPath, dotnetExePathParent, applicationPhysicalPath)) {
+                if (!TryGetHostFxrPath(hostFxrDllPath, dotnetExePathParent, applicationPhysicalPath))
+                {
                     throw InvalidOperationException(format(L"get_hostfxr_path failed"));
                 }
 
