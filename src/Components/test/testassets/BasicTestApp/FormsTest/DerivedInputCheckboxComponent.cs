@@ -8,6 +8,7 @@ namespace BasicTestApp.FormsTest;
 
 public class DerivedInputCheckboxComponent : InputCheckbox
 {
+    // Supports InputsTwoWayBindingComponent test
     // Repro for https://github.com/dotnet/aspnetcore/issues/40097
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)

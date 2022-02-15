@@ -2,11 +2,11 @@
 
 <EditForm Model="model">
     <DerivedInputTextComponent @bind-Value="@model.TextValue" id="derived-input-text" />
+    <DerivedInputTextareaComponent @bind-Value="@model.TextValue" id="derived-input-textarea" />
     <DerivedInputDateComponent @bind-Value="@model.DateValue" id="derived-input-date" />
     <DerivedInputNumberComponent @bind-Value="@model.IntValue" id="derived-input-number" />
     <DerivedInputCheckboxComponent @bind-Value="@model.BoolValue" id="derived-input-checkbox" />
 </EditForm>
-@model.BoolValue
 
 <button id="move-focus-button">Move focus</button>
 

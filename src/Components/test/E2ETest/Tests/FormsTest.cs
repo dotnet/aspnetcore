@@ -751,7 +751,30 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         input.Click();
         input.SendKeys(Keys.Control + "a"); // select all content
         input.SendKeys("24h");              // replace content with new value
-        button.Click();                         // raise onchange event
+        button.Click();                     // raise onchange event
+        Browser.Equal("24:00:00", () => input.GetDomProperty("value"));
+    }
+
+    [Fact]
+    public void InputTextareaUpdatesDotNetModelWhenDomValueChanges()
+    {
+        // Repro for https://github.com/dotnet/aspnetcore/issues/40097
+        // DerivedInputTextareaComponent changes its value to "24:00:00" whenever "24h" is entered
+
+        var appElement = Browser.MountTestComponent<InputsTwoWayBindingComponent>();
+        var input = appElement.FindElement(By.Id("derived-input-textarea"));
+        var button = appElement.FindElement(By.Id("move-focus-button"));
+
+        // first update - OK
+        input.SendKeys("24h");
+        button.Click();
+        Browser.Equal("24:00:00", () => input.GetDomProperty("value"));
+
+        // second update - fails if component's .NET model does not update input's element value from DOM (diff does not recognize any change)
+        input.Click();
+        input.SendKeys(Keys.Control + "a"); // select all content
+        input.SendKeys("24h");              // replace content with new value
+        button.Click();                     // raise onchange event
         Browser.Equal("24:00:00", () => input.GetDomProperty("value"));
     }
 
@@ -798,7 +821,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         input.Click();
         input.SendKeys(Keys.Control + "a");     // select all content
         input.SendKeys("1");                    // replace content with "1"
-        button.Click();                             // raise onchange event
+        button.Click();                         // raise onchange event
         Browser.Equal("0", () => input.GetDomProperty("value"));
     }
 
