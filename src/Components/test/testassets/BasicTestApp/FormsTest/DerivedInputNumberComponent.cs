@@ -7,6 +7,7 @@ namespace BasicTestApp.FormsTest;
 
 public class DerivedInputNumberComponent : InputNumber<int?>
 {
+    // Supports InputsTwoWayBindingComponent test
     // Repro for https://github.com/dotnet/aspnetcore/issues/40097
 
     protected override bool TryParseValueFromString(string value, out int? result, out string validationErrorMessage)

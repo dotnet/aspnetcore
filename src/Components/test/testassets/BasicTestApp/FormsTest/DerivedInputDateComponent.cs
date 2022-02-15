@@ -11,6 +11,7 @@ using Newtonsoft.Json.Linq;
 namespace BasicTestApp.FormsTest;
 public class DerivedInputDateComponent : InputDate<DateTime?>
 {
+    // Supports InputsTwoWayBindingComponent test
     // Repro for https://github.com/dotnet/aspnetcore/issues/40097
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out DateTime? result, [NotNullWhen(false)] out string? validationErrorMessage)

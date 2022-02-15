@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Components.Forms;
 
 namespace BasicTestApp.FormsTest;
 
-public class DerivedInputTextComponent : InputText
+public class DerivedInputTextareaComponent : InputTextArea
 {
     // Supports InputsTwoWayBindingComponent test
     // Repro for https://github.com/dotnet/aspnetcore/issues/40097
