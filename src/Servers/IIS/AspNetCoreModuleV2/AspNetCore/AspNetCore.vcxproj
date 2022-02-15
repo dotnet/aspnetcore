@@ -11,7 +11,7 @@
   <PropertyGroup Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
   </PropertyGroup>
-  <Import Project="..\..\build\Build.Settings" />
+  <Import Project="..\..\build\Build.Dll.Settings" />
   <ItemDefinitionGroup>
     <ClCompile>
       <PreprocessorDefinitions>_USRDLL;ASPNETCOREMODULE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -24,13 +24,11 @@
       <AdditionalIncludeDirectories>..\Commonlib</AdditionalIncludeDirectories>
     </ResourceCompile>
   </ItemDefinitionGroup>
-
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
   </ItemDefinitionGroup>
-
   <ItemGroup>
     <ClInclude Include="ApplicationFactory.h" />
     <ClInclude Include="applicationinfo.h" />

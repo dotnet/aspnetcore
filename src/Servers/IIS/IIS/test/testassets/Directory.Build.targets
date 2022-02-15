@@ -41,7 +41,7 @@
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="PublishTestsAsset"
              RemoveProperties="Platform;PlatformTarget"
-             Properties="PublishDir=$(PublishDir);TestAssetProfile=%(TestAssetPublishProfile.Identity);%(TestAssetPublishProfile.Properties)">
+             Properties="PublishDir=$(PublishDir);TestAssetProfile=%(TestAssetPublishProfile.Identity);ReferenceTestTasks=false;%(TestAssetPublishProfile.Properties)">
       <Output TaskParameter="TargetOutputs" ItemName="PublishedTestAsset" />
     </MSBuild>
   </Target>

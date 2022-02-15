@@ -209,6 +209,7 @@ public class StartupTests : IISFunctionalTestBase
         // We need the right dotnet on the path in IIS
         deploymentParameters.EnvironmentVariables["PATH"] = Path.GetDirectoryName(DotNetCommands.GetDotNetExecutable(deploymentParameters.RuntimeArchitecture));
 
+        // ReferenceTestTasks is workaround for https://github.com/dotnet/sdk/issues/2482
         var deploymentResult = await DeployAsync(deploymentParameters);
 
         Assert.True(File.Exists(Path.Combine(deploymentResult.ContentRoot, "InProcessWebSite.exe")));

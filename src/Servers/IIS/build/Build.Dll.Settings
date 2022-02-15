@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Common build settings for C++ Dll projects -->
+<Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Configuration">
+    <AspNetCoreModuleTargetName>aspnetcore</AspNetCoreModuleTargetName>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+
+  <Import Project="Build.Common.Settings" />
+
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessKeepComments>false</PreprocessKeepComments>
+      <ControlFlowGuard>Guard</ControlFlowGuard>
+      <ExceptionHandling>SyncCThrow</ExceptionHandling>
+      <StructMemberAlignment>8Bytes</StructMemberAlignment>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <OmitDefaultLibName>true</OmitDefaultLibName>
+      <StringPooling>true</StringPooling>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>$(LibNetHostPath)</AdditionalLibraryDirectories>
+      <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
+      <StripPrivateSymbols>$(OutDir)$(TargetName).pub.pdb</StripPrivateSymbols>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <Profile>true</Profile>
+      <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <!-- Without a debug version of libnethost.lib we cannot use _DEBUG -->
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <!-- Without a debug version of libnethost.lib we cannot use _DEBUG -->
+      <PreprocessorDefinitions>_WIN64;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PreprocessorDefinitions>_WIN64;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+</Project>
