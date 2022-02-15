@@ -1,23 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
  <Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-   <Import Project="Build.Common.Settings" />
    <PropertyGroup Label="Configuration">
      <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">$(MSBuildThisFileDirectory)..\</SolutionDir>
      <Keyword>Win32Proj</Keyword>
      <AspNetCoreModuleTargetName>aspnetcore</AspNetCoreModuleTargetName>
    </PropertyGroup>
 
-   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-     <UseDebugLibraries>false</UseDebugLibraries>
-     <WholeProgramOptimization>false</WholeProgramOptimization>
-   </PropertyGroup>
-
-   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-     <UseDebugLibraries>false</UseDebugLibraries>
-     <WholeProgramOptimization Condition="'$(Platform)'=='Win32'">true</WholeProgramOptimization>
-   </PropertyGroup>
-
-   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+   <Import Project="Build.Common.Settings" />
 
    <ItemDefinitionGroup>
      <ClCompile>
