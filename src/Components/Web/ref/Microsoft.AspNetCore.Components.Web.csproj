@@ -10,7 +10,6 @@
     <Reference Include="Microsoft.AspNetCore.Components.Forms" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="Microsoft.JSInterop" />
-    <Reference Include="System.Text.Encodings.Web" />
   </ItemGroup>
 <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">
     <Compile Include="Microsoft.AspNetCore.Components.Web.netcoreapp.cs" />
@@ -19,6 +18,5 @@
     <Reference Include="Microsoft.AspNetCore.Components.Forms" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="Microsoft.JSInterop" />
-    <Reference Include="System.Text.Encodings.Web" />
   </ItemGroup>
 </Project>
