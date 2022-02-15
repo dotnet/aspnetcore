@@ -115,6 +115,19 @@ internal sealed class TryParseModelBinder<T> : IModelBinder
         var tryParseMethodExpession = ModelMetadata.FindTryParseMethod(modelType)
             ?? throw new InvalidOperationException($"The type '{ modelType }' does not contains a TryParse method and the binder '{ nameof(TryParseModelBinder<T>) }' cannot be used.");
 
+        // var tempSourceString = valueProviderResult.FirstValue;
+        // object model = null;
+        // if ([modeltype].TryParse(tempSourceString, [valueProviderResult.Culture,] out [modelType] parsedValue))
+        // {
+        //     model = (object)parsedValue;
+        //     bindingContext.Result = ModelBindingResult.Success(model);
+        // }
+        // else
+        // {
+        //     AddModelError(bindingContext, new FormatException());
+        // }
+        // return model;
+
         var parsedValue = Expression.Variable(modelType, "parsedValue");
         var modelValue = Expression.Variable(typeof(object), "model");
 
