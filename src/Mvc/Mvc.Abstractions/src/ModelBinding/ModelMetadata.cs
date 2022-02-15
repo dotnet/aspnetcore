@@ -529,8 +529,8 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
             throw _recordTypeValidatorsOnPropertiesError;
         }
     }
-    internal static Func<ParameterExpression, IFormatProvider, Expression>? FindTryParseMethod(Type modelType)
-        => ParameterBindingMethodCache.FindTryParseMethod(modelType);
+    internal static Func<ParameterExpression, Expression, Expression>? FindTryParseMethod(Type modelType)
+        => ParameterBindingMethodCache.FindTryParseMethod(Nullable.GetUnderlyingType(modelType) ?? modelType);
 
     [MemberNotNull(nameof(_parameterMapping), nameof(_boundConstructorPropertyMapping))]
     private void CalculateRecordTypeConstructorDetails()
@@ -627,11 +627,11 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
     {
         Debug.Assert(ModelType != null);
 
-        IsComplexType = !TypeDescriptor.GetConverter(ModelType).CanConvertFrom(typeof(string));
+        HasTryParse = ParameterBindingMethodCache.HasTryParseMethod(ModelType);
+        IsComplexType = !HasTryParse && !TypeDescriptor.GetConverter(ModelType).CanConvertFrom(typeof(string));
         IsNullableValueType = Nullable.GetUnderlyingType(ModelType) != null;
         IsReferenceOrNullableType = !ModelType.IsValueType || IsNullableValueType;
         UnderlyingOrModelType = Nullable.GetUnderlyingType(ModelType) ?? ModelType;
-        HasTryParse = ParameterBindingMethodCache.HasTryParseMethod(ModelType);
 
         var collectionType = ClosedGenericMatcher.ExtractGenericInterface(ModelType, typeof(ICollection<>));
         IsCollectionType = collectionType != null;

@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 /// <summary>
 /// An <see cref="IModelBinderProvider"/> for binding types that have a TryParse method.
 /// </summary>
-public class TryParseModelBinderProvider : IModelBinderProvider
+public sealed class TryParseModelBinderProvider : IModelBinderProvider
 {
     /// <inheritdoc />
     public IModelBinder? GetBinder(ModelBinderProviderContext context)

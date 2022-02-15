@@ -4,6 +4,7 @@
 #nullable enable
 
 using System.Linq.Expressions;
+using System.Reflection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
@@ -12,9 +13,17 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 /// <summary>
 /// An <see cref="IModelBinder"/> for simple types.
 /// </summary>
-public class TryParseModelBinder : IModelBinder
+internal sealed class TryParseModelBinder : IModelBinder
 {
-    private readonly Func<ParameterExpression, IFormatProvider, Expression> _tryParseMethodExpession;
+    private static readonly MethodInfo AddModelErrorMethod = typeof(TryParseModelBinder).GetMethod(nameof(AddModelError), BindingFlags.NonPublic | BindingFlags.Static)!;
+    private static readonly MethodInfo SuccessBindingResultMethod = typeof(ModelBindingResult).GetMethod(nameof(ModelBindingResult.Success), BindingFlags.Public | BindingFlags.Static)!;
+    private static readonly ParameterExpression BindingContextExpression = Expression.Parameter(typeof(ModelBindingContext), "bindingContext");
+    private static readonly ParameterExpression ValueProviderResultExpression = Expression.Parameter(typeof(ValueProviderResult), "valueProviderResult");
+    private static readonly MemberExpression BindingResultExpression = Expression.Property(BindingContextExpression, nameof(ModelBindingContext.Result));
+    private static readonly MemberExpression ValueExpression = Expression.Property(ValueProviderResultExpression, nameof(ValueProviderResult.FirstValue));
+    private static readonly MemberExpression CultureExpression = Expression.Property(ValueProviderResultExpression, nameof(ValueProviderResult.Culture));
+
+    private readonly Func<ValueProviderResult, ModelBindingContext, object?> _tryParseOperation;
     private readonly ILogger _logger;
 
     /// <summary>
@@ -34,7 +43,7 @@ public class TryParseModelBinder : IModelBinder
             throw new ArgumentNullException(nameof(loggerFactory));
         }
 
-        _tryParseMethodExpession = ModelMetadata.FindTryParseMethod(type)!;
+        _tryParseOperation = CreateTryParseOperation(type);
         _logger = loggerFactory.CreateLogger<SimpleTypeModelBinder>();
     }
 
@@ -63,54 +72,68 @@ public class TryParseModelBinder : IModelBinder
         try
         {
             var value = valueProviderResult.FirstValue;
-
-            object? model = null;
             if (string.IsNullOrWhiteSpace(value))
             {
-                // Other than the StringConverter, converters Trim() the value then throw if the result is empty.
-                model = null;
+                // Is expected to the TryParse() method trims the value then fail if the result is empty.
+
+                // When converting newModel a null value may indicate a failed conversion for an otherwise required
+                // model (can't set a ValueType to null). This detects if a null model value is acceptable given the
+                // current bindingContext. If not, an error is logged.
+                if (!bindingContext.ModelMetadata.IsReferenceOrNullableType)
+                {
+                    bindingContext.ModelState.TryAddModelError(
+                        bindingContext.ModelName,
+                        bindingContext.ModelMetadata.ModelBindingMessageProvider.ValueMustNotBeNullAccessor(
+                            valueProviderResult.ToString()));
+                }
+                else
+                {
+                    bindingContext.Result = ModelBindingResult.Success(null);
+                }
             }
             else
             {
-                var parsedValue = Expression.Variable(bindingContext.ModelType, "parsedValue");
-                var modelValue = Expression.Variable(typeof(object), "model");
-
-                var expression = Expression.Block(
-                    new[] { parsedValue, modelValue, ParameterBindingMethodCache.TempSourceStringExpr },
-                    Expression.Assign(ParameterBindingMethodCache.TempSourceStringExpr, Expression.Constant(value!)),
-                    Expression.IfThenElse(_tryParseMethodExpession(parsedValue, valueProviderResult.Culture),
-                        Expression.Assign(modelValue, Expression.Convert(parsedValue, modelValue.Type)),
-                        Expression.Throw(Expression.Constant(new FormatException()))),
-                    modelValue);
-
-                model = Expression.Lambda<Func<object?>>(expression).Compile()();
-            }
-
-            // When converting newModel a null value may indicate a failed conversion for an otherwise required
-            // model (can't set a ValueType to null). This detects if a null model value is acceptable given the
-            // current bindingContext. If not, an error is logged.
-            if (model == null && !bindingContext.ModelMetadata.IsReferenceOrNullableType)
-            {
-                bindingContext.ModelState.TryAddModelError(
-                    bindingContext.ModelName,
-                    bindingContext.ModelMetadata.ModelBindingMessageProvider.ValueMustNotBeNullAccessor(
-                        valueProviderResult.ToString()));
-            }
-            else
-            {
-                bindingContext.Result = ModelBindingResult.Success(model);
+                _tryParseOperation(valueProviderResult, bindingContext);
             }
         }
         catch (Exception exception)
         {
             // Conversion failed.
-            bindingContext.ModelState.TryAddModelError(
-                bindingContext.ModelName,
-                exception,
-                bindingContext.ModelMetadata);
+            AddModelError(bindingContext, exception);
         }
 
         _logger.DoneAttemptingToBindModel(bindingContext);
         return Task.CompletedTask;
+    }
+
+    private static void AddModelError(ModelBindingContext bindingContext, Exception exception)
+    {
+        // Conversion failed.
+        bindingContext.ModelState.TryAddModelError(
+            bindingContext.ModelName,
+            exception,
+            bindingContext.ModelMetadata);
+    }
+
+    private Func<ValueProviderResult, ModelBindingContext, object?> CreateTryParseOperation(Type modelType)
+    {
+        modelType = Nullable.GetUnderlyingType(modelType) ?? modelType;
+        var tryParseMethodExpession = ModelMetadata.FindTryParseMethod(modelType)
+            ?? throw new InvalidOperationException($"The binder { nameof(TryParseModelBinder) } must be only used for types that contains a TryParse method");
+
+        var parsedValue = Expression.Variable(modelType, "parsedValue");
+        var modelValue = Expression.Variable(typeof(object), "model");
+
+        var expression = Expression.Block(
+            new[] { parsedValue, modelValue, ParameterBindingMethodCache.TempSourceStringExpr },
+            Expression.Assign(ParameterBindingMethodCache.TempSourceStringExpr, ValueExpression),
+            Expression.IfThenElse(tryParseMethodExpession(parsedValue, CultureExpression),
+                Expression.Block(
+                    Expression.Assign(modelValue, Expression.Convert(parsedValue, modelValue.Type)),
+                    Expression.Assign(BindingResultExpression, Expression.Call(SuccessBindingResultMethod, modelValue))),
+                Expression.Call(AddModelErrorMethod, BindingContextExpression, Expression.Constant(new FormatException()))),
+            modelValue);
+
+        return Expression.Lambda<Func<ValueProviderResult, ModelBindingContext, object?>>(expression, new[] { ValueProviderResultExpression, BindingContextExpression }).Compile();
     }
 }
