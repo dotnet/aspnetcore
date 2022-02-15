@@ -1,0 +1,24 @@
+#nullable enable
+Microsoft.AspNetCore.Grpc.HttpApi.GrpcHttpApiOptions
+Microsoft.AspNetCore.Grpc.HttpApi.GrpcHttpApiOptions.GrpcHttpApiOptions() -> void
+Microsoft.AspNetCore.Grpc.HttpApi.GrpcHttpApiOptions.JsonSettings.get -> Microsoft.AspNetCore.Grpc.HttpApi.JsonSettings!
+Microsoft.AspNetCore.Grpc.HttpApi.GrpcHttpApiOptions.JsonSettings.set -> void
+Microsoft.AspNetCore.Grpc.HttpApi.GrpcHttpMetadata
+Microsoft.AspNetCore.Grpc.HttpApi.GrpcHttpMetadata.GrpcHttpMetadata(Google.Protobuf.Reflection.MethodDescriptor! methodDescriptor, Google.Api.HttpRule! httpRule) -> void
+Microsoft.AspNetCore.Grpc.HttpApi.GrpcHttpMetadata.HttpRule.get -> Google.Api.HttpRule!
+Microsoft.AspNetCore.Grpc.HttpApi.GrpcHttpMetadata.MethodDescriptor.get -> Google.Protobuf.Reflection.MethodDescriptor!
+Microsoft.AspNetCore.Grpc.HttpApi.JsonSettings
+Microsoft.AspNetCore.Grpc.HttpApi.JsonSettings.FormatDefaultValues.get -> bool
+Microsoft.AspNetCore.Grpc.HttpApi.JsonSettings.FormatDefaultValues.set -> void
+Microsoft.AspNetCore.Grpc.HttpApi.JsonSettings.FormatEnumsAsIntegers.get -> bool
+Microsoft.AspNetCore.Grpc.HttpApi.JsonSettings.FormatEnumsAsIntegers.set -> void
+Microsoft.AspNetCore.Grpc.HttpApi.JsonSettings.FormatInt64sAsIntegers.get -> bool
+Microsoft.AspNetCore.Grpc.HttpApi.JsonSettings.FormatInt64sAsIntegers.set -> void
+Microsoft.AspNetCore.Grpc.HttpApi.JsonSettings.JsonSettings() -> void
+Microsoft.AspNetCore.Grpc.HttpApi.JsonSettings.TypeRegistry.get -> Google.Protobuf.Reflection.TypeRegistry!
+Microsoft.AspNetCore.Grpc.HttpApi.JsonSettings.TypeRegistry.set -> void
+Microsoft.AspNetCore.Grpc.HttpApi.JsonSettings.WriteIndented.get -> bool
+Microsoft.AspNetCore.Grpc.HttpApi.JsonSettings.WriteIndented.set -> void
+Microsoft.Extensions.DependencyInjection.GrpcHttpApiServiceExtensions
+static Microsoft.Extensions.DependencyInjection.GrpcHttpApiServiceExtensions.AddGrpcHttpApi(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.DependencyInjection.GrpcHttpApiServiceExtensions.AddGrpcHttpApi(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Grpc.HttpApi.GrpcHttpApiOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

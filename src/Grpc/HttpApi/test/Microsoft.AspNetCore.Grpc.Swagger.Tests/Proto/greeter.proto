@@ -1,0 +1,30 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+syntax = "proto3";
+
+import "google/api/annotations.proto";
+
+package greet;
+
+// Greeter!
+service Greeter {
+  // SayHello!
+  rpc SayHello (HelloRequest) returns (HelloReply) {
+    option (google.api.http) = {
+      get: "/v1/greeter/{name}"
+    };
+  }
+}
+
+// HelloRequest!
+message HelloRequest {
+  // Name!
+  string name = 1;
+}
+
+// HelloReply!
+message HelloReply {
+  // Message!
+  string message = 1;
+}

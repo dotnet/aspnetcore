@@ -1,10 +1,31 @@
-﻿{
+{
   "solution": {
     "path": "..\\..\\AspNetCore.sln",
-    "projects" : [
-      "src\\Grpc\\test\\InteropTests\\InteropTests.csproj",
-      "src\\Grpc\\test\\testassets\\InteropWebsite\\InteropWebsite.csproj",
-      "src\\Grpc\\test\\testassets\\InteropClient\\InteropClient.csproj",
+    "projects": [
+      "src\\Extensions\\Features\\src\\Microsoft.Extensions.Features.csproj",
+      "src\\Grpc\\HttpApi\\perf\\Microsoft.AspNetCore.Grpc.Microbenchmarks\\Microsoft.AspNetCore.Grpc.Microbenchmarks.csproj",
+      "src\\Grpc\\HttpApi\\src\\Microsoft.AspNetCore.Grpc.HttpApi\\Microsoft.AspNetCore.Grpc.HttpApi.csproj",
+      "src\\Grpc\\HttpApi\\src\\Microsoft.AspNetCore.Grpc.Swagger\\Microsoft.AspNetCore.Grpc.Swagger.csproj",
+      "src\\Grpc\\HttpApi\\test\\Microsoft.AspNetCore.Grpc.HttpApi.IntegrationTests\\Microsoft.AspNetCore.Grpc.HttpApi.IntegrationTests.csproj",
+      "src\\Grpc\\HttpApi\\test\\Microsoft.AspNetCore.Grpc.HttpApi.Tests\\Microsoft.AspNetCore.Grpc.HttpApi.Tests.csproj",
+      "src\\Grpc\\HttpApi\\test\\Microsoft.AspNetCore.Grpc.Swagger.Tests\\Microsoft.AspNetCore.Grpc.Swagger.Tests.csproj",
+      "src\\Grpc\\HttpApi\\test\\testassets\\IntegrationTestsWebsite\\IntegrationTestsWebsite.csproj",
+      "src\\Grpc\\HttpApi\\test\\testassets\\Sandbox\\Sandbox.csproj",
+      "src\\Grpc\\Interop\\test\\InteropTests\\InteropTests.csproj",
+      "src\\Grpc\\Interop\\test\\testassets\\InteropClient\\InteropClient.csproj",
+      "src\\Grpc\\Interop\\test\\testassets\\InteropWebsite\\InteropWebsite.csproj",
+      "src\\Hosting\\Abstractions\\src\\Microsoft.AspNetCore.Hosting.Abstractions.csproj",
+      "src\\Hosting\\Hosting\\src\\Microsoft.AspNetCore.Hosting.csproj",
+      "src\\Hosting\\Server.Abstractions\\src\\Microsoft.AspNetCore.Hosting.Server.Abstractions.csproj",
+      "src\\Hosting\\TestHost\\src\\Microsoft.AspNetCore.TestHost.csproj",
+      "src\\Http\\Headers\\src\\Microsoft.Net.Http.Headers.csproj",
+      "src\\Http\\Http.Abstractions\\src\\Microsoft.AspNetCore.Http.Abstractions.csproj",
+      "src\\Http\\Http.Extensions\\src\\Microsoft.AspNetCore.Http.Extensions.csproj",
+      "src\\Http\\Http.Features\\src\\Microsoft.AspNetCore.Http.Features.csproj",
+      "src\\Http\\Http\\src\\Microsoft.AspNetCore.Http.csproj",
+      "src\\Http\\WebUtilities\\src\\Microsoft.AspNetCore.WebUtilities.csproj",
+      "src\\ObjectPool\\src\\Microsoft.Extensions.ObjectPool.csproj",
+      "src\\Servers\\Connections.Abstractions\\src\\Microsoft.AspNetCore.Connections.Abstractions.csproj",
       "src\\Testing\\src\\Microsoft.AspNetCore.Testing.csproj"
     ]
   }
