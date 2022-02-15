@@ -1,1 +1,3 @@
 #nullable enable
+*REMOVED*Microsoft.AspNetCore.Authentication.Negotiate.PostConfigureNegotiateOptions.PostConfigure(string! name, Microsoft.AspNetCore.Authentication.Negotiate.NegotiateOptions! options) -> void
+Microsoft.AspNetCore.Authentication.Negotiate.PostConfigureNegotiateOptions.PostConfigure(string? name, Microsoft.AspNetCore.Authentication.Negotiate.NegotiateOptions! options) -> void

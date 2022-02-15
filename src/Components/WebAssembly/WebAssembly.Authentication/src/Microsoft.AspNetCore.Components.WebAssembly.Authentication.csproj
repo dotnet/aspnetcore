@@ -76,7 +76,7 @@
       <_InteropBuildOutput Include="$(YarnWorkingDir)dist\$(Configuration)\**" Exclude="$(YarnWorkingDir)dist\.gitignore" />
     </ItemGroup>
 
-    <DefineStaticWebAssets Condition="@(_InteropBuildOutput) != ''"
+    <DefineStaticWebAssets Condition="'@(_InteropBuildOutput)' != ''"
       SourceType="Computed"
       SourceId="$(PackageId)"
       ContentRoot="$(YarnWorkingDir)dist\$(Configuration)\"

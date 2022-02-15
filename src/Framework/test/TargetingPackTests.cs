@@ -7,6 +7,7 @@ using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Runtime.CompilerServices;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.Testing;
 using NuGet.Versioning;
 using Xunit.Abstractions;
 
@@ -24,14 +25,11 @@ public class TargetingPackTests
         _output = output;
         _expectedRid = TestData.GetSharedFxRuntimeIdentifier();
         _targetingPackTfm = TestData.GetDefaultNetCoreTargetFramework();
-        var root = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")) ?
-            TestData.GetTestDataValue("TargetingPackLayoutRoot") :
-            Environment.GetEnvironmentVariable("DOTNET_ROOT");
         _targetingPackRoot = Path.Combine(
-            root,
+            Environment.GetEnvironmentVariable("DOTNET_ROOT"),
             "packs",
             "Microsoft.AspNetCore.App.Ref",
-            TestData.GetTestDataValue("TargetingPackVersion"));
+            TestData.GetSharedFxVersion());
     }
 
     [Fact]
@@ -255,7 +253,7 @@ public class TargetingPackTests
     }
 
     [Fact]
-    public void FrameworkListListsContainsCorrectEntries()
+    public void FrameworkListContainsCorrectEntries()
     {
         var frameworkListPath = Path.Combine(_targetingPackRoot, "data", "FrameworkList.xml");
         var expectedAssemblies = TestData.GetTargetingPackDependencies()
@@ -322,13 +320,8 @@ public class TargetingPackTests
     }
 
     [Fact]
-    public void FrameworkListListsContainsCorrectPaths()
+    public void FrameworkListContainsCorrectPaths()
     {
-        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))
-        {
-            return;
-        }
-
         var frameworkListPath = Path.Combine(_targetingPackRoot, "data", "FrameworkList.xml");
 
         AssertEx.FileExists(frameworkListPath);
@@ -336,7 +329,12 @@ public class TargetingPackTests
         var frameworkListDoc = XDocument.Load(frameworkListPath);
         var frameworkListEntries = frameworkListDoc.Root.Descendants();
 
-        var targetingPackPath = Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"), ("Microsoft.AspNetCore.App.Ref." + TestData.GetSharedFxVersion() + ".nupkg"));
+        var packageFolder = SkipOnHelixAttribute.OnHelix() ?
+            Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT") :
+            TestData.GetPackagesFolder();
+        var targetingPackPath = Path.Combine(
+            packageFolder, "Microsoft.AspNetCore.App.Ref." + TestData.GetSharedFxVersion() + ".nupkg");
+        AssertEx.FileExists(targetingPackPath);
 
         ZipArchive archive = ZipFile.OpenRead(targetingPackPath);
 
@@ -364,13 +362,8 @@ public class TargetingPackTests
     }
 
     [Fact]
-    public void FrameworkListListsContainsAnalyzerLanguage()
+    public void FrameworkListContainsAnalyzerLanguage()
     {
-        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))
-        {
-            return;
-        }
-
         var frameworkListPath = Path.Combine(_targetingPackRoot, "data", "FrameworkList.xml");
 
         AssertEx.FileExists(frameworkListPath);

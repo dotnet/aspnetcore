@@ -106,7 +106,7 @@ internal class MvcCoreMvcOptionsSetup : IConfigureOptions<MvcOptions>, IPostConf
         options.ModelValidatorProviders.Add(new DefaultModelValidatorProvider());
     }
 
-    public void PostConfigure(string name, MvcOptions options)
+    public void PostConfigure(string? name, MvcOptions options)
     {
         // HasValidatorsValidationMetadataProvider uses the results of other ValidationMetadataProvider to determine if a model requires
         // validation. It is imperative that this executes later than all other metadata provider. We'll register it as part of PostConfigure.

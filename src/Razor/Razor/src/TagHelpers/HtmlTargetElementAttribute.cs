@@ -9,6 +9,9 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers;
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
 public sealed class HtmlTargetElementAttribute : Attribute
 {
+    /// <summary>
+    /// The value for a tag helper that targets all HTML elements.
+    /// </summary>
     public const string ElementCatchAllTarget = "*";
 
     /// <summary>

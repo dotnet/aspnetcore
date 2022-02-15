@@ -53,5 +53,5 @@ public interface IUserLoginStore<TUser> : IUserStore<TUser> where TUser : class
     /// <returns>
     /// The <see cref="Task"/> for the asynchronous operation, containing the user, if any which matched the specified login provider and key.
     /// </returns>
-    Task<TUser> FindByLoginAsync(string loginProvider, string providerKey, CancellationToken cancellationToken);
+    Task<TUser?> FindByLoginAsync(string loginProvider, string providerKey, CancellationToken cancellationToken);
 }

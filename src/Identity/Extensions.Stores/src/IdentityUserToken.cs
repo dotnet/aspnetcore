@@ -14,21 +14,21 @@ public class IdentityUserToken<TKey> where TKey : IEquatable<TKey>
     /// <summary>
     /// Gets or sets the primary key of the user that the token belongs to.
     /// </summary>
-    public virtual TKey UserId { get; set; }
+    public virtual TKey UserId { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the LoginProvider this token is from.
     /// </summary>
-    public virtual string LoginProvider { get; set; }
+    public virtual string LoginProvider { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the name of the token.
     /// </summary>
-    public virtual string Name { get; set; }
+    public virtual string Name { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the token value.
     /// </summary>
     [ProtectedPersonalData]
-    public virtual string Value { get; set; }
+    public virtual string? Value { get; set; }
 }

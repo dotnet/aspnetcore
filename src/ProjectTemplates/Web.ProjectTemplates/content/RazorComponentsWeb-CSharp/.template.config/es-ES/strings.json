@@ -1,7 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "strings": {
-    "name": "Aplicación de servidor Blazor",
-    "description": "Plantilla de proyecto para crear una aplicación Blazor que se ejecuta del lado servidor dentro de una aplicación de ASP.NET Core. Esta plantilla se puede usar para las aplicaciones web con interfaces de usuario dinámicas enriquecidas."
-  }
-}

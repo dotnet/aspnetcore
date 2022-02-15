@@ -1,7 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "strings": {
-    "name": "Aplicación web de ASP.NET Core",
-    "description": "Una plantilla de proyecto para crear una aplicación ASP.NET Core con contenido de páginas de Razor de ASP.NET de ejemplo."
-  }
-}

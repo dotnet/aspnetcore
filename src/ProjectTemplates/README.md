@@ -30,22 +30,37 @@ To build the ProjectTemplates, use one of:
 
 1. Run `eng\build.cmd -all -pack -configuration Release` in the repository root to build and pack all of the repo, including template projects.
 1. Run `src\ProjectTemplates\build.cmd -pack -configuration Release` to produce NuGet packages only for the template projects.
+    - This will also build and pack the shared framework.
 
 **Note** use `eng/build.sh` or `src/ProjectTemplates/build.sh` on non-Windows platforms.
 
 ### Test
 
-To run the ProjectTemplate tests:
+#### Running ProjectTemplate tests:
 
-1. Because the templates build against the version of `Microsoft.AspNetCore.App` that was built during the previous step, it is NOT advised that you install templates created on your local machine via `dotnet new -i [nupkgPath]`. Instead, use the `Run-[Template]-Locally.ps1` scripts in the script folder. These scripts do `dotnet new -i` with your packages, but also apply a series of fixes and tweaks to the created template which keep the fact that you don't have a production `Microsoft.AspNetCore.App` from interfering.
-1. The ASP.NET localhost development certificate must also be installed and trusted or else you'll get a test error "Certificate error: Navigation blocked".
-1. Run `eng\build.cmd -test -NoRestore -NoBuild -NoBuilddeps -configuration Release "/p:RunTemplateTests=true"` to run template tests.
+To run ProjectTemplate tests, first ensure the ASP.NET localhost development certificate is installed and trusted.
+Otherwise, you'll get a test error "Certificate error: Navigation blocked".
+
+Then, use one of:
+
+1. Run `src\ProjectTemplates\build.cmd -test -NoRestore -NoBuild -NoBuilddeps -configuration Release` (or equivalent src\ProjectTemplates\build.sh` command) to run all template tests.
+1. To test specific templates, use the `Run-[Template]-Locally.ps1` scripts in the script folder.
+    - These scripts do `dotnet new -i` with your packages, but also apply a series of fixes and tweaks to the created template which keep the fact that you don't have a production `Microsoft.AspNetCore.App` from interfering.
+1. Run templates manually with `custom-hive` and `disable-sdk-templates` to install to a custom location and turn off the built-in templates e.g.
+    - `dotnet new -i Microsoft.DotNet.Web.Spa.ProjectTemplates.6.0.6.0.0-dev.nupkg --debug:custom-hive C:\TemplateHive\`
+    - `dotnet new angular --auth Individual --debug:disable-sdk-templates --debug:custom-hive C:\TemplateHive\`
+1. Install the templates to an existing Visual Studio installation.
+    1. Pack the ProjectTemplates: `src\ProjectTemplates\build.cmd -pack -configuration Release`
+        - This will produce the `*dev.nupkg` containing the ProjectTemplates at `artifacts\packages\Release\Shipping\Microsoft.DotNet.Web.ProjectTemplates.7.0.7.0.0-dev.nupkg`
+    2. Install ProjectTemplates in local Visual Studio instance: `dotnet new -i "<REPO_PATH>\artifacts\packages\Release\Shipping\Microsoft.DotNet.Web.ProjectTemplates.7.0.7.0.0-dev.nupkg"`
+    3. Run Visual Studio and test out templates manually.
+    4. Uninstall ProjectTemplates from local Visual Studio instance: `dotnet new --uninstall Microsoft.DotNet.Web.ProjectTemplates.7.0`
 
 **Note** ProjectTemplates tests require Visual Studio unless a full build (CI) is performed.
 
-Alternatively, you can run with `custom-hive` and `disable-sdk-templates` to install to a custom location and turn off the built in templates
-- `dotnet new -i Microsoft.DotNet.Web.Spa.ProjectTemplates.6.0.6.0.0-dev.nupkg --debug:custom-hive C:\TemplateHive\`
-- `dotnet new angular --auth Individual --debug:disable-sdk-templates --debug:custom-hive C:\TemplateHive\`
+**Note** Because the templates build against the version of `Microsoft.AspNetCore.App` that was built during the
+previous step, it is NOT advised that you install templates created on your local machine using just
+`dotnet new -i [nupkgPath]`.
 
 ## More Information
 

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -121,7 +122,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
             {
                 throw new InvalidOperationException(Resources.StoreNotIProtectedUserStore);
             }
-            if (services.GetService<ILookupProtector>() == null)
+            if (services?.GetService<ILookupProtector>() == null)
             {
                 throw new InvalidOperationException(Resources.NoPersonalDataProtector);
             }
@@ -400,7 +401,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// <param name="principal">The <see cref="ClaimsPrincipal"/> instance.</param>
     /// <returns>The Name claim value, or null if the claim is not present.</returns>
     /// <remarks>The Name claim is identified by <see cref="ClaimsIdentity.DefaultNameClaimType"/>.</remarks>
-    public virtual string GetUserName(ClaimsPrincipal principal)
+    public virtual string? GetUserName(ClaimsPrincipal principal)
     {
         if (principal == null)
         {
@@ -415,7 +416,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// <param name="principal">The <see cref="ClaimsPrincipal"/> instance.</param>
     /// <returns>The User ID claim value, or null if the claim is not present.</returns>
     /// <remarks>The User ID claim is identified by <see cref="ClaimTypes.NameIdentifier"/>.</remarks>
-    public virtual string GetUserId(ClaimsPrincipal principal)
+    public virtual string? GetUserId(ClaimsPrincipal principal)
     {
         if (principal == null)
         {
@@ -431,14 +432,14 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// <param name="principal">The principal which contains the user id claim.</param>
     /// <returns>The user corresponding to the IdentityOptions.ClaimsIdentity.UserIdClaimType claim in
     /// the principal or null</returns>
-    public virtual Task<TUser> GetUserAsync(ClaimsPrincipal principal)
+    public virtual Task<TUser?> GetUserAsync(ClaimsPrincipal principal)
     {
         if (principal == null)
         {
             throw new ArgumentNullException(nameof(principal));
         }
         var id = GetUserId(principal);
-        return id == null ? Task.FromResult<TUser>(null) : FindByIdAsync(id);
+        return id == null ? Task.FromResult<TUser?>(null) : FindByIdAsync(id);
     }
 
     /// <summary>
@@ -527,7 +528,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// <returns>
     /// The <see cref="Task"/> that represents the asynchronous operation, containing the user matching the specified <paramref name="userId"/> if it exists.
     /// </returns>
-    public virtual Task<TUser> FindByIdAsync(string userId)
+    public virtual Task<TUser?> FindByIdAsync(string userId)
     {
         ThrowIfDisposed();
         return Store.FindByIdAsync(userId, CancellationToken);
@@ -540,7 +541,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// <returns>
     /// The <see cref="Task"/> that represents the asynchronous operation, containing the user matching the specified <paramref name="userName"/> if it exists.
     /// </returns>
-    public virtual async Task<TUser> FindByNameAsync(string userName)
+    public virtual async Task<TUser?> FindByNameAsync(string userName)
     {
         ThrowIfDisposed();
         if (userName == null)
@@ -607,7 +608,8 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// </summary>
     /// <param name="name">The name to normalize.</param>
     /// <returns>A normalized value representing the specified <paramref name="name"/>.</returns>
-    public virtual string NormalizeName(string name)
+    [return: NotNullIfNotNull("name")]
+    public virtual string? NormalizeName(string? name)
         => (KeyNormalizer == null) ? name : KeyNormalizer.NormalizeName(name);
 
     /// <summary>
@@ -615,15 +617,17 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// </summary>
     /// <param name="email">The email to normalize.</param>
     /// <returns>A normalized value representing the specified <paramref name="email"/>.</returns>
-    public virtual string NormalizeEmail(string email)
+    [return: NotNullIfNotNull("email")]
+    public virtual string? NormalizeEmail(string? email)
         => (KeyNormalizer == null) ? email : KeyNormalizer.NormalizeEmail(email);
 
-    private string ProtectPersonalData(string data)
+    [return: NotNullIfNotNull("data")]
+    private string? ProtectPersonalData(string? data)
     {
         if (Options.Stores.ProtectPersonalData)
         {
-            var keyRing = _services.GetService<ILookupProtectorKeyRing>();
-            var protector = _services.GetService<ILookupProtector>();
+            var keyRing = _services.GetRequiredService<ILookupProtectorKeyRing>();
+            var protector = _services.GetRequiredService<ILookupProtector>();
             return protector.Protect(keyRing.CurrentKeyId, data);
         }
         return data;
@@ -646,7 +650,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// </summary>
     /// <param name="user">The user whose name should be retrieved.</param>
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the name for the specified <paramref name="user"/>.</returns>
-    public virtual async Task<string> GetUserNameAsync(TUser user)
+    public virtual async Task<string?> GetUserNameAsync(TUser user)
     {
         ThrowIfDisposed();
         if (user == null)
@@ -662,7 +666,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// <param name="user">The user whose name should be set.</param>
     /// <param name="userName">The user name to set.</param>
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
-    public virtual async Task<IdentityResult> SetUserNameAsync(TUser user, string userName)
+    public virtual async Task<IdentityResult> SetUserNameAsync(TUser user, string? userName)
     {
         ThrowIfDisposed();
         if (user == null)
@@ -714,7 +718,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         var success = result != PasswordVerificationResult.Failed;
         if (!success)
         {
-            Logger.LogWarning(LoggerEventIds.InvalidPassword, "Invalid password for user.");
+            Logger.LogDebug(LoggerEventIds.InvalidPassword, "Invalid password for user.");
         }
         return success;
     }
@@ -761,7 +765,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         var hash = await passwordStore.GetPasswordHashAsync(user, CancellationToken).ConfigureAwait(false);
         if (hash != null)
         {
-            Logger.LogWarning(LoggerEventIds.UserAlreadyHasPassword, "User already has a password.");
+            Logger.LogDebug(LoggerEventIds.UserAlreadyHasPassword, "User already has a password.");
             return IdentityResult.Failed(ErrorDescriber.UserAlreadyHasPassword());
         }
         var result = await UpdatePasswordHash(passwordStore, user, password).ConfigureAwait(false);
@@ -801,7 +805,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
             }
             return await UpdateUserAsync(user).ConfigureAwait(false);
         }
-        Logger.LogWarning(LoggerEventIds.ChangePasswordFailed, "Change password failed for user.");
+        Logger.LogDebug(LoggerEventIds.ChangePasswordFailed, "Change password failed for user.");
         return IdentityResult.Failed(ErrorDescriber.PasswordMismatch());
     }
 
@@ -862,7 +866,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         var stamp = await securityStore.GetSecurityStampAsync(user, CancellationToken).ConfigureAwait(false);
         if (stamp == null)
         {
-            Logger.LogWarning(LoggerEventIds.GetSecurityStampFailed, "GetSecurityStampAsync for user failed because stamp was null.");
+            Logger.LogDebug(LoggerEventIds.GetSecurityStampFailed, "GetSecurityStampAsync for user failed because stamp was null.");
             throw new InvalidOperationException(Resources.NullSecurityStamp);
         }
         return stamp;
@@ -945,7 +949,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// <returns>
     /// The <see cref="Task"/> for the asynchronous operation, containing the user, if any which matched the specified login provider and key.
     /// </returns>
-    public virtual Task<TUser> FindByLoginAsync(string loginProvider, string providerKey)
+    public virtual Task<TUser?> FindByLoginAsync(string loginProvider, string providerKey)
     {
         ThrowIfDisposed();
         var loginStore = GetLoginStore();
@@ -1018,7 +1022,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         var existingUser = await FindByLoginAsync(login.LoginProvider, login.ProviderKey).ConfigureAwait(false);
         if (existingUser != null)
         {
-            Logger.LogWarning(LoggerEventIds.AddLoginFailed, "AddLogin for user failed because it was already associated with another user.");
+            Logger.LogDebug(LoggerEventIds.AddLoginFailed, "AddLogin for user failed because it was already associated with another user.");
             return IdentityResult.Failed(ErrorDescriber.LoginAlreadyAssociated());
         }
         await loginStore.AddLoginAsync(user, login, CancellationToken).ConfigureAwait(false);
@@ -1282,13 +1286,13 @@ public class UserManager<TUser> : IDisposable where TUser : class
 
     private IdentityResult UserAlreadyInRoleError(string role)
     {
-        Logger.LogWarning(LoggerEventIds.UserAlreadyInRole, "User is already in role {role}.", role);
+        Logger.LogDebug(LoggerEventIds.UserAlreadyInRole, "User is already in role {role}.", role);
         return IdentityResult.Failed(ErrorDescriber.UserAlreadyInRole(role));
     }
 
     private IdentityResult UserNotInRoleError(string role)
     {
-        Logger.LogWarning(LoggerEventIds.UserNotInRole, "User is not in role {role}.", role);
+        Logger.LogDebug(LoggerEventIds.UserNotInRole, "User is not in role {role}.", role);
         return IdentityResult.Failed(ErrorDescriber.UserNotInRole(role));
     }
 
@@ -1367,7 +1371,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// </summary>
     /// <param name="user">The user whose email should be returned.</param>
     /// <returns>The task object containing the results of the asynchronous operation, the email address for the specified <paramref name="user"/>.</returns>
-    public virtual async Task<string> GetEmailAsync(TUser user)
+    public virtual async Task<string?> GetEmailAsync(TUser user)
     {
         ThrowIfDisposed();
         var store = GetEmailStore();
@@ -1387,7 +1391,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/>
     /// of the operation.
     /// </returns>
-    public virtual async Task<IdentityResult> SetEmailAsync(TUser user, string email)
+    public virtual async Task<IdentityResult> SetEmailAsync(TUser user, string? email)
     {
         ThrowIfDisposed();
         var store = GetEmailStore();
@@ -1411,7 +1415,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// <returns>
     /// The task object containing the results of the asynchronous lookup operation, the user, if any, associated with a normalized value of the specified email address.
     /// </returns>
-    public virtual async Task<TUser> FindByEmailAsync(string email)
+    public virtual async Task<TUser?> FindByEmailAsync(string email)
     {
         ThrowIfDisposed();
         var store = GetEmailStore();
@@ -1451,11 +1455,11 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// <returns>The task object representing the asynchronous operation.</returns>
     public virtual async Task UpdateNormalizedEmailAsync(TUser user)
     {
-        var store = GetEmailStore(throwOnFail: false);
+        var store = GetOptionalEmailStore();
         if (store != null)
         {
             var email = await GetEmailAsync(user).ConfigureAwait(false);
-            await store.SetNormalizedEmailAsync(user, ProtectPersonalData(NormalizeEmail(email)), CancellationToken).ConfigureAwait(false);
+            await store.SetNormalizedEmailAsync(user, ProtectPersonalData(NormalizeEmail(email)!), CancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -1567,7 +1571,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// </summary>
     /// <param name="user">The user whose telephone number should be retrieved.</param>
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the user's telephone number, if any.</returns>
-    public virtual async Task<string> GetPhoneNumberAsync(TUser user)
+    public virtual async Task<string?> GetPhoneNumberAsync(TUser user)
     {
         ThrowIfDisposed();
         var store = GetPhoneNumberStore();
@@ -1587,7 +1591,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/>
     /// of the operation.
     /// </returns>
-    public virtual async Task<IdentityResult> SetPhoneNumberAsync(TUser user, string phoneNumber)
+    public virtual async Task<IdentityResult> SetPhoneNumberAsync(TUser user, string? phoneNumber)
     {
         ThrowIfDisposed();
         var store = GetPhoneNumberStore();
@@ -1624,7 +1628,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
 
         if (!await VerifyChangePhoneNumberTokenAsync(user, token, phoneNumber).ConfigureAwait(false))
         {
-            Logger.LogWarning(LoggerEventIds.PhoneNumberChanged, "Change phone number for user failed with invalid token.");
+            Logger.LogDebug(LoggerEventIds.PhoneNumberChanged, "Change phone number for user failed with invalid token.");
             return IdentityResult.Failed(ErrorDescriber.InvalidToken());
         }
         await store.SetPhoneNumberAsync(user, phoneNumber, CancellationToken).ConfigureAwait(false);
@@ -1824,7 +1828,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         var result = await _tokenProviders[tokenProvider].ValidateAsync("TwoFactor", token, this, user).ConfigureAwait(false);
         if (!result)
         {
-            Logger.LogWarning(LoggerEventIds.VerifyTwoFactorTokenFailed, $"{nameof(VerifyTwoFactorTokenAsync)}() failed for user.");
+            Logger.LogDebug(LoggerEventIds.VerifyTwoFactorTokenFailed, $"{nameof(VerifyTwoFactorTokenAsync)}() failed for user.");
         }
         return result;
     }
@@ -1997,7 +2001,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
 
         if (!await store.GetLockoutEnabledAsync(user, CancellationToken).ConfigureAwait(false))
         {
-            Logger.LogWarning(LoggerEventIds.LockoutFailed, "Lockout for user failed because lockout is not enabled for this user.");
+            Logger.LogDebug(LoggerEventIds.LockoutFailed, "Lockout for user failed because lockout is not enabled for this user.");
             return IdentityResult.Failed(ErrorDescriber.UserLockoutNotEnabled());
         }
         await store.SetLockoutEndDateAsync(user, lockoutEnd, CancellationToken).ConfigureAwait(false);
@@ -2026,7 +2030,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         {
             return await UpdateUserAsync(user).ConfigureAwait(false);
         }
-        Logger.LogWarning(LoggerEventIds.UserLockedOut, "User is locked out.");
+        Logger.LogDebug(LoggerEventIds.UserLockedOut, "User is locked out.");
         await store.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow.Add(Options.Lockout.DefaultLockoutTimeSpan),
             CancellationToken).ConfigureAwait(false);
         await store.ResetAccessFailedCountAsync(user, CancellationToken).ConfigureAwait(false);
@@ -2118,7 +2122,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// <param name="loginProvider">The authentication scheme for the provider the token is associated with.</param>
     /// <param name="tokenName">The name of the token.</param>
     /// <returns>The authentication token for a user</returns>
-    public virtual Task<string> GetAuthenticationTokenAsync(TUser user, string loginProvider, string tokenName)
+    public virtual Task<string?> GetAuthenticationTokenAsync(TUser user, string loginProvider, string tokenName)
     {
         ThrowIfDisposed();
         var store = GetAuthenticationTokenStore();
@@ -2146,7 +2150,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// <param name="tokenName">The name of the token.</param>
     /// <param name="tokenValue">The value of the token.</param>
     /// <returns>Whether the user was successfully updated.</returns>
-    public virtual async Task<IdentityResult> SetAuthenticationTokenAsync(TUser user, string loginProvider, string tokenName, string tokenValue)
+    public virtual async Task<IdentityResult> SetAuthenticationTokenAsync(TUser user, string loginProvider, string tokenName, string? tokenValue)
     {
         ThrowIfDisposed();
         var store = GetAuthenticationTokenStore();
@@ -2201,7 +2205,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// </summary>
     /// <param name="user">The user.</param>
     /// <returns>The authenticator key</returns>
-    public virtual Task<string> GetAuthenticatorKeyAsync(TUser user)
+    public virtual Task<string?> GetAuthenticatorKeyAsync(TUser user)
     {
         ThrowIfDisposed();
         var store = GetAuthenticatorKeyStore();
@@ -2243,7 +2247,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// <param name="user">The user to generate recovery codes for.</param>
     /// <param name="number">The number of codes to generate.</param>
     /// <returns>The new recovery codes for the user.  Note: there may be less than number returned, as duplicates will be removed.</returns>
-    public virtual async Task<IEnumerable<string>> GenerateNewTwoFactorRecoveryCodesAsync(TUser user, int number)
+    public virtual async Task<IEnumerable<string>?> GenerateNewTwoFactorRecoveryCodesAsync(TUser user, int number)
     {
         ThrowIfDisposed();
         var store = GetRecoveryCodeStore();
@@ -2348,14 +2352,18 @@ public class UserManager<TUser> : IDisposable where TUser : class
         return cast;
     }
 
-    private IUserEmailStore<TUser> GetEmailStore(bool throwOnFail = true)
+    private IUserEmailStore<TUser> GetEmailStore()
     {
-        var cast = Store as IUserEmailStore<TUser>;
-        if (throwOnFail && cast == null)
+        if (Store is not IUserEmailStore<TUser> emailStore)
         {
             throw new NotSupportedException(Resources.StoreNotIUserEmailStore);
         }
-        return cast;
+        return emailStore;
+    }
+
+    private IUserEmailStore<TUser>? GetOptionalEmailStore()
+    {
+        return Store as IUserEmailStore<TUser>;
     }
 
     private IUserPhoneNumberStore<TUser> GetPhoneNumberStore()
@@ -2398,7 +2406,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         => UpdatePasswordHash(GetPasswordStore(), user, newPassword, validatePassword);
 
     private async Task<IdentityResult> UpdatePasswordHash(IUserPasswordStore<TUser> passwordStore,
-        TUser user, string newPassword, bool validatePassword = true)
+        TUser user, string? newPassword, bool validatePassword = true)
     {
         if (validatePassword)
         {
@@ -2500,7 +2508,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         }
         if (errors.Count > 0)
         {
-            Logger.LogWarning(LoggerEventIds.UserValidationFailed, "User validation failed: {errors}.", string.Join(";", errors.Select(e => e.Code)));
+            Logger.LogDebug(LoggerEventIds.UserValidationFailed, "User validation failed: {errors}.", string.Join(";", errors.Select(e => e.Code)));
             return IdentityResult.Failed(errors.ToArray());
         }
         return IdentityResult.Success;
@@ -2513,7 +2521,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// <param name="user">The user.</param>
     /// <param name="password">The password.</param>
     /// <returns>A <see cref="IdentityResult"/> representing whether validation was successful.</returns>
-    protected async Task<IdentityResult> ValidatePasswordAsync(TUser user, string password)
+    protected async Task<IdentityResult> ValidatePasswordAsync(TUser user, string? password)
     {
         var errors = new List<IdentityError>();
         var isValid = true;
@@ -2532,7 +2540,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         }
         if (!isValid)
         {
-            Logger.LogWarning(LoggerEventIds.PasswordValidationFailed, "User password validation failed: {errors}.", string.Join(";", errors.Select(e => e.Code)));
+            Logger.LogDebug(LoggerEventIds.PasswordValidationFailed, "User password validation failed: {errors}.", string.Join(";", errors.Select(e => e.Code)));
             return IdentityResult.Failed(errors.ToArray());
         }
         return IdentityResult.Success;

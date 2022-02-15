@@ -116,7 +116,7 @@ public class AuthenticationBuilder
             _authOptions = authOptions.Value;
         }
 
-        public void PostConfigure(string name, TOptions options)
+        public void PostConfigure(string? name, TOptions options)
         {
             options.SignInScheme ??= _authOptions.DefaultSignInScheme ?? _authOptions.DefaultScheme;
         }

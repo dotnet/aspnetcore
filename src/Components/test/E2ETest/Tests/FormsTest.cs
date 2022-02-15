@@ -360,37 +360,36 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var appElement = MountTypicalValidationComponent();
         var messagesAccessor = CreateValidationMessagesAccessor(appElement);
 
+        // By capturing the inputradio elements just once up front, we're implicitly showing
+        // that they are retained as their values change
+        var unknownAirlineInput = FindAirlineInputs().First(i => string.Equals("Unknown", i.GetAttribute("value")));
+        var bestAirlineInput = FindAirlineInputs().First(i => string.Equals("BestAirline", i.GetAttribute("value")));
+
         // Validate selected inputs
-        Browser.True(() => FindUnknownAirlineInput().Selected);
-        Browser.False(() => FindBestAirlineInput().Selected);
+        Browser.True(() => unknownAirlineInput.Selected);
+        Browser.False(() => bestAirlineInput.Selected);
 
         // InputRadio emits additional attributes
-        Browser.True(() => FindUnknownAirlineInput().GetAttribute("extra").Equals("additional"));
+        Browser.True(() => unknownAirlineInput.GetAttribute("extra").Equals("additional"));
 
         // Validates on edit
-        Browser.Equal("valid", () => FindUnknownAirlineInput().GetAttribute("class"));
-        Browser.Equal("valid", () => FindBestAirlineInput().GetAttribute("class"));
+        Browser.Equal("valid", () => unknownAirlineInput.GetAttribute("class"));
+        Browser.Equal("valid", () => bestAirlineInput.GetAttribute("class"));
 
-        FindBestAirlineInput().Click();
+        bestAirlineInput.Click();
 
-        Browser.Equal("modified valid", () => FindUnknownAirlineInput().GetAttribute("class"));
-        Browser.Equal("modified valid", () => FindBestAirlineInput().GetAttribute("class"));
+        Browser.Equal("modified valid", () => unknownAirlineInput.GetAttribute("class"));
+        Browser.Equal("modified valid", () => bestAirlineInput.GetAttribute("class"));
 
         // Can become invalid
-        FindUnknownAirlineInput().Click();
+        unknownAirlineInput.Click();
 
-        Browser.Equal("modified invalid", () => FindUnknownAirlineInput().GetAttribute("class"));
-        Browser.Equal("modified invalid", () => FindBestAirlineInput().GetAttribute("class"));
+        Browser.Equal("modified invalid", () => unknownAirlineInput.GetAttribute("class"));
+        Browser.Equal("modified invalid", () => bestAirlineInput.GetAttribute("class"));
         Browser.Equal(new[] { "Pick a valid airline." }, messagesAccessor);
 
         IReadOnlyCollection<IWebElement> FindAirlineInputs()
             => appElement.FindElement(By.ClassName("airline")).FindElements(By.TagName("input"));
-
-        IWebElement FindUnknownAirlineInput()
-            => FindAirlineInputs().First(i => string.Equals("Unknown", i.GetAttribute("value")));
-
-        IWebElement FindBestAirlineInput()
-            => FindAirlineInputs().First(i => string.Equals("BestAirline", i.GetAttribute("value")));
     }
 
     [Fact]

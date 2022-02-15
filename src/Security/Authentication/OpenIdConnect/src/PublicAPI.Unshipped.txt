@@ -1,1 +1,3 @@
 #nullable enable
+*REMOVED*Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectPostConfigureOptions.PostConfigure(string! name, Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions! options) -> void
+Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectPostConfigureOptions.PostConfigure(string? name, Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions! options) -> void

@@ -1,7 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "strings": {
-    "name": "空的 ASP.NET Core",
-    "description": "可用於建立 ASP.NET Core 應用程式的空白專案範本。此範本不含任何內容。"
-  }
-}

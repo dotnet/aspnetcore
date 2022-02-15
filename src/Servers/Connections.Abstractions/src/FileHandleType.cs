@@ -8,7 +8,18 @@ namespace Microsoft.AspNetCore.Connections;
 /// </summary>
 public enum FileHandleType
 {
+    /// <summary>
+    /// This API is unused and no longer supported.
+    /// </summary>
     Auto,
+
+    /// <summary>
+    /// This API is unused and no longer supported.
+    /// </summary>
     Tcp,
+
+    /// <summary>
+    /// This API is unused and no longer supported.
+    /// </summary>
     Pipe
 }

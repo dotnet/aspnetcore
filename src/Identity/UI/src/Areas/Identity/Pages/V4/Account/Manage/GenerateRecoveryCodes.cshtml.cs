@@ -20,14 +20,14 @@ public abstract class GenerateRecoveryCodesModel : PageModel
     ///     directly from your code. This API may change or be removed in future releases.
     /// </summary>
     [TempData]
-    public string[] RecoveryCodes { get; set; }
+    public string[]? RecoveryCodes { get; set; }
 
     /// <summary>
     ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
     ///     directly from your code. This API may change or be removed in future releases.
     /// </summary>
     [TempData]
-    public string StatusMessage { get; set; }
+    public string? StatusMessage { get; set; }
 
     /// <summary>
     ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
@@ -87,7 +87,7 @@ internal class GenerateRecoveryCodesModel<TUser> : GenerateRecoveryCodesModel wh
         }
 
         var recoveryCodes = await _userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 10);
-        RecoveryCodes = recoveryCodes.ToArray();
+        RecoveryCodes = recoveryCodes!.ToArray();
 
         _logger.LogInformation(LoggerEventIds.TwoFARecoveryGenerated, "User has generated new 2FA recovery codes.");
         StatusMessage = "You have generated new recovery codes.";

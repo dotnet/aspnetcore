@@ -33,7 +33,6 @@ public class HttpsRedirectionMiddleware
     /// <param name="config"></param>
     /// <param name="loggerFactory"></param>
     public HttpsRedirectionMiddleware(RequestDelegate next, IOptions<HttpsRedirectionOptions> options, IConfiguration config, ILoggerFactory loggerFactory)
-
     {
         _next = next ?? throw new ArgumentNullException(nameof(next));
         _config = config ?? throw new ArgumentNullException(nameof(config));

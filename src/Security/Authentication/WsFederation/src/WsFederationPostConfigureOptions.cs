@@ -31,8 +31,13 @@ public class WsFederationPostConfigureOptions : IPostConfigureOptions<WsFederati
     /// </summary>
     /// <param name="name">The name of the options instance being configured.</param>
     /// <param name="options">The options instance to configure.</param>
-    public void PostConfigure(string name, WsFederationOptions options)
+    public void PostConfigure(string? name, WsFederationOptions options)
     {
+        if (name is null)
+        {
+            throw new ArgumentNullException(nameof(name));
+        }
+
         options.DataProtectionProvider = options.DataProtectionProvider ?? _dp;
 
         if (string.IsNullOrEmpty(options.SignOutScheme))

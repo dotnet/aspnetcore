@@ -171,7 +171,7 @@ public static class HubConnectionBuilderHttpExtensions
             _defaultTransferFormat = hubProtocol.TransferFormat;
         }
 
-        public void Configure(string name, HttpConnectionOptions options)
+        public void Configure(string? name, HttpConnectionOptions options)
         {
             Configure(options);
         }

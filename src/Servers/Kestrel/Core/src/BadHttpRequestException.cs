@@ -28,6 +28,9 @@ public sealed class BadHttpRequestException : Microsoft.AspNetCore.Http.BadHttpR
         }
     }
 
+    /// <summary>
+    /// Gets the HTTP status code for this exception.
+    /// </summary>
     public new int StatusCode { get => base.StatusCode; }
 
     internal StringValues AllowedHeader { get; }
