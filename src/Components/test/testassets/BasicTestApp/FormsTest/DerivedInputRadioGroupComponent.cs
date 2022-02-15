@@ -3,7 +3,6 @@
 
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.AspNetCore.Components.Rendering;
 
 namespace BasicTestApp.FormsTest;
 
@@ -12,7 +11,7 @@ public class DerivedInputRadioGroupComponent : InputRadioGroup<DayOfWeek>
     // Supports InputsTwoWayBindingComponent test
     // Repro for https://github.com/dotnet/aspnetcore/issues/40097
 
-    protected override bool TryParseValueFromString(string value, [MaybeNullWhen(false)] out DayOfWeek result, [NotNullWhen(false)] out string validationErrorMessage)
+    protected override bool TryParseValueFromString(string value, out DayOfWeek result, out string validationErrorMessage)
     {
         result = DayOfWeek.Monday;
         validationErrorMessage = null;
