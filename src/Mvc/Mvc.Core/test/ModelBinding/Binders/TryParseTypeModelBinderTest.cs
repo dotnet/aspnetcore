@@ -10,58 +10,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 
 public class TryParseTypeModelBinderTest
 {
-    //[Theory]
-    //[InlineData(null)]
-    //[InlineData("value")]
-    //[InlineData("intermediate   whitespace")]
-    //[InlineData("\t untrimmed whitespace \t\r\n")]
-    //public async Task BindModelAsync_ReturnsProvidedString(string value)
-    //{
-    //    // Arrange
-    //    var bindingContext = GetBindingContext(typeof(string));
-    //    bindingContext.ValueProvider = new SimpleValueProvider
-    //        {
-    //            { "theModelName", value }
-    //        };
-
-    //    var binder = new SimpleTypeModelBinder(typeof(string), NullLoggerFactory.Instance);
-
-    //    // Act
-    //    await binder.BindModelAsync(bindingContext);
-
-    //    // Assert
-    //    Assert.Same(value, bindingContext.Result.Model);
-    //    Assert.True(bindingContext.ModelState.ContainsKey("theModelName"));
-    //}
-
-    //[Theory]
-    //[InlineData("")]
-    //[InlineData(" \t \r\n ")]
-    //public async Task BindModel_ReturnsProvidedWhitespaceString_WhenNotConvertEmptyStringToNull(string value)
-    //{
-    //    // Arrange
-    //    var bindingContext = GetBindingContext(typeof(string));
-    //    bindingContext.ValueProvider = new SimpleValueProvider
-    //        {
-    //            { "theModelName", value }
-    //        };
-
-    //    var metadataProvider = new TestModelMetadataProvider();
-    //    metadataProvider
-    //        .ForType(typeof(string))
-    //        .DisplayDetails(d => d.ConvertEmptyStringToNull = false);
-    //    bindingContext.ModelMetadata = metadataProvider.GetMetadataForType(typeof(string));
-
-    //    var binder = new SimpleTypeModelBinder(typeof(string), NullLoggerFactory.Instance);
-
-    //    // Act
-    //    await binder.BindModelAsync(bindingContext);
-
-    //    // Assert
-    //    Assert.Same(value, bindingContext.Result.Model);
-    //    Assert.True(bindingContext.ModelState.ContainsKey("theModelName"));
-    //}
-
     public static TheoryData<Type> ConvertibleTypeData
     {
         get
@@ -192,28 +140,6 @@ public class TryParseTypeModelBinderTest
         Assert.Empty(bindingContext.ModelState);
         Assert.Equal(3, sink.Writes.Count());
     }
-
-    //[Theory]
-    //[InlineData("")]
-    //[InlineData(" \t \r\n ")]
-    //public async Task BindModel_ReturnsNull_IfTrimmedValueIsEmptyString(object value)
-    //{
-    //    // Arrange
-    //    var bindingContext = GetBindingContext(typeof(string));
-    //    bindingContext.ValueProvider = new SimpleValueProvider
-    //        {
-    //            { "theModelName", value }
-    //        };
-
-    //    var binder = new SimpleTypeModelBinder(typeof(string), NullLoggerFactory.Instance);
-
-    //    // Act
-    //    await binder.BindModelAsync(bindingContext);
-
-    //    // Assert
-    //    Assert.Null(bindingContext.Result.Model);
-    //    Assert.True(bindingContext.ModelState.ContainsKey("theModelName"));
-    //}
 
     [Fact]
     public async Task BindModel_NullableIntegerValueProviderResult_ReturnsModel()
@@ -573,7 +499,7 @@ public class TryParseTypeModelBinderTest
     {
         public int? Id { get; set; }
 
-        public static bool TryParse(string s, out TestTryParseClass? result)
+        public static bool TryParse(string s, out TestTryParseClass result)
         {
             result = new TestTryParseClass();
 
@@ -583,7 +509,7 @@ public class TryParseTypeModelBinderTest
 
                 if (tokens.Length >= 2)
                 {
-                    result.Id = int.Parse(tokens[1]);
+                    result.Id = int.Parse(tokens[1], CultureInfo.CurrentCulture);
                     return true;
                 }
             }
