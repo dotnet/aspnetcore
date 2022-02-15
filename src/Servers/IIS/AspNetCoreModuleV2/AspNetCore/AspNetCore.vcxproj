@@ -29,57 +29,22 @@
   <PropertyGroup Label="UserMacros" />
   <ItemDefinitionGroup>
     <ClCompile>
-      <WarningLevel>Level4</WarningLevel>
       <PreprocessorDefinitions>_USRDLL;ASPNETCOREMODULE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
       <AdditionalIncludeDirectories>..\IISLib;.\Inc;..\CommonLib;$(LibNetHostPath)</AdditionalIncludeDirectories>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <TreatWarningAsError>true</TreatWarningAsError>
-      <SDLCheck>true</SDLCheck>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <PreprocessKeepComments>false</PreprocessKeepComments>
-      <ExceptionHandling>SyncCThrow</ExceptionHandling>
-      <StructMemberAlignment>8Bytes</StructMemberAlignment>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
-      <OmitDefaultLibName>true</OmitDefaultLibName>
-      <CompileAs>CompileAsCpp</CompileAs>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-      <LanguageStandard>stdcpp17</LanguageStandard>
-      <ForcedIncludeFiles>stdafx.h</ForcedIncludeFiles>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>kernel32.lib;user32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;ahadmin.lib;ws2_32.lib;iphlpapi.lib;version.lib;$(LibNetHostPath)\libnethost.lib</AdditionalDependencies>
-      <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
-      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
-      <AdditionalLibraryDirectories>$(LibNetHostPath)</AdditionalLibraryDirectories>
-      <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>kernel32.lib;user32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;ahadmin.lib;ws2_32.lib;iphlpapi.lib;version.lib;libnethost.lib</AdditionalDependencies>
     </Link>
     <ResourceCompile>
       <AdditionalIncludeDirectories>..\Commonlib</AdditionalIncludeDirectories>
     </ResourceCompile>
   </ItemDefinitionGroup>
 
-  <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
-    <ClCompile>
-      <Optimization>Disabled</Optimization>
-    </ClCompile>
-  </ItemDefinitionGroup>
-
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <Optimization>MaxSpeed</Optimization>
     </ClCompile>
-    <Link>
-      <OptimizeReferences>true</OptimizeReferences>
-    </Link>
-
   </ItemDefinitionGroup>
 
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

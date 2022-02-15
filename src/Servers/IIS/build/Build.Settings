@@ -72,10 +72,14 @@
        <ControlFlowGuard>Guard</ControlFlowGuard>
        <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
        <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+       <PreprocessKeepComments>false</PreprocessKeepComments>
+       <ExceptionHandling>SyncCThrow</ExceptionHandling>
+       <StructMemberAlignment>8Bytes</StructMemberAlignment>
+       <RuntimeTypeInfo>false</RuntimeTypeInfo>
+       <OmitDefaultLibName>true</OmitDefaultLibName>
        <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
        <StringPooling>true</StringPooling>
        <CompileAs>CompileAsCpp</CompileAs>
-       <IntrinsicFunctions>true</IntrinsicFunctions>
        <LanguageStandard>stdcpp17</LanguageStandard>
        <ForcedIncludeFiles>stdafx.h</ForcedIncludeFiles>
        <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -83,9 +87,9 @@
      <Link>
        <SubSystem>Windows</SubSystem>
        <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
+       <AdditionalLibraryDirectories>$(LibNetHostPath)</AdditionalLibraryDirectories>
        <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
        <StripPrivateSymbols>$(OutDir)$(TargetName).pub.pdb</StripPrivateSymbols>
-       <OptimizeReferences>true</OptimizeReferences>
        <EnableCOMDATFolding>true</EnableCOMDATFolding>
        <Profile>true</Profile>
        <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
@@ -111,6 +115,7 @@
      </ClCompile>
      <Link>
        <GenerateDebugInformation>false</GenerateDebugInformation>
+       <OptimizeReferences>true</OptimizeReferences>
      </Link>
    </ItemDefinitionGroup>
 

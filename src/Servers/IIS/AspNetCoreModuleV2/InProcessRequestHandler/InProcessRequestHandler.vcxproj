@@ -94,12 +94,6 @@
       <PreprocessorDefinitions>NDEBUG;REQUESTHANDLER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\IISLib;..\CommonLib;.\Inc;..\RequestHandlerLib;$(LibNetHostPath)</AdditionalIncludeDirectories>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <PreprocessKeepComments>false</PreprocessKeepComments>
-      <ExceptionHandling>SyncCThrow</ExceptionHandling>
-      <StructMemberAlignment>8Bytes</StructMemberAlignment>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
-      <OmitDefaultLibName>true</OmitDefaultLibName>
     </ClCompile>
     <Link>
       <AdditionalOptions>/NODEFAULTLIB:libucrt.lib /DEFAULTLIB:ucrt.lib /ignore:4099 %(AdditionalOptions)</AdditionalOptions>
