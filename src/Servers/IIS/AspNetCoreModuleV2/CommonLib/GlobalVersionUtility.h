@@ -5,6 +5,8 @@
 
 #include "fx_ver.h"
 
+using namespace aspnet;
+
 class GlobalVersionUtility
 {
 public:
@@ -22,7 +24,7 @@ public:
         RemoveFileNameFromFolderPath(std::wstring fileName);
 
     static
-        std::vector<fx_ver_asp_t>
+        std::vector<fx_ver_t>
         GetRequestHandlerVersions(PCWSTR pwzAspNetCoreFolderPath);
 
     static
