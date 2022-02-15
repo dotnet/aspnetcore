@@ -35,108 +35,11 @@
      </ProjectConfiguration>
    </ItemGroup>
 
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-
-   <PropertyGroup Label="Configuration">
-     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">$(MSBuildThisFileDirectory)..\</SolutionDir>
-     <Configuration Condition="'$(Configuration)'==''">Debug</Configuration>
-     <Platform Condition="'$(Platform)' == ''">Win32</Platform>
-     <PlatformToolsetVersion>v142</PlatformToolsetVersion>
-     <PlatformToolset>$(PlatformToolsetVersion)</PlatformToolset>
-     <VCToolsVersion>14.29.30133</VCToolsVersion>
-     <WindowsTargetPlatformVersion Condition=" '$(WindowsTargetPlatformVersion)' == '' ">10.0.18362.0</WindowsTargetPlatformVersion>
-     <VCProjectVersion>15.0</VCProjectVersion>
-     <Keyword>Win32Proj</Keyword>
-     <CharacterSet>Unicode</CharacterSet>
-     <LinkIncremental>false</LinkIncremental>
-   </PropertyGroup>
-
-   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-     <UseDebugLibraries>false</UseDebugLibraries>
-     <WholeProgramOptimization>false</WholeProgramOptimization>
-   </PropertyGroup>
-
-   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-     <UseDebugLibraries>false</UseDebugLibraries>
-     <WholeProgramOptimization Condition="'$(Platform)'=='Win32'">true</WholeProgramOptimization>
-   </PropertyGroup>
-
-   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-
-   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-     <ClCompile>
-       <!-- Without a debug version of libnethost.lib we cannot use _DEBUG -->
-       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-     </ClCompile>
-   </ItemDefinitionGroup>
-
-   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-     <ClCompile>
-       <!-- Without a debug version of libnethost.lib we cannot use _DEBUG -->
-       <PreprocessorDefinitions>_WIN64;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-     </ClCompile>
-   </ItemDefinitionGroup>
-
-   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-     <ClCompile>
-       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-     </ClCompile>
-   </ItemDefinitionGroup>
-
-   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-     <ClCompile>
-       <PreprocessorDefinitions>_WIN64;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-     </ClCompile>
-   </ItemDefinitionGroup>
-
-  <ItemDefinitionGroup>
-    <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <WarningLevel>Level4</WarningLevel>
-      <TreatWarningAsError>true</TreatWarningAsError>
-      <SDLCheck>false</SDLCheck>
-      <PreprocessorDefinitions>_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
-      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
-      <ConformanceMode>true</ConformanceMode>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <ShowIncludes>false</ShowIncludes>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <LanguageStandard>stdcpp17</LanguageStandard>
-      <ForcedIncludeFiles>stdafx.h</ForcedIncludeFiles>
-    </ClCompile>
-    <Link>
-      <SubSystem>Windows</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-    </Link>
-  </ItemDefinitionGroup>
-
-  <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
-    <ClCompile>
-      <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-    </ClCompile>
-  </ItemDefinitionGroup>
-
-  <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
-    <ClCompile>
-      <Optimization>MaxSpeed</Optimization>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
-    <Link>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <AdditionalOptions>/NODEFAULTLIB:libucrt.lib /DEFAULTLIB:ucrt.lib %(AdditionalOptions)</AdditionalOptions>
-      <OptimizeReferences>true</OptimizeReferences>
-    </Link>
-  </ItemDefinitionGroup>
-
    <PropertyGroup>
      <_TwoDigitYear>$([MSBuild]::Subtract($([System.DateTime]::UtcNow.Year), 2000))</_TwoDigitYear>
      <_ThreeDigitDayOfYear>$([System.DateTime]::UtcNow.DayOfYear.ToString().PadLeft(3, '0'))</_ThreeDigitDayOfYear>
      <AssemblyBuild>$(_TwoDigitYear)$(_ThreeDigitDayOfYear)</AssemblyBuild>
    </PropertyGroup>
 
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
  </Project>
