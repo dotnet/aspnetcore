@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
  <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+  </PropertyGroup>
+
   <Import Project="Build.Common.Settings" />
 
-  <PropertyGroup Label="Configuration">
-    <VCToolsVersion>14.29.30133</VCToolsVersion>
-    <ConfigurationType>StaticLibrary</ConfigurationType>
-    <PlatformToolset>$(PlatformToolsetVersion)</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
     <UseDebugLibraries>true</UseDebugLibraries>
   </PropertyGroup>

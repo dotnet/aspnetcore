@@ -2,16 +2,8 @@
  <Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
    <Import Project="Build.Common.Settings" />
    <PropertyGroup Label="Configuration">
-     <SolutionDir Condition="'$(SolutionDir)' == '' Or '$(SolutionDir)' == '*Undefined*'">$(MSBuildThisFileDirectory)..\</SolutionDir>
-     <Configuration Condition="'$(Configuration)'==''">Debug</Configuration>
-     <Platform Condition="'$(Platform)' == ''">Win32</Platform>
-     <PlatformToolsetVersion>v142</PlatformToolsetVersion>
-     <PlatformToolset>$(PlatformToolsetVersion)</PlatformToolset>
-     <VCToolsVersion>14.29.30133</VCToolsVersion>
-     <WindowsTargetPlatformVersion Condition=" '$(WindowsTargetPlatformVersion)' == '' ">10.0.18362.0</WindowsTargetPlatformVersion>
-     <VCProjectVersion>15.0</VCProjectVersion>
+     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">$(MSBuildThisFileDirectory)..\</SolutionDir>
      <Keyword>Win32Proj</Keyword>
-     <CharacterSet>Unicode</CharacterSet>
      <AspNetCoreModuleTargetName>aspnetcore</AspNetCoreModuleTargetName>
    </PropertyGroup>
 
