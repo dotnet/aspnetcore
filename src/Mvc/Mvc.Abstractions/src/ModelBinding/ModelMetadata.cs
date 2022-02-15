@@ -529,6 +529,7 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
             throw _recordTypeValidatorsOnPropertiesError;
         }
     }
+
     internal static Func<ParameterExpression, Expression, Expression>? FindTryParseMethod(Type modelType)
         => ParameterBindingMethodCache.FindTryParseMethod(Nullable.GetUnderlyingType(modelType) ?? modelType);
 
