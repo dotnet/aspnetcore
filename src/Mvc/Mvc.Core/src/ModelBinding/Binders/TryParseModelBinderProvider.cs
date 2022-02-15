@@ -24,7 +24,9 @@ public sealed class TryParseModelBinderProvider : IModelBinderProvider
         if (context.Metadata.HasTryParse)
         {
             var loggerFactory = context.Services.GetRequiredService<ILoggerFactory>();
-            return new TryParseModelBinder(context.Metadata.ModelType, loggerFactory);
+
+            var binderType = typeof(TryParseModelBinder<>).MakeGenericType(context.Metadata.ModelType);
+            return (IModelBinder)Activator.CreateInstance(binderType, loggerFactory)!;
         }
 
         return null;

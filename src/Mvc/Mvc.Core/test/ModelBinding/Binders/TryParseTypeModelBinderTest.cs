@@ -3,6 +3,7 @@
 
 using System.Globalization;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
 
@@ -46,7 +47,7 @@ public class TryParseTypeModelBinderTest
                 { "theModelName", "some-value" }
             };
 
-        var binder = new TryParseModelBinder(destinationType, NullLoggerFactory.Instance);
+        var binder = CreateBinder(destinationType);
 
         // Act
         await binder.BindModelAsync(bindingContext);
@@ -65,7 +66,7 @@ public class TryParseTypeModelBinderTest
             {
                 { "theModelName", string.Empty }
             };
-        var binder = new TryParseModelBinder(destinationType, NullLoggerFactory.Instance);
+        var binder = CreateBinder(destinationType);
 
         // Act
         await binder.BindModelAsync(bindingContext);
@@ -90,7 +91,7 @@ public class TryParseTypeModelBinderTest
                 { "theModelName", "not an integer" }
             };
 
-        var binder = new TryParseModelBinder(typeof(int), NullLoggerFactory.Instance);
+        var binder = CreateBinder(typeof(int));
 
         // Act
         await binder.BindModelAsync(bindingContext);
@@ -130,7 +131,7 @@ public class TryParseTypeModelBinderTest
 
         var sink = new TestSink();
         var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-        var binder = new TryParseModelBinder(typeof(int), loggerFactory);
+        var binder = CreateBinder(typeof(int), loggerFactory);
 
         // Act
         await binder.BindModelAsync(bindingContext);
@@ -151,7 +152,7 @@ public class TryParseTypeModelBinderTest
                 { "theModelName", "12" }
             };
 
-        var binder = new TryParseModelBinder(typeof(int?), NullLoggerFactory.Instance);
+        var binder = CreateBinder(typeof(int?));
 
         // Act
         await binder.BindModelAsync(bindingContext);
@@ -172,7 +173,7 @@ public class TryParseTypeModelBinderTest
                 { "theModelName", "12.5" }
             };
 
-        var binder = new TryParseModelBinder(typeof(double?), NullLoggerFactory.Instance);
+        var binder = CreateBinder(typeof(double?));
 
         // Act
         await binder.BindModelAsync(bindingContext);
@@ -197,7 +198,7 @@ public class TryParseTypeModelBinderTest
 
         var sink = new TestSink();
         var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-        var binder = new TryParseModelBinder(typeof(int), loggerFactory);
+        var binder = CreateBinder(typeof(int), loggerFactory);
 
         // Act
         await binder.BindModelAsync(bindingContext);
@@ -239,7 +240,7 @@ public class TryParseTypeModelBinderTest
                 { "theModelName", "32,000" }
             };
 
-        var binder = new TryParseModelBinder(type, NullLoggerFactory.Instance);
+        var binder = CreateBinder(type);
 
         // Act
         await binder.BindModelAsync(bindingContext);
@@ -267,7 +268,7 @@ public class TryParseTypeModelBinderTest
                 { "theModelName", "12,5" }
             };
 
-        var binder = new TryParseModelBinder(typeof(decimal), NullLoggerFactory.Instance);
+        var binder = CreateBinder(typeof(decimal));
 
         // Act
         await binder.BindModelAsync(bindingContext);
@@ -288,7 +289,7 @@ public class TryParseTypeModelBinderTest
                 { "theModelName", "12-5" }
             };
 
-        var binder = new TryParseModelBinder(typeof(decimal), NullLoggerFactory.Instance);
+        var binder = CreateBinder(typeof(decimal));
 
         // Act
         await binder.BindModelAsync(bindingContext);
@@ -312,7 +313,7 @@ public class TryParseTypeModelBinderTest
                 { "theModelName", new object[] { "Value1" } }
             };
 
-        var binder = new TryParseModelBinder(typeof(IntEnum), NullLoggerFactory.Instance);
+        var binder = CreateBinder(typeof(IntEnum));
 
         // Act
         await binder.BindModelAsync(bindingContext);
@@ -333,7 +334,7 @@ public class TryParseTypeModelBinderTest
                 { "theModelName", new object[] { "1" } }
             };
 
-        var binder = new TryParseModelBinder(typeof(IntEnum), NullLoggerFactory.Instance);
+        var binder = CreateBinder(typeof(IntEnum));
 
         // Act
         await binder.BindModelAsync(bindingContext);
@@ -370,7 +371,7 @@ public class TryParseTypeModelBinderTest
                 { "theModelName", flagsEnumValue }
             };
 
-        var binder = new TryParseModelBinder(typeof(IntEnum), NullLoggerFactory.Instance);
+        var binder = CreateBinder(typeof(IntEnum));
 
         // Act
         await binder.BindModelAsync(bindingContext);
@@ -393,7 +394,7 @@ public class TryParseTypeModelBinderTest
                 { "theModelName", flagsEnumValue }
             };
 
-        var binder = new TryParseModelBinder(typeof(FlagsEnum), NullLoggerFactory.Instance);
+        var binder = CreateBinder(typeof(FlagsEnum));
 
         // Act
         await binder.BindModelAsync(bindingContext);
@@ -420,7 +421,7 @@ public class TryParseTypeModelBinderTest
                 { "theModelName", value }
             };
 
-        var binder = new TryParseModelBinder(typeof(TestTryParseClass), NullLoggerFactory.Instance);
+        var binder = CreateBinder(typeof(TestTryParseClass));
 
         // Act
         await binder.BindModelAsync(bindingContext);
@@ -443,7 +444,7 @@ public class TryParseTypeModelBinderTest
                 { "theModelName", value }
             };
 
-        var binder = new TryParseModelBinder(typeof(TestTryParseClass), NullLoggerFactory.Instance);
+        var binder = CreateBinder(typeof(TestTryParseClass));
 
         // Act
         await binder.BindModelAsync(bindingContext);
@@ -469,7 +470,7 @@ public class TryParseTypeModelBinderTest
                 { "theModelName", flagsEnumValue }
             };
 
-        var binder = new TryParseModelBinder(typeof(FlagsEnum), NullLoggerFactory.Instance);
+        var binder = CreateBinder(typeof(FlagsEnum));
 
         // Act
         await binder.BindModelAsync(bindingContext);
@@ -478,6 +479,20 @@ public class TryParseTypeModelBinderTest
         Assert.True(bindingContext.Result.IsModelSet);
         var boundModel = Assert.IsType<FlagsEnum>(bindingContext.Result.Model);
         Assert.Equal((FlagsEnum)expected, boundModel);
+    }
+
+    [Fact]
+    public void BindModel_ThrowsInvalidOperationException_WhenTryParseNotFound()
+    {
+        // Arrange
+        var bindingContext = GetBindingContext(typeof(TestClass));
+        bindingContext.ValueProvider = new SimpleValueProvider
+            {
+                { "theModelName", string.Empty }
+            };
+
+        // Act & assert
+        Assert.Throws<InvalidOperationException>(() => new TryParseModelBinder<TestClass>(NullLoggerFactory.Instance));
     }
 
     private static DefaultModelBindingContext GetBindingContext(Type modelType)
@@ -490,6 +505,11 @@ public class TryParseTypeModelBinderTest
             ValueProvider = new SimpleValueProvider() // empty
         };
     }
+
+    private static IModelBinder CreateBinder(Type modelType, ILoggerFactory loggerFactory = null) =>
+        (IModelBinder)Activator.CreateInstance(
+            typeof(TryParseModelBinder<>).MakeGenericType(modelType),
+            loggerFactory ?? NullLoggerFactory.Instance)!;
 
     private sealed class TestClass
     {

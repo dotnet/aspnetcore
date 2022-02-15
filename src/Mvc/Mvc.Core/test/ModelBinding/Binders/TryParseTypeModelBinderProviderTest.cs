@@ -43,7 +43,8 @@ public class TryParseModelBinderProviderTest
         var result = provider.GetBinder(context);
 
         // Assert
-        Assert.IsType<TryParseModelBinder>(result);
+        var binderType = typeof(TryParseModelBinder<>).MakeGenericType(modelType);
+        Assert.IsType(binderType, result);
     }
 
     private class TestClass
