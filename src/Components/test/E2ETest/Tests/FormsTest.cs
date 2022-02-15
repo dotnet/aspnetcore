@@ -845,6 +845,25 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     }
 
     [Fact]
+    public void InputRadioUpdatesDotNetModelWhenDomValueChanges()
+    {
+        // Repro for https://github.com/dotnet/aspnetcore/issues/40097
+        // DerivedInputRadioGroupComponent changes its value to DayOfWeek.Monday on any input
+
+        var appElement = Browser.MountTestComponent<InputsTwoWayBindingComponent>();
+        var input = appElement.FindElement(By.Id("input-radio-sunday"));
+        var button = appElement.FindElement(By.Id("move-focus-button"));
+
+        // fails if component's .NET model does not update input's element checked attribude value from DOM (diff does not recognize any change)
+        input.Click();
+        Browser.Equal("False", () => input.GetDomProperty("checked"));
+
+        // any click should be reverted to unchecked state
+        input.Click();
+        Browser.Equal("False", () => input.GetDomProperty("checked"));
+    }
+
+    [Fact]
     public void InputSelectWorksWithoutEditContext()
     {
         var appElement = Browser.MountTestComponent<InputsWithoutEditForm>();

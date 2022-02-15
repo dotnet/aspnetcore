@@ -60,6 +60,7 @@ public class InputRadio<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTyp
         builder.AddAttribute(5, "value", BindConverter.FormatValue(Value?.ToString()));
         builder.AddAttribute(6, "checked", Context.CurrentValue?.Equals(Value));
         builder.AddAttribute(7, "onchange", Context.ChangeEventCallback);
+        builder.SetUpdatesAttributeName("checked");
         builder.CloseElement();
     }
 }

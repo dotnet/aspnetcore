@@ -6,6 +6,9 @@
     <DerivedInputDateComponent @bind-Value="@model.DateValue" id="derived-input-date" />
     <DerivedInputNumberComponent @bind-Value="@model.IntValue" id="derived-input-number" />
     <DerivedInputCheckboxComponent @bind-Value="@model.BoolValue" id="derived-input-checkbox" />
+    <DerivedInputRadioGroupComponent @bind-Value="@model.RadioValue">
+        <InputRadio Value="@DayOfWeek.Saturday" id="input-radio-sunday" />
+    </DerivedInputRadioGroupComponent>
 </EditForm>
 
 <button id="move-focus-button">Move focus</button>
@@ -21,5 +24,6 @@
         public DateTime? DateValue { get; set; }
         public int? IntValue { get; set; }
         public bool BoolValue { get; set; }
+        public DayOfWeek RadioValue { get; set; } = DayOfWeek.Monday;
     }
 }
