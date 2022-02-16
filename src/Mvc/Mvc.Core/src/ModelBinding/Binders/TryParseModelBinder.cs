@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable enable
-
 using System.Linq.Expressions;
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
@@ -38,7 +36,7 @@ internal sealed class TryParseModelBinder<T> : IModelBinder
         }
 
         _tryParseOperation = CreateTryParseOperation(typeof(T));
-        _logger = loggerFactory.CreateLogger<SimpleTypeModelBinder>();
+        _logger = loggerFactory.CreateLogger<TryParseModelBinder<T>>();
     }
 
     /// <inheritdoc />
@@ -127,7 +125,7 @@ internal sealed class TryParseModelBinder<T> : IModelBinder
         //     AddModelError(bindingContext, new FormatException());
         // }
         // return model;
-
+            
         var parsedValue = Expression.Variable(modelType, "parsedValue");
         var modelValue = Expression.Variable(typeof(object), "model");
 
