@@ -165,7 +165,6 @@ public class RemoteAuthenticationService<
     }
 
     /// <inheritdoc />
-    [DynamicDependency(JsonSerialized, typeof(AccessToken))]
     [DynamicDependency(JsonSerialized, typeof(AccessTokenRequestOptions))]
     public virtual async ValueTask<AccessTokenResult> RequestAccessToken(AccessTokenRequestOptions options)
     {
@@ -244,6 +243,7 @@ public class RemoteAuthenticationService<
 }
 
 // Internal for testing purposes
+[DynamicDependency(JsonSerialized, typeof(AccessToken))]
 internal struct InternalAccessTokenResult
 {
     public string Status { get; set; }
