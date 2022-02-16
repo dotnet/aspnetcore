@@ -26,7 +26,6 @@ internal class IdentityDefaultUIConfigureOptions<TUser> :
 
     public void PostConfigure(string? name, RazorPagesOptions options)
     {
-        name = name ?? throw new ArgumentNullException(nameof(name));
         options = options ?? throw new ArgumentNullException(nameof(options));
 
         options.Conventions.AuthorizeAreaFolder(IdentityUIDefaultAreaName, "/Account/Manage");
@@ -49,7 +48,6 @@ internal class IdentityDefaultUIConfigureOptions<TUser> :
 
     public void Configure(string? name, CookieAuthenticationOptions options)
     {
-        name = name ?? throw new ArgumentNullException(nameof(name));
         options = options ?? throw new ArgumentNullException(nameof(options));
 
         if (string.Equals(IdentityConstants.ApplicationScheme, name, StringComparison.Ordinal))
