@@ -316,6 +316,35 @@ public class RenderTreeDiffBuilderTest : IDisposable
     }
 
     [Fact]
+    public void RecognizesKeyedComponentInsertionsBeforeUnchangedNonKeyedComponent()
+    {
+        // Arrange
+        oldTree.OpenComponent<FakeComponent>(1);
+        oldTree.CloseComponent();
+
+        // Instantiate initial components
+        using var initial = new RenderTreeBuilder();
+        GetRenderedBatch(initial, oldTree, false);
+        var oldComponents = GetComponents(oldTree);
+
+        newTree.OpenComponent<FakeComponent>(0);
+        newTree.SetKey("will insert");
+        newTree.CloseComponent();
+
+        newTree.OpenComponent<FakeComponent>(1);
+        newTree.CloseComponent();
+
+        // Act
+        var (result, referenceFrames) = GetSingleUpdatedComponent();
+        var newComponents = GetComponents(newTree);
+
+        // Assert
+        Assert.Same(oldComponents[0], newComponents[1]);
+        Assert.Collection(result.Edits,
+            entry => AssertEdit(entry, RenderTreeEditType.PrependFrame, 0));
+    }
+
+    [Fact]
     public void RecognizesSimultaneousKeyedComponentInsertionsAndDeletions()
     {
         // Arrange
