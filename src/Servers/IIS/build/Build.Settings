@@ -8,28 +8,16 @@
 
    <ItemDefinitionGroup>
      <ClCompile>
-       <PrecompiledHeader>Use</PrecompiledHeader>
-       <WarningLevel>Level4</WarningLevel>
-       <TreatWarningAsError Condition="'$(TreatWarningsAsErrors)' != ''">true</TreatWarningAsError>
        <SDLCheck>true</SDLCheck>
-       <ControlFlowGuard>Guard</ControlFlowGuard>
-       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
-       <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
        <PreprocessKeepComments>false</PreprocessKeepComments>
+       <ControlFlowGuard>Guard</ControlFlowGuard>
        <ExceptionHandling>SyncCThrow</ExceptionHandling>
        <StructMemberAlignment>8Bytes</StructMemberAlignment>
        <RuntimeTypeInfo>false</RuntimeTypeInfo>
        <OmitDefaultLibName>true</OmitDefaultLibName>
-       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
        <StringPooling>true</StringPooling>
-       <CompileAs>CompileAsCpp</CompileAs>
-       <LanguageStandard>stdcpp17</LanguageStandard>
-       <ForcedIncludeFiles>stdafx.h</ForcedIncludeFiles>
-       <MultiProcessorCompilation>true</MultiProcessorCompilation>
      </ClCompile>
      <Link>
-       <SubSystem>Windows</SubSystem>
-       <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
        <AdditionalLibraryDirectories>$(LibNetHostPath)</AdditionalLibraryDirectories>
        <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
        <StripPrivateSymbols>$(OutDir)$(TargetName).pub.pdb</StripPrivateSymbols>
@@ -37,28 +25,6 @@
        <Profile>true</Profile>
        <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
        <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
-     </Link>
-   </ItemDefinitionGroup>
-
-   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
-     <ClCompile>
-       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-       <Optimization>Disabled</Optimization>
-     </ClCompile>
-     <Link>
-       <GenerateDebugInformation>true</GenerateDebugInformation>
-     </Link>
-   </ItemDefinitionGroup>
-
-   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
-     <ClCompile>
-       <Optimization>MaxSpeed</Optimization>
-       <FunctionLevelLinking>true</FunctionLevelLinking>
-       <IntrinsicFunctions>true</IntrinsicFunctions>
-     </ClCompile>
-     <Link>
-       <GenerateDebugInformation>false</GenerateDebugInformation>
-       <OptimizeReferences>true</OptimizeReferences>
      </Link>
    </ItemDefinitionGroup>
 
