@@ -482,7 +482,7 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
     /// <summary>
     /// 
     /// </summary>
-    internal bool HasTryParse { get; private set; } = default!;
+    internal bool IsParseableType { get; private set; } = default!;
 
     /// <summary>
     /// Gets a value indicating the NullabilityState of the value or reference type.
@@ -628,8 +628,8 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
     {
         Debug.Assert(ModelType != null);
 
-        HasTryParse = ParameterBindingMethodCache.HasTryParseMethod(ModelType);
-        IsComplexType = !HasTryParse && !TypeDescriptor.GetConverter(ModelType).CanConvertFrom(typeof(string));
+        IsParseableType = ParameterBindingMethodCache.HasTryParseMethod(ModelType);
+        IsComplexType = !IsParseableType && !TypeDescriptor.GetConverter(ModelType).CanConvertFrom(typeof(string));
         IsNullableValueType = Nullable.GetUnderlyingType(ModelType) != null;
         IsReferenceOrNullableType = !ModelType.IsValueType || IsNullableValueType;
         UnderlyingOrModelType = Nullable.GetUnderlyingType(ModelType) ?? ModelType;

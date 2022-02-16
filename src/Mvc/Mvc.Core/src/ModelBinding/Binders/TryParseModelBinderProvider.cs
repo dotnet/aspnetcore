@@ -21,7 +21,7 @@ public sealed class TryParseModelBinderProvider : IModelBinderProvider
             throw new ArgumentNullException(nameof(context));
         }
 
-        if (context.Metadata.HasTryParse)
+        if (context.Metadata.IsParseableType)
         {
             var loggerFactory = context.Services.GetRequiredService<ILoggerFactory>();
 
