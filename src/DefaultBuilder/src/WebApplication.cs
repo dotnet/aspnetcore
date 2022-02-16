@@ -27,7 +27,7 @@ public sealed class WebApplication : IHost, IApplicationBuilder, IEndpointRouteB
     internal WebApplication(IHost host)
     {
         _host = host;
-        ApplicationBuilder = new ApplicationBuilder(host.Services, this.ServerFeatures);
+        ApplicationBuilder = new ApplicationBuilder(host.Services, ServerFeatures);
         Logger = host.Services.GetRequiredService<ILoggerFactory>().CreateLogger(Environment.ApplicationName);
 
         Properties[GlobalEndpointRouteBuilderKey] = this;
