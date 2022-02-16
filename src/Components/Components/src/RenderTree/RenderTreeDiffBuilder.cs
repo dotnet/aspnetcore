@@ -3,6 +3,7 @@
 
 #nullable disable warnings
 
+using System.Diagnostics;
 using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Rendering;
 
@@ -138,23 +139,43 @@ internal static class RenderTreeDiffBuilder
                             keyedItemInfos[oldKey] = oldKeyItemInfo.WithOldSiblingIndex(diffContext.SiblingIndex);
                             keyedItemInfos[newKey] = newKeyItemInfo.WithNewSiblingIndex(diffContext.SiblingIndex);
                         }
-                        else if (!hasMoreNew)
+                        else if (newKey == null)
                         {
-                            // If we've run out of new items, we must be looking at just an old item, so delete it
-                            action = DiffAction.Delete;
-                        }
-                        else if (!oldKeyIsInNewTree && (newKey == null))
-                        {
-                            // If the old key not in the tree anymore we prefer deletion of the old element (the following elements will not be recreated and won't lost their state).
-                            action = DiffAction.Delete;
+                            // Only the old side is keyed.
+                            // - If it was retained, we're inserting the new (unkeyed) side.
+                            // - If it wasn't retained, we're deleting the old (keyed) side.
+                            action = oldKeyIsInNewTree ? DiffAction.Insert : DiffAction.Delete;
                         }
                         else
                         {
-                            // It's an insertion or a deletion, or both
-                            // If the new key is in both trees, but the old key isn't, then the old item was deleted
-                            // Otherwise, it's either an insertion or *both* insertion+deletion, so pick insertion and get the deletion on the next iteration if needed
+                            // The rationale is complex here because there are a lot of different cases that
+                            // merge together into the same rule.
+                            // | old is keyed | newKeyIsInOldTree | oldKeyIsInNewTree  | Outcome   |
+                            // | ------------ | ----------------- | ------------------ | --------- |
+                            // | false        | true              | n/a - it's unkeyed | Delete    |
+                            // | false        | false             | n/a - it's unkeyed | Insert    |
+                            // | true         | true              | must be false[1]   | Delete    |
+                            // | true         | false             | true               | Insert    |
+                            // | true         | false             | false              | Insert[2] |
+                            // [1] because we already know they were not both retained (checked above)
+                            // [2] because neither was retained, so it's both an insert and a delete, and thus
+                            //     we can pick either one to handle on this iteration, and the other will be
+                            //     found and handled on the next iteration
+                            // So all cases can be handled by the following simple criterion, which is pleasingly
+                            // symetrically opposite the case for newKey==null.
                             action = newKeyIsInOldTree ? DiffAction.Delete : DiffAction.Insert;
                         }
+
+                        // The above logic doesn't explicitly talk about whether or not we've run out of items on either
+                        // side of the comparison. If we do run out of items on either side, the logic should result in
+                        // us picking the remaining items from the other side to insert/delete. The following assertion is
+                        // just to simplify debugging if future logic changes violate this.
+                        Debug.Assert(action switch
+                        {
+                            DiffAction.Insert => hasMoreNew,
+                            DiffAction.Delete => hasMoreOld,
+                            _ => true,
+                        }, "The chosen diff action is illegal because we've run out of items on the side being inserted/deleted");
                     }
                     #endregion
                 }
