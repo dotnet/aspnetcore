@@ -49,7 +49,7 @@
      <VCProjectVersion>15.0</VCProjectVersion>
      <VCToolsVersion>14.29.30133</VCToolsVersion>
      <Keyword>Win32Proj</Keyword>
-     <Platform Condition="'$(Platform)' == ''">Win32</Platform>
+     <Platform Condition="'$(Platform)' == ''">x64</Platform>
      <PlatformToolsetVersion>v142</PlatformToolsetVersion>
      <PlatformToolset>$(PlatformToolsetVersion)</PlatformToolset>
      <WindowsTargetPlatformVersion Condition=" '$(WindowsTargetPlatformVersion)' == '' ">10.0.18362.0</WindowsTargetPlatformVersion>

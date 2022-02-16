@@ -73,7 +73,8 @@ HostFxrResolver::GetHostFxrParameters(
                 LOG_INFOF(L"get_hostfxr_path skipped due to expandedProcessPath being dotnet.exe");
             }
 
-            if (gotHostFxrPath) {
+            if (gotHostFxrPath)
+            {
                 dotnetExePath = GetAbsolutePathToDotnetFromHostfxr(hostFxrDllPath);
             }
             else
@@ -89,7 +90,8 @@ HostFxrResolver::GetHostFxrParameters(
             LOG_INFOF(L"Trying get_hostfxr_path with dotnet path as dotnet root");
             fs::path dotnetExePathParent = dotnetExePath.parent_path();
             gotHostFxrPath = TryGetHostFxrPath(hostFxrDllPath, dotnetExePathParent, applicationPhysicalPath);
-            if (!gotHostFxrPath) {
+            if (!gotHostFxrPath)
+            {
                 throw InvalidOperationException(format(L"get_hostfxr_path failed"));
             }
         }
