@@ -482,7 +482,7 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
     /// <summary>
     /// 
     /// </summary>
-    internal bool IsParseableType { get; private set; };
+    internal bool IsParseableType { get; private set; }
 
     /// <summary>
     /// Gets a value indicating the NullabilityState of the value or reference type.
