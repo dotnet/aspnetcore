@@ -375,10 +375,10 @@ tweetnacl@^0.14.3, tweetnacl@~0.14.0:
   resolved "https://registry.yarnpkg.com/tweetnacl/-/tweetnacl-0.14.5.tgz#5ae68177f192d4456269d108afa93ff8743f4f64"
   integrity sha1-WuaBd/GS1EViadEIr6k/+HQ/T2Q=
 
-url-parse@>=1.5.0, url-parse@^1.4.3:
-  version "1.5.6"
-  resolved "https://registry.yarnpkg.com/url-parse/-/url-parse-1.5.6.tgz#b2a41d5a233645f3c31204cc8be60e76a15230a2"
-  integrity sha512-xj3QdUJ1DttD1LeSfvJlU1eiF1RvBSBfUu8GplFGdUzSO28y5yUtEl7wb//PI4Af6qh0o/K8545vUmucRrfWsw==
+url-parse@>=1.5.6, url-parse@^1.4.3:
+  version "1.5.7"
+  resolved "https://registry.yarnpkg.com/url-parse/-/url-parse-1.5.7.tgz#00780f60dbdae90181f51ed85fb24109422c932a"
+  integrity sha512-HxWkieX+STA38EDk7CE9MEryFeHCKzgagxlGvsdS7WBImq9Mk+PGwiT56w82WI3aicwJA8REp42Cxo98c8FZMA==
   dependencies:
     querystringify "^2.1.1"
     requires-port "^1.0.0"
