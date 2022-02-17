@@ -30,7 +30,7 @@ public class ParameterBindingMethodCacheTests
 
         Assert.NotNull(methodFound);
 
-        var call = methodFound!(Expression.Variable(type, "parsedValue")) as MethodCallExpression;
+        var call = methodFound!(Expression.Variable(type, "parsedValue"), Expression.Constant(CultureInfo.InvariantCulture)) as MethodCallExpression;
         Assert.NotNull(call);
         var parameters = call!.Method.GetParameters();
 
@@ -53,7 +53,7 @@ public class ParameterBindingMethodCacheTests
 
         Assert.NotNull(methodFound);
 
-        var call = methodFound!(Expression.Variable(type, "parsedValue")) as MethodCallExpression;
+        var call = methodFound!(Expression.Variable(type, "parsedValue"), Expression.Constant(CultureInfo.InvariantCulture)) as MethodCallExpression;
         Assert.NotNull(call);
         var parameters = call!.Method.GetParameters();
 
@@ -85,7 +85,7 @@ public class ParameterBindingMethodCacheTests
 
         Assert.NotNull(methodFound);
 
-        var call = methodFound!(Expression.Variable(type, "parsedValue")) as MethodCallExpression;
+        var call = methodFound!(Expression.Variable(type, "parsedValue"), Expression.Constant(CultureInfo.InvariantCulture)) as MethodCallExpression;
         Assert.NotNull(call);
         var parameters = call!.Method.GetParameters();
 
@@ -109,7 +109,7 @@ public class ParameterBindingMethodCacheTests
         var methodFound = new ParameterBindingMethodCache().FindTryParseMethod(@type);
         Assert.NotNull(methodFound);
 
-        var call = methodFound!(Expression.Variable(type, "parsedValue")) as MethodCallExpression;
+        var call = methodFound!(Expression.Variable(type, "parsedValue"), Expression.Constant(CultureInfo.InvariantCulture)) as MethodCallExpression;
         Assert.NotNull(call);
         var parameters = call!.Method.GetParameters();
 
@@ -155,7 +155,7 @@ public class ParameterBindingMethodCacheTests
 
         Assert.NotNull(methodFound);
 
-        var call = methodFound!(Expression.Variable(type, "parsedValue")) as MethodCallExpression;
+        var call = methodFound!(Expression.Variable(type, "parsedValue"), Expression.Constant(CultureInfo.InvariantCulture)) as MethodCallExpression;
         Assert.NotNull(call);
         var method = call!.Method;
         var parameters = method.GetParameters();
@@ -177,7 +177,7 @@ public class ParameterBindingMethodCacheTests
         Assert.NotNull(methodFound);
 
         var parsedValue = Expression.Variable(type, "parsedValue");
-        var block = methodFound!(parsedValue) as BlockExpression;
+        var block = methodFound!(parsedValue, Expression.Constant(CultureInfo.InvariantCulture)) as BlockExpression;
         Assert.NotNull(block);
         Assert.Equal(typeof(bool), block!.Type);
 
