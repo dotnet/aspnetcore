@@ -11,9 +11,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 /// <summary>
 /// An <see cref="IModelBinder"/> for simple types.
 /// </summary>
-internal sealed class TryParseModelBinder<T> : IModelBinder
+internal sealed class TryParseModelBinder : IModelBinder
 {
-    private static readonly MethodInfo AddModelErrorMethod = typeof(TryParseModelBinder<T>).GetMethod(nameof(AddModelError), BindingFlags.NonPublic | BindingFlags.Static)!;
+    private static readonly MethodInfo AddModelErrorMethod = typeof(TryParseModelBinder).GetMethod(nameof(AddModelError), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo SuccessBindingResultMethod = typeof(ModelBindingResult).GetMethod(nameof(ModelBindingResult.Success), BindingFlags.Public | BindingFlags.Static)!;
     private static readonly ParameterExpression BindingContextExpression = Expression.Parameter(typeof(ModelBindingContext), "bindingContext");
     private static readonly ParameterExpression ValueProviderResultExpression = Expression.Parameter(typeof(ValueProviderResult), "valueProviderResult");
@@ -27,16 +27,22 @@ internal sealed class TryParseModelBinder<T> : IModelBinder
     /// <summary>
     /// Initializes a new instance of <see cref="SimpleTypeModelBinder"/>.
     /// </summary>
+    /// <param name="modelType">The model type.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
-    public TryParseModelBinder(ILoggerFactory loggerFactory)
+    public TryParseModelBinder(Type modelType, ILoggerFactory loggerFactory)
     {
+        if (modelType == null)
+        {
+            throw new ArgumentNullException(nameof(modelType));
+        }
+
         if (loggerFactory == null)
         {
             throw new ArgumentNullException(nameof(loggerFactory));
         }
 
-        _tryParseOperation = CreateTryParseOperation(typeof(T));
-        _logger = loggerFactory.CreateLogger<TryParseModelBinder<T>>();
+        _tryParseOperation = CreateTryParseOperation(modelType);
+        _logger = loggerFactory.CreateLogger<TryParseModelBinder>();
     }
 
     /// <inheritdoc />
@@ -111,7 +117,7 @@ internal sealed class TryParseModelBinder<T> : IModelBinder
     {
         modelType = Nullable.GetUnderlyingType(modelType) ?? modelType;
         var tryParseMethodExpession = ModelMetadata.FindTryParseMethod(modelType)
-            ?? throw new InvalidOperationException($"The type '{ modelType }' does not contains a TryParse method and the binder '{ nameof(TryParseModelBinder<T>) }' cannot be used.");
+            ?? throw new InvalidOperationException($"The type '{ modelType }' does not contains a TryParse method and the binder '{ nameof(TryParseModelBinder) }' cannot be used.");
 
         // var tempSourceString = valueProviderResult.FirstValue;
         // object model = null;

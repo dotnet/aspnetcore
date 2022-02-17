@@ -22,9 +22,7 @@ public sealed class TryParseModelBinderProvider : IModelBinderProvider
         if (context.Metadata.IsParseableType)
         {
             var loggerFactory = context.Services.GetRequiredService<ILoggerFactory>();
-
-            var binderType = typeof(TryParseModelBinder<>).MakeGenericType(context.Metadata.ModelType);
-            return (IModelBinder)Activator.CreateInstance(binderType, loggerFactory)!;
+            return new TryParseModelBinder(context.Metadata.ModelType, loggerFactory);
         }
 
         return null;
