@@ -596,14 +596,12 @@ public class BodyValidationIntegrationTests
     }
 
     [Theory]
-    [InlineData(typeof(Person5), false, false)]
-    [InlineData(typeof(Person5), true, true)]
-    [InlineData(typeof(Person5WithNullableContext), true, false)]
-    [InlineData(typeof(Person5WithNullableContext), false, false)]
-    public async Task FromBodyWithEmptyBody_AddsModelErrorWhenExpected(
+    [InlineData(typeof(Person5), false)]
+    [InlineData(typeof(Person5WithNullableContext), true)]
+    [InlineData(typeof(Person5WithNullableContext), false)]
+    public async Task FromBodyWithEmptyBody_ModelStateIsInvalid_HasModelErrors(
         Type modelType,
-        bool allowEmptyInputInBodyModelBindingSetting,
-        bool expectedModelStateIsValid)
+        bool allowEmptyInputInBodyModelBindingSetting)
     {
         // Arrange
         var parameter = new ParameterDescriptor
@@ -635,23 +633,51 @@ public class BodyValidationIntegrationTests
         Assert.True(modelBindingResult.IsModelSet);
         Assert.IsType(modelType, modelBindingResult.Model);
 
-        if (expectedModelStateIsValid)
-        {
-            Assert.True(modelState.IsValid);
-        }
-        else
-        {
-            Assert.False(modelState.IsValid);
-            var entry = Assert.Single(modelState);
-            Assert.Equal("CustomParameter.Address", entry.Key);
-            var street = entry.Value;
-            Assert.Equal(ModelValidationState.Invalid, street.ValidationState);
-            var error = Assert.Single(street.Errors);
+        Assert.False(modelState.IsValid);
+        var entry = Assert.Single(modelState);
+        Assert.Equal("CustomParameter.Address", entry.Key);
+        var street = entry.Value;
+        Assert.Equal(ModelValidationState.Invalid, street.ValidationState);
+        var error = Assert.Single(street.Errors);
 
-            // Since the message doesn't come from DataAnnotations, we don't have a way to get the
-            // exact string, so just check it's nonempty.
-            Assert.NotEmpty(error.ErrorMessage);
-        }
+        // Since the message doesn't come from DataAnnotations, we don't have a way to get the
+        // exact string, so just check it's nonempty.
+        Assert.NotEmpty(error.ErrorMessage);
+    }
+
+    [Fact]
+    public async Task FromBodyWithEmptyBody_ModelStateIsValid_WhenAllowEmptyInput()
+    {
+        // Arrange
+        var parameter = new ParameterDescriptor
+        {
+            Name = "Parameter1",
+            BindingInfo = new BindingInfo
+            {
+                BinderModelName = "CustomParameter",
+            },
+            ParameterType = typeof(Person5)
+        };
+
+        var testContext = ModelBindingTestHelper.GetTestContext(
+            request =>
+            {
+                request.Body = new MemoryStream(Encoding.UTF8.GetBytes(string.Empty));
+                request.ContentType = "application/json";
+                request.ContentLength = 0;
+            },
+            options => options.AllowEmptyInputInBodyModelBinding = true);
+
+        var modelState = testContext.ModelState;
+        var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext.HttpContext.RequestServices);
+
+        // Act
+        var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+
+        // Assert
+        Assert.True(modelBindingResult.IsModelSet);
+        Assert.IsType<Person5>(modelBindingResult.Model);
+        Assert.True(modelState.IsValid);
     }
 
     private class Person2
