@@ -251,8 +251,8 @@ public class BindingInfo
         // as Allow when the NullablityState == NullablityStateNull or HasDefaultValue
         // https://github.com/dotnet/aspnetcore/issues/39754
         if (EmptyBodyBehavior == EmptyBodyBehavior.Default &&
-                BindingSource == BindingSource.Body &&
-                (modelMetadata.NullabilityState == NullabilityState.Nullable || modelMetadata.IsNullableValueType || modelMetadata.HasDefaultValue))
+            BindingSource == BindingSource.Body &&
+            (modelMetadata.NullabilityState == NullabilityState.Nullable || modelMetadata.IsNullableValueType || modelMetadata.HasDefaultValue))
         {
             isBindingInfoPresent = true;
             EmptyBodyBehavior = EmptyBodyBehavior.Allow;
