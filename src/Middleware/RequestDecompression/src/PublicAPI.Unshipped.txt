@@ -1,4 +1,4 @@
-﻿Microsoft.AspNetCore.RequestDecompression.BrotliDecompressionProvider
+Microsoft.AspNetCore.RequestDecompression.BrotliDecompressionProvider
 Microsoft.AspNetCore.RequestDecompression.BrotliDecompressionProvider.BrotliDecompressionProvider() -> void
 Microsoft.AspNetCore.RequestDecompression.BrotliDecompressionProvider.CreateStream(System.IO.Stream! outputStream) -> System.IO.Stream!
 Microsoft.AspNetCore.RequestDecompression.BrotliDecompressionProvider.EncodingName.get -> string!
@@ -28,13 +28,11 @@ Microsoft.AspNetCore.RequestDecompression.RequestDecompressionMiddleware.Request
 Microsoft.AspNetCore.RequestDecompression.RequestDecompressionOptions
 Microsoft.AspNetCore.RequestDecompression.RequestDecompressionOptions.Providers.get -> Microsoft.AspNetCore.RequestDecompression.DecompressionProviderCollection!
 Microsoft.AspNetCore.RequestDecompression.RequestDecompressionOptions.RequestDecompressionOptions() -> void
-Microsoft.AspNetCore.RequestDecompression.RequestDecompressionOptions.ReturnUnsupportedMediaType.get -> bool
 Microsoft.AspNetCore.RequestDecompression.RequestDecompressionProvider
 Microsoft.AspNetCore.RequestDecompression.RequestDecompressionServiceExtensions
 static Microsoft.AspNetCore.RequestDecompression.RequestDecompressionBuilderExtensions.UseRequestDecompression(this Microsoft.AspNetCore.Builder.IApplicationBuilder! builder) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.AspNetCore.RequestDecompression.RequestDecompressionServiceExtensions.AddRequestDecompression(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.AspNetCore.RequestDecompression.RequestDecompressionServiceExtensions.AddRequestDecompression(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.RequestDecompression.RequestDecompressionOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
-virtual Microsoft.AspNetCore.RequestDecompression.RequestDecompressionProvider.GetAcceptEncodingHeader() -> Microsoft.Extensions.Primitives.StringValues
 virtual Microsoft.AspNetCore.RequestDecompression.RequestDecompressionProvider.GetDecompressionProvider(Microsoft.AspNetCore.Http.HttpContext! context) -> Microsoft.AspNetCore.RequestDecompression.IDecompressionProvider?
 virtual Microsoft.AspNetCore.RequestDecompression.RequestDecompressionProvider.IsContentEncodingSupported(Microsoft.AspNetCore.Http.HttpContext! context) -> bool
 virtual Microsoft.AspNetCore.RequestDecompression.RequestDecompressionProvider.ShouldDecompressRequest(Microsoft.AspNetCore.Http.HttpContext! context) -> bool
