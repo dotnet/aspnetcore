@@ -260,7 +260,7 @@
     <PhotinoNETVersion>1.1.6</PhotinoNETVersion>
     <MicrosoftPlaywrightVersion>1.17.3</MicrosoftPlaywrightVersion>
     <PollyExtensionsHttpVersion>3.0.0</PollyExtensionsHttpVersion>
-    <PollyVersion>7.2.2</PollyVersion>
+    <PollyVersion>7.2.3</PollyVersion>
     <SeleniumSupportVersion>4.1.0</SeleniumSupportVersion>
     <SeleniumWebDriverChromeDriverVersion>97.0.4692.7100</SeleniumWebDriverChromeDriverVersion>
     <SeleniumWebDriverVersion>4.1.0</SeleniumWebDriverVersion>
