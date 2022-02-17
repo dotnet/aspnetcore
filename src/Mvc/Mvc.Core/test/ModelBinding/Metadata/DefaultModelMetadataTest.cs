@@ -339,6 +339,56 @@ public class DefaultModelMetadataTest
         Assert.False(isBindingRequired);
     }
 
+    [Fact]
+    public void IsParseableType_ReturnsTrue_ForType()
+    {
+        // Arrange
+        var provider = new EmptyModelMetadataProvider();
+        var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
+
+        var key = ModelMetadataIdentity.ForType(typeof(int));
+        var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0], null, null))
+        {
+            BindingMetadata = new BindingMetadata()
+            {
+                IsBindingFromTryParseAllowed = true,
+            },
+        };
+
+        var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
+
+        // Act
+        var isParseableType = metadata.IsParseableType;
+
+        // Assert
+        Assert.True(isParseableType);
+    }
+
+    [Fact]
+    public void IsParseableType_ReturnsFalse_ForType()
+    {
+        // Arrange
+        var provider = new EmptyModelMetadataProvider();
+        var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
+
+        var key = ModelMetadataIdentity.ForType(typeof(string));
+        var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0], null, null))
+        {
+            BindingMetadata = new BindingMetadata()
+            {
+                IsBindingFromTryParseAllowed = false,
+            },
+        };
+
+        var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
+
+        // Act
+        var isParseableType = metadata.IsParseableType;
+
+        // Assert
+        Assert.False(isParseableType);
+    }
+
     [Theory]
     [InlineData(typeof(string))]
     [InlineData(typeof(IDisposable))]

@@ -484,15 +484,8 @@ public class TryParseTypeModelBinderTest
     [Fact]
     public void BindModel_ThrowsInvalidOperationException_WhenTryParseNotFound()
     {
-        // Arrange
-        var bindingContext = GetBindingContext(typeof(TestClass));
-        bindingContext.ValueProvider = new SimpleValueProvider
-            {
-                { "theModelName", string.Empty }
-            };
-
         // Act & assert
-        Assert.Throws<InvalidOperationException>(() => new TryParseModelBinder<TestClass>(NullLoggerFactory.Instance));
+        Assert.Throws<InvalidOperationException>(() => new TryParseModelBinder(typeof(TestClass), NullLoggerFactory.Instance));
     }
 
     private static DefaultModelBindingContext GetBindingContext(Type modelType)
@@ -507,9 +500,7 @@ public class TryParseTypeModelBinderTest
     }
 
     private static IModelBinder CreateBinder(Type modelType, ILoggerFactory loggerFactory = null) =>
-        (IModelBinder)Activator.CreateInstance(
-            typeof(TryParseModelBinder<>).MakeGenericType(modelType),
-            loggerFactory ?? NullLoggerFactory.Instance)!;
+        new TryParseModelBinder(modelType, loggerFactory ?? NullLoggerFactory.Instance);
 
     private sealed class TestClass
     {

@@ -8,17 +8,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 
 public class TryParseModelBinderProviderTest
 {
-    [Theory]
-    [InlineData(typeof(string))]
-    [InlineData(typeof(object))]
-    [InlineData(typeof(Calendar))]
-    [InlineData(typeof(TestClass))]
-    [InlineData(typeof(List<int>))]
-    public void Create_ForTypesWithoutTryParse_ReturnsNull(Type modelType)
+    [Fact]
+    public void Create_ForTypesWithoutTryParse_ReturnsNull()
     {
         // Arrange
         var provider = new TryParseModelBinderProvider();
-        var context = new TestModelBinderProviderContext(modelType);
+        var context = CreateContext(modelType: typeof(TestClass), false);
 
         // Act
         var result = provider.GetBinder(context);
@@ -27,24 +22,27 @@ public class TryParseModelBinderProviderTest
         Assert.Null(result);
     }
 
-    [Theory]
-    [InlineData(typeof(int))]
-    [InlineData(typeof(DateTime))]
-    [InlineData(typeof(DateTime?))]
-    [InlineData(typeof(IPEndPoint))]
-    [InlineData(typeof(TestClassWithTryParse))]
-    public void Create_ForTypesWithTryParse_ReturnsBinder(Type modelType)
+    [Fact]
+    public void Create_ForTypesWithTryParse_ReturnsBinder()
     {
         // Arrange
         var provider = new TryParseModelBinderProvider();
-        var context = new TestModelBinderProviderContext(modelType);
+        var context = CreateContext(typeof(TestClassWithTryParse), true);
 
         // Act
         var result = provider.GetBinder(context);
 
         // Assert
-        var binderType = typeof(TryParseModelBinder<>).MakeGenericType(modelType);
-        Assert.IsType(binderType, result);
+        Assert.IsType<TryParseModelBinder>(result);
+    }
+
+    private static TestModelBinderProviderContext CreateContext(Type modelType, bool allowTryParse)
+    {
+        TestModelBinderProviderContext.CachedMetadataProvider
+            .ForType(modelType)
+            .BindingDetails(b => b.IsBindingFromTryParseAllowed = allowTryParse);
+
+        return new TestModelBinderProviderContext(modelType);
     }
 
     private class TestClass

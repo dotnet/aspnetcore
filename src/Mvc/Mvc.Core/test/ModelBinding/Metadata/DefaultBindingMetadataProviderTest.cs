@@ -656,6 +656,112 @@ public class DefaultModelMetadataBindingDetailsProviderTest
         Assert.Equal(initialValue, context.BindingMetadata.IsBindingRequired);
     }
 
+    private class NonParseableClass
+    {
+    }
+
+    private class CustomParseableClass
+    {
+        public static bool TryParse(string s, out CustomParseableClass value)
+        {
+            value = new CustomParseableClass();
+            return true;
+        }
+    }
+
+    [Theory]
+    [InlineData(typeof(int))]
+    [InlineData(typeof(int?))]
+    [InlineData(typeof(Guid))]
+    [InlineData(typeof(DateTime))]
+    [InlineData(typeof(DateTime?))]
+    [InlineData(typeof(System.Net.IPEndPoint))]
+    [InlineData(typeof(CustomParseableClass))]
+    public void CreateBindingDetails_DetectsParseableType_OnTypes(Type modelType)
+    {
+        // Arrange
+        var context = new BindingMetadataProviderContext(
+            ModelMetadataIdentity.ForType(modelType),
+            new ModelAttributes(new object[0], null, null));
+
+        var provider = new DefaultBindingMetadataProvider(new MvcOptions());
+
+        // Act
+        provider.CreateBindingMetadata(context);
+
+        // Assert
+        Assert.True(context.BindingMetadata.IsBindingFromTryParseAllowed);
+    }
+
+    [Theory]
+    [InlineData(typeof(string))]
+    [InlineData(typeof(object))]
+    [InlineData(typeof(NonParseableClass))]
+    [InlineData(typeof(RecordTypeWithPrimaryConstructor))]    
+    public void CreateBindingDetails_SkipParseableType_OnTypes(Type modelType)
+    {
+        // Arrange
+        var context = new BindingMetadataProviderContext(
+            ModelMetadataIdentity.ForType(modelType),
+            new ModelAttributes(new object[0], null, null));
+
+        var provider = new DefaultBindingMetadataProvider(new MvcOptions());
+
+        // Act
+        provider.CreateBindingMetadata(context);
+
+        // Assert
+        Assert.False(context.BindingMetadata.IsBindingFromTryParseAllowed);
+    }
+
+    [Theory]
+    [InlineData(typeof(int))]
+    [InlineData(typeof(int?))]
+    [InlineData(typeof(Guid))]
+    [InlineData(typeof(DateTime))]
+    [InlineData(typeof(DateTime?))]
+    [InlineData(typeof(System.Net.IPEndPoint))]
+    [InlineData(typeof(CustomParseableClass))]
+    public void CreateBindingDetails_SkipParseableType_OnTypes_WhenSuppressParseableTypesBindingIsTrue(Type modelType)
+    {
+        // Arrange
+        var context = new BindingMetadataProviderContext(
+            ModelMetadataIdentity.ForType(modelType),
+            new ModelAttributes(new object[0], null, null));
+
+        var provider = new DefaultBindingMetadataProvider(new MvcOptions() {  SuppressParseableTypesBinding = true });
+
+        // Act
+        provider.CreateBindingMetadata(context);
+
+        // Assert
+        Assert.False(context.BindingMetadata.IsBindingFromTryParseAllowed);
+    }
+
+    [Theory]
+    [InlineData(typeof(int))]
+    [InlineData(typeof(int?))]
+    [InlineData(typeof(Guid))]
+    [InlineData(typeof(DateTime))]
+    [InlineData(typeof(DateTime?))]
+    [InlineData(typeof(System.Net.IPEndPoint))]
+    [InlineData(typeof(CustomParseableClass))]
+    public void CreateBindingDetails_SkipParseableType_OnTypes_WhenOptionsIsNull(Type modelType)
+    {
+        // Arrange
+        var context = new BindingMetadataProviderContext(
+            ModelMetadataIdentity.ForType(modelType),
+            new ModelAttributes(new object[0], null, null));
+
+        var provider = new DefaultBindingMetadataProvider();
+
+        // Act
+        provider.CreateBindingMetadata(context);
+
+        // Assert
+        Assert.False(context.BindingMetadata.IsBindingFromTryParseAllowed);
+    }
+
     private class DefaultConstructorType { }
 
     [Fact]
