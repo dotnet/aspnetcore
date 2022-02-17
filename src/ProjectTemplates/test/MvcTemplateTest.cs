@@ -247,6 +247,7 @@ public class MvcTemplateTest : LoggedTest
         var menuLinks = new[]
         {
             PageUrls.HomeUrl,
+            PageUrls.HomeUrl,            
             PageUrls.PrivacyFullUrl
         };
 
