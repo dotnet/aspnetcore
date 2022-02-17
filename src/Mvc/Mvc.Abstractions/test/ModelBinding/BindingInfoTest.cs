@@ -50,7 +50,7 @@ public class BindingInfoTest
         // Arrange
         var attributes = new object[]
         {
-                new FromBodyAttribute { EmptyBodyBehavior = EmptyBodyBehavior.Allow },
+          new FromBodyAttribute { EmptyBodyBehavior = EmptyBodyBehavior.Allow },
         };
 
         // Act
