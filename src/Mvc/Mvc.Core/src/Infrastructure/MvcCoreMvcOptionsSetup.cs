@@ -100,7 +100,7 @@ internal class MvcCoreMvcOptionsSetup : IConfigureOptions<MvcOptions>, IPostConf
         options.ValueProviderFactories.Add(new FormFileValueProviderFactory());
 
         // Set up metadata providers
-        ConfigureAdditionalModelMetadataDetailsProviders(options.ModelMetadataDetailsProviders);
+        ConfigureAdditionalModelMetadataDetailsProviders(options.ModelMetadataDetailsProviders, options);
 
         // Set up validators
         options.ModelValidatorProviders.Add(new DefaultModelValidatorProvider());
@@ -115,13 +115,13 @@ internal class MvcCoreMvcOptionsSetup : IConfigureOptions<MvcOptions>, IPostConf
         options.ModelMetadataDetailsProviders.Add(new HasValidatorsValidationMetadataProvider(options.ModelValidatorProviders));
     }
 
-    internal static void ConfigureAdditionalModelMetadataDetailsProviders(IList<IMetadataDetailsProvider> modelMetadataDetailsProviders)
+    internal static void ConfigureAdditionalModelMetadataDetailsProviders(IList<IMetadataDetailsProvider> modelMetadataDetailsProviders, MvcOptions options)
     {
         // Don't bind the Type class by default as it's expensive. A user can override this behavior
         // by altering the collection of providers.
         modelMetadataDetailsProviders.Add(new ExcludeBindingMetadataProvider(typeof(Type)));
 
-        modelMetadataDetailsProviders.Add(new DefaultBindingMetadataProvider());
+        modelMetadataDetailsProviders.Add(new DefaultBindingMetadataProvider(options));
         modelMetadataDetailsProviders.Add(new DefaultValidationMetadataProvider());
 
         modelMetadataDetailsProviders.Add(new BindingSourceMetadataProvider(typeof(CancellationToken), BindingSource.Special));

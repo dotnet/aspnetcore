@@ -437,11 +437,11 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
     /// Gets a value indicating whether <see cref="ModelType"/> is a complex type.
     /// </summary>
     /// <remarks>
-    /// A complex type is defined as a <see cref="Type"/> without a <see cref="TypeConverter"/> that can convert
-    /// from <see cref="string"/>. Most POCO and <see cref="IEnumerable"/> types are therefore complex. Most, if
+    /// A complex type is defined as a <see cref="Type"/> that is NOT <see cref="IsConvertibleType"/> and NOT <see cref="IsParseableType"/>.
+    /// Most POCO and <see cref="IEnumerable"/> types are therefore complex. Most, if
     /// not all, BCL value types are simple types.
     /// </remarks>
-    public bool IsComplexType { get; private set; }
+    public bool IsComplexType => !IsConvertibleType && !IsParseableType;
 
     /// <summary>
     /// Gets a value indicating whether or not <see cref="ModelType"/> is a <see cref="Nullable{T}"/>.
@@ -480,9 +480,15 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
     public Type UnderlyingOrModelType { get; private set; } = default!;
 
     /// <summary>
-    /// 
+    /// Gets a value indicating whether or not <see cref="ModelType"/> has a TryParse method.
     /// </summary>
-    internal bool IsParseableType { get; private set; }
+    internal virtual bool IsParseableType { get; }
+
+    /// <summary>
+    /// Gets a value indicating whether or not <see cref="ModelType"/> has a <see cref="TypeConverter"/>
+    /// from <see cref="string"/>.
+    /// </summary>
+    internal bool IsConvertibleType { get; private set; }
 
     /// <summary>
     /// Gets a value indicating the NullabilityState of the value or reference type.
@@ -628,8 +634,7 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
     {
         Debug.Assert(ModelType != null);
 
-        IsParseableType = ParameterBindingMethodCache.HasTryParseMethod(ModelType);
-        IsComplexType = !IsParseableType && !TypeDescriptor.GetConverter(ModelType).CanConvertFrom(typeof(string));
+        IsConvertibleType = TypeDescriptor.GetConverter(ModelType).CanConvertFrom(typeof(string));
         IsNullableValueType = Nullable.GetUnderlyingType(ModelType) != null;
         IsReferenceOrNullableType = !ModelType.IsValueType || IsNullableValueType;
         UnderlyingOrModelType = Nullable.GetUnderlyingType(ModelType) ?? ModelType;

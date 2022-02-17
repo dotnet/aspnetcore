@@ -137,6 +137,12 @@ public class MvcOptions : IEnumerable<ICompatibilitySwitch>
     public bool SuppressOutputFormatterBuffering { get; set; }
 
     /// <summary>
+    /// Gets or sets the flag that determines if binding is disabled for Parseable types (contains a TryParse method)
+    /// and will treat them as <see cref="ModelMetadata.IsComplexType"/>, in case, there isn't a <see cref="System.ComponentModel.TypeConverter"/> from <see cref="string"> registered.
+    /// </summary>
+    public bool SuppressParseableTypesBinding { get; set; }
+
+    /// <summary>
     /// Gets or sets the flag that determines if MVC should use action invoker extensibility. This will allow
     /// custom <see cref="IActionInvokerFactory"/> and <see cref="IActionInvokerProvider"/> execute during the request pipeline.
     /// </summary>
