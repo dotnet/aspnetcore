@@ -138,7 +138,7 @@ public class MvcOptions : IEnumerable<ICompatibilitySwitch>
 
     /// <summary>
     /// Gets or sets the flag that determines if binding is disabled for Parseable types (contains a TryParse method)
-    /// and will treat them as <see cref="ModelMetadata.IsComplexType"/>, in case, there isn't a <see cref="System.ComponentModel.TypeConverter"/> from <see cref="string"> registered.
+    /// and will treat them as <see cref="ModelMetadata.IsComplexType"/>, in case, there isn't a <see cref="System.ComponentModel.TypeConverter"/> from <see cref="string"/> registered.
     /// </summary>
     public bool SuppressParseableTypesBinding { get; set; }
 
