@@ -58,6 +58,7 @@
     "ws": "^7.4.5"
   },
   "resolutions": {
-    "ansi-regex": "5.0.1"
+    "ansi-regex": "5.0.1",
+    "url-parse": ">=1.5.6"
   }
 }
