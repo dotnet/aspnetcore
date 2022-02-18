@@ -54,10 +54,19 @@ public class RequestDecompressionMiddleware
 
     private async Task InvokeCore(HttpContext context)
     {
+        var originalBody = context.Request.Body;
+
         var decompressionBody = new RequestDecompressionBody(context, _provider);
         context.Request.Body = decompressionBody;
 
-        await _next(context);
-        await decompressionBody.FinishDecompressionAsync();
+        try
+        {
+            await _next(context);
+            await decompressionBody.FinishDecompressionAsync();
+        }
+        finally
+        {
+            context.Request.Body = originalBody;
+        }
     }
 }
