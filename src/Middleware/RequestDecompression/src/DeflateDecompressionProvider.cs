@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.RequestDecompression;
 /// <summary>
 /// DEFLATE decompression provider.
 /// </summary>
-public class DeflateDecompressionProvider : IDecompressionProvider
+public sealed class DeflateDecompressionProvider : IDecompressionProvider
 {
     /// <inheritdoc />
     public string EncodingName => "deflate";
