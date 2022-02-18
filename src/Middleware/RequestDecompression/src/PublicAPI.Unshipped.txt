@@ -1,3 +1,4 @@
+﻿#nullable enable
 Microsoft.AspNetCore.RequestDecompression.BrotliDecompressionProvider
 Microsoft.AspNetCore.RequestDecompression.BrotliDecompressionProvider.BrotliDecompressionProvider() -> void
 Microsoft.AspNetCore.RequestDecompression.BrotliDecompressionProvider.CreateStream(System.IO.Stream! outputStream) -> System.IO.Stream!
