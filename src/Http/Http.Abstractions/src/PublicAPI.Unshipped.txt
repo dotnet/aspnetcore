@@ -14,3 +14,7 @@ Microsoft.AspNetCore.Http.RouteHandlerFilterContext
 Microsoft.AspNetCore.Http.RouteHandlerFilterContext.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
 Microsoft.AspNetCore.Http.RouteHandlerFilterContext.Parameters.get -> System.Collections.Generic.IList<object?>!
 Microsoft.AspNetCore.Http.IRouteHandlerFilter
+Microsoft.AspNetCore.Http.Metadata.IEndpointDescriptionMetadata
+Microsoft.AspNetCore.Http.Metadata.IEndpointDescriptionMetadata.Description.get -> string!
+Microsoft.AspNetCore.Http.Metadata.IEndpointSummaryMetadata
+Microsoft.AspNetCore.Http.Metadata.IEndpointSummaryMetadata.Summary.get -> string!
