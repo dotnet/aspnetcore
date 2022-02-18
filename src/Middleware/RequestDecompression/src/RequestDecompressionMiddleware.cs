@@ -43,19 +43,13 @@ public class RequestDecompressionMiddleware
     /// <returns>A task that represents the execution of this middleware.</returns>
     public Task Invoke(HttpContext context)
     {
-        if (!_provider.ShouldDecompressRequest(context))
+        if (_provider.ShouldDecompressRequest(context)
+            && _provider.IsContentEncodingSupported(context))
         {
-            return _next(context);
+            return InvokeCore(context);
         }
 
-        if (!_provider.IsContentEncodingSupported(context))
-        {
-            context.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
-
-            return Task.CompletedTask;
-        }
-
-        return InvokeCore(context);
+        return _next(context);
     }
 
     private async Task InvokeCore(HttpContext context)
