@@ -10,7 +10,7 @@ using static Microsoft.AspNetCore.HttpSys.Internal.UnsafeNclNativeMethods;
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
 #pragma warning disable CA1844 // Provide memory-based overrides of async methods when subclassing 'Stream'. Fixing this is too gnarly.
-internal class ResponseBody : Stream
+internal sealed partial class ResponseBody : Stream
 #pragma warning restore CA1844
 {
     private readonly RequestContext _requestContext;
@@ -732,70 +732,30 @@ internal class ResponseBody : Stream
         }
     }
 
-    private static class Log
+    private static partial class Log
     {
-        private static readonly Action<ILogger, Exception?> _fewerBytesThanExpected =
-            LoggerMessage.Define(LogLevel.Error, LoggerEventIds.FewerBytesThanExpected, "ResponseStream::Dispose; Fewer bytes were written than were specified in the Content-Length.");
+        [LoggerMessage(LoggerEventIds.FewerBytesThanExpected, LogLevel.Error, "ResponseStream::Dispose; Fewer bytes were written than were specified in the Content-Length.", EventName = "FewerBytesThanExpected")]
+        public static partial void FewerBytesThanExpected(ILogger logger);
 
-        private static readonly Action<ILogger, Exception> _writeError =
-            LoggerMessage.Define(LogLevel.Error, LoggerEventIds.WriteError, "Flush");
+        [LoggerMessage(LoggerEventIds.WriteError, LogLevel.Error, "Flush", EventName = "WriteError")]
+        public static partial void WriteError(ILogger logger, IOException exception);
 
-        private static readonly Action<ILogger, uint, Exception?> _writeErrorIgnored =
-            LoggerMessage.Define<uint>(LogLevel.Debug, LoggerEventIds.WriteErrorIgnored, "Flush; Ignored write exception: {StatusCode}");
+        [LoggerMessage(LoggerEventIds.WriteErrorIgnored, LogLevel.Debug, "Flush; Ignored write exception: {StatusCode}", EventName = "WriteFlushedIgnored")]
+        public static partial void WriteErrorIgnored(ILogger logger, uint statusCode);
 
-        private static readonly Action<ILogger, Exception> _errorWhenFlushAsync =
-            LoggerMessage.Define(LogLevel.Debug, LoggerEventIds.ErrorWhenFlushAsync, "FlushAsync");
+        [LoggerMessage(LoggerEventIds.ErrorWhenFlushAsync, LogLevel.Debug, "FlushAsync", EventName = "ErrorWhenFlushAsync")]
+        public static partial void ErrorWhenFlushAsync(ILogger logger, Exception exception);
 
-        private static readonly Action<ILogger, uint, Exception?> _writeFlushCancelled =
-            LoggerMessage.Define<uint>(LogLevel.Debug, LoggerEventIds.WriteFlushCancelled, "FlushAsync; Write cancelled with error code: {StatusCode}");
+        [LoggerMessage(LoggerEventIds.WriteFlushCancelled, LogLevel.Debug, "FlushAsync; Write cancelled with error code: {StatusCode}", EventName = "WriteFlushCancelled")]
+        public static partial void WriteFlushCancelled(ILogger logger, uint statusCode);
 
-        private static readonly Action<ILogger, Exception> _fileSendAsyncError =
-            LoggerMessage.Define(LogLevel.Error, LoggerEventIds.FileSendAsyncError, "SendFileAsync");
+        [LoggerMessage(LoggerEventIds.FileSendAsyncError, LogLevel.Error, "SendFileAsync", EventName = "FileSendAsyncError")]
+        public static partial void FileSendAsyncError(ILogger logger, Exception exception);
 
-        private static readonly Action<ILogger, uint, Exception?> _fileSendAsyncCancelled =
-            LoggerMessage.Define<uint>(LogLevel.Debug, LoggerEventIds.FileSendAsyncCancelled, "SendFileAsync; Write cancelled with error code: {StatusCode}");
+        [LoggerMessage(LoggerEventIds.FileSendAsyncCancelled, LogLevel.Debug, "SendFileAsync; Write cancelled with error code: {StatusCode}", EventName = "FileSendAsyncCancelled")]
+        public static partial void FileSendAsyncCancelled(ILogger logger, uint statusCode);
 
-        private static readonly Action<ILogger, uint, Exception?> _fileSendAsyncErrorIgnored =
-            LoggerMessage.Define<uint>(LogLevel.Debug, LoggerEventIds.FileSendAsyncErrorIgnored, "SendFileAsync; Ignored write exception: {StatusCode}");
-
-        public static void FewerBytesThanExpected(ILogger logger)
-        {
-            _fewerBytesThanExpected(logger, null);
-        }
-
-        public static void WriteError(ILogger logger, IOException exception)
-        {
-            _writeError(logger, exception);
-        }
-
-        public static void WriteErrorIgnored(ILogger logger, uint statusCode)
-        {
-            _writeErrorIgnored(logger, statusCode, null);
-        }
-
-        public static void ErrorWhenFlushAsync(ILogger logger, Exception exception)
-        {
-            _errorWhenFlushAsync(logger, exception);
-        }
-
-        public static void WriteFlushCancelled(ILogger logger, uint statusCode)
-        {
-            _writeFlushCancelled(logger, statusCode, null);
-        }
-
-        public static void FileSendAsyncError(ILogger logger, Exception exception)
-        {
-            _fileSendAsyncError(logger, exception);
-        }
-
-        public static void FileSendAsyncCancelled(ILogger logger, uint statusCode)
-        {
-            _fileSendAsyncCancelled(logger, statusCode, null);
-        }
-
-        public static void FileSendAsyncErrorIgnored(ILogger logger, uint statusCode)
-        {
-            _fileSendAsyncErrorIgnored(logger, statusCode, null);
-        }
+        [LoggerMessage(LoggerEventIds.FileSendAsyncErrorIgnored, LogLevel.Debug, "SendFileAsync; Ignored write exception: {StatusCode}", EventName = "FileSendAsyncErrorIgnored")]
+        public static partial void FileSendAsyncErrorIgnored(ILogger logger, uint statusCode);
     }
 }
