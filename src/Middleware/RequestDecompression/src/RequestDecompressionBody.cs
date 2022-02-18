@@ -10,21 +10,20 @@ namespace Microsoft.AspNetCore.RequestDecompression;
 /// </summary>
 internal class RequestDecompressionBody : Stream
 {
-    private readonly HttpContext _context;
     private readonly IRequestDecompressionProvider _provider;
     private readonly Stream _innerStream;
 
-    private IDecompressionProvider? _decompressionProvider;
-    private bool _decompressionChecked;
-    private Stream? _decompressionStream;
-    private bool _providerCreated;
+    private readonly IDecompressionProvider? _decompressionProvider;
+    private readonly Stream? _decompressionStream;
     private bool _complete;
 
     internal RequestDecompressionBody(HttpContext context, IRequestDecompressionProvider provider)
     {
-        _context = context;
         _provider = provider;
         _innerStream = context.Request.Body;
+
+        _decompressionProvider = _provider.GetDecompressionProvider(context);
+        _decompressionStream = _decompressionProvider?.CreateStream(_innerStream);
     }
 
     public override bool CanRead => true;
@@ -48,8 +47,6 @@ internal class RequestDecompressionBody : Stream
 
     public override int Read(byte[] buffer, int offset, int count)
     {
-        OnRead();
-
         if (_decompressionStream != null)
         {
             return _decompressionStream.Read(buffer, offset, count);
@@ -89,40 +86,12 @@ internal class RequestDecompressionBody : Stream
 
     public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
     {
-        OnRead();
-
         if (_decompressionStream != null)
         {
             return await _decompressionStream.ReadAsync(buffer, cancellationToken);
         }
 
         return await _innerStream.ReadAsync(buffer, cancellationToken);
-    }
-
-    private void OnRead()
-    {
-        if (!_decompressionChecked)
-        {
-            _decompressionChecked = true;
-
-            var decompressionProvider = ResolveDecompressionProvider();
-
-            if (decompressionProvider != null)
-            {
-                _decompressionStream = decompressionProvider.CreateStream(_innerStream);
-            }
-        }
-    }
-
-    private IDecompressionProvider? ResolveDecompressionProvider()
-    {
-        if (!_providerCreated)
-        {
-            _providerCreated = true;
-            _decompressionProvider = _provider.GetDecompressionProvider(_context);
-        }
-
-        return _decompressionProvider;
     }
 
     public async Task CompleteAsync()
