@@ -4,3 +4,7 @@ Microsoft.AspNetCore.Http.Metadata.IFromFormMetadata
 Microsoft.AspNetCore.Http.Metadata.IFromFormMetadata.Name.get -> string?
 abstract Microsoft.AspNetCore.Http.HttpResponse.ContentType.get -> string?
 Microsoft.AspNetCore.Http.Metadata.ISkipStatusCodePagesMetadata
+Microsoft.AspNetCore.Http.Metadata.IEndpointDescriptionMetadata
+Microsoft.AspNetCore.Http.Metadata.IEndpointDescriptionMetadata.Description.get -> string!
+Microsoft.AspNetCore.Http.Metadata.IEndpointSummaryMetadata
+Microsoft.AspNetCore.Http.Metadata.IEndpointSummaryMetadata.Summary.get -> string!
