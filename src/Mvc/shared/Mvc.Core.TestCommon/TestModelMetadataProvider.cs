@@ -32,7 +32,7 @@ public class TestModelMetadataProvider : DefaultModelMetadataProvider
                 new DataMemberRequiredBindingMetadataProvider(),
             };
 
-        MvcCoreMvcOptionsSetup.ConfigureAdditionalModelMetadataDetailsProviders(detailsProviders);
+        MvcCoreMvcOptionsSetup.ConfigureAdditionalModelMetadataDetailsProviders(detailsProviders, new MvcOptions());
 
         var validationProviders = TestModelValidatorProvider.CreateDefaultProvider();
         detailsProviders.Add(new HasValidatorsValidationMetadataProvider(validationProviders.ValidatorProviders));
@@ -54,7 +54,7 @@ public class TestModelMetadataProvider : DefaultModelMetadataProvider
                 new DataMemberRequiredBindingMetadataProvider(),
             };
 
-        MvcCoreMvcOptionsSetup.ConfigureAdditionalModelMetadataDetailsProviders(detailsProviders);
+        MvcCoreMvcOptionsSetup.ConfigureAdditionalModelMetadataDetailsProviders(detailsProviders, new MvcOptions());
 
         detailsProviders.AddRange(providers);
 
