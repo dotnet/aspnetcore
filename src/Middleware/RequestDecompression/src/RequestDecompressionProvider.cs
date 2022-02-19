@@ -50,16 +50,15 @@ internal sealed class RequestDecompressionProvider : IRequestDecompressionProvid
         {
             _providers = new IDecompressionProvider[]
             {
-                new DecompressionProviderFactory(typeof(BrotliDecompressionProvider)),
-                new DecompressionProviderFactory(typeof(DeflateDecompressionProvider)),
-                new DecompressionProviderFactory(typeof(GZipDecompressionProvider))
+                new BrotliDecompressionProvider(),
+                new DeflateDecompressionProvider(),
+                new GZipDecompressionProvider()
             };
         }
 
         for (var i = 0; i < _providers.Length; i++)
         {
-            var factory = _providers[i] as DecompressionProviderFactory;
-            if (factory != null)
+            if (_providers[i] is DecompressionProviderFactory factory)
             {
                 _providers[i] = factory.CreateInstance(services);
             }
