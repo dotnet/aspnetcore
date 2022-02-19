@@ -57,16 +57,14 @@ public class RequestDecompressionMiddleware
     {
         var originalBody = context.Request.Body;
 
-        var decompressionStream = decompressionProvider.CreateStream(originalBody);
-        var decompressionBody = new RequestDecompressionBody(decompressionStream);
+        await using var decompressionStream = decompressionProvider.CreateStream(originalBody);
 
-        context.Request.Body = decompressionBody;
+        context.Request.Body = decompressionStream;
         context.Request.Headers.Remove(HeaderNames.ContentEncoding);
 
         try
         {
             await _next(context);
-            await decompressionBody.FinishDecompressionAsync();
         }
         finally
         {
