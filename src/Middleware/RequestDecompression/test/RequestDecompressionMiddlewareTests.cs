@@ -64,17 +64,6 @@ public class RequestDecompressionMiddlewareTests
     }
 
     [Fact]
-    public async Task Request_NoContentEncoding_NotDecompressed()
-    {
-        var uncompressedContent = GetUncompressedContent();
-
-        var (logMessages, outputContent) = await InvokeMiddleware(uncompressedContent);
-
-        AssertLog(logMessages.Single(), LogLevel.Trace, "The Content-Encoding header is missing or empty. Skipping request decompression.");
-        Assert.Equal(uncompressedContent, outputContent);
-    }
-
-    [Fact]
     public async Task Request_ContentEncodingBrotli_Decompressed()
     {
         var compressedContent = await GetBrotliCompressedContent();
@@ -108,6 +97,17 @@ public class RequestDecompressionMiddlewareTests
 
         AssertDecompressedWithLog(logMessages, contentEncoding);
         Assert.Equal(GetUncompressedContent(), decompressedContent);
+    }
+
+    [Fact]
+    public async Task Request_NoContentEncoding_NotDecompressed()
+    {
+        var uncompressedContent = GetUncompressedContent();
+
+        var (logMessages, outputContent) = await InvokeMiddleware(uncompressedContent);
+
+        AssertLog(logMessages.Single(), LogLevel.Trace, "The Content-Encoding header is missing or empty. Skipping request decompression.");
+        Assert.Equal(uncompressedContent, outputContent);
     }
 
     [Fact]
@@ -187,6 +187,61 @@ public class RequestDecompressionMiddlewareTests
         await client.SendAsync(request);
 
         return (sink.Writes.ToList(), outputContent);
+    }
+
+    [Fact]
+    public async Task Request_MiddlewareAddedMultipleTimes_OnlyDecompressedOnce()
+    {
+        var compressedContent = await GetGZipCompressedContent();
+        var contentEncoding = "gzip";
+
+        var sink = new TestSink(
+            TestSink.EnableWithTypeName<RequestDecompressionProvider>,
+            TestSink.EnableWithTypeName<RequestDecompressionProvider>);
+        var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+
+        var outputContent = Array.Empty<byte>();
+
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .ConfigureServices(services =>
+                {
+                    services.AddRequestDecompression();
+                    services.AddSingleton<ILoggerFactory>(loggerFactory);
+                })
+                .Configure(app =>
+                {
+                    app.UseRequestDecompression();
+                    app.UseRequestDecompression();
+                    app.Run(async context =>
+                    {
+                        await using var ms = new MemoryStream();
+                        await context.Request.Body.CopyToAsync(ms, context.RequestAborted);
+                        outputContent = ms.ToArray();
+                    });
+                });
+            }).Build();
+
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
+        var client = server.CreateClient();
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, "");
+        request.Content = new ByteArrayContent(compressedContent);
+        request.Content.Headers.ContentEncoding.Add(contentEncoding);
+
+        await client.SendAsync(request);
+
+        var logMessages = sink.Writes.ToList();
+
+        Assert.Equal(2, logMessages.Count);
+        AssertLog(logMessages.First(), LogLevel.Debug, $"The request will be decompressed with '{contentEncoding}'.");
+        AssertLog(logMessages.Skip(1).First(), LogLevel.Trace, "The Content-Encoding header is missing or empty. Skipping request decompression.");
+        Assert.Equal(GetUncompressedContent(), outputContent);
     }
 
     private static void AssertLog(WriteContext log, LogLevel level, string message)

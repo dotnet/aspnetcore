@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.RequestDecompression;
 
@@ -60,6 +61,7 @@ public class RequestDecompressionMiddleware
         var decompressionBody = new RequestDecompressionBody(decompressionStream);
 
         context.Request.Body = decompressionBody;
+        context.Request.Headers.Remove(HeaderNames.ContentEncoding);
 
         try
         {
