@@ -1,10 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.RequestDecompression;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace Microsoft.AspNetCore.RequestDecompression;
+namespace Microsoft.AspNetCore.Builder;
 
 /// <summary>
 /// Extension methods for the RequestDecompression middleware.
