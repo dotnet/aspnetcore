@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.RequestDecompression;
 /// <summary>
 /// Stream wrapper that creates a specific decompression stream if necessary.
 /// </summary>
-internal class RequestDecompressionBody : Stream
+internal sealed class RequestDecompressionBody : Stream
 {
     private readonly IRequestDecompressionProvider _provider;
     private readonly Stream _innerStream;

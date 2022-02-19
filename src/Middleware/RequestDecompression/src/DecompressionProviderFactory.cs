@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.RequestDecompression;
 /// This is a placeholder for the <see cref="DecompressionProviderCollection"/> that allows
 /// the creation of the given type via an <see cref="IServiceProvider"/>.
 /// </summary>
-internal class DecompressionProviderFactory : IDecompressionProvider
+internal sealed class DecompressionProviderFactory : IDecompressionProvider
 {
     public DecompressionProviderFactory(Type providerType)
     {

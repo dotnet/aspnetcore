@@ -11,7 +11,7 @@ using Microsoft.Extensions.Primitives;
 namespace Microsoft.AspNetCore.RequestDecompression;
 
 /// <inheritdoc />
-public class RequestDecompressionProvider : IRequestDecompressionProvider
+internal sealed class RequestDecompressionProvider : IRequestDecompressionProvider
 {
     private readonly IDecompressionProvider[] _providers;
     private readonly ILogger _logger;
@@ -68,7 +68,7 @@ public class RequestDecompressionProvider : IRequestDecompressionProvider
     }
 
     /// <inheritdoc />
-    public virtual IDecompressionProvider? GetDecompressionProvider(HttpContext context)
+    public IDecompressionProvider? GetDecompressionProvider(HttpContext context)
     {
         // e.g. Content-Encoding: br, deflate, gzip
         var encodings = context.Request.Headers.ContentEncoding;
@@ -105,7 +105,7 @@ public class RequestDecompressionProvider : IRequestDecompressionProvider
     }
 
     /// <inheritdoc />
-    public virtual bool ShouldDecompressRequest(HttpContext context)
+    public bool ShouldDecompressRequest(HttpContext context)
     {
         var encodings = context.Request.Headers.ContentEncoding;
 
@@ -120,7 +120,7 @@ public class RequestDecompressionProvider : IRequestDecompressionProvider
     }
 
     /// <inheritdoc />
-    public virtual bool IsContentEncodingSupported(HttpContext context)
+    public bool IsContentEncodingSupported(HttpContext context)
     {
         var encodings = context.Request.Headers.ContentEncoding;
 
