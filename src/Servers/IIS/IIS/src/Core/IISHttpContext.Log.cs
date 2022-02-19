@@ -20,7 +20,7 @@ internal abstract partial class IISHttpContext
             LoggerMessage.Define<string, string?>(LogLevel.Error, new EventId(3, "UnexpectedError"), @"Unexpected exception in ""{ClassName}.{MethodName}"".");
 
         private static readonly Action<ILogger, string, string, Exception> _connectionBadRequest =
-            LoggerMessage.Define<string, string>(LogLevel.Information, new EventId(4, nameof(ConnectionBadRequest)), @"Connection id ""{ConnectionId}"" bad request data: ""{message}""");
+            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(4, nameof(ConnectionBadRequest)), @"Connection id ""{ConnectionId}"" bad request data: ""{message}""");
 
         public static void ConnectionDisconnect(ILogger logger, string connectionId)
         {
