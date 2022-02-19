@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Http;
-
 namespace Microsoft.AspNetCore.RequestDecompression;
 
 /// <summary>
@@ -10,27 +8,19 @@ namespace Microsoft.AspNetCore.RequestDecompression;
 /// </summary>
 internal sealed class RequestDecompressionBody : Stream
 {
-    private readonly IRequestDecompressionProvider _provider;
-    private readonly Stream _innerStream;
-
-    private readonly IDecompressionProvider? _decompressionProvider;
-    private readonly Stream? _decompressionStream;
+    private readonly Stream _decompressionStream;
     private bool _complete;
 
-    internal RequestDecompressionBody(HttpContext context, IRequestDecompressionProvider provider)
+    internal RequestDecompressionBody(Stream decompressionStream)
     {
-        _provider = provider;
-        _innerStream = context.Request.Body;
-
-        _decompressionProvider = _provider.GetDecompressionProvider(context);
-        _decompressionStream = _decompressionProvider?.CreateStream(_innerStream);
+        _decompressionStream = decompressionStream;
     }
 
     public override bool CanRead => true;
 
     public override bool CanSeek => false;
 
-    public override bool CanWrite => _innerStream.CanWrite;
+    public override bool CanWrite => _decompressionStream.CanWrite;
 
     public override long Length
     {
@@ -45,12 +35,7 @@ internal sealed class RequestDecompressionBody : Stream
 
     public override int Read(byte[] buffer, int offset, int count)
     {
-        if (_decompressionStream != null)
-        {
-            return _decompressionStream.Read(buffer, offset, count);
-        }
-
-        return _innerStream.Read(buffer, offset, count);
+        return _decompressionStream.Read(buffer, offset, count);
     }
 
     public override long Seek(long offset, SeekOrigin origin)
@@ -84,12 +69,7 @@ internal sealed class RequestDecompressionBody : Stream
 
     public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
     {
-        if (_decompressionStream != null)
-        {
-            return await _decompressionStream.ReadAsync(buffer, cancellationToken);
-        }
-
-        return await _innerStream.ReadAsync(buffer, cancellationToken);
+        return await _decompressionStream.ReadAsync(buffer, cancellationToken);
     }
 
     public async Task CompleteAsync()
@@ -111,9 +91,6 @@ internal sealed class RequestDecompressionBody : Stream
 
         _complete = true;
 
-        if (_decompressionStream != null)
-        {
-            await _decompressionStream.DisposeAsync();
-        }
+        await _decompressionStream.DisposeAsync();
     }
 }

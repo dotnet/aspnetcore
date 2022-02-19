@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -75,14 +74,12 @@ internal sealed class RequestDecompressionProvider : IRequestDecompressionProvid
 
         if (StringValues.IsNullOrEmpty(encodings))
         {
-            Debug.Assert(false, "Duplicate check failed.");
             _logger.NoContentEncoding();
             return null;
         }
 
         if (encodings.Count > 1)
         {
-            Debug.Assert(false, "Duplicate check failed.");
             _logger.MultipleContentEncodingsSpecified();
             return null;
         }
@@ -95,58 +92,11 @@ internal sealed class RequestDecompressionProvider : IRequestDecompressionProvid
 
         if (selectedProvider == null)
         {
-            Debug.Assert(false, "Duplicate check failed.");
             _logger.NoDecompressionProvider();
             return null;
         }
 
         _logger.DecompressingWith(selectedProvider.EncodingName);
         return selectedProvider;
-    }
-
-    /// <inheritdoc />
-    public bool ShouldDecompressRequest(HttpContext context)
-    {
-        var encodings = context.Request.Headers.ContentEncoding;
-
-        if (StringValues.IsNullOrEmpty(encodings))
-        {
-            _logger.NoContentEncoding();
-            return false;
-        }
-
-        _logger.ContentEncodingSpecified();
-        return true;
-    }
-
-    /// <inheritdoc />
-    public bool IsContentEncodingSupported(HttpContext context)
-    {
-        var encodings = context.Request.Headers.ContentEncoding;
-
-        if (StringValues.IsNullOrEmpty(encodings))
-        {
-            Debug.Assert(false, "Duplicate check failed.");
-            _logger.NoContentEncoding();
-            return false;
-        }
-
-        if (encodings.Count > 1)
-        {
-            _logger.MultipleContentEncodingsSpecified();
-            return false;
-        }
-
-        var encoding = encodings.Single();
-        var supportedEncodings = _providers.Select(x => x.EncodingName);
-
-        if (supportedEncodings.Any(x => string.Equals(x, encoding, StringComparison.OrdinalIgnoreCase)))
-        {
-            _logger.ContentEncodingSupported(encoding);
-            return true;
-        }
-
-        _logger.ContentEncodingUnsupported(encoding);
-        return false;
     }
 }

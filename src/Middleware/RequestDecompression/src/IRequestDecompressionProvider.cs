@@ -16,18 +16,4 @@ public interface IRequestDecompressionProvider
     /// <param name="context">The <see cref="HttpContext"/>.</param>
     /// <returns>A decompression provider or null if there are no acceptable providers.</returns>
     IDecompressionProvider? GetDecompressionProvider(HttpContext context);
-
-    /// <summary>
-    /// Examines the request to see if it should be decompressed.
-    /// </summary>
-    /// <param name="context">The <see cref="HttpContext"/>.</param>
-    /// <returns><see langword="true"/> if the request should be decompressed, otherwise <see langword="false"/>.</returns>
-    bool ShouldDecompressRequest(HttpContext context);
-
-    /// <summary>
-    /// Examines the request to see if decompression is supported for the specified Content-Type.
-    /// </summary>
-    /// <param name="context">The <see cref="HttpContext"/>.</param>
-    /// <returns><see langword="true"/> if the Content-Encoding is supported, otherwise <see langword="false"/>.</returns>
-    bool IsContentEncodingSupported(HttpContext context);
 }

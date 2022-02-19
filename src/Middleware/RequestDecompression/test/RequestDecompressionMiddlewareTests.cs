@@ -118,8 +118,7 @@ public class RequestDecompressionMiddlewareTests
 
         var (logMessages, outputContent) = await InvokeMiddleware(inputContent, new[] { contentEncoding });
 
-        AssertLog(logMessages.First(), LogLevel.Trace, "The Content-Encoding header is specified. Proceeding with request decompression.");
-        AssertLog(logMessages.Skip(1).First(), LogLevel.Debug, $"Request decompression is not supported for Content-Encoding '{contentEncoding}'.");
+        AssertLog(logMessages.First(), LogLevel.Debug, $"No matching request decompression provider found.");
         Assert.Equal(GetUncompressedContent(), outputContent);
     }
 
@@ -131,8 +130,7 @@ public class RequestDecompressionMiddlewareTests
 
         var (logMessages, outputContent) = await InvokeMiddleware(inputContent, contentEncodings);
 
-        AssertLog(logMessages.First(), LogLevel.Trace, "The Content-Encoding header is specified. Proceeding with request decompression.");
-        AssertLog(logMessages.Skip(1).First(), LogLevel.Debug, "Request decompression is not supported for multiple Content-Encodings.");
+        AssertLog(logMessages.First(), LogLevel.Debug, "Request decompression is not supported for multiple Content-Encodings.");
         Assert.Equal(GetUncompressedContent(), outputContent);
     }
 
@@ -199,9 +197,7 @@ public class RequestDecompressionMiddlewareTests
 
     private static void AssertDecompressedWithLog(List<WriteContext> logMessages, string encoding)
     {
-        Assert.Equal(3, logMessages.Count);
-        AssertLog(logMessages.First(), LogLevel.Trace, "The Content-Encoding header is specified. Proceeding with request decompression.");
-        AssertLog(logMessages.Skip(1).First(), LogLevel.Trace, $"Request decompression is supported for Content-Encoding '{encoding}'.");
-        AssertLog(logMessages.Skip(2).First(), LogLevel.Debug, $"The request will be decompressed with '{encoding}'.");
+        var message = Assert.Single(logMessages);
+        AssertLog(message, LogLevel.Debug, $"The request will be decompressed with '{encoding}'.");
     }
 }

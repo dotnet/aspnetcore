@@ -43,20 +43,22 @@ public class RequestDecompressionMiddleware
     /// <returns>A task that represents the execution of this middleware.</returns>
     public Task Invoke(HttpContext context)
     {
-        if (_provider.ShouldDecompressRequest(context)
-            && _provider.IsContentEncodingSupported(context))
+        var decompressionProvider = _provider.GetDecompressionProvider(context);
+        if (decompressionProvider == null)
         {
-            return InvokeCore(context);
+            return _next(context);
         }
 
-        return _next(context);
+        return InvokeCore(context, decompressionProvider);
     }
 
-    private async Task InvokeCore(HttpContext context)
+    private async Task InvokeCore(HttpContext context, IDecompressionProvider decompressionProvider)
     {
         var originalBody = context.Request.Body;
 
-        var decompressionBody = new RequestDecompressionBody(context, _provider);
+        var decompressionStream = decompressionProvider.CreateStream(originalBody);
+        var decompressionBody = new RequestDecompressionBody(decompressionStream);
+
         context.Request.Body = decompressionBody;
 
         try
