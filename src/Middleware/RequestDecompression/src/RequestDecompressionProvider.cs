@@ -83,7 +83,7 @@ internal sealed class RequestDecompressionProvider : IRequestDecompressionProvid
             return null;
         }
 
-        var encodingName = encodings.Single();
+        string encodingName = encodings!;
 
         var selectedProvider =
             _providers.FirstOrDefault(x =>
