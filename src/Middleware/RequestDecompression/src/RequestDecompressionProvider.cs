@@ -4,7 +4,6 @@
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
@@ -21,18 +20,29 @@ public class RequestDecompressionProvider : IRequestDecompressionProvider
     /// If no decompression providers are specified then all default providers will be registered.
     /// </summary>
     /// <param name="services">Services to use when instantiating decompression providers.</param>
+    /// <param name="logger">An instance of <see cref="ILogger"/>.</param>
     /// <param name="options">The options for this instance.</param>
-    public RequestDecompressionProvider(IServiceProvider services, IOptions<RequestDecompressionOptions> options)
+    public RequestDecompressionProvider(
+        IServiceProvider services,
+        ILogger<RequestDecompressionProvider> logger,
+        IOptions<RequestDecompressionOptions> options)
     {
         if (services == null)
         {
             throw new ArgumentNullException(nameof(services));
         }
 
+        if (logger == null)
+        {
+            throw new ArgumentNullException(nameof(logger));
+        }
+
         if (options == null)
         {
             throw new ArgumentNullException(nameof(options));
         }
+
+        _logger = logger;
 
         var requestDecompressionOptions = options.Value;
 
@@ -55,8 +65,6 @@ public class RequestDecompressionProvider : IRequestDecompressionProvider
                 _providers[i] = factory.CreateInstance(services);
             }
         }
-
-        _logger = services.GetRequiredService<ILogger<RequestDecompressionProvider>>();
     }
 
     /// <inheritdoc />
