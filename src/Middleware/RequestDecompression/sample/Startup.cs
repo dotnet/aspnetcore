@@ -11,7 +11,7 @@ public class Startup
     {
         services.AddRequestDecompression(options =>
         {
-            options.Providers.Add<GzipDecompressionProvider>();
+            options.Providers.Add<GZipDecompressionProvider>();
             options.Providers.Add<CustomDecompressionProvider>();
         });
     }

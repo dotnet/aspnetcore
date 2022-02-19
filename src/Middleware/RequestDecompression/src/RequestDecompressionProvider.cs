@@ -52,7 +52,7 @@ internal sealed class RequestDecompressionProvider : IRequestDecompressionProvid
             {
                 new DecompressionProviderFactory(typeof(BrotliDecompressionProvider)),
                 new DecompressionProviderFactory(typeof(DeflateDecompressionProvider)),
-                new DecompressionProviderFactory(typeof(GzipDecompressionProvider))
+                new DecompressionProviderFactory(typeof(GZipDecompressionProvider))
             };
         }
 
