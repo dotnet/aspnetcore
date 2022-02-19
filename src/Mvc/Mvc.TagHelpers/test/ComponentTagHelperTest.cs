@@ -38,6 +38,34 @@ public class ComponentTagHelperTest
         Assert.Null(output.TagName);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ProcessAsync_InvokesRenderer_WithDefer(bool expectedDefer)
+    {
+        // Arrange
+        var componentRenderer = new Mock<IComponentRenderer>();
+        componentRenderer
+            .Setup(c => c.RenderComponentAsync(It.IsAny<ViewContext>(), It.IsAny<Type>(), It.IsAny<RenderMode>(), It.IsAny<object>(), expectedDefer))
+            .Returns(new ValueTask<IHtmlContent>(HtmlString.Empty))
+            .Verifiable();
+
+        var tagHelper = new ComponentTagHelper
+        {
+            ViewContext = GetViewContext(componentRenderer.Object),
+            RenderMode = RenderMode.Static,
+            Defer = expectedDefer,
+        };
+        var context = GetTagHelperContext();
+        var output = GetTagHelperOutput();
+
+        // Act
+        await tagHelper.ProcessAsync(context, output);
+
+        // Assert
+        componentRenderer.Verify();
+    }
+
     [Fact]
     public async Task ProcessAsync_WithoutSpecifyingRenderMode_ThrowsError()
     {
@@ -71,11 +99,11 @@ public class ComponentTagHelperTest
             (_, __) => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()));
     }
 
-    private ViewContext GetViewContext()
+    private ViewContext GetViewContext(IComponentRenderer renderer = null)
     {
         var htmlContent = new HtmlContentBuilder().AppendHtml("Hello world");
-        var renderer = Mock.Of<IComponentRenderer>(c =>
-            c.RenderComponentAsync(It.IsAny<ViewContext>(), It.IsAny<Type>(), It.IsAny<RenderMode>(), It.IsAny<object>()) == new ValueTask<IHtmlContent>(htmlContent));
+        renderer ??= Mock.Of<IComponentRenderer>(c =>
+            c.RenderComponentAsync(It.IsAny<ViewContext>(), It.IsAny<Type>(), It.IsAny<RenderMode>(), It.IsAny<object>(), false) == new ValueTask<IHtmlContent>(htmlContent));
 
         var httpContext = new DefaultHttpContext
         {

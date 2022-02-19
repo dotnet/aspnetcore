@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net.Http;
+using BasicWebSite.RazorComponents;
 using BasicWebSite.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
@@ -48,6 +49,8 @@ public class StartupWithoutEndpointRouting
         services.AddScoped<TestResponseGenerator>();
         services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
         services.TryAddSingleton(CreateWeatherForecastService);
+
+        services.TryAddScoped<DeferredComponentState>();
     }
 
     // For manual debug only (running this test site with F5)

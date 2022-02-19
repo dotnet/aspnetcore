@@ -158,6 +158,27 @@ public class ComponentRenderingFunctionalTests : IClassFixture<MvcTestFixture<Ba
         AssertComponent(expectedHtml, "FetchData", content);
     }
 
+    [Fact]
+    public async Task RenderingForComponentsCanBeDefferred()
+    {
+        // Arrange & Act
+        var client = CreateClient(Factory);
+
+        var document = await client.GetHtmlDocumentAsync("http://localhost/components/deferredrendering");
+
+        // Assert
+        // Verify both components ran
+        var setterHello = document.RequiredQuerySelector("body #setter-hello");
+        Assert.Equal("Hello from ComponentStateSetter", setterHello.TextContent);
+
+        var getterHello = document.RequiredQuerySelector("head #getter-hello");
+        Assert.Equal("Hello from ComponentStateGetter", getterHello.GetAttribute("content"));
+
+        // Verify the components were rendered out of order.
+        var state = document.RequiredQuerySelector("head > title");
+        Assert.Equal("State configured by ComponentStateSetter", state.TextContent);
+    }
+
     private void AssertComponent(string expectedContent, string divId, string responseContent)
     {
         var parser = new HtmlParser();

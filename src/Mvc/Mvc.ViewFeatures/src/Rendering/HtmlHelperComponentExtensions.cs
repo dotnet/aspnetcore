@@ -44,11 +44,47 @@ public static class HtmlHelperComponentExtensions
     /// <param name="parameters">An <see cref="object"/> containing the parameters to pass
     /// to the component.</param>
     /// <param name="renderMode">The <see cref="RenderMode"/> for the component.</param>
-    public static async Task<IHtmlContent> RenderComponentAsync(
+    public static Task<IHtmlContent> RenderComponentAsync(
         this IHtmlHelper htmlHelper,
         Type componentType,
         RenderMode renderMode,
         object parameters)
+        => RenderComponentAsync(htmlHelper, componentType, renderMode, parameters, deferred: false);
+
+    /// <summary>
+    /// Renders the <typeparamref name="TComponent"/>.
+    /// </summary>
+    /// <param name="htmlHelper">The <see cref="IHtmlHelper"/>.</param>
+    /// <param name="parameters">An <see cref="object"/> containing the parameters to pass
+    /// to the component.</param>
+    /// <param name="renderMode">The <see cref="RenderMode"/> for the component.</param>
+    /// <param name="deferred">Gets or sets a value that determines if rendering of the component
+    /// is deferred until the returned content is rendered.</param>
+    /// <returns>The HTML produced by the rendered <typeparamref name="TComponent"/>.</returns>
+    public static Task<IHtmlContent> RenderComponentAsync<TComponent>(
+        this IHtmlHelper htmlHelper,
+        RenderMode renderMode,
+        object parameters,
+        bool deferred)
+        where TComponent : IComponent
+        => RenderComponentAsync(htmlHelper, typeof(TComponent), renderMode, parameters, deferred);
+
+    /// <summary>
+    /// Renders the specified <paramref name="componentType"/>.
+    /// </summary>
+    /// <param name="htmlHelper">The <see cref="IHtmlHelper"/>.</param>
+    /// <param name="componentType">The component type.</param>
+    /// <param name="parameters">An <see cref="object"/> containing the parameters to pass
+    /// to the component.</param>
+    /// <param name="renderMode">The <see cref="RenderMode"/> for the component.</param>
+    /// <param name="deferred">Gets or sets a value that determines if rendering of the component
+    /// is deferred until the returned content is rendered.</param>
+    public static async Task<IHtmlContent> RenderComponentAsync(
+        this IHtmlHelper htmlHelper,
+        Type componentType,
+        RenderMode renderMode,
+        object parameters,
+        bool deferred)
     {
         if (htmlHelper is null)
         {
@@ -62,6 +98,6 @@ public static class HtmlHelperComponentExtensions
 
         var viewContext = htmlHelper.ViewContext;
         var componentRenderer = viewContext.HttpContext.RequestServices.GetRequiredService<IComponentRenderer>();
-        return await componentRenderer.RenderComponentAsync(viewContext, componentType, renderMode, parameters);
+        return await componentRenderer.RenderComponentAsync(viewContext, componentType, renderMode, parameters, deferred);
     }
 }

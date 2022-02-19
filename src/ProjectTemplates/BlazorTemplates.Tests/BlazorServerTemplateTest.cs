@@ -25,7 +25,7 @@ public class BlazorServerTemplateTest : BlazorTemplateTest
 
     public override string ProjectType { get; } = "blazorserver";
 
-    [Theory(Skip = "https://github.com/dotnet/aspnetcore/issues/30761")]
+    [Theory]
     [InlineData(BrowserKind.Chromium)]
     public async Task BlazorServerTemplateWorks_NoAuth(BrowserKind browserKind)
     {

@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.AspNetCore.Mvc.TagHelpers.ComponentTagHelper.Defer.get -> bool
+Microsoft.AspNetCore.Mvc.TagHelpers.ComponentTagHelper.Defer.set -> void

@@ -4,6 +4,7 @@
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -15,6 +16,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.JSInterop;
@@ -45,7 +47,7 @@ public class ComponentRendererTest
         var writer = new StringWriter();
 
         // Act
-        var result = await renderer.RenderComponentAsync(viewContext, typeof(TestComponent), RenderMode.WebAssembly, null);
+        var result = await renderer.RenderComponentAsync(viewContext, typeof(TestComponent), RenderMode.WebAssembly, null, false);
         result.WriteTo(writer, HtmlEncoder.Default);
         var content = writer.ToString();
         var match = Regex.Match(content, ComponentPattern);
@@ -68,7 +70,7 @@ public class ComponentRendererTest
         var writer = new StringWriter();
 
         // Act
-        var result = await renderer.RenderComponentAsync(viewContext, typeof(TestComponent), RenderMode.WebAssemblyPrerendered, null);
+        var result = await renderer.RenderComponentAsync(viewContext, typeof(TestComponent), RenderMode.WebAssemblyPrerendered, null, false);
         result.WriteTo(writer, HtmlEncoder.Default);
         var content = writer.ToString();
         var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Multiline);
@@ -111,7 +113,7 @@ public class ComponentRendererTest
             new
             {
                 Name = "Daniel"
-            });
+            }, false);
         result.WriteTo(writer, HtmlEncoder.Default);
         var content = writer.ToString();
         var match = Regex.Match(content, ComponentPattern);
@@ -148,7 +150,7 @@ public class ComponentRendererTest
             new
             {
                 Name = (string)null
-            });
+            }, false);
         result.WriteTo(writer, HtmlEncoder.Default);
         var content = writer.ToString();
         var match = Regex.Match(content, ComponentPattern);
@@ -183,7 +185,7 @@ public class ComponentRendererTest
             new
             {
                 Name = "Daniel"
-            });
+            }, false);
         result.WriteTo(writer, HtmlEncoder.Default);
         var content = writer.ToString();
         var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Multiline);
@@ -232,7 +234,7 @@ public class ComponentRendererTest
             new
             {
                 Name = (string)null
-            });
+            }, false);
         result.WriteTo(writer, HtmlEncoder.Default);
         var content = writer.ToString();
         var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Multiline);
@@ -275,7 +277,7 @@ public class ComponentRendererTest
         var writer = new StringWriter();
 
         // Act
-        var result = await renderer.RenderComponentAsync(viewContext, typeof(TestComponent), RenderMode.Static, null);
+        var result = await renderer.RenderComponentAsync(viewContext, typeof(TestComponent), RenderMode.Static, null, false);
         result.WriteTo(writer, HtmlEncoder.Default);
         var content = writer.ToString();
 
@@ -292,7 +294,7 @@ public class ComponentRendererTest
             .ToTimeLimitedDataProtector();
 
         // Act
-        var result = await renderer.RenderComponentAsync(viewContext, typeof(TestComponent), RenderMode.Server, null);
+        var result = await renderer.RenderComponentAsync(viewContext, typeof(TestComponent), RenderMode.Server, null, false);
         var content = HtmlContentUtilities.HtmlContentToString(result, HtmlEncoder.Default);
         var match = Regex.Match(content, ComponentPattern);
 
@@ -324,7 +326,7 @@ public class ComponentRendererTest
             .ToTimeLimitedDataProtector();
 
         // Act
-        var result = await renderer.RenderComponentAsync(viewContext, typeof(TestComponent), RenderMode.ServerPrerendered, null);
+        var result = await renderer.RenderComponentAsync(viewContext, typeof(TestComponent), RenderMode.ServerPrerendered, null, false);
         var content = HtmlContentUtilities.HtmlContentToString(result, HtmlEncoder.Default);
         var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Multiline);
 
@@ -367,8 +369,8 @@ public class ComponentRendererTest
         var viewContext = GetViewContext();
 
         // Act
-        var server = await renderer.RenderComponentAsync(viewContext, typeof(GreetingComponent), RenderMode.ServerPrerendered, new { Name = "Steve" });
-        var client = await renderer.RenderComponentAsync(viewContext, typeof(GreetingComponent), RenderMode.WebAssemblyPrerendered, new { Name = "Steve" });
+        var server = await renderer.RenderComponentAsync(viewContext, typeof(GreetingComponent), RenderMode.ServerPrerendered, new { Name = "Steve" }, false);
+        var client = await renderer.RenderComponentAsync(viewContext, typeof(GreetingComponent), RenderMode.WebAssemblyPrerendered, new { Name = "Steve" }, false);
 
         // Assert
         var (_, mode) = Assert.Single(viewContext.Items, (kvp) => kvp.Value is InvokedRenderModes);
@@ -384,11 +386,11 @@ public class ComponentRendererTest
             .ToTimeLimitedDataProtector();
 
         // Act
-        var firstResult = await renderer.RenderComponentAsync(viewContext, typeof(TestComponent), RenderMode.ServerPrerendered, null);
+        var firstResult = await renderer.RenderComponentAsync(viewContext, typeof(TestComponent), RenderMode.ServerPrerendered, null, false);
         var firstComponent = HtmlContentUtilities.HtmlContentToString(firstResult);
         var firstMatch = Regex.Match(firstComponent, PrerenderedComponentPattern, RegexOptions.Multiline);
 
-        var secondResult = await renderer.RenderComponentAsync(viewContext, typeof(TestComponent), RenderMode.Server, null);
+        var secondResult = await renderer.RenderComponentAsync(viewContext, typeof(TestComponent), RenderMode.Server, null, false);
         var secondComponent = HtmlContentUtilities.HtmlContentToString(secondResult);
         var secondMatch = Regex.Match(secondComponent, ComponentPattern);
 
@@ -424,7 +426,7 @@ public class ComponentRendererTest
         var viewContext = GetViewContext();
 
         // Act
-        var result = await renderer.RenderComponentAsync(viewContext, typeof(GreetingComponent), RenderMode.Static, new { Name = "Steve" });
+        var result = await renderer.RenderComponentAsync(viewContext, typeof(GreetingComponent), RenderMode.Static, new { Name = "Steve" }, false);
 
         // Assert
         var content = HtmlContentUtilities.HtmlContentToString(result, HtmlEncoder.Default);
@@ -440,7 +442,7 @@ public class ComponentRendererTest
             .ToTimeLimitedDataProtector();
 
         // Act
-        var result = await renderer.RenderComponentAsync(viewContext, typeof(GreetingComponent), RenderMode.Server, new { Name = "Daniel" });
+        var result = await renderer.RenderComponentAsync(viewContext, typeof(GreetingComponent), RenderMode.Server, new { Name = "Daniel" }, false);
         var content = HtmlContentUtilities.HtmlContentToString(result, HtmlEncoder.Default);
         var match = Regex.Match(content, ComponentPattern);
 
@@ -479,7 +481,7 @@ public class ComponentRendererTest
 
         // Act
 
-        var result = await renderer.RenderComponentAsync(viewContext, typeof(GreetingComponent), RenderMode.Server, new { Name = (string)null });
+        var result = await renderer.RenderComponentAsync(viewContext, typeof(GreetingComponent), RenderMode.Server, new { Name = (string)null }, false);
         var content = HtmlContentUtilities.HtmlContentToString(result, HtmlEncoder.Default);
         var match = Regex.Match(content, ComponentPattern);
 
@@ -518,7 +520,7 @@ public class ComponentRendererTest
             .ToTimeLimitedDataProtector();
 
         // Act
-        var result = await renderer.RenderComponentAsync(viewContext, typeof(GreetingComponent), RenderMode.ServerPrerendered, new { Name = "Daniel" });
+        var result = await renderer.RenderComponentAsync(viewContext, typeof(GreetingComponent), RenderMode.ServerPrerendered, new { Name = "Daniel" }, false);
         var content = HtmlContentUtilities.HtmlContentToString(result, HtmlEncoder.Default);
         var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Multiline);
 
@@ -569,7 +571,7 @@ public class ComponentRendererTest
             .ToTimeLimitedDataProtector();
 
         // Act
-        var result = await renderer.RenderComponentAsync(viewContext, typeof(GreetingComponent), RenderMode.ServerPrerendered, new { Name = (string)null });
+        var result = await renderer.RenderComponentAsync(viewContext, typeof(GreetingComponent), RenderMode.ServerPrerendered, new { Name = (string)null }, false);
         var content = HtmlContentUtilities.HtmlContentToString(result, HtmlEncoder.Default);
         var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Multiline);
 
@@ -618,7 +620,7 @@ public class ComponentRendererTest
 
         // Act & Assert
         var ex = await ExceptionAssert.ThrowsArgumentAsync(
-            async () => await renderer.RenderComponentAsync(viewContext, typeof(GreetingComponent), default, new { Name = "Daniel" }),
+            async () => await renderer.RenderComponentAsync(viewContext, typeof(GreetingComponent), default, new { Name = "Daniel" }, false),
             "renderMode",
             $"Unsupported RenderMode '{(RenderMode)default}'");
     }
@@ -631,12 +633,93 @@ public class ComponentRendererTest
 
         // Act
         var state = new OnAfterRenderState();
-        var result = await renderer.RenderComponentAsync(viewContext, typeof(OnAfterRenderComponent), RenderMode.Static, new { state });
+        var result = await renderer.RenderComponentAsync(viewContext, typeof(OnAfterRenderComponent), RenderMode.Static, new { state }, false);
 
         // Assert
         var content = HtmlContentUtilities.HtmlContentToString(result, HtmlEncoder.Default);
         Assert.Equal("<p>Hello</p>", content);
         Assert.False(state.OnAfterRenderRan);
+    }
+
+    [Fact]
+    public async Task RenderComponent_WithDefer_ReturnsDeferredHtmlContent()
+    {
+        // Arrange
+        var state = new DeferRenderState();
+        var collection = CreateServiceCollectionWithRenderer();
+        collection.TryAddSingleton(state);
+        
+        var provider = collection.BuildServiceProvider();
+        var scope = provider.GetRequiredService<IServiceScopeFactory>().CreateScope();
+        var scopedProvider = scope.ServiceProvider;
+        var context = new DefaultHttpContext() { RequestServices = scopedProvider };
+        var viewContext = GetViewContext(context);
+        var renderer = scopedProvider.GetRequiredService<ComponentRenderer>();
+
+        // Act
+        var result = await renderer.RenderComponentAsync(viewContext, typeof(DeferRenderComponent), RenderMode.Static, new { state }, deferred: true);
+
+        // Assert
+        Assert.False(state.Rendered); // Should be false until the content is rendered.
+        var content = HtmlContentUtilities.HtmlContentToString(result, HtmlEncoder.Default);
+        Assert.Equal("<h1>Hello world!</h1>", content);
+        Assert.True(state.Rendered);
+    }
+
+    [Fact]
+    public async Task RenderComponent_WithDefer_ThrowsIfRenderDoesNotFinishSynchronously()
+    {
+        // Arrange
+        var tcs = new TaskCompletionSource();
+        var state = new DeferRenderState { SetParametersTask = tcs.Task };
+        var collection = CreateServiceCollectionWithRenderer();
+        collection.TryAddSingleton(state);
+
+        var provider = collection.BuildServiceProvider();
+        var scope = provider.GetRequiredService<IServiceScopeFactory>().CreateScope();
+        var scopedProvider = scope.ServiceProvider;
+        var context = new DefaultHttpContext() { RequestServices = scopedProvider };
+        var viewContext = GetViewContext(context);
+        var renderer = scopedProvider.GetRequiredService<ComponentRenderer>();
+
+        // Act
+        var result = await renderer.RenderComponentAsync(viewContext, typeof(DeferRenderComponent), RenderMode.Static, new { state }, deferred: true);
+
+        // Assert
+        Assert.False(state.Rendered); // Should be false until the content is rendered.
+        // Producing markup should produce an exception since the component did not complete rendering synchronously.
+        var ex = Assert.Throws<InvalidOperationException>(() => HtmlContentUtilities.HtmlContentToString(result, HtmlEncoder.Default));
+        Assert.Equal("Components with deferred rendering must complete synchronously.", ex.Message);
+        tcs.TrySetResult();
+    }
+
+    [Fact]
+    public async Task RenderComponent_WithDefer_ThrowsIfRenderingErrors()
+    {
+        // Arrange
+        var exception = new TimeZoneNotFoundException();
+        var tcs = new TaskCompletionSource();
+        tcs.SetException(exception);
+        var state = new DeferRenderState { SetParametersTask = tcs.Task };
+        var collection = CreateServiceCollectionWithRenderer();
+        collection.TryAddSingleton(state);
+
+        var provider = collection.BuildServiceProvider();
+        var scope = provider.GetRequiredService<IServiceScopeFactory>().CreateScope();
+        var scopedProvider = scope.ServiceProvider;
+        var context = new DefaultHttpContext() { RequestServices = scopedProvider };
+        var viewContext = GetViewContext(context);
+        var renderer = scopedProvider.GetRequiredService<ComponentRenderer>();
+
+        // Act
+        var result = await renderer.RenderComponentAsync(viewContext, typeof(DeferRenderComponent), RenderMode.Static, new { state }, deferred: true);
+
+        // Assert
+        Assert.False(state.Rendered); // Should be false until the content is rendered.
+        // Producing markup should return the original exception if any.
+        var ex = Record.Exception(() => HtmlContentUtilities.HtmlContentToString(result, HtmlEncoder.Default));
+        Assert.Same(exception, ex);
+        tcs.TrySetResult();
     }
 
     [Fact]
@@ -663,7 +746,7 @@ public class ComponentRendererTest
 
         // Act
         var state = new AsyncDisposableState();
-        var result = await renderer.RenderComponentAsync(viewContext, typeof(AsyncDisposableComponent), RenderMode.Static, new { state });
+        var result = await renderer.RenderComponentAsync(viewContext, typeof(AsyncDisposableComponent), RenderMode.Static, new { state }, false);
 
         // Assert
         var content = HtmlContentUtilities.HtmlContentToString(result, HtmlEncoder.Default);
@@ -687,7 +770,7 @@ public class ComponentRendererTest
             new
             {
                 IsAsync = false
-            }));
+            }, false));
 
         // Assert
         Assert.Equal("Threw an exception synchronously", exception.Message);
@@ -707,7 +790,8 @@ public class ComponentRendererTest
             new
             {
                 IsAsync = true
-            }));
+            },
+            false));
 
         // Assert
         Assert.Equal("Threw an exception asynchronously", exception.Message);
@@ -727,7 +811,8 @@ public class ComponentRendererTest
             new
             {
                 JsInterop = true
-            }
+            },
+            false
         ));
 
         // Assert
@@ -760,7 +845,8 @@ public class ComponentRendererTest
             new
             {
                 RedirectUri = "http://localhost/redirect"
-            }));
+            },
+            false));
 
         Assert.Equal("A navigation command was attempted during prerendering after the server already started sending the response. " +
                         "Navigation commands can not be issued during server-side prerendering after the response from the server has started. Applications must buffer the" +
@@ -788,7 +874,7 @@ public class ComponentRendererTest
             new
             {
                 RedirectUri = "http://localhost/redirect"
-            });
+            }, false);
 
         // Assert
         Assert.Equal(302, ctx.Response.StatusCode);
@@ -844,7 +930,7 @@ public class ComponentRendererTest
 </table>";
 
         // Act
-        var result = await renderer.RenderComponentAsync(viewContext, typeof(AsyncComponent), RenderMode.Static, null);
+        var result = await renderer.RenderComponentAsync(viewContext, typeof(AsyncComponent), RenderMode.Static, null, false);
         var content = HtmlContentUtilities.HtmlContentToString(result, HtmlEncoder.Default);
 
         // Assert
@@ -883,6 +969,21 @@ public class ComponentRendererTest
         services.AddSingleton<ILogger<ComponentStatePersistenceManager>, NullLogger<ComponentStatePersistenceManager>>();
         services.AddSingleton<ComponentStatePersistenceManager>();
         services.AddSingleton(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
+        return services;
+    }
+
+    private static ServiceCollection CreateServiceCollectionWithRenderer()
+    {
+        var services = CreateDefaultServiceCollection();
+        services.TryAddScoped<ComponentRenderer>();
+        services.TryAddScoped<StaticComponentRenderer>();
+        services.TryAddScoped<HtmlRenderer>();
+        services.TryAddSingleton(HtmlEncoder.Default);
+        services.TryAddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+        services.TryAddSingleton<ServerComponentSerializer>();
+        services.TryAddSingleton(_dataprotectorProvider);
+        services.TryAddSingleton<WebAssemblyComponentSerializer>();
+        services.TryAddScoped<IViewBufferScope, TestViewBufferScope>();
         return services;
     }
 
@@ -946,6 +1047,42 @@ public class ComponentRendererTest
                 await Task.Yield();
                 throw new InvalidOperationException("Threw an exception asynchronously");
             }
+        }
+    }
+
+    private class DeferRenderState
+    {
+        public Task SetParametersTask { get; set; } = Task.CompletedTask;
+
+        public bool Rendered { get; set; }
+    }
+
+    private class DeferRenderComponent : IComponent
+    {
+        private readonly DeferRenderState _state;
+        private RenderHandle _renderHandle;
+
+        public DeferRenderComponent(DeferRenderState state)
+        {
+            _state = state;
+        }
+
+        public void Attach(RenderHandle renderHandle)
+        {
+            _renderHandle = renderHandle;
+        }
+
+        public Task SetParametersAsync(ParameterView parameters)
+        {
+            _renderHandle.Render(builder =>
+            {
+                _state.Rendered = true;
+                builder.OpenElement(0, "h1");
+                builder.AddContent(1, "Hello world!");
+                builder.CloseElement();
+            });
+
+            return _state.SetParametersTask;
         }
     }
 

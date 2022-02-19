@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
@@ -32,7 +33,8 @@ internal sealed class ComponentRenderer : IComponentRenderer
         ViewContext viewContext,
         Type componentType,
         RenderMode renderMode,
-        object parameters)
+        object parameters,
+        bool deferred)
     {
         if (viewContext is null)
         {
@@ -49,13 +51,36 @@ internal sealed class ComponentRenderer : IComponentRenderer
             throw new ArgumentException(Resources.FormatTypeMustDeriveFromType(componentType, typeof(IComponent)));
         }
 
-        var context = viewContext.HttpContext;
         var parameterView = parameters is null ?
             ParameterView.Empty :
             ParameterView.FromDictionary(HtmlHelper.ObjectToDictionary(parameters));
 
         UpdateSaveStateRenderMode(viewContext, renderMode);
 
+        if (deferred)
+        {
+            return new DeferedHtmlContent(
+                this,
+                viewContext,
+                componentType,
+                renderMode,
+                parameterView);
+        }
+
+        return await RenderComponentCoreAsync(
+            viewContext,
+            componentType,
+            renderMode,
+            parameterView);
+    }
+
+    private async ValueTask<IHtmlContent> RenderComponentCoreAsync(
+        ViewContext viewContext,
+        Type componentType,
+        RenderMode renderMode,
+        ParameterView parameterView)
+    {
+        var context = viewContext.HttpContext;
         return renderMode switch
         {
             RenderMode.Server => NonPrerenderedServerComponent(context, GetOrCreateInvocationId(viewContext), componentType, parameterView),
@@ -65,6 +90,42 @@ internal sealed class ComponentRenderer : IComponentRenderer
             RenderMode.WebAssemblyPrerendered => await PrerenderedWebAssemblyComponentAsync(context, componentType, parameterView),
             _ => throw new ArgumentException(Resources.FormatUnsupportedRenderMode(renderMode), nameof(renderMode)),
         };
+    }
+
+    private sealed class DeferedHtmlContent : IHtmlContent
+    {
+        private readonly ComponentRenderer _componentRenderer;
+        private readonly ViewContext _viewContext;
+        private readonly Type _componentType;
+        private readonly RenderMode _renderMode;
+        private readonly ParameterView _parameterView;
+
+        public DeferedHtmlContent(
+            ComponentRenderer componentRenderer,
+            ViewContext viewContext,
+            Type componentType,
+            RenderMode renderMode,
+            ParameterView parameterView)
+        {
+            _componentRenderer = componentRenderer;
+            _viewContext = viewContext;
+            _componentType = componentType;
+            _renderMode = renderMode;
+            _parameterView = parameterView;
+        }
+
+        public void WriteTo(TextWriter writer, HtmlEncoder encoder)
+        {
+            var renderTask = _componentRenderer.RenderComponentCoreAsync(
+                _viewContext, _componentType, _renderMode, _parameterView);
+
+            if (!renderTask.IsCompleted)
+            {
+                throw new InvalidOperationException("Components with deferred rendering must complete synchronously.");
+            }
+
+            renderTask.GetAwaiter().GetResult().WriteTo(writer, encoder);
+        }
     }
 
     private static ServerComponentInvocationSequence GetOrCreateInvocationId(ViewContext viewContext)

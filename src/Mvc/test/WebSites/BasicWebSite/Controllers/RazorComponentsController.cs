@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Mvc;
@@ -67,6 +67,12 @@ public class RazorComponentsController : Controller
 
     [HttpGet("/components/Navigation")]
     public IActionResult Navigation()
+    {
+        return View();
+    }
+
+    [HttpGet("/components/DeferredRendering")]
+    public IActionResult DeferredRendering()
     {
         return View();
     }

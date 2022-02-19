@@ -18,6 +18,7 @@ public sealed class ComponentTagHelper : TagHelper
     private const string ComponentParameterName = "params";
     private const string ComponentParameterPrefix = "param-";
     private const string ComponentTypeName = "type";
+    private const string ComponentDefer = "defer";
     private const string RenderModeName = "render-mode";
     private IDictionary<string, object> _parameters;
     private RenderMode? _renderMode;
@@ -48,6 +49,17 @@ public sealed class ComponentTagHelper : TagHelper
     /// </summary>
     [HtmlAttributeName(ComponentTypeName)]
     public Type ComponentType { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value that determines if rendering for the component should be deferred instead of being processed inline.
+    /// <para>
+    /// Configuring this value to <see langword="true"/> would be recommended in the event a component, such as <c>HeadOutlet</c>, relies on the output
+    /// of another component that is rendered later in the page.
+    /// </para>
+    /// When set, the component specified by <c>type</c> must finish rendering synchronously.
+    /// </summary>
+    [HtmlAttributeName(ComponentDefer)]
+    public bool Defer { get; set; }
 
     /// <summary>
     /// Gets or sets the <see cref="Rendering.RenderMode"/>
@@ -99,10 +111,11 @@ public sealed class ComponentTagHelper : TagHelper
 
         var requestServices = ViewContext.HttpContext.RequestServices;
         var componentRenderer = requestServices.GetRequiredService<IComponentRenderer>();
-        var result = await componentRenderer.RenderComponentAsync(ViewContext, ComponentType, RenderMode, _parameters);
 
         // Reset the TagName. We don't want `component` to render.
         output.TagName = null;
+
+        var result = await componentRenderer.RenderComponentAsync(ViewContext, ComponentType, RenderMode, _parameters, Defer);
         output.Content.SetHtmlContent(result);
     }
 }

@@ -12,5 +12,6 @@ internal interface IComponentRenderer
         ViewContext viewContext,
         Type componentType,
         RenderMode renderMode,
-        object parameters);
+        object parameters,
+        bool deferred);
 }

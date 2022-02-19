@@ -181,7 +181,7 @@ public class PersistComponentStateTagHelperTest
     {
         var htmlContent = new HtmlContentBuilder().AppendHtml("Hello world");
         var renderer = Mock.Of<IComponentRenderer>(c =>
-            c.RenderComponentAsync(It.IsAny<ViewContext>(), It.IsAny<Type>(), It.IsAny<RenderMode>(), It.IsAny<object>()) == new ValueTask<IHtmlContent>(htmlContent));
+            c.RenderComponentAsync(It.IsAny<ViewContext>(), It.IsAny<Type>(), It.IsAny<RenderMode>(), It.IsAny<object>(), false) == new ValueTask<IHtmlContent>(htmlContent));
 
         var httpContext = new DefaultHttpContext
         {

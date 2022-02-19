@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Include="..\Common\TestResponseGenerator.cs" Link="TestResponseGenerator.cs" />
   </ItemGroup>

@@ -1,0 +1,12 @@
+﻿@using Microsoft.AspNetCore.Components.Web
+@inject DeferredComponentState State
+
+<h1 id="setter-hello">Hello from ComponentStateSetter</h1>
+
+@code
+{
+    protected override void OnInitialized()
+    {
+        State.Value = "State configured by ComponentStateSetter";
+    }
+}

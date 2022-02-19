@@ -1,0 +1,12 @@
+﻿@using Microsoft.AspNetCore.Components.Web
+@using BasicWebSite.RazorComponents
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<html>
+<head>
+    <component type="typeof(ComponentStateGetter)" render-mode="Static" defer="true" />
+</head>
+<body>
+    <component type="typeof(ComponentStateSetter)" render-mode="Static" />
+</body>
+</html>
