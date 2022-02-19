@@ -43,8 +43,6 @@ internal class RequestDecompressionBody : Stream
         set { throw new NotSupportedException(); }
     }
 
-    public Stream Stream => this;
-
     public override int Read(byte[] buffer, int offset, int count)
     {
         if (_decompressionStream != null)
