@@ -54,7 +54,7 @@ public class MaxRequestBodySizeTests : LoggedTest
         }
 
         Assert.Equal(CoreStrings.BadRequest_RequestBodyTooLarge, exception.Message);
-        VerifyLogs();
+        VerifyLogs(exception);
     }
 
     [ConditionalFact]
@@ -97,7 +97,7 @@ public class MaxRequestBodySizeTests : LoggedTest
         }
 
         Assert.Equal(CoreStrings.BadRequest_RequestBodyTooLarge, exception.Message);
-        VerifyLogs();
+        VerifyLogs(exception);
     }
 
     [ConditionalFact]
@@ -307,7 +307,7 @@ public class MaxRequestBodySizeTests : LoggedTest
 
         Assert.NotNull(exception);
         Assert.Equal(CoreStrings.BadRequest_RequestBodyTooLarge, exception.Message);
-        VerifyLogs();
+        VerifyLogs(exception);
     }
 
     [ConditionalFact]
@@ -344,12 +344,21 @@ public class MaxRequestBodySizeTests : LoggedTest
         Assert.NotNull(requestRejectedEx2);
         Assert.Equal(CoreStrings.BadRequest_RequestBodyTooLarge, requestRejectedEx1.Message);
         Assert.Equal(CoreStrings.BadRequest_RequestBodyTooLarge, requestRejectedEx2.Message);
-        VerifyLogs();
+        VerifyLogs(requestRejectedEx2);
     }
 
-    private void VerifyLogs()
+    private void VerifyLogs(BadHttpRequestException thrownError)
     {
-        var log = Assert.Single(TestSink.Writes, w => w.LoggerName == "Microsoft.AspNetCore.Server.IIS.Core.IISHttpServer" && w.LogLevel > LogLevel.Debug);
-        Assert.Equal(new EventId(2, "ApplicationError"), log.EventId);
+        // Bad requests should not be logged over LogLevel.Debug because this can create a lot of log noise that cannot
+        // be controlled by the app. We have no choice but to throw if the bad request is not observed until after the
+        // app starts reading the request body. We log ApplicationErrors because these tests rethrow the
+        // BadHttpRequestExceptions. IIS should emit no other logs over LogLevel.Debug for these bad requests.
+        var appErrorLog = Assert.Single(TestSink.Writes, w => w.LoggerName == "Microsoft.AspNetCore.Server.IIS.Core.IISHttpServer" && w.LogLevel > LogLevel.Debug);
+        var badRequestLog = Assert.Single(TestSink.Writes, w => w.LoggerName == "Microsoft.AspNetCore.Server.IIS.Core.IISHttpServer" && w.EventId == new EventId(4, "ConnectionBadRequest"));
+
+        Assert.Equal(new EventId(2, "ApplicationError"), appErrorLog.EventId);
+        Assert.Equal(LogLevel.Error, appErrorLog.LogLevel);
+        Assert.Same(thrownError, appErrorLog.Exception);
+        Assert.Same(thrownError, badRequestLog.Exception);
     }
 }
