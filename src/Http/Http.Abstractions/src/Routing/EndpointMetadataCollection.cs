@@ -137,7 +137,7 @@ public sealed class EndpointMetadataCollection : IReadOnlyList<object>
     public T GetRequiredMetadata<T>() where T : class
     {
         var metadata = GetMetadata<T>();
-        return metadata == null ? throw new InvalidOperationException($"Metadata '{typeof(T)}' is not found.") : metadata;
+        return metadata ?? throw new InvalidOperationException($"Metadata '{typeof(T)}' is not found.");
     }
 
     /// <summary>
