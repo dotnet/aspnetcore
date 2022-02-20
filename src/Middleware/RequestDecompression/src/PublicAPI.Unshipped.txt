@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 Microsoft.AspNetCore.Builder.RequestDecompressionBuilderExtensions
 Microsoft.AspNetCore.Builder.RequestDecompressionServiceExtensions
 Microsoft.AspNetCore.RequestDecompression.BrotliDecompressionProvider
@@ -22,8 +22,6 @@ Microsoft.AspNetCore.RequestDecompression.IDecompressionProvider.CreateStream(Sy
 Microsoft.AspNetCore.RequestDecompression.IDecompressionProvider.EncodingName.get -> string!
 Microsoft.AspNetCore.RequestDecompression.IRequestDecompressionProvider
 Microsoft.AspNetCore.RequestDecompression.IRequestDecompressionProvider.GetDecompressionProvider(Microsoft.AspNetCore.Http.HttpContext! context) -> Microsoft.AspNetCore.RequestDecompression.IDecompressionProvider?
-Microsoft.AspNetCore.RequestDecompression.IRequestDecompressionProvider.IsContentEncodingSupported(Microsoft.AspNetCore.Http.HttpContext! context) -> bool
-Microsoft.AspNetCore.RequestDecompression.IRequestDecompressionProvider.ShouldDecompressRequest(Microsoft.AspNetCore.Http.HttpContext! context) -> bool
 Microsoft.AspNetCore.RequestDecompression.RequestDecompressionMiddleware
 Microsoft.AspNetCore.RequestDecompression.RequestDecompressionMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.RequestDecompression.RequestDecompressionMiddleware.RequestDecompressionMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.AspNetCore.RequestDecompression.IRequestDecompressionProvider! provider) -> void
@@ -33,7 +31,3 @@ Microsoft.AspNetCore.RequestDecompression.RequestDecompressionOptions.RequestDec
 static Microsoft.AspNetCore.Builder.RequestDecompressionBuilderExtensions.UseRequestDecompression(this Microsoft.AspNetCore.Builder.IApplicationBuilder! builder) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.AspNetCore.Builder.RequestDecompressionServiceExtensions.AddRequestDecompression(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.AspNetCore.Builder.RequestDecompressionServiceExtensions.AddRequestDecompression(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.RequestDecompression.RequestDecompressionOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
-virtual Microsoft.AspNetCore.RequestDecompression.RequestDecompressionProvider.GetDecompressionProvider(Microsoft.AspNetCore.Http.HttpContext! context) -> Microsoft.AspNetCore.RequestDecompression.IDecompressionProvider?
-virtual Microsoft.AspNetCore.RequestDecompression.RequestDecompressionProvider.IsContentEncodingSupported(Microsoft.AspNetCore.Http.HttpContext! context) -> bool
-virtual Microsoft.AspNetCore.RequestDecompression.RequestDecompressionProvider.ShouldDecompressRequest(Microsoft.AspNetCore.Http.HttpContext! context) -> bool
-~Microsoft.AspNetCore.RequestDecompression.RequestDecompressionProvider.RequestDecompressionProvider(System.IServiceProvider! services, Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.RequestDecompression.RequestDecompressionProvider!>! logger, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.RequestDecompression.RequestDecompressionOptions!>! options) -> void
