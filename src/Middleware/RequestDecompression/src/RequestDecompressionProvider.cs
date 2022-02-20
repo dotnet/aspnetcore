@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.RequestDecompression;
 /// <inheritdoc />
 internal sealed class RequestDecompressionProvider : IRequestDecompressionProvider
 {
-    private readonly IDecompressionProvider[] _providers;
+    private readonly IReadOnlyDictionary<string, IDecompressionProvider> _providers;
     private readonly ILogger _logger;
 
     /// <summary>
@@ -45,10 +45,10 @@ internal sealed class RequestDecompressionProvider : IRequestDecompressionProvid
 
         var requestDecompressionOptions = options.Value;
 
-        _providers = requestDecompressionOptions.Providers.ToArray();
-        if (_providers.Length == 0)
+        var registeredProviders = requestDecompressionOptions.Providers.ToArray();
+        if (registeredProviders.Length == 0)
         {
-            _providers = new IDecompressionProvider[]
+            registeredProviders = new IDecompressionProvider[]
             {
                 new BrotliDecompressionProvider(),
                 new DeflateDecompressionProvider(),
@@ -56,13 +56,22 @@ internal sealed class RequestDecompressionProvider : IRequestDecompressionProvid
             };
         }
 
-        for (var i = 0; i < _providers.Length; i++)
+        var providers = new Dictionary<string, IDecompressionProvider>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var provider in registeredProviders)
         {
-            if (_providers[i] is DecompressionProviderFactory factory)
+            if (provider is DecompressionProviderFactory factory)
             {
-                _providers[i] = factory.CreateInstance(services);
+                var providerInstance = factory.CreateInstance(services);
+                providers[providerInstance.EncodingName] = providerInstance;
+            }
+            else
+            {
+                providers[provider.EncodingName] = provider;
             }
         }
+
+        _providers = providers;
     }
 
     /// <inheritdoc />
@@ -85,17 +94,13 @@ internal sealed class RequestDecompressionProvider : IRequestDecompressionProvid
 
         string encodingName = encodings!;
 
-        var selectedProvider =
-            _providers.FirstOrDefault(x =>
-                StringSegment.Equals(x.EncodingName, encodingName, StringComparison.OrdinalIgnoreCase));
-
-        if (selectedProvider == null)
+        if (_providers.TryGetValue(encodingName, out var matchingProvider))
         {
-            _logger.NoDecompressionProvider();
-            return null;
+            _logger.DecompressingWith(matchingProvider.EncodingName);
+            return matchingProvider;
         }
 
-        _logger.DecompressingWith(selectedProvider.EncodingName);
-        return selectedProvider;
+        _logger.NoDecompressionProvider();
+        return null;
     }
 }
