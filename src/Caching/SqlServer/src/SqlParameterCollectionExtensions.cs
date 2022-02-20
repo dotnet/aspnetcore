@@ -22,7 +22,7 @@ internal static class SqlParameterCollectionExtensions
         return parameters.AddWithValue(Columns.Names.CacheItemId, SqlDbType.NVarChar, CacheItemIdColumnWidth, value);
     }
 
-    public static SqlParameterCollection AddCacheItemValue(this SqlParameterCollection parameters, byte[] value)
+    public static SqlParameterCollection AddCacheItemValue(this SqlParameterCollection parameters, byte[]? value)
     {
         if (value != null && value.Length < DefaultValueColumnWidth)
         {
@@ -74,7 +74,7 @@ internal static class SqlParameterCollectionExtensions
         this SqlParameterCollection parameters,
         string parameterName,
         SqlDbType dbType,
-        object value)
+        object? value)
     {
         var parameter = new SqlParameter(parameterName, dbType);
         parameter.Value = value;
@@ -88,7 +88,7 @@ internal static class SqlParameterCollectionExtensions
         string parameterName,
         SqlDbType dbType,
         int size,
-        object value)
+        object? value)
     {
         var parameter = new SqlParameter(parameterName, dbType, size);
         parameter.Value = value;

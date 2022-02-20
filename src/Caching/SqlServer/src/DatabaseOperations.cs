@@ -77,12 +77,12 @@ internal class DatabaseOperations : IDatabaseOperations
         }
     }
 
-    public virtual byte[] GetCacheItem(string key)
+    public virtual byte[]? GetCacheItem(string key)
     {
         return GetCacheItem(key, includeValue: true);
     }
 
-    public virtual async Task<byte[]> GetCacheItemAsync(string key, CancellationToken token = default(CancellationToken))
+    public virtual async Task<byte[]?> GetCacheItemAsync(string key, CancellationToken token = default(CancellationToken))
     {
         token.ThrowIfCancellationRequested();
 
@@ -194,7 +194,7 @@ internal class DatabaseOperations : IDatabaseOperations
         }
     }
 
-    protected virtual byte[] GetCacheItem(string key, bool includeValue)
+    protected virtual byte[]? GetCacheItem(string key, bool includeValue)
     {
         var utcNow = SystemClock.UtcNow;
 
@@ -208,7 +208,7 @@ internal class DatabaseOperations : IDatabaseOperations
             query = SqlQueries.GetCacheItemWithoutValue;
         }
 
-        byte[] value = null;
+        byte[]? value = null;
         using (var connection = new SqlConnection(ConnectionString))
         using (var command = new SqlCommand(query, connection))
         {
@@ -238,7 +238,7 @@ internal class DatabaseOperations : IDatabaseOperations
         return value;
     }
 
-    protected virtual async Task<byte[]> GetCacheItemAsync(string key, bool includeValue, CancellationToken token = default(CancellationToken))
+    protected virtual async Task<byte[]?> GetCacheItemAsync(string key, bool includeValue, CancellationToken token = default(CancellationToken))
     {
         token.ThrowIfCancellationRequested();
 
@@ -254,7 +254,7 @@ internal class DatabaseOperations : IDatabaseOperations
             query = SqlQueries.GetCacheItemWithoutValue;
         }
 
-        byte[] value = null;
+        byte[]? value = null;
         using (var connection = new SqlConnection(ConnectionString))
         using (var command = new SqlCommand(query, connection))
         {

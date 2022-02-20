@@ -92,7 +92,7 @@ public class SqlServerCache : IDistributedCache
     }
 
     /// <inheritdoc />
-    public byte[] Get(string key)
+    public byte[]? Get(string key)
     {
         if (key == null)
         {
@@ -107,7 +107,7 @@ public class SqlServerCache : IDistributedCache
     }
 
     /// <inheritdoc />
-    public async Task<byte[]> GetAsync(string key, CancellationToken token = default(CancellationToken))
+    public async Task<byte[]?> GetAsync(string key, CancellationToken token = default(CancellationToken))
     {
         if (key == null)
         {
