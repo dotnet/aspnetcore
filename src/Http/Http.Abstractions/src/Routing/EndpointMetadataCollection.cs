@@ -127,6 +127,20 @@ public sealed class EndpointMetadataCollection : IReadOnlyList<object>
     }
 
     /// <summary>
+    /// Gets the most significant metadata item of type <typeparamref name="T"/>.
+    /// Throws an <see cref="InvalidOperationException"/> if the metadata is not found.
+    /// </summary>
+    /// <typeparam name="T">The type of metadata to retrieve.</typeparam>
+    /// <returns>
+    /// The most significant metadata of type <typeparamref name="T"/>.
+    /// </returns>
+    public T GetRequiredMetadata<T>() where T : class
+    {
+        var metadata = GetMetadata<T>();
+        return metadata == null ? throw new InvalidOperationException($"Metadata '{typeof(T)}' is not found.") : metadata;
+    }
+
+    /// <summary>
     /// Gets an <see cref="IEnumerator"/> of all metadata items.
     /// </summary>
     /// <returns>An <see cref="IEnumerator"/> of all metadata items.</returns>
