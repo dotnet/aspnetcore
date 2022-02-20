@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.RequestDecompression.Tests;
 
@@ -63,39 +64,42 @@ public class RequestDecompressionMiddlewareTests
         return await GetCompressedContent(compressorDelegate, input);
     }
 
-    [Fact]
-    public async Task Request_ContentEncodingBrotli_Decompressed()
+    [Theory]
+    [InlineData("br")]
+    [InlineData("BR")]
+    public async Task Request_ContentEncodingBrotli_Decompressed(string contentEncoding)
     {
         var compressedContent = await GetBrotliCompressedContent();
-        var contentEncoding = "br";
 
         var (logMessages, decompressedContent) = await InvokeMiddleware(compressedContent, new[] { contentEncoding });
 
-        AssertDecompressedWithLog(logMessages, contentEncoding);
+        AssertDecompressedWithLog(logMessages, contentEncoding.ToLowerInvariant());
         Assert.Equal(GetUncompressedContent(), decompressedContent);
     }
 
-    [Fact]
-    public async Task Request_ContentEncodingDeflate_Decompressed()
+    [Theory]
+    [InlineData("deflate")]
+    [InlineData("DEFLATE")]
+    public async Task Request_ContentEncodingDeflate_Decompressed(string contentEncoding)
     {
         var compressedContent = await GetDeflateCompressedContent();
-        var contentEncoding = "deflate";
 
         var (logMessages, decompressedContent) = await InvokeMiddleware(compressedContent, new[] { contentEncoding });
 
-        AssertDecompressedWithLog(logMessages, contentEncoding);
+        AssertDecompressedWithLog(logMessages, contentEncoding.ToLowerInvariant());
         Assert.Equal(GetUncompressedContent(), decompressedContent);
     }
 
-    [Fact]
-    public async Task Request_ContentEncodingGzip_Decompressed()
+    [Theory]
+    [InlineData("gzip")]
+    [InlineData("GZIP")]
+    public async Task Request_ContentEncodingGzip_Decompressed(string contentEncoding)
     {
         var compressedContent = await GetGZipCompressedContent();
-        var contentEncoding = "gzip";
 
         var (logMessages, decompressedContent) = await InvokeMiddleware(compressedContent, new[] { contentEncoding });
 
-        AssertDecompressedWithLog(logMessages, contentEncoding);
+        AssertDecompressedWithLog(logMessages, contentEncoding.ToLowerInvariant());
         Assert.Equal(GetUncompressedContent(), decompressedContent);
     }
 
@@ -118,7 +122,7 @@ public class RequestDecompressionMiddlewareTests
 
         var (logMessages, outputContent) = await InvokeMiddleware(inputContent, new[] { contentEncoding });
 
-        AssertLog(logMessages.First(), LogLevel.Debug, $"No matching request decompression provider found.");
+        AssertNoDecompressionProviderLog(logMessages);
         Assert.Equal(GetUncompressedContent(), outputContent);
     }
 
@@ -130,7 +134,8 @@ public class RequestDecompressionMiddlewareTests
 
         var (logMessages, outputContent) = await InvokeMiddleware(inputContent, contentEncodings);
 
-        AssertLog(logMessages.First(), LogLevel.Debug, "Request decompression is not supported for multiple Content-Encodings.");
+        var logMessage = Assert.Single(logMessages);
+        AssertLog(logMessage, LogLevel.Debug, "Request decompression is not supported for multiple Content-Encodings.");
         Assert.Equal(GetUncompressedContent(), outputContent);
     }
 
@@ -244,6 +249,100 @@ public class RequestDecompressionMiddlewareTests
         Assert.Equal(GetUncompressedContent(), outputContent);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Request_Decompressed_ContentEncodingHeaderRemoved(bool isDecompressed)
+    {
+        var compressedContent = await GetGZipCompressedContent();
+        var contentEncoding = isDecompressed ? "gzip" : "custom";
+
+        var sink = new TestSink(
+            TestSink.EnableWithTypeName<RequestDecompressionProvider>,
+            TestSink.EnableWithTypeName<RequestDecompressionProvider>);
+        var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+
+        var outputContent = Array.Empty<byte>();
+        var contentEncodingHeader = new StringValues();
+
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .ConfigureServices(services =>
+                {
+                    services.AddRequestDecompression();
+                    services.AddSingleton<ILoggerFactory>(loggerFactory);
+                })
+                .Configure(app =>
+                {
+                    app.UseRequestDecompression();
+                    app.Run(async context =>
+                    {
+                        contentEncodingHeader = context.Request.Headers.ContentEncoding;
+
+                        await using var ms = new MemoryStream();
+                        await context.Request.Body.CopyToAsync(ms, context.RequestAborted);
+                        outputContent = ms.ToArray();
+                    });
+                });
+            }).Build();
+
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
+        var client = server.CreateClient();
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, "");
+        request.Content = new ByteArrayContent(compressedContent);
+        request.Content.Headers.ContentEncoding.Add(contentEncoding);
+
+        await client.SendAsync(request);
+
+        var logMessages = sink.Writes.ToList();
+
+        if (isDecompressed)
+        {
+            AssertDecompressedWithLog(logMessages, contentEncoding);
+            Assert.Empty(contentEncodingHeader);
+            Assert.Equal(GetUncompressedContent(), outputContent);
+        }
+        else
+        {
+            AssertNoDecompressionProviderLog(logMessages);
+            Assert.Equal(compressedContent, outputContent);
+        }
+    }
+
+    [Theory]
+    [InlineData("gzip", true)]
+    [InlineData("br", false)]
+    public async Task Options_IncludesProviders_OnlyUsesRegisteredProviders(string contentEncoding, bool explicitlyRegistered)
+    {
+        var compressedContent = await GetGZipCompressedContent();
+
+        var (logMessages, outputContent) =
+            await InvokeMiddleware(
+                compressedContent,
+                new[] { contentEncoding },
+                configure: (RequestDecompressionOptions options) =>
+                {
+                    options.Providers.Add<GZipDecompressionProvider>();
+                });
+
+        if (explicitlyRegistered)
+        {
+            AssertDecompressedWithLog(logMessages, contentEncoding);
+            Assert.Equal(GetUncompressedContent(), outputContent);
+        }
+        else
+        {
+            AssertNoDecompressionProviderLog(logMessages);
+            Assert.Equal(compressedContent, outputContent);
+        }
+    }
+
     private static void AssertLog(WriteContext log, LogLevel level, string message)
     {
         Assert.Equal(level, log.LogLevel);
@@ -254,5 +353,11 @@ public class RequestDecompressionMiddlewareTests
     {
         var message = Assert.Single(logMessages);
         AssertLog(message, LogLevel.Debug, $"The request will be decompressed with '{encoding}'.");
+    }
+
+    private static void AssertNoDecompressionProviderLog(List<WriteContext> logMessages)
+    {
+        var logMessage = Assert.Single(logMessages);
+        AssertLog(logMessage, LogLevel.Debug, "No matching request decompression provider found.");
     }
 }
