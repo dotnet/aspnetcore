@@ -243,9 +243,10 @@ public class RequestDecompressionMiddlewareTests
 
         var logMessages = sink.Writes.ToList();
 
-        Assert.Equal(2, logMessages.Count);
+        Assert.Equal(3, logMessages.Count);
         AssertLog(logMessages.First(), LogLevel.Debug, $"The request will be decompressed with '{contentEncoding}'.");
-        AssertLog(logMessages.Skip(1).First(), LogLevel.Trace, "The Content-Encoding header is missing or empty. Skipping request decompression.");
+        AssertLog(logMessages.Skip(1).First(), LogLevel.Warning, "A request body size limit could not be applied. This server does not support the IHttpMaxRequestBodySizeFeature.");
+        AssertLog(logMessages.Skip(2).First(), LogLevel.Trace, "The Content-Encoding header is missing or empty. Skipping request decompression.");
         Assert.Equal(GetUncompressedContent(), outputContent);
     }
 
@@ -351,8 +352,9 @@ public class RequestDecompressionMiddlewareTests
 
     private static void AssertDecompressedWithLog(List<WriteContext> logMessages, string encoding)
     {
-        var message = Assert.Single(logMessages);
-        AssertLog(message, LogLevel.Debug, $"The request will be decompressed with '{encoding}'.");
+        Assert.Equal(2, logMessages.Count);
+        AssertLog(logMessages.First(), LogLevel.Debug, $"The request will be decompressed with '{encoding}'.");
+        AssertLog(logMessages.Skip(1).First(), LogLevel.Warning, "A request body size limit could not be applied. This server does not support the IHttpMaxRequestBodySizeFeature.");
     }
 
     private static void AssertNoDecompressionProviderLog(List<WriteContext> logMessages)

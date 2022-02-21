@@ -26,6 +26,8 @@ Microsoft.AspNetCore.RequestDecompression.RequestDecompressionMiddleware
 Microsoft.AspNetCore.RequestDecompression.RequestDecompressionMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.RequestDecompression.RequestDecompressionMiddleware.RequestDecompressionMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.AspNetCore.RequestDecompression.IRequestDecompressionProvider! provider) -> void
 Microsoft.AspNetCore.RequestDecompression.RequestDecompressionOptions
+Microsoft.AspNetCore.RequestDecompression.RequestDecompressionOptions.MaxRequestBodySize.get -> long
+Microsoft.AspNetCore.RequestDecompression.RequestDecompressionOptions.MaxRequestBodySize.set -> void
 Microsoft.AspNetCore.RequestDecompression.RequestDecompressionOptions.Providers.get -> Microsoft.AspNetCore.RequestDecompression.DecompressionProviderCollection!
 Microsoft.AspNetCore.RequestDecompression.RequestDecompressionOptions.RequestDecompressionOptions() -> void
 static Microsoft.AspNetCore.Builder.RequestDecompressionBuilderExtensions.UseRequestDecompression(this Microsoft.AspNetCore.Builder.IApplicationBuilder! builder) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!

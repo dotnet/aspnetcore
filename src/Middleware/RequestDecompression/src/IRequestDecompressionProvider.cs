@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.RequestDecompression;
 
@@ -16,4 +17,10 @@ public interface IRequestDecompressionProvider
     /// <param name="context">The <see cref="HttpContext"/>.</param>
     /// <returns>A decompression provider or null if there are no acceptable providers.</returns>
     IDecompressionProvider? GetDecompressionProvider(HttpContext context);
+
+    /// <summary>
+    /// Sets <see cref="IHttpMaxRequestBodySizeFeature.MaxRequestBodySize"/>, if the feature exists.
+    /// </summary>
+    /// <param name="context">The <see cref="HttpContext"/>.</param>
+    void SetRequestSizeLimit(HttpContext context);
 }

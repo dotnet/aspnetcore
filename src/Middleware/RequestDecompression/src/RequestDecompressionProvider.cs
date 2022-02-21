@@ -3,6 +3,7 @@
 
 using System.Linq;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
@@ -12,8 +13,10 @@ namespace Microsoft.AspNetCore.RequestDecompression;
 /// <inheritdoc />
 internal sealed class RequestDecompressionProvider : IRequestDecompressionProvider
 {
-    private readonly IReadOnlyDictionary<string, IDecompressionProvider> _providers;
+    private readonly RequestDecompressionOptions _options;
     private readonly ILogger _logger;
+
+    private readonly IReadOnlyDictionary<string, IDecompressionProvider> _providers;
 
     /// <summary>
     /// If no decompression providers are specified then all default providers will be registered.
@@ -41,11 +44,10 @@ internal sealed class RequestDecompressionProvider : IRequestDecompressionProvid
             throw new ArgumentNullException(nameof(options));
         }
 
-        _logger = logger;
+        _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-        var requestDecompressionOptions = options.Value;
-
-        var registeredProviders = requestDecompressionOptions.Providers.ToArray();
+        var registeredProviders = _options.Providers.ToArray();
         if (registeredProviders.Length == 0)
         {
             registeredProviders = new IDecompressionProvider[]
@@ -102,5 +104,25 @@ internal sealed class RequestDecompressionProvider : IRequestDecompressionProvid
 
         _logger.NoDecompressionProvider();
         return null;
+    }
+
+    /// <inheritdoc />
+    public void SetRequestSizeLimit(HttpContext context)
+    {
+        var maxRequestBodySizeFeature = context.Features.Get<IHttpMaxRequestBodySizeFeature>();
+
+        if (maxRequestBodySizeFeature == null)
+        {
+            _logger.FeatureNotFound();
+        }
+        else if (maxRequestBodySizeFeature.IsReadOnly)
+        {
+            _logger.FeatureIsReadOnly();
+        }
+        else
+        {
+            maxRequestBodySizeFeature.MaxRequestBodySize = _options.MaxRequestBodySize;
+            _logger.MaxRequestBodySizeSet(_options.MaxRequestBodySize);
+        }
     }
 }

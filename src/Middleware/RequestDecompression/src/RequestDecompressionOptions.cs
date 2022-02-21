@@ -12,4 +12,9 @@ public class RequestDecompressionOptions
     /// The <see cref="IDecompressionProvider"/> types to use for request decompression.
     /// </summary>
     public DecompressionProviderCollection Providers { get; } = new DecompressionProviderCollection();
+
+    /// <summary>
+    /// The maximum allowed size of the decompressed request body in bytes.
+    /// </summary>
+    public long MaxRequestBodySize { get; set; }
 }
