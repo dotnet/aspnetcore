@@ -38,7 +38,8 @@ public static class EndpointRouteBuilderExtensions
         string pattern,
         RequestDelegate requestDelegate)
     {
-        if (requestDelegate.Method.ReturnType.IsGenericType)
+        var returnType = requestDelegate.Method.ReturnType;
+        if (returnType is { IsGenericType: true } && returnType.GetGenericTypeDefinition() == typeof(Task<>))
         {
             return MapMethods(endpoints, pattern, GetVerb, requestDelegate as Delegate);
         }
