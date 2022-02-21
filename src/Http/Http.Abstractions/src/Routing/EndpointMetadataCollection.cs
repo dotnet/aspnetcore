@@ -134,6 +134,7 @@ public sealed class EndpointMetadataCollection : IReadOnlyList<object>
     /// <returns>
     /// The most significant metadata of type <typeparamref name="T"/>.
     /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public T GetRequiredMetadata<T>() where T : class
     {
         var metadata = GetMetadata<T>();
