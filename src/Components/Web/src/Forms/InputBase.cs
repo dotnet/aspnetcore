@@ -16,6 +16,8 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
 {
     private readonly EventHandler<ValidationStateChangedEventArgs> _validationStateChangedHandler;
     private bool _hasInitializedParameters;
+    private bool _parsingFailed;
+    private string? _currentValueAsString;
     private bool _previousParsingAttemptFailed;
     private ValidationMessageStore? _parsingValidationMessages;
     private Type? _nullableUnderlyingType;
@@ -74,6 +76,7 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
             var hasChanged = !EqualityComparer<TValue>.Default.Equals(value, Value);
             if (hasChanged)
             {
+                _parsingFailed = false;
                 Value = value;
                 _ = ValueChanged.InvokeAsync(Value);
                 EditContext?.NotifyFieldChanged(FieldIdentifier);
@@ -86,29 +89,35 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
     /// </summary>
     protected string? CurrentValueAsString
     {
-        get => FormatValueAsString(CurrentValue);
+        get
+        {
+            if (_parsingFailed)
+            {
+                return _currentValueAsString;
+            }
+            return FormatValueAsString(CurrentValue);
+        }
         set
         {
+            _currentValueAsString = value;
             _parsingValidationMessages?.Clear();
-
-            bool parsingFailed;
 
             if (_nullableUnderlyingType != null && string.IsNullOrEmpty(value))
             {
                 // Assume if it's a nullable type, null/empty inputs should correspond to default(T)
                 // Then all subclasses get nullable support almost automatically (they just have to
                 // not reject Nullable<T> based on the type itself).
-                parsingFailed = false;
+                _parsingFailed = false;
                 CurrentValue = default!;
             }
             else if (TryParseValueFromString(value, out var parsedValue, out var validationErrorMessage))
             {
-                parsingFailed = false;
+                _parsingFailed = false;
                 CurrentValue = parsedValue!;
             }
             else
             {
-                parsingFailed = true;
+                _parsingFailed = true;
 
                 // EditContext may be null if the input is not a child component of EditForm.
                 if (EditContext is not null)
@@ -122,10 +131,10 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
             }
 
             // We can skip the validation notification if we were previously valid and still are
-            if (parsingFailed || _previousParsingAttemptFailed)
+            if (_parsingFailed || _previousParsingAttemptFailed)
             {
                 EditContext?.NotifyValidationStateChanged();
-                _previousParsingAttemptFailed = parsingFailed;
+                _previousParsingAttemptFailed = _parsingFailed;
             }
         }
     }
