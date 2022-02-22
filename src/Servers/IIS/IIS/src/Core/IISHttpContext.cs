@@ -397,9 +397,10 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
 
     // Response trailers, reset, and GOAWAY are only on HTTP/2+ and require IIS support
     // that is only available on Win 11/Server 2022 or later.
-    protected bool AdvancedHttp2FeaturesSupported => OperatingSystem.IsWindowsVersionAtLeast(10, 0, 20348, 0) &&
-                                                   HttpVersion >= System.Net.HttpVersion.Version20 &&
-                                                   NativeMethods.HttpHasResponse4(_requestNativeHandle);
+    protected static readonly bool isCompatibleOsVersion = OperatingSystem.IsWindowsVersionAtLeast(10, 0, 20348, 0);
+    protected bool AdvancedHttp2FeaturesSupported => isCompatibleOsVersion &&
+        HttpVersion >= System.Net.HttpVersion.Version20 &&
+        NativeMethods.HttpHasResponse4(_requestNativeHandle);
 
     public unsafe void SetResponseHeaders()
     {
