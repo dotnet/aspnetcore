@@ -26,7 +26,7 @@ public class TestModelMetadataProvider : DefaultModelMetadataProvider
     {
         var detailsProviders = new List<IMetadataDetailsProvider>
             {
-                new DefaultBindingMetadataProvider(),
+                new DefaultBindingMetadataProvider(new MvcOptions()),
                 new DefaultValidationMetadataProvider(),
                 CreateDefaultDataAnnotationsProvider(stringLocalizerFactory),
                 new DataMemberRequiredBindingMetadataProvider(),
@@ -45,7 +45,7 @@ public class TestModelMetadataProvider : DefaultModelMetadataProvider
     {
         var detailsProviders = new List<IMetadataDetailsProvider>()
             {
-                new DefaultBindingMetadataProvider(),
+                new DefaultBindingMetadataProvider(new MvcOptions()),
                 new DefaultValidationMetadataProvider(),
                 new DataAnnotationsMetadataProvider(
                     new MvcOptions(),
@@ -88,7 +88,7 @@ public class TestModelMetadataProvider : DefaultModelMetadataProvider
         : base(
               new DefaultCompositeMetadataDetailsProvider(new IMetadataDetailsProvider[]
               {
-                      new DefaultBindingMetadataProvider(),
+                      new DefaultBindingMetadataProvider(new MvcOptions()),
                       new DefaultValidationMetadataProvider(),
                       new DataAnnotationsMetadataProvider(
                           new MvcOptions(),

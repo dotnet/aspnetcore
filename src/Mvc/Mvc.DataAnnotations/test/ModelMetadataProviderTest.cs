@@ -1045,7 +1045,7 @@ public class ModelMetadataProviderTest
             : base(
                   new DefaultCompositeMetadataDetailsProvider(new IMetadataDetailsProvider[]
                   {
-                          new DefaultBindingMetadataProvider(),
+                          new DefaultBindingMetadataProvider(new MvcOptions()),
                           new DataAnnotationsMetadataProvider(
                               new MvcOptions(),
                               Options.Create(new MvcDataAnnotationsLocalizationOptions()),

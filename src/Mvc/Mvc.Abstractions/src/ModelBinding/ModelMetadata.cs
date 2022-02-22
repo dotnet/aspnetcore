@@ -437,9 +437,9 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
     /// Gets a value indicating whether <see cref="ModelType"/> is a complex type.
     /// </summary>
     /// <remarks>
-    /// A complex type is defined as a <see cref="Type"/> that is NOT <see cref="IsConvertibleType"/> and NOT <see cref="IsParseableType"/>.
-    /// Most POCO and <see cref="IEnumerable"/> types are therefore complex. Most, if
-    /// not all, BCL value types are simple types.
+    /// A complex type is defined as a <see cref="Type"/> without a <see cref="TypeConverter"/> that can convert
+    /// from <see cref="string"/> and without a <c>TryParse</c> method. Most POCO and <see cref="IEnumerable"/> types are therefore complex.
+    /// Most, if not all, BCL value types are simple types.
     /// </remarks>
     public bool IsComplexType => !IsConvertibleType && !IsParseableType;
 

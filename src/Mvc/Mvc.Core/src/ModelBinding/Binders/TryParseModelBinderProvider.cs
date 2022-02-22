@@ -14,7 +14,7 @@ public sealed class TryParseModelBinderProvider : IModelBinderProvider
     /// <inheritdoc />
     public IModelBinder? GetBinder(ModelBinderProviderContext context)
     {
-        if (context == null)
+        if (context is null)
         {
             throw new ArgumentNullException(nameof(context));
         }

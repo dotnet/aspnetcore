@@ -14,9 +14,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 /// </summary>
 internal class DefaultBindingMetadataProvider : IBindingMetadataProvider
 {
-    private readonly MvcOptions? _options;
+    private readonly MvcOptions _options;
 
-    public DefaultBindingMetadataProvider(MvcOptions? options = null)
+    public DefaultBindingMetadataProvider(MvcOptions options)
     {
         _options = options;
     }
@@ -86,7 +86,7 @@ internal class DefaultBindingMetadataProvider : IBindingMetadataProvider
             context.BindingMetadata.BoundConstructor = constructorInfo;
         }
 
-        if (_options?.SuppressParseableTypesBinding is false && ModelMetadata.FindTryParseMethod(context.Key.ModelType) is not null)
+        if (!_options.SuppressParseableTypesBinding && ModelMetadata.FindTryParseMethod(context.Key.ModelType) is not null)
         {
             context.BindingMetadata.IsBindingFromTryParseAllowed = true;
         }

@@ -4,6 +4,7 @@
 using System.Linq.Expressions;
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
@@ -117,7 +118,7 @@ internal sealed class TryParseModelBinder : IModelBinder
     {
         modelType = Nullable.GetUnderlyingType(modelType) ?? modelType;
         var tryParseMethodExpession = ModelMetadata.FindTryParseMethod(modelType)
-            ?? throw new InvalidOperationException($"The type '{ modelType }' does not contains a TryParse method and the binder '{ nameof(TryParseModelBinder) }' cannot be used.");
+            ?? throw new InvalidOperationException(Resources.FormatTryParseModelBinder_InvalidType(modelType, nameof(TryParseModelBinder)));
 
         // var tempSourceString = valueProviderResult.FirstValue;
         // object model = null;
