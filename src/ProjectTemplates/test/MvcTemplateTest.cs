@@ -229,7 +229,7 @@ public class MvcTemplateTest : LoggedTest
 
     [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)] // Running these requires the rid-specific runtime pack to be available which is not consistent in all our platform builds.
-    [SkipOnHelix("cert failure", Queues = "All.OSX")]
+    [SkipOnHelix("cert failure", Queues = "All.OSX;" + HelixConstants.Windows10Arm64)]
     public async Task MvcTemplate_SingleFileExe()
     {
         // This test verifies publishing an MVC app as a single file exe works. We'll limit testing
