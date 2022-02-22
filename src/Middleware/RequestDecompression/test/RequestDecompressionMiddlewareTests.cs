@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Text;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -110,7 +111,8 @@ public class RequestDecompressionMiddlewareTests
 
         var (logMessages, outputContent) = await InvokeMiddleware(uncompressedContent);
 
-        AssertLog(logMessages.Single(), LogLevel.Trace, "The Content-Encoding header is missing or empty. Skipping request decompression.");
+        var logMessage = Assert.Single(logMessages);
+        AssertLog(logMessage, LogLevel.Trace, "The Content-Encoding header is missing or empty. Skipping request decompression.");
         Assert.Equal(uncompressedContent, outputContent);
     }
 
@@ -137,6 +139,295 @@ public class RequestDecompressionMiddlewareTests
         var logMessage = Assert.Single(logMessages);
         AssertLog(logMessage, LogLevel.Debug, "Request decompression is not supported for multiple Content-Encodings.");
         Assert.Equal(GetUncompressedContent(), outputContent);
+    }
+
+    [Fact]
+    public async Task Request_MiddlewareAddedMultipleTimes_OnlyDecompressedOnce()
+    {
+        var compressedContent = await GetGZipCompressedContent();
+        var contentEncoding = "gzip";
+
+        var outputContent = Array.Empty<byte>();
+
+        var sink = new TestSink(
+            TestSink.EnableWithTypeName<RequestDecompressionProvider>,
+            TestSink.EnableWithTypeName<RequestDecompressionProvider>);
+        var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .ConfigureServices(services =>
+                {
+                    services.AddRequestDecompression();
+                    services.AddSingleton<ILoggerFactory>(loggerFactory);
+                })
+                .Configure(app =>
+                {
+                    app.UseRequestDecompression();
+                    app.UseRequestDecompression();
+                    app.Run(async context =>
+                    {
+                        await using var ms = new MemoryStream();
+                        await context.Request.Body.CopyToAsync(ms, context.RequestAborted);
+                        outputContent = ms.ToArray();
+                    });
+                });
+            }).Build();
+
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
+        var client = server.CreateClient();
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, "");
+        request.Content = new ByteArrayContent(compressedContent);
+        request.Content.Headers.ContentEncoding.Add(contentEncoding);
+
+        await client.SendAsync(request);
+
+        var logMessages = sink.Writes.ToList();
+
+        Assert.Equal(3, logMessages.Count);
+        AssertLog(logMessages.First(), LogLevel.Debug, $"The request will be decompressed with '{contentEncoding}'.");
+        AssertLog(logMessages.Skip(1).First(), LogLevel.Warning, $"A request body size limit could not be applied. This server does not support the {nameof(IHttpMaxRequestBodySizeFeature)}.");
+        AssertLog(logMessages.Skip(2).First(), LogLevel.Trace, "The Content-Encoding header is missing or empty. Skipping request decompression.");
+
+        Assert.Equal(GetUncompressedContent(), outputContent);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Request_Decompressed_ContentEncodingHeaderRemoved(bool isDecompressed)
+    {
+        var contentEncoding = isDecompressed ? "gzip" : "custom";
+        var contentEncodingHeader = new StringValues();
+
+        var sink = new TestSink(
+            TestSink.EnableWithTypeName<RequestDecompressionProvider>,
+            TestSink.EnableWithTypeName<RequestDecompressionProvider>);
+        var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .ConfigureServices(services =>
+                {
+                    services.AddRequestDecompression();
+                    services.AddSingleton<ILoggerFactory>(loggerFactory);
+                })
+                .Configure(app =>
+                {
+                    app.UseRequestDecompression();
+                    app.Run(context =>
+                    {
+                        contentEncodingHeader = context.Request.Headers.ContentEncoding;
+                        return Task.CompletedTask;
+                    });
+                });
+            }).Build();
+
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
+        var client = server.CreateClient();
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, "");
+        request.Content = new ByteArrayContent(new byte[1]);
+        request.Content.Headers.ContentEncoding.Add(contentEncoding);
+
+        await client.SendAsync(request);
+
+        var logMessages = sink.Writes.ToList();
+
+        if (isDecompressed)
+        {
+            AssertDecompressedWithLog(logMessages, contentEncoding);
+            Assert.Empty(contentEncodingHeader);
+        }
+        else
+        {
+            AssertNoDecompressionProviderLog(logMessages);
+            Assert.Equal(contentEncoding, contentEncodingHeader);
+        }
+    }
+
+    [Theory]
+    [InlineData("gzip", true)]
+    [InlineData("br", false)]
+    public async Task Options_IncludesProviders_OnlyUsesRegisteredProviders(string contentEncoding, bool explicitlyRegistered)
+    {
+        var compressedContent = await GetGZipCompressedContent();
+
+        var (logMessages, _) =
+            await InvokeMiddleware(
+                compressedContent,
+                new[] { contentEncoding },
+                configure: (RequestDecompressionOptions options) =>
+                {
+                    options.Providers.Add<GZipDecompressionProvider>();
+                });
+
+        if (explicitlyRegistered)
+        {
+            AssertDecompressedWithLog(logMessages, contentEncoding);
+        }
+        else
+        {
+            AssertNoDecompressionProviderLog(logMessages);
+        }
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Request_ServerSupportsMaxBodySizeFeature_RequestSizeLimitSet(bool supportsFeature)
+    {
+        var contentEncoding = "gzip";
+        long maxRequestBodySize = 100;
+
+        var fakeMaxRequestBodySize = supportsFeature
+            ? new FakeHttpMaxRequestBodySizeFeature()
+            : null;
+
+        var sink = new TestSink(
+            TestSink.EnableWithTypeName<RequestDecompressionProvider>,
+            TestSink.EnableWithTypeName<RequestDecompressionProvider>);
+        var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .ConfigureServices(services =>
+                {
+                    services.AddRequestDecompression(options =>
+                    {
+                        options.MaxRequestBodySize = maxRequestBodySize;
+                    });
+                    services.AddSingleton<ILoggerFactory>(loggerFactory);
+                })
+                .Configure(app =>
+                {
+                    app.Use((context, next) =>
+                    {
+                        context.Features.Set<IHttpMaxRequestBodySizeFeature>(fakeMaxRequestBodySize);
+                        return next(context);
+                    });
+                    app.UseRequestDecompression();
+                    app.Run(context => Task.CompletedTask);
+                });
+            }).Build();
+
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
+        var client = server.CreateClient();
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, "");
+        request.Content = new ByteArrayContent(new byte[1]);
+        request.Content.Headers.ContentEncoding.Add(contentEncoding);
+
+        await client.SendAsync(request);
+
+        var logMessages = sink.Writes.ToList();
+
+        Assert.Equal(2, logMessages.Count);
+        AssertLog(logMessages.First(), LogLevel.Debug, $"The request will be decompressed with '{contentEncoding}'.");
+
+        if (supportsFeature)
+        {
+            AssertLog(logMessages.Skip(1).First(), LogLevel.Debug, $"The maximum request body size has been set to {maxRequestBodySize}.");
+            Assert.Equal(maxRequestBodySize, fakeMaxRequestBodySize.MaxRequestBodySize);
+        }
+        else
+        {
+            AssertLog(logMessages.Skip(1).First(), LogLevel.Warning, $"A request body size limit could not be applied. This server does not support the {nameof(IHttpMaxRequestBodySizeFeature)}.");
+        }
+    }
+
+    [Fact]
+    public async Task Request_ReadOnlyMaxBodySizeFeature_RequestSizeLimitNotSet()
+    {
+        var contentEncoding = "gzip";
+        long maxRequestBodySize = 100;
+
+        FakeHttpMaxRequestBodySizeFeature fakeMaxRequestBodySize = null;
+
+        var sink = new TestSink(
+            TestSink.EnableWithTypeName<RequestDecompressionProvider>,
+            TestSink.EnableWithTypeName<RequestDecompressionProvider>);
+        var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .ConfigureServices(services =>
+                {
+                    services.AddRequestDecompression(options =>
+                    {
+                        options.MaxRequestBodySize = maxRequestBodySize;
+                    });
+                    services.AddSingleton<ILoggerFactory>(loggerFactory);
+                })
+                .Configure(app =>
+                {
+                    app.Use((context, next) =>
+                    {
+                        fakeMaxRequestBodySize = new FakeHttpMaxRequestBodySizeFeature(isReadOnly: true);
+                        context.Features.Set<IHttpMaxRequestBodySizeFeature>(fakeMaxRequestBodySize);
+                        return next(context);
+                    });
+                    app.UseRequestDecompression();
+                    app.Run(context => Task.CompletedTask);
+                });
+            }).Build();
+
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
+        var client = server.CreateClient();
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, "");
+        request.Content = new ByteArrayContent(new byte[1]);
+        request.Content.Headers.ContentEncoding.Add(contentEncoding);
+
+        await client.SendAsync(request);
+
+        var logMessages = sink.Writes.ToList();
+
+        Assert.Equal(2, logMessages.Count);
+        AssertLog(logMessages.First(), LogLevel.Debug, $"The request will be decompressed with '{contentEncoding}'.");
+        AssertLog(logMessages.Skip(1).First(), LogLevel.Warning, $"A request body size limit could not be applied. The {nameof(IHttpMaxRequestBodySizeFeature)} for the server is read-only.");
+
+        Assert.NotEqual(maxRequestBodySize, fakeMaxRequestBodySize.MaxRequestBodySize);
+    }
+
+    private static void AssertLog(WriteContext log, LogLevel level, string message)
+    {
+        Assert.Equal(level, log.LogLevel);
+        Assert.Equal(message, log.State.ToString());
+    }
+
+    private static void AssertDecompressedWithLog(List<WriteContext> logMessages, string encoding)
+    {
+        Assert.Equal(2, logMessages.Count);
+        AssertLog(logMessages.First(), LogLevel.Debug, $"The request will be decompressed with '{encoding}'.");
+        AssertLog(logMessages.Skip(1).First(), LogLevel.Warning, $"A request body size limit could not be applied. This server does not support the {nameof(IHttpMaxRequestBodySizeFeature)}.");
+    }
+
+    private static void AssertNoDecompressionProviderLog(List<WriteContext> logMessages)
+    {
+        var logMessage = Assert.Single(logMessages);
+        AssertLog(logMessage, LogLevel.Debug, "No matching request decompression provider found.");
     }
 
     private static async Task<(List<WriteContext>, byte[])> InvokeMiddleware(
@@ -194,172 +485,16 @@ public class RequestDecompressionMiddlewareTests
         return (sink.Writes.ToList(), outputContent);
     }
 
-    [Fact]
-    public async Task Request_MiddlewareAddedMultipleTimes_OnlyDecompressedOnce()
+    private class FakeHttpMaxRequestBodySizeFeature : IHttpMaxRequestBodySizeFeature
     {
-        var compressedContent = await GetGZipCompressedContent();
-        var contentEncoding = "gzip";
-
-        var sink = new TestSink(
-            TestSink.EnableWithTypeName<RequestDecompressionProvider>,
-            TestSink.EnableWithTypeName<RequestDecompressionProvider>);
-        var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-
-        var outputContent = Array.Empty<byte>();
-
-        using var host = new HostBuilder()
-            .ConfigureWebHost(webHostBuilder =>
-            {
-                webHostBuilder
-                .UseTestServer()
-                .ConfigureServices(services =>
-                {
-                    services.AddRequestDecompression();
-                    services.AddSingleton<ILoggerFactory>(loggerFactory);
-                })
-                .Configure(app =>
-                {
-                    app.UseRequestDecompression();
-                    app.UseRequestDecompression();
-                    app.Run(async context =>
-                    {
-                        await using var ms = new MemoryStream();
-                        await context.Request.Body.CopyToAsync(ms, context.RequestAborted);
-                        outputContent = ms.ToArray();
-                    });
-                });
-            }).Build();
-
-        await host.StartAsync();
-
-        var server = host.GetTestServer();
-        var client = server.CreateClient();
-
-        using var request = new HttpRequestMessage(HttpMethod.Post, "");
-        request.Content = new ByteArrayContent(compressedContent);
-        request.Content.Headers.ContentEncoding.Add(contentEncoding);
-
-        await client.SendAsync(request);
-
-        var logMessages = sink.Writes.ToList();
-
-        Assert.Equal(3, logMessages.Count);
-        AssertLog(logMessages.First(), LogLevel.Debug, $"The request will be decompressed with '{contentEncoding}'.");
-        AssertLog(logMessages.Skip(1).First(), LogLevel.Warning, "A request body size limit could not be applied. This server does not support the IHttpMaxRequestBodySizeFeature.");
-        AssertLog(logMessages.Skip(2).First(), LogLevel.Trace, "The Content-Encoding header is missing or empty. Skipping request decompression.");
-        Assert.Equal(GetUncompressedContent(), outputContent);
-    }
-
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task Request_Decompressed_ContentEncodingHeaderRemoved(bool isDecompressed)
-    {
-        var compressedContent = await GetGZipCompressedContent();
-        var contentEncoding = isDecompressed ? "gzip" : "custom";
-
-        var sink = new TestSink(
-            TestSink.EnableWithTypeName<RequestDecompressionProvider>,
-            TestSink.EnableWithTypeName<RequestDecompressionProvider>);
-        var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-
-        var outputContent = Array.Empty<byte>();
-        var contentEncodingHeader = new StringValues();
-
-        using var host = new HostBuilder()
-            .ConfigureWebHost(webHostBuilder =>
-            {
-                webHostBuilder
-                .UseTestServer()
-                .ConfigureServices(services =>
-                {
-                    services.AddRequestDecompression();
-                    services.AddSingleton<ILoggerFactory>(loggerFactory);
-                })
-                .Configure(app =>
-                {
-                    app.UseRequestDecompression();
-                    app.Run(async context =>
-                    {
-                        contentEncodingHeader = context.Request.Headers.ContentEncoding;
-
-                        await using var ms = new MemoryStream();
-                        await context.Request.Body.CopyToAsync(ms, context.RequestAborted);
-                        outputContent = ms.ToArray();
-                    });
-                });
-            }).Build();
-
-        await host.StartAsync();
-
-        var server = host.GetTestServer();
-        var client = server.CreateClient();
-
-        using var request = new HttpRequestMessage(HttpMethod.Post, "");
-        request.Content = new ByteArrayContent(compressedContent);
-        request.Content.Headers.ContentEncoding.Add(contentEncoding);
-
-        await client.SendAsync(request);
-
-        var logMessages = sink.Writes.ToList();
-
-        if (isDecompressed)
+        public FakeHttpMaxRequestBodySizeFeature(long? maxRequestBodySize = null, bool isReadOnly = false)
         {
-            AssertDecompressedWithLog(logMessages, contentEncoding);
-            Assert.Empty(contentEncodingHeader);
-            Assert.Equal(GetUncompressedContent(), outputContent);
+            MaxRequestBodySize = maxRequestBodySize;
+            IsReadOnly = isReadOnly;
         }
-        else
-        {
-            AssertNoDecompressionProviderLog(logMessages);
-            Assert.Equal(compressedContent, outputContent);
-        }
-    }
 
-    [Theory]
-    [InlineData("gzip", true)]
-    [InlineData("br", false)]
-    public async Task Options_IncludesProviders_OnlyUsesRegisteredProviders(string contentEncoding, bool explicitlyRegistered)
-    {
-        var compressedContent = await GetGZipCompressedContent();
+        public bool IsReadOnly { get; }
 
-        var (logMessages, outputContent) =
-            await InvokeMiddleware(
-                compressedContent,
-                new[] { contentEncoding },
-                configure: (RequestDecompressionOptions options) =>
-                {
-                    options.Providers.Add<GZipDecompressionProvider>();
-                });
-
-        if (explicitlyRegistered)
-        {
-            AssertDecompressedWithLog(logMessages, contentEncoding);
-            Assert.Equal(GetUncompressedContent(), outputContent);
-        }
-        else
-        {
-            AssertNoDecompressionProviderLog(logMessages);
-            Assert.Equal(compressedContent, outputContent);
-        }
-    }
-
-    private static void AssertLog(WriteContext log, LogLevel level, string message)
-    {
-        Assert.Equal(level, log.LogLevel);
-        Assert.Equal(message, log.State.ToString());
-    }
-
-    private static void AssertDecompressedWithLog(List<WriteContext> logMessages, string encoding)
-    {
-        Assert.Equal(2, logMessages.Count);
-        AssertLog(logMessages.First(), LogLevel.Debug, $"The request will be decompressed with '{encoding}'.");
-        AssertLog(logMessages.Skip(1).First(), LogLevel.Warning, "A request body size limit could not be applied. This server does not support the IHttpMaxRequestBodySizeFeature.");
-    }
-
-    private static void AssertNoDecompressionProviderLog(List<WriteContext> logMessages)
-    {
-        var logMessage = Assert.Single(logMessages);
-        AssertLog(logMessage, LogLevel.Debug, "No matching request decompression provider found.");
+        public long? MaxRequestBodySize { get; set; }
     }
 }
