@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.Authentication.WebAssembly.Msal;
 
-internal class MsalDefaultOptionsConfiguration : IPostConfigureOptions<RemoteAuthenticationOptions<MsalProviderOptions>>
+internal sealed class MsalDefaultOptionsConfiguration : IPostConfigureOptions<RemoteAuthenticationOptions<MsalProviderOptions>>
 {
     private readonly NavigationManager _navigationManager;
 
@@ -41,7 +41,7 @@ internal class MsalDefaultOptionsConfiguration : IPostConfigureOptions<RemoteAut
         options.ProviderOptions.Authentication.NavigateToLoginRequestUrl = false;
     }
 
-    public void PostConfigure(string name, RemoteAuthenticationOptions<MsalProviderOptions> options)
+    public void PostConfigure(string? name, RemoteAuthenticationOptions<MsalProviderOptions> options)
     {
         if (string.Equals(name, Options.DefaultName, StringComparison.Ordinal))
         {

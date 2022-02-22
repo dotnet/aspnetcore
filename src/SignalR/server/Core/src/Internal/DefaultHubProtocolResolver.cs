@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.SignalR.Internal;
 
-internal class DefaultHubProtocolResolver : IHubProtocolResolver
+internal partial class DefaultHubProtocolResolver : IHubProtocolResolver
 {
     private readonly ILogger<DefaultHubProtocolResolver> _logger;
     private readonly List<IHubProtocol> _hubProtocols;
@@ -44,23 +44,12 @@ internal class DefaultHubProtocolResolver : IHubProtocolResolver
         return null;
     }
 
-    private static class Log
+    private static partial class Log
     {
-        // Category: DefaultHubProtocolResolver
-        private static readonly Action<ILogger, string, Type, Exception?> _registeredSignalRProtocol =
-            LoggerMessage.Define<string, Type>(LogLevel.Debug, new EventId(1, "RegisteredSignalRProtocol"), "Registered SignalR Protocol: {ProtocolName}, implemented by {ImplementationType}.");
+        [LoggerMessage(1, LogLevel.Debug, "Registered SignalR Protocol: {ProtocolName}, implemented by {ImplementationType}.", EventName = "RegisteredSignalRProtocol")]
+        public static partial void RegisteredSignalRProtocol(ILogger logger, string protocolName, Type implementationType);
 
-        private static readonly Action<ILogger, string, Exception?> _foundImplementationForProtocol =
-            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(2, "FoundImplementationForProtocol"), "Found protocol implementation for requested protocol: {ProtocolName}.");
-
-        public static void RegisteredSignalRProtocol(ILogger logger, string protocolName, Type implementationType)
-        {
-            _registeredSignalRProtocol(logger, protocolName, implementationType, null);
-        }
-
-        public static void FoundImplementationForProtocol(ILogger logger, string protocolName)
-        {
-            _foundImplementationForProtocol(logger, protocolName, null);
-        }
+        [LoggerMessage(2, LogLevel.Debug, "Found protocol implementation for requested protocol: {ProtocolName}.", EventName = "FoundImplementationForProtocol")]
+        public static partial void FoundImplementationForProtocol(ILogger logger, string protocolName);
     }
 }

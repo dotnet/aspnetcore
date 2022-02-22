@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client.Internal;
 
-internal class LoggingHttpMessageHandler : DelegatingHandler
+internal sealed partial class LoggingHttpMessageHandler : DelegatingHandler
 {
     private readonly ILogger<LoggingHttpMessageHandler> _logger;
 
@@ -38,21 +38,12 @@ internal class LoggingHttpMessageHandler : DelegatingHandler
         return response;
     }
 
-    private static class Log
+    private static partial class Log
     {
-        private static readonly Action<ILogger, HttpMethod, Uri, Exception?> _sendingHttpRequest =
-            LoggerMessage.Define<HttpMethod, Uri>(LogLevel.Trace, new EventId(1, "SendingHttpRequest"), "Sending HTTP request {RequestMethod} '{RequestUrl}'.");
+        [LoggerMessage(1, LogLevel.Trace, "Sending HTTP request {RequestMethod} '{RequestUrl}'.", EventName = "SendingHttpRequest")]
+        public static partial void SendingHttpRequest(ILogger logger, HttpMethod requestMethod, Uri requestUrl);
 
-        private static readonly Action<ILogger, int, HttpMethod, Uri, Exception?> _unsuccessfulHttpResponse =
-            LoggerMessage.Define<int, HttpMethod, Uri>(LogLevel.Warning, new EventId(2, "UnsuccessfulHttpResponse"), "Unsuccessful HTTP response {StatusCode} return from {RequestMethod} '{RequestUrl}'.");
-
-        public static void SendingHttpRequest(ILogger logger, HttpMethod requestMethod, Uri requestUrl)
-        {
-            _sendingHttpRequest(logger, requestMethod, requestUrl, null);
-        }
-        public static void UnsuccessfulHttpResponse(ILogger logger, HttpStatusCode statusCode, HttpMethod requestMethod, Uri requestUrl)
-        {
-            _unsuccessfulHttpResponse(logger, (int)statusCode, requestMethod, requestUrl, null);
-        }
+        [LoggerMessage(2, LogLevel.Warning, "Unsuccessful HTTP response {StatusCode} return from {RequestMethod} '{RequestUrl}'.", EventName = "UnsuccessfulHttpResponse")]
+        public static partial void UnsuccessfulHttpResponse(ILogger logger, HttpStatusCode statusCode, HttpMethod requestMethod, Uri requestUrl);
     }
 }

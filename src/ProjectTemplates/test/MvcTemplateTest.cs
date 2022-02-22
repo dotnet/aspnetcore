@@ -1,16 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing;
 using Templates.Test.Helpers;
-using Xunit;
 using Xunit.Abstractions;
-using Xunit.Sdk;
 
 namespace Templates.Test;
 
@@ -83,18 +76,18 @@ public class MvcTemplateTest : LoggedTest
         var footerLinks = new string[] { PageUrls.PrivacyFullUrl };
 
         var pages = new List<Page>
+        {
+            new Page
             {
-                new Page
-                {
-                    Url = PageUrls.HomeUrl,
-                    Links = menuLinks.Append(PageUrls.DocsUrl).Concat(footerLinks)
-                },
-                new Page
-                {
-                    Url = PageUrls.PrivacyFullUrl,
-                    Links = menuLinks.Concat(footerLinks)
-                }
-            };
+                Url = PageUrls.HomeUrl,
+                Links = menuLinks.Append(PageUrls.DocsUrl).Concat(footerLinks)
+            },
+            new Page
+            {
+                Url = PageUrls.PrivacyFullUrl,
+                Links = menuLinks.Concat(footerLinks)
+            }
+        };
 
         using (var aspNetProcess = project.StartBuiltProjectAsync())
         {
@@ -234,68 +227,45 @@ public class MvcTemplateTest : LoggedTest
         }
     }
 
-    [ConditionalFact(Skip = "https://github.com/dotnet/aspnetcore/issues/25103")]
-    [SkipOnHelix("cert failure", Queues = "All.OSX")]
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)] // Running these requires the rid-specific runtime pack to be available which is not consistent in all our platform builds.
+    [SkipOnHelix("cert failure", Queues = "All.OSX;" + HelixConstants.Windows10Arm64)]
     public async Task MvcTemplate_SingleFileExe()
     {
         // This test verifies publishing an MVC app as a single file exe works. We'll limit testing
         // this to a few operating systems to make our lives easier.
-        string runtimeIdentifer;
-        if (OperatingSystem.IsWindows())
-        {
-            runtimeIdentifer = "win-x64";
-        }
-        else if (OperatingSystem.IsLinux())
-        {
-            runtimeIdentifer = "linux-x64";
-        }
-        else
-        {
-            return;
-        }
-
+        var runtimeIdentifer = "win-x64";
         var project = await ProjectFactory.GetOrCreateProject("mvcsinglefileexe", Output);
         project.RuntimeIdentifier = runtimeIdentifer;
 
-        var createResult = await project.RunDotNetNewAsync("mvc", auth: "Individual", useLocalDB: true);
+        var createResult = await project.RunDotNetNewAsync("mvc");
         Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
 
         var publishResult = await project.RunDotNetPublishAsync(additionalArgs: $"/p:PublishSingleFile=true -r {runtimeIdentifer}", noRestore: false);
         Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", project, publishResult));
 
-        var pages = new[]
+        var menuLinks = new[]
         {
-                new Page
-                {
-                    // Verify a view from the app works
-                    Url = PageUrls.HomeUrl,
-                    Links = new []
-                    {
-                        PageUrls.HomeUrl,
-                        PageUrls.RegisterUrl,
-                        PageUrls.LoginUrl,
-                        PageUrls.HomeUrl,
-                        PageUrls.PrivacyUrl,
-                        PageUrls.DocsUrl,
-                        PageUrls.PrivacyUrl
-                    }
-                },
-                new Page
-                {
-                    // Verify a view from a RCL (in this case IdentityUI) works
-                    Url = PageUrls.RegisterUrl,
-                    Links = new []
-                    {
-                        PageUrls.HomeUrl,
-                        PageUrls.RegisterUrl,
-                        PageUrls.LoginUrl,
-                        PageUrls.HomeUrl,
-                        PageUrls.PrivacyUrl,
-                        PageUrls.ExternalArticle,
-                        PageUrls.PrivacyUrl
-                    }
-                },
-            };
+            PageUrls.HomeUrl,
+            PageUrls.HomeUrl,            
+            PageUrls.PrivacyFullUrl
+        };
+
+        var footerLinks = new[] { PageUrls.PrivacyFullUrl };
+
+        var pages = new List<Page>
+        {
+            new Page
+            {
+                Url = PageUrls.HomeUrl,
+                Links = menuLinks.Append(PageUrls.DocsUrl).Concat(footerLinks),
+            },
+            new Page
+            {
+                Url = PageUrls.PrivacyFullUrl,
+                Links = menuLinks.Concat(footerLinks),
+            }
+        };
 
         using var aspNetProcess = project.StartPublishedProjectAsync(usePublishedAppHost: true);
         Assert.False(
