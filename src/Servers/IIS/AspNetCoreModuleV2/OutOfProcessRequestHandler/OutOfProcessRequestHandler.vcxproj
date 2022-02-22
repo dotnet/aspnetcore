@@ -8,7 +8,7 @@
   <PropertyGroup Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
   </PropertyGroup>
-  <Import Project="..\..\build\Build.Settings" />
+  <Import Project="..\..\build\Build.Dll.Settings" />
   <PropertyGroup>
     <TargetName>aspnetcorev2_outofprocess</TargetName>
   </PropertyGroup>
