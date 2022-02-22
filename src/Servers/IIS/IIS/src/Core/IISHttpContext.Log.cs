@@ -20,6 +20,6 @@ internal abstract partial class IISHttpContext
         public static partial void UnexpectedError(ILogger logger, string className, Exception ex, [CallerMemberName] string? methodName = null);
 
         [LoggerMessage(4, LogLevel.Debug, @"Connection id ""{ConnectionId}"" bad request data: ""{message}""", EventName = nameof(ConnectionBadRequest))]
-        private static partial void ConnectionBadRequest(ILogger logger, string connectionId, string message, Microsoft.AspNetCore.Http.BadHttpRequestException ex);
+        public static partial void ConnectionBadRequest(ILogger logger, string connectionId, string message, Microsoft.AspNetCore.Http.BadHttpRequestException ex);
     }
 }
