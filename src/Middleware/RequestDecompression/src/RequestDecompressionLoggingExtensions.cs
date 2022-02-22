@@ -27,5 +27,5 @@ internal static partial class RequestDecompressionLoggingExtensions
     public static partial void FeatureIsReadOnly(this ILogger logger);
 
     [LoggerMessage(7, LogLevel.Debug, "The maximum request body size has been set to {RequestSize}.", EventName = "MaxRequestBodySizeSet")]
-    public static partial void MaxRequestBodySizeSet(this ILogger logger, long? requestSize);
+    public static partial void MaxRequestBodySizeSet(this ILogger logger, long requestSize);
 }

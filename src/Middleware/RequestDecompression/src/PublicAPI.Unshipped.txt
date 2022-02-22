@@ -22,6 +22,7 @@ Microsoft.AspNetCore.RequestDecompression.IDecompressionProvider.CreateStream(Sy
 Microsoft.AspNetCore.RequestDecompression.IDecompressionProvider.EncodingName.get -> string!
 Microsoft.AspNetCore.RequestDecompression.IRequestDecompressionProvider
 Microsoft.AspNetCore.RequestDecompression.IRequestDecompressionProvider.GetDecompressionProvider(Microsoft.AspNetCore.Http.HttpContext! context) -> Microsoft.AspNetCore.RequestDecompression.IDecompressionProvider?
+Microsoft.AspNetCore.RequestDecompression.IRequestDecompressionProvider.SetRequestSizeLimit(Microsoft.AspNetCore.Http.HttpContext! context) -> void
 Microsoft.AspNetCore.RequestDecompression.RequestDecompressionMiddleware
 Microsoft.AspNetCore.RequestDecompression.RequestDecompressionMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.RequestDecompression.RequestDecompressionMiddleware.RequestDecompressionMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.AspNetCore.RequestDecompression.IRequestDecompressionProvider! provider) -> void
