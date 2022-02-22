@@ -116,9 +116,11 @@
     <SystemRuntimeCompilerServicesUnsafeVersion>7.0.0-preview.3.22118.9</SystemRuntimeCompilerServicesUnsafeVersion>
     <SystemSecurityCryptographyPkcsVersion>7.0.0-preview.3.22120.1</SystemSecurityCryptographyPkcsVersion>
     <SystemSecurityCryptographyXmlVersion>7.0.0-preview.3.22120.1</SystemSecurityCryptographyXmlVersion>
+    <SystemSecurityPermissionsVersion>7.0.0-preview.3.22120.1</SystemSecurityPermissionsVersion>
     <SystemServiceProcessServiceControllerVersion>7.0.0-preview.3.22120.1</SystemServiceProcessServiceControllerVersion>
     <SystemTextEncodingsWebVersion>7.0.0-preview.3.22120.1</SystemTextEncodingsWebVersion>
     <SystemTextJsonVersion>7.0.0-preview.3.22120.1</SystemTextJsonVersion>
+    <SystemThreadingAccessControlVersion>7.0.0-preview.3.22120.1</SystemThreadingAccessControlVersion>
     <SystemThreadingChannelsVersion>7.0.0-preview.3.22120.1</SystemThreadingChannelsVersion>
     <SystemThreadingRateLimitingVersion>7.0.0-preview.3.22120.1</SystemThreadingRateLimitingVersion>
     <!-- Only listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->

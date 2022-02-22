@@ -4,7 +4,11 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Net.Http.Headers" />
-    <!--<Reference Include="Microsoft.AspNetCore.WebUtilities" />-->
+    <Reference Include="Microsoft.AspNetCore.WebUtilities" />
+
+    <!-- Packages required to produce a complete dependency graph for the trimmer -->
+    <Reference Include="System.Security.Permissions" />
+    <Reference Include="System.Threading.AccessControl" />
   </ItemGroup>
   <Target Name="ILLinkTrimProjects" DependsOnTargets="ResolveReferences" AfterTargets="Build" Condition="'$(DotNetBuildFromSource)' != 'true' AND '$(SkipTestBuild)' != 'true'">
     <PropertyGroup>

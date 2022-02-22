@@ -225,6 +225,10 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>4017327955f1d8ddc43980eb1848c52fbb131dfc</Sha>
     </Dependency>
+    <Dependency Name="System.Security.Permissions" Version="7.0.0-preview.3.22120.1">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>4017327955f1d8ddc43980eb1848c52fbb131dfc</Sha>
+    </Dependency>
     <Dependency Name="System.ServiceProcess.ServiceController" Version="7.0.0-preview.3.22120.1">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>4017327955f1d8ddc43980eb1848c52fbb131dfc</Sha>
@@ -234,6 +238,10 @@
       <Sha>4017327955f1d8ddc43980eb1848c52fbb131dfc</Sha>
     </Dependency>
     <Dependency Name="System.Text.Json" Version="7.0.0-preview.3.22120.1">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>4017327955f1d8ddc43980eb1848c52fbb131dfc</Sha>
+    </Dependency>
+    <Dependency Name="System.Threading.AccessControl" Version="7.0.0-preview.3.22120.1">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>4017327955f1d8ddc43980eb1848c52fbb131dfc</Sha>
     </Dependency>
