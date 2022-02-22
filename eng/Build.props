@@ -19,7 +19,6 @@
     <!-- These projects are meant to be referenced only by tests. -->
     <ProjectToExclude Include="$(RepoRoot)src\**\testassets\**\*.*proj"
       Exclude="$(RepoRoot)src\Components\WebAssembly\testassets\WasmLinkerTest\*.*proj;
-               $(RepoRoot)src\Shared\test\testassets\LinkerTest\*.*proj;
                $(RepoRoot)src\Components\WebView\Samples\PhotinoPlatform\testassets\PhotinoTestApp\*.*proj;
                $(RepoRoot)src\Http\Routing\test\testassets\RoutingSandbox\*.*proj;
                $(RepoRoot)src\Security\Authentication\Negotiate\test\testassets\Negotiate.Client\*.*proj;
