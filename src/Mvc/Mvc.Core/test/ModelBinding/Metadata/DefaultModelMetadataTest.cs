@@ -340,7 +340,7 @@ public class DefaultModelMetadataTest
     }
 
     [Fact]
-    public void IsParseableType_ReturnsTrue_ForType()
+    public void IsParseableType_ReturnsTrue_WhenTryParseAllowed()
     {
         // Arrange
         var provider = new EmptyModelMetadataProvider();
@@ -365,7 +365,7 @@ public class DefaultModelMetadataTest
     }
 
     [Fact]
-    public void IsParseableType_ReturnsFalse_ForType()
+    public void IsParseableType_ReturnsFalse_WhenTryParseNotAllowed()
     {
         // Arrange
         var provider = new EmptyModelMetadataProvider();
