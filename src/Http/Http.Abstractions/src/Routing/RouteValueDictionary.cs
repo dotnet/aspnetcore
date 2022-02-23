@@ -95,6 +95,7 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
     /// property names are keys, and property values are the values, and copied into the dictionary.
     /// Only public instance non-index properties are considered.
     /// </remarks>
+    [RequiresUnreferencedCode("RouteValueDictionary uses reflection to generate the route values.")]
     public RouteValueDictionary(object? values)
     {
         if (values is RouteValueDictionary dictionary)
@@ -744,6 +745,7 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
         public readonly object Value;
         public readonly PropertyHelper[] Properties;
 
+        [RequiresUnreferencedCode("PropertyStorage uses reflection to get property values.")]
         public PropertyStorage(object value)
         {
             Debug.Assert(value != null);

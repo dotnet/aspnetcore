@@ -7,6 +7,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Metadata;
@@ -136,7 +137,8 @@ internal class PropertyHelper
     /// <param name="typeInfo">The type info to extract property accessors for.</param>
     /// <returns>A cached array of all public properties of the specified type.
     /// </returns>
-    public static PropertyHelper[] GetProperties(TypeInfo typeInfo)
+    public static PropertyHelper[] GetProperties(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.NonPublicProperties)] TypeInfo typeInfo)
     {
         return GetProperties(typeInfo.AsType());
     }
@@ -148,7 +150,8 @@ internal class PropertyHelper
     /// <param name="type">The type to extract property accessors for.</param>
     /// <returns>A cached array of all public properties of the specified type.
     /// </returns>
-    public static PropertyHelper[] GetProperties(Type type)
+    public static PropertyHelper[] GetProperties(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.NonPublicProperties)] Type type)
     {
         return GetProperties(type, p => CreateInstance(p), PropertiesCache);
     }
@@ -167,7 +170,8 @@ internal class PropertyHelper
     /// <returns>
     /// A cached array of all public properties of the specified type.
     /// </returns>
-    public static PropertyHelper[] GetVisibleProperties(TypeInfo typeInfo)
+    public static PropertyHelper[] GetVisibleProperties(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TypeInfo typeInfo)
     {
         return GetVisibleProperties(typeInfo.AsType(), p => CreateInstance(p), PropertiesCache, VisiblePropertiesCache);
     }
@@ -186,7 +190,8 @@ internal class PropertyHelper
     /// <returns>
     /// A cached array of all public properties of the specified type.
     /// </returns>
-    public static PropertyHelper[] GetVisibleProperties(Type type)
+    public static PropertyHelper[] GetVisibleProperties(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.NonPublicProperties)] Type type)
     {
         return GetVisibleProperties(type, p => CreateInstance(p), PropertiesCache, VisiblePropertiesCache);
     }
@@ -341,6 +346,7 @@ internal class PropertyHelper
     /// The implementation of PropertyHelper will cache the property accessors per-type. This is
     /// faster when the same type is used multiple times with ObjectToDictionary.
     /// </remarks>
+    [RequiresUnreferencedCode("Method uses reflection to generate the dictionary.")]
     public static IDictionary<string, object?> ObjectToDictionary(object? value)
     {
         if (value is IDictionary<string, object?> dictionary)
@@ -419,7 +425,7 @@ internal class PropertyHelper
     }
 
     protected static PropertyHelper[] GetVisibleProperties(
-        Type type,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.NonPublicProperties)] Type type,
         Func<PropertyInfo, PropertyHelper> createPropertyHelper,
         ConcurrentDictionary<Type, PropertyHelper[]> allPropertiesCache,
         ConcurrentDictionary<Type, PropertyHelper[]> visiblePropertiesCache)
@@ -491,7 +497,7 @@ internal class PropertyHelper
     }
 
     protected static PropertyHelper[] GetProperties(
-        Type type,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.NonPublicProperties)] Type type,
         Func<PropertyInfo, PropertyHelper> createPropertyHelper,
         ConcurrentDictionary<Type, PropertyHelper[]> cache)
     {
