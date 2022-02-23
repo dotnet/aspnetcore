@@ -1,4 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
+
   <Import Project="..\..\..\..\build\testsite.props" />
 
   <PropertyGroup>
@@ -8,11 +9,7 @@
 
   <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
     <TestAssetPublishProfile Include="Portable" Properties="TargetFramework=$(DefaultNetCoreTargetFramework)" />
-
-    <!-- ReferenceTestTasks is workaround for https://github.com/dotnet/sdk/issues/2482 -->
-    <TestAssetPublishProfile Include="Standalone-x64"
-        Condition=" '$(TargetArchitecture)' != 'arm' "
-        Properties="RuntimeIdentifier=win-x64;ReferenceTestTasks=false" />
+    <TestAssetPublishProfile Condition="'$(TargetArchitecture)' != 'arm'" Include="Standalone-x64" Properties="RuntimeIdentifier=win-x64;" />
   </ItemGroup>
 
   <ItemGroup>
@@ -35,12 +32,4 @@
     <Reference Include="xunit.assert" />
   </ItemGroup>
 
-  <!-- Repeat Build target for win-x64 to allow later Publish w/ NoBuild=true. -->
-  <Target Name="BuildX64"
-      BeforeTargets="Build"
-      Condition=" '$(RuntimeIdentifier)' != 'win-x64' AND '$(TargetArchitecture)' != 'arm' ">
-    <MSBuild Projects="$(MSBuildProjectFullPath)"
-        Properties="RuntimeIdentifier=win-x64;ReferenceTestTasks=false"
-        Targets="Build" />
-  </Target>
 </Project>
