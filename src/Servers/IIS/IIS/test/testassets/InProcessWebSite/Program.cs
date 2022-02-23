@@ -30,7 +30,7 @@ public static class Program
                 Console.WriteLine(new string('a', 30000));
                 break;
             case "CheckLargeStdErrWrites":
-                Console.Error.WriteLine(new string('a', 30000));
+                Console.WriteLine(new string('a', 30000));
                 Console.Error.Flush();
                 break;
             case "ConsoleWrite":
@@ -41,7 +41,7 @@ public static class Program
                 Console.Error.Flush();
                 break;
             case "CheckOversizedStdErrWrites":
-                Console.WriteLine(new string('a', 31000));
+                Console.WriteLine(new string('a', 30000));
                 break;
             case "CheckOversizedStdOutWrites":
                 Console.Error.WriteLine(new string('a', 31000));

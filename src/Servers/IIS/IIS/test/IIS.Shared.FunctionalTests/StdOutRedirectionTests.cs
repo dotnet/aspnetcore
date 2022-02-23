@@ -137,6 +137,7 @@ public class StdOutRedirectionTests : IISFunctionalTestBase
         var deploymentParameters =
             Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
         deploymentParameters.EnvironmentVariables["COREHOST_TRACE"] = "1";
+//        deploymentParameters.EnvironmentVariables["COREHOST_TRACEFILE"] = @"C:\Github\aspnetcore\corehost.txt";
         deploymentParameters.TransformArguments((a, _) => $"{a} {path}");
 
         deploymentParameters.EnableLogging(LogFolderPath);

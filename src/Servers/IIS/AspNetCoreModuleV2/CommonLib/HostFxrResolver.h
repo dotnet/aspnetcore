@@ -50,17 +50,22 @@ private:
     );
 
     static
-        BOOL
-        TryGetHostFxrPath(
-            std::filesystem::path& hostFxrDllPath,
-            const std::filesystem::path& dotnetRoot,
-            const std::filesystem::path& applicationPath
-        );
+    VOID
+    FindDotNetFolders(
+        const std::filesystem::path& path,
+        std::vector<std::wstring> & pvFolders
+    );
+
+    static
+    std::wstring
+    FindHighestDotNetVersion(
+        std::vector<std::wstring> & vFolders
+    );
 
     static
     std::filesystem::path
-    GetAbsolutePathToDotnetFromHostfxr(
-        const std::filesystem::path& hostfxrPath
+    GetAbsolutePathToHostFxr(
+        const std::filesystem::path & dotnetPath
     );
 
     static
