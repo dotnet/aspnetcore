@@ -511,6 +511,6 @@
     <value>Could not parse '{0}'. Content types with wildcards are not supported.</value>
   </data>
   <data name="TryParseModelBinder_InvalidType" xml:space="preserve">
-    <value>The type '{0}' does not contains a TryParse method and the binder '{1}' cannot be used.</value>
+    <value>The type '{0}' does not contain a TryParse method and the binder '{1}' cannot be used.</value>
   </data>
 </root>
