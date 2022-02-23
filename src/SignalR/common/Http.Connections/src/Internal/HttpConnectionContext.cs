@@ -13,10 +13,11 @@ using Microsoft.AspNetCore.Http.Connections.Internal.Transports;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal;
 
-internal class HttpConnectionContext : ConnectionContext,
+internal sealed partial class HttpConnectionContext : ConnectionContext,
                                      IConnectionIdFeature,
                                      IConnectionItemsFeature,
                                      IConnectionTransportFeature,
@@ -71,7 +72,7 @@ internal class HttpConnectionContext : ConnectionContext,
         SupportedFormats = TransferFormat.Binary | TransferFormat.Text;
         ActiveFormat = TransferFormat.Text;
 
-        _logger = logger;
+        _logger = logger ?? NullLogger.Instance;
 
         // PERF: This type could just implement IFeatureCollection
         Features = new FeatureCollection();
@@ -616,118 +617,33 @@ internal class HttpConnectionContext : ConnectionContext,
         ThreadPool.UnsafeQueueUserWorkItem(static cts => ((CancellationTokenSource)cts!).Cancel(), _connectionCloseRequested);
     }
 
-    private static class Log
+    private static partial class Log
     {
-        private static readonly Action<ILogger, string, Exception?> _disposingConnection =
-            LoggerMessage.Define<string>(LogLevel.Trace, new EventId(1, "DisposingConnection"), "Disposing connection {TransportConnectionId}.");
+        [LoggerMessage(1, LogLevel.Trace, "Disposing connection {TransportConnectionId}.", EventName = "DisposingConnection")]
+        public static partial void DisposingConnection(ILogger logger, string transportConnectionId);
 
-        private static readonly Action<ILogger, Exception?> _waitingForApplication =
-            LoggerMessage.Define(LogLevel.Trace, new EventId(2, "WaitingForApplication"), "Waiting for application to complete.");
+        [LoggerMessage(2, LogLevel.Trace, "Waiting for application to complete.", EventName = "WaitingForApplication")]
+        public static partial void WaitingForApplication(ILogger logger);
 
-        private static readonly Action<ILogger, Exception?> _applicationComplete =
-            LoggerMessage.Define(LogLevel.Trace, new EventId(3, "ApplicationComplete"), "Application complete.");
+        [LoggerMessage(3, LogLevel.Trace, "Application complete.", EventName = "ApplicationComplete")]
+        public static partial void ApplicationComplete(ILogger logger);
 
-        private static readonly Action<ILogger, HttpTransportType, Exception?> _waitingForTransport =
-            LoggerMessage.Define<HttpTransportType>(LogLevel.Trace, new EventId(4, "WaitingForTransport"), "Waiting for {TransportType} transport to complete.");
+        [LoggerMessage(4, LogLevel.Trace, "Waiting for {TransportType} transport to complete.", EventName = "WaitingForTransport")]
+        public static partial void WaitingForTransport(ILogger logger, HttpTransportType transportType);
 
-        private static readonly Action<ILogger, HttpTransportType, Exception?> _transportComplete =
-            LoggerMessage.Define<HttpTransportType>(LogLevel.Trace, new EventId(5, "TransportComplete"), "{TransportType} transport complete.");
+        [LoggerMessage(5, LogLevel.Trace, "{TransportType} transport complete.", EventName = "TransportComplete")]
+        public static partial void TransportComplete(ILogger logger, HttpTransportType transportType);
+        
+        [LoggerMessage(6, LogLevel.Trace, "Shutting down both the application and the {TransportType} transport.", EventName = "ShuttingDownTransportAndApplication")]
+        public static partial void ShuttingDownTransportAndApplication(ILogger logger, HttpTransportType transportType);
 
-        private static readonly Action<ILogger, HttpTransportType, Exception?> _shuttingDownTransportAndApplication =
-            LoggerMessage.Define<HttpTransportType>(LogLevel.Trace, new EventId(6, "ShuttingDownTransportAndApplication"), "Shutting down both the application and the {TransportType} transport.");
+        [LoggerMessage(7, LogLevel.Trace, "Waiting for both the application and {TransportType} transport to complete.", EventName = "WaitingForTransportAndApplication")]
+        public static partial void WaitingForTransportAndApplication(ILogger logger, HttpTransportType transportType);
 
-        private static readonly Action<ILogger, HttpTransportType, Exception?> _waitingForTransportAndApplication =
-            LoggerMessage.Define<HttpTransportType>(LogLevel.Trace, new EventId(7, "WaitingForTransportAndApplication"), "Waiting for both the application and {TransportType} transport to complete.");
+        [LoggerMessage(8, LogLevel.Trace, "The application and {TransportType} transport are both complete.", EventName = "TransportAndApplicationComplete")]
+        public static partial void TransportAndApplicationComplete(ILogger logger, HttpTransportType transportType);
 
-        private static readonly Action<ILogger, HttpTransportType, Exception?> _transportAndApplicationComplete =
-            LoggerMessage.Define<HttpTransportType>(LogLevel.Trace, new EventId(8, "TransportAndApplicationComplete"), "The application and {TransportType} transport are both complete.");
-
-        private static readonly Action<ILogger, int, string, Exception?> _transportSendtimeout =
-            LoggerMessage.Define<int, string>(LogLevel.Trace, new EventId(9, "TransportSendTimeout"), "{Timeout}ms elapsed attempting to send a message to the transport. Closing connection {TransportConnectionId}.");
-
-        public static void DisposingConnection(ILogger logger, string connectionId)
-        {
-            if (logger == null)
-            {
-                return;
-            }
-
-            _disposingConnection(logger, connectionId, null);
-        }
-
-        public static void WaitingForApplication(ILogger logger)
-        {
-            if (logger == null)
-            {
-                return;
-            }
-
-            _waitingForApplication(logger, null);
-        }
-
-        public static void ApplicationComplete(ILogger logger)
-        {
-            if (logger == null)
-            {
-                return;
-            }
-
-            _applicationComplete(logger, null);
-        }
-
-        public static void WaitingForTransport(ILogger logger, HttpTransportType transportType)
-        {
-            if (logger == null)
-            {
-                return;
-            }
-
-            _waitingForTransport(logger, transportType, null);
-        }
-
-        public static void TransportComplete(ILogger logger, HttpTransportType transportType)
-        {
-            if (logger == null)
-            {
-                return;
-            }
-
-            _transportComplete(logger, transportType, null);
-        }
-
-        public static void ShuttingDownTransportAndApplication(ILogger logger, HttpTransportType transportType)
-        {
-            if (logger == null)
-            {
-                return;
-            }
-
-            _shuttingDownTransportAndApplication(logger, transportType, null);
-        }
-
-        public static void WaitingForTransportAndApplication(ILogger logger, HttpTransportType transportType)
-        {
-            if (logger == null)
-            {
-                return;
-            }
-
-            _waitingForTransportAndApplication(logger, transportType, null);
-        }
-
-        public static void TransportAndApplicationComplete(ILogger logger, HttpTransportType transportType)
-        {
-            if (logger == null)
-            {
-                return;
-            }
-
-            _transportAndApplicationComplete(logger, transportType, null);
-        }
-
-        public static void TransportSendTimeout(ILogger logger, TimeSpan transportTimeout, string connectionId)
-        {
-            _transportSendtimeout(logger, (int)transportTimeout.TotalMilliseconds, connectionId, null);
-        }
+        [LoggerMessage(9, LogLevel.Trace, "{Timeout}ms elapsed attempting to send a message to the transport. Closing connection {TransportConnectionId}.", EventName = "TransportSendTimeout")]
+        public static partial void TransportSendTimeout(ILogger logger, TimeSpan timeout, string transportConnectionId);
     }
 }

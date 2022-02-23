@@ -7,38 +7,18 @@ namespace Microsoft.AspNetCore.Server.HttpSys;
 
 internal partial class UrlGroup
 {
-    private static class Log
+    private static partial class Log
     {
-        private static readonly Action<ILogger, uint, Exception?> _closeUrlGroupError =
-            LoggerMessage.Define<uint>(LogLevel.Error, LoggerEventIds.CloseUrlGroupError, "HttpCloseUrlGroup; Result: {StatusCode}");
+        [LoggerMessage(LoggerEventIds.CloseUrlGroupError, LogLevel.Error, "HttpCloseUrlGroup; Result: {StatusCode}", EventName = "CloseUrlGroupError")]
+        public static partial void CloseUrlGroupError(ILogger logger, uint statusCode);
 
-        private static readonly Action<ILogger, string, Exception?> _registeringPrefix =
-            LoggerMessage.Define<string>(LogLevel.Debug, LoggerEventIds.RegisteringPrefix, "Listening on prefix: {UriPrefix}");
+        [LoggerMessage(LoggerEventIds.RegisteringPrefix, LogLevel.Debug, "Listening on prefix: {UriPrefix}", EventName = "RegisteringPrefix")]
+        public static partial void RegisteringPrefix(ILogger logger, string uriPrefix);
 
-        private static readonly Action<ILogger, Exception?> _setUrlPropertyError =
-            LoggerMessage.Define(LogLevel.Error, LoggerEventIds.SetUrlPropertyError, "SetUrlGroupProperty");
+        [LoggerMessage(LoggerEventIds.SetUrlPropertyError, LogLevel.Error, "SetUrlGroupProperty", EventName = "SetUrlPropertyError")]
+        public static partial void SetUrlPropertyError(ILogger logger, Exception exception);
 
-        private static readonly Action<ILogger, string, Exception?> _unregisteringPrefix =
-            LoggerMessage.Define<string>(LogLevel.Information, LoggerEventIds.UnregisteringPrefix, "Stop listening on prefix: {UriPrefix}");
-
-        public static void CloseUrlGroupError(ILogger logger, uint statusCode)
-        {
-            _closeUrlGroupError(logger, statusCode, null);
-        }
-
-        public static void RegisteringPrefix(ILogger logger, string uriPrefix)
-        {
-            _registeringPrefix(logger, uriPrefix, null);
-        }
-
-        public static void SetUrlPropertyError(ILogger logger, Exception exception)
-        {
-            _setUrlPropertyError(logger, exception);
-        }
-
-        public static void UnregisteringPrefix(ILogger logger, string uriPrefix)
-        {
-            _unregisteringPrefix(logger, uriPrefix, null);
-        }
+        [LoggerMessage(LoggerEventIds.UnregisteringPrefix, LogLevel.Information, "Stop listening on prefix: {UriPrefix}", EventName = "UnregisteringPrefix")]
+        public static partial void UnregisteringPrefix(ILogger logger, string uriPrefix);
     }
 }

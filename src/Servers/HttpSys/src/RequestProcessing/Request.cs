@@ -14,7 +14,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
-internal sealed class Request
+internal sealed partial class Request
 {
     private X509Certificate2? _clientCert;
     // TODO: https://github.com/aspnet/HttpSysServer/issues/231
@@ -451,14 +451,9 @@ internal sealed class Request
         _nativeStream.SwitchToOpaqueMode();
     }
 
-    private static class Log
+    private static partial class Log
     {
-        private static readonly Action<ILogger, Exception?> _errorInReadingCertificate =
-            LoggerMessage.Define(LogLevel.Debug, LoggerEventIds.ErrorInReadingCertificate, "An error occurred reading the client certificate.");
-
-        public static void ErrorInReadingCertificate(ILogger logger, Exception exception)
-        {
-            _errorInReadingCertificate(logger, exception);
-        }
+        [LoggerMessage(LoggerEventIds.ErrorInReadingCertificate, LogLevel.Debug, "An error occurred reading the client certificate.", EventName = "ErrorInReadingCertificate")]
+        public static partial void ErrorInReadingCertificate(ILogger logger, Exception exception);
     }
 }

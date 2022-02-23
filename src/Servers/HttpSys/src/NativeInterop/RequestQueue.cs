@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
-internal class RequestQueue
+internal sealed partial class RequestQueue
 {
     private static readonly int BindingInfoSize =
         Marshal.SizeOf<HttpApiTypes.HTTP_BINDING_INFO>();
@@ -206,14 +206,9 @@ internal class RequestQueue
         }
     }
 
-    private static class Log
+    private static partial class Log
     {
-        private static readonly Action<ILogger, string?, Exception?> _attachedToQueue =
-            LoggerMessage.Define<string?>(LogLevel.Information, LoggerEventIds.AttachedToQueue, "Attached to an existing request queue '{RequestQueueName}', some options do not apply.");
-
-        public static void AttachedToQueue(ILogger logger, string? requestQueueName)
-        {
-            _attachedToQueue(logger, requestQueueName, null);
-        }
+        [LoggerMessage(LoggerEventIds.AttachedToQueue, LogLevel.Information, "Attached to an existing request queue '{RequestQueueName}', some options do not apply.", EventName = "AttachedToQueue")]
+        public static partial void AttachedToQueue(ILogger logger, string? requestQueueName);
     }
 }

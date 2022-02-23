@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Distributed cache implementation of Microsoft.Extensions.Caching.Distributed.IDistributedCache using Microsoft SQL Server.</Description>
@@ -9,7 +9,6 @@
     <NoWarn>$(NoWarn);PKG0001</NoWarn>
     <IsPackable>true</IsPackable>
     <IsShipping>true</IsShipping>
-    <Nullable>disable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

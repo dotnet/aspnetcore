@@ -395,6 +395,17 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
         await _bodyOutput.FlushAsync(default);
     }
 
+    // Response trailers, reset, and GOAWAY are only on HTTP/2+ and require IIS support
+    // that is only available on Win 11/Server 2022 or later.
+    private static readonly bool OsSupportsAdvancedHttp2 = OperatingSystem.IsWindowsVersionAtLeast(10, 0, 20348, 0);
+
+    protected bool AdvancedHttp2FeaturesSupported()
+    {
+        return OsSupportsAdvancedHttp2 &&
+            HttpVersion >= System.Net.HttpVersion.Version20 &&
+            NativeMethods.HttpHasResponse4(_requestNativeHandle);
+    }
+
     public unsafe void SetResponseHeaders()
     {
         // Verifies we have sent the statuscode before writing a header
@@ -403,7 +414,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
         // This copies data into the underlying buffer
         NativeMethods.HttpSetResponseStatusCode(_requestNativeHandle, (ushort)StatusCode, reasonPhrase);
 
-        if (HttpVersion >= System.Net.HttpVersion.Version20 && NativeMethods.HttpHasResponse4(_requestNativeHandle))
+        if (AdvancedHttp2FeaturesSupported())
         {
             // Check if connection close is set, if so setting goaway
             if (string.Equals(ConnectionClose, HttpResponseHeaders[HeaderNames.Connection], StringComparison.OrdinalIgnoreCase))
