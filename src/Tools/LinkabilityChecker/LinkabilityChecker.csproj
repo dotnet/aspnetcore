@@ -10,7 +10,6 @@
     <Reference Include="Microsoft.Extensions.Features" />
     <Reference Include="Microsoft.Extensions.ObjectPool" />
     <Reference Include="Microsoft.AspNetCore.Http.Features" />
-    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
 
     <!-- Packages required to produce a complete dependency graph for the trimmer -->
     <Reference Include="System.Security.Permissions" />
