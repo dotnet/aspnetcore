@@ -230,7 +230,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     {
         // Cancel the CTS instead of disposing it, since disposing does not
         // actually cancel and can cause unintended Object Disposed Exceptions.
-        // This effectivelly cancels the previously running task and completes it.
+        // This effectively cancels the previously running task and completes it.
         _onNavigateCts?.Cancel();
         // Then make sure that the task has been completely cancelled or completed
         // before starting the next one. This avoid race conditions where the cancellation

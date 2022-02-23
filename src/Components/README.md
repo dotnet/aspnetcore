@@ -8,9 +8,9 @@ This folder contains the component model shared between the WebAssembly and Serv
 
 The following contains a description of each sub-directory in the `Components` directory.
 
-- `Analyzers`: Contains a collection of Rosyln analyzers for Blazor components
+- `Analyzers`: Contains a collection of Rosyln analyzers for Razor components
 - `Authorization`: Contains source files associated with auth-related components and services in Blazor
-- `Components`: Contains the implementation for the Blazor component model
+- `Components`: Contains the implementation for Blazor's component model
 - `Forms`: Contains source files for Form components in Blazor
 - `Samples`: Contains a collection of sample apps in Blazor
 - `Server`: Contains the implementation for Blazor Server-specific components
