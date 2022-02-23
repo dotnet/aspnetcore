@@ -18,7 +18,7 @@ internal sealed partial class RequestQueue
     private bool _disposed;
 
     internal RequestQueue(string requestQueueName, ILogger logger)
-        : this(urlGroup: null!, requestQueueName, RequestQueueMode.Attach, logger, receiver: true)
+        : this(urlGroup: null, requestQueueName, RequestQueueMode.Attach, logger, receiver: true)
     {
     }
 
@@ -26,7 +26,7 @@ internal sealed partial class RequestQueue
         : this(urlGroup, requestQueueName, mode, logger, false)
     { }
 
-    private RequestQueue(UrlGroup urlGroup, string? requestQueueName, RequestQueueMode mode, ILogger logger, bool receiver)
+    private RequestQueue(UrlGroup? urlGroup, string? requestQueueName, RequestQueueMode mode, ILogger logger, bool receiver)
     {
         _mode = mode;
         UrlGroup = urlGroup;
@@ -106,10 +106,15 @@ internal sealed partial class RequestQueue
     internal SafeHandle Handle { get; }
     internal ThreadPoolBoundHandle BoundHandle { get; }
 
-    internal UrlGroup UrlGroup { get; }
+    internal UrlGroup? UrlGroup { get; }
 
     internal unsafe void AttachToUrlGroup()
     {
+        if (UrlGroup == null)
+        {
+            throw new NotSupportedException("Can't attach when UrlGroup is null");
+        }
+
         Debug.Assert(Created);
         CheckDisposed();
         // Set the association between request queue and url group. After this, requests for registered urls will
@@ -127,6 +132,11 @@ internal sealed partial class RequestQueue
 
     internal unsafe void DetachFromUrlGroup()
     {
+        if (UrlGroup == null)
+        {
+            throw new NotSupportedException("Can't attach when UrlGroup is null");
+        }
+
         Debug.Assert(Created);
         CheckDisposed();
         // Break the association between request queue and url group. After this, requests for registered urls
