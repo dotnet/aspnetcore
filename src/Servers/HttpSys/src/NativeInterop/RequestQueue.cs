@@ -17,18 +17,9 @@ internal sealed partial class RequestQueue
     private readonly ILogger _logger;
     private bool _disposed;
 
-    internal RequestQueue(string requestQueueName, string urlPrefix, ILogger logger, bool receiver)
-        : this(urlGroup: null!, requestQueueName, RequestQueueMode.Attach, logger, receiver)
+    internal RequestQueue(string requestQueueName, ILogger logger)
+        : this(urlGroup: null!, requestQueueName, RequestQueueMode.Attach, logger, receiver: true)
     {
-        try
-        {
-            UrlGroup = new UrlGroup(this, UrlPrefix.Create(urlPrefix), logger);
-        }
-        catch
-        {
-            Dispose();
-            throw;
-        }
     }
 
     internal RequestQueue(UrlGroup urlGroup, string? requestQueueName, RequestQueueMode mode, ILogger logger)
