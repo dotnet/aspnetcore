@@ -439,7 +439,7 @@ internal partial class IISHttpContext : IFeatureCollection,
 
     internal IHttpResponseTrailersFeature? GetResponseTrailersFeature()
     {
-        return AdvancedHttp2FeaturesSupported ? this : null;
+        return AdvancedHttp2FeaturesSupported() ? this : null;
     }
 
     IHeaderDictionary IHttpResponseTrailersFeature.Trailers
@@ -452,7 +452,7 @@ internal partial class IISHttpContext : IFeatureCollection,
 
     internal IHttpResetFeature? GetResetFeature()
     {
-        return AdvancedHttp2FeaturesSupported ? this : null;
+        return AdvancedHttp2FeaturesSupported() ? this : null;
     }
 
     void IHttpResetFeature.Reset(int errorCode)
