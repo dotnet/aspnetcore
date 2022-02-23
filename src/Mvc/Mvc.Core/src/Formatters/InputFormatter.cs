@@ -99,11 +99,11 @@ public abstract class InputFormatter : IInputFormatter, IApiRequestFormatMetadat
             throw new ArgumentNullException(nameof(context));
         }
 
-        var hasBody = context.HttpContext.Features.Get<IHttpRequestBodyDetectionFeature>()?.CanHaveBody;
+        var canHaveBody = context.HttpContext.Features.Get<IHttpRequestBodyDetectionFeature>()?.CanHaveBody;
         // In case the feature is not registered
-        hasBody ??= context.HttpContext.Request.ContentLength != 0;
+        canHaveBody ??= context.HttpContext.Request.ContentLength != 0;
 
-        if (hasBody is false)
+        if (canHaveBody is false)
         {
             if (context.TreatEmptyInputAsDefaultValue)
             {
