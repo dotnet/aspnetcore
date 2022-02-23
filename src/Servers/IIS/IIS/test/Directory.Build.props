@@ -9,6 +9,7 @@
     <!-- IIS tests are Windows-only -->
     <IsWindowsOnlyTest>true</IsWindowsOnlyTest>
     <TestDependsOnIIS>true</TestDependsOnIIS>
+    <BuildHelixPayload>false</BuildHelixPayload>
   </PropertyGroup>
 
 </Project>
