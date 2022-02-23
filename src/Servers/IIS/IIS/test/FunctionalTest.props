@@ -3,7 +3,7 @@
     <Content Include="..\Common.FunctionalTests\Infrastructure\*.config" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
-  <Target Name="CopyAssets" BeforeTargets="Publish" Condition=" '$(ExcludeFromBuild)' != 'true' ">
+  <Target Name="CopyAssets" BeforeTargets="Publish;RunTests;VSTest" Condition=" '$(ExcludeFromBuild)' != 'true' ">
     <MSBuild Projects="@(ProjectReference)"
         Targets="PublishTestsAssets"
         SkipNonexistentTargets="true"
