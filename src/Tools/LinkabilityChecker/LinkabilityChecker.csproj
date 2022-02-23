@@ -4,13 +4,14 @@
     <IsPackable>false</IsPackable>
     <OutputType>Exe</OutputType>
   </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="Microsoft.Net.Http.Headers" />
-    <Reference Include="Microsoft.AspNetCore.WebUtilities" />
-    <Reference Include="Microsoft.Extensions.Features" />
-    <Reference Include="Microsoft.Extensions.ObjectPool" />
-    <Reference Include="Microsoft.AspNetCore.Http.Features" />
 
+  <Import Project="$(RepoRoot)eng\TrimmableProjects.props" />
+
+  <ItemGroup>
+    <Reference Include="@(TrimmableProject)" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- Packages required to produce a complete dependency graph for the trimmer -->
     <Reference Include="System.Security.Permissions" />
     <Reference Include="System.Threading.AccessControl" />
