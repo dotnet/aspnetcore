@@ -108,8 +108,6 @@ export class LongPollingTransport implements ITransport {
                 }
             }
         }
-
-        return;
     }
 
     private async _poll(url: string, pollOptions: HttpRequest): Promise<void> {
