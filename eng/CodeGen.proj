@@ -84,7 +84,7 @@
 
   This file contains a complete list of projects annotated for trimming.
 
-  This project is generated using the <Trimmable> properties from each .csproj in this repository.
+  This file is generated using the <Trimmable> properties from each .csproj in this repository.
 -->
 <Project>
   <ItemGroup>
