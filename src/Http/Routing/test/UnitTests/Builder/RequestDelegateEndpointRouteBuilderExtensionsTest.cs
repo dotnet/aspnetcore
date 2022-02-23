@@ -70,6 +70,27 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
     }
 
     [Fact]
+    public void MapEndpoint_ReturnGenericTypeTask_GeneratedDelegate()
+    {
+        // Arrange
+        var builder = new DefaultEndpointRouteBuilder(Mock.Of<IApplicationBuilder>());
+        static async Task<string> GenericTypeTaskDelegate(HttpContext context) => await Task.FromResult("response");
+
+        // Act
+        var endpointBuilder = builder.MapGet("/", GenericTypeTaskDelegate);
+
+        // Assert
+        var endpointBuilder1 = GetRouteEndpointBuilder(builder);
+        var target = endpointBuilder1.RequestDelegate.Target;
+        Assert.NotNull(target);
+        var handlerField = target.GetType().GetField("handler");
+        Assert.NotNull(handlerField);
+        var handler = handlerField.GetValue(target) as Delegate;
+        Assert.NotNull(handler);
+        Assert.True(handler.Method.ReturnType.IsGenericType);
+    }
+
+    [Fact]
     public void MapEndpoint_TypedPattern_BuildsEndpoint()
     {
         // Arrange
