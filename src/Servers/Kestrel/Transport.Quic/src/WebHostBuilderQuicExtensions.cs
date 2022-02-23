@@ -20,7 +20,7 @@ public static class WebHostBuilderQuicExtensions
     /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
     public static IWebHostBuilder UseQuic(this IWebHostBuilder hostBuilder)
     {
-        if (QuicImplementationProviders.Default.IsSupported)
+        if (IsQuicSupported())
         {
             return hostBuilder.ConfigureServices(services =>
             {
@@ -43,5 +43,19 @@ public static class WebHostBuilderQuicExtensions
         {
             services.Configure(configureOptions);
         });
+    }
+
+    private static bool IsQuicSupported()
+    {
+        try
+        {
+            return QuicImplementationProviders.Default.IsSupported;
+        }
+        catch (PlatformNotSupportedException)
+        {
+            // On some platforms, System.Net.Quic is just a stub assembly in which every method throws PlatformNotSupportedException,
+            // including the QuicImplementationProviders.Default.IsSupported getter.
+            return false;
+        }
     }
 }
