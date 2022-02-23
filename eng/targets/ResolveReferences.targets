@@ -316,6 +316,7 @@
         <IsAspNetCoreApp>$([MSBuild]::ValueOrDefault($(IsAspNetCoreApp),'false'))</IsAspNetCoreApp>
         <IsPackable>$([MSBuild]::ValueOrDefault($(IsPackable),'false'))</IsPackable>
         <ProjectFileRelativePath>$([MSBuild]::MakeRelative($(RepoRoot), $(MSBuildProjectFullPath)))</ProjectFileRelativePath>
+        <Trimmable>$([MSBuild]::ValueOrDefault($(Trimmable),'false'))</Trimmable>
       </ProvidesReference>
     </ItemGroup>
   </Target>
