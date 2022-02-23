@@ -148,21 +148,32 @@ public abstract class WebViewManager : IAsyncDisposable
             return;
         }
 
-        _ = _dispatcher.InvokeAsync(async () =>
+        var task = _dispatcher.InvokeAsync(() =>
+               _ipcReceiver.OnMessageReceivedAsync(_currentPageContext, message)
+            );
+
+        ReceiveMessageWithErrorHandling(task);
+
+    }
+    private void ReceiveMessageWithErrorHandling(Task messageDispatchTask)
+    {
+        _ = AwaitAndNotify();
+
+        async Task AwaitAndNotify()
         {
-            // TODO: Verify this produces the correct exception-surfacing behaviors.
-            // For example, JS interop exceptions should flow back into JS, whereas
-            // renderer exceptions should be fatal.
             try
             {
-                await _ipcReceiver.OnMessageReceivedAsync(_currentPageContext, message);
+                // TODO: Verify this produces the correct exception-surfacing behaviors.
+                // For example, JS interop exceptions should flow back into JS, whereas
+                // renderer exceptions should be fatal.
+                await messageDispatchTask;
             }
             catch (Exception ex)
             {
                 _ipcSender.NotifyUnhandledException(ex);
                 throw;
             }
-        });
+        }
     }
 
     /// <summary>
