@@ -1600,7 +1600,7 @@ public class ModelStateDictionaryTest
     }
 
     private DefaultBindingMetadataProvider CreateBindingMetadataProvider(MvcOptions options = null)
-        => CreateBindingMetadataProvider(options ?? new MvcOptions());
+        => new DefaultBindingMetadataProvider(options ?? new MvcOptions());
 
     private class OptionsAccessor : IOptions<MvcOptions>
     {
