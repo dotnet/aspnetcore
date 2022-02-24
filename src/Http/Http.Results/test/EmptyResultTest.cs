@@ -7,12 +7,20 @@ namespace Microsoft.AspNetCore.Http.Result;
 
 public class EmptyResultTest
 {
+    [Fact]
     public async Task EmptyResult_DoesNothing()
     {
+        // Arrange
         var emptyResult = EmptyResult.Instance;
 
-        // Assert- does not throw.
-        await emptyResult.ExecuteAsync(GetHttpContext());
+        // Act
+        var httpContext = GetHttpContext();
+        var memoryStream = httpContext.Response.Body;
+        await emptyResult.ExecuteAsync(httpContext);
+
+        // Assert
+        Assert.Equal(StatusCodes.Status200OK, httpContext.Response.StatusCode);
+        Assert.Equal(memoryStream, httpContext.Response.Body);
     }
 
     private static HttpContext GetHttpContext()
