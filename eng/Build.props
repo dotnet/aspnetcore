@@ -93,7 +93,7 @@
 
         <!-- Windows hosting bundled -->
         <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\WindowsHostingBundle\WindowsHostingBundle.wixproj" AdditionalProperties="Platform=x86" />
-        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\WindowsHostingBundle\WindowsHostingBundle.wixproj" AdditionalProperties="Platform=arm86" />
+        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\WindowsHostingBundle\WindowsHostingBundle.wixproj" AdditionalProperties="Platform=arm64" />
       </ItemGroup>
 
       <ItemGroup Condition=" '$(BuildInstallers)' == 'true' AND '$(TargetOsName)' == 'win' AND '$(TargetArchitecture)' == 'arm64' ">
