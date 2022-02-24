@@ -16,6 +16,10 @@
   <?define ANCMDepProviderKey = "IISExpress_AspNetCore_Module_V2,x64" ?>
 <?endif?>
 
+<!--
+    What about arm64 def?
+-->
+
 <?define ProductShortName="IIS Express AspNetCore Module V2" ?>
 <?define ProductNameShort="IISExpress_ANCM_V2" ?>
 <?define ProductVersionString = "V2"?>
@@ -36,11 +40,22 @@
     <?define SchemaGuid32 = "e629b31a-3d56-4b5c-959c-586fc1c55599" ?>
     <?define AspNetCoreV2ProgramFilesTargetPath = "$(var.AspNetCoreV2.TargetPath)" ?>
     <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(var.AspNetCoreV2Handler.TargetPath)" ?>
-<?else ?>
+<?endif ?>
+
+<?if $(var.Platform) = "x86" ?>
     <?define SchemaGuid = "e629b31a-3d56-4b5c-959c-586fc1c55599" ?>
     <?define AspNetCoreV2ProgramFilesTargetPath = "$(var.AspNetCoreV2WoW64.TargetPath)" ?>
     <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(var.AspNetCoreV2HandlerWoW64.TargetPath)" ?>
 <?endif ?>
+
+<!--
+<?if $(var.Platform) = "arm64" ?>
+    <?define SchemaGuid = "e629b31a-3d56-4b5c-959c-586fc1c55599" ?>
+    <?define SchemaGuid32 = "e629b31a-3d56-4b5c-959c-586fc1c55599" ?>
+    <?define AspNetCoreV2ProgramFilesTargetPath = "$(var.AspNetCoreV2.TargetPath)" ?>
+    <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(var.AspNetCoreV2Handler.TargetPath)" ?>
+<?endif ?>
+-->
 
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:dep="http://schemas.microsoft.com/wix/DependencyExtension">
     <Product Id="$(var.ProductCode)"
