@@ -1,41 +1,39 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 
-namespace Microsoft.Extensions.DependencyInjection
+namespace Microsoft.Extensions.DependencyInjection;
+
+/// <summary>
+/// Allows fine grained configuration of MVC services.
+/// </summary>
+internal class MvcBuilder : IMvcBuilder
 {
     /// <summary>
-    /// Allows fine grained configuration of MVC services.
+    /// Initializes a new <see cref="MvcBuilder"/> instance.
     /// </summary>
-    internal class MvcBuilder : IMvcBuilder
+    /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
+    /// <param name="manager">The <see cref="ApplicationPartManager"/> of the application.</param>
+    public MvcBuilder(IServiceCollection services, ApplicationPartManager manager)
     {
-        /// <summary>
-        /// Initializes a new <see cref="MvcBuilder"/> instance.
-        /// </summary>
-        /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
-        /// <param name="manager">The <see cref="ApplicationPartManager"/> of the application.</param>
-        public MvcBuilder(IServiceCollection services, ApplicationPartManager manager)
+        if (services == null)
         {
-            if (services == null)
-            {
-                throw new ArgumentNullException(nameof(services));
-            }
-
-            if (manager == null)
-            {
-                throw new ArgumentNullException(nameof(manager));
-            }
-
-            Services = services;
-            PartManager = manager;
+            throw new ArgumentNullException(nameof(services));
         }
 
-        /// <inheritdoc />
-        public IServiceCollection Services { get; }
+        if (manager == null)
+        {
+            throw new ArgumentNullException(nameof(manager));
+        }
 
-        /// <inheritdoc />
-        public ApplicationPartManager PartManager { get; }
+        Services = services;
+        PartManager = manager;
     }
+
+    /// <inheritdoc />
+    public IServiceCollection Services { get; }
+
+    /// <inheritdoc />
+    public ApplicationPartManager PartManager { get; }
 }

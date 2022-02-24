@@ -20,10 +20,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
-    </ProjectReference>
+    <ProjectReference Include="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
+      Private="false"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true" />
 
     <InstallerOwnedDirectory Include="$(RpmPackageInstallRoot)shared/Microsoft.AspNetCore.App" />
     <RpmDependency Include="dotnet-runtime-$(MicrosoftNETCoreAppRuntimeMajorMinorVersion)" Version="$(MicrosoftNETCoreAppRuntimeVersion.Split('-')[0])" />

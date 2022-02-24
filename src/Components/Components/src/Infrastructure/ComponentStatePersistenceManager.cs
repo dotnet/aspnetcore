@@ -1,136 +1,127 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Buffers;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.IO.Pipelines;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Components.Infrastructure
+namespace Microsoft.AspNetCore.Components.Infrastructure;
+
+/// <summary>
+/// Manages the persistent state of components in an application.
+/// </summary>
+public class ComponentStatePersistenceManager
 {
+    private bool _stateIsPersisted;
+    private readonly List<Func<Task>> _pauseCallbacks = new();
+    private readonly Dictionary<string, byte[]> _currentState = new(StringComparer.Ordinal);
+    private readonly ILogger<ComponentStatePersistenceManager> _logger;
+
     /// <summary>
-    /// Manages the persistent state of components in an application.
+    /// Initializes a new instance of <see cref="ComponentStatePersistenceManager"/>.
     /// </summary>
-    public class ComponentStatePersistenceManager
+    public ComponentStatePersistenceManager(ILogger<ComponentStatePersistenceManager> logger)
     {
-        private bool _stateIsPersisted;
-        private readonly List<Func<Task>> _pauseCallbacks = new();
-        private readonly Dictionary<string, byte[]> _currentState = new(StringComparer.Ordinal);
-        private readonly ILogger<ComponentStatePersistenceManager> _logger;
+        State = new PersistentComponentState(_currentState, _pauseCallbacks);
+        _logger = logger;
+    }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="ComponentStatePersistenceManager"/>.
-        /// </summary>
-        public ComponentStatePersistenceManager(ILogger<ComponentStatePersistenceManager> logger)
+    /// <summary>
+    /// Gets the <see cref="ComponentStatePersistenceManager"/> associated with the <see cref="ComponentStatePersistenceManager"/>.
+    /// </summary>
+    public PersistentComponentState State { get; }
+
+    /// <summary>
+    /// Restores the component application state from the given <see cref="IPersistentComponentStateStore"/>.
+    /// </summary>
+    /// <param name="store">The <see cref="IPersistentComponentStateStore"/> to restore the application state from.</param>
+    /// <returns>A <see cref="Task"/> that will complete when the state has been restored.</returns>
+    public async Task RestoreStateAsync(IPersistentComponentStateStore store)
+    {
+        var data = await store.GetPersistedStateAsync();
+        State.InitializeExistingState(data);
+    }
+
+    /// <summary>
+    /// Persists the component application state into the given <see cref="IPersistentComponentStateStore"/>.
+    /// </summary>
+    /// <param name="store">The <see cref="IPersistentComponentStateStore"/> to restore the application state from.</param>
+    /// <param name="renderer">The <see cref="Renderer"/> that components are being rendered.</param>
+    /// <returns>A <see cref="Task"/> that will complete when the state has been restored.</returns>
+    public Task PersistStateAsync(IPersistentComponentStateStore store, Renderer renderer)
+    {
+        if (_stateIsPersisted)
         {
-            State = new PersistentComponentState(_currentState, _pauseCallbacks);
-            _logger = logger;
+            throw new InvalidOperationException("State already persisted.");
         }
 
-        /// <summary>
-        /// Gets the <see cref="ComponentStatePersistenceManager"/> associated with the <see cref="ComponentStatePersistenceManager"/>.
-        /// </summary>
-        public PersistentComponentState State { get; }
+        _stateIsPersisted = true;
 
-        /// <summary>
-        /// Restores the component application state from the given <see cref="IPersistentComponentStateStore"/>.
-        /// </summary>
-        /// <param name="store">The <see cref="IPersistentComponentStateStore"/> to restore the application state from.</param>
-        /// <returns>A <see cref="Task"/> that will complete when the state has been restored.</returns>
-        public async Task RestoreStateAsync(IPersistentComponentStateStore store)
+        return renderer.Dispatcher.InvokeAsync(PauseAndPersistState);
+
+        async Task PauseAndPersistState()
         {
-            var data = await store.GetPersistedStateAsync();
-            State.InitializeExistingState(data);
+            State.PersistingState = true;
+            await PauseAsync();
+            State.PersistingState = false;
+
+            await store.PersistStateAsync(_currentState);
         }
+    }
 
-        /// <summary>
-        /// Persists the component application state into the given <see cref="IPersistentComponentStateStore"/>.
-        /// </summary>
-        /// <param name="store">The <see cref="IPersistentComponentStateStore"/> to restore the application state from.</param>
-        /// <param name="renderer">The <see cref="Renderer"/> that components are being rendered.</param>
-        /// <returns>A <see cref="Task"/> that will complete when the state has been restored.</returns>
-        public Task PersistStateAsync(IPersistentComponentStateStore store, Renderer renderer)
+    internal Task PauseAsync()
+    {
+        List<Task>? pendingCallbackTasks = null;
+
+        for (var i = 0; i < _pauseCallbacks.Count; i++)
         {
-            if (_stateIsPersisted)
+            var callback = _pauseCallbacks[i];
+            var result = ExecuteCallback(callback, _logger);
+            if (!result.IsCompletedSuccessfully)
             {
-                throw new InvalidOperationException("State already persisted.");
+                pendingCallbackTasks ??= new();
+                pendingCallbackTasks.Add(result);
             }
-
-            _stateIsPersisted = true;
-
-            return renderer.Dispatcher.InvokeAsync(PauseAndPersistState);
-
-            async Task PauseAndPersistState()
-            {
-                State.PersistingState = true;
-                await PauseAsync();
-                State.PersistingState = false;
-
-                await store.PersistStateAsync(_currentState);
-            }
         }
 
-        internal Task PauseAsync()
+        if (pendingCallbackTasks != null)
         {
-            List<Task>? pendingCallbackTasks = null;
+            return Task.WhenAll(pendingCallbackTasks);
+        }
+        else
+        {
+            return Task.CompletedTask;
+        }
 
-            for (var i = 0; i < _pauseCallbacks.Count; i++)
+        static Task ExecuteCallback(Func<Task> callback, ILogger<ComponentStatePersistenceManager> logger)
+        {
+            try
             {
-                var callback = _pauseCallbacks[i];
-                var result = ExecuteCallback(callback, _logger);
-                if (!result.IsCompletedSuccessfully)
+                var current = callback();
+                if (current.IsCompletedSuccessfully)
                 {
-                    pendingCallbackTasks ??= new();
-                    pendingCallbackTasks.Add(result);
+                    return current;
+                }
+                else
+                {
+                    return Awaited(current, logger);
                 }
             }
-
-            if (pendingCallbackTasks != null)
+            catch (Exception ex)
             {
-                return Task.WhenAll(pendingCallbackTasks);
-            }
-            else
-            {
+                logger.LogError(new EventId(1000, "PersistenceCallbackError"), ex, "There was an error executing a callback while pausing the application.");
                 return Task.CompletedTask;
             }
 
-            static Task ExecuteCallback(Func<Task> callback, ILogger<ComponentStatePersistenceManager> logger)
+            static async Task Awaited(Task task, ILogger<ComponentStatePersistenceManager> logger)
             {
                 try
                 {
-                    var current = callback();
-                    if (current.IsCompletedSuccessfully)
-                    {
-                        return current;
-                    }
-                    else
-                    {
-                        return Awaited(current, logger);
-                    }
+                    await task;
                 }
                 catch (Exception ex)
                 {
                     logger.LogError(new EventId(1000, "PersistenceCallbackError"), ex, "There was an error executing a callback while pausing the application.");
-                    return Task.CompletedTask;
-                }
-
-                static async Task Awaited(Task task, ILogger<ComponentStatePersistenceManager> logger)
-                {
-                    try
-                    {
-                        await task;
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.LogError(new EventId(1000, "PersistenceCallbackError"), ex, "There was an error executing a callback while pausing the application.");
-                        return;
-                    }
+                    return;
                 }
             }
         }

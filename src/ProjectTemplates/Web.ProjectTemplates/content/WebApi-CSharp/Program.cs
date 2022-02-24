@@ -2,13 +2,16 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 #endif
+#if (WindowsAuth)
+using Microsoft.AspNetCore.Authentication.Negotiate;
+#endif
 #if (GenerateGraph)
 using Graph = Microsoft.Graph;
 #endif
 #if (OrganizationalAuth || IndividualB2CAuth)
 using Microsoft.Identity.Web;
 #endif
-#if (OrganizationalAuth || IndividualB2CAuth || GenerateGraph)
+#if (OrganizationalAuth || IndividualB2CAuth || GenerateGraph || WindowsAuth)
 
 #endif
 var builder = WebApplication.CreateBuilder(args);
@@ -47,6 +50,17 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 #endif
+#if (WindowsAuth)
+
+builder.Services.AddAuthentication(NegotiateDefaults.AuthenticationScheme)
+   .AddNegotiate();
+
+builder.Services.AddAuthorization(options =>
+{
+    // By default, all incoming requests will be authorized according to the default policy.
+    options.FallbackPolicy = options.DefaultPolicy;
+});
+#endif
 
 var app = builder.Build();
 
@@ -63,7 +77,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 #endif
 
-#if (OrganizationalAuth || IndividualAuth)
+#if (OrganizationalAuth || IndividualAuth || WindowsAuth)
 app.UseAuthentication();
 #endif
 app.UseAuthorization();

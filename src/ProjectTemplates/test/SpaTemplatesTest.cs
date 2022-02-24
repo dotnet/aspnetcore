@@ -10,51 +10,50 @@ using Templates.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Templates.Test
+namespace Templates.Test;
+
+public class SpaTemplatesTest : LoggedTest
 {
-    public class SpaTemplatesTest : LoggedTest
+    public SpaTemplatesTest(ProjectFactoryFixture projectFactory)
     {
-        public SpaTemplatesTest(ProjectFactoryFixture projectFactory)
-        {
-            ProjectFactory = projectFactory;
-        }
+        ProjectFactory = projectFactory;
+    }
 
-        public ProjectFactoryFixture ProjectFactory { get; set; }
+    public ProjectFactoryFixture ProjectFactory { get; set; }
 
-        private ITestOutputHelper _output;
-        public ITestOutputHelper Output
+    private ITestOutputHelper _output;
+    public ITestOutputHelper Output
+    {
+        get
         {
-            get
+            if (_output == null)
             {
-                if (_output == null)
-                {
-                    _output = new TestOutputLogger(Logger);
-                }
-                return _output;
+                _output = new TestOutputLogger(Logger);
             }
+            return _output;
         }
+    }
 
-        [Theory]
-        [InlineData("angularind", "angular", "Individual")]
-        [InlineData("reactind", "react", "Individual")]
-        [InlineData("angularnoauth", "angular", null)]
-        [InlineData("reactnoauth", "react", null)]
-        public async Task SpaTemplates_BuildAndPublish(string projectKey, string template, string auth)
-        {
-            var project = await ProjectFactory.GetOrCreateProject(projectKey, Output);
-            var args = new[] { "--NoSpaFrontEnd", "true" };
-            var createResult = await project.RunDotNetNewAsync(template, auth: auth, args: args);
-            Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage(template, project, createResult));
+    [Theory]
+    [InlineData("angularind", "angular", "Individual")]
+    [InlineData("reactind", "react", "Individual")]
+    [InlineData("angularnoauth", "angular", null)]
+    [InlineData("reactnoauth", "react", null)]
+    public async Task SpaTemplates_BuildAndPublish(string projectKey, string template, string auth)
+    {
+        var project = await ProjectFactory.GetOrCreateProject(projectKey, Output);
+        var args = new[] { "--NoSpaFrontEnd", "true" };
+        var createResult = await project.RunDotNetNewAsync(template, auth: auth, args: args);
+        Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage(template, project, createResult));
 
-            var publishResult = await project.RunDotNetPublishAsync();
-            Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", project, createResult));
+        var publishResult = await project.RunDotNetPublishAsync();
+        Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", project, publishResult));
 
-            // Run dotnet build after publish. The reason is that one uses Config = Debug and the other uses Config = Release
-            // The output from publish will go into bin/Release/netcoreappX.Y/publish and won't be affected by calling build
-            // later, while the opposite is not true.
+        // Run dotnet build after publish. The reason is that one uses Config = Debug and the other uses Config = Release
+        // The output from publish will go into bin/Release/netcoreappX.Y/publish and won't be affected by calling build
+        // later, while the opposite is not true.
 
-            var buildResult = await project.RunDotNetBuildAsync();
-            Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", project, createResult));
-        }
+        var buildResult = await project.RunDotNetBuildAsync();
+        Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", project, buildResult));
     }
 }

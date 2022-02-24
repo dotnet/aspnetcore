@@ -1,6 +1,10 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 import { BootConfigResult } from './BootConfig';
 import { System_String, System_Object } from './Platform';
 import { Blazor } from '../GlobalExports';
+import { BINDING } from './Mono/MonoPlatform';
 
 export class WebAssemblyConfigLoader {
   static async initAsync(bootConfigResult: BootConfigResult): Promise<void> {

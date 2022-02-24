@@ -5,29 +5,28 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 
-namespace Microsoft.AspNetCore
+namespace Microsoft.AspNetCore;
+
+internal sealed class ForwardedHeadersStartupFilter : IStartupFilter
 {
-    internal sealed class ForwardedHeadersStartupFilter : IStartupFilter
+    private readonly IConfiguration _configuration;
+
+    public ForwardedHeadersStartupFilter(IConfiguration configuration)
     {
-        private readonly IConfiguration _configuration;
+        _configuration = configuration;
+    }
 
-        public ForwardedHeadersStartupFilter(IConfiguration configuration)
+    public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
+    {
+        if (!string.Equals("true", _configuration["ForwardedHeaders_Enabled"], StringComparison.OrdinalIgnoreCase))
         {
-            _configuration = configuration;
+            return next;
         }
 
-        public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
+        return app =>
         {
-            if (!string.Equals("true", _configuration["ForwardedHeaders_Enabled"], StringComparison.OrdinalIgnoreCase))
-            {
-                return next;
-            }
-
-            return app =>
-            {
-                app.UseForwardedHeaders();
-                next(app);
-            };
-        }
+            app.UseForwardedHeaders();
+            next(app);
+        };
     }
 }

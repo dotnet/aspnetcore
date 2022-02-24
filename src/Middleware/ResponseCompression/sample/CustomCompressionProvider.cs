@@ -1,21 +1,19 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
 using Microsoft.AspNetCore.ResponseCompression;
 
-namespace ResponseCompressionSample
+namespace ResponseCompressionSample;
+
+public class CustomCompressionProvider : ICompressionProvider
 {
-    public class CustomCompressionProvider : ICompressionProvider
+    public string EncodingName => "custom";
+
+    public bool SupportsFlush => true;
+
+    public Stream CreateStream(Stream outputStream)
     {
-        public string EncodingName => "custom";
-
-        public bool SupportsFlush => true;
-
-        public Stream CreateStream(Stream outputStream)
-        {
-            // Create a custom compression stream wrapper here
-            return outputStream;
-        }
+        // Create a custom compression stream wrapper here
+        return outputStream;
     }
 }

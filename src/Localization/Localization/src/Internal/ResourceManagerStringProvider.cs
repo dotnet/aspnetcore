@@ -7,81 +7,80 @@ using System.Globalization;
 using System.Reflection;
 using System.Resources;
 
-namespace Microsoft.Extensions.Localization
+namespace Microsoft.Extensions.Localization;
+
+/// <summary>
+/// This API supports infrastructure and is not intended to be used
+/// directly from your code. This API may change or be removed in future releases.
+/// </summary>
+internal class ResourceManagerStringProvider : IResourceStringProvider
 {
-    /// <summary>
-    /// This API supports infrastructure and is not intended to be used
-    /// directly from your code. This API may change or be removed in future releases.
-    /// </summary>
-    internal class ResourceManagerStringProvider : IResourceStringProvider
+    private readonly IResourceNamesCache _resourceNamesCache;
+    private readonly ResourceManager _resourceManager;
+    private readonly Assembly _assembly;
+    private readonly string _resourceBaseName;
+
+    public ResourceManagerStringProvider(
+        IResourceNamesCache resourceCache,
+        ResourceManager resourceManager,
+        Assembly assembly,
+        string baseName)
     {
-        private readonly IResourceNamesCache _resourceNamesCache;
-        private readonly ResourceManager _resourceManager;
-        private readonly Assembly _assembly;
-        private readonly string _resourceBaseName;
+        _resourceManager = resourceManager;
+        _resourceNamesCache = resourceCache;
+        _assembly = assembly;
+        _resourceBaseName = baseName;
+    }
 
-        public ResourceManagerStringProvider(
-            IResourceNamesCache resourceCache,
-            ResourceManager resourceManager,
-            Assembly assembly,
-            string baseName)
+    private string GetResourceCacheKey(CultureInfo culture)
+    {
+        var resourceName = _resourceManager.BaseName;
+
+        return $"Culture={culture.Name};resourceName={resourceName};Assembly={_assembly.FullName}";
+    }
+
+    private string GetResourceName(CultureInfo culture)
+    {
+        var resourceStreamName = _resourceBaseName;
+        if (!string.IsNullOrEmpty(culture.Name))
         {
-            _resourceManager = resourceManager;
-            _resourceNamesCache = resourceCache;
-            _assembly = assembly;
-            _resourceBaseName = baseName;
+            resourceStreamName += "." + culture.Name;
         }
+        resourceStreamName += ".resources";
 
-        private string GetResourceCacheKey(CultureInfo culture)
+        return resourceStreamName;
+    }
+
+    public IList<string>? GetAllResourceStrings(CultureInfo culture, bool throwOnMissing)
+    {
+        var cacheKey = GetResourceCacheKey(culture);
+
+        return _resourceNamesCache.GetOrAdd(cacheKey, _ =>
         {
-            var resourceName = _resourceManager.BaseName;
-
-            return $"Culture={culture.Name};resourceName={resourceName};Assembly={_assembly.FullName}";
-        }
-
-        private string GetResourceName(CultureInfo culture)
-        {
-            var resourceStreamName = _resourceBaseName;
-            if (!string.IsNullOrEmpty(culture.Name))
+            // We purposly don't dispose the ResourceSet because it causes an ObjectDisposedException when you try to read the values later.
+            var resourceSet = _resourceManager.GetResourceSet(culture, createIfNotExists: true, tryParents: false);
+            if (resourceSet == null)
             {
-                resourceStreamName += "." + culture.Name;
+                if (throwOnMissing)
+                {
+                    throw new MissingManifestResourceException(Resources.FormatLocalization_MissingManifest(GetResourceName(culture)));
+                }
+                else
+                {
+                    return null;
+                }
             }
-            resourceStreamName += ".resources";
 
-            return resourceStreamName;
-        }
-
-        public IList<string>? GetAllResourceStrings(CultureInfo culture, bool throwOnMissing)
-        {
-            var cacheKey = GetResourceCacheKey(culture);
-
-            return _resourceNamesCache.GetOrAdd(cacheKey, _ =>
+            var names = new List<string>();
+            foreach (DictionaryEntry? entry in resourceSet)
             {
-                // We purposly don't dispose the ResourceSet because it causes an ObjectDisposedException when you try to read the values later.
-                var resourceSet = _resourceManager.GetResourceSet(culture, createIfNotExists: true, tryParents: false);
-                if (resourceSet == null)
+                if (entry?.Key is string key)
                 {
-                    if (throwOnMissing)
-                    {
-                        throw new MissingManifestResourceException(Resources.FormatLocalization_MissingManifest(GetResourceName(culture)));
-                    }
-                    else
-                    {
-                        return null;
-                    }
+                    names.Add(key);
                 }
+            }
 
-                var names = new List<string>();
-                foreach (DictionaryEntry? entry in resourceSet)
-                {
-                    if (entry?.Key is string key)
-                    {
-                        names.Add(key);
-                    }
-                }
-
-                return names;
-            });
-        }
+            return names;
+        });
     }
 }

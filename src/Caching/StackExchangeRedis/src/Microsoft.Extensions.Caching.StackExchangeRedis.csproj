@@ -8,7 +8,6 @@
     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
     <IsPackable>true</IsPackable>
     <IsShipping>true</IsShipping>
-    <Nullable>disable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,24 +1,20 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Moq;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Hosting.Azure.AppServices.Tests
+namespace Microsoft.AspNetCore.Hosting.Azure.AppServices.Tests;
+
+public class AppServicesWebHostBuilderExtensionsTest
 {
-    public class AppServicesWebHostBuilderExtensionsTest
+    [Fact]
+    public void UseAzureAppServices_RegisterLogger()
     {
-        [Fact]
-        public void UseAzureAppServices_RegisterLogger()
-        {
-            var mock = new Mock<IWebHostBuilder>();
+        var mock = new Mock<IWebHostBuilder>();
 
-            mock.Object.UseAzureAppServices();
+        mock.Object.UseAzureAppServices();
 
-            mock.Verify(builder => builder.ConfigureServices(It.IsNotNull<Action<IServiceCollection>>()), Times.Once);
-        }
+        mock.Verify(builder => builder.ConfigureServices(It.IsNotNull<Action<IServiceCollection>>()), Times.Once);
     }
 }

@@ -4,53 +4,52 @@
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 
-namespace Microsoft.AspNetCore.Analyzers
+namespace Microsoft.AspNetCore.Analyzers;
+
+internal class StartupAnalysis
 {
-    internal class StartupAnalysis
+    private readonly ImmutableDictionary<INamedTypeSymbol, ImmutableArray<object>> _analysesByType;
+
+    public StartupAnalysis(
+        StartupSymbols startupSymbols,
+        ImmutableDictionary<INamedTypeSymbol, ImmutableArray<object>> analysesByType)
     {
-        private readonly ImmutableDictionary<INamedTypeSymbol, ImmutableArray<object>> _analysesByType;
+        StartupSymbols = startupSymbols;
+        _analysesByType = analysesByType;
+    }
 
-        public StartupAnalysis(
-            StartupSymbols startupSymbols,
-            ImmutableDictionary<INamedTypeSymbol, ImmutableArray<object>> analysesByType)
+    public StartupSymbols StartupSymbols { get; }
+
+    public T? GetRelatedSingletonAnalysis<T>(INamedTypeSymbol type) where T : class
+    {
+        if (_analysesByType.TryGetValue(type, out var list))
         {
-            StartupSymbols = startupSymbols;
-            _analysesByType = analysesByType;
-        }
-
-        public StartupSymbols StartupSymbols { get; }
-
-        public T? GetRelatedSingletonAnalysis<T>(INamedTypeSymbol type) where T : class
-        {
-            if (_analysesByType.TryGetValue(type, out var list))
+            for (var i = 0; i < list.Length; i++)
             {
-                for (var i = 0; i < list.Length; i++)
+                if (list[i] is T item)
                 {
-                    if (list[i] is T item)
-                    {
-                        return item;
-                    }
+                    return item;
                 }
             }
-
-            return null;
         }
 
-        public ImmutableArray<T> GetRelatedAnalyses<T>(INamedTypeSymbol type) where T : class
+        return null;
+    }
+
+    public ImmutableArray<T> GetRelatedAnalyses<T>(INamedTypeSymbol type) where T : class
+    {
+        var items = ImmutableArray.CreateBuilder<T>();
+        if (_analysesByType.TryGetValue(type, out var list))
         {
-            var items = ImmutableArray.CreateBuilder<T>();
-            if (_analysesByType.TryGetValue(type, out var list))
+            for (var i = 0; i < list.Length; i++)
             {
-                for (var i = 0; i < list.Length; i++)
+                if (list[i] is T item)
                 {
-                    if (list[i] is T item)
-                    {
-                        items.Add(item);
-                    }
+                    items.Add(item);
                 }
             }
-
-            return items.ToImmutable();
         }
+
+        return items.ToImmutable();
     }
 }

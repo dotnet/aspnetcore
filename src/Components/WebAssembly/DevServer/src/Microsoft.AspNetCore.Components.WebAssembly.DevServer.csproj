@@ -28,9 +28,8 @@
   <!--  We include this here to ensure that the shared framework is built before we leverage it when running
   the dev server. -->
   <ItemGroup>
-    <ProjectReference
-      Include="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
-      PrivateAssets="All"
+    <ProjectReference Include="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
+      Private="false"
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>

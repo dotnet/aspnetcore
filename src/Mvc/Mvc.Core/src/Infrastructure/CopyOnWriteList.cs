@@ -4,115 +4,113 @@
 #nullable enable
 
 using System.Collections;
-using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Mvc.Infrastructure
+namespace Microsoft.AspNetCore.Mvc.Infrastructure;
+
+internal class CopyOnWriteList<T> : IList<T>
 {
-    internal class CopyOnWriteList<T> : IList<T>
+    private readonly IReadOnlyList<T> _source;
+    private List<T>? _copy;
+
+    public CopyOnWriteList(IReadOnlyList<T> source)
     {
-        private readonly IReadOnlyList<T> _source;
-        private List<T>? _copy;
+        _source = source;
+    }
 
-        public CopyOnWriteList(IReadOnlyList<T> source)
+    private IReadOnlyList<T> Readable => _copy ?? _source;
+
+    private List<T> Writable
+    {
+        get
         {
-            _source = source;
-        }
-
-        private IReadOnlyList<T> Readable => _copy ?? _source;
-
-        private List<T> Writable
-        {
-            get
+            if (_copy == null)
             {
-                if (_copy == null)
-                {
-                    _copy = new List<T>(_source);
-                }
+                _copy = new List<T>(_source);
+            }
 
-                return _copy;
+            return _copy;
+        }
+    }
+
+    public T this[int index]
+    {
+        get => Readable[index];
+        set => Writable[index] = value;
+    }
+
+    public int Count => Readable.Count;
+
+    public bool IsReadOnly => false;
+
+    public void Add(T item)
+    {
+        Writable.Add(item);
+    }
+
+    public void Clear()
+    {
+        Writable.Clear();
+    }
+
+    public bool Contains(T item)
+    {
+        foreach (var obj in Readable)
+        {
+            if (object.Equals(obj, item))
+            {
+                return true;
             }
         }
 
-        public T this[int index]
+        return false;
+    }
+
+    public void CopyTo(T[] array, int arrayIndex)
+    {
+        foreach (var item in Readable)
         {
-            get => Readable[index];
-            set => Writable[index] = value;
+            array[arrayIndex++] = item;
         }
+    }
 
-        public int Count => Readable.Count;
+    public IEnumerator<T> GetEnumerator()
+    {
+        return Readable.GetEnumerator();
+    }
 
-        public bool IsReadOnly => false;
-
-        public void Add(T item)
+    public int IndexOf(T item)
+    {
+        var i = 0;
+        foreach (var obj in Readable)
         {
-            Writable.Add(item);
-        }
-
-        public void Clear()
-        {
-            Writable.Clear();
-        }
-
-        public bool Contains(T item)
-        {
-            foreach (var obj in Readable)
+            if (object.Equals(obj, item))
             {
-                if (object.Equals(obj, item))
-                {
-                    return true;
-                }
+                return i;
             }
 
-            return false;
+            i++;
         }
 
-        public void CopyTo(T[] array, int arrayIndex)
-        {
-            foreach (var item in Readable)
-            {
-                array[arrayIndex++] = item;
-            }
-        }
+        return -1;
+    }
 
-        public IEnumerator<T> GetEnumerator()
-        {
-            return Readable.GetEnumerator();
-        }
+    public void Insert(int index, T item)
+    {
+        Writable.Insert(index, item);
+    }
 
-        public int IndexOf(T item)
-        {
-            var i = 0;
-            foreach (var obj in Readable)
-            {
-                if (object.Equals(obj, item))
-                {
-                    return i;
-                }
+    public bool Remove(T item)
+    {
+        return Writable.Remove(item);
+    }
 
-                i++;
-            }
+    public void RemoveAt(int index)
+    {
+        Writable.RemoveAt(index);
+    }
 
-            return -1;
-        }
-
-        public void Insert(int index, T item)
-        {
-            Writable.Insert(index, item);
-        }
-
-        public bool Remove(T item)
-        {
-            return Writable.Remove(item);
-        }
-
-        public void RemoveAt(int index)
-        {
-            Writable.RemoveAt(index);
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
     }
 }

@@ -251,13 +251,12 @@ internal sealed class AcceptsMatcherPolicy : MatcherPolicy, IEndpointComparerPol
             edges.Add(string.Empty, anyEndpoints.ToList());
         }
 
-
         return edges
             .Select(kvp => new PolicyNodeEdge(kvp.Key, kvp.Value))
             .ToArray();
     }
 
-    private Endpoint CreateRejectionEndpoint()
+    private static Endpoint CreateRejectionEndpoint()
     {
         return new Endpoint(
             (context) =>
@@ -378,7 +377,6 @@ internal sealed class AcceptsMatcherPolicy : MatcherPolicy, IEndpointComparerPol
             var destinations = _destinations;
             for (var i = 0; i < destinations.Length; i++)
             {
-
                 var destination = destinations[i].mediaType;
                 if (requestMediaType.IsSubsetOf(destination))
                 {

@@ -1,1 +1,0 @@
-TestFiles/IntegrationTests/CodeGenerationIntegrationTest/InvalidNamespaceAtEOF.cshtml(1,2): Error RZ1007: "namespace" is a reserved word and cannot be used in implicit expressions.  An explicit expression ("@()") must be used.

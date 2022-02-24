@@ -1,8 +1,11 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 /* eslint-disable array-element-newline */
 import { DotNet } from '@microsoft/dotnet-js-interop';
 import { Blazor } from './GlobalExports';
 import * as Environment from './Environment';
-import { byteArrayBeingTransferred, monoPlatform } from './Platform/Mono/MonoPlatform';
+import { byteArrayBeingTransferred, Module, BINDING, monoPlatform } from './Platform/Mono/MonoPlatform';
 import { renderBatch, getRendererer, attachRootComponentToElement, attachRootComponentToLogicalElement } from './Rendering/Renderer';
 import { SharedMemoryRenderBatch } from './Rendering/RenderBatch/SharedMemoryRenderBatch';
 import { shouldAutoStart } from './BootCommon';
@@ -16,7 +19,6 @@ import { discoverComponents, discoverPersistedState, WebAssemblyComponentDescrip
 import { setDispatchEventMiddleware } from './Rendering/WebRendererInteropMethods';
 import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.WebAssembly';
 
-declare let Module: EmscriptenModule;
 let started = false;
 
 async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
@@ -25,6 +27,11 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
     throw new Error('Blazor has already started.');
   }
   started = true;
+
+  if (inAuthRedirectIframe()) {
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    await new Promise(() => {}); // See inAuthRedirectIframe for explanation
+  }
 
   setDispatchEventMiddleware((browserRendererId, eventHandlerId, continuation) => {
     // It's extremely unusual, but an event can be raised while we're in the middle of synchronously applying a
@@ -37,8 +44,8 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
     }
   });
 
-  Blazor._internal.applyHotReload = (id: string, metadataDelta: string, ilDeta: string) => {
-    DotNet.invokeMethod('Microsoft.AspNetCore.Components.WebAssembly', 'ApplyHotReloadDelta', id, metadataDelta, ilDeta);
+  Blazor._internal.applyHotReload = (id: string, metadataDelta: string, ilDelta: string, pdbDelta: string | undefined) => {
+    DotNet.invokeMethod('Microsoft.AspNetCore.Components.WebAssembly', 'ApplyHotReloadDelta', id, metadataDelta, ilDelta, pdbDelta);
   };
 
   Blazor._internal.getApplyUpdateCapabilities = () => DotNet.invokeMethod('Microsoft.AspNetCore.Components.WebAssembly', 'GetApplyUpdateCapabilities');
@@ -104,7 +111,7 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
 
   Blazor._internal.getPersistedState = () => BINDING.js_string_to_mono_string(discoverPersistedState(document) || '');
 
-  Blazor._internal.attachRootComponentToElement = (selector, componentId, rendererId) => {
+  Blazor._internal.attachRootComponentToElement = (selector, componentId, rendererId: any) => {
     const element = componentAttacher.resolveRegisteredElement(selector);
     if (!element) {
       attachRootComponentToElement(selector, componentId, rendererId);
@@ -180,7 +187,7 @@ function endInvokeDotNetFromJS(callId: System_String, success: System_Boolean, r
 }
 
 function receiveByteArray(id: System_Int, data: System_Array<System_Byte>): void {
-  const idLong = id as any as number;
+  const idLong = id as unknown as number;
   const dataByteArray = monoPlatform.toUint8Array(data);
   DotNet.jsCallDispatcher.receiveByteArray(idLong, dataByteArray);
 }
@@ -192,6 +199,22 @@ function retrieveByteArray(): System_Object {
 
   const typedArray = BINDING.js_typed_array_to_array(byteArrayBeingTransferred);
   return typedArray;
+}
+
+function inAuthRedirectIframe(): boolean {
+  // We don't want the .NET runtime to start up a second time inside the AuthenticationService.ts iframe. It uses resources
+  // unnecessarily and can lead to errors (#37355), plus the behavior is not well defined as the frame will be terminated shortly.
+  // So, if we're in that situation, block the startup process indefinitely so that anything chained to Blazor.start never happens.
+  // The detection logic here is based on the equivalent check in AuthenticationService.ts.
+  // TODO: Later we want AuthenticationService.ts to become responsible for doing this via a JS initializer. Doing it here is a
+  //       tactical fix for .NET 6 so we don't have to change how authentication is initialized.
+  if (window.parent !== window && !window.opener && window.frameElement) {
+    const settingsJson = window.sessionStorage && window.sessionStorage['Microsoft.AspNetCore.Components.WebAssembly.Authentication.CachedAuthSettings'];
+    const settings = settingsJson && JSON.parse(settingsJson);
+    return settings && settings.redirect_uri && location.href.startsWith(settings.redirect_uri);
+  }
+
+  return false;
 }
 
 Blazor.start = boot;

@@ -3,110 +3,106 @@
 
 #nullable disable warnings
 
-using System;
-using System.Collections.Generic;
 using System.Reflection;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Routing;
 
-namespace Microsoft.AspNetCore.Components
+namespace Microsoft.AspNetCore.Components;
+
+/// <summary>
+/// Displays the specified page component, rendering it inside its layout
+/// and any further nested layouts.
+/// </summary>
+public class RouteView : IComponent
 {
+    private readonly RenderFragment _renderDelegate;
+    private readonly RenderFragment _renderPageWithParametersDelegate;
+    private RenderHandle _renderHandle;
+
+    [Inject]
+    private NavigationManager NavigationManager { get; set; }
+
     /// <summary>
-    /// Displays the specified page component, rendering it inside its layout
-    /// and any further nested layouts.
+    /// Gets or sets the route data. This determines the page that will be
+    /// displayed and the parameter values that will be supplied to the page.
     /// </summary>
-    public class RouteView : IComponent
+    [Parameter]
+    [EditorRequired]
+    public RouteData RouteData { get; set; }
+
+    /// <summary>
+    /// Gets or sets the type of a layout to be used if the page does not
+    /// declare any layout. If specified, the type must implement <see cref="IComponent"/>
+    /// and accept a parameter named <see cref="LayoutComponentBase.Body"/>.
+    /// </summary>
+    [Parameter]
+    public Type DefaultLayout { get; set; }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="RouteView"/>.
+    /// </summary>
+    public RouteView()
     {
-        private readonly RenderFragment _renderDelegate;
-        private readonly RenderFragment _renderPageWithParametersDelegate;
-        private RenderHandle _renderHandle;
+        // Cache the delegate instances
+        _renderDelegate = Render;
+        _renderPageWithParametersDelegate = RenderPageWithParameters;
+    }
 
-        [Inject]
-        private NavigationManager NavigationManager { get; set; }
+    /// <inheritdoc />
+    public void Attach(RenderHandle renderHandle)
+    {
+        _renderHandle = renderHandle;
+    }
 
-        /// <summary>
-        /// Gets or sets the route data. This determines the page that will be
-        /// displayed and the parameter values that will be supplied to the page.
-        /// </summary>
-        [Parameter]
-        [EditorRequired]
-        public RouteData RouteData { get; set; }
+    /// <inheritdoc />
+    public Task SetParametersAsync(ParameterView parameters)
+    {
+        parameters.SetParameterProperties(this);
 
-        /// <summary>
-        /// Gets or sets the type of a layout to be used if the page does not
-        /// declare any layout. If specified, the type must implement <see cref="IComponent"/>
-        /// and accept a parameter named <see cref="LayoutComponentBase.Body"/>.
-        /// </summary>
-        [Parameter]
-        public Type DefaultLayout { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="RouteView"/>.
-        /// </summary>
-        public RouteView()
+        if (RouteData == null)
         {
-            // Cache the delegate instances
-            _renderDelegate = Render;
-            _renderPageWithParametersDelegate = RenderPageWithParameters;
+            throw new InvalidOperationException($"The {nameof(RouteView)} component requires a non-null value for the parameter {nameof(RouteData)}.");
         }
 
-        /// <inheritdoc />
-        public void Attach(RenderHandle renderHandle)
+        _renderHandle.Render(_renderDelegate);
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Renders the component.
+    /// </summary>
+    /// <param name="builder">The <see cref="RenderTreeBuilder"/>.</param>
+    protected virtual void Render(RenderTreeBuilder builder)
+    {
+        var pageLayoutType = RouteData.PageType.GetCustomAttribute<LayoutAttribute>()?.LayoutType
+            ?? DefaultLayout;
+
+        builder.OpenComponent<LayoutView>(0);
+        builder.AddAttribute(1, nameof(LayoutView.Layout), pageLayoutType);
+        builder.AddAttribute(2, nameof(LayoutView.ChildContent), _renderPageWithParametersDelegate);
+        builder.CloseComponent();
+    }
+
+    private void RenderPageWithParameters(RenderTreeBuilder builder)
+    {
+        builder.OpenComponent(0, RouteData.PageType);
+
+        foreach (var kvp in RouteData.RouteValues)
         {
-            _renderHandle = renderHandle;
+            builder.AddAttribute(1, kvp.Key, kvp.Value);
         }
 
-        /// <inheritdoc />
-        public Task SetParametersAsync(ParameterView parameters)
+        var queryParameterSupplier = QueryParameterValueSupplier.ForType(RouteData.PageType);
+        if (queryParameterSupplier is not null)
         {
-            parameters.SetParameterProperties(this);
-
-            if (RouteData == null)
-            {
-                throw new InvalidOperationException($"The {nameof(RouteView)} component requires a non-null value for the parameter {nameof(RouteData)}.");
-            }
-
-            _renderHandle.Render(_renderDelegate);
-            return Task.CompletedTask;
+            // Since this component does accept some parameters from query, we must supply values for all of them,
+            // even if the querystring in the URI is empty. So don't skip the following logic.
+            var url = NavigationManager.Uri;
+            var queryStartPos = url.IndexOf('?');
+            var query = queryStartPos < 0 ? default : url.AsMemory(queryStartPos);
+            queryParameterSupplier.RenderParametersFromQueryString(builder, query);
         }
 
-        /// <summary>
-        /// Renders the component.
-        /// </summary>
-        /// <param name="builder">The <see cref="RenderTreeBuilder"/>.</param>
-        protected virtual void Render(RenderTreeBuilder builder)
-        {
-            var pageLayoutType = RouteData.PageType.GetCustomAttribute<LayoutAttribute>()?.LayoutType
-                ?? DefaultLayout;
-
-            builder.OpenComponent<LayoutView>(0);
-            builder.AddAttribute(1, nameof(LayoutView.Layout), pageLayoutType);
-            builder.AddAttribute(2, nameof(LayoutView.ChildContent), _renderPageWithParametersDelegate);
-            builder.CloseComponent();
-        }
-
-        private void RenderPageWithParameters(RenderTreeBuilder builder)
-        {
-            builder.OpenComponent(0, RouteData.PageType);
-
-            foreach (var kvp in RouteData.RouteValues)
-            {
-                builder.AddAttribute(1, kvp.Key, kvp.Value);
-            }
-
-            var queryParameterSupplier = QueryParameterValueSupplier.ForType(RouteData.PageType);
-            if (queryParameterSupplier is not null)
-            {
-                // Since this component does accept some parameters from query, we must supply values for all of them,
-                // even if the querystring in the URI is empty. So don't skip the following logic.
-                var url = NavigationManager.Uri;
-                var queryStartPos = url.IndexOf('?');
-                var query = queryStartPos < 0 ? default : url.AsMemory(queryStartPos);
-                queryParameterSupplier.RenderParametersFromQueryString(builder, query);
-            }
-
-            builder.CloseComponent();
-        }
+        builder.CloseComponent();
     }
 }

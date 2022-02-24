@@ -24,6 +24,6 @@ The ASP.NET Core shared framework contains assemblies that are fully developed, 
 The contents of the shared framework are defined in two ways:
 
 * [eng/SharedFramework.Local.props](/eng/SharedFramework.Local.props) - this file is generated from the .csproj files in this repo
-  by looking for projects which have set `<IsAspNetCoreApp>true</IsAspNetCoreApp>`.
+  by looking for projects which have set `<IsAspNetCoreApp>true</IsAspNetCoreApp>`. Run `./eng/scripts/GenerateProjectList.ps1` to update.
 * [eng/SharedFramework.External.props](/eng/SharedFramework.External.props) - this file lists all assemblies shipped
   in Microsoft.AspNetCore.App which are built by source code found in other repositories.

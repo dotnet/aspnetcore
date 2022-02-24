@@ -1,144 +1,120 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Runtime.InteropServices;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.HttpSys.Internal;
 
-namespace Microsoft.AspNetCore.Server.HttpSys
+namespace Microsoft.AspNetCore.Server.HttpSys;
+
+internal unsafe class RequestStreamAsyncResult : IAsyncResult, IDisposable
 {
-    internal unsafe class RequestStreamAsyncResult : IAsyncResult, IDisposable
+    private static readonly IOCompletionCallback IOCallback = new IOCompletionCallback(Callback);
+
+    private readonly SafeNativeOverlapped? _overlapped;
+    private readonly IntPtr _pinnedBuffer;
+    private readonly uint _dataAlreadyRead;
+    private readonly TaskCompletionSource<int> _tcs;
+    private readonly RequestStream _requestStream;
+    private readonly AsyncCallback? _callback;
+    private readonly CancellationTokenRegistration _cancellationRegistration;
+
+    internal RequestStreamAsyncResult(RequestStream requestStream, object? userState, AsyncCallback? callback)
     {
-        private static readonly IOCompletionCallback IOCallback = new IOCompletionCallback(Callback);
+        _requestStream = requestStream;
+        _tcs = new TaskCompletionSource<int>(userState);
+        _callback = callback;
+    }
 
-        private readonly SafeNativeOverlapped? _overlapped;
-        private readonly IntPtr _pinnedBuffer;
-        private readonly uint _dataAlreadyRead;
-        private readonly TaskCompletionSource<int> _tcs;
-        private readonly RequestStream _requestStream;
-        private readonly AsyncCallback? _callback;
-        private readonly CancellationTokenRegistration _cancellationRegistration;
+    internal RequestStreamAsyncResult(RequestStream requestStream, object? userState, AsyncCallback? callback, uint dataAlreadyRead)
+        : this(requestStream, userState, callback)
+    {
+        _dataAlreadyRead = dataAlreadyRead;
+    }
 
-        internal RequestStreamAsyncResult(RequestStream requestStream, object? userState, AsyncCallback? callback)
+    internal RequestStreamAsyncResult(RequestStream requestStream, object? userState, AsyncCallback? callback, byte[] buffer, int offset, uint dataAlreadyRead)
+        : this(requestStream, userState, callback, buffer, offset, dataAlreadyRead, new CancellationTokenRegistration())
+    {
+    }
+
+    internal RequestStreamAsyncResult(RequestStream requestStream, object? userState, AsyncCallback? callback, byte[] buffer, int offset, uint dataAlreadyRead, CancellationTokenRegistration cancellationRegistration)
+        : this(requestStream, userState, callback)
+    {
+        _dataAlreadyRead = dataAlreadyRead;
+        var boundHandle = requestStream.RequestContext.Server.RequestQueue.BoundHandle;
+        _overlapped = new SafeNativeOverlapped(boundHandle,
+            boundHandle.AllocateNativeOverlapped(IOCallback, this, buffer));
+        _pinnedBuffer = (Marshal.UnsafeAddrOfPinnedArrayElement(buffer, offset));
+        _cancellationRegistration = cancellationRegistration;
+    }
+
+    internal RequestStream RequestStream
+    {
+        get { return _requestStream; }
+    }
+
+    internal SafeNativeOverlapped? NativeOverlapped
+    {
+        get { return _overlapped; }
+    }
+
+    internal IntPtr PinnedBuffer
+    {
+        get { return _pinnedBuffer; }
+    }
+
+    internal uint DataAlreadyRead
+    {
+        get { return _dataAlreadyRead; }
+    }
+
+    internal Task<int> Task
+    {
+        get { return _tcs.Task; }
+    }
+
+    internal void IOCompleted(uint errorCode, uint numBytes)
+    {
+        IOCompleted(this, errorCode, numBytes);
+    }
+
+    [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Redirecting to callback")]
+    private static void IOCompleted(RequestStreamAsyncResult asyncResult, uint errorCode, uint numBytes)
+    {
+        try
         {
-            _requestStream = requestStream;
-            _tcs = new TaskCompletionSource<int>(userState);
-            _callback = callback;
-        }
-
-        internal RequestStreamAsyncResult(RequestStream requestStream, object? userState, AsyncCallback? callback, uint dataAlreadyRead)
-            : this(requestStream, userState, callback)
-        {
-            _dataAlreadyRead = dataAlreadyRead;
-        }
-
-        internal RequestStreamAsyncResult(RequestStream requestStream, object? userState, AsyncCallback? callback, byte[] buffer, int offset, uint dataAlreadyRead)
-            : this(requestStream, userState, callback, buffer, offset, dataAlreadyRead, new CancellationTokenRegistration())
-        {
-        }
-
-        internal RequestStreamAsyncResult(RequestStream requestStream, object? userState, AsyncCallback? callback, byte[] buffer, int offset, uint dataAlreadyRead, CancellationTokenRegistration cancellationRegistration)
-            : this(requestStream, userState, callback)
-        {
-            _dataAlreadyRead = dataAlreadyRead;
-            var boundHandle = requestStream.RequestContext.Server.RequestQueue.BoundHandle;
-            _overlapped = new SafeNativeOverlapped(boundHandle,
-                boundHandle.AllocateNativeOverlapped(IOCallback, this, buffer));
-            _pinnedBuffer = (Marshal.UnsafeAddrOfPinnedArrayElement(buffer, offset));
-            _cancellationRegistration = cancellationRegistration;
-        }
-
-        internal RequestStream RequestStream
-        {
-            get { return _requestStream; }
-        }
-
-        internal SafeNativeOverlapped? NativeOverlapped
-        {
-            get { return _overlapped; }
-        }
-
-        internal IntPtr PinnedBuffer
-        {
-            get { return _pinnedBuffer; }
-        }
-
-        internal uint DataAlreadyRead
-        {
-            get { return _dataAlreadyRead; }
-        }
-
-        internal Task<int> Task
-        {
-            get { return _tcs.Task; }
-        }
-
-        internal void IOCompleted(uint errorCode, uint numBytes)
-        {
-            IOCompleted(this, errorCode, numBytes);
-        }
-
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Redirecting to callback")]
-        private static void IOCompleted(RequestStreamAsyncResult asyncResult, uint errorCode, uint numBytes)
-        {
-            try
+            if (errorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && errorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_HANDLE_EOF)
             {
-                if (errorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && errorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_HANDLE_EOF)
-                {
-                    asyncResult.Fail(new IOException(string.Empty, new HttpSysException((int)errorCode)));
-                }
-                else
-                {
-                    // TODO: Verbose log dump data read
-                    asyncResult.Complete((int)numBytes, errorCode);
-                }
+                asyncResult.Fail(new IOException(string.Empty, new HttpSysException((int)errorCode)));
             }
-            catch (Exception e)
+            else
             {
-                asyncResult.Fail(new IOException(string.Empty, e));
+                // TODO: Verbose log dump data read
+                asyncResult.Complete((int)numBytes, errorCode);
             }
         }
-
-        private static unsafe void Callback(uint errorCode, uint numBytes, NativeOverlapped* nativeOverlapped)
+        catch (Exception e)
         {
-            var asyncResult = (RequestStreamAsyncResult)ThreadPoolBoundHandle.GetNativeOverlappedState(nativeOverlapped)!;
-            IOCompleted(asyncResult, errorCode, numBytes);
+            asyncResult.Fail(new IOException(string.Empty, e));
         }
+    }
 
-        internal void Complete(int read, uint errorCode = UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
+    private static unsafe void Callback(uint errorCode, uint numBytes, NativeOverlapped* nativeOverlapped)
+    {
+        var asyncResult = (RequestStreamAsyncResult)ThreadPoolBoundHandle.GetNativeOverlappedState(nativeOverlapped)!;
+        IOCompleted(asyncResult, errorCode, numBytes);
+    }
+
+    internal void Complete(int read, uint errorCode = UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
+    {
+        if (_requestStream.TryCheckSizeLimit(read + (int)DataAlreadyRead, out var exception))
         {
-            if (_requestStream.TryCheckSizeLimit(read + (int)DataAlreadyRead, out var exception))
-            {
-                _tcs.TrySetException(exception);
-            }
-            else if (_tcs.TrySetResult(read + (int)DataAlreadyRead))
-            {
-                RequestStream.UpdateAfterRead((uint)errorCode, (uint)(read + DataAlreadyRead));
-                if (_callback != null)
-                {
-                    try
-                    {
-                        _callback(this);
-                    }
-                    catch (Exception)
-                    {
-                        // TODO: Exception handling? This may be an IO callback thread and throwing here could crash the app.
-                    }
-                }
-            }
-            Dispose();
+            _tcs.TrySetException(exception);
         }
-
-        internal void Fail(Exception ex)
+        else if (_tcs.TrySetResult(read + (int)DataAlreadyRead))
         {
-            // Make sure the Abort state is set before signaling the callback so we can avoid race condtions with user code.
-            Dispose();
-            _requestStream.Abort();
-            if (_tcs.TrySetException(ex) && _callback != null)
+            RequestStream.UpdateAfterRead((uint)errorCode, (uint)(read + DataAlreadyRead));
+            if (_callback != null)
             {
                 try
                 {
@@ -147,47 +123,66 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 catch (Exception)
                 {
                     // TODO: Exception handling? This may be an IO callback thread and throwing here could crash the app.
-                    // TODO: Log
                 }
             }
         }
+        Dispose();
+    }
 
-        [SuppressMessage("Microsoft.Usage", "CA2216:DisposableTypesShouldDeclareFinalizer", Justification = "The disposable resource referenced does have a finalizer.")]
-        public void Dispose()
+    internal void Fail(Exception ex)
+    {
+        // Make sure the Abort state is set before signaling the callback so we can avoid race condtions with user code.
+        Dispose();
+        _requestStream.Abort();
+        if (_tcs.TrySetException(ex) && _callback != null)
         {
-            Dispose(true);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
+            try
             {
-                if (_overlapped != null)
-                {
-                    _overlapped.Dispose();
-                }
-                _cancellationRegistration.Dispose();
+                _callback(this);
+            }
+            catch (Exception)
+            {
+                // TODO: Exception handling? This may be an IO callback thread and throwing here could crash the app.
+                // TODO: Log
             }
         }
+    }
 
-        public object? AsyncState
-        {
-            get { return _tcs.Task.AsyncState; }
-        }
+    [SuppressMessage("Microsoft.Usage", "CA2216:DisposableTypesShouldDeclareFinalizer", Justification = "The disposable resource referenced does have a finalizer.")]
+    public void Dispose()
+    {
+        Dispose(true);
+    }
 
-        public WaitHandle AsyncWaitHandle
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
         {
-            get { return ((IAsyncResult)_tcs.Task).AsyncWaitHandle; }
+            if (_overlapped != null)
+            {
+                _overlapped.Dispose();
+            }
+            _cancellationRegistration.Dispose();
         }
+    }
 
-        public bool CompletedSynchronously
-        {
-            get { return ((IAsyncResult)_tcs.Task).CompletedSynchronously; }
-        }
+    public object? AsyncState
+    {
+        get { return _tcs.Task.AsyncState; }
+    }
 
-        public bool IsCompleted
-        {
-            get { return _tcs.Task.IsCompleted; }
-        }
+    public WaitHandle AsyncWaitHandle
+    {
+        get { return ((IAsyncResult)_tcs.Task).AsyncWaitHandle; }
+    }
+
+    public bool CompletedSynchronously
+    {
+        get { return ((IAsyncResult)_tcs.Task).CompletedSynchronously; }
+    }
+
+    public bool IsCompleted
+    {
+        get { return _tcs.Task.IsCompleted; }
     }
 }

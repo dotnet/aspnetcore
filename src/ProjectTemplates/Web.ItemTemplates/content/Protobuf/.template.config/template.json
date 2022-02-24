@@ -12,8 +12,8 @@
     "language": "",
     "type": "item"
   },
-  "groupIdentity": "Microsoft.Web.Grpc.Protobuf",
-  "precedence": "100",
+  "groupIdentity": "Microsoft.Web.Grpc.Protobuf.6.0",
+  "precedence": "600",
   "identity": "Microsoft.Web.Grpc.Protobuf",
   "shortname": "proto",
   "sourceName": "protobuf",
@@ -36,6 +36,7 @@
   },
   "postActions": [
     {
+      "id": "openInEditor",
       "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
       "description": "Opens protobuf.proto in the editor",
       "manualInstructions": [],

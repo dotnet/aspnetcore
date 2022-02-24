@@ -2,42 +2,39 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Net.Http.Headers;
 
-namespace BasicWebSite.Formatters
+namespace BasicWebSite.Formatters;
+
+public class CustomFormatter : TextOutputFormatter
 {
-    public class CustomFormatter : TextOutputFormatter
+    public string ContentType { get; private set; }
+
+    public CustomFormatter(string contentType)
     {
-        public string ContentType { get; private set; }
+        ContentType = contentType;
+        SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse(contentType));
+        SupportedEncodings.Add(Encoding.GetEncoding("utf-8"));
+    }
 
-        public CustomFormatter(string contentType)
+    public override bool CanWriteResult(OutputFormatterCanWriteContext context)
+    {
+        if (base.CanWriteResult(context))
         {
-            ContentType = contentType;
-            SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse(contentType));
-            SupportedEncodings.Add(Encoding.GetEncoding("utf-8"));
-        }
-
-        public override bool CanWriteResult(OutputFormatterCanWriteContext context)
-        {
-            if (base.CanWriteResult(context))
+            var actionReturnString = context.Object as string;
+            if (actionReturnString != null)
             {
-                var actionReturnString = context.Object as string;
-                if (actionReturnString != null)
-                {
-                    return true;
-                }
+                return true;
             }
-            return false;
         }
+        return false;
+    }
 
-        public override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
-        {
-            var response = context.HttpContext.Response;
-            response.ContentType = ContentType + ";charset=utf-8";
-            await response.WriteAsync(context.Object.ToString());
-        }
+    public override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
+    {
+        var response = context.HttpContext.Response;
+        response.ContentType = ContentType + ";charset=utf-8";
+        await response.WriteAsync(context.Object.ToString());
     }
 }

@@ -1,59 +1,56 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
+namespace Microsoft.AspNetCore.Mvc.Abstractions;
 
-namespace Microsoft.AspNetCore.Mvc.Abstractions
+/// <summary>
+/// Extension methods for <see cref="ActionDescriptor"/>.
+/// </summary>
+public static class ActionDescriptorExtensions
 {
     /// <summary>
-    /// Extension methods for <see cref="ActionDescriptor"/>.
+    /// Gets the value of a property from the <see cref="ActionDescriptor.Properties"/> collection
+    /// using the provided value of <typeparamref name="T"/> as the key.
     /// </summary>
-    public static class ActionDescriptorExtensions
+    /// <typeparam name="T">The type of the property.</typeparam>
+    /// <param name="actionDescriptor">The action descriptor.</param>
+    /// <returns>The property or the default value of <typeparamref name="T"/>.</returns>
+    public static T? GetProperty<T>(this ActionDescriptor actionDescriptor)
     {
-        /// <summary>
-        /// Gets the value of a property from the <see cref="ActionDescriptor.Properties"/> collection
-        /// using the provided value of <typeparamref name="T"/> as the key.
-        /// </summary>
-        /// <typeparam name="T">The type of the property.</typeparam>
-        /// <param name="actionDescriptor">The action descriptor.</param>
-        /// <returns>The property or the default value of <typeparamref name="T"/>.</returns>
-        public static T? GetProperty<T>(this ActionDescriptor actionDescriptor)
+        if (actionDescriptor == null)
         {
-            if (actionDescriptor == null)
-            {
-                throw new ArgumentNullException(nameof(actionDescriptor));
-            }
-
-            if (actionDescriptor.Properties.TryGetValue(typeof(T), out var value))
-            {
-                return (T?)value;
-            }
-            else
-            {
-                return default!;
-            }
+            throw new ArgumentNullException(nameof(actionDescriptor));
         }
 
-        /// <summary>
-        /// Sets the value of an property in the <see cref="ActionDescriptor.Properties"/> collection using
-        /// the provided value of <typeparamref name="T"/> as the key.
-        /// </summary>
-        /// <typeparam name="T">The type of the property.</typeparam>
-        /// <param name="actionDescriptor">The action descriptor.</param>
-        /// <param name="value">The value of the property.</param>
-        public static void SetProperty<T>(this ActionDescriptor actionDescriptor, T value)
+        if (actionDescriptor.Properties.TryGetValue(typeof(T), out var value))
         {
-            if (actionDescriptor == null)
-            {
-                throw new ArgumentNullException(nameof(actionDescriptor));
-            }
-
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-
-            actionDescriptor.Properties[typeof(T)] = value;
+            return (T?)value;
         }
+        else
+        {
+            return default!;
+        }
+    }
+
+    /// <summary>
+    /// Sets the value of an property in the <see cref="ActionDescriptor.Properties"/> collection using
+    /// the provided value of <typeparamref name="T"/> as the key.
+    /// </summary>
+    /// <typeparam name="T">The type of the property.</typeparam>
+    /// <param name="actionDescriptor">The action descriptor.</param>
+    /// <param name="value">The value of the property.</param>
+    public static void SetProperty<T>(this ActionDescriptor actionDescriptor, T value)
+    {
+        if (actionDescriptor == null)
+        {
+            throw new ArgumentNullException(nameof(actionDescriptor));
+        }
+
+        if (value == null)
+        {
+            throw new ArgumentNullException(nameof(value));
+        }
+
+        actionDescriptor.Properties[typeof(T)] = value;
     }
 }

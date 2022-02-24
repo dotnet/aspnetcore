@@ -7,8 +7,8 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>http</PackageTags>
     <IsPackable>false</IsPackable>
-    <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Trimmable>true</Trimmable>
   </PropertyGroup>
 
   <ItemGroup>

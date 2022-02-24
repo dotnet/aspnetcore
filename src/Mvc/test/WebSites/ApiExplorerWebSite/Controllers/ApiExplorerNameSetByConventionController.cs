@@ -3,14 +3,13 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace ApiExplorerWebSite
+namespace ApiExplorerWebSite;
+
+[Route("ApiExplorerNameSetByConvention")]
+public class ApiExplorerNameSetByConventionController : Controller
 {
-    [Route("ApiExplorerNameSetByConvention")]
-    public class ApiExplorerNameSetByConventionController : Controller
+    [HttpGet]
+    public void Get()
     {
-        [HttpGet]
-        public void Get()
-        {
-        }
     }
 }

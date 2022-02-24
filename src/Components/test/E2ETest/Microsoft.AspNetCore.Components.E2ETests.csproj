@@ -1,7 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!--
+      Skip building and running the Components E2E tests in CI unless explicitly configured otherwise via
+      EXECUTE_COMPONENTS_E2E_TESTS. At least build the Components E2E tests locally unless SkipTestBuild is set.
+    -->
+    <_BuildAndTest>false</_BuildAndTest>
+    <_BuildAndTest
+        Condition=" '$(ContinuousIntegrationBuild)' == 'true' AND '$(EXECUTE_COMPONENTS_E2E_TESTS)' == 'true' ">true</_BuildAndTest>
+    <_BuildAndTest
+        Condition=" '$(ContinuousIntegrationBuild)' != 'true' AND '$(SkipTestBuild)' != 'true' ">true</_BuildAndTest>
+    <ExcludeFromBuild Condition=" !$(_BuildAndTest) ">true</ExcludeFromBuild>
+    <SkipTests Condition=" !$(_BuildAndTest) ">true</SkipTests>
+  </PropertyGroup>
 
   <!-- Shared testing infrastructure for running E2E tests using selenium -->
-  <Import Condition="'$(SkipTestBuild)' != 'true'" Project="$(SharedSourceRoot)E2ETesting\E2ETesting.props" />
+  <Import Condition=" $(_BuildAndTest) " Project="$(SharedSourceRoot)E2ETesting\E2ETesting.props" />
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -10,16 +23,11 @@
     <!-- https://github.com/dotnet/aspnetcore/issues/6857 -->
     <BuildHelixPayload>false</BuildHelixPayload>
 
-    <!-- Run on platforms where we support Selenium -->
-    <SkipTests Condition="'$(SeleniumE2ETestsSupported)' != 'true'">true</SkipTests>
-    <SkipTests Condition="'$(SeleniumE2ETestsSupported)' == 'true'">false</SkipTests>
-
-    <!-- Until we resolve reliability issues, we're disabling these E2E tests in the main CI job -->
-    <SkipTests Condition="'$(SkipComponentsE2ETests)' == 'true'">true</SkipTests>
+    <!-- Run only on platforms where we support Selenium. -->
+    <SkipTests Condition=" '$(SeleniumE2ETestsSupported)' != 'true' ">true</SkipTests>
 
     <!-- Tests do not work on Helix or when bin/ directory is not in project directory due to undeclared dependency on test content. -->
     <BaseOutputPath />
-
     <OutputPath />
 
     <!-- This project references the shared framework transitively. Prevent restore errors by setting this flag. -->
@@ -37,7 +45,6 @@
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
-    <Reference Include="Ignitor" />
   </ItemGroup>
 
   <ItemGroup>
@@ -82,7 +89,7 @@
   </ItemGroup>
 
   <!-- Shared testing infrastructure for running E2E tests using selenium -->
-  <Import Condition="'$(SkipTestBuild)' != 'true'" Project="$(SharedSourceRoot)E2ETesting\E2ETesting.targets" />
+  <Import Condition=" '$(SkipTests)' != 'true' " Project="$(SharedSourceRoot)E2ETesting\E2ETesting.targets" />
 
   <ItemGroup>
     <!-- Shared descriptor infrastructure with MVC -->
@@ -110,5 +117,4 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-
 </Project>

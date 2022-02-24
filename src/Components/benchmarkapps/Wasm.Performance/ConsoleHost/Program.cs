@@ -4,24 +4,23 @@
 using Microsoft.Extensions.CommandLineUtils;
 using Wasm.Performance.ConsoleHost.Scenarios;
 
-namespace Wasm.Performance.ConsoleHost
+namespace Wasm.Performance.ConsoleHost;
+
+internal class Program : CommandLineApplication
 {
-    internal class Program : CommandLineApplication
+    static void Main(string[] args)
     {
-        static void Main(string[] args)
-        {
-            new Program().Execute(args);
-        }
+        new Program().Execute(args);
+    }
 
-        public Program()
+    public Program()
+    {
+        OnExecute(() =>
         {
-            OnExecute(() =>
-            {
-                ShowHelp();
-                return 1;
-            });
+            ShowHelp();
+            return 1;
+        });
 
-            Commands.Add(new GridScenario());
-        }
+        Commands.Add(new GridScenario());
     }
 }

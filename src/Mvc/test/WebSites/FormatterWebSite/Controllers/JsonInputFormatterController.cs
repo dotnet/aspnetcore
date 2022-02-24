@@ -3,16 +3,15 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace FormatterWebSite.Controllers
+namespace FormatterWebSite.Controllers;
+
+[ApiController]
+[Route("[controller]/[action]")]
+public class JsonInputFormatterController
 {
-    [ApiController]
-    [Route("[controller]/[action]")]
-    public class JsonInputFormatterController
+    [HttpPost]
+    public ActionResult<int> IntValue(int value)
     {
-        [HttpPost]
-        public ActionResult<int> IntValue(int value)
-        {
-            return value;
-        }
+        return value;
     }
 }

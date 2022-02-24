@@ -1,87 +1,62 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Http.Result
+namespace Microsoft.AspNetCore.Http.Result;
+
+internal abstract class FileResult : FileResultBase, IResult
 {
-    internal abstract partial class FileResult
+    public FileResult(string? contentType)
+        : base(contentType)
     {
-        private string? _fileDownloadName;
+    }
 
-        /// <summary>
-        /// Creates a new <see cref="FileResult"/> instance with
-        /// the provided <paramref name="contentType"/>.
-        /// </summary>
-        /// <param name="contentType">The Content-Type header of the response.</param>
-        protected FileResult(string? contentType)
+    protected abstract ILogger GetLogger(HttpContext httpContext);
+
+    protected abstract Task ExecuteCoreAsync(HttpContext httpContext, RangeItemHeaderValue? range, long rangeLength);
+
+    public virtual Task ExecuteAsync(HttpContext httpContext)
+    {
+        var logger = GetLogger(httpContext);
+
+        Log.ExecutingFileResult(logger, this);
+
+        var fileResultInfo = new FileResultInfo
         {
-            ContentType = contentType ?? "application/octet-stream";
+            ContentType = ContentType,
+            EnableRangeProcessing = EnableRangeProcessing,
+            EntityTag = EntityTag,
+            FileDownloadName = FileDownloadName,
+            LastModified = LastModified,
+        };
+
+        var (range, rangeLength, serveBody) = FileResultHelper.SetHeadersAndLog(
+            httpContext,
+            fileResultInfo,
+            FileLength,
+            EnableRangeProcessing,
+            LastModified,
+            EntityTag,
+            logger);
+
+        if (!serveBody)
+        {
+            return Task.CompletedTask;
         }
 
-        /// <summary>
-        /// Gets the Content-Type header for the response.
-        /// </summary>
-        public string ContentType { get; }
-
-        /// <summary>
-        /// Gets the file name that will be used in the Content-Disposition header of the response.
-        /// </summary>
-        [AllowNull]
-        public string FileDownloadName
+        if (range != null && rangeLength == 0)
         {
-            get { return _fileDownloadName ?? string.Empty; }
-            init { _fileDownloadName = value; }
+            return Task.CompletedTask;
         }
 
-        /// <summary>
-        /// Gets or sets the last modified information associated with the <see cref="FileResult"/>.
-        /// </summary>
-        public DateTimeOffset? LastModified { get; init; }
-
-        /// <summary>
-        /// Gets or sets the etag associated with the <see cref="FileResult"/>.
-        /// </summary>
-        public EntityTagHeaderValue? EntityTag { get; init; }
-
-        /// <summary>
-        /// Gets or sets the value that enables range processing for the <see cref="FileResult"/>.
-        /// </summary>
-        public bool EnableRangeProcessing { get; init; }
-
-        protected static partial class Log
+        if (range != null)
         {
-            public static void ExecutingFileResult(ILogger logger, FileResult fileResult)
-            {
-                if (logger.IsEnabled(LogLevel.Information))
-                {
-                    var fileResultType = fileResult.GetType().Name;
-                    ExecutingFileResultWithNoFileName(logger, fileResultType, fileResult.FileDownloadName);
-                }
-            }
-
-            public static void ExecutingFileResult(ILogger logger, FileResult fileResult, string fileName)
-            {
-                if (logger.IsEnabled(LogLevel.Information))
-                {
-                    var fileResultType = fileResult.GetType().Name;
-                    ExecutingFileResult(logger, fileResultType, fileName, fileResult.FileDownloadName);
-                }
-            }
-
-            [LoggerMessage(1, LogLevel.Information,
-                "Executing {FileResultType}, sending file with download name '{FileDownloadName}'.",
-                EventName = "ExecutingFileResultWithNoFileName",
-                SkipEnabledCheck = true)]
-            private static partial void ExecutingFileResultWithNoFileName(ILogger logger, string fileResultType, string fileDownloadName);
-
-            [LoggerMessage(2, LogLevel.Information,
-                "Executing {FileResultType}, sending file '{FileDownloadPath}' with download name '{FileDownloadName}'.",
-                EventName = "ExecutingFileResult",
-                SkipEnabledCheck = true)]
-            private static partial void ExecutingFileResult(ILogger logger, string fileResultType, string fileDownloadPath, string fileDownloadName);
+            FileResultHelper.Log.WritingRangeToBody(logger);
         }
+
+        return ExecuteCoreAsync(httpContext, range, rangeLength);
     }
 }

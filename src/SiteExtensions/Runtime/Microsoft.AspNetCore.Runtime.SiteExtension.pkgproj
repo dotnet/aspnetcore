@@ -28,13 +28,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.Web.Xdt.Extensions\src\Microsoft.Web.Xdt.Extensions.csproj" PrivateAssets="All" ReferenceOutputAssembly="False"/>
+    <ProjectReference Include="..\Microsoft.Web.Xdt.Extensions\src\Microsoft.Web.Xdt.Extensions.csproj"
+      Private="false"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true" />
 
     <!-- Make sure redist folder is built and ready -->
-    <ProjectReference Include="..\..\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
-    </ProjectReference>
+    <ProjectReference Include="..\..\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
+      Private="false"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true" />
 
     <NativeProjectReference Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" Platform="$(TargetArchitecture)" />
     <NativeProjectReference Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" HandlerPath="2.0.0" Platform="$(TargetArchitecture)" />
@@ -42,7 +45,7 @@
 
   <Target Name="ResolveReferenceItemsForPackage" DependsOnTargets="ResolveReferences" BeforeTargets="_GetPackageFiles">
     <ItemGroup>
-      <Content Include="$(DotNetUnpackFolder)\**\*.*" Exclude="$(DotNetUnpackFolder)\**\.*" Condition="$(DotNetAssetRootUrl) != ''" PackagePath="content\%(RecursiveDir)" />
+      <Content Include="$(DotNetUnpackFolder)\**\*.*" Exclude="$(DotNetUnpackFolder)\**\.*" Condition="'$(DotNetAssetRootUrl)' != ''" PackagePath="content\%(RecursiveDir)" />
       <Content Include="%(ShimComponents.DllLocation)"
             Pack="true"
             Condition="'%(ShimComponents.Platform)' == '$(TargetArchitecture)'"

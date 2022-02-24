@@ -1,191 +1,188 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Globalization;
-using System.IO;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Certificates
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Certificates;
+
+internal class CertificateConfigLoader : ICertificateConfigLoader
 {
-    internal class CertificateConfigLoader : ICertificateConfigLoader
+    public CertificateConfigLoader(IHostEnvironment hostEnvironment, ILogger<KestrelServer> logger)
     {
-        public CertificateConfigLoader(IHostEnvironment hostEnvironment, ILogger<KestrelServer> logger)
+        HostEnvironment = hostEnvironment;
+        Logger = logger;
+    }
+
+    public IHostEnvironment HostEnvironment { get; }
+    public ILogger<KestrelServer> Logger { get; }
+
+    public bool IsTestMock => false;
+
+    public X509Certificate2? LoadCertificate(CertificateConfig? certInfo, string endpointName)
+    {
+        if (certInfo is null)
         {
-            HostEnvironment = hostEnvironment;
-            Logger = logger;
+            return null;
         }
 
-        public IHostEnvironment HostEnvironment { get; }
-        public ILogger<KestrelServer> Logger { get; }
-
-        public bool IsTestMock => false;
-
-        public X509Certificate2? LoadCertificate(CertificateConfig? certInfo, string endpointName)
+        if (certInfo.IsFileCert && certInfo.IsStoreCert)
         {
-            if (certInfo is null)
+            throw new InvalidOperationException(CoreStrings.FormatMultipleCertificateSources(endpointName));
+        }
+        else if (certInfo.IsFileCert)
+        {
+            var certificatePath = Path.Combine(HostEnvironment.ContentRootPath, certInfo.Path!);
+            if (certInfo.KeyPath != null)
             {
-                return null;
-            }
+                var certificateKeyPath = Path.Combine(HostEnvironment.ContentRootPath, certInfo.KeyPath);
+                var certificate = GetCertificate(certificatePath);
 
-            if (certInfo.IsFileCert && certInfo.IsStoreCert)
-            {
-                throw new InvalidOperationException(CoreStrings.FormatMultipleCertificateSources(endpointName));
-            }
-            else if (certInfo.IsFileCert)
-            {
-                var certificatePath = Path.Combine(HostEnvironment.ContentRootPath, certInfo.Path!);
-                if (certInfo.KeyPath != null)
+                if (certificate != null)
                 {
-                    var certificateKeyPath = Path.Combine(HostEnvironment.ContentRootPath, certInfo.KeyPath);
-                    var certificate = GetCertificate(certificatePath);
-
-                    if (certificate != null)
-                    {
-                        certificate = LoadCertificateKey(certificate, certificateKeyPath, certInfo.Password);
-                    }
-                    else
-                    {
-                        Logger.FailedToLoadCertificate(certificateKeyPath);
-                    }
-
-                    if (certificate != null)
-                    {
-                        if (OperatingSystem.IsWindows())
-                        {
-                            return PersistKey(certificate);
-                        }
-
-                        return certificate;
-                    }
-                    else
-                    {
-                        Logger.FailedToLoadCertificateKey(certificateKeyPath);
-                    }
-
-                    throw new InvalidOperationException(CoreStrings.InvalidPemKey);
+                    certificate = LoadCertificateKey(certificate, certificateKeyPath, certInfo.Password);
+                }
+                else
+                {
+                    Logger.FailedToLoadCertificate(certificateKeyPath);
                 }
 
-                return new X509Certificate2(Path.Combine(HostEnvironment.ContentRootPath, certInfo.Path!), certInfo.Password);
-            }
-            else if (certInfo.IsStoreCert)
-            {
-                return LoadFromStoreCert(certInfo);
-            }
-
-            return null;
-        }
-
-        private static X509Certificate2 PersistKey(X509Certificate2 fullCertificate)
-        {
-            // We need to force the key to be persisted.
-            // See https://github.com/dotnet/runtime/issues/23749
-            var certificateBytes = fullCertificate.Export(X509ContentType.Pkcs12, "");
-            return new X509Certificate2(certificateBytes, "", X509KeyStorageFlags.DefaultKeySet);
-        }
-
-        private static X509Certificate2 LoadCertificateKey(X509Certificate2 certificate, string keyPath, string? password)
-        {
-            // OIDs for the certificate key types.
-            const string RSAOid = "1.2.840.113549.1.1.1";
-            const string DSAOid = "1.2.840.10040.4.1";
-            const string ECDsaOid = "1.2.840.10045.2.1";
-
-            // Duplication is required here because there are separate CopyWithPrivateKey methods for each algorithm.
-            var keyText = File.ReadAllText(keyPath);
-            switch (certificate.PublicKey.Oid.Value)
-            {
-                case RSAOid:
+                if (certificate != null)
+                {
+                    if (OperatingSystem.IsWindows())
                     {
-                        using var rsa = RSA.Create();
-                        ImportKeyFromFile(rsa, keyText, password);
-
-                        try
-                        {
-                            return certificate.CopyWithPrivateKey(rsa);
-                        }
-                        catch (Exception ex)
-                        {
-                            throw CreateErrorGettingPrivateKeyException(keyPath, ex);
-                        }
+                        return PersistKey(certificate);
                     }
-                case ECDsaOid:
+
+                    return certificate;
+                }
+                else
+                {
+                    Logger.FailedToLoadCertificateKey(certificateKeyPath);
+                }
+
+                throw new InvalidOperationException(CoreStrings.InvalidPemKey);
+            }
+
+            return new X509Certificate2(Path.Combine(HostEnvironment.ContentRootPath, certInfo.Path!), certInfo.Password);
+        }
+        else if (certInfo.IsStoreCert)
+        {
+            return LoadFromStoreCert(certInfo);
+        }
+
+        return null;
+    }
+
+    private static X509Certificate2 PersistKey(X509Certificate2 fullCertificate)
+    {
+        // We need to force the key to be persisted.
+        // See https://github.com/dotnet/runtime/issues/23749
+        var certificateBytes = fullCertificate.Export(X509ContentType.Pkcs12, "");
+        return new X509Certificate2(certificateBytes, "", X509KeyStorageFlags.DefaultKeySet);
+    }
+
+    private static X509Certificate2 LoadCertificateKey(X509Certificate2 certificate, string keyPath, string? password)
+    {
+        // OIDs for the certificate key types.
+        const string RSAOid = "1.2.840.113549.1.1.1";
+        const string DSAOid = "1.2.840.10040.4.1";
+        const string ECDsaOid = "1.2.840.10045.2.1";
+
+        // Duplication is required here because there are separate CopyWithPrivateKey methods for each algorithm.
+        var keyText = File.ReadAllText(keyPath);
+        switch (certificate.PublicKey.Oid.Value)
+        {
+            case RSAOid:
+                {
+                    using var rsa = RSA.Create();
+                    ImportKeyFromFile(rsa, keyText, password);
+
+                    try
                     {
-                        using var ecdsa = ECDsa.Create();
-                        ImportKeyFromFile(ecdsa, keyText, password);
-
-                        try
-                        {
-                            return certificate.CopyWithPrivateKey(ecdsa);
-                        }
-                        catch (Exception ex)
-                        {
-                            throw CreateErrorGettingPrivateKeyException(keyPath, ex);
-                        }
+                        return certificate.CopyWithPrivateKey(rsa);
                     }
-                case DSAOid:
+                    catch (Exception ex)
                     {
-                        using var dsa = DSA.Create();
-                        ImportKeyFromFile(dsa, keyText, password);
-
-                        try
-                        {
-                            return certificate.CopyWithPrivateKey(dsa);
-                        }
-                        catch (Exception ex)
-                        {
-                            throw CreateErrorGettingPrivateKeyException(keyPath, ex);
-                        }
+                        throw CreateErrorGettingPrivateKeyException(keyPath, ex);
                     }
-                default:
-                    throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, CoreStrings.UnrecognizedCertificateKeyOid, certificate.PublicKey.Oid.Value));
-            }
-        }
+                }
+            case ECDsaOid:
+                {
+                    using var ecdsa = ECDsa.Create();
+                    ImportKeyFromFile(ecdsa, keyText, password);
 
-        private static InvalidOperationException CreateErrorGettingPrivateKeyException(string keyPath, Exception ex)
+                    try
+                    {
+                        return certificate.CopyWithPrivateKey(ecdsa);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw CreateErrorGettingPrivateKeyException(keyPath, ex);
+                    }
+                }
+            case DSAOid:
+                {
+                    using var dsa = DSA.Create();
+                    ImportKeyFromFile(dsa, keyText, password);
+
+                    try
+                    {
+                        return certificate.CopyWithPrivateKey(dsa);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw CreateErrorGettingPrivateKeyException(keyPath, ex);
+                    }
+                }
+            default:
+                throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, CoreStrings.UnrecognizedCertificateKeyOid, certificate.PublicKey.Oid.Value));
+        }
+    }
+
+    private static InvalidOperationException CreateErrorGettingPrivateKeyException(string keyPath, Exception ex)
+    {
+        return new InvalidOperationException($"Error getting private key from '{keyPath}'.", ex);
+    }
+
+    private static X509Certificate2? GetCertificate(string certificatePath)
+    {
+        if (X509Certificate2.GetCertContentType(certificatePath) == X509ContentType.Cert)
         {
-            return new InvalidOperationException($"Error getting private key from '{keyPath}'.", ex);
+            return new X509Certificate2(certificatePath);
         }
 
-        private static X509Certificate2? GetCertificate(string certificatePath)
+        return null;
+    }
+
+    private static void ImportKeyFromFile(AsymmetricAlgorithm asymmetricAlgorithm, string keyText, string? password)
+    {
+        if (password == null)
         {
-            if (X509Certificate2.GetCertContentType(certificatePath) == X509ContentType.Cert)
-            {
-                return new X509Certificate2(certificatePath);
-            }
-
-            return null;
+            asymmetricAlgorithm.ImportFromPem(keyText);
         }
-
-        private static void ImportKeyFromFile(AsymmetricAlgorithm asymmetricAlgorithm, string keyText, string? password)
+        else
         {
-            if (password == null)
-            {
-                asymmetricAlgorithm.ImportFromPem(keyText);
-            }
-            else
-            {
-                asymmetricAlgorithm.ImportFromEncryptedPem(keyText, password);
-            }
+            asymmetricAlgorithm.ImportFromEncryptedPem(keyText, password);
         }
+    }
 
-        private static X509Certificate2 LoadFromStoreCert(CertificateConfig certInfo)
+    private static X509Certificate2 LoadFromStoreCert(CertificateConfig certInfo)
+    {
+        var subject = certInfo.Subject!;
+        var storeName = string.IsNullOrEmpty(certInfo.Store) ? StoreName.My.ToString() : certInfo.Store;
+        var location = certInfo.Location;
+        var storeLocation = StoreLocation.CurrentUser;
+        if (!string.IsNullOrEmpty(location))
         {
-            var subject = certInfo.Subject!;
-            var storeName = string.IsNullOrEmpty(certInfo.Store) ? StoreName.My.ToString() : certInfo.Store;
-            var location = certInfo.Location;
-            var storeLocation = StoreLocation.CurrentUser;
-            if (!string.IsNullOrEmpty(location))
-            {
-                storeLocation = (StoreLocation)Enum.Parse(typeof(StoreLocation), location, ignoreCase: true);
-            }
-            var allowInvalid = certInfo.AllowInvalid ?? false;
-
-            return CertificateLoader.LoadFromStoreCert(subject, storeName, storeLocation, allowInvalid);
+            storeLocation = (StoreLocation)Enum.Parse(typeof(StoreLocation), location, ignoreCase: true);
         }
+        var allowInvalid = certInfo.AllowInvalid ?? false;
+
+        return CertificateLoader.LoadFromStoreCert(subject, storeName, storeLocation, allowInvalid);
     }
 }

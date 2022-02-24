@@ -1,2 +1,0 @@
-(1,18): Error RZ1035: Missing close angle for tag helper 'strong'.
-(1,26): Error RZ1034: Found a malformed 'strong' tag helper. Tag helpers must have a start and end tag or be self closing.

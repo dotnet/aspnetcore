@@ -1,47 +1,43 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.TagHelpers;
 using Microsoft.AspNetCore.Mvc.TagHelpers.Cache;
 using Microsoft.AspNetCore.Razor.TagHelpers;
-using Microsoft.Extensions.Logging;
 
-namespace HtmlGenerationWebSite
+namespace HtmlGenerationWebSite;
+
+// This TagHelper enables us to investigate potential flakiness in the test that uses this tracked by https://github.com/aspnet/Mvc/issues/8281
+public class TestCacheTagHelper : CacheTagHelper
 {
-    // This TagHelper enables us to investigate potential flakiness in the test that uses this tracked by https://github.com/aspnet/Mvc/issues/8281
-    public class TestCacheTagHelper : CacheTagHelper
+    private readonly ILogger _logger;
+
+    public TestCacheTagHelper(
+        CacheTagHelperMemoryCacheFactory factory,
+        HtmlEncoder htmlEncoder,
+        ILoggerFactory loggerFactory) : base(factory, htmlEncoder)
     {
-        private readonly ILogger _logger;
-
-        public TestCacheTagHelper(
-            CacheTagHelperMemoryCacheFactory factory,
-            HtmlEncoder htmlEncoder,
-            ILoggerFactory loggerFactory) : base(factory, htmlEncoder)
+        if (loggerFactory == null)
         {
-            if (loggerFactory == null)
-            {
-                throw new ArgumentNullException(nameof(loggerFactory));
-            }
-
-            _logger = loggerFactory.CreateLogger<TestCacheTagHelper>();
+            throw new ArgumentNullException(nameof(loggerFactory));
         }
 
-        public override Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
-        {
-            var cacheKey = new CacheTagKey(this, context);
-            if (MemoryCache.TryGetValue(cacheKey, out var _))
-            {
-                _logger.LogInformation("Cache entry exists with key: " + cacheKey.GenerateKey());
-            }
-            else
-            {
-                _logger.LogInformation("Cache entry does NOT exist with key: " + cacheKey.GenerateKey());
-            }
+        _logger = loggerFactory.CreateLogger<TestCacheTagHelper>();
+    }
 
-            return base.ProcessAsync(context, output);
+    public override Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
+    {
+        var cacheKey = new CacheTagKey(this, context);
+        if (MemoryCache.TryGetValue(cacheKey, out var _))
+        {
+            _logger.LogInformation("Cache entry exists with key: " + cacheKey.GenerateKey());
         }
+        else
+        {
+            _logger.LogInformation("Cache entry does NOT exist with key: " + cacheKey.GenerateKey());
+        }
+
+        return base.ProcessAsync(context, output);
     }
 }

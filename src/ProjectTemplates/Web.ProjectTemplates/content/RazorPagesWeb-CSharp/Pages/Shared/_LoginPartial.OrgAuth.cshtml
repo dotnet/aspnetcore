@@ -32,7 +32,9 @@
 }
 else
 {
-        <span class="navbar-text text-dark">Hello @User.Identity?.Name!</span>
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignIn">Sign in</a>
+        </li>
 }
 #else
 @if (User.Identity?.IsAuthenticated == true)

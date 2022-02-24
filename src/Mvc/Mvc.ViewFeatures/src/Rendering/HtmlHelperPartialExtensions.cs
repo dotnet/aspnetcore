@@ -1,372 +1,369 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
-namespace Microsoft.AspNetCore.Mvc.Rendering
+namespace Microsoft.AspNetCore.Mvc.Rendering;
+
+/// <summary>
+/// PartialView-related extensions for <see cref="IHtmlHelper"/>.
+/// </summary>
+public static class HtmlHelperPartialExtensions
 {
     /// <summary>
-    /// PartialView-related extensions for <see cref="IHtmlHelper"/>.
+    /// Returns HTML markup for the specified partial view.
     /// </summary>
-    public static class HtmlHelperPartialExtensions
+    /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+    /// <param name="partialViewName">
+    /// The name or path of the partial view used to create the HTML markup. Must not be <c>null</c>.
+    /// </param>
+    /// <returns>
+    /// A <see cref="Task"/> that on completion returns a new <see cref="IHtmlContent"/> instance containing
+    /// the created HTML.
+    /// </returns>
+    public static Task<IHtmlContent> PartialAsync(
+        this IHtmlHelper htmlHelper,
+        string partialViewName)
     {
-        /// <summary>
-        /// Returns HTML markup for the specified partial view.
-        /// </summary>
-        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
-        /// <param name="partialViewName">
-        /// The name or path of the partial view used to create the HTML markup. Must not be <c>null</c>.
-        /// </param>
-        /// <returns>
-        /// A <see cref="Task"/> that on completion returns a new <see cref="IHtmlContent"/> instance containing
-        /// the created HTML.
-        /// </returns>
-        public static Task<IHtmlContent> PartialAsync(
-            this IHtmlHelper htmlHelper,
-            string partialViewName)
+        if (htmlHelper == null)
         {
-            if (htmlHelper == null)
-            {
-                throw new ArgumentNullException(nameof(htmlHelper));
-            }
-
-            if (partialViewName == null)
-            {
-                throw new ArgumentNullException(nameof(partialViewName));
-            }
-
-            return htmlHelper.PartialAsync(partialViewName, htmlHelper.ViewData.Model, viewData: null);
+            throw new ArgumentNullException(nameof(htmlHelper));
         }
 
-        /// <summary>
-        /// Returns HTML markup for the specified partial view.
-        /// </summary>
-        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
-        /// <param name="partialViewName">
-        /// The name or path of the partial view used to create the HTML markup. Must not be <c>null</c>.
-        /// </param>
-        /// <param name="viewData">A <see cref="ViewDataDictionary"/> to pass into the partial view.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that on completion returns a new <see cref="IHtmlContent"/> instance containing
-        /// the created HTML.
-        /// </returns>
-        public static Task<IHtmlContent> PartialAsync(
-            this IHtmlHelper htmlHelper,
-            string partialViewName,
-            ViewDataDictionary viewData)
+        if (partialViewName == null)
         {
-            if (htmlHelper == null)
-            {
-                throw new ArgumentNullException(nameof(htmlHelper));
-            }
-
-            if (partialViewName == null)
-            {
-                throw new ArgumentNullException(nameof(partialViewName));
-            }
-
-            return htmlHelper.PartialAsync(partialViewName, htmlHelper.ViewData.Model, viewData);
+            throw new ArgumentNullException(nameof(partialViewName));
         }
 
-        /// <summary>
-        /// Returns HTML markup for the specified partial view.
-        /// </summary>
-        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
-        /// <param name="partialViewName">
-        /// The name or path of the partial view used to create the HTML markup. Must not be <c>null</c>.
-        /// </param>
-        /// <param name="model">A model to pass into the partial view.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that on completion returns a new <see cref="IHtmlContent"/> instance containing
-        /// the created HTML.
-        /// </returns>
-        public static Task<IHtmlContent> PartialAsync(
-            this IHtmlHelper htmlHelper,
-            string partialViewName,
-            object model)
+        return htmlHelper.PartialAsync(partialViewName, htmlHelper.ViewData.Model, viewData: null);
+    }
+
+    /// <summary>
+    /// Returns HTML markup for the specified partial view.
+    /// </summary>
+    /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+    /// <param name="partialViewName">
+    /// The name or path of the partial view used to create the HTML markup. Must not be <c>null</c>.
+    /// </param>
+    /// <param name="viewData">A <see cref="ViewDataDictionary"/> to pass into the partial view.</param>
+    /// <returns>
+    /// A <see cref="Task"/> that on completion returns a new <see cref="IHtmlContent"/> instance containing
+    /// the created HTML.
+    /// </returns>
+    public static Task<IHtmlContent> PartialAsync(
+        this IHtmlHelper htmlHelper,
+        string partialViewName,
+        ViewDataDictionary viewData)
+    {
+        if (htmlHelper == null)
         {
-            if (htmlHelper == null)
-            {
-                throw new ArgumentNullException(nameof(htmlHelper));
-            }
-
-            if (partialViewName == null)
-            {
-                throw new ArgumentNullException(nameof(partialViewName));
-            }
-
-            return htmlHelper.PartialAsync(partialViewName, model, viewData: null);
+            throw new ArgumentNullException(nameof(htmlHelper));
         }
 
-        /// <summary>
-        /// Returns HTML markup for the specified partial view.
-        /// </summary>
-        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
-        /// <param name="partialViewName">
-        /// The name or path of the partial view used to create the HTML markup. Must not be <c>null</c>.
-        /// </param>
-        /// <returns>
-        /// Returns a new <see cref="IHtmlContent"/> instance containing the created HTML.
-        /// </returns>
-        /// <remarks>
-        /// This method synchronously calls and blocks on
-        /// <see cref="IHtmlHelper.PartialAsync(string, object, ViewDataDictionary)"/>
-        /// </remarks>
-        public static IHtmlContent Partial(this IHtmlHelper htmlHelper, string partialViewName)
+        if (partialViewName == null)
         {
-            return Partial(htmlHelper, partialViewName, htmlHelper.ViewData.Model, viewData: null);
+            throw new ArgumentNullException(nameof(partialViewName));
         }
 
-        /// <summary>
-        /// Returns HTML markup for the specified partial view.
-        /// </summary>
-        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
-        /// <param name="partialViewName">
-        /// The name or path of the partial view used to create the HTML markup. Must not be <c>null</c>.
-        /// </param>
-        /// <param name="viewData">A <see cref="ViewDataDictionary"/> to pass into the partial view.</param>
-        /// <returns>
-        /// Returns a new <see cref="IHtmlContent"/> instance containing the created HTML.
-        /// </returns>
-        /// <remarks>
-        /// This method synchronously calls and blocks on
-        /// <see cref="IHtmlHelper.PartialAsync(string, object, ViewDataDictionary)"/>
-        /// </remarks>
-        public static IHtmlContent Partial(
-            this IHtmlHelper htmlHelper,
-            string partialViewName,
-            ViewDataDictionary viewData)
+        return htmlHelper.PartialAsync(partialViewName, htmlHelper.ViewData.Model, viewData);
+    }
+
+    /// <summary>
+    /// Returns HTML markup for the specified partial view.
+    /// </summary>
+    /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+    /// <param name="partialViewName">
+    /// The name or path of the partial view used to create the HTML markup. Must not be <c>null</c>.
+    /// </param>
+    /// <param name="model">A model to pass into the partial view.</param>
+    /// <returns>
+    /// A <see cref="Task"/> that on completion returns a new <see cref="IHtmlContent"/> instance containing
+    /// the created HTML.
+    /// </returns>
+    public static Task<IHtmlContent> PartialAsync(
+        this IHtmlHelper htmlHelper,
+        string partialViewName,
+        object model)
+    {
+        if (htmlHelper == null)
         {
-            return Partial(htmlHelper, partialViewName, htmlHelper.ViewData.Model, viewData);
+            throw new ArgumentNullException(nameof(htmlHelper));
         }
 
-        /// <summary>
-        /// Returns HTML markup for the specified partial view.
-        /// </summary>
-        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
-        /// <param name="partialViewName">
-        /// The name or path of the partial view used to create the HTML markup. Must not be <c>null</c>.
-        /// </param>
-        /// <param name="model">A model to pass into the partial view.</param>
-        /// <returns>
-        /// Returns a new <see cref="IHtmlContent"/> instance containing the created HTML.
-        /// </returns>
-        /// <remarks>
-        /// This method synchronously calls and blocks on
-        /// <see cref="IHtmlHelper.PartialAsync(string, object, ViewDataDictionary)"/>
-        /// </remarks>
-        public static IHtmlContent Partial(this IHtmlHelper htmlHelper, string partialViewName, object model)
+        if (partialViewName == null)
         {
-            return Partial(htmlHelper, partialViewName, model, viewData: null);
+            throw new ArgumentNullException(nameof(partialViewName));
         }
 
-        /// <summary>
-        /// Returns HTML markup for the specified partial view.
-        /// </summary>
-        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
-        /// <param name="partialViewName">
-        /// The name or path of the partial view used to create the HTML markup. Must not be <c>null</c>.
-        /// </param>
-        /// <param name="model">A model to pass into the partial view.</param>
-        /// <param name="viewData">A <see cref="ViewDataDictionary"/> to pass into the partial view.</param>
-        /// <returns>
-        /// Returns a new <see cref="IHtmlContent"/> instance containing the created HTML.
-        /// </returns>
-        /// <remarks>
-        /// This method synchronously calls and blocks on
-        /// <see cref="IHtmlHelper.PartialAsync(string, object, ViewDataDictionary)"/>
-        /// </remarks>
-        public static IHtmlContent Partial(
-            this IHtmlHelper htmlHelper,
-            string partialViewName,
-            object model,
-            ViewDataDictionary viewData)
+        return htmlHelper.PartialAsync(partialViewName, model, viewData: null);
+    }
+
+    /// <summary>
+    /// Returns HTML markup for the specified partial view.
+    /// </summary>
+    /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+    /// <param name="partialViewName">
+    /// The name or path of the partial view used to create the HTML markup. Must not be <c>null</c>.
+    /// </param>
+    /// <returns>
+    /// Returns a new <see cref="IHtmlContent"/> instance containing the created HTML.
+    /// </returns>
+    /// <remarks>
+    /// This method synchronously calls and blocks on
+    /// <see cref="IHtmlHelper.PartialAsync(string, object, ViewDataDictionary)"/>
+    /// </remarks>
+    public static IHtmlContent Partial(this IHtmlHelper htmlHelper, string partialViewName)
+    {
+        return Partial(htmlHelper, partialViewName, htmlHelper.ViewData.Model, viewData: null);
+    }
+
+    /// <summary>
+    /// Returns HTML markup for the specified partial view.
+    /// </summary>
+    /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+    /// <param name="partialViewName">
+    /// The name or path of the partial view used to create the HTML markup. Must not be <c>null</c>.
+    /// </param>
+    /// <param name="viewData">A <see cref="ViewDataDictionary"/> to pass into the partial view.</param>
+    /// <returns>
+    /// Returns a new <see cref="IHtmlContent"/> instance containing the created HTML.
+    /// </returns>
+    /// <remarks>
+    /// This method synchronously calls and blocks on
+    /// <see cref="IHtmlHelper.PartialAsync(string, object, ViewDataDictionary)"/>
+    /// </remarks>
+    public static IHtmlContent Partial(
+        this IHtmlHelper htmlHelper,
+        string partialViewName,
+        ViewDataDictionary viewData)
+    {
+        return Partial(htmlHelper, partialViewName, htmlHelper.ViewData.Model, viewData);
+    }
+
+    /// <summary>
+    /// Returns HTML markup for the specified partial view.
+    /// </summary>
+    /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+    /// <param name="partialViewName">
+    /// The name or path of the partial view used to create the HTML markup. Must not be <c>null</c>.
+    /// </param>
+    /// <param name="model">A model to pass into the partial view.</param>
+    /// <returns>
+    /// Returns a new <see cref="IHtmlContent"/> instance containing the created HTML.
+    /// </returns>
+    /// <remarks>
+    /// This method synchronously calls and blocks on
+    /// <see cref="IHtmlHelper.PartialAsync(string, object, ViewDataDictionary)"/>
+    /// </remarks>
+    public static IHtmlContent Partial(this IHtmlHelper htmlHelper, string partialViewName, object model)
+    {
+        return Partial(htmlHelper, partialViewName, model, viewData: null);
+    }
+
+    /// <summary>
+    /// Returns HTML markup for the specified partial view.
+    /// </summary>
+    /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+    /// <param name="partialViewName">
+    /// The name or path of the partial view used to create the HTML markup. Must not be <c>null</c>.
+    /// </param>
+    /// <param name="model">A model to pass into the partial view.</param>
+    /// <param name="viewData">A <see cref="ViewDataDictionary"/> to pass into the partial view.</param>
+    /// <returns>
+    /// Returns a new <see cref="IHtmlContent"/> instance containing the created HTML.
+    /// </returns>
+    /// <remarks>
+    /// This method synchronously calls and blocks on
+    /// <see cref="IHtmlHelper.PartialAsync(string, object, ViewDataDictionary)"/>
+    /// </remarks>
+    public static IHtmlContent Partial(
+        this IHtmlHelper htmlHelper,
+        string partialViewName,
+        object model,
+        ViewDataDictionary viewData)
+    {
+        if (htmlHelper == null)
         {
-            if (htmlHelper == null)
-            {
-                throw new ArgumentNullException(nameof(htmlHelper));
-            }
-
-            if (partialViewName == null)
-            {
-                throw new ArgumentNullException(nameof(partialViewName));
-            }
-
-            var result = htmlHelper.PartialAsync(partialViewName, model, viewData);
-            return result.GetAwaiter().GetResult();
+            throw new ArgumentNullException(nameof(htmlHelper));
         }
 
-        /// <summary>
-        /// Renders HTML markup for the specified partial view.
-        /// </summary>
-        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
-        /// <param name="partialViewName">
-        /// The name or path of the partial view used to create the HTML markup. Must not be <c>null</c>.
-        /// </param>
-        /// <remarks>
-        /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.
-        /// </remarks>
-        public static void RenderPartial(this IHtmlHelper htmlHelper, string partialViewName)
+        if (partialViewName == null)
         {
-            RenderPartial(htmlHelper, partialViewName, htmlHelper.ViewData.Model, viewData: null);
+            throw new ArgumentNullException(nameof(partialViewName));
         }
 
-        /// <summary>
-        /// Renders HTML markup for the specified partial view.
-        /// </summary>
-        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
-        /// <param name="partialViewName">
-        /// The name or path of the partial view used to create the HTML markup. Must not be <c>null</c>.
-        /// </param>
-        /// <param name="viewData">A <see cref="ViewDataDictionary"/> to pass into the partial view.</param>
-        /// <remarks>
-        /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.
-        /// </remarks>
-        public static void RenderPartial(
-            this IHtmlHelper htmlHelper,
-            string partialViewName,
-            ViewDataDictionary viewData)
+        var result = htmlHelper.PartialAsync(partialViewName, model, viewData);
+        return result.GetAwaiter().GetResult();
+    }
+
+    /// <summary>
+    /// Renders HTML markup for the specified partial view.
+    /// </summary>
+    /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+    /// <param name="partialViewName">
+    /// The name or path of the partial view used to create the HTML markup. Must not be <c>null</c>.
+    /// </param>
+    /// <remarks>
+    /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.
+    /// </remarks>
+    public static void RenderPartial(this IHtmlHelper htmlHelper, string partialViewName)
+    {
+        RenderPartial(htmlHelper, partialViewName, htmlHelper.ViewData.Model, viewData: null);
+    }
+
+    /// <summary>
+    /// Renders HTML markup for the specified partial view.
+    /// </summary>
+    /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+    /// <param name="partialViewName">
+    /// The name or path of the partial view used to create the HTML markup. Must not be <c>null</c>.
+    /// </param>
+    /// <param name="viewData">A <see cref="ViewDataDictionary"/> to pass into the partial view.</param>
+    /// <remarks>
+    /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.
+    /// </remarks>
+    public static void RenderPartial(
+        this IHtmlHelper htmlHelper,
+        string partialViewName,
+        ViewDataDictionary viewData)
+    {
+        RenderPartial(htmlHelper, partialViewName, htmlHelper.ViewData.Model, viewData);
+    }
+
+    /// <summary>
+    /// Renders HTML markup for the specified partial view.
+    /// </summary>
+    /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+    /// <param name="partialViewName">
+    /// The name or path of the partial view used to create the HTML markup. Must not be <c>null</c>.
+    /// </param>
+    /// <param name="model">A model to pass into the partial view.</param>
+    /// <remarks>
+    /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.
+    /// </remarks>
+    public static void RenderPartial(this IHtmlHelper htmlHelper, string partialViewName, object model)
+    {
+        RenderPartial(htmlHelper, partialViewName, model, viewData: null);
+    }
+
+    /// <summary>
+    /// Renders HTML markup for the specified partial view.
+    /// </summary>
+    /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+    /// <param name="partialViewName">
+    /// The name or path of the partial view used to create the HTML markup. Must not be <c>null</c>.
+    /// </param>
+    /// <param name="model">A model to pass into the partial view.</param>
+    /// <param name="viewData">A <see cref="ViewDataDictionary"/> to pass into the partial view.</param>
+    /// <remarks>
+    /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.
+    /// </remarks>
+    public static void RenderPartial(
+        this IHtmlHelper htmlHelper,
+        string partialViewName,
+        object model,
+        ViewDataDictionary viewData)
+    {
+        if (htmlHelper == null)
         {
-            RenderPartial(htmlHelper, partialViewName, htmlHelper.ViewData.Model, viewData);
+            throw new ArgumentNullException(nameof(htmlHelper));
         }
 
-        /// <summary>
-        /// Renders HTML markup for the specified partial view.
-        /// </summary>
-        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
-        /// <param name="partialViewName">
-        /// The name or path of the partial view used to create the HTML markup. Must not be <c>null</c>.
-        /// </param>
-        /// <param name="model">A model to pass into the partial view.</param>
-        /// <remarks>
-        /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.
-        /// </remarks>
-        public static void RenderPartial(this IHtmlHelper htmlHelper, string partialViewName, object model)
+        if (partialViewName == null)
         {
-            RenderPartial(htmlHelper, partialViewName, model, viewData: null);
+            throw new ArgumentNullException(nameof(partialViewName));
         }
 
-        /// <summary>
-        /// Renders HTML markup for the specified partial view.
-        /// </summary>
-        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
-        /// <param name="partialViewName">
-        /// The name or path of the partial view used to create the HTML markup. Must not be <c>null</c>.
-        /// </param>
-        /// <param name="model">A model to pass into the partial view.</param>
-        /// <param name="viewData">A <see cref="ViewDataDictionary"/> to pass into the partial view.</param>
-        /// <remarks>
-        /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.
-        /// </remarks>
-        public static void RenderPartial(
-            this IHtmlHelper htmlHelper,
-            string partialViewName,
-            object model,
-            ViewDataDictionary viewData)
+        var result = htmlHelper.RenderPartialAsync(partialViewName, model, viewData);
+        result.GetAwaiter().GetResult();
+    }
+
+    /// <summary>
+    /// Renders HTML markup for the specified partial view.
+    /// </summary>
+    /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+    /// <param name="partialViewName">
+    /// The name or path of the partial view used to create the HTML markup. Must not be <c>null</c>.
+    /// </param>
+    /// <returns>A <see cref="Task"/> that renders the created HTML when it executes.</returns>
+    /// <remarks>
+    /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.
+    /// </remarks>
+    public static Task RenderPartialAsync(
+        this IHtmlHelper htmlHelper,
+        string partialViewName)
+    {
+        if (htmlHelper == null)
         {
-            if (htmlHelper == null)
-            {
-                throw new ArgumentNullException(nameof(htmlHelper));
-            }
-
-            if (partialViewName == null)
-            {
-                throw new ArgumentNullException(nameof(partialViewName));
-            }
-
-            var result = htmlHelper.RenderPartialAsync(partialViewName, model, viewData);
-            result.GetAwaiter().GetResult();
+            throw new ArgumentNullException(nameof(htmlHelper));
         }
 
-        /// <summary>
-        /// Renders HTML markup for the specified partial view.
-        /// </summary>
-        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
-        /// <param name="partialViewName">
-        /// The name or path of the partial view used to create the HTML markup. Must not be <c>null</c>.
-        /// </param>
-        /// <returns>A <see cref="Task"/> that renders the created HTML when it executes.</returns>
-        /// <remarks>
-        /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.
-        /// </remarks>
-        public static Task RenderPartialAsync(
-            this IHtmlHelper htmlHelper,
-            string partialViewName)
+        if (partialViewName == null)
         {
-            if (htmlHelper == null)
-            {
-                throw new ArgumentNullException(nameof(htmlHelper));
-            }
-
-            if (partialViewName == null)
-            {
-                throw new ArgumentNullException(nameof(partialViewName));
-            }
-
-            return htmlHelper.RenderPartialAsync(partialViewName, htmlHelper.ViewData.Model, viewData: null);
+            throw new ArgumentNullException(nameof(partialViewName));
         }
 
-        /// <summary>
-        /// Renders HTML markup for the specified partial view.
-        /// </summary>
-        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
-        /// <param name="partialViewName">
-        /// The name or path of the partial view used to create the HTML markup. Must not be <c>null</c>.
-        /// </param>
-        /// <param name="viewData">A <see cref="ViewDataDictionary"/> to pass into the partial view.</param>
-        /// <returns>A <see cref="Task"/> that renders the created HTML when it executes.</returns>
-        /// <remarks>
-        /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.
-        /// </remarks>
-        public static Task RenderPartialAsync(
-            this IHtmlHelper htmlHelper,
-            string partialViewName,
-            ViewDataDictionary viewData)
+        return htmlHelper.RenderPartialAsync(partialViewName, htmlHelper.ViewData.Model, viewData: null);
+    }
+
+    /// <summary>
+    /// Renders HTML markup for the specified partial view.
+    /// </summary>
+    /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+    /// <param name="partialViewName">
+    /// The name or path of the partial view used to create the HTML markup. Must not be <c>null</c>.
+    /// </param>
+    /// <param name="viewData">A <see cref="ViewDataDictionary"/> to pass into the partial view.</param>
+    /// <returns>A <see cref="Task"/> that renders the created HTML when it executes.</returns>
+    /// <remarks>
+    /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.
+    /// </remarks>
+    public static Task RenderPartialAsync(
+        this IHtmlHelper htmlHelper,
+        string partialViewName,
+        ViewDataDictionary viewData)
+    {
+        if (htmlHelper == null)
         {
-            if (htmlHelper == null)
-            {
-                throw new ArgumentNullException(nameof(htmlHelper));
-            }
-
-            if (partialViewName == null)
-            {
-                throw new ArgumentNullException(nameof(partialViewName));
-            }
-
-            return htmlHelper.RenderPartialAsync(partialViewName, htmlHelper.ViewData.Model, viewData);
+            throw new ArgumentNullException(nameof(htmlHelper));
         }
 
-        /// <summary>
-        /// Renders HTML markup for the specified partial view.
-        /// </summary>
-        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
-        /// <param name="partialViewName">
-        /// The name or path of the partial view used to create the HTML markup. Must not be <c>null</c>.
-        /// </param>
-        /// <param name="model">A model to pass into the partial view.</param>
-        /// <returns>A <see cref="Task"/> that renders the created HTML when it executes.</returns>
-        /// <remarks>
-        /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.
-        /// </remarks>
-        public static Task RenderPartialAsync(
-            this IHtmlHelper htmlHelper,
-            string partialViewName,
-            object model)
+        if (partialViewName == null)
         {
-            if (htmlHelper == null)
-            {
-                throw new ArgumentNullException(nameof(htmlHelper));
-            }
-
-            if (partialViewName == null)
-            {
-                throw new ArgumentNullException(nameof(partialViewName));
-            }
-
-            return htmlHelper.RenderPartialAsync(partialViewName, model, viewData: null);
+            throw new ArgumentNullException(nameof(partialViewName));
         }
+
+        return htmlHelper.RenderPartialAsync(partialViewName, htmlHelper.ViewData.Model, viewData);
+    }
+
+    /// <summary>
+    /// Renders HTML markup for the specified partial view.
+    /// </summary>
+    /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+    /// <param name="partialViewName">
+    /// The name or path of the partial view used to create the HTML markup. Must not be <c>null</c>.
+    /// </param>
+    /// <param name="model">A model to pass into the partial view.</param>
+    /// <returns>A <see cref="Task"/> that renders the created HTML when it executes.</returns>
+    /// <remarks>
+    /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.
+    /// </remarks>
+    public static Task RenderPartialAsync(
+        this IHtmlHelper htmlHelper,
+        string partialViewName,
+        object model)
+    {
+        if (htmlHelper == null)
+        {
+            throw new ArgumentNullException(nameof(htmlHelper));
+        }
+
+        if (partialViewName == null)
+        {
+            throw new ArgumentNullException(nameof(partialViewName));
+        }
+
+        return htmlHelper.RenderPartialAsync(partialViewName, model, viewData: null);
     }
 }

@@ -3,6 +3,7 @@
 
 import { HandshakeProtocol, HandshakeRequestMessage, HandshakeResponseMessage } from "./HandshakeProtocol";
 import { IConnection } from "./IConnection";
+import { AbortError } from "./Errors";
 import { CancelInvocationMessage, CompletionMessage, IHubProtocol, InvocationMessage, MessageType, StreamInvocationMessage, StreamItemMessage } from "./IHubProtocol";
 import { ILogger, LogLevel } from "./ILogger";
 import { IRetryPolicy } from "./IRetryPolicy";
@@ -180,10 +181,8 @@ export class HubConnection {
             await this._startInternal();
 
             if (Platform.isBrowser) {
-                if (document) {
-                    // Log when the browser freezes the tab so users know why their connection unexpectedly stopped working
-                    document.addEventListener("freeze", this._freezeEventListener);
-                }
+                // Log when the browser freezes the tab so users know why their connection unexpectedly stopped working
+                window.document.addEventListener("freeze", this._freezeEventListener);
             }
 
             this._connectionState = HubConnectionState.Connected;
@@ -298,7 +297,7 @@ export class HubConnection {
 
         this._cleanupTimeout();
         this._cleanupPingTimer();
-        this._stopDuringStartError = error || new Error("The connection was stopped before the hub handshake could complete.");
+        this._stopDuringStartError = error || new AbortError("The connection was stopped before the hub handshake could complete.");
 
         // HttpConnection.stop() should not complete until after either HttpConnection.start() fails
         // or the onclose callback is invoked. The onclose callback will transition the HubConnection
@@ -676,8 +675,9 @@ export class HubConnection {
     private _invokeClientMethod(invocationMessage: InvocationMessage) {
         const methods = this._methods[invocationMessage.target.toLowerCase()];
         if (methods) {
+            const methodsCopy = methods.slice();
             try {
-                methods.forEach((m) => m.apply(this, invocationMessage.arguments));
+                methodsCopy.forEach((m) => m.apply(this, invocationMessage.arguments));
             } catch (e) {
                 this._logger.log(LogLevel.Error, `A callback for the method ${invocationMessage.target.toLowerCase()} threw error '${e}'.`);
             }
@@ -699,7 +699,7 @@ export class HubConnection {
         this._logger.log(LogLevel.Debug, `HubConnection.connectionClosed(${error}) called while in state ${this._connectionState}.`);
 
         // Triggering this.handshakeRejecter is insufficient because it could already be resolved without the continuation having run yet.
-        this._stopDuringStartError = this._stopDuringStartError || error || new Error("The underlying connection was closed before the hub handshake could complete.");
+        this._stopDuringStartError = this._stopDuringStartError || error || new AbortError("The underlying connection was closed before the hub handshake could complete.");
 
         // If the handshake is in progress, start will be waiting for the handshake promise, so we complete it.
         // If it has already completed, this should just noop.
@@ -734,9 +734,7 @@ export class HubConnection {
             this._connectionStarted = false;
 
             if (Platform.isBrowser) {
-                if (document) {
-                    document.removeEventListener("freeze", this._freezeEventListener);
-                }
+                window.document.removeEventListener("freeze", this._freezeEventListener);
             }
 
             try {

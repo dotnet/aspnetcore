@@ -1,27 +1,24 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Filters;
 
-namespace Microsoft.AspNetCore.Mvc.Filters
+namespace Microsoft.AspNetCore.Mvc.Filters;
+
+internal class PageViewDataAttributeFilterFactory : IFilterFactory
 {
-    internal class PageViewDataAttributeFilterFactory : IFilterFactory
+    public PageViewDataAttributeFilterFactory(IReadOnlyList<LifecycleProperty> properties)
     {
-        public PageViewDataAttributeFilterFactory(IReadOnlyList<LifecycleProperty> properties)
-        {
-            Properties = properties;
-        }
+        Properties = properties;
+    }
 
-        public IReadOnlyList<LifecycleProperty> Properties { get; }
+    public IReadOnlyList<LifecycleProperty> Properties { get; }
 
-        // PageViewDataAttributeFilter is stateful and cannot be reused.
-        public bool IsReusable => false;
+    // PageViewDataAttributeFilter is stateful and cannot be reused.
+    public bool IsReusable => false;
 
-        public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
-        {
-            return new PageViewDataAttributeFilter(Properties);
-        }
+    public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
+    {
+        return new PageViewDataAttributeFilter(Properties);
     }
 }

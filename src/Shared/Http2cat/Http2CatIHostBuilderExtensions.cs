@@ -6,21 +6,20 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http2Cat;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.Extensions.Hosting
+namespace Microsoft.Extensions.Hosting;
+
+internal static class Http2CatIHostBuilderExtensions
 {
-    internal static class Http2CatIHostBuilderExtensions
+    public static IHostBuilder UseHttp2Cat(this IHostBuilder hostBuilder, string address, Func<Http2Utilities, Task> scenario)
     {
-        public static IHostBuilder UseHttp2Cat(this IHostBuilder hostBuilder, string address, Func<Http2Utilities, Task> scenario)
+        hostBuilder.ConfigureServices(services =>
         {
-            hostBuilder.ConfigureServices(services =>
+            services.UseHttp2Cat(options =>
             {
-                services.UseHttp2Cat(options =>
-                {
-                    options.Url = address;
-                    options.Scenaro = scenario;
-                });
+                options.Url = address;
+                options.Scenaro = scenario;
             });
-            return hostBuilder;
-         }
+        });
+        return hostBuilder;
     }
 }

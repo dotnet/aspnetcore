@@ -1,35 +1,18 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.HttpSys
+namespace Microsoft.AspNetCore.Server.HttpSys;
+
+internal static partial class RequestContextLog
 {
-    internal static class RequestContextLog
-    {
-        private static readonly Action<ILogger, Exception?> _requestError =
-            LoggerMessage.Define(LogLevel.Error, LoggerEventIds.RequestError, "ProcessRequestAsync");
+    [LoggerMessage(LoggerEventIds.RequestError, LogLevel.Error, "ProcessRequestAsync", EventName = "RequestError")]
+    public static partial void RequestError(ILogger logger, Exception exception);
 
-        private static readonly Action<ILogger, Exception?> _requestProcessError =
-            LoggerMessage.Define(LogLevel.Error, LoggerEventIds.RequestProcessError, "ProcessRequestAsync");
+    [LoggerMessage(LoggerEventIds.RequestProcessError, LogLevel.Error, "ProcessRequestAsync", EventName = "RequestProcessError")]
+    public static partial void RequestProcessError(ILogger logger, Exception exception);
 
-        private static readonly Action<ILogger, Exception?> _requestsDrained =
-            LoggerMessage.Define(LogLevel.Information, LoggerEventIds.RequestsDrained, "All requests drained.");
-
-        public static void RequestError(ILogger logger, Exception exception)
-        {
-            _requestError(logger, exception);
-        }
-
-        public static void RequestProcessError(ILogger logger, Exception exception)
-        {
-            _requestProcessError(logger, exception);
-        }
-
-        public static void RequestsDrained(ILogger logger)
-        {
-            _requestsDrained(logger, null);
-        }
-    }
+    [LoggerMessage(LoggerEventIds.RequestsDrained, LogLevel.Information, "All requests drained.", EventName = "RequestsDrained")]
+    public static partial void RequestsDrained(ILogger logger);
 }

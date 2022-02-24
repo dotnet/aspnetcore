@@ -12,17 +12,17 @@
     <KnownAppHostPack
       Include="@(KnownAppHostPack->WithMetadataValue('TargetFramework', 'net6.0'))"
       TargetFramework="${DefaultNetCoreTargetFramework}"
-      Condition="@(KnownAppHostPack->Count()) != '0' AND
+      Condition="'@(KnownAppHostPack->Count())' != '0' AND
         !(@(KnownAppHostPack->AnyHaveMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}')))" />
     <KnownRuntimePack
       Include="@(KnownRuntimePack->WithMetadataValue('TargetFramework', 'net6.0'))"
       TargetFramework="${DefaultNetCoreTargetFramework}"
-      Condition="@(KnownRuntimePack->Count()) != '0' AND
+      Condition="'@(KnownRuntimePack->Count())' != '0' AND
         !(@(KnownRuntimePack->AnyHaveMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}')))" />
     <KnownFrameworkReference
       Include="@(KnownFrameworkReference->WithMetadataValue('TargetFramework', 'net6.0'))"
       TargetFramework="${DefaultNetCoreTargetFramework}"
-      Condition="@(KnownFrameworkReference->Count()) != '0' AND
+      Condition="'@(KnownFrameworkReference->Count())' != '0' AND
         !(@(KnownFrameworkReference->AnyHaveMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}')))" />
   </ItemGroup>
 
@@ -58,14 +58,25 @@
           '$(TargetLatestDotNetRuntime)' != 'false' ">${MicrosoftNETCoreAppRuntimeVersion}</DefaultRuntimeFrameworkVersion>
     </KnownFrameworkReference>
 
+    <KnownAppHostPack Update="Microsoft.NETCore.App">
+      <AppHostPackVersion
+        Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftNETCoreAppRuntimeVersion}</AppHostPackVersion>
+    </KnownAppHostPack>
+
+    <KnownRuntimePack Update="Microsoft.NETCore.App">
+      <LatestRuntimeFrameworkVersion
+        Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftNETCoreAppRuntimeVersion}</LatestRuntimeFrameworkVersion>
+    </KnownRuntimePack>
+
     <!-- Use the just-built ASP.NET Core shared framework if available except when building product code in servicing. -->
     <KnownFrameworkReference Update="Microsoft.AspNetCore.App" Condition=" $(UpdateAspNetCoreKnownFramework) ">
       <LatestRuntimeFrameworkVersion
           Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftAspNetCoreAppRuntimeVersion}</LatestRuntimeFrameworkVersion>
       <RuntimePackRuntimeIdentifiers
           Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${SupportedRuntimeIdentifiers}</RuntimePackRuntimeIdentifiers>
+      <!-- Do not update %(TargetingPackVersion) until X.Y.0 versions have been released. -->
       <TargetingPackVersion
-          Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftAspNetCoreAppRefVersion}</TargetingPackVersion>
+          Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' AND '${AspNetCorePatchVersion}' != '1' ">${MicrosoftAspNetCoreAppRefVersion}</TargetingPackVersion>
       <DefaultRuntimeFrameworkVersion Condition=" '$(IsServicingBuild)' != 'true' AND
           '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftAspNetCoreAppRuntimeVersion}</DefaultRuntimeFrameworkVersion>
     </KnownFrameworkReference>

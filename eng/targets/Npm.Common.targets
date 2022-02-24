@@ -1,5 +1,4 @@
 <Project DefaultTargets="Build" InitialTargets="_CheckForInvalidConfiguration">
-
   <!-- Version of this SDK is set in global.json -->
   <Sdk Name="Yarn.MSBuild" />
 
@@ -9,7 +8,7 @@
     <PackageJson>$(MSBuildProjectDirectory)\package.json</PackageJson>
     <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)' == ''">$(MSBuildProjectDirectory)\obj\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$([MSBuild]::NormalizeDirectory('$(BaseIntermediateOutputPath)'))$(Configuration)\</IntermediateOutputPath>
-    <InstallArgs Condition="'$(RestoreLockedMode)' == 'true'">--frozen-lockfile</InstallArgs>
+    <InstallArgs>--frozen-lockfile</InstallArgs>
     <_BackupPackageJson>$(IntermediateOutputPath)$(MSBuildProjectName).package.json.bak</_BackupPackageJson>
     <BuildDependsOn>
       PrepareForBuild;
@@ -36,7 +35,8 @@
       <Output TaskParameter="ExitCode" PropertyName="ErrorCode"/>
     </Exec>
 
-    <Error Text="Building *.npmproj but NodeJS was not detected on path. Ensure NodeJS is on path or disable building NodeJS projects with -noBuildNodeJS or --no-build-nodejs. Skipping NodeJS projects will also skip managed projects depending on them, including Components, Mvc and Analysers." Condition="'$(ErrorCode)' != '0'"/>
+    <Error Text="Building *.npmproj but NodeJS was not detected on path. Ensure NodeJS is on path or disable building NodeJS projects with -noBuildNodeJS or --no-build-nodejs. Skipping NodeJS projects will also skip managed projects depending on them, including Components, Mvc and Analysers."
+        Condition="'$(ErrorCode)' != '0'"/>
   </Target>
 
   <Target Name="Restore">
@@ -132,10 +132,9 @@
     <Move SourceFiles="$(_BackupPackageJson)" DestinationFiles="$(PackageJson)" />
   </Target>
 
-  <Target Name="Test" Condition="'$(IsTestProject)' == 'true' AND '$(SkipTests)' != 'true'">
+  <Target Name="Test" Condition=" $(IsTestProject) AND '$(SkipTests)' != 'true'">
     <Telemetry EventName="NETCORE_ENGINEERING_TELEMETRY" EventData="Category=Test" />
     <Message Importance="High" Text="Running npm tests for $(MSBuildProjectName)" />
     <Yarn Command="$(NpmTestArgs)" StandardOutputImportance="High" StandardErrorImportance="High" IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)" />
   </Target>
-
 </Project>

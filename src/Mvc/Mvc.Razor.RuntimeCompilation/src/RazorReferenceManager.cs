@@ -1,85 +1,81 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection.PortableExecutable;
-using System.Threading;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
+namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
+
+internal class RazorReferenceManager
 {
-    internal class RazorReferenceManager
+    private readonly ApplicationPartManager _partManager;
+    private readonly MvcRazorRuntimeCompilationOptions _options;
+    private object _compilationReferencesLock = new object();
+    private bool _compilationReferencesInitialized;
+    private IReadOnlyList<MetadataReference>? _compilationReferences;
+
+    public RazorReferenceManager(
+        ApplicationPartManager partManager,
+        IOptions<MvcRazorRuntimeCompilationOptions> options)
     {
-        private readonly ApplicationPartManager _partManager;
-        private readonly MvcRazorRuntimeCompilationOptions _options;
-        private object _compilationReferencesLock = new object();
-        private bool _compilationReferencesInitialized;
-        private IReadOnlyList<MetadataReference>? _compilationReferences;
+        _partManager = partManager;
+        _options = options.Value;
+    }
 
-        public RazorReferenceManager(
-            ApplicationPartManager partManager,
-            IOptions<MvcRazorRuntimeCompilationOptions> options)
+    public virtual IReadOnlyList<MetadataReference> CompilationReferences
+    {
+        get
         {
-            _partManager = partManager;
-            _options = options.Value;
+            return LazyInitializer.EnsureInitialized(
+                ref _compilationReferences,
+                ref _compilationReferencesInitialized,
+                ref _compilationReferencesLock,
+                GetCompilationReferences)!;
         }
+    }
 
-        public virtual IReadOnlyList<MetadataReference> CompilationReferences
+    private IReadOnlyList<MetadataReference> GetCompilationReferences()
+    {
+        var referencePaths = GetReferencePaths();
+
+        return referencePaths
+            .Select(CreateMetadataReference)
+            .ToList();
+    }
+
+    // For unit testing
+    internal IEnumerable<string> GetReferencePaths()
+    {
+        var referencePaths = new List<string>(_options.AdditionalReferencePaths.Count);
+
+        foreach (var part in _partManager.ApplicationParts)
         {
-            get
+            if (part is ICompilationReferencesProvider compilationReferenceProvider)
             {
-                return LazyInitializer.EnsureInitialized(
-                    ref _compilationReferences,
-                    ref _compilationReferencesInitialized,
-                    ref _compilationReferencesLock,
-                    GetCompilationReferences)!;
+                referencePaths.AddRange(compilationReferenceProvider.GetReferencePaths());
+            }
+            else if (part is AssemblyPart assemblyPart)
+            {
+                referencePaths.AddRange(assemblyPart.GetReferencePaths());
             }
         }
 
-        private IReadOnlyList<MetadataReference> GetCompilationReferences()
+        referencePaths.AddRange(_options.AdditionalReferencePaths);
+
+        return referencePaths;
+    }
+
+    private static MetadataReference CreateMetadataReference(string path)
+    {
+        using (var stream = File.OpenRead(path))
         {
-            var referencePaths = GetReferencePaths();
+            var moduleMetadata = ModuleMetadata.CreateFromStream(stream, PEStreamOptions.PrefetchMetadata);
+            var assemblyMetadata = AssemblyMetadata.Create(moduleMetadata);
 
-            return referencePaths
-                .Select(CreateMetadataReference)
-                .ToList();
-        }
-
-        // For unit testing
-        internal IEnumerable<string> GetReferencePaths()
-        {
-            var referencePaths = new List<string>(_options.AdditionalReferencePaths.Count);
-
-            foreach (var part in _partManager.ApplicationParts)
-            {
-                if (part is ICompilationReferencesProvider compilationReferenceProvider)
-                {
-                    referencePaths.AddRange(compilationReferenceProvider.GetReferencePaths());
-                }
-                else if (part is AssemblyPart assemblyPart)
-                {
-                    referencePaths.AddRange(assemblyPart.GetReferencePaths());
-                }
-            }
-
-            referencePaths.AddRange(_options.AdditionalReferencePaths);
-
-            return referencePaths;
-        }
-
-        private static MetadataReference CreateMetadataReference(string path)
-        {
-            using (var stream = File.OpenRead(path))
-            {
-                var moduleMetadata = ModuleMetadata.CreateFromStream(stream, PEStreamOptions.PrefetchMetadata);
-                var assemblyMetadata = AssemblyMetadata.Create(moduleMetadata);
-
-                return assemblyMetadata.GetReference(filePath: path);
-            }
+            return assemblyMetadata.GetReference(filePath: path);
         }
     }
 }

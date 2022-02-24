@@ -1,74 +1,71 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using Microsoft.Extensions.Internal;
 
-namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
+namespace Microsoft.AspNetCore.Mvc.Formatters.Xml;
+
+/// <summary>
+/// Creates an <see cref="EnumerableWrapperProvider"/> for interface types implementing the
+/// <see cref="IEnumerable{T}"/> type.
+/// </summary>
+public class EnumerableWrapperProviderFactory : IWrapperProviderFactory
 {
+    private readonly IEnumerable<IWrapperProviderFactory> _wrapperProviderFactories;
+
     /// <summary>
-    /// Creates an <see cref="EnumerableWrapperProvider"/> for interface types implementing the
-    /// <see cref="IEnumerable{T}"/> type.
+    /// Initializes an <see cref="EnumerableWrapperProviderFactory"/> with a list
+    /// <see cref="IWrapperProviderFactory"/>.
     /// </summary>
-    public class EnumerableWrapperProviderFactory : IWrapperProviderFactory
+    /// <param name="wrapperProviderFactories">List of <see cref="IWrapperProviderFactory"/>.</param>
+    public EnumerableWrapperProviderFactory(IEnumerable<IWrapperProviderFactory> wrapperProviderFactories)
     {
-        private readonly IEnumerable<IWrapperProviderFactory> _wrapperProviderFactories;
-
-        /// <summary>
-        /// Initializes an <see cref="EnumerableWrapperProviderFactory"/> with a list
-        /// <see cref="IWrapperProviderFactory"/>.
-        /// </summary>
-        /// <param name="wrapperProviderFactories">List of <see cref="IWrapperProviderFactory"/>.</param>
-        public EnumerableWrapperProviderFactory(IEnumerable<IWrapperProviderFactory> wrapperProviderFactories)
+        if (wrapperProviderFactories == null)
         {
-            if (wrapperProviderFactories == null)
-            {
-                throw new ArgumentNullException(nameof(wrapperProviderFactories));
-            }
-
-            _wrapperProviderFactories = wrapperProviderFactories;
+            throw new ArgumentNullException(nameof(wrapperProviderFactories));
         }
 
-        /// <summary>
-        /// Gets an <see cref="EnumerableWrapperProvider"/> for the provided context.
-        /// </summary>
-        /// <param name="context">The <see cref="WrapperProviderContext"/>.</param>
-        /// <returns>An instance of <see cref="EnumerableWrapperProvider"/> if the declared type is
-        /// an interface and implements <see cref="IEnumerable{T}"/>.</returns>
-        public IWrapperProvider? GetProvider(WrapperProviderContext context)
+        _wrapperProviderFactories = wrapperProviderFactories;
+    }
+
+    /// <summary>
+    /// Gets an <see cref="EnumerableWrapperProvider"/> for the provided context.
+    /// </summary>
+    /// <param name="context">The <see cref="WrapperProviderContext"/>.</param>
+    /// <returns>An instance of <see cref="EnumerableWrapperProvider"/> if the declared type is
+    /// an interface and implements <see cref="IEnumerable{T}"/>.</returns>
+    public IWrapperProvider? GetProvider(WrapperProviderContext context)
+    {
+        if (context == null)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            throw new ArgumentNullException(nameof(context));
+        }
 
-            if (context.IsSerialization)
-            {
-                // Example: IEnumerable<SerializableError>
-                var declaredType = context.DeclaredType;
+        if (context.IsSerialization)
+        {
+            // Example: IEnumerable<SerializableError>
+            var declaredType = context.DeclaredType;
 
-                // We only wrap interfaces types(ex: IEnumerable<T>, IQueryable<T>, IList<T> etc.) and not
-                // concrete types like List<T>, Collection<T> which implement IEnumerable<T>.
-                if (declaredType != null && declaredType.IsInterface && declaredType.IsGenericType)
+            // We only wrap interfaces types(ex: IEnumerable<T>, IQueryable<T>, IList<T> etc.) and not
+            // concrete types like List<T>, Collection<T> which implement IEnumerable<T>.
+            if (declaredType != null && declaredType.IsInterface && declaredType.IsGenericType)
+            {
+                var enumerableOfT = ClosedGenericMatcher.ExtractGenericInterface(
+                    declaredType,
+                    typeof(IEnumerable<>));
+                if (enumerableOfT != null)
                 {
-                    var enumerableOfT = ClosedGenericMatcher.ExtractGenericInterface(
-                        declaredType,
-                        typeof(IEnumerable<>));
-                    if (enumerableOfT != null)
-                    {
-                        var elementType = enumerableOfT.GenericTypeArguments[0];
-                        var wrapperProviderContext = new WrapperProviderContext(elementType, context.IsSerialization);
+                    var elementType = enumerableOfT.GenericTypeArguments[0];
+                    var wrapperProviderContext = new WrapperProviderContext(elementType, context.IsSerialization);
 
-                        var elementWrapperProvider =
-                            _wrapperProviderFactories.GetWrapperProvider(wrapperProviderContext);
+                    var elementWrapperProvider =
+                        _wrapperProviderFactories.GetWrapperProvider(wrapperProviderContext);
 
-                        return new EnumerableWrapperProvider(enumerableOfT, elementWrapperProvider);
-                    }
+                    return new EnumerableWrapperProvider(enumerableOfT, elementWrapperProvider);
                 }
             }
-
-            return null;
         }
+
+        return null;
     }
 }

@@ -5,91 +5,90 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
 
-namespace Microsoft.AspNetCore.Components.Web
+namespace Microsoft.AspNetCore.Components.Web;
+
+/// <summary>
+/// Specifies options for use when enabling JS component support.
+/// This type is not normally used directly from application code. In most cases, applications should
+/// call methods on the <see cref="IJSComponentConfiguration" /> on their application host builder.
+/// </summary>
+public sealed class JSComponentConfigurationStore
 {
-    /// <summary>
-    /// Specifies options for use when enabling JS component support.
-    /// This type is not normally used directly from application code. In most cases, applications should
-    /// call methods on the <see cref="IJSComponentConfiguration" /> on their application host builder.
-    /// </summary>
-    public sealed class JSComponentConfigurationStore
+    // Everything's internal here, and can only be operated upon via the extension methods on
+    // IJSComponentConfiguration. This is so that, in the future, we can add any additional
+    // configuration APIs (as further extension methods) and/or storage (as internal members here)
+    // without needing any changes on the downstream code that implements IJSComponentConfiguration,
+    // and without exposing any of the configuration storage across layers.
+
+    internal Dictionary<string, Type> JSComponentTypesByIdentifier { get; } = new(StringComparer.Ordinal);
+    internal Dictionary<string, JSComponentParameter[]> JSComponentParametersByIdentifier { get; } = new(StringComparer.Ordinal);
+    internal Dictionary<string, List<string>> JSComponentIdentifiersByInitializer { get; } = new(StringComparer.Ordinal);
+
+    internal void Add(Type componentType, string identifier)
     {
-        // Everything's internal here, and can only be operated upon via the extension methods on
-        // IJSComponentConfiguration. This is so that, in the future, we can add any additional
-        // configuration APIs (as further extension methods) and/or storage (as internal members here)
-        // without needing any changes on the downstream code that implements IJSComponentConfiguration,
-        // and without exposing any of the configuration storage across layers.
-
-        internal Dictionary<string, Type> JSComponentTypesByIdentifier { get; } = new(StringComparer.Ordinal);
-        internal Dictionary<string, JSComponentParameter[]> JSComponentParametersByIdentifier { get; } = new(StringComparer.Ordinal);
-        internal Dictionary<string, List<string>> JSComponentIdentifiersByInitializer { get; } = new(StringComparer.Ordinal);
-
-        internal void Add(Type componentType, string identifier)
+        var parameterTypes = JSComponentInterop.GetComponentParameters(componentType).ParameterInfoByName;
+        var parameters = new JSComponentParameter[parameterTypes.Count];
+        var index = 0;
+        foreach (var (name, type) in parameterTypes)
         {
-            var parameterTypes = JSComponentInterop.GetComponentParameters(componentType).ParameterInfoByName;
-            var parameters = new JSComponentParameter[parameterTypes.Count];
-            var index = 0;
-            foreach (var (name, type) in parameterTypes)
-            {
-                parameters[index++] = new JSComponentParameter(name, type.Type);
-            }
-
-            JSComponentTypesByIdentifier.Add(identifier, componentType);
-            JSComponentParametersByIdentifier.Add(identifier, parameters);
+            parameters[index++] = new JSComponentParameter(name, type.Type);
         }
 
-        [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(JSComponentParameter))]
-        [DynamicDependency(nameof(WebRenderer.WebRendererInteropMethods.AddRootComponent), typeof(WebRenderer.WebRendererInteropMethods))]
-        [DynamicDependency(nameof(WebRenderer.WebRendererInteropMethods.SetRootComponentParameters), typeof(WebRenderer.WebRendererInteropMethods))]
-        [DynamicDependency(nameof(WebRenderer.WebRendererInteropMethods.RemoveRootComponent), typeof(WebRenderer.WebRendererInteropMethods))]
-        internal void Add(Type componentType, string identifier, string javaScriptInitializer)
+        JSComponentTypesByIdentifier.Add(identifier, componentType);
+        JSComponentParametersByIdentifier.Add(identifier, parameters);
+    }
+
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(JSComponentParameter))]
+    [DynamicDependency(nameof(WebRenderer.WebRendererInteropMethods.AddRootComponent), typeof(WebRenderer.WebRendererInteropMethods))]
+    [DynamicDependency(nameof(WebRenderer.WebRendererInteropMethods.SetRootComponentParameters), typeof(WebRenderer.WebRendererInteropMethods))]
+    [DynamicDependency(nameof(WebRenderer.WebRendererInteropMethods.RemoveRootComponent), typeof(WebRenderer.WebRendererInteropMethods))]
+    internal void Add(Type componentType, string identifier, string javaScriptInitializer)
+    {
+        Add(componentType, identifier);
+
+        if (string.IsNullOrEmpty(javaScriptInitializer))
         {
-            Add(componentType, identifier);
-
-            if (string.IsNullOrEmpty(javaScriptInitializer))
-            {
-                throw new ArgumentException($"'{nameof(javaScriptInitializer)}' cannot be null or empty.", nameof(javaScriptInitializer));
-            }
-
-            // Since it has a JS initializer, prepare the metadata we'll supply to JS code
-            if (!JSComponentIdentifiersByInitializer.TryGetValue(javaScriptInitializer, out var identifiersForInitializer))
-            {
-                identifiersForInitializer = new();
-                JSComponentIdentifiersByInitializer.Add(javaScriptInitializer, identifiersForInitializer);
-            }
-
-            identifiersForInitializer.Add(identifier);
+            throw new ArgumentException($"'{nameof(javaScriptInitializer)}' cannot be null or empty.", nameof(javaScriptInitializer));
         }
 
-        internal readonly struct JSComponentParameter
+        // Since it has a JS initializer, prepare the metadata we'll supply to JS code
+        if (!JSComponentIdentifiersByInitializer.TryGetValue(javaScriptInitializer, out var identifiersForInitializer))
         {
-            public readonly string Name { get; }
-            public readonly string Type { get; }
-
-            public JSComponentParameter(string name, Type dotNetType)
-            {
-                Name = name;
-                Type = GetJSType(dotNetType);
-            }
-
-            private static string GetJSType(Type dotNetType) => dotNetType switch
-            {
-                var x when x == typeof(string) => "string",
-                var x when x == typeof(bool) => "boolean",
-                var x when x == typeof(bool?) => "boolean?",
-                var x when x == typeof(decimal) => "number",
-                var x when x == typeof(decimal?) => "number?",
-                var x when x == typeof(double) => "number",
-                var x when x == typeof(double?) => "number?",
-                var x when x == typeof(float) => "number",
-                var x when x == typeof(float?) => "number?",
-                var x when x == typeof(int) => "number",
-                var x when x == typeof(int?) => "number?",
-                var x when x == typeof(long) => "number",
-                var x when x == typeof(long?) => "number?",
-                var x when JSComponentInterop.IsEventCallbackType(x) => "eventcallback",
-                _ => "object"
-            };
+            identifiersForInitializer = new();
+            JSComponentIdentifiersByInitializer.Add(javaScriptInitializer, identifiersForInitializer);
         }
+
+        identifiersForInitializer.Add(identifier);
+    }
+
+    internal readonly struct JSComponentParameter
+    {
+        public readonly string Name { get; }
+        public readonly string Type { get; }
+
+        public JSComponentParameter(string name, Type dotNetType)
+        {
+            Name = name;
+            Type = GetJSType(dotNetType);
+        }
+
+        private static string GetJSType(Type dotNetType) => dotNetType switch
+        {
+            var x when x == typeof(string) => "string",
+            var x when x == typeof(bool) => "boolean",
+            var x when x == typeof(bool?) => "boolean?",
+            var x when x == typeof(decimal) => "number",
+            var x when x == typeof(decimal?) => "number?",
+            var x when x == typeof(double) => "number",
+            var x when x == typeof(double?) => "number?",
+            var x when x == typeof(float) => "number",
+            var x when x == typeof(float?) => "number?",
+            var x when x == typeof(int) => "number",
+            var x when x == typeof(int?) => "number?",
+            var x when x == typeof(long) => "number",
+            var x when x == typeof(long?) => "number?",
+            var x when JSComponentInterop.IsEventCallbackType(x) => "eventcallback",
+            _ => "object"
+        };
     }
 }

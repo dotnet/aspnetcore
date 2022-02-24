@@ -1,7 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "strings": {
-    "name": "ASP.NET Core Web 应用(模型-视图-控制器)",
-    "description": "用于创建包含示例 ASP.NET Core MVC 视图和控制器的 ASP.NET Core 应用程序的项目模板。此模板还可以用于 RESTful HTTP 服务。"
-  }
-}

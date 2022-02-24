@@ -13,11 +13,15 @@ and are generated based on the last package release.
   </PropertyGroup>
 
   <ItemGroup Label=".NET team dependencies">
+    <LatestPackageReference Include="Microsoft.AspNetCore.Razor.Language" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" />
     <LatestPackageReference Include="Microsoft.Azure.SignalR" />
+    <LatestPackageReference Include="Microsoft.Bcl.HashCode" />
     <LatestPackageReference Include="Microsoft.Css.Parser" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.Common" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+    <LatestPackageReference Include="Microsoft.CodeAnalysis.Razor" />
     <LatestPackageReference Include="Microsoft.CSharp" />
     <LatestPackageReference Include="Microsoft.Extensions.Caching.Abstractions" />
     <LatestPackageReference Include="Microsoft.Extensions.Caching.Memory" />
@@ -56,6 +60,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.Extensions.Options" />
     <LatestPackageReference Include="Microsoft.Extensions.Primitives" />
     <LatestPackageReference Include="Microsoft.Win32.Registry" />
+    <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing.XUnit" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing.XUnit" />
     <LatestPackageReference Include="System.Buffers" />
     <LatestPackageReference Include="System.CodeDom" />
@@ -74,10 +79,13 @@ and are generated based on the last package release.
     <LatestPackageReference Include="System.Runtime.InteropServices.RuntimeInformation" />
     <LatestPackageReference Include="System.Security.Cryptography.Pkcs" />
     <LatestPackageReference Include="System.Security.Cryptography.Xml" />
+    <LatestPackageReference Include="System.Security.Permissions" />
     <LatestPackageReference Include="System.Security.Principal.Windows" />
     <LatestPackageReference Include="System.Text.Encodings.Web" />
     <LatestPackageReference Include="System.Text.Json" />
+    <LatestPackageReference Include="System.Threading.AccessControl" />
     <LatestPackageReference Include="System.Threading.Channels" />
+    <LatestPackageReference Include="System.Threading.RateLimiting" />
     <LatestPackageReference Include="System.ValueTuple" />
 
     <!-- Runtime packages required for crossgen -->
@@ -176,7 +184,6 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Grpc.Auth" />
     <LatestPackageReference Include="Grpc.Net.Client" />
     <LatestPackageReference Include="Grpc.Tools" />
-    <LatestPackageReference Include="Libuv" />
     <LatestPackageReference Include="MessagePack" />
     <LatestPackageReference Include="MessagePackAnalyzer" />
     <LatestPackageReference Include="Microsoft.Data.SqlClient" />
@@ -187,7 +194,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="NuGet.Frameworks" />
     <LatestPackageReference Include="NuGet.Versioning" />
     <LatestPackageReference Include="Photino.NET" />
-    <LatestPackageReference Include="PlaywrightSharp" />
+    <LatestPackageReference Include="Microsoft.Playwright" />
     <LatestPackageReference Include="Polly" />
     <LatestPackageReference Include="Polly.Extensions.Http" />
     <LatestPackageReference Include="Selenium.Support" />

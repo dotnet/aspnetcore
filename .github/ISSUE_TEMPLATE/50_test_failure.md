@@ -1,11 +1,15 @@
 ---
 name: Test failure
 about: Report a failing test that needs to be quarantined
-title: ''
+title: 'Quarantine <FAILING_TEST_NAME>'
 labels: test-failure
 assignees: ''
 
 ---
+
+<!--
+Note this issue template is specifically for failing tests within the dotnet/aspnetcore repo.
+-->
 
 ## Failing Test(s)
 

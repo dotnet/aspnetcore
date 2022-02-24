@@ -7,96 +7,95 @@ using System;
 using System.Linq;
 using System.Reflection;
 
-namespace Microsoft.Extensions.Internal
+namespace Microsoft.Extensions.Internal;
+
+internal class PropertyActivator<TContext>
 {
-    internal class PropertyActivator<TContext>
+    private readonly Func<TContext, object> _valueAccessor;
+    private readonly Action<object, object> _fastPropertySetter;
+
+    public PropertyActivator(
+        PropertyInfo propertyInfo,
+        Func<TContext, object> valueAccessor)
     {
-        private readonly Func<TContext, object> _valueAccessor;
-        private readonly Action<object, object> _fastPropertySetter;
+        PropertyInfo = propertyInfo ?? throw new ArgumentNullException(nameof(propertyInfo));
+        _valueAccessor = valueAccessor ?? throw new ArgumentNullException(nameof(valueAccessor));
+        _fastPropertySetter = PropertyHelper.MakeFastPropertySetter(propertyInfo);
+    }
 
-        public PropertyActivator(
-            PropertyInfo propertyInfo,
-            Func<TContext, object> valueAccessor)
+    public PropertyInfo PropertyInfo { get; private set; }
+
+    public object Activate(object instance, TContext context)
+    {
+        if (instance == null)
         {
-            PropertyInfo = propertyInfo ?? throw new ArgumentNullException(nameof(propertyInfo));
-            _valueAccessor = valueAccessor ?? throw new ArgumentNullException(nameof(valueAccessor));
-            _fastPropertySetter = PropertyHelper.MakeFastPropertySetter(propertyInfo);
+            throw new ArgumentNullException(nameof(instance));
         }
 
-        public PropertyInfo PropertyInfo { get; private set; }
+        var value = _valueAccessor(context);
+        _fastPropertySetter(instance, value);
+        return value;
+    }
 
-        public object Activate(object instance, TContext context)
+    public static PropertyActivator<TContext>[] GetPropertiesToActivate(
+        Type type,
+        Type activateAttributeType,
+        Func<PropertyInfo, PropertyActivator<TContext>> createActivateInfo)
+    {
+        if (type == null)
         {
-            if (instance == null)
-            {
-                throw new ArgumentNullException(nameof(instance));
-            }
-
-            var value = _valueAccessor(context);
-            _fastPropertySetter(instance, value);
-            return value;
+            throw new ArgumentNullException(nameof(type));
         }
 
-        public static PropertyActivator<TContext>[] GetPropertiesToActivate(
-            Type type,
-            Type activateAttributeType,
-            Func<PropertyInfo, PropertyActivator<TContext>> createActivateInfo)
+        if (activateAttributeType == null)
         {
-            if (type == null)
-            {
-                throw new ArgumentNullException(nameof(type));
-            }
-
-            if (activateAttributeType == null)
-            {
-                throw new ArgumentNullException(nameof(activateAttributeType));
-            }
-
-            if (createActivateInfo == null)
-            {
-                throw new ArgumentNullException(nameof(createActivateInfo));
-            }
-
-            return GetPropertiesToActivate(type, activateAttributeType, createActivateInfo, includeNonPublic: false);
+            throw new ArgumentNullException(nameof(activateAttributeType));
         }
 
-        public static PropertyActivator<TContext>[] GetPropertiesToActivate(
-            Type type,
-            Type activateAttributeType,
-            Func<PropertyInfo, PropertyActivator<TContext>> createActivateInfo,
-            bool includeNonPublic)
+        if (createActivateInfo == null)
         {
-            if (type == null)
-            {
-                throw new ArgumentNullException(nameof(type));
-            }
-
-            if (activateAttributeType == null)
-            {
-                throw new ArgumentNullException(nameof(activateAttributeType));
-            }
-
-            if (createActivateInfo == null)
-            {
-                throw new ArgumentNullException(nameof(createActivateInfo));
-            }
-
-            var properties = type.GetRuntimeProperties()
-                .Where((property) =>
-                {
-                    return
-                        property.IsDefined(activateAttributeType) &&
-                        property.GetIndexParameters().Length == 0 &&
-                        property.SetMethod != null &&
-                        !property.SetMethod.IsStatic;
-                });
-
-            if (!includeNonPublic)
-            {
-                properties = properties.Where(property => property.SetMethod is { IsPublic: true });
-            }
-
-            return properties.Select(createActivateInfo).ToArray();
+            throw new ArgumentNullException(nameof(createActivateInfo));
         }
+
+        return GetPropertiesToActivate(type, activateAttributeType, createActivateInfo, includeNonPublic: false);
+    }
+
+    public static PropertyActivator<TContext>[] GetPropertiesToActivate(
+        Type type,
+        Type activateAttributeType,
+        Func<PropertyInfo, PropertyActivator<TContext>> createActivateInfo,
+        bool includeNonPublic)
+    {
+        if (type == null)
+        {
+            throw new ArgumentNullException(nameof(type));
+        }
+
+        if (activateAttributeType == null)
+        {
+            throw new ArgumentNullException(nameof(activateAttributeType));
+        }
+
+        if (createActivateInfo == null)
+        {
+            throw new ArgumentNullException(nameof(createActivateInfo));
+        }
+
+        var properties = type.GetRuntimeProperties()
+            .Where((property) =>
+            {
+                return
+                    property.IsDefined(activateAttributeType) &&
+                    property.GetIndexParameters().Length == 0 &&
+                    property.SetMethod != null &&
+                    !property.SetMethod.IsStatic;
+            });
+
+        if (!includeNonPublic)
+        {
+            properties = properties.Where(property => property.SetMethod is { IsPublic: true });
+        }
+
+        return properties.Select(createActivateInfo).ToArray();
     }
 }

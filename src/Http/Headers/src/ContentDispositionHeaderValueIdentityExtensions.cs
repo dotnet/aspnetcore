@@ -1,46 +1,44 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.Net.Http.Headers
+namespace Microsoft.Net.Http.Headers;
+
+/// <summary>
+/// Various extension methods for <see cref="ContentDispositionHeaderValue"/> for identifying the type of the disposition header
+/// </summary>
+public static class ContentDispositionHeaderValueIdentityExtensions
 {
     /// <summary>
-    /// Various extension methods for <see cref="ContentDispositionHeaderValue"/> for identifying the type of the disposition header
+    /// Checks if the content disposition header is a file disposition
     /// </summary>
-    public static class ContentDispositionHeaderValueIdentityExtensions
+    /// <param name="header">The header to check</param>
+    /// <returns>True if the header is file disposition, false otherwise</returns>
+    public static bool IsFileDisposition(this ContentDispositionHeaderValue header)
     {
-        /// <summary>
-        /// Checks if the content disposition header is a file disposition
-        /// </summary>
-        /// <param name="header">The header to check</param>
-        /// <returns>True if the header is file disposition, false otherwise</returns>
-        public static bool IsFileDisposition(this ContentDispositionHeaderValue header)
+        if (header == null)
         {
-            if (header == null)
-            {
-                throw new ArgumentNullException(nameof(header));
-            }
-
-            return header.DispositionType.Equals("form-data")
-                && (!StringSegment.IsNullOrEmpty(header.FileName) || !StringSegment.IsNullOrEmpty(header.FileNameStar));
+            throw new ArgumentNullException(nameof(header));
         }
 
-        /// <summary>
-        /// Checks if the content disposition header is a form disposition
-        /// </summary>
-        /// <param name="header">The header to check</param>
-        /// <returns>True if the header is form disposition, false otherwise</returns>
-        public static bool IsFormDisposition(this ContentDispositionHeaderValue header)
-        {
-            if (header == null)
-            {
-                throw new ArgumentNullException(nameof(header));
-            }
+        return header.DispositionType.Equals("form-data")
+            && (!StringSegment.IsNullOrEmpty(header.FileName) || !StringSegment.IsNullOrEmpty(header.FileNameStar));
+    }
 
-            return header.DispositionType.Equals("form-data")
-               && StringSegment.IsNullOrEmpty(header.FileName) && StringSegment.IsNullOrEmpty(header.FileNameStar);
+    /// <summary>
+    /// Checks if the content disposition header is a form disposition
+    /// </summary>
+    /// <param name="header">The header to check</param>
+    /// <returns>True if the header is form disposition, false otherwise</returns>
+    public static bool IsFormDisposition(this ContentDispositionHeaderValue header)
+    {
+        if (header == null)
+        {
+            throw new ArgumentNullException(nameof(header));
         }
+
+        return header.DispositionType.Equals("form-data")
+           && StringSegment.IsNullOrEmpty(header.FileName) && StringSegment.IsNullOrEmpty(header.FileNameStar);
     }
 }

@@ -1,7 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "strings": {
-    "name": "ASP.NET Core Web Uygulaması",
-    "description": "Örnek ASP.NET Razor Sayfaları içeriğine sahip bir ASP.NET Core uygulaması oluşturmaya yönelik proje şablonu."
-  }
-}

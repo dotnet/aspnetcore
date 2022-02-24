@@ -50,7 +50,6 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.IIS" ProjectPath="$(RepoRoot)src\Servers\IIS\IIS\src\Microsoft.AspNetCore.Server.IIS.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.Kestrel.Core" ProjectPath="$(RepoRoot)src\Servers\Kestrel\Core\src\Microsoft.AspNetCore.Server.Kestrel.Core.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.Kestrel" ProjectPath="$(RepoRoot)src\Servers\Kestrel\Kestrel\src\Microsoft.AspNetCore.Server.Kestrel.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" ProjectPath="$(RepoRoot)src\Servers\Kestrel\Transport.Libuv\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" ProjectPath="$(RepoRoot)src\Servers\Kestrel\Transport.Quic\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" ProjectPath="$(RepoRoot)src\Servers\Kestrel\Transport.Sockets\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authentication.Certificate" ProjectPath="$(RepoRoot)src\Security\Authentication\Certificate\src\Microsoft.AspNetCore.Authentication.Certificate.csproj" />
@@ -99,11 +98,6 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.SpaServices.Extensions" ProjectPath="$(RepoRoot)src\Middleware\Spa\SpaServices.Extensions\src\Microsoft.AspNetCore.SpaServices.Extensions.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.StaticFiles" ProjectPath="$(RepoRoot)src\Middleware\StaticFiles\src\Microsoft.AspNetCore.StaticFiles.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.WebSockets" ProjectPath="$(RepoRoot)src\Middleware\WebSockets\src\Microsoft.AspNetCore.WebSockets.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X" ProjectPath="$(RepoRoot)src\Razor\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X\src\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X" ProjectPath="$(RepoRoot)src\Razor\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X\src\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" ProjectPath="$(RepoRoot)src\Razor\Microsoft.AspNetCore.Mvc.Razor.Extensions\src\Microsoft.AspNetCore.Mvc.Razor.Extensions.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Razor.Language" ProjectPath="$(RepoRoot)src\Razor\Microsoft.AspNetCore.Razor.Language\src\Microsoft.AspNetCore.Razor.Language.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.CodeAnalysis.Razor" ProjectPath="$(RepoRoot)src\Razor\Microsoft.CodeAnalysis.Razor\src\Microsoft.CodeAnalysis.Razor.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Razor.Runtime" ProjectPath="$(RepoRoot)src\Razor\Razor.Runtime\src\Microsoft.AspNetCore.Razor.Runtime.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Razor" ProjectPath="$(RepoRoot)src\Razor\Razor\src\Microsoft.AspNetCore.Razor.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Abstractions" ProjectPath="$(RepoRoot)src\Mvc\Mvc.Abstractions\src\Microsoft.AspNetCore.Mvc.Abstractions.csproj" />
@@ -128,6 +122,7 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" ProjectPath="$(RepoRoot)src\Azure\AzureAppServices.HostingStartup\src\Microsoft.AspNetCore.AzureAppServices.HostingStartup.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.AzureAppServicesIntegration" ProjectPath="$(RepoRoot)src\Azure\AzureAppServicesIntegration\src\Microsoft.AspNetCore.AzureAppServicesIntegration.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR.Client.Core" ProjectPath="$(RepoRoot)src\SignalR\clients\csharp\Client.Core\src\Microsoft.AspNetCore.SignalR.Client.Core.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR.Client.SourceGenerator" ProjectPath="$(RepoRoot)src\SignalR\clients\csharp\Client.SourceGenerator\src\Microsoft.AspNetCore.SignalR.Client.SourceGenerator.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR.Client" ProjectPath="$(RepoRoot)src\SignalR\clients\csharp\Client\src\Microsoft.AspNetCore.SignalR.Client.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Http.Connections.Client" ProjectPath="$(RepoRoot)src\SignalR\clients\csharp\Http.Connections.Client\src\Microsoft.AspNetCore.Http.Connections.Client.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Http.Connections.Common" ProjectPath="$(RepoRoot)src\SignalR\common\Http.Connections.Common\src\Microsoft.AspNetCore.Http.Connections.Common.csproj" />
@@ -143,7 +138,6 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Authorization" ProjectPath="$(RepoRoot)src\Components\Authorization\src\Microsoft.AspNetCore.Components.Authorization.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components" ProjectPath="$(RepoRoot)src\Components\Components\src\Microsoft.AspNetCore.Components.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Forms" ProjectPath="$(RepoRoot)src\Components\Forms\src\Microsoft.AspNetCore.Components.Forms.csproj" />
-    <ProjectReferenceProvider Include="Ignitor" ProjectPath="$(RepoRoot)src\Components\Ignitor\src\Ignitor.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Server" ProjectPath="$(RepoRoot)src\Components\Server\src\Microsoft.AspNetCore.Components.Server.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Authentication.WebAssembly.Msal" ProjectPath="$(RepoRoot)src\Components\WebAssembly\Authentication.Msal\src\Microsoft.Authentication.WebAssembly.Msal.csproj" />
     <ProjectReferenceProvider Include="Microsoft.JSInterop.WebAssembly" ProjectPath="$(RepoRoot)src\Components\WebAssembly\JSInterop\src\Microsoft.JSInterop.WebAssembly.csproj" />

@@ -1,7 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "strings": {
-    "name": "Progetto ASP.NET Core vuoto",
-    "description": "Modello di progetto vuoto per la creazione di un'applicazione ASP.NET Core. Questo modello non include alcun contenuto."
-  }
-}

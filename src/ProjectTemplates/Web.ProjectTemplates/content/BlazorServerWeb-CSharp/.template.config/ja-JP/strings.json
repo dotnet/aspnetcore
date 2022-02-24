@@ -1,7 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "strings": {
-    "name": "Blazor Server アプリ",
-    "description": "ASP.NET Core アプリ内のサーバー側で実行され、SignalR 接続を介してユーザー操作を処理する Blazor Server アプリを作成するためのプロジェクト テンプレート。このテンプレートは、高度でダイナミックなユーザー インターフェイス (UI) を備えた Web アプリに使用できます。"
-  }
-}

@@ -3,14 +3,13 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace MvcSample.Web.Components
+namespace MvcSample.Web.Components;
+
+[ViewComponent(Name = "ComponentWithFlush")]
+public class ComponentWithFlush : ViewComponent
 {
-    [ViewComponent(Name = "ComponentWithFlush")]
-    public class ComponentWithFlush : ViewComponent
+    public IViewComponentResult Invoke()
     {
-        public IViewComponentResult Invoke()
-        {
-            return View();
-        }
+        return View();
     }
 }

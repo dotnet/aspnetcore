@@ -3,57 +3,53 @@
 
 using System.Globalization;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 
-namespace TestServer
+namespace TestServer;
+
+public class PrerenderedStartup
 {
-    public class PrerenderedStartup
+    public PrerenderedStartup(IConfiguration configuration)
     {
-        public PrerenderedStartup(IConfiguration configuration)
+        Configuration = configuration;
+    }
+
+    public IConfiguration Configuration { get; }
+
+    // This method gets called by the runtime. Use this method to add services to the container.
+    public void ConfigureServices(IServiceCollection services)
+    {
+        services.AddMvc();
+        services.AddServerSideBlazor();
+        services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
+        services.AddScoped<LazyAssemblyLoader>();
+    }
+
+    // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    {
+        var enUs = new CultureInfo("en-US");
+        CultureInfo.DefaultThreadCurrentCulture = enUs;
+        CultureInfo.DefaultThreadCurrentUICulture = enUs;
+
+        if (env.IsDevelopment())
         {
-            Configuration = configuration;
+            app.UseDeveloperExceptionPage();
         }
 
-        public IConfiguration Configuration { get; }
-
-        // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services)
+        app.Map("/prerendered", app =>
         {
-            services.AddMvc();
-            services.AddServerSideBlazor();
-            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
-            services.AddScoped<LazyAssemblyLoader>();
-        }
+            app.UseStaticFiles();
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-        {
-            var enUs = new CultureInfo("en-US");
-            CultureInfo.DefaultThreadCurrentCulture = enUs;
-            CultureInfo.DefaultThreadCurrentUICulture = enUs;
+            app.UseAuthentication();
 
-            if (env.IsDevelopment())
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
             {
-                app.UseDeveloperExceptionPage();
-            }
-
-            app.Map("/prerendered", app =>
-            {
-                app.UseStaticFiles();
-
-                app.UseAuthentication();
-
-                app.UseRouting();
-                app.UseEndpoints(endpoints =>
-                {
-                    endpoints.MapGet("ishotreloadsubscribedto", () => HotReloadManager.IsSubscribedTo);
-
-                    endpoints.MapRazorPages();
-                    endpoints.MapFallbackToPage("/PrerenderedHost");
-                    endpoints.MapBlazorHub();
-                });
+                endpoints.MapRazorPages();
+                endpoints.MapFallbackToPage("/PrerenderedHost");
+                endpoints.MapBlazorHub();
             });
-        }
+        });
     }
 }

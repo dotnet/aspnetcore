@@ -5,28 +5,27 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Components.Server.Circuits
+namespace Microsoft.AspNetCore.Components.Server.Circuits;
+
+internal class CircuitOptionsJavaScriptInitializersConfiguration : IConfigureOptions<CircuitOptions>
 {
-    internal class CircuitOptionsJavaScriptInitializersConfiguration : IConfigureOptions<CircuitOptions>
+    private readonly IWebHostEnvironment _environment;
+
+    public CircuitOptionsJavaScriptInitializersConfiguration(IWebHostEnvironment environment)
     {
-        private readonly IWebHostEnvironment _environment;
+        _environment = environment;
+    }
 
-        public CircuitOptionsJavaScriptInitializersConfiguration(IWebHostEnvironment environment)
+    public void Configure(CircuitOptions options)
+    {
+        var file = _environment.WebRootFileProvider.GetFileInfo($"{_environment.ApplicationName}.modules.json");
+        if (file.Exists)
         {
-            _environment = environment;
-        }
-
-        public void Configure(CircuitOptions options)
-        {
-            var file = _environment.WebRootFileProvider.GetFileInfo($"{_environment.ApplicationName}.modules.json");
-            if (file.Exists)
+            var initializers = JsonSerializer.Deserialize<string[]>(file.CreateReadStream());
+            for (var i = 0; i < initializers.Length; i++)
             {
-                var initializers = JsonSerializer.Deserialize<string[]>(file.CreateReadStream());
-                for (var i = 0; i < initializers.Length; i++)
-                {
-                    var initializer = initializers[i];
-                    options.JavaScriptInitializers.Add(initializer);
-                }
+                var initializer = initializers[i];
+                options.JavaScriptInitializers.Add(initializer);
             }
         }
     }

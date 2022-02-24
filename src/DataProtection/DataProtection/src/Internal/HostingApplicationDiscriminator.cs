@@ -4,22 +4,21 @@
 using Microsoft.AspNetCore.DataProtection.Infrastructure;
 using Microsoft.Extensions.Hosting;
 
-namespace Microsoft.AspNetCore.DataProtection.Internal
+namespace Microsoft.AspNetCore.DataProtection.Internal;
+
+internal class HostingApplicationDiscriminator : IApplicationDiscriminator
 {
-    internal class HostingApplicationDiscriminator : IApplicationDiscriminator
+    private readonly IHostEnvironment? _hosting;
+
+    // the optional constructor for when IHostingEnvironment is not available from DI
+    public HostingApplicationDiscriminator()
     {
-        private readonly IHostEnvironment? _hosting;
-
-        // the optional constructor for when IHostingEnvironment is not available from DI
-        public HostingApplicationDiscriminator()
-        {
-        }
-
-        public HostingApplicationDiscriminator(IHostEnvironment hosting)
-        {
-            _hosting = hosting;
-        }
-
-        public string? Discriminator => _hosting?.ContentRootPath;
     }
+
+    public HostingApplicationDiscriminator(IHostEnvironment hosting)
+    {
+        _hosting = hosting;
+    }
+
+    public string? Discriminator => _hosting?.ContentRootPath;
 }

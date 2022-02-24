@@ -1,3 +1,0 @@
-Transition span at (18:0,18 [1] ) (Accepts:None) - Parent: Expression block at (18:0,18 [13] )
-Code span at (19:0,19 [12] ) (Accepts:NonWhitespace) - Parent: Expression block at (18:0,18 [13] )
-Markup span at (33:0,33 [16] ) (Accepts:Any) - Parent: Tag block at (0:0,0 [58] )

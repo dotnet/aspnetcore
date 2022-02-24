@@ -1,13 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.MiddlewareAnalysis.AnalysisBuilder.AnalysisBuilder(Microsoft.AspNetCore.Builder.IApplicationBuilder! inner) -> void
-Microsoft.AspNetCore.MiddlewareAnalysis.AnalysisBuilder.ApplicationServices.get -> System.IServiceProvider!
-Microsoft.AspNetCore.MiddlewareAnalysis.AnalysisBuilder.ApplicationServices.set -> void
-Microsoft.AspNetCore.MiddlewareAnalysis.AnalysisBuilder.Build() -> Microsoft.AspNetCore.Http.RequestDelegate!
-Microsoft.AspNetCore.MiddlewareAnalysis.AnalysisBuilder.New() -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
-Microsoft.AspNetCore.MiddlewareAnalysis.AnalysisBuilder.Properties.get -> System.Collections.Generic.IDictionary<string!, object?>!
-Microsoft.AspNetCore.MiddlewareAnalysis.AnalysisBuilder.ServerFeatures.get -> Microsoft.AspNetCore.Http.Features.IFeatureCollection!
-Microsoft.AspNetCore.MiddlewareAnalysis.AnalysisBuilder.Use(System.Func<Microsoft.AspNetCore.Http.RequestDelegate!, Microsoft.AspNetCore.Http.RequestDelegate!>! middleware) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
-Microsoft.AspNetCore.MiddlewareAnalysis.AnalysisMiddleware.AnalysisMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, System.Diagnostics.DiagnosticSource! diagnosticSource, string! middlewareName) -> void
-Microsoft.AspNetCore.MiddlewareAnalysis.AnalysisMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.MiddlewareAnalysis.AnalysisStartupFilter.Configure(System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder!>! next) -> System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder!>!
-static Microsoft.Extensions.DependencyInjection.AnalysisServiceCollectionExtensions.AddMiddlewareAnalysis(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

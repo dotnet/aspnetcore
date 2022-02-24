@@ -1,103 +1,100 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
-namespace Microsoft.AspNetCore.Mvc.ViewComponents
+namespace Microsoft.AspNetCore.Mvc.ViewComponents;
+
+/// <summary>
+/// A default implementation of <see cref="IViewComponentActivator"/>.
+/// </summary>
+/// <remarks>
+/// The <see cref="DefaultViewComponentActivator"/> can provide the current instance of
+/// <see cref="ViewComponentContext"/> to a public property of a view component marked
+/// with <see cref="ViewComponentContextAttribute"/>.
+/// </remarks>
+internal class DefaultViewComponentActivator : IViewComponentActivator
 {
+    private readonly ITypeActivatorCache _typeActivatorCache;
+
     /// <summary>
-    /// A default implementation of <see cref="IViewComponentActivator"/>.
+    /// Initializes a new instance of <see cref="DefaultViewComponentActivator"/> class.
     /// </summary>
-    /// <remarks>
-    /// The <see cref="DefaultViewComponentActivator"/> can provide the current instance of
-    /// <see cref="ViewComponentContext"/> to a public property of a view component marked
-    /// with <see cref="ViewComponentContextAttribute"/>.
-    /// </remarks>
-    internal class DefaultViewComponentActivator : IViewComponentActivator
+    /// <param name="typeActivatorCache">
+    /// The <see cref="ITypeActivatorCache"/> used to create new view component instances.
+    /// </param>
+    public DefaultViewComponentActivator(ITypeActivatorCache typeActivatorCache)
     {
-        private readonly ITypeActivatorCache _typeActivatorCache;
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="DefaultViewComponentActivator"/> class.
-        /// </summary>
-        /// <param name="typeActivatorCache">
-        /// The <see cref="ITypeActivatorCache"/> used to create new view component instances.
-        /// </param>
-        public DefaultViewComponentActivator(ITypeActivatorCache typeActivatorCache)
+        if (typeActivatorCache == null)
         {
-            if (typeActivatorCache == null)
-            {
-                throw new ArgumentNullException(nameof(typeActivatorCache));
-            }
-
-            _typeActivatorCache = typeActivatorCache;
+            throw new ArgumentNullException(nameof(typeActivatorCache));
         }
 
-        /// <inheritdoc />
-        public object Create(ViewComponentContext context)
+        _typeActivatorCache = typeActivatorCache;
+    }
+
+    /// <inheritdoc />
+    public object Create(ViewComponentContext context)
+    {
+        if (context == null)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            var componentType = context.ViewComponentDescriptor.TypeInfo;
-
-            if (componentType == null)
-            {
-                throw new ArgumentException(Resources.FormatPropertyOfTypeCannotBeNull(
-                    nameof(context.ViewComponentDescriptor.TypeInfo),
-                    nameof(context.ViewComponentDescriptor)));
-            }
-
-            var viewComponent = _typeActivatorCache.CreateInstance<object>(
-                context.ViewContext.HttpContext.RequestServices,
-                context.ViewComponentDescriptor.TypeInfo.AsType());
-
-            return viewComponent;
+            throw new ArgumentNullException(nameof(context));
         }
 
-        /// <inheritdoc />
-        public void Release(ViewComponentContext context, object viewComponent)
+        var componentType = context.ViewComponentDescriptor.TypeInfo;
+
+        if (componentType == null)
         {
-            if (context == null)
-            {
-                throw new InvalidOperationException(nameof(context));
-            }
-
-            if (viewComponent == null)
-            {
-                throw new InvalidOperationException(nameof(viewComponent));
-            }
-
-            if (viewComponent is IDisposable disposable)
-            {
-                disposable.Dispose();
-            }
+            throw new ArgumentException(Resources.FormatPropertyOfTypeCannotBeNull(
+                nameof(context.ViewComponentDescriptor.TypeInfo),
+                nameof(context.ViewComponentDescriptor)));
         }
 
-        public ValueTask ReleaseAsync(ViewComponentContext context, object viewComponent)
+        var viewComponent = _typeActivatorCache.CreateInstance<object>(
+            context.ViewContext.HttpContext.RequestServices,
+            context.ViewComponentDescriptor.TypeInfo.AsType());
+
+        return viewComponent;
+    }
+
+    /// <inheritdoc />
+    public void Release(ViewComponentContext context, object viewComponent)
+    {
+        if (context == null)
         {
-            if (context == null)
-            {
-                throw new InvalidOperationException(nameof(context));
-            }
-
-            if (viewComponent == null)
-            {
-                throw new InvalidOperationException(nameof(viewComponent));
-            }
-
-            if (viewComponent is IAsyncDisposable disposable)
-            {
-                return disposable.DisposeAsync();
-            }
-
-            Release(context, viewComponent);
-            return default;
+            throw new InvalidOperationException(nameof(context));
         }
+
+        if (viewComponent == null)
+        {
+            throw new InvalidOperationException(nameof(viewComponent));
+        }
+
+        if (viewComponent is IDisposable disposable)
+        {
+            disposable.Dispose();
+        }
+    }
+
+    public ValueTask ReleaseAsync(ViewComponentContext context, object viewComponent)
+    {
+        if (context == null)
+        {
+            throw new InvalidOperationException(nameof(context));
+        }
+
+        if (viewComponent == null)
+        {
+            throw new InvalidOperationException(nameof(viewComponent));
+        }
+
+        if (viewComponent is IAsyncDisposable disposable)
+        {
+            return disposable.DisposeAsync();
+        }
+
+        Release(context, viewComponent);
+        return default;
     }
 }

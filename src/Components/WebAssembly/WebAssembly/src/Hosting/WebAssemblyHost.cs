@@ -11,179 +11,178 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
+namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+
+/// <summary>
+/// A host object for Blazor running under WebAssembly. Use <see cref="WebAssemblyHostBuilder"/>
+/// to initialize a <see cref="WebAssemblyHost"/>.
+/// </summary>
+public sealed class WebAssemblyHost : IAsyncDisposable
 {
-    /// <summary>
-    /// A host object for Blazor running under WebAssembly. Use <see cref="WebAssemblyHostBuilder"/>
-    /// to initialize a <see cref="WebAssemblyHost"/>.
-    /// </summary>
-    public sealed class WebAssemblyHost : IAsyncDisposable
+    private readonly AsyncServiceScope _scope;
+    private readonly IServiceProvider _services;
+    private readonly IConfiguration _configuration;
+    private readonly RootComponentMappingCollection _rootComponents;
+    private readonly string? _persistedState;
+
+    // NOTE: the host is disposable because it OWNs references to disposable things.
+    //
+    // The twist is that in general dispose is not going to run even if the user puts it in a using.
+    // When a user refreshes or navigates away that terminates the app, like a process.exit. So the
+    // dispose functionality here is basically so that it can be used in unit tests.
+    //
+    // Based on the APIs that exist in Blazor today it's not possible for the
+    // app to get disposed, however if we add something like that in the future, most of the work is
+    // already done.
+    private bool _disposed;
+    private bool _started;
+    private WebAssemblyRenderer? _renderer;
+
+    internal WebAssemblyHost(
+        WebAssemblyHostBuilder builder,
+        IServiceProvider services,
+        AsyncServiceScope scope,
+        string? persistedState)
     {
-        private readonly AsyncServiceScope _scope;
-        private readonly IServiceProvider _services;
-        private readonly IConfiguration _configuration;
-        private readonly RootComponentMappingCollection _rootComponents;
-        private readonly string? _persistedState;
+        // To ensure JS-invoked methods don't get linked out, have a reference to their enclosing types
+        GC.KeepAlive(typeof(JSInteropMethods));
 
-        // NOTE: the host is disposable because it OWNs references to disposable things.
-        //
-        // The twist is that in general dispose is not going to run even if the user puts it in a using.
-        // When a user refreshes or navigates away that terminates the app, like a process.exit. So the
-        // dispose functionality here is basically so that it can be used in unit tests.
-        //
-        // Based on the APIs that exist in Blazor today it's not possible for the
-        // app to get disposed, however if we add something like that in the future, most of the work is
-        // already done.
-        private bool _disposed;
-        private bool _started;
-        private WebAssemblyRenderer? _renderer;
+        _services = services;
+        _scope = scope;
+        _configuration = builder.Configuration;
+        _rootComponents = builder.RootComponents;
+        _persistedState = persistedState;
+    }
 
-        internal WebAssemblyHost(
-            WebAssemblyHostBuilder builder,
-            IServiceProvider services,
-            AsyncServiceScope scope,
-            string? persistedState)
+    /// <summary>
+    /// Gets the application configuration.
+    /// </summary>
+    public IConfiguration Configuration => _configuration;
+
+    /// <summary>
+    /// Gets the service provider associated with the application.
+    /// </summary>
+    public IServiceProvider Services => _scope.ServiceProvider;
+
+    /// <summary>
+    /// Disposes the host asynchronously.
+    /// </summary>
+    /// <returns>A <see cref="ValueTask"/> which respresents the completion of disposal.</returns>
+    public async ValueTask DisposeAsync()
+    {
+        if (_disposed)
         {
-            // To ensure JS-invoked methods don't get linked out, have a reference to their enclosing types
-            GC.KeepAlive(typeof(JSInteropMethods));
-
-            _services = services;
-            _scope = scope;
-            _configuration = builder.Configuration;
-            _rootComponents = builder.RootComponents;
-            _persistedState = persistedState;
+            return;
         }
 
-        /// <summary>
-        /// Gets the application configuration.
-        /// </summary>
-        public IConfiguration Configuration => _configuration;
+        _disposed = true;
 
-        /// <summary>
-        /// Gets the service provider associated with the application.
-        /// </summary>
-        public IServiceProvider Services => _scope.ServiceProvider;
-
-        /// <summary>
-        /// Disposes the host asynchronously.
-        /// </summary>
-        /// <returns>A <see cref="ValueTask"/> which respresents the completion of disposal.</returns>
-        public async ValueTask DisposeAsync()
+        if (_renderer != null)
         {
-            if (_disposed)
-            {
-                return;
-            }
-
-            _disposed = true;
-
-            if (_renderer != null)
-            {
-                await _renderer.DisposeAsync();
-            }
-
-            await _scope.DisposeAsync();
-
-            if (_services is IAsyncDisposable asyncDisposableServices)
-            {
-                await asyncDisposableServices.DisposeAsync();
-            }
-            else if (_services is IDisposable disposableServices)
-            {
-                disposableServices.Dispose();
-            }
+            await _renderer.DisposeAsync();
         }
 
-        /// <summary>
-        /// Runs the application associated with this host.
-        /// </summary>
-        /// <returns>A <see cref="Task"/> which represents exit of the application.</returns>
-        /// <remarks>
-        /// At this time, it's not possible to shut down a Blazor WebAssembly application using imperative code.
-        /// The application only stops when the hosting page is reloaded or navigated to another page. As a result
-        /// the task returned from this method does not complete. This method is not suitable for use in unit-testing.
-        /// </remarks>
-        public Task RunAsync()
+        await _scope.DisposeAsync();
+
+        if (_services is IAsyncDisposable asyncDisposableServices)
         {
-            // RunAsyncCore will await until the CancellationToken fires. However, we don't fire it
-            // currently, so the app will "run" forever.
-            return RunAsyncCore(CancellationToken.None);
+            await asyncDisposableServices.DisposeAsync();
+        }
+        else if (_services is IDisposable disposableServices)
+        {
+            disposableServices.Dispose();
+        }
+    }
+
+    /// <summary>
+    /// Runs the application associated with this host.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> which represents exit of the application.</returns>
+    /// <remarks>
+    /// At this time, it's not possible to shut down a Blazor WebAssembly application using imperative code.
+    /// The application only stops when the hosting page is reloaded or navigated to another page. As a result
+    /// the task returned from this method does not complete. This method is not suitable for use in unit-testing.
+    /// </remarks>
+    public Task RunAsync()
+    {
+        // RunAsyncCore will await until the CancellationToken fires. However, we don't fire it
+        // currently, so the app will "run" forever.
+        return RunAsyncCore(CancellationToken.None);
+    }
+
+    // Internal for testing.
+    internal async Task RunAsyncCore(CancellationToken cancellationToken, WebAssemblyCultureProvider? cultureProvider = null)
+    {
+        if (_started)
+        {
+            throw new InvalidOperationException("The host has already started.");
         }
 
-        // Internal for testing.
-        internal async Task RunAsyncCore(CancellationToken cancellationToken, WebAssemblyCultureProvider? cultureProvider = null)
+        _started = true;
+
+        cultureProvider ??= WebAssemblyCultureProvider.Instance!;
+        cultureProvider.ThrowIfCultureChangeIsUnsupported();
+
+        // Application developers might have configured the culture based on some ambient state
+        // such as local storage, url etc as part of their Program.Main(Async).
+        // This is the earliest opportunity to fetch satellite assemblies for this selection.
+        await cultureProvider.LoadCurrentCultureResourcesAsync();
+
+        var manager = Services.GetRequiredService<ComponentStatePersistenceManager>();
+        var store = !string.IsNullOrEmpty(_persistedState) ?
+            new PrerenderComponentApplicationStore(_persistedState) :
+            new PrerenderComponentApplicationStore();
+
+        await manager.RestoreStateAsync(store);
+
+        if (MetadataUpdater.IsSupported)
         {
-            if (_started)
+            await WebAssemblyHotReload.InitializeAsync();
+        }
+
+        var tcs = new TaskCompletionSource();
+
+        using (cancellationToken.Register(() => tcs.TrySetResult()))
+        {
+            var loggerFactory = Services.GetRequiredService<ILoggerFactory>();
+            var jsComponentInterop = new JSComponentInterop(_rootComponents.JSComponents);
+            _renderer = new WebAssemblyRenderer(Services, loggerFactory, jsComponentInterop);
+
+            var initializationTcs = new TaskCompletionSource();
+            WebAssemblyCallQueue.Schedule((_rootComponents, _renderer, initializationTcs), static async state =>
             {
-                throw new InvalidOperationException("The host has already started.");
-            }
+                var (rootComponents, renderer, initializationTcs) = state;
 
-            _started = true;
-
-            cultureProvider ??= WebAssemblyCultureProvider.Instance!;
-            cultureProvider.ThrowIfCultureChangeIsUnsupported();
-
-            // Application developers might have configured the culture based on some ambient state
-            // such as local storage, url etc as part of their Program.Main(Async).
-            // This is the earliest opportunity to fetch satellite assemblies for this selection.
-            await cultureProvider.LoadCurrentCultureResourcesAsync();
-
-            var manager = Services.GetRequiredService<ComponentStatePersistenceManager>();
-            var store = !string.IsNullOrEmpty(_persistedState) ?
-                new PrerenderComponentApplicationStore(_persistedState) :
-                new PrerenderComponentApplicationStore();
-
-            await manager.RestoreStateAsync(store);
-
-            if (MetadataUpdater.IsSupported)
-            {
-                await WebAssemblyHotReload.InitializeAsync();
-            }
-
-            var tcs = new TaskCompletionSource();
-
-            using (cancellationToken.Register(() => tcs.TrySetResult()))
-            {
-                var loggerFactory = Services.GetRequiredService<ILoggerFactory>();
-                var jsComponentInterop = new JSComponentInterop(_rootComponents.JSComponents);
-                _renderer = new WebAssemblyRenderer(Services, loggerFactory, jsComponentInterop);
-
-                var initializationTcs = new TaskCompletionSource();
-                WebAssemblyCallQueue.Schedule((_rootComponents, _renderer, initializationTcs), static async state =>
+                try
                 {
-                    var (rootComponents, renderer, initializationTcs) = state;
-
-                    try
+                    // Here, we add each root component but don't await the returned tasks so that the
+                    // components can be processed in parallel.
+                    var count = rootComponents.Count;
+                    var pendingRenders = new Task[count];
+                    for (var i = 0; i < count; i++)
                     {
-                        // Here, we add each root component but don't await the returned tasks so that the
-                        // components can be processed in parallel.
-                        var count = rootComponents.Count;
-                        var pendingRenders = new Task[count];
-                        for (var i = 0; i < count; i++)
-                        {
-                            var rootComponent = rootComponents[i];
-                            pendingRenders[i] = renderer.AddComponentAsync(
-                                rootComponent.ComponentType,
-                                rootComponent.Parameters,
-                                rootComponent.Selector);
-                        }
-
-                        // Now we wait for all components to finish rendering.
-                        await Task.WhenAll(pendingRenders);
-
-                        initializationTcs.SetResult();
+                        var rootComponent = rootComponents[i];
+                        pendingRenders[i] = renderer.AddComponentAsync(
+                            rootComponent.ComponentType,
+                            rootComponent.Parameters,
+                            rootComponent.Selector);
                     }
-                    catch (Exception ex)
-                    {
-                        initializationTcs.SetException(ex);
-                    }
-                });
 
-                await initializationTcs.Task;
-                store.ExistingState.Clear();
+                    // Now we wait for all components to finish rendering.
+                    await Task.WhenAll(pendingRenders);
 
-                await tcs.Task;
-            }
+                    initializationTcs.SetResult();
+                }
+                catch (Exception ex)
+                {
+                    initializationTcs.SetException(ex);
+                }
+            });
+
+            await initializationTcs.Task;
+            store.ExistingState.Clear();
+
+            await tcs.Task;
         }
     }
 }

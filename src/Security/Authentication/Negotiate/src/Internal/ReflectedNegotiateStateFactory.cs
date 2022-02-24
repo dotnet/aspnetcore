@@ -1,17 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
+namespace Microsoft.AspNetCore.Authentication.Negotiate;
 
-namespace Microsoft.AspNetCore.Authentication.Negotiate
+internal class ReflectedNegotiateStateFactory : INegotiateStateFactory
 {
-    internal class ReflectedNegotiateStateFactory : INegotiateStateFactory
+    public INegotiateState CreateInstance()
     {
-        public INegotiateState CreateInstance()
-        {
-            return new ReflectedNegotiateState();
-        }
+        return new ReflectedNegotiateState();
     }
 }

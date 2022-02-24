@@ -3,18 +3,17 @@
 
 using Microsoft.AspNetCore.Connections.Features;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
+
+internal class DefaultStreamDirectionFeature : IStreamDirectionFeature
 {
-    internal class DefaultStreamDirectionFeature : IStreamDirectionFeature
+    public DefaultStreamDirectionFeature(bool canRead, bool canWrite)
     {
-        public DefaultStreamDirectionFeature(bool canRead, bool canWrite)
-        {
-            CanRead = canRead;
-            CanWrite = canWrite;
-        }
-
-        public bool CanRead { get; }
-
-        public bool CanWrite { get; }
+        CanRead = canRead;
+        CanWrite = canWrite;
     }
+
+    public bool CanRead { get; }
+
+    public bool CanWrite { get; }
 }

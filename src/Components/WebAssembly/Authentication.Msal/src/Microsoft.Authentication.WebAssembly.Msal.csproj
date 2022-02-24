@@ -7,7 +7,6 @@
     <Description>Authenticate your Blazor webassembly applications with Azure Active Directory and Azure Active Directory B2C</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Trimmable>true</Trimmable>
-    <Nullable>disable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -34,7 +33,6 @@
   <ItemGroup>
     <YarnInputs Include="$(YarnWorkingDir)**" Exclude="$(YarnWorkingDir)node_modules\**;$(YarnWorkingDir)*.d.ts;$(YarnWorkingDir)dist\**" />
     <YarnOutputs Include="$(YarnWorkingDir)dist\$(Configuration)\AuthenticationService.js" />
-    <YarnOutputs Include="$(YarnWorkingDir)dist\$(Configuration)\AuthenticationService.js.map" Condition="'$(Configuration)' == 'Debug'" />
 
     <Content Remove="$(YarnWorkingDir)**" />
     <None Include="$(YarnWorkingDir)*" Exclude="$(YarnWorkingDir)node_modules\**" />
@@ -62,7 +60,7 @@
   </Target>
 
   <Target Name="CompileInterop" Condition="'$(BuildNodeJS)' != 'false' AND '$(DesignTimeBuild)' != 'true'" Inputs="$(InteropCompilationCacheFile)" Outputs="@(YarnOutputs)">
-    <Yarn Command="install --mutex network" WorkingDirectory="$(YarnWorkingDir)" IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)" />
+    <Yarn Command="install --mutex network --frozen-lockfile" WorkingDirectory="$(YarnWorkingDir)" IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)" />
     <Yarn Command="run build:production" WorkingDirectory="$(YarnWorkingDir)" Condition="'$(Configuration)' == 'Release'" IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)" />
     <Yarn Command="run build:debug" WorkingDirectory="$(YarnWorkingDir)" Condition="'$(Configuration)' == 'Debug'" IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)" />
 
@@ -75,7 +73,7 @@
       <_InteropBuildOutput Include="$(YarnWorkingDir)dist\$(Configuration)\**" Exclude="$(YarnWorkingDir)dist\.gitignore" />
     </ItemGroup>
 
-    <DefineStaticWebAssets Condition="@(_InteropBuildOutput) != ''"
+    <DefineStaticWebAssets Condition="'@(_InteropBuildOutput)' != ''"
       SourceType="Computed"
       SourceId="$(PackageId)"
       ContentRoot="$(YarnWorkingDir)dist\$(Configuration)\"

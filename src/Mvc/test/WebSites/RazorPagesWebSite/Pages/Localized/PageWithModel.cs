@@ -4,10 +4,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace RazorPagesWebSite.Pages.Localized
+namespace RazorPagesWebSite.Pages.Localized;
+
+public class PageWithModel : PageModel
 {
-    public class PageWithModel : PageModel
-    {
-        public IActionResult OnGet() => Page();
-    }
+    public IActionResult OnGet() => Page();
 }

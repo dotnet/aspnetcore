@@ -11,81 +11,80 @@ using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.Extensions.Tools.Internal;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.Extensions.SecretManager.Tools.Internal
+namespace Microsoft.Extensions.SecretManager.Tools.Internal;
+
+/// <summary>
+/// This API supports infrastructure and is not intended to be used
+/// directly from your code. This API may change or be removed in future releases.
+/// </summary>
+public class SecretsStore
 {
-    /// <summary>
-    /// This API supports infrastructure and is not intended to be used
-    /// directly from your code. This API may change or be removed in future releases.
-    /// </summary>
-    public class SecretsStore
+    private readonly string _secretsFilePath;
+    private readonly IDictionary<string, string> _secrets;
+
+    public SecretsStore(string userSecretsId, IReporter reporter)
     {
-        private readonly string _secretsFilePath;
-        private readonly IDictionary<string, string> _secrets;
+        Ensure.NotNull(userSecretsId, nameof(userSecretsId));
 
-        public SecretsStore(string userSecretsId, IReporter reporter)
+        _secretsFilePath = PathHelper.GetSecretsPathFromSecretsId(userSecretsId);
+
+        // workaround bug in configuration
+        var secretDir = Path.GetDirectoryName(_secretsFilePath);
+        Directory.CreateDirectory(secretDir);
+
+        reporter.Verbose(Resources.FormatMessage_Secret_File_Path(_secretsFilePath));
+        _secrets = Load(userSecretsId);
+    }
+
+    public string this[string key]
+    {
+        get
         {
-            Ensure.NotNull(userSecretsId, nameof(userSecretsId));
-
-            _secretsFilePath = PathHelper.GetSecretsPathFromSecretsId(userSecretsId);
-
-            // workaround bug in configuration
-            var secretDir = Path.GetDirectoryName(_secretsFilePath);
-            Directory.CreateDirectory(secretDir);
-
-            reporter.Verbose(Resources.FormatMessage_Secret_File_Path(_secretsFilePath));
-            _secrets = Load(userSecretsId);
+            return _secrets[key];
         }
+    }
 
-        public string this[string key]
+    public int Count => _secrets.Count;
+
+    public bool ContainsKey(string key) => _secrets.ContainsKey(key);
+
+    public IEnumerable<KeyValuePair<string, string>> AsEnumerable() => _secrets;
+
+    public void Clear() => _secrets.Clear();
+
+    public void Set(string key, string value) => _secrets[key] = value;
+
+    public void Remove(string key)
+    {
+        if (_secrets.ContainsKey(key))
         {
-            get
+            _secrets.Remove(key);
+        }
+    }
+
+    public virtual void Save()
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(_secretsFilePath));
+
+        var contents = new JObject();
+        if (_secrets != null)
+        {
+            foreach (var secret in _secrets.AsEnumerable())
             {
-                return _secrets[key];
+                contents[secret.Key] = secret.Value;
             }
         }
 
-        public int Count => _secrets.Count;
+        File.WriteAllText(_secretsFilePath, contents.ToString(), Encoding.UTF8);
+    }
 
-        public bool ContainsKey(string key) => _secrets.ContainsKey(key);
-
-        public IEnumerable<KeyValuePair<string, string>> AsEnumerable() => _secrets;
-
-        public void Clear() => _secrets.Clear();
-
-        public void Set(string key, string value) => _secrets[key] = value;
-
-        public void Remove(string key)
-        {
-            if (_secrets.ContainsKey(key))
-            {
-                _secrets.Remove(key);
-            }
-        }
-
-        public virtual void Save()
-        {
-            Directory.CreateDirectory(Path.GetDirectoryName(_secretsFilePath));
-
-            var contents = new JObject();
-            if (_secrets != null)
-            {
-                foreach (var secret in _secrets.AsEnumerable())
-                {
-                    contents[secret.Key] = secret.Value;
-                }
-            }
-
-            File.WriteAllText(_secretsFilePath, contents.ToString(), Encoding.UTF8);
-        }
-
-        protected virtual IDictionary<string, string> Load(string userSecretsId)
-        {
-            return new ConfigurationBuilder()
-                .AddJsonFile(_secretsFilePath, optional: true)
-                .Build()
-                .AsEnumerable()
-                .Where(i => i.Value != null)
-                .ToDictionary(i => i.Key, i => i.Value, StringComparer.OrdinalIgnoreCase);
-        }
+    protected virtual IDictionary<string, string> Load(string userSecretsId)
+    {
+        return new ConfigurationBuilder()
+            .AddJsonFile(_secretsFilePath, optional: true)
+            .Build()
+            .AsEnumerable()
+            .Where(i => i.Value != null)
+            .ToDictionary(i => i.Key, i => i.Value, StringComparer.OrdinalIgnoreCase);
     }
 }

@@ -3,13 +3,12 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace BasicWebSite.Components
+namespace BasicWebSite.Components;
+
+public class PassThroughViewComponent : ViewComponent
 {
-    public class PassThroughViewComponent : ViewComponent
+    public IViewComponentResult Invoke(long value)
     {
-        public IViewComponentResult Invoke(long value)
-        {
-            return View(value);
-        }
+        return View(value);
     }
 }

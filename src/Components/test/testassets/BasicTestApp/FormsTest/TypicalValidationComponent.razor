@@ -12,7 +12,7 @@
     </p>
     <p class="email">
         Email: <InputText @bind-Value="person.Email" />
-        <ValidationMessage For="@(() => person.Email)" />
+        <ValidationMessage For="@(() => person.Email)" class="special-email-css-class-override" />
     </p>
     <p class="confirm-email">
         Email: <InputText @bind-Value="person.ConfirmEmail" />
@@ -141,11 +141,9 @@
 
     <button type="submit">Submit</button>
 
-    <p class="model-errors">
-        <ValidationSummary Model="person" />
+    <p class="all-errors">
+        <ValidationSummary />
     </p>
-
-    <ValidationSummary />
 </EditForm>
 
 <ul>@foreach (var entry in submissionLog) { <li class="submission-log-entry">@entry</li> }</ul>

@@ -6,6 +6,6 @@
 
   <!-- Import this modules properties if not yet declared -->
 
-  <Import Condition="$(IIS-Common) == ''" Project="$(MSBuildThisFileDirectory)exports.props" />
+  <Import Condition="'$(IIS-Common)' == ''" Project="$(MSBuildThisFileDirectory)exports.props" />
 
 </Project>

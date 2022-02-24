@@ -1,9 +1,18 @@
 #nullable enable
+~Microsoft.AspNetCore.Authorization.DefaultAuthorizationPolicyProvider.DefaultAuthorizationPolicyProvider(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Authorization.AuthorizationOptions!>! options) -> void
+~Microsoft.AspNetCore.Authorization.DefaultAuthorizationService.DefaultAuthorizationService(Microsoft.AspNetCore.Authorization.IAuthorizationPolicyProvider! policyProvider, Microsoft.AspNetCore.Authorization.IAuthorizationHandlerProvider! handlers, Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Authorization.DefaultAuthorizationService!>! logger, Microsoft.AspNetCore.Authorization.IAuthorizationHandlerContextFactory! contextFactory, Microsoft.AspNetCore.Authorization.IAuthorizationEvaluator! evaluator, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Authorization.AuthorizationOptions!>! options) -> void
+abstract Microsoft.AspNetCore.Authorization.AuthorizationHandler<TRequirement, TResource>.HandleRequirementAsync(Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext! context, TRequirement requirement, TResource resource) -> System.Threading.Tasks.Task!
+abstract Microsoft.AspNetCore.Authorization.AuthorizationHandler<TRequirement>.HandleRequirementAsync(Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext! context, TRequirement requirement) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute
 Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute.AllowAnonymousAttribute() -> void
 Microsoft.AspNetCore.Authorization.AuthorizationFailure
 Microsoft.AspNetCore.Authorization.AuthorizationFailure.FailCalled.get -> bool
 Microsoft.AspNetCore.Authorization.AuthorizationFailure.FailedRequirements.get -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.IAuthorizationRequirement!>!
+Microsoft.AspNetCore.Authorization.AuthorizationFailure.FailureReasons.get -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.AuthorizationFailureReason!>!
+Microsoft.AspNetCore.Authorization.AuthorizationFailureReason
+Microsoft.AspNetCore.Authorization.AuthorizationFailureReason.AuthorizationFailureReason(Microsoft.AspNetCore.Authorization.IAuthorizationHandler! handler, string! message) -> void
+Microsoft.AspNetCore.Authorization.AuthorizationFailureReason.Handler.get -> Microsoft.AspNetCore.Authorization.IAuthorizationHandler!
+Microsoft.AspNetCore.Authorization.AuthorizationFailureReason.Message.get -> string!
 Microsoft.AspNetCore.Authorization.AuthorizationHandler<TRequirement, TResource>
 Microsoft.AspNetCore.Authorization.AuthorizationHandler<TRequirement, TResource>.AuthorizationHandler() -> void
 Microsoft.AspNetCore.Authorization.AuthorizationHandler<TRequirement>
@@ -34,17 +43,17 @@ Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder.AuthorizationPolic
 Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder.AuthorizationPolicyBuilder(params string![]! authenticationSchemes) -> void
 Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder.Build() -> Microsoft.AspNetCore.Authorization.AuthorizationPolicy!
 Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder.Combine(Microsoft.AspNetCore.Authorization.AuthorizationPolicy! policy) -> Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder!
-Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder.RequireAssertion(System.Func<Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext!, System.Threading.Tasks.Task<bool>!>! handler) -> Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder!
 Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder.RequireAssertion(System.Func<Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext!, bool>! handler) -> Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder!
+Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder.RequireAssertion(System.Func<Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext!, System.Threading.Tasks.Task<bool>!>! handler) -> Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder!
 Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder.RequireAuthenticatedUser() -> Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder!
 Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder.RequireClaim(string! claimType) -> Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder!
-Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder.RequireClaim(string! claimType, System.Collections.Generic.IEnumerable<string!>! allowedValues) -> Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder!
 Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder.RequireClaim(string! claimType, params string![]! allowedValues) -> Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder!
-Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder.RequireRole(System.Collections.Generic.IEnumerable<string!>! roles) -> Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder!
-Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder.RequireRole(params string![]! roles) -> Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder!
-Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder.RequireUserName(string! userName) -> Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder!
+Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder.RequireClaim(string! claimType, System.Collections.Generic.IEnumerable<string!>! allowedValues) -> Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder!
 Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder.Requirements.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Authorization.IAuthorizationRequirement!>!
 Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder.Requirements.set -> void
+Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder.RequireRole(params string![]! roles) -> Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder!
+Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder.RequireRole(System.Collections.Generic.IEnumerable<string!>! roles) -> Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder!
+Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder.RequireUserName(string! userName) -> Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder!
 Microsoft.AspNetCore.Authorization.AuthorizationResult
 Microsoft.AspNetCore.Authorization.AuthorizationResult.Failure.get -> Microsoft.AspNetCore.Authorization.AuthorizationFailure?
 Microsoft.AspNetCore.Authorization.AuthorizationResult.Succeeded.get -> bool
@@ -85,8 +94,8 @@ Microsoft.AspNetCore.Authorization.IAuthorizationPolicyProvider.GetFallbackPolic
 Microsoft.AspNetCore.Authorization.IAuthorizationPolicyProvider.GetPolicyAsync(string! policyName) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationPolicy?>!
 Microsoft.AspNetCore.Authorization.IAuthorizationRequirement
 Microsoft.AspNetCore.Authorization.IAuthorizationService
-Microsoft.AspNetCore.Authorization.IAuthorizationService.AuthorizeAsync(System.Security.Claims.ClaimsPrincipal! user, object? resource, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.IAuthorizationRequirement!>! requirements) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationResult!>!
 Microsoft.AspNetCore.Authorization.IAuthorizationService.AuthorizeAsync(System.Security.Claims.ClaimsPrincipal! user, object? resource, string! policyName) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationResult!>!
+Microsoft.AspNetCore.Authorization.IAuthorizationService.AuthorizeAsync(System.Security.Claims.ClaimsPrincipal! user, object? resource, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.IAuthorizationRequirement!>! requirements) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationResult!>!
 Microsoft.AspNetCore.Authorization.IAuthorizeData (forwarded, contained in Microsoft.AspNetCore.Metadata)
 Microsoft.AspNetCore.Authorization.IAuthorizeData.AuthenticationSchemes.get -> string? (forwarded, contained in Microsoft.AspNetCore.Metadata)
 Microsoft.AspNetCore.Authorization.IAuthorizeData.AuthenticationSchemes.set -> void (forwarded, contained in Microsoft.AspNetCore.Metadata)
@@ -95,14 +104,14 @@ Microsoft.AspNetCore.Authorization.IAuthorizeData.Policy.set -> void (forwarded,
 Microsoft.AspNetCore.Authorization.IAuthorizeData.Roles.get -> string? (forwarded, contained in Microsoft.AspNetCore.Metadata)
 Microsoft.AspNetCore.Authorization.IAuthorizeData.Roles.set -> void (forwarded, contained in Microsoft.AspNetCore.Metadata)
 Microsoft.AspNetCore.Authorization.Infrastructure.AssertionRequirement
-Microsoft.AspNetCore.Authorization.Infrastructure.AssertionRequirement.AssertionRequirement(System.Func<Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext!, System.Threading.Tasks.Task<bool>!>! handler) -> void
 Microsoft.AspNetCore.Authorization.Infrastructure.AssertionRequirement.AssertionRequirement(System.Func<Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext!, bool>! handler) -> void
+Microsoft.AspNetCore.Authorization.Infrastructure.AssertionRequirement.AssertionRequirement(System.Func<Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext!, System.Threading.Tasks.Task<bool>!>! handler) -> void
 Microsoft.AspNetCore.Authorization.Infrastructure.AssertionRequirement.HandleAsync(Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Authorization.Infrastructure.AssertionRequirement.Handler.get -> System.Func<Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext!, System.Threading.Tasks.Task<bool>!>!
 Microsoft.AspNetCore.Authorization.Infrastructure.ClaimsAuthorizationRequirement
 Microsoft.AspNetCore.Authorization.Infrastructure.ClaimsAuthorizationRequirement.AllowedValues.get -> System.Collections.Generic.IEnumerable<string!>?
-Microsoft.AspNetCore.Authorization.Infrastructure.ClaimsAuthorizationRequirement.ClaimType.get -> string!
 Microsoft.AspNetCore.Authorization.Infrastructure.ClaimsAuthorizationRequirement.ClaimsAuthorizationRequirement(string! claimType, System.Collections.Generic.IEnumerable<string!>? allowedValues) -> void
+Microsoft.AspNetCore.Authorization.Infrastructure.ClaimsAuthorizationRequirement.ClaimType.get -> string!
 Microsoft.AspNetCore.Authorization.Infrastructure.DenyAnonymousAuthorizationRequirement
 Microsoft.AspNetCore.Authorization.Infrastructure.DenyAnonymousAuthorizationRequirement.DenyAnonymousAuthorizationRequirement() -> void
 Microsoft.AspNetCore.Authorization.Infrastructure.NameAuthorizationRequirement
@@ -119,8 +128,6 @@ Microsoft.AspNetCore.Authorization.Infrastructure.RolesAuthorizationRequirement
 Microsoft.AspNetCore.Authorization.Infrastructure.RolesAuthorizationRequirement.AllowedRoles.get -> System.Collections.Generic.IEnumerable<string!>!
 Microsoft.AspNetCore.Authorization.Infrastructure.RolesAuthorizationRequirement.RolesAuthorizationRequirement(System.Collections.Generic.IEnumerable<string!>! allowedRoles) -> void
 Microsoft.Extensions.DependencyInjection.AuthorizationServiceCollectionExtensions
-abstract Microsoft.AspNetCore.Authorization.AuthorizationHandler<TRequirement, TResource>.HandleRequirementAsync(Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext! context, TRequirement requirement, TResource resource) -> System.Threading.Tasks.Task!
-abstract Microsoft.AspNetCore.Authorization.AuthorizationHandler<TRequirement>.HandleRequirementAsync(Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext! context, TRequirement requirement) -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Authorization.Infrastructure.AssertionRequirement.ToString() -> string!
 override Microsoft.AspNetCore.Authorization.Infrastructure.ClaimsAuthorizationRequirement.HandleRequirementAsync(Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext! context, Microsoft.AspNetCore.Authorization.Infrastructure.ClaimsAuthorizationRequirement! requirement) -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Authorization.Infrastructure.ClaimsAuthorizationRequirement.ToString() -> string!
@@ -132,22 +139,25 @@ override Microsoft.AspNetCore.Authorization.Infrastructure.OperationAuthorizatio
 override Microsoft.AspNetCore.Authorization.Infrastructure.RolesAuthorizationRequirement.HandleRequirementAsync(Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext! context, Microsoft.AspNetCore.Authorization.Infrastructure.RolesAuthorizationRequirement! requirement) -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Authorization.Infrastructure.RolesAuthorizationRequirement.ToString() -> string!
 static Microsoft.AspNetCore.Authorization.AuthorizationFailure.ExplicitFail() -> Microsoft.AspNetCore.Authorization.AuthorizationFailure!
+static Microsoft.AspNetCore.Authorization.AuthorizationFailure.Failed(System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.AuthorizationFailureReason!>! reasons) -> Microsoft.AspNetCore.Authorization.AuthorizationFailure!
 static Microsoft.AspNetCore.Authorization.AuthorizationFailure.Failed(System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.IAuthorizationRequirement!>! failed) -> Microsoft.AspNetCore.Authorization.AuthorizationFailure!
-static Microsoft.AspNetCore.Authorization.AuthorizationPolicy.Combine(System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.AuthorizationPolicy!>! policies) -> Microsoft.AspNetCore.Authorization.AuthorizationPolicy!
 static Microsoft.AspNetCore.Authorization.AuthorizationPolicy.Combine(params Microsoft.AspNetCore.Authorization.AuthorizationPolicy![]! policies) -> Microsoft.AspNetCore.Authorization.AuthorizationPolicy!
+static Microsoft.AspNetCore.Authorization.AuthorizationPolicy.Combine(System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.AuthorizationPolicy!>! policies) -> Microsoft.AspNetCore.Authorization.AuthorizationPolicy!
 static Microsoft.AspNetCore.Authorization.AuthorizationPolicy.CombineAsync(Microsoft.AspNetCore.Authorization.IAuthorizationPolicyProvider! policyProvider, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.IAuthorizeData!>! authorizeData) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationPolicy?>!
 static Microsoft.AspNetCore.Authorization.AuthorizationResult.Failed() -> Microsoft.AspNetCore.Authorization.AuthorizationResult!
 static Microsoft.AspNetCore.Authorization.AuthorizationResult.Failed(Microsoft.AspNetCore.Authorization.AuthorizationFailure! failure) -> Microsoft.AspNetCore.Authorization.AuthorizationResult!
 static Microsoft.AspNetCore.Authorization.AuthorizationResult.Success() -> Microsoft.AspNetCore.Authorization.AuthorizationResult!
 static Microsoft.AspNetCore.Authorization.AuthorizationServiceExtensions.AuthorizeAsync(this Microsoft.AspNetCore.Authorization.IAuthorizationService! service, System.Security.Claims.ClaimsPrincipal! user, Microsoft.AspNetCore.Authorization.AuthorizationPolicy! policy) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationResult!>!
-static Microsoft.AspNetCore.Authorization.AuthorizationServiceExtensions.AuthorizeAsync(this Microsoft.AspNetCore.Authorization.IAuthorizationService! service, System.Security.Claims.ClaimsPrincipal! user, object! resource, Microsoft.AspNetCore.Authorization.IAuthorizationRequirement! requirement) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationResult!>!
 static Microsoft.AspNetCore.Authorization.AuthorizationServiceExtensions.AuthorizeAsync(this Microsoft.AspNetCore.Authorization.IAuthorizationService! service, System.Security.Claims.ClaimsPrincipal! user, object? resource, Microsoft.AspNetCore.Authorization.AuthorizationPolicy! policy) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationResult!>!
+static Microsoft.AspNetCore.Authorization.AuthorizationServiceExtensions.AuthorizeAsync(this Microsoft.AspNetCore.Authorization.IAuthorizationService! service, System.Security.Claims.ClaimsPrincipal! user, object? resource, Microsoft.AspNetCore.Authorization.IAuthorizationRequirement! requirement) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationResult!>!
 static Microsoft.AspNetCore.Authorization.AuthorizationServiceExtensions.AuthorizeAsync(this Microsoft.AspNetCore.Authorization.IAuthorizationService! service, System.Security.Claims.ClaimsPrincipal! user, string! policyName) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationResult!>!
 static Microsoft.Extensions.DependencyInjection.AuthorizationServiceCollectionExtensions.AddAuthorizationCore(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Extensions.DependencyInjection.AuthorizationServiceCollectionExtensions.AddAuthorizationCore(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Authorization.AuthorizationOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 virtual Microsoft.AspNetCore.Authorization.AuthorizationHandler<TRequirement, TResource>.HandleAsync(Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext! context) -> System.Threading.Tasks.Task!
 virtual Microsoft.AspNetCore.Authorization.AuthorizationHandler<TRequirement>.HandleAsync(Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext! context) -> System.Threading.Tasks.Task!
 virtual Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext.Fail() -> void
+virtual Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext.Fail(Microsoft.AspNetCore.Authorization.AuthorizationFailureReason! reason) -> void
+virtual Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext.FailureReasons.get -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.AuthorizationFailureReason!>!
 virtual Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext.HasFailed.get -> bool
 virtual Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext.HasSucceeded.get -> bool
 virtual Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext.PendingRequirements.get -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.IAuthorizationRequirement!>!
@@ -157,7 +167,5 @@ virtual Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext.Succeed(M
 virtual Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext.User.get -> System.Security.Claims.ClaimsPrincipal!
 virtual Microsoft.AspNetCore.Authorization.DefaultAuthorizationHandlerContextFactory.CreateContext(System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.IAuthorizationRequirement!>! requirements, System.Security.Claims.ClaimsPrincipal! user, object? resource) -> Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext!
 virtual Microsoft.AspNetCore.Authorization.DefaultAuthorizationPolicyProvider.GetPolicyAsync(string! policyName) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationPolicy?>!
-virtual Microsoft.AspNetCore.Authorization.DefaultAuthorizationService.AuthorizeAsync(System.Security.Claims.ClaimsPrincipal! user, object? resource, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.IAuthorizationRequirement!>! requirements) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationResult!>!
 virtual Microsoft.AspNetCore.Authorization.DefaultAuthorizationService.AuthorizeAsync(System.Security.Claims.ClaimsPrincipal! user, object? resource, string! policyName) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationResult!>!
-~Microsoft.AspNetCore.Authorization.DefaultAuthorizationPolicyProvider.DefaultAuthorizationPolicyProvider(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Authorization.AuthorizationOptions!>! options) -> void
-~Microsoft.AspNetCore.Authorization.DefaultAuthorizationService.DefaultAuthorizationService(Microsoft.AspNetCore.Authorization.IAuthorizationPolicyProvider! policyProvider, Microsoft.AspNetCore.Authorization.IAuthorizationHandlerProvider! handlers, Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Authorization.DefaultAuthorizationService!>! logger, Microsoft.AspNetCore.Authorization.IAuthorizationHandlerContextFactory! contextFactory, Microsoft.AspNetCore.Authorization.IAuthorizationEvaluator! evaluator, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Authorization.AuthorizationOptions!>! options) -> void
+virtual Microsoft.AspNetCore.Authorization.DefaultAuthorizationService.AuthorizeAsync(System.Security.Claims.ClaimsPrincipal! user, object? resource, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.IAuthorizationRequirement!>! requirements) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationResult!>!

@@ -22,6 +22,11 @@ $RetryWaitTimeInSeconds = 30
 # Wait time between check for system load
 $SecondsBetweenLoadChecks = 10
 
+if (!$InputPath -or !(Test-Path $InputPath)){
+  Write-Host "No files to validate."
+  ExitWithExitCode 0
+}
+
 $ValidatePackage = {
   param( 
     [string] $PackagePath                                 # Full path to a Symbols.NuGet package

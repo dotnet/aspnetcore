@@ -2,35 +2,29 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 
-namespace Wasm.Performance.Driver
+namespace Wasm.Performance.Driver;
+
+public class BenchmarkDriverStartup
 {
-    public class BenchmarkDriverStartup
+
+    public void ConfigureServices(IServiceCollection services)
     {
+        services.AddCors(c => c.AddDefaultPolicy(builder => builder.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin()));
+    }
 
-        public void ConfigureServices(IServiceCollection services)
+    public void Configure(IApplicationBuilder app)
+    {
+        app.UseCors();
+
+        app.Run(async context =>
         {
-            services.AddCors(c => c.AddDefaultPolicy(builder => builder.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin()));
-        }
-
-        public void Configure(IApplicationBuilder app)
-        {
-            app.UseCors();
-
-            app.Run(async context =>
+            var result = await JsonSerializer.DeserializeAsync<BenchmarkResult>(context.Request.Body, new JsonSerializerOptions
             {
-                var result = await JsonSerializer.DeserializeAsync<BenchmarkResult>(context.Request.Body, new JsonSerializerOptions
-                {
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                });
-                await context.Response.WriteAsync("OK");
-                Program.BenchmarkResultTask.TrySetResult(result);
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             });
-        }
+            await context.Response.WriteAsync("OK");
+            Program.BenchmarkResultTask.TrySetResult(result);
+        });
     }
 }

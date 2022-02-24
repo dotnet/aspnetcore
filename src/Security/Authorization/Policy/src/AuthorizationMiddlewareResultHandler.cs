@@ -1,54 +1,52 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Authorization.Policy
+namespace Microsoft.AspNetCore.Authorization.Policy;
+
+/// <summary>
+/// Default implementation for <see cref="IAuthorizationMiddlewareResultHandler"/>.
+/// </summary>
+public class AuthorizationMiddlewareResultHandler : IAuthorizationMiddlewareResultHandler
 {
-    /// <summary>
-    /// Default implementation for <see cref="IAuthorizationMiddlewareResultHandler"/>.
-    /// </summary>
-    public class AuthorizationMiddlewareResultHandler : IAuthorizationMiddlewareResultHandler
+    /// <inheritdoc />
+    public async Task HandleAsync(RequestDelegate next, HttpContext context, AuthorizationPolicy policy, PolicyAuthorizationResult authorizeResult)
     {
-        /// <inheritdoc />
-        public async Task HandleAsync(RequestDelegate next, HttpContext context, AuthorizationPolicy policy, PolicyAuthorizationResult authorizeResult)
+        if (authorizeResult.Challenged)
         {
-            if (authorizeResult.Challenged)
+            if (policy.AuthenticationSchemes.Count > 0)
             {
-                if (policy.AuthenticationSchemes.Count > 0)
+                foreach (var scheme in policy.AuthenticationSchemes)
                 {
-                    foreach (var scheme in policy.AuthenticationSchemes)
-                    {
-                        await context.ChallengeAsync(scheme);
-                    }
+                    await context.ChallengeAsync(scheme);
                 }
-                else
-                {
-                    await context.ChallengeAsync();
-                }
-
-                return;
             }
-            else if (authorizeResult.Forbidden)
+            else
             {
-                if (policy.AuthenticationSchemes.Count > 0)
-                {
-                    foreach (var scheme in policy.AuthenticationSchemes)
-                    {
-                        await context.ForbidAsync(scheme);
-                    }
-                }
-                else
-                {
-                    await context.ForbidAsync();
-                }
-
-                return;
+                await context.ChallengeAsync();
             }
 
-            await next(context);
+            return;
         }
+        else if (authorizeResult.Forbidden)
+        {
+            if (policy.AuthenticationSchemes.Count > 0)
+            {
+                foreach (var scheme in policy.AuthenticationSchemes)
+                {
+                    await context.ForbidAsync(scheme);
+                }
+            }
+            else
+            {
+                await context.ForbidAsync();
+            }
+
+            return;
+        }
+
+        await next(context);
     }
 }

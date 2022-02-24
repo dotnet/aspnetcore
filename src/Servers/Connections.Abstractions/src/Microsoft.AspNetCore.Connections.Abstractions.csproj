@@ -7,12 +7,10 @@
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore</PackageTags>
-    <NoWarn>CS1591;$(NoWarn)</NoWarn>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <SuppressBaselineReference Include="Microsoft.AspNetCore.Http.Features" />
     <Reference Include="Microsoft.Extensions.Features" />
     <Reference Include="System.IO.Pipelines" />
 

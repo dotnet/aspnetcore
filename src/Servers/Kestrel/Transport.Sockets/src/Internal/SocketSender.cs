@@ -1,98 +1,94 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal;
+
+internal sealed class SocketSender : SocketAwaitableEventArgs
 {
-    internal sealed class SocketSender : SocketAwaitableEventArgs
+    private List<ArraySegment<byte>>? _bufferList;
+
+    public SocketSender(PipeScheduler scheduler) : base(scheduler)
     {
-        private List<ArraySegment<byte>>? _bufferList;
+    }
 
-        public SocketSender(PipeScheduler scheduler) : base(scheduler)
+    public ValueTask<int> SendAsync(Socket socket, in ReadOnlySequence<byte> buffers)
+    {
+        if (buffers.IsSingleSegment)
         {
+            return SendAsync(socket, buffers.First);
         }
 
-        public ValueTask<int> SendAsync(Socket socket, in ReadOnlySequence<byte> buffers)
+        SetBufferList(buffers);
+
+        if (socket.SendAsync(this))
         {
-            if (buffers.IsSingleSegment)
-            {
-                return SendAsync(socket, buffers.First);
-            }
-
-            SetBufferList(buffers);
-
-            if (socket.SendAsync(this))
-            {
-                return new ValueTask<int>(this, 0);
-            }
-
-            var bytesTransferred = BytesTransferred;
-            var error = SocketError;
-
-            return error == SocketError.Success ?
-                new ValueTask<int>(bytesTransferred) :
-               ValueTask.FromException<int>(CreateException(error));
+            return new ValueTask<int>(this, 0);
         }
 
-        public void Reset()
-        {
-            // We clear the buffer and buffer list before we put it back into the pool
-            // it's a small performance hit but it removes the confusion when looking at dumps to see this still
-            // holds onto the buffer when it's back in the pool
-            if (BufferList != null)
-            {
-                BufferList = null;
+        var bytesTransferred = BytesTransferred;
+        var error = SocketError;
 
-                _bufferList?.Clear();
-            }
-            else
-            {
-                SetBuffer(null, 0, 0);
-            }
+        return error == SocketError.Success ?
+            new ValueTask<int>(bytesTransferred) :
+           ValueTask.FromException<int>(CreateException(error));
+    }
+
+    public void Reset()
+    {
+        // We clear the buffer and buffer list before we put it back into the pool
+        // it's a small performance hit but it removes the confusion when looking at dumps to see this still
+        // holds onto the buffer when it's back in the pool
+        if (BufferList != null)
+        {
+            BufferList = null;
+
+            _bufferList?.Clear();
+        }
+        else
+        {
+            SetBuffer(null, 0, 0);
+        }
+    }
+
+    private ValueTask<int> SendAsync(Socket socket, ReadOnlyMemory<byte> memory)
+    {
+        SetBuffer(MemoryMarshal.AsMemory(memory));
+
+        if (socket.SendAsync(this))
+        {
+            return new ValueTask<int>(this, 0);
         }
 
-        private ValueTask<int> SendAsync(Socket socket, ReadOnlyMemory<byte> memory)
+        var bytesTransferred = BytesTransferred;
+        var error = SocketError;
+
+        return error == SocketError.Success ?
+            new ValueTask<int>(bytesTransferred) :
+           ValueTask.FromException<int>(CreateException(error));
+    }
+
+    private void SetBufferList(in ReadOnlySequence<byte> buffer)
+    {
+        Debug.Assert(!buffer.IsEmpty);
+        Debug.Assert(!buffer.IsSingleSegment);
+
+        if (_bufferList == null)
         {
-            SetBuffer(MemoryMarshal.AsMemory(memory));
-
-            if (socket.SendAsync(this))
-            {
-                return new ValueTask<int>(this, 0);
-            }
-
-            var bytesTransferred = BytesTransferred;
-            var error = SocketError;
-
-            return error == SocketError.Success ?
-                new ValueTask<int>(bytesTransferred) :
-               ValueTask.FromException<int>(CreateException(error));
+            _bufferList = new List<ArraySegment<byte>>();
         }
 
-        private void SetBufferList(in ReadOnlySequence<byte> buffer)
+        foreach (var b in buffer)
         {
-            Debug.Assert(!buffer.IsEmpty);
-            Debug.Assert(!buffer.IsSingleSegment);
-
-            if (_bufferList == null)
-            {
-                _bufferList = new List<ArraySegment<byte>>();
-            }
-
-            foreach (var b in buffer)
-            {
-                _bufferList.Add(b.GetArray());
-            }
-
-            // The act of setting this list, sets the buffers in the internal buffer list
-            BufferList = _bufferList;
+            _bufferList.Add(b.GetArray());
         }
+
+        // The act of setting this list, sets the buffers in the internal buffer list
+        BufferList = _bufferList;
     }
 }

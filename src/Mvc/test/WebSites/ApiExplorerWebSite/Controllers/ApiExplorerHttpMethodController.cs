@@ -3,30 +3,29 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace ApiExplorerWebSite
+namespace ApiExplorerWebSite;
+
+[Route("ApiExplorerHttpMethod")]
+public class ApiExplorerHttpMethodController : Controller
 {
-    [Route("ApiExplorerHttpMethod")]
-    public class ApiExplorerHttpMethodController : Controller
+    [Route("All")]
+    public void All()
     {
-        [Route("All")]
-        public void All()
-        {
-        }
+    }
 
-        [HttpGet("Get")]
-        public void Get()
-        {
-        }
+    [HttpGet("Get")]
+    public void Get()
+    {
+    }
 
-        [AcceptVerbs("PUT", "POST", Route = "Single")]
-        public void PutOrPost()
-        {
-        }
+    [AcceptVerbs("PUT", "POST", Route = "Single")]
+    public void PutOrPost()
+    {
+    }
 
-        [HttpGet("MultipleActions")]
-        [HttpPut("MultipleActions")]
-        public void MultipleActions()
-        {
-        }
+    [HttpGet("MultipleActions")]
+    [HttpPut("MultipleActions")]
+    public void MultipleActions()
+    {
     }
 }

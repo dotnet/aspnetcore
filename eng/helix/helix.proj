@@ -1,11 +1,16 @@
 <Project Sdk="Microsoft.DotNet.Helix.Sdk" DefaultTargets="Test" TreatAsLocalProperty="ProjectToBuild">
-
   <PropertyGroup>
     <!--
       When invoking helix.proj for the whole repo with build.cmd, ProjectToBuild will be set to the path to this project.
       This must be reset in order for Build.props to evaluate a list of projects to be tested on Helix.
     -->
     <ProjectToBuild Condition="'$(ProjectToBuild)' == '$(MSBuildProjectFullPath)'"/>
+
+    <!--
+      Do not load NuGet.targets since this project doesn't reference anything from NuGet. Reduces `msbuild`
+      baggage slightly.
+    -->
+    <IsRestoreTargetsFileLoaded>true</IsRestoreTargetsFileLoaded>
   </PropertyGroup>
 
   <Import Project="..\targets\Helix.Common.props" />
@@ -30,10 +35,11 @@
     <DotNetCliChannel>Current</DotNetCliChannel>
 
     <!-- Similar to ProjectLayout.props in the Arcade SDK. The Helix SDK contains nothing similar. -->
-    <OutputPath Condition=" '$(OutputPath)' == '' ">$(RepoRoot)artifacts\bin\$(MSBuildProjectName)\</OutputPath>
+    <OutputPath Condition=" '$(OutputPath)' == '' "
+        >$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'artifacts', 'bin', '$(MSBuildProjectName)'))</OutputPath>
   </PropertyGroup>
 
-  <!-- Specify the runtime we need which will be included as a correlation payload -->
+  <!-- Specify the .NET runtime we need which will be included as a correlation payload. -->
   <ItemGroup>
     <!--
       Use the BrowserDebugHost transport package as a sentinel for the non-shipping version of the NETCoreApp shared framework.
@@ -43,23 +49,27 @@
     </AdditionalDotNetPackage>
   </ItemGroup>
 
-  <PropertyGroup Condition=" '$(ContinuousIntegrationBuild)' == 'true' ">
-    <HelixType>ci</HelixType>
-    <!-- Creator is not valid for internal queues -->
-    <Creator Condition="'$(_UseHelixOpenQueues)' == 'true'">aspnetcore</Creator>
-    <HelixBuild>$(BUILD_BUILDNUMBER).$(TargetArchitecture).$(SYSTEM_JOBATTEMPT)</HelixBuild>
-    <WaitForWorkItemCompletion>true</WaitForWorkItemCompletion>
-    <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
-    <EnableXUnitReporter>true</EnableXUnitReporter>
-  </PropertyGroup>
+  <Choose>
+    <When Condition=" '$(ContinuousIntegrationBuild)' == 'true' ">
+      <PropertyGroup>
+        <!-- Creator is not valid for internal queues -->
+        <Creator Condition=" '$(_UseHelixOpenQueues)' == 'true' ">aspnetcore</Creator>
 
-  <PropertyGroup Condition=" '$(ContinuousIntegrationBuild)' != 'true' ">
-    <HelixType>dev</HelixType>
-    <!-- Creator is not valid for internal queues -->
-    <Creator Condition="'$(_UseHelixOpenQueues)' == 'true'">$(USERNAME)</Creator>
-    <Creator Condition="'$(USERNAME)' == '' AND '$(_UseHelixOpenQueues)' == 'true'">$(USER)</Creator>
-    <HelixBuild>$([System.DateTime]::Now.ToString('yyyyMMddHHmm'))</HelixBuild>
-  </PropertyGroup>
+        <HelixType>ci</HelixType>
+        <HelixBuild>$(BUILD_BUILDNUMBER).$(SYSTEM_JOBATTEMPT)</HelixBuild>
+      </PropertyGroup>
+    </When>
+    <Otherwise>
+      <PropertyGroup>
+        <!-- Creator is not valid for internal queues -->
+        <Creator Condition=" '$(_UseHelixOpenQueues)' == 'true' ">$(USERNAME)</Creator>
+        <Creator Condition=" '$(_UseHelixOpenQueues)' == 'true' AND '$(USERNAME)' == '' ">$(USER)</Creator>
+
+        <HelixType>dev</HelixType>
+        <HelixBuild>$([System.DateTime]::Now.ToString('yyyyMMddHHmm'))</HelixBuild>
+      </PropertyGroup>
+    </Otherwise>
+  </Choose>
 
   <!-- Items with the type "HelixProperties" will become arbitrary JSON associated with the job -->
   <!-- NOTE: These are global to the whole Job, so don't include project-specific content here. -->
@@ -74,9 +84,12 @@
     <HelixProperties Condition="'$(RunQuarantinedTests)' != 'true'" Include="runType" Value="unquarantined" />
   </ItemGroup>
 
-  <Target Name="IncludeAspNetRuntime" BeforeTargets="Gather"
-    Condition="'$(DoNotRequireSharedFxHelix)' != 'true' OR
-    EXISTS('$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\Microsoft.AspNetCore.App.Runtime.$(TargetRuntimeIdentifier).$(SharedFxVersion).nupkg')">
+  <!--
+    In inner (per-queue) builds, tell the Helix SDK to pack up our just-built App.Ref / App.Runtime layouts w/
+    the current versions. Warning: When using RunHelix.ps1, .dotnet/ folder may contain older App.Ref and
+    App.Runtime layouts.
+  -->
+  <Target Name="IncludeAspNetRuntime" BeforeTargets="Gather">
     <MSBuild Projects="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
         Properties="DisableYarnCheck=true;ExcludeFromBuild=false"
         Targets="_GetPackageVersionInfo">
@@ -85,41 +98,50 @@
 
     <PropertyGroup>
       <SharedFxVersion>@(_ResolvedProductVersionInfo->'%(PackageVersion)')</SharedFxVersion>
+      <_AppRefSubPath>$([System.IO.Path]::Combine('packs', 'Microsoft.AspNetCore.App.Ref', '$(SharedFxVersion)'))</_AppRefSubPath>
+      <_AppRuntimeSubPath>$([System.IO.Path]::Combine('shared', 'Microsoft.AspNetCore.App', '$(SharedFxVersion)'))</_AppRuntimeSubPath>
+      <_AppRefPath>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', '.dotnet', '$(_AppRefSubPath)'))</_AppRefPath>
+      <_AppRuntimePath>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', '.dotnet', '$(_AppRuntimeSubPath)'))</_AppRuntimePath>
+
+      <!--
+        Don't bother checking for App.Runtime layout because we want both and App.Ref project depends on the
+        App.Runtime project.
+      -->
+      <_AppRefPathExists Condition=" EXISTS('$(_AppRefPath)') ">true</_AppRefPathExists>
+      <_AppRefPathExists Condition=" '$(_AppRefPathExists)' == '' ">false</_AppRefPathExists>
     </PropertyGroup>
 
-    <!-- Use package because .dotnet/ folder doesn't contain RuntimeList.xml file and SharedFxTests checks that. -->
-    <Unzip
-       SourceFiles="$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\Microsoft.AspNetCore.App.Runtime.$(TargetRuntimeIdentifier).$(SharedFxVersion).nupkg"
-       DestinationFolder="$(OutputPath)\SharedFx.Unzip" />
-    <ItemGroup>
-      <_appRuntimeFiles Include="$(OutputPath)\SharedFx.Unzip\**\*.txt" />
-      <_appRuntimeFiles Include="$(OutputPath)\SharedFx.Unzip\**\*.json" />
-      <_appRuntimeFiles Include="$(OutputPath)\SharedFx.Unzip\**\*.dll" />
-      <_appRuntimeFiles Include="$(OutputPath)\SharedFx.Unzip\**\RuntimeList.xml" />
-    </ItemGroup>
-    <Copy SourceFiles="@(_appRuntimeFiles)"
-        DestinationFolder="$(OutputPath)\SharedFx.Layout\shared\Microsoft.AspNetCore.App\$(SharedFxVersion)" />
-    <Copy SourceFiles="$(OutputPath)\SharedFx.Unzip\Microsoft.AspNetCore.App.versions.txt"
-        DestinationFiles="$(OutputPath)\SharedFx.Layout\shared\Microsoft.AspNetCore.App\$(SharedFxVersion)\.version" />
+    <!-- After complaining about missing App.Ref layout, do nothing else in this target.  -->
+    <Message Importance="High"
+        Text="Targeting path location '$(_AppRefPath)' does not exist and tests will use the SDK's bundled runtimes and targeting pack."
+        Condition=" !$(_AppRefPathExists) AND '$(DoNotRequireSharedFxHelix)' == true " />
+    <Error Text="Targeting path location '$(_AppRefPath)' does not exist and some tests are guaranteed to fail."
+        Condition=" !$(_AppRefPathExists) AND '$(DoNotRequireSharedFxHelix)' != true " />
 
-    <Unzip Condition="Exists('$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\Microsoft.AspNetCore.App.Ref.$(SharedFxVersion).nupkg')"
-      SourceFiles="$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\Microsoft.AspNetCore.App.Ref.$(SharedFxVersion).nupkg"
-      DestinationFolder="$(OutputPath)\SharedFx.Layout\packs\Microsoft.AspNetCore.App.Ref\$(SharedFxVersion)" />
-    <ZipDirectory Condition="Exists('$(OutputPath)\SharedFx.Layout')"
-      SourceDirectory="$(OutputPath)\SharedFx.Layout"
-      DestinationFile="$(OutputPath)\SharedFx.Layout.zip" Overwrite="true" />
-
-    <ItemGroup>
-      <HelixCorrelationPayload Include="$(OutputPath)\SharedFx.Layout.zip" Destination="$(DotNetCliDestination)" />
+    <!-- Grab only the portions of the .dotnet/ tree built in this run and have Helix zip that up. -->
+    <ItemGroup Condition=" $(_AppRefPathExists) ">
+      <HelixCorrelationPayload Include="$(_AppRefPath)"
+          Condition=" $(IsWindowsHelixQueue) "
+          Destination="$(DotNetCliDestination)\$(_AppRefSubPath)" />
+      <HelixCorrelationPayload Include="$(_AppRefPath)"
+          Condition=" !$(IsWindowsHelixQueue) "
+          Destination="$(DotNetCliDestination)/$(_AppRefSubPath.Replace('\','/'))" />
+      <HelixCorrelationPayload Include="$(_AppRuntimePath)"
+          Condition=" $(IsWindowsHelixQueue) "
+          Destination="$(DotNetCliDestination)\$(_AppRuntimeSubPath)" />
+      <HelixCorrelationPayload Include="$(_AppRuntimePath)"
+          Condition=" !$(IsWindowsHelixQueue) "
+          Destination="$(DotNetCliDestination)/$(_AppRuntimeSubPath.Replace('\','/'))" />
     </ItemGroup>
   </Target>
 
-  <Target Name="Gather" BeforeTargets="Build">
+  <!-- In inner (per-queue) builds, Publish the test projects and create work items. -->
+  <Target Name="Gather" BeforeTargets="BeforeTest" Condition=" '$(HelixTargetQueue)' != '' ">
     <MSBuild Projects="@(ProjectToBuild)"
-              Targets="CreateHelixPayload"
-              SkipNonexistentTargets="true">
+        BuildInParallel="%(ProjectToBuild.BuildInParallel)"
+        Targets="CreateHelixPayload"
+        SkipNonexistentTargets="true">
       <Output TaskParameter="TargetOutputs" ItemName="HelixWorkItem" />
     </MSBuild>
   </Target>
-
 </Project>

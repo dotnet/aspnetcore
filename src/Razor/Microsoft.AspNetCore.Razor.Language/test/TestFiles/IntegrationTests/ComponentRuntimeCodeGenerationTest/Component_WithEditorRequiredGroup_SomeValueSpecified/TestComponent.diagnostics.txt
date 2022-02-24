@@ -1,1 +1,0 @@
-x:\dir\subdir\Test\TestComponent.cshtml(1,1): Warning RZ2012: Component 'ComponentWithRequiredGroup' expects a value for the parameter 'Property2', but a value may not have been provided.

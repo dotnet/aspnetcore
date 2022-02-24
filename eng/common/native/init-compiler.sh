@@ -2,24 +2,45 @@
 #
 # This file detects the C/C++ compiler and exports it to the CC/CXX environment variables
 #
+# NOTE: some scripts source this file and rely on stdout being empty, make sure to not output anything here!
 
 if [[ "$#" -lt 3 ]]; then
   echo "Usage..."
-  echo "init-compiler.sh <script directory> <Architecture> <compiler> <compiler major version> <compiler minor version>"
+  echo "init-compiler.sh <script directory> <Architecture> <compiler>"
   echo "Specify the script directory."
   echo "Specify the target architecture."
   echo "Specify the name of compiler (clang or gcc)."
-  echo "Specify the major version of compiler."
-  echo "Specify the minor version of compiler."
   exit 1
 fi
 
 nativescriptroot="$1"
 build_arch="$2"
 compiler="$3"
+
+case "$compiler" in
+    clang*|-clang*|--clang*)
+        # clangx.y or clang-x.y
+        version="$(echo "$compiler" | tr -d '[:alpha:]-=')"
+        parts=(${version//./ })
+        majorVersion="${parts[0]}"
+        minorVersion="${parts[1]}"
+        if [[ -z "$minorVersion" && "$majorVersion" -le 6 ]]; then
+            minorVersion=0;
+        fi
+        compiler=clang
+        ;;
+
+    gcc*|-gcc*|--gcc*)
+        # gccx.y or gcc-x.y
+        version="$(echo "$compiler" | tr -d '[:alpha:]-=')"
+        parts=(${version//./ })
+        majorVersion="${parts[0]}"
+        minorVersion="${parts[1]}"
+        compiler=gcc
+        ;;
+esac
+
 cxxCompiler="$compiler++"
-majorVersion="$4"
-minorVersion="$5"
 
 . "$nativescriptroot"/../pipeline-logging-functions.sh
 
@@ -111,12 +132,10 @@ if [[ -z "$CC" ]]; then
     exit 1
 fi
 
-if [[ "$compiler" == "clang" ]]; then
-    if command -v "lld$desired_version" > /dev/null; then
-        # Only lld version >= 9 can be considered stable
-        if [[ "$majorVersion" -ge 9 ]]; then
-            LDFLAGS="-fuse-ld=lld"
-        fi
+# Only lld version >= 9 can be considered stable
+if [[ "$compiler" == "clang" && "$majorVersion" -ge 9 ]]; then
+    if "$CC" -fuse-ld=lld -Wl,--version >/dev/null 2>&1; then
+        LDFLAGS="-fuse-ld=lld"
     fi
 fi
 

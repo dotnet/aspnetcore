@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 import { ReconnectionHandler, ReconnectionOptions } from './CircuitStartOptions';
 import { ReconnectDisplay } from './ReconnectDisplay';
 import { DefaultReconnectDisplay } from './DefaultReconnectDisplay';
@@ -84,7 +87,7 @@ class ReconnectionProcess {
           return;
         }
         return;
-      } catch (err: any) {
+      } catch (err: unknown) {
         // We got an exception so will try again momentarily
         this.logger.log(LogLevel.Error, err as Error);
       }

@@ -5,9 +5,6 @@
   "symbolInfo": [
     {
       "id": "SupportPagesAndViews",
-      "name": {
-        "text": "_Support pages and views"
-      },
       "isVisible": "true"
     }
   ]

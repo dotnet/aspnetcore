@@ -83,6 +83,12 @@ public:
         return m_strShadowCopyingDirectory;
     }
 
+    bool
+    QueryDisallowRotationOnConfigChange() const noexcept
+    {
+        return m_fDisallowRotationOnConfigChange;
+    }
+
     ShimOptions(const ConfigurationSource &configurationSource);
 
 private:
@@ -96,5 +102,6 @@ private:
     bool                           m_fShowDetailedErrors;
     bool                           m_fexperimentalEnableShadowCopying;
     bool                           m_fCleanShadowCopyDirectory;
+    bool                           m_fDisallowRotationOnConfigChange;
     std::wstring                   m_strShadowCopyingDirectory;
 };

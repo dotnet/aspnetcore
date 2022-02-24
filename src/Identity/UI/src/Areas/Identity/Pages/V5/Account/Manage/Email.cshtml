@@ -10,7 +10,7 @@
 <div class="row">
     <div class="col-md-6">
         <form id="email-form" method="post">
-            <div asp-validation-summary="All" class="text-danger"></div>
+            <div asp-validation-summary="All" class="text-danger" role="alert"></div>
             @if (Model.IsEmailConfirmed)
             {
                 <div class="form-floating input-group">

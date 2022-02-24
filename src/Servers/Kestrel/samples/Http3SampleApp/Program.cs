@@ -6,112 +6,117 @@ using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
+using Microsoft.AspNetCore.Testing;
 
-namespace Http3SampleApp
+namespace Http3SampleApp;
+
+public class Program
 {
-    public class Program
+    public static void Main(string[] args)
     {
-        public static void Main(string[] args)
-        {
-            var hostBuilder = new HostBuilder()
-                .ConfigureLogging((_, factory) =>
+        var hostBuilder = new HostBuilder()
+            .ConfigureLogging((_, factory) =>
+            {
+                factory.SetMinimumLevel(LogLevel.Trace);
+                factory.AddSimpleConsole(o => o.TimestampFormat = "[HH:mm:ss.fff] ");
+            })
+            .ConfigureWebHost(webHost =>
+            {
+                webHost.UseKestrel()
+                .ConfigureKestrel((context, options) =>
                 {
-                    factory.SetMinimumLevel(LogLevel.Trace);
-                    factory.AddConsole();
-                })
-                .ConfigureWebHost(webHost =>
-                {
-                    webHost.UseKestrel()
-                    .ConfigureKestrel((context, options) =>
+                    var cert = CertificateLoader.LoadFromStoreCert("localhost", StoreName.My.ToString(), StoreLocation.CurrentUser, false);
+
+                    options.ConfigureHttpsDefaults(httpsOptions =>
                     {
-                        var cert = CertificateLoader.LoadFromStoreCert("localhost", StoreName.My.ToString(), StoreLocation.CurrentUser, false);
+                        httpsOptions.ServerCertificate = cert;
+                        // httpsOptions.ClientCertificateMode = ClientCertificateMode.AllowCertificate;
+                        // httpsOptions.AllowAnyClientCertificate();
+                    });
 
-                        options.ConfigureHttpsDefaults(httpsOptions =>
+                    options.ListenAnyIP(5000, listenOptions =>
+                    {
+                        listenOptions.UseConnectionLogging();
+                        listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+                    });
+
+                    options.ListenAnyIP(5001, listenOptions =>
+                    {
+                        listenOptions.UseHttps();
+                        listenOptions.UseConnectionLogging();
+                        listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
+                    });
+
+                    options.ListenAnyIP(5002, listenOptions =>
+                    {
+                        listenOptions.UseHttps(StoreName.My, "localhost");
+                        listenOptions.UseConnectionLogging();
+                        listenOptions.Protocols = HttpProtocols.Http3;
+                    });
+
+                    options.ListenAnyIP(5003, listenOptions =>
+                    {
+                        listenOptions.UseHttps(httpsOptions =>
                         {
-                            httpsOptions.ServerCertificate = cert;
-                            // httpsOptions.ClientCertificateMode = ClientCertificateMode.AllowCertificate;
-                            // httpsOptions.AllowAnyClientCertificate();
+                            // ConnectionContext is null
+                            httpsOptions.ServerCertificateSelector = (context, host) => cert;
                         });
+                        listenOptions.UseConnectionLogging();
+                        listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
+                    });
 
-                        options.ListenAnyIP(5000, listenOptions =>
+                    // No SslServerAuthenticationOptions callback is currently supported by QuicListener
+                    options.ListenAnyIP(5004, listenOptions =>
+                    {
+                        listenOptions.UseHttps(httpsOptions =>
                         {
-                            listenOptions.UseConnectionLogging();
-                            listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+                            httpsOptions.OnAuthenticate = (_, sslOptions) => sslOptions.ServerCertificate = cert;
                         });
+                        listenOptions.UseConnectionLogging();
+                        listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+                    });
 
-                        options.ListenAnyIP(5001, listenOptions =>
+                    // ServerOptionsSelectionCallback isn't currently supported by QuicListener
+                    options.ListenAnyIP(5005, listenOptions =>
+                    {
+                        ServerOptionsSelectionCallback callback = (SslStream stream, SslClientHelloInfo clientHelloInfo, object state, CancellationToken cancellationToken) =>
                         {
-                            listenOptions.UseHttps();
-                            listenOptions.UseConnectionLogging();
-                            listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
-                        });
-
-                        options.ListenAnyIP(5002, listenOptions =>
-                        {
-                            listenOptions.UseHttps(StoreName.My, "localhost");
-                            listenOptions.UseConnectionLogging();
-                            listenOptions.Protocols = HttpProtocols.Http3;
-                        });
-
-                        options.ListenAnyIP(5003, listenOptions =>
-                        {
-                            listenOptions.UseHttps(httpsOptions =>
+                            var options = new SslServerAuthenticationOptions()
                             {
-                                // ConnectionContext is null
-                                httpsOptions.ServerCertificateSelector = (context, host) => cert;
-                            });
-                            listenOptions.UseConnectionLogging();
-                            listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
-                        });
+                                ServerCertificate = cert,
+                            };
+                            return new ValueTask<SslServerAuthenticationOptions>(options);
+                        };
+                        listenOptions.UseHttps(callback, state: null);
+                        listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+                    });
 
-                        // No SslServerAuthenticationOptions callback is currently supported by QuicListener
-                        options.ListenAnyIP(5004, listenOptions =>
+                    // TlsHandshakeCallbackOptions (ServerOptionsSelectionCallback) isn't currently supported by QuicListener
+                    options.ListenAnyIP(5006, listenOptions =>
+                    {
+                        listenOptions.UseHttps(new TlsHandshakeCallbackOptions()
                         {
-                            listenOptions.UseHttps(httpsOptions =>
-                            {
-                                httpsOptions.OnAuthenticate = (_, sslOptions) => sslOptions.ServerCertificate = cert;
-                            });
-                            listenOptions.UseConnectionLogging();
-                            listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
-                        });
-
-                        // ServerOptionsSelectionCallback isn't currently supported by QuicListener
-                        options.ListenAnyIP(5005, listenOptions =>
-                        {
-                            ServerOptionsSelectionCallback callback = (SslStream stream, SslClientHelloInfo clientHelloInfo, object state, CancellationToken cancellationToken) =>
+                            OnConnection = context =>
                             {
                                 var options = new SslServerAuthenticationOptions()
                                 {
                                     ServerCertificate = cert,
                                 };
                                 return new ValueTask<SslServerAuthenticationOptions>(options);
-                            };
-                            listenOptions.UseHttps(callback, state: null);
-                            listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+                            },
                         });
+                        listenOptions.UseConnectionLogging();
+                        listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+                    });
+                })
+                .UseStartup<Startup>();
+            });
 
-                        // TlsHandshakeCallbackOptions (ServerOptionsSelectionCallback) isn't currently supported by QuicListener
-                        options.ListenAnyIP(5006, listenOptions =>
-                        {
-                            listenOptions.UseHttps(new TlsHandshakeCallbackOptions()
-                            {
-                                OnConnection = context =>
-                                {
-                                    var options = new SslServerAuthenticationOptions()
-                                    {
-                                        ServerCertificate = cert,
-                                    };
-                                    return new ValueTask<SslServerAuthenticationOptions>(options);
-                                },
-                            });
-                            listenOptions.UseConnectionLogging();
-                            listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
-                        });
-                    })
-                    .UseStartup<Startup>();
-                });
+        var host = hostBuilder.Build();
 
-            hostBuilder.Build().Run();
-        }
+        // Listener needs to be configured before host (and HTTP/3 endpoints) start up.
+        using var httpEventSource = new HttpEventSourceListener(host.Services.GetRequiredService<ILoggerFactory>());
+
+        host.Run();
     }
 }

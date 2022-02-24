@@ -1,55 +1,53 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Hosting
+namespace Microsoft.AspNetCore.Hosting;
+
+internal class ConventionBasedStartup : IStartup
 {
-    internal class ConventionBasedStartup : IStartup
+    private readonly StartupMethods _methods;
+
+    public ConventionBasedStartup(StartupMethods methods)
     {
-        private readonly StartupMethods _methods;
+        _methods = methods;
+    }
 
-        public ConventionBasedStartup(StartupMethods methods)
+    public void Configure(IApplicationBuilder app)
+    {
+        try
         {
-            _methods = methods;
+            _methods.ConfigureDelegate(app);
         }
-
-        public void Configure(IApplicationBuilder app)
+        catch (Exception ex)
         {
-            try
+            if (ex is TargetInvocationException)
             {
-                _methods.ConfigureDelegate(app);
+                ExceptionDispatchInfo.Capture(ex.InnerException!).Throw();
             }
-            catch (Exception ex)
-            {
-                if (ex is TargetInvocationException)
-                {
-                    ExceptionDispatchInfo.Capture(ex.InnerException!).Throw();
-                }
 
-                throw;
-            }
+            throw;
         }
+    }
 
-        public IServiceProvider ConfigureServices(IServiceCollection services)
+    public IServiceProvider ConfigureServices(IServiceCollection services)
+    {
+        try
         {
-            try
+            return _methods.ConfigureServicesDelegate(services);
+        }
+        catch (Exception ex)
+        {
+            if (ex is TargetInvocationException)
             {
-                return _methods.ConfigureServicesDelegate(services);
+                ExceptionDispatchInfo.Capture(ex.InnerException!).Throw();
             }
-            catch (Exception ex)
-            {
-                if (ex is TargetInvocationException)
-                {
-                    ExceptionDispatchInfo.Capture(ex.InnerException!).Throw();
-                }
 
-                throw;
-            }
+            throw;
         }
     }
 }

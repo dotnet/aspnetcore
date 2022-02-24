@@ -2,30 +2,28 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO.Pipelines;
-using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.SignalR.Microbenchmarks.Shared
+namespace Microsoft.AspNetCore.SignalR.Microbenchmarks.Shared;
+
+public class TestDuplexPipe : IDuplexPipe
 {
-    public class TestDuplexPipe : IDuplexPipe
+    private readonly TestPipeReader _input;
+
+    public PipeReader Input => _input;
+
+    public PipeWriter Output { get; }
+
+    public TestDuplexPipe(bool writerForceAsync = false)
     {
-        private readonly TestPipeReader _input;
-
-        public PipeReader Input => _input;
-
-        public PipeWriter Output { get; }
-
-        public TestDuplexPipe(bool writerForceAsync = false)
+        _input = new TestPipeReader();
+        Output = new TestPipeWriter
         {
-            _input = new TestPipeReader();
-            Output = new TestPipeWriter
-            {
-                ForceAsync = writerForceAsync
-            };
-        }
+            ForceAsync = writerForceAsync
+        };
+    }
 
-        public void AddReadResult(ValueTask<ReadResult> readResult)
-        {
-            _input.ReadResults.Add(readResult);
-        }
+    public void AddReadResult(ValueTask<ReadResult> readResult)
+    {
+        _input.ReadResults.Add(readResult);
     }
 }

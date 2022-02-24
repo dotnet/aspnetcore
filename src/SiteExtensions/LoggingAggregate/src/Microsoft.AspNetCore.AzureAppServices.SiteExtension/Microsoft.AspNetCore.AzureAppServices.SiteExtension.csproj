@@ -53,11 +53,16 @@
   <ItemGroup>
     <Content Include="applicationHost.xdt" />
     <Content Include="scmApplicationHost.xdt" />
-    <Content Include="$(OutputPath)\Microsoft.Web.Xdt.Extensions.dll" PackagePath="content" />
+    <Content Include="$(ArtifactsBinDir)Microsoft.Web.Xdt.Extensions\$(Configuration)\$(DefaultNetFxTargetFramework)\Microsoft.Web.Xdt.Extensions.dll"
+        Condition="EXISTS('$(ArtifactsBinDir)Microsoft.Web.Xdt.Extensions\$(Configuration)\$(DefaultNetFxTargetFramework)\Microsoft.Web.Xdt.Extensions.dll')"
+        PackagePath="content" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Web.Xdt.Extensions" PrivateAssets="All" />
+    <Reference Include="Microsoft.Web.Xdt.Extensions"
+      Private="false"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
 
   <!--

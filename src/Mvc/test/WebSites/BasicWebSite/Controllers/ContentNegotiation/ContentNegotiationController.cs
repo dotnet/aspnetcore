@@ -4,35 +4,34 @@
 using BasicWebSite.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace BasicWebSite.Controllers.ContentNegotiation
+namespace BasicWebSite.Controllers.ContentNegotiation;
+
+public class ContentNegotiationController : Controller
 {
-    public class ContentNegotiationController : Controller
+    public IActionResult Index()
     {
-        public IActionResult Index()
-        {
-            return new JsonResult("Index Method");
-        }
+        return new JsonResult("Index Method");
+    }
 
-        public User UserInfo()
-        {
-            return CreateUser();
-        }
+    public User UserInfo()
+    {
+        return CreateUser();
+    }
 
-        [Produces(typeof(User))]
-        public IActionResult UserInfo_ProducesWithTypeOnly()
-        {
-            return new ObjectResult(CreateUser());
-        }
+    [Produces(typeof(User))]
+    public IActionResult UserInfo_ProducesWithTypeOnly()
+    {
+        return new ObjectResult(CreateUser());
+    }
 
-        [Produces("application/xml", Type = typeof(User))]
-        public IActionResult UserInfo_ProducesWithTypeAndContentType()
-        {
-            return new ObjectResult(CreateUser());
-        }
+    [Produces("application/xml", Type = typeof(User))]
+    public IActionResult UserInfo_ProducesWithTypeAndContentType()
+    {
+        return new ObjectResult(CreateUser());
+    }
 
-        private User CreateUser()
-        {
-            return new User() { Name = "John", Address = "One Microsoft Way" };
-        }
+    private User CreateUser()
+    {
+        return new User() { Name = "John", Address = "One Microsoft Way" };
     }
 }

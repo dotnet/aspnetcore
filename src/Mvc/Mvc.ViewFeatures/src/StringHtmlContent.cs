@@ -3,54 +3,51 @@
 
 #nullable enable
 
-using System;
 using System.Diagnostics;
-using System.IO;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Html;
 
-namespace Microsoft.AspNetCore.Mvc.ViewFeatures
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
+
+/// <summary>
+/// String content which gets encoded when written.
+/// </summary>
+[DebuggerDisplay("{DebuggerToString()}")]
+public class StringHtmlContent : IHtmlContent
 {
+    private readonly string _input;
+
     /// <summary>
-    /// String content which gets encoded when written.
+    /// Creates a new instance of <see cref="StringHtmlContent"/>
     /// </summary>
-    [DebuggerDisplay("{DebuggerToString()}")]
-    public class StringHtmlContent : IHtmlContent
+    /// <param name="input"><see cref="string"/> to be HTML encoded when <see cref="WriteTo"/> is called.</param>
+    public StringHtmlContent(string input)
     {
-        private readonly string _input;
+        _input = input;
+    }
 
-        /// <summary>
-        /// Creates a new instance of <see cref="StringHtmlContent"/>
-        /// </summary>
-        /// <param name="input"><see cref="string"/> to be HTML encoded when <see cref="WriteTo"/> is called.</param>
-        public StringHtmlContent(string input)
+    /// <inheritdoc />
+    public void WriteTo(TextWriter writer, HtmlEncoder encoder)
+    {
+        if (writer == null)
         {
-            _input = input;
+            throw new ArgumentNullException(nameof(writer));
         }
 
-        /// <inheritdoc />
-        public void WriteTo(TextWriter writer, HtmlEncoder encoder)
+        if (encoder == null)
         {
-            if (writer == null)
-            {
-                throw new ArgumentNullException(nameof(writer));
-            }
-
-            if (encoder == null)
-            {
-                throw new ArgumentNullException(nameof(encoder));
-            }
-
-            encoder.Encode(writer, _input);
+            throw new ArgumentNullException(nameof(encoder));
         }
 
-        private string DebuggerToString()
+        encoder.Encode(writer, _input);
+    }
+
+    private string DebuggerToString()
+    {
+        using (var writer = new StringWriter())
         {
-            using (var writer = new StringWriter())
-            {
-                WriteTo(writer, HtmlEncoder.Default);
-                return writer.ToString();
-            }
+            WriteTo(writer, HtmlEncoder.Default);
+            return writer.ToString();
         }
     }
 }

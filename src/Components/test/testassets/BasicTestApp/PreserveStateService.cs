@@ -1,53 +1,50 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 
-namespace BasicTestApp
+namespace BasicTestApp;
+
+public class PreserveStateService : IDisposable
 {
-    public class PreserveStateService : IDisposable
+    private readonly PersistentComponentState _componentApplicationState;
+    private PersistingComponentStateSubscription _persistingSubscription;
+
+    private ServiceState _state = new();
+
+    public PreserveStateService(PersistentComponentState componentApplicationState)
     {
-        private readonly PersistentComponentState _componentApplicationState;
-        private PersistingComponentStateSubscription _persistingSubscription;
+        _componentApplicationState = componentApplicationState;
+        _persistingSubscription = _componentApplicationState.RegisterOnPersisting(PersistState);
+        TryRestoreState();
+    }
 
-        private ServiceState _state = new();
+    public Guid Guid => _state.TheState;
 
-        public PreserveStateService(PersistentComponentState componentApplicationState)
+    private void TryRestoreState()
+    {
+        if (_componentApplicationState.TryTakeFromJson<ServiceState>("Service", out var state))
         {
-            _componentApplicationState = componentApplicationState;
-            _persistingSubscription = _componentApplicationState.RegisterOnPersisting(PersistState);
-            TryRestoreState();
+            _state = state;
         }
-
-        public Guid Guid => _state.TheState;
-
-        private void TryRestoreState()
+        else
         {
-            if (_componentApplicationState.TryTakeFromJson<ServiceState>("Service", out var state))
-            {
-                _state = state;
-            }
-            else
-            {
-                _state = new ServiceState { TheState = Guid.NewGuid() };
-            }
+            _state = new ServiceState { TheState = Guid.NewGuid() };
         }
+    }
 
-        public void NewState() => _state = new ServiceState { TheState = Guid.NewGuid() };
+    public void NewState() => _state = new ServiceState { TheState = Guid.NewGuid() };
 
-        private Task PersistState()
-        {
-            _componentApplicationState.PersistAsJson("Service", _state);
-            return Task.CompletedTask;
-        }
+    private Task PersistState()
+    {
+        _componentApplicationState.PersistAsJson("Service", _state);
+        return Task.CompletedTask;
+    }
 
-        public void Dispose() => _persistingSubscription.Dispose();
+    public void Dispose() => _persistingSubscription.Dispose();
 
-        private class ServiceState
-        {
-            public Guid TheState { get; set; }
-        }
+    private class ServiceState
+    {
+        public Guid TheState { get; set; }
     }
 }

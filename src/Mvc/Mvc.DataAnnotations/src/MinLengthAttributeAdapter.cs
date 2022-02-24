@@ -1,48 +1,46 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.Localization;
 
-namespace Microsoft.AspNetCore.Mvc.DataAnnotations
+namespace Microsoft.AspNetCore.Mvc.DataAnnotations;
+
+internal class MinLengthAttributeAdapter : AttributeAdapterBase<MinLengthAttribute>
 {
-    internal class MinLengthAttributeAdapter : AttributeAdapterBase<MinLengthAttribute>
+    private readonly string _min;
+
+    public MinLengthAttributeAdapter(MinLengthAttribute attribute, IStringLocalizer? stringLocalizer)
+        : base(attribute, stringLocalizer)
     {
-        private readonly string _min;
+        _min = Attribute.Length.ToString(CultureInfo.InvariantCulture);
+    }
 
-        public MinLengthAttributeAdapter(MinLengthAttribute attribute, IStringLocalizer? stringLocalizer)
-            : base(attribute, stringLocalizer)
+    public override void AddValidation(ClientModelValidationContext context)
+    {
+        if (context == null)
         {
-            _min = Attribute.Length.ToString(CultureInfo.InvariantCulture);
+            throw new ArgumentNullException(nameof(context));
         }
 
-        public override void AddValidation(ClientModelValidationContext context)
-        {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+        MergeAttribute(context.Attributes, "data-val", "true");
+        MergeAttribute(context.Attributes, "data-val-minlength", GetErrorMessage(context));
+        MergeAttribute(context.Attributes, "data-val-minlength-min", _min);
+    }
 
-            MergeAttribute(context.Attributes, "data-val", "true");
-            MergeAttribute(context.Attributes, "data-val-minlength", GetErrorMessage(context));
-            MergeAttribute(context.Attributes, "data-val-minlength-min", _min);
+    /// <inheritdoc />
+    public override string GetErrorMessage(ModelValidationContextBase validationContext)
+    {
+        if (validationContext == null)
+        {
+            throw new ArgumentNullException(nameof(validationContext));
         }
 
-        /// <inheritdoc />
-        public override string GetErrorMessage(ModelValidationContextBase validationContext)
-        {
-            if (validationContext == null)
-            {
-                throw new ArgumentNullException(nameof(validationContext));
-            }
-
-            return GetErrorMessage(
-                validationContext.ModelMetadata,
-                validationContext.ModelMetadata.GetDisplayName(),
-                Attribute.Length);
-        }
+        return GetErrorMessage(
+            validationContext.ModelMetadata,
+            validationContext.ModelMetadata.GetDisplayName(),
+            Attribute.Length);
     }
 }

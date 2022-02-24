@@ -1,41 +1,37 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Threading;
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
+internal class HeartbeatManager : IHeartbeatHandler, ISystemClock
 {
-    internal class HeartbeatManager : IHeartbeatHandler, ISystemClock
+    private readonly ConnectionManager _connectionManager;
+    private readonly Action<KestrelConnection> _walkCallback;
+    private DateTimeOffset _now;
+    private long _nowTicks;
+
+    public HeartbeatManager(ConnectionManager connectionManager)
     {
-        private readonly ConnectionManager _connectionManager;
-        private readonly Action<KestrelConnection> _walkCallback;
-        private DateTimeOffset _now;
-        private long _nowTicks;
+        _connectionManager = connectionManager;
+        _walkCallback = WalkCallback;
+    }
 
-        public HeartbeatManager(ConnectionManager connectionManager)
-        {
-            _connectionManager = connectionManager;
-            _walkCallback = WalkCallback;
-        }
+    public DateTimeOffset UtcNow => new DateTimeOffset(UtcNowTicks, TimeSpan.Zero);
 
-        public DateTimeOffset UtcNow => new DateTimeOffset(UtcNowTicks, TimeSpan.Zero);
+    public long UtcNowTicks => Volatile.Read(ref _nowTicks);
 
-        public long UtcNowTicks => Volatile.Read(ref _nowTicks);
+    public DateTimeOffset UtcNowUnsynchronized => _now;
 
-        public DateTimeOffset UtcNowUnsynchronized => _now;
+    public void OnHeartbeat(DateTimeOffset now)
+    {
+        _now = now;
+        Volatile.Write(ref _nowTicks, now.Ticks);
 
-        public void OnHeartbeat(DateTimeOffset now)
-        {
-            _now = now;
-            Volatile.Write(ref _nowTicks, now.Ticks);
+        _connectionManager.Walk(_walkCallback);
+    }
 
-            _connectionManager.Walk(_walkCallback);
-        }
-
-        private void WalkCallback(KestrelConnection connection)
-        {
-            connection.TickHeartbeat();
-        }
+    private void WalkCallback(KestrelConnection connection)
+    {
+        connection.TickHeartbeat();
     }
 }

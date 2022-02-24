@@ -6,27 +6,26 @@ using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace Microsoft.Extensions.DependencyInjection
+namespace Microsoft.Extensions.DependencyInjection;
+
+/// <summary>
+/// Extensions for configuring ApiExplorer using <see cref="Endpoint.Metadata"/>.
+/// </summary>
+public static class EndpointMetadataApiExplorerServiceCollectionExtensions
 {
     /// <summary>
-    /// Extensions for configuring ApiExplorer using <see cref="Endpoint.Metadata"/>.
+    /// Configures ApiExplorer using <see cref="Endpoint.Metadata"/>.
     /// </summary>
-    public static class EndpointMetadataApiExplorerServiceCollectionExtensions
+    /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+    public static IServiceCollection AddEndpointsApiExplorer(this IServiceCollection services)
     {
-        /// <summary>
-        /// Configures ApiExplorer using <see cref="Endpoint.Metadata"/>.
-        /// </summary>
-        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
-        public static IServiceCollection AddEndpointsApiExplorer(this IServiceCollection services)
-        {
-            // Try to add default services in case MVC services aren't added.
-            services.TryAddSingleton<IActionDescriptorCollectionProvider, DefaultActionDescriptorCollectionProvider>();
-            services.TryAddSingleton<IApiDescriptionGroupCollectionProvider, ApiDescriptionGroupCollectionProvider>();
+        // Try to add default services in case MVC services aren't added.
+        services.TryAddSingleton<IActionDescriptorCollectionProvider, DefaultActionDescriptorCollectionProvider>();
+        services.TryAddSingleton<IApiDescriptionGroupCollectionProvider, ApiDescriptionGroupCollectionProvider>();
 
-            services.TryAddEnumerable(
-                ServiceDescriptor.Transient<IApiDescriptionProvider, EndpointMetadataApiDescriptionProvider>());
+        services.TryAddEnumerable(
+            ServiceDescriptor.Transient<IApiDescriptionProvider, EndpointMetadataApiDescriptionProvider>());
 
-            return services;
-        }
+        return services;
     }
 }

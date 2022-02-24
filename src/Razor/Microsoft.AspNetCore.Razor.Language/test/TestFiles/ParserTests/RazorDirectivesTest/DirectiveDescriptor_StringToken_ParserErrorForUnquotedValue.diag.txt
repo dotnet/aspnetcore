@@ -1,1 +1,0 @@
-(1,9): Error RZ1016: The 'custom' directive expects a string surrounded by double quotes.

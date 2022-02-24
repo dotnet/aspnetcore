@@ -2,7 +2,7 @@
 
 ## Dependencies
 In order to successfully build and test *SignalR* you'll need to ensure that your system has the following installed:
-* [NodeJS](https://nodejs.org/) version 6.9 or later
+* [NodeJS](https://nodejs.org/) version 16.11.0 or later
 * NPM *(typically bundled with NodeJS)*
 
 ## How To Build
