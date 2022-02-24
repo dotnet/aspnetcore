@@ -36,7 +36,9 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
     private readonly HttpConnectionContext _context;
     private readonly Http2FrameWriter _frameWriter;
     private readonly Pipe _input;
+    private readonly Pipe _output;
     private readonly Task _inputTask;
+    private readonly Task _outputTask;
     private readonly int _minAllocBufferSize;
     private readonly HPackDecoder _hpackDecoder;
     private readonly InputFlowControl _inputFlowControl;
@@ -83,8 +85,34 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
         // Capture the ExecutionContext before dispatching HTTP/2 middleware. Will be restored by streams when processing request
         _context.InitialExecutionContext = ExecutionContext.Capture();
 
+        var inputPipeOptions = new PipeOptions(pool: context.MemoryPool,
+            readerScheduler: context.ServiceContext.Scheduler,
+            writerScheduler: PipeScheduler.Inline,
+            pauseWriterThreshold: 1,
+            resumeWriterThreshold: 1,
+            minimumSegmentSize: context.MemoryPool.GetMinimumSegmentSize(),
+            useSynchronizationContext: false);
+
+        // Never write inline because we do not want to hold Http2FramerWriter._writeLock for potentially expensive TLS
+        // write operations. This essentially doubles the MaxResponseBufferSize for HTTP/2 connections compared to
+        // HTTP/1.x. This seems reasonable given HTTP/2's support for many concurrent streams per connection. We don't
+        // want every write to return an incomplete ValueTasK now that we're dispatching TLS write operations which
+        // would likely happen with a pauseWriterThreashold of 1, but we still need to respect connection backpressure.
+        var maxWriteBufferSize = httpLimits.MaxResponseBufferSize ?? 0;
+
+        var outputPipeOptions = new PipeOptions(pool: context.MemoryPool,
+            readerScheduler: PipeScheduler.ThreadPool,
+            writerScheduler: PipeScheduler.Inline,
+            pauseWriterThreshold: maxWriteBufferSize,
+            resumeWriterThreshold: maxWriteBufferSize / 2,
+            minimumSegmentSize: context.MemoryPool.GetMinimumSegmentSize(),
+            useSynchronizationContext: false);
+
+        _input = new Pipe(inputPipeOptions);
+        _output = new Pipe(outputPipeOptions);
+
         _frameWriter = new Http2FrameWriter(
-            context.Transport.Output,
+            _output.Writer,
             context.ConnectionContext,
             this,
             _outputFlowControl,
@@ -94,15 +122,6 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
             context.MemoryPool,
             context.ServiceContext);
 
-        var inputOptions = new PipeOptions(pool: context.MemoryPool,
-            readerScheduler: context.ServiceContext.Scheduler,
-            writerScheduler: PipeScheduler.Inline,
-            pauseWriterThreshold: 1,
-            resumeWriterThreshold: 1,
-            minimumSegmentSize: context.MemoryPool.GetMinimumSegmentSize(),
-            useSynchronizationContext: false);
-
-        _input = new Pipe(inputOptions);
         _minAllocBufferSize = context.MemoryPool.GetMinimumAllocSize();
 
         _hpackDecoder = new HPackDecoder(http2Limits.HeaderTableSize, http2Limits.MaxRequestHeaderFieldSize);
@@ -129,7 +148,8 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
 
         _scheduleInline = context.ServiceContext.Scheduler == PipeScheduler.Inline;
 
-        _inputTask = ReadInputAsync();
+        _inputTask = CopyPipe(_context.Transport.Input, _input.Writer);
+        _outputTask = CopyPipe(_output.Reader, _context.Transport.Output);
     }
 
     public string ConnectionId => _context.ConnectionId;
@@ -381,8 +401,10 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
             finally
             {
                 Input.Complete();
+                _output.Writer.Complete();
                 _context.Transport.Input.CancelPendingRead();
                 await _inputTask;
+                await _outputTask;
             }
         }
     }
@@ -1655,16 +1677,13 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
         Interlocked.Decrement(ref _clientActiveStreamCount);
     }
 
-    private async Task ReadInputAsync()
+    private async Task CopyPipe(PipeReader reader, PipeWriter writer)
     {
         Exception? error = null;
         try
         {
             while (true)
             {
-                var reader = _context.Transport.Input;
-                var writer = _input.Writer;
-
                 var readResult = await reader.ReadAsync();
 
                 if ((readResult.IsCompleted && readResult.Buffer.Length == 0) || readResult.IsCanceled)
@@ -1699,8 +1718,8 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
         }
         finally
         {
-            await _context.Transport.Input.CompleteAsync();
-            _input.Writer.Complete(error);
+            await reader.CompleteAsync();
+            await writer.CompleteAsync(error);
         }
     }
 
