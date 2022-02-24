@@ -46,6 +46,16 @@ public static class HubEndpointRouteBuilderExtensions
                                                 "'IServiceCollection.AddSignalR' inside the call to 'ConfigureServices(...)' in the application startup code.");
         }
 
+        using var scope1 = endpoints.ServiceProvider.CreateScope();
+        var hub1 = scope1.ServiceProvider.GetService<THub>();
+        using var scope2 = endpoints.ServiceProvider.CreateScope();
+        var hub2 = scope2.ServiceProvider.GetService<THub>();
+        if (hub1 is not null && hub2 is not null &&
+            hub1 == hub2)
+        {
+            throw new InvalidOperationException($"'{typeof(THub).Name}' is registered as a Singleton which is not supported.");
+        }
+
         var options = new HttpConnectionDispatcherOptions();
         configureOptions?.Invoke(options);
 

@@ -320,6 +320,38 @@ public class MapSignalRTests
         }
     }
 
+    [Fact]
+    public void MapSignalRFailsWithSingletonHub()
+    {
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+        {
+            using (var host = BuildWebHost(routes => routes.MapHub<AuthHub>("/overloads"), services => services.AddSingleton<AuthHub>()))
+            {
+                host.Start();
+            }
+        });
+
+        Assert.Equal("'AuthHub' is registered as a Singleton which is not supported.", ex.Message);
+    }
+
+    [Fact]
+    public void MapSignalRWorksWithTransientHub()
+    {
+        using (var host = BuildWebHost(routes => routes.MapHub<AuthHub>("/overloads"), services => services.AddTransient<AuthHub>()))
+        {
+            host.Start();
+        }
+    }
+
+    [Fact]
+    public void MapSignalRWorksWithScopedHub()
+    {
+        using (var host = BuildWebHost(routes => routes.MapHub<AuthHub>("/overloads"), services => services.AddScoped<AuthHub>()))
+        {
+            host.Start();
+        }
+    }
+
     private class InvalidHub : Hub
     {
         public void OverloadedMethod(int num)
@@ -345,7 +377,7 @@ public class MapSignalRTests
     {
     }
 
-    private IHost BuildWebHost(Action<IEndpointRouteBuilder> configure)
+    private IHost BuildWebHost(Action<IEndpointRouteBuilder> configure, Action<IServiceCollection> configureServices = null)
     {
         return new HostBuilder()
             .ConfigureWebHost(webHostBuilder =>
@@ -355,6 +387,10 @@ public class MapSignalRTests
                 .ConfigureServices(services =>
                 {
                     services.AddSignalR();
+                    if (configureServices is not null)
+                    {
+                        configureServices(services);
+                    }
                 })
                 .Configure(app =>
                 {
