@@ -27,9 +27,14 @@
 <?if $(var.Platform) = "x64" ?>
     <?define AspNetCoreV2ProgramFilesTargetPath = "$(var.AspNetCoreV2.TargetPath)" ?>
     <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(var.AspNetCoreV2Handler.TargetPath)" ?>
-<?else ?>
+<?endif ?>
+<?if $(var.Platform) = "x86" ?>
     <?define AspNetCoreV2ProgramFilesTargetPath = "$(var.AspNetCoreV2WoW64.TargetPath)" ?>
     <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(var.AspNetCoreV2HandlerWoW64.TargetPath)" ?>
+<?endif ?>
+<?if $(var.Platform) = "arm64" ?>
+    <?define AspNetCoreV2ProgramFilesTargetPath = "$(var.AspNetCoreV2ARM64.TargetPath)" ?>
+    <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(var.AspNetCoreV2HandlerARM64.TargetPath)" ?>
 <?endif ?>
 
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:dep="http://schemas.microsoft.com/wix/DependencyExtension">
@@ -85,12 +90,14 @@
         <?endif ?>
 
         <!-- also prevent install of 64-bit product on 32-bit machine -->
-        <?if $(var.Platform) = "x64"?>
+        <?if $(var.Platform) = "x64" OR  $(var.Platform) = "arm64"?>
         <Condition Message="!(loc.LaunchCondition_32BIT)">
             <![CDATA[(Installed And NOT PATCH) Or VersionNT64]]>
         </Condition>
         <?endif ?>
 
+        <!-- REVIEW need arm64 checks too? -->
+        
         <Property Id="ALLUSERS">1</Property>
 
         <!-- Detect IIS version and require 7.5 -->
@@ -215,6 +222,50 @@
                 </Directory>
             </Directory>
             <?endif ?>
+            
+           <!-- ARM64 Support -->
+           <?if $(var.Platform) = "arm64" ?>
+           <Component Id="C_DiscoverabilityKeyWow" Guid="2eeb90e8-28d0-4543-9c2f-843b03bd6d05" Win64="no">
+               <RegistryKey Root="HKLM" Key="$(var.DiscoverabilityKeyRoot)">
+                    <RegistryKey Key="$(var.ProductShortName)">
+                        <RegistryValue Type="integer" Name="Install" Value="1" />
+                        <RegistryValue Type="string" Name="Version" Value="$(var.ANCMMsiVersion)" />
+                    </RegistryKey>
+                </RegistryKey>
+            </Component>
+
+            <Directory Id="$(var.ProgramFilesFolder32)">
+                 <Directory Id="IISModuleDirectory32" Name="IIS">
+                    <Directory Id="INSTALLLOCATION32" ShortName="ANCM" Name="Asp.Net Core Module">
+                        <Directory Id="VersionDir32" Name="$(var.ProductVersionString)" SourceName="Arm64Only" >
+                            <Component Id="AspNetCoreModuleV2.arm64" Guid="1b8ecba0-c002-442a-92c0-0fa9c0f21df4" Win64="no">
+                                <File Id="AspNetCoreModuleV2Dll.arm64"
+                                    Name="aspnetcorev2.dll"
+                                    Source="$(var.AspNetCoreV2ARM64.TargetPath)"
+                                    DiskId="1"
+                                    Vital="yes">
+                                </File>
+                                <RemoveFile Id="AspNetCoreModuleV2Dll.arm64_Remove" Name="aspnetcorev2.dll" On="install" />
+                                <RegistryKey Root="HKLM" Key="SYSTEM\CurrentControlSet\Services\EventLog\Application\$(var.ProductShortName)">
+                                    <RegistryValue Name="EventMessageFile" Type="expandable" Value="[#AspNetCoreModuleV2Dll.arm64]"/>
+                                    <RegistryValue Name="TypesSupported" Type="integer" Value="7"/>
+                                </RegistryKey>
+                            </Component>
+                            <Directory Id="HandlerVersionDir32" Name="$(var.ANCMFolderVersion)" SourceName="Arm64Only">
+                                <Component Id="AspNetCoreModuleHandler.arm64" Guid="d927e5d3-c8b2-400c-b85c-ae5c2772d6c3" Win64="no">
+                                    <File Id="AspNetCoreModuleHandlerDll.arm64"
+                                          Name="aspnetcorev2_outofprocess.dll"
+                                          Source="$(var.AspNetCoreV2HandlerARM64.TargetPath)"
+                                          DiskId="1"
+                                          Vital="yes">
+                                    </File>
+                                </Component>
+                            </Directory>
+                        </Directory>
+                    </Directory>
+                </Directory>
+            </Directory>
+            <?endif ?>
         </Directory>
 
         <!-- Feature Definition -->
@@ -227,6 +278,11 @@
             <ComponentRef Id="C_DiscoverabilityKeyWow"/>
             <ComponentRef Id="AspNetCoreModuleV2.wow"/>
             <ComponentRef Id="AspNetCoreModuleHandler.wow"/>
+            <?endif ?>
+            <?if $(var.Platform) = "arm64" ?>
+            <ComponentRef Id="C_DiscoverabilityKeyARM64"/>
+            <ComponentRef Id="AspNetCoreModuleV2.arm64"/>
+            <ComponentRef Id="AspNetCoreModuleHandler.arm64"/>
             <?endif ?>
         </Feature>
 
