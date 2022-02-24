@@ -537,7 +537,20 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
     }
 
     internal static Func<ParameterExpression, Expression, Expression>? FindTryParseMethod(Type modelType)
-        => ParameterBindingMethodCache.FindTryParseMethod(Nullable.GetUnderlyingType(modelType) ?? modelType);
+    {
+        try
+        {
+            modelType = Nullable.GetUnderlyingType(modelType) ?? modelType;
+            return ParameterBindingMethodCache.FindTryParseMethod(modelType);
+        }
+        catch (InvalidOperationException)
+        {
+            // The ParameterBindingMethodCache.FindTryParseMethod throws an exception
+            // when an wrong try/parse method is detected
+            // but we don't need this behavior here and return null is enough
+            return null;
+        }
+    }
 
     [MemberNotNull(nameof(_parameterMapping), nameof(_boundConstructorPropertyMapping))]
     private void CalculateRecordTypeConstructorDetails()

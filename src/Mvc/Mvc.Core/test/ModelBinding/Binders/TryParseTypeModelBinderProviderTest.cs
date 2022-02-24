@@ -13,7 +13,7 @@ public class TryParseModelBinderProviderTest
     {
         // Arrange
         var provider = new TryParseModelBinderProvider();
-        var context = CreateContext(modelType: typeof(TestClass), false);
+        var context = new TestModelBinderProviderContext(typeof(TestClass));
 
         // Act
         var result = provider.GetBinder(context);
@@ -27,22 +27,13 @@ public class TryParseModelBinderProviderTest
     {
         // Arrange
         var provider = new TryParseModelBinderProvider();
-        var context = CreateContext(typeof(TestClassWithTryParse), true);
+        var context = new TestModelBinderProviderContext(typeof(TestClassWithTryParse));
 
         // Act
         var result = provider.GetBinder(context);
 
         // Assert
         Assert.IsType<TryParseModelBinder>(result);
-    }
-
-    private static TestModelBinderProviderContext CreateContext(Type modelType, bool allowTryParse)
-    {
-        TestModelBinderProviderContext.CachedMetadataProvider
-            .ForType(modelType)
-            .BindingDetails(b => b.IsBindingFromTryParseAllowed = allowTryParse);
-
-        return new TestModelBinderProviderContext(modelType);
     }
 
     private class TestClass

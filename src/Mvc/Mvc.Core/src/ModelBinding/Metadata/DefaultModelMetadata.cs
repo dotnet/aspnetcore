@@ -347,7 +347,8 @@ public class DefaultModelMetadata : ModelMetadata
         }
     }
 
-    internal override bool IsParseableType => BindingMetadata.IsBindingFromTryParseAllowed;
+    internal override bool IsParseableType
+        => BindingMetadata.IsBindingFromTryParseAllowed && ModelMetadata.FindTryParseMethod(ModelType) is not null;
 
     /// <inheritdoc />
     public override ModelBindingMessageProvider ModelBindingMessageProvider =>
