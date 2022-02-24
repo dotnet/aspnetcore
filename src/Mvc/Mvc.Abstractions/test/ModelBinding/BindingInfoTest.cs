@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
@@ -42,6 +42,23 @@ public class BindingInfoTest
         // Assert
         Assert.NotNull(bindingInfo);
         Assert.Same(bindAttribute, bindingInfo.PropertyFilterProvider);
+    }
+
+    [Fact]
+    public void GetBindingInfo_ReadsEmptyBodyBehavior()
+    {
+        // Arrange
+        var attributes = new object[]
+        {
+          new FromBodyAttribute { EmptyBodyBehavior = EmptyBodyBehavior.Allow },
+        };
+
+        // Act
+        var bindingInfo = BindingInfo.GetBindingInfo(attributes);
+
+        // Assert
+        Assert.NotNull(bindingInfo);
+        Assert.Equal(EmptyBodyBehavior.Allow, bindingInfo.EmptyBodyBehavior);
     }
 
     [Fact]
@@ -100,6 +117,26 @@ public class BindingInfoTest
         Assert.NotNull(bindingInfo);
         Assert.Same(typeof(ComplexObjectModelBinder), bindingInfo.BinderType);
         Assert.Same("Test", bindingInfo.BinderModelName);
+    }
+
+    [Fact]
+    public void GetBindingInfo_WithAttributesAndModelMetadata_UsesEmptyBodyBehaviorFromBindingInfo_IfAttributesPresent()
+    {
+        // Arrange
+        var attributes = new object[]
+        {
+                new FromBodyAttribute() { EmptyBodyBehavior = EmptyBodyBehavior.Disallow }
+        };
+        var modelType = typeof(Guid?);
+        var provider = new TestModelMetadataProvider();
+        var modelMetadata = provider.GetMetadataForType(modelType);
+
+        // Act
+        var bindingInfo = BindingInfo.GetBindingInfo(attributes, modelMetadata);
+
+        // Assert
+        Assert.NotNull(bindingInfo);
+        Assert.Equal(EmptyBodyBehavior.Disallow, bindingInfo.EmptyBodyBehavior);
     }
 
     [Fact]
@@ -204,5 +241,49 @@ public class BindingInfoTest
         // Assert
         Assert.NotNull(bindingInfo);
         Assert.Same(propertyFilterProvider, bindingInfo.PropertyFilterProvider);
+    }
+
+    [Fact]
+    public void GetBindingInfo_WithAttributesAndModelMetadata_UsesEmptyBodyFromModelMetadata_WhenNotFoundViaAttributes()
+    {
+        // Arrange
+        var attributes = new object[]
+        {
+                new ControllerAttribute(),
+                new BindNeverAttribute(),
+                new FromBodyAttribute(),
+        };
+        var modelType = typeof(Guid?);
+        var provider = new TestModelMetadataProvider();
+        var modelMetadata = provider.GetMetadataForType(modelType);
+
+        // Act
+        var bindingInfo = BindingInfo.GetBindingInfo(attributes, modelMetadata);
+
+        // Assert
+        Assert.NotNull(bindingInfo);
+        Assert.Equal(EmptyBodyBehavior.Allow, bindingInfo.EmptyBodyBehavior);
+    }
+
+    [Fact]
+    public void GetBindingInfo_WithAttributesAndModelMetadata_PreserveEmptyBodyDefault_WhenNotNullable()
+    {
+        // Arrange
+        var attributes = new object[]
+        {
+                new ControllerAttribute(),
+                new BindNeverAttribute(),
+                new FromBodyAttribute(),
+        };
+        var modelType = typeof(Guid);
+        var provider = new TestModelMetadataProvider();
+        var modelMetadata = provider.GetMetadataForType(modelType);
+
+        // Act
+        var bindingInfo = BindingInfo.GetBindingInfo(attributes, modelMetadata);
+
+        // Assert
+        Assert.NotNull(bindingInfo);
+        Assert.Equal(EmptyBodyBehavior.Default, bindingInfo.EmptyBodyBehavior);
     }
 }
