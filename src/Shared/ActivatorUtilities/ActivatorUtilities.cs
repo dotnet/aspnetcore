@@ -4,6 +4,7 @@
 #nullable disable warnings
 #nullable enable annotations
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -29,6 +30,8 @@ internal
 #endif
 static class ActivatorUtilities
 {
+    private const DynamicallyAccessedMemberTypes ActivatorAccessibility = DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors;
+
     private static readonly MethodInfo GetServiceInfo =
         GetMethodInfo<Func<IServiceProvider, Type, Type, bool, object>>((sp, t, r, c) => GetService(sp, t, r, c));
 
@@ -39,7 +42,10 @@ static class ActivatorUtilities
     /// <param name="instanceType">The type to activate</param>
     /// <param name="parameters">Constructor arguments not provided by the <paramref name="provider"/>.</param>
     /// <returns>An activated object of type instanceType</returns>
-    public static object CreateInstance(IServiceProvider provider, Type instanceType, params object[] parameters)
+    public static object CreateInstance(
+        IServiceProvider provider,
+        [DynamicallyAccessedMembers(ActivatorAccessibility)] Type instanceType,
+        params object[] parameters)
     {
         int bestLength = -1;
         var seenPreferred = false;
@@ -98,7 +104,9 @@ static class ActivatorUtilities
     /// A factory that will instantiate instanceType using an <see cref="IServiceProvider"/>
     /// and an argument array containing objects matching the types defined in argumentTypes
     /// </returns>
-    public static ObjectFactory CreateFactory(Type instanceType, Type[] argumentTypes)
+    public static ObjectFactory CreateFactory(
+        [DynamicallyAccessedMembers(ActivatorAccessibility)] Type instanceType,
+        Type[] argumentTypes)
     {
         FindApplicableConstructor(instanceType, argumentTypes, out ConstructorInfo constructor, out int?[] parameterMap);
 
@@ -120,7 +128,9 @@ static class ActivatorUtilities
     /// <param name="provider">The service provider used to resolve dependencies</param>
     /// <param name="parameters">Constructor arguments not provided by the <paramref name="provider"/>.</param>
     /// <returns>An activated object of type T</returns>
-    public static T CreateInstance<T>(IServiceProvider provider, params object[] parameters)
+    public static T CreateInstance<
+        [DynamicallyAccessedMembers(ActivatorAccessibility)] T
+        >(IServiceProvider provider, params object[] parameters)
     {
         return (T)CreateInstance(provider, typeof(T), parameters);
     }
@@ -131,7 +141,9 @@ static class ActivatorUtilities
     /// <typeparam name="T">The type of the service</typeparam>
     /// <param name="provider">The service provider used to resolve dependencies</param>
     /// <returns>The resolved service or created instance</returns>
-    public static T GetServiceOrCreateInstance<T>(IServiceProvider provider)
+    public static T GetServiceOrCreateInstance<
+        [DynamicallyAccessedMembers(ActivatorAccessibility)] T
+        >(IServiceProvider provider)
     {
         return (T)GetServiceOrCreateInstance(provider, typeof(T));
     }
@@ -142,7 +154,9 @@ static class ActivatorUtilities
     /// <param name="provider">The service provider</param>
     /// <param name="type">The type of the service</param>
     /// <returns>The resolved service or created instance</returns>
-    public static object GetServiceOrCreateInstance(IServiceProvider provider, Type type)
+    public static object GetServiceOrCreateInstance(
+        IServiceProvider provider,
+        [DynamicallyAccessedMembers(ActivatorAccessibility)] Type type)
     {
         return provider.GetService(type) ?? CreateInstance(provider, type);
     }
@@ -207,7 +221,7 @@ static class ActivatorUtilities
     }
 
     private static void FindApplicableConstructor(
-        Type instanceType,
+        [DynamicallyAccessedMembers(ActivatorAccessibility)] Type instanceType,
         Type[] argumentTypes,
         out ConstructorInfo matchingConstructor,
         out int?[] parameterMap)
@@ -225,7 +239,7 @@ static class ActivatorUtilities
 
     // Tries to find constructor based on provided argument types
     private static bool TryFindMatchingConstructor(
-        Type instanceType,
+        [DynamicallyAccessedMembers(ActivatorAccessibility)] Type instanceType,
         Type[] argumentTypes,
         ref ConstructorInfo matchingConstructor,
         ref int?[] parameterMap)
@@ -249,7 +263,7 @@ static class ActivatorUtilities
 
     // Tries to find constructor marked with ActivatorUtilitiesConstructorAttribute
     private static bool TryFindPreferredConstructor(
-        Type instanceType,
+        [DynamicallyAccessedMembers(ActivatorAccessibility)] Type instanceType,
         Type[] argumentTypes,
         ref ConstructorInfo matchingConstructor,
         ref int?[] parameterMap)

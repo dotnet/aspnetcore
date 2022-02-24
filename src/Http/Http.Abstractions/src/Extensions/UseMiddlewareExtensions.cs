@@ -43,7 +43,10 @@ public static class UseMiddlewareExtensions
     /// <param name="middleware">The middleware type.</param>
     /// <param name="args">The arguments to pass to the middleware type instance's constructor.</param>
     /// <returns>The <see cref="IApplicationBuilder"/> instance.</returns>
-    public static IApplicationBuilder UseMiddleware(this IApplicationBuilder app, [DynamicallyAccessedMembers(MiddlewareAccessibility)] Type middleware, params object?[] args)
+    public static IApplicationBuilder UseMiddleware(
+        this IApplicationBuilder app,
+        [DynamicallyAccessedMembers(MiddlewareAccessibility)] Type middleware,
+        params object?[] args)
     {
         if (typeof(IMiddleware).IsAssignableFrom(middleware))
         {
@@ -112,7 +115,9 @@ public static class UseMiddlewareExtensions
         });
     }
 
-    private static IApplicationBuilder UseMiddlewareInterface(IApplicationBuilder app, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type middlewareType)
+    private static IApplicationBuilder UseMiddlewareInterface(
+        IApplicationBuilder app,
+        [DynamicallyAccessedMembers(MiddlewareAccessibility)] Type middlewareType)
     {
         return app.Use(next =>
         {
