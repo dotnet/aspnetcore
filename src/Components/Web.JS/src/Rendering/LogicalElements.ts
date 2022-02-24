@@ -10,7 +10,7 @@
   LogicalElement APIs take care of tracking hierarchical relationships separately. The point
   of this is to permit a logical tree structure in which parent/child relationships don't
   have to be materialized in terms of DOM element parent/child relationships. And the reason
-  why we want that is so that hierarchies of Blazor components can be tracked even when those
+  why we want that is so that hierarchies of Razor components can be tracked even when those
   components' render output need not be a single literal DOM element.
 
   Consumers of the API don't need to know about the implementation, but how it's done is:
