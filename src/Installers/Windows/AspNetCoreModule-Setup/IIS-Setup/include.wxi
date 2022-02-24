@@ -27,7 +27,9 @@
     <?define IsWin64 = yes ?>
     <?define PlatformArchitecture = ARM64 ?>
     <?define ProgramFilesFolder = ProgramFiles64Folder ?>
+    <?define ProgramFilesFolder32 = ProgramFilesFolder ?>
     <?define SystemFolder = System64Folder ?>
+    <?define SysWow64Folder = SystemFolder ?>
     <?define PlatformValue = "arm64" ?>
   <?endif?>
 
