@@ -66,13 +66,13 @@
       </ItemsToPushToBlobFeed>
 
       <ItemsToPushToBlobFeed Include="@(_InstallersToPublish)" Condition="! $([System.String]::Copy('%(Filename)').ToLower().Contains('internal'))">
-        <IsShipping>true</IsShipping>
+        <ManifestArtifactData>NonShipping=false</ManifestArtifactData>
         <PublishFlatContainer>true</PublishFlatContainer>
         <RelativeBlobPath>$(_UploadPathRoot)/%(_InstallersToPublish.UploadPathSegment)/$(_PackageVersion)/%(Filename)%(Extension)</RelativeBlobPath>
       </ItemsToPushToBlobFeed>
 
       <ItemsToPushToBlobFeed Include="@(_InstallersToPublish)" Condition="$([System.String]::Copy('%(Filename)').ToLower().Contains('internal'))">
-        <IsShipping>false</IsShipping>
+        <ManifestArtifactData>NonShipping=true</ManifestArtifactData>
         <PublishFlatContainer>true</PublishFlatContainer>
         <RelativeBlobPath>$(_UploadPathRoot)/%(_InstallersToPublish.UploadPathSegment)/$(_PackageVersion)/%(Filename)%(Extension)</RelativeBlobPath>
       </ItemsToPushToBlobFeed>
