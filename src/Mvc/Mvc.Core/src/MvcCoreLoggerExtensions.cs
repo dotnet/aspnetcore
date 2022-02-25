@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
+#pragma warning disable CA1810 // Initialize all static fields inline.
 
 using System.Collections;
 using System.Globalization;

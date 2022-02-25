@@ -8,7 +8,6 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Resources;
-using Microsoft.Extensions.Localization.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.Localization;
@@ -18,7 +17,7 @@ namespace Microsoft.Extensions.Localization;
 /// <see cref="ResourceReader"/> to provide localized strings.
 /// </summary>
 /// <remarks>This type is thread-safe.</remarks>
-public class ResourceManagerStringLocalizer : IStringLocalizer
+public partial class ResourceManagerStringLocalizer : IStringLocalizer
 {
     private readonly ConcurrentDictionary<string, object?> _missingManifestCache = new ConcurrentDictionary<string, object?>();
     private readonly IResourceNamesCache _resourceNamesCache;
@@ -193,7 +192,7 @@ public class ResourceManagerStringLocalizer : IStringLocalizer
 
         var cacheKey = $"name={name}&culture={keyCulture.Name}";
 
-        _logger.SearchedLocation(name, _resourceBaseName, keyCulture);
+        Log.SearchedLocation(_logger, name, _resourceBaseName, keyCulture);
 
         if (_missingManifestCache.ContainsKey(cacheKey))
         {
@@ -246,5 +245,11 @@ public class ResourceManagerStringLocalizer : IStringLocalizer
         }
 
         return resourceNames;
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(1, LogLevel.Debug, $"{nameof(ResourceManagerStringLocalizer)} searched for '{{Key}}' in '{{LocationSearched}}' with culture '{{Culture}}'.", EventName = "SearchedLocation")]
+        public static partial void SearchedLocation(ILogger logger, string key, string locationSearched, CultureInfo culture);
     }
 }

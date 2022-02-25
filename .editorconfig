@@ -99,7 +99,7 @@ dotnet_diagnostic.CA1802.severity = warning
 dotnet_diagnostic.CA1805.severity = warning
 
 # CA1810: Do not initialize unnecessarily
-dotnet_diagnostic.CA1810.severity = suggestion
+dotnet_diagnostic.CA1810.severity = warning
 
 # CA1821: Remove empty Finalizers
 dotnet_diagnostic.CA1821.severity = warning
@@ -268,6 +268,8 @@ dotnet_diagnostic.CA1507.severity = suggestion
 dotnet_diagnostic.CA1802.severity = suggestion
 # CA1805: Do not initialize unnecessarily
 dotnet_diagnostic.CA1805.severity = suggestion
+# CA1810: Do not initialize unnecessarily
+dotnet_diagnostic.CA1810.severity = suggestion
 # CA1822: Make member static
 dotnet_diagnostic.CA1822.severity = suggestion
 # CA1823: Avoid zero-length array allocations
