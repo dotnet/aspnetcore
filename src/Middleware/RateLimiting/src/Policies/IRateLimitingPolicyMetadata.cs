@@ -1,12 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Threading.RateLimiting;
-using Microsoft.AspNetCore.Http;
-
 namespace Microsoft.AspNetCore.RateLimiting.Policies;
-public class RateLimitingPolicy
+
+public interface IRateLimitingPolicyMetadata
 {
-    private readonly RateLimiter _limiter;
-    private readonly QueueProcessingOrder _order;
+    /// <summary>
+    /// The policy which needs to be applied.
+    /// </summary>
+    RateLimitingPolicy Policy { get; }
 }

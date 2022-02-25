@@ -1,1 +1,11 @@
-﻿Microsoft.AspNetCore.RateLimiting.RateLimitingMiddleware.RateLimitingMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.RateLimiting.RateLimitingOptions!>! options) -> void
+﻿Microsoft.AspNetCore.Builder.RateLimitingEndpointConventionBuilderExtensions
+Microsoft.AspNetCore.RateLimiting.Policies.IRateLimitingPolicyMetadata
+Microsoft.AspNetCore.RateLimiting.Policies.RateLimitingPolicy
+Microsoft.AspNetCore.RateLimiting.Policies.RateLimitingPolicyBuilder
+Microsoft.AspNetCore.RateLimiting.Policies.RateLimitingPolicyMetadata
+Microsoft.AspNetCore.RateLimiting.Policies.RateLimitingPolicyMetadata.Policy.get -> Microsoft.AspNetCore.RateLimiting.Policies.RateLimitingPolicy!
+Microsoft.AspNetCore.RateLimiting.Policies.RateLimitingPolicyMetadata.RateLimitingPolicyMetadata(Microsoft.AspNetCore.RateLimiting.Policies.RateLimitingPolicy! policy) -> void
+Microsoft.AspNetCore.RateLimiting.RateLimitingMiddleware
+Microsoft.AspNetCore.RateLimiting.RateLimitingMiddleware.RateLimitingMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.RateLimiting.RateLimitingOptions!>! options) -> void
+Microsoft.AspNetCore.RateLimiting.RateLimitingOptions
+static Microsoft.AspNetCore.Builder.RateLimitingEndpointConventionBuilderExtensions.RequireRateLimiting<TBuilder>(this TBuilder builder, System.Action<RateLimitingPolicyBuilder!>! configurePolicy) -> TBuilder
