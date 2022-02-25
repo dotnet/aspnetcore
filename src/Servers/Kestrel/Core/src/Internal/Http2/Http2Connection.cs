@@ -85,31 +85,8 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
         // Capture the ExecutionContext before dispatching HTTP/2 middleware. Will be restored by streams when processing request
         _context.InitialExecutionContext = ExecutionContext.Capture();
 
-        var inputPipeOptions = new PipeOptions(pool: context.MemoryPool,
-            readerScheduler: context.ServiceContext.Scheduler,
-            writerScheduler: PipeScheduler.Inline,
-            pauseWriterThreshold: 1,
-            resumeWriterThreshold: 1,
-            minimumSegmentSize: context.MemoryPool.GetMinimumSegmentSize(),
-            useSynchronizationContext: false);
-
-        // Never write inline because we do not want to hold Http2FramerWriter._writeLock for potentially expensive TLS
-        // write operations. This essentially doubles the MaxResponseBufferSize for HTTP/2 connections compared to
-        // HTTP/1.x. This seems reasonable given HTTP/2's support for many concurrent streams per connection. We don't
-        // want every write to return an incomplete ValueTasK now that we're dispatching TLS write operations which
-        // would likely happen with a pauseWriterThreashold of 1, but we still need to respect connection backpressure.
-        var maxWriteBufferSize = httpLimits.MaxResponseBufferSize ?? 0;
-
-        var outputPipeOptions = new PipeOptions(pool: context.MemoryPool,
-            readerScheduler: PipeScheduler.ThreadPool,
-            writerScheduler: PipeScheduler.Inline,
-            pauseWriterThreshold: maxWriteBufferSize,
-            resumeWriterThreshold: maxWriteBufferSize / 2,
-            minimumSegmentSize: context.MemoryPool.GetMinimumSegmentSize(),
-            useSynchronizationContext: false);
-
-        _input = new Pipe(inputPipeOptions);
-        _output = new Pipe(outputPipeOptions);
+        _input = new Pipe(GetInputPipeOptions());
+        _output = new Pipe(GetOutputPipeOptions());
 
         _frameWriter = new Http2FrameWriter(
             _output.Writer,
@@ -1677,6 +1654,46 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
         Interlocked.Decrement(ref _clientActiveStreamCount);
     }
 
+    private PipeOptions GetInputPipeOptions() => new PipeOptions(pool: _context.MemoryPool,
+            readerScheduler: _context.ServiceContext.Scheduler,
+            writerScheduler: PipeScheduler.Inline,
+            pauseWriterThreshold: 1,
+            resumeWriterThreshold: 1,
+            minimumSegmentSize: _context.MemoryPool.GetMinimumSegmentSize(),
+            useSynchronizationContext: false);
+
+    private PipeOptions GetOutputPipeOptions()
+    {
+        // Never write inline because we do not want to hold Http2FramerWriter._writeLock for potentially expensive TLS
+        // write operations. This essentially doubles the MaxResponseBufferSize for HTTP/2 connections compared to
+        // HTTP/1.x. This seems reasonable given HTTP/2's support for many concurrent streams per connection. We don't
+        // want every write to return an incomplete ValueTask now that we're dispatching TLS write operations which
+        // would likely happen with a pauseWriterThreashold of 1, but we still need to respect connection back pressure.
+        var pauseWriterThreshold = _context.ServiceContext.ServerOptions.Limits.MaxResponseBufferSize switch
+        {
+            // null means that we have no back pressure
+            null => 0,
+            // 0 = no buffering so we need to configure the pipe so the writer waits on the reader directly
+            0 => 1,
+            long limit => limit,
+        };
+
+        var resumeWriterThreshold = pauseWriterThreshold switch
+        {
+            // The resumeWriterThreashould must be at least 1 to ever resume after pausing.
+            1 => 1,
+            long limit => limit / 2,
+        };
+
+        return new PipeOptions(pool: _context.MemoryPool,
+            readerScheduler: _context.ServiceContext.Scheduler,
+            writerScheduler: PipeScheduler.Inline,
+            pauseWriterThreshold: pauseWriterThreshold,
+            resumeWriterThreshold: resumeWriterThreshold,
+            minimumSegmentSize: _context.MemoryPool.GetMinimumSegmentSize(),
+            useSynchronizationContext: false);
+    }
+
     private async Task CopyPipe(PipeReader reader, PipeWriter writer)
     {
         Exception? error = null;
@@ -1699,10 +1716,11 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
 
                 bufferSlice.CopyTo(outputBuffer.Span);
 
-                reader.AdvanceTo(bufferSlice.End);
                 writer.Advance(copyAmount);
 
                 var result = await writer.FlushAsync();
+
+                reader.AdvanceTo(bufferSlice.End);
 
                 if (result.IsCompleted || result.IsCanceled)
                 {
@@ -1718,7 +1736,7 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
         }
         finally
         {
-            await reader.CompleteAsync();
+            await reader.CompleteAsync(error);
             await writer.CompleteAsync(error);
         }
     }
