@@ -1,0 +1,1 @@
+﻿Microsoft.AspNetCore.RateLimiting.RateLimitingMiddleware.RateLimitingMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.RateLimiting.RateLimitingOptions!>! options) -> void
