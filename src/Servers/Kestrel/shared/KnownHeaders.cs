@@ -145,8 +145,8 @@ public class KnownHeaders
             HeaderNames.Baggage,
         })
         .Concat(corsRequestHeaders)
-        .OrderBy(header => header)
         .OrderBy(header => !requestPrimaryHeaders.Contains(header))
+        .ThenBy(header => header)
         .Select((header, index) => new KnownHeader
         {
             Name = header,
@@ -214,8 +214,8 @@ public class KnownHeaders
             HeaderNames.Trailer,
         })
         .Concat(corsResponseHeaders)
-        .OrderBy(header => header)
         .OrderBy(header => !responsePrimaryHeaders.Contains(header))
+        .ThenBy(header => header)
         .Select((header, index) => new KnownHeader
         {
             Name = header,
@@ -239,8 +239,8 @@ public class KnownHeaders
             HeaderNames.GrpcMessage,
             HeaderNames.GrpcStatus
         }
-        .OrderBy(header => header)
         .OrderBy(header => !responsePrimaryHeaders.Contains(header))
+        .ThenBy(header => header)
         .Select((header, index) => new KnownHeader
         {
             Name = header,
