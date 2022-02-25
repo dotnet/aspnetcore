@@ -8,7 +8,8 @@
     because VS does not use a target when discovering or executing tests (examines test assembly instead). Need
     those targets too to ensure everything is up-to-date when executing tests.
   -->
-  <Target Name="CopyAssets" BeforeTargets="Build;Publish;RunTests;VSTest" Condition=" '$(ExcludeFromBuild)' != 'true' ">
+  <Target Name="CopyAssets" BeforeTargets="Build;Publish;RunTests;VSTest"
+      Condition=" '$(ExcludeFromBuild)' != 'true' AND '$(DotNetBuildFromSource)' != 'true' ">
     <MSBuild Projects="@(ProjectReference)"
         Targets="PublishTestsAssets"
         SkipNonexistentTargets="true"
