@@ -110,9 +110,16 @@ public class Http2StreamTests : Http2TestBase
             withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
             withStreamId: 1);
 
-        await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+        await StartStreamAsync(3, headers, endStream: true);
 
-        _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
+        // Can't check length this time because it will be different with compression.
+        var headersFrame2 = await ExpectAsync(Http2FrameType.HEADERS,
+            withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+            withStreamId: 3);
+
+        await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
+
+        _hpackDecoder.Decode(headersFrame2.PayloadSequence, endHeaders: false, handler: this);
 
         Assert.Equal(4, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);

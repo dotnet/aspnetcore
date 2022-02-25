@@ -90,8 +90,19 @@ internal sealed class Http2HeadersEnumerator : IEnumerator<KeyValuePair<string, 
         else
         {
             return _genericEnumerator!.MoveNext()
-                ? SetCurrent(_genericEnumerator.Current.Key, _genericEnumerator.Current.Value, default)
+                ? SetCurrent(_genericEnumerator.Current.Key, _genericEnumerator.Current.Value, ZZGetKnownHeaderType(_genericEnumerator.Current.Key))
                 : false;
+        }
+    }
+
+    private static KnownHeaderType ZZGetKnownHeaderType(string headerName)
+    {
+        switch (headerName)
+        {
+            case ":method":
+                return KnownHeaderType.Method;
+            default:
+                return default;
         }
     }
 
@@ -149,6 +160,8 @@ internal sealed class Http2HeadersEnumerator : IEnumerator<KeyValuePair<string, 
         // Removed from this test are request-only headers, e.g. cookie.
         switch (responseHeaderType)
         {
+            case KnownHeaderType.Method:
+                return H2StaticTable.MethodGet;
             case KnownHeaderType.CacheControl:
                 return H2StaticTable.CacheControl;
             case KnownHeaderType.Date:
