@@ -125,8 +125,8 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
 
         _scheduleInline = context.ServiceContext.Scheduler == PipeScheduler.Inline;
 
-        _inputTask = CopyPipe(_context.Transport.Input, _input.Writer);
-        _outputTask = CopyPipe(_output.Reader, _context.Transport.Output);
+        _inputTask = CopyPipeAsync(_context.Transport.Input, _input.Writer);
+        _outputTask = CopyPipeAsync(_output.Reader, _context.Transport.Output);
     }
 
     public string ConnectionId => _context.ConnectionId;
@@ -1694,7 +1694,7 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
             useSynchronizationContext: false);
     }
 
-    private async Task CopyPipe(PipeReader reader, PipeWriter writer)
+    private async Task CopyPipeAsync(PipeReader reader, PipeWriter writer)
     {
         Exception? error = null;
         try
