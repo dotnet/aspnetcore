@@ -17,12 +17,14 @@
     <?define SystemFolder = System64Folder ?>
     <?define SysWow64Folder = SystemFolder ?>
     <?define PlatformValue = x64 ?>
+    <?define InstallerVersion="200"?>
   <?elseif $(var.Platform) = "x86" ?>
     <?define IsWin64 = no ?>
     <?define PlatformArchitecture = x86 ?>
     <?define ProgramFilesFolder = ProgramFilesFolder ?>
     <?define SystemFolder = SystemFolder ?>
     <?define PlatformValue = Intel ?>
+    <?define InstallerVersion="200"?>
   <?elseif $(var.Platform) ~= "arm64" ?>
     <?define IsWin64 = yes ?>
     <?define PlatformArchitecture = ARM64 ?>
@@ -31,6 +33,9 @@
     <?define SystemFolder = System64Folder ?>
     <?define SysWow64Folder = SystemFolder ?>
     <?define PlatformValue = "arm64" ?>
+    <!-- See https://docs.microsoft.com/en-us/windows/win32/msi/using-64-bit-windows-installer-packages. -->
+    <!-- For 64-bit packages on the Arm64 platform, the Windows Installer database schema must be 500 or higher. -->
+    <?define InstallerVersion="500"?>
   <?endif?>
 
   <!-- Ensure build target properly initialized -->
