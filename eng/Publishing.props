@@ -60,13 +60,7 @@
            the nupkgs pushed. -->
       <ItemsToPushToBlobFeed Remove="@(ItemsToPushToBlobFeed)" Condition="'$(OS)' != 'Windows_NT' and '$(PostBuildSign)' != 'true'" />
 
-      <ItemsToPushToBlobFeed Include="@(_ChecksumsToPublish)" Condition="! $([System.String]::Copy('%(Filename)').ToLower().Contains('internal'))">
-        <ManifestArtifactData>NonShipping=false</ManifestArtifactData>
-        <PublishFlatContainer>true</PublishFlatContainer>
-        <RelativeBlobPath>$(_UploadPathRoot)/Runtime/$(_PackageVersion)/%(Filename)%(Extension)</RelativeBlobPath>
-      </ItemsToPushToBlobFeed>
-
-      <ItemsToPushToBlobFeed Include="@(_ChecksumsToPublish)" Condition="$([System.String]::Copy('%(Filename)').ToLower().Contains('internal'))">
+      <ItemsToPushToBlobFeed Include="@(_ChecksumsToPublish)">
         <ManifestArtifactData>NonShipping=true</ManifestArtifactData>
         <PublishFlatContainer>true</PublishFlatContainer>
         <RelativeBlobPath>$(_UploadPathRoot)/Runtime/$(_PackageVersion)/%(Filename)%(Extension)</RelativeBlobPath>
