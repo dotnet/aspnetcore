@@ -103,7 +103,6 @@ public class ResourceManagerStringLocalizerFactory : IStringLocalizerFactory
         {
             return typeInfo.FullName;
         }
-
         else
         {
             // This expectation is defined by dotnet's automatic resource storage.
