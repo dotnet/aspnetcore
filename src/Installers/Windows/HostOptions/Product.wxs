@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+<?include ..\AspNetCoreModule-Setup\IIS-Setup\include.wxi ?>
+
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
     <Product Id="$(var.ProductCode)" Name="$(var.ProductName)" Language="1033" Version="$(var.Version)" 
              Manufacturer="Microsoft Corporation" UpgradeCode="$(var.UpgradeCode)">
@@ -33,7 +36,7 @@
 
     <Fragment>
         <Directory Id="TARGETDIR" Name="SourceDir">
-            <Directory Id="ProgramFilesFolder">
+            <Directory Id="$(var.ProgramFilesFolder)">
                 <Directory Id="INSTALLFOLDER" Name="dotnet">
                     <Directory Id="MM" Name="$(var.MajorVersion).$(var.MinorVersion)" />
                 </Directory>
@@ -51,7 +54,6 @@
             <?define ProductOptionsKey=SOFTWARE\Microsoft\dotnet\host\options\$(var.MajorVersion).$(var.MinorVersion)?>
 
             <Component Id="OPT" Guid="*">
-<!-- COMMENTING OUT FOR NOW TO AVOID ICE WARNING
                 <RegistryKey Root="HKLM" Key="$(var.ProductOptionsKey)">
                     <RegistryValue Name="OPT_NO_ANCM" Type="integer" Value="[OPT_NO_ANCM]" KeyPath="yes" />
                     <RegistryValue Name="OPT_NO_SHAREDFX" Type="integer" Value="[OPT_NO_SHAREDFX]" />
@@ -59,7 +61,6 @@
                     <RegistryValue Name="OPT_NO_X86" Type="integer" Value="[OPT_NO_X86]" />
                     <RegistryValue Name="OPT_NO_SHARED_CONFIG_CHECK" Type="integer" Value="[OPT_NO_SHARED_CONFIG_CHECK]" />
                 </RegistryKey>
--->
             </Component>
         </ComponentGroup>
     </Fragment>
