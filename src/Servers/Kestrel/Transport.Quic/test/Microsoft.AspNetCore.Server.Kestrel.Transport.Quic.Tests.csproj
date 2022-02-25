@@ -8,7 +8,12 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)NullScope.cs" />
-    <Compile Include="$(KestrelSharedSourceRoot)test\*.cs" LinkBase="shared" />
+    <Compile Include="$(KestrelSharedSourceRoot)test\HttpEventSourceListener.cs" Link="shared\HttpEventSourceListener.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)test\TestResources.cs" Link="shared\TestResources.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)test\StreamExtensions.cs" Link="shared\StreamExtensions.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)test\KestrelTestLoggerProvider.cs" Link="shared\KestrelTestLoggerProvider.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)test\TestApplicationErrorLoggerLoggedTest.cs" Link="shared\TestApplicationErrorLoggerLoggedTest.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)test\TestApplicationErrorLogger.cs" Link="shared\TestApplicationErrorLogger.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\IHostPortExtensions.cs" Link="shared\TransportTestHelpers\IHostPortExtensions.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\MsQuicSupportedAttribute.cs" Link="shared\TransportTestHelpers\MsQuicSupportedAttribute.cs" />
     <Content Include="$(KestrelSharedSourceRoot)test\TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />

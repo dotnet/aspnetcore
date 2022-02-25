@@ -103,17 +103,28 @@ public class Http2StreamTests : Http2TestBase
             };
         await InitializeConnectionAsync(_echoMethodNoBody);
 
+        // First request
         await StartStreamAsync(1, headers, endStream: true);
 
-        var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+        var headersFrame1 = await ExpectAsync(Http2FrameType.HEADERS,
             withLength: 45 + method.Length,
             withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
             withStreamId: 1);
 
+        _hpackDecoder.Decode(headersFrame1.PayloadSequence, endHeaders: false, handler: this);
+
+        Assert.Equal(4, _decodedHeaders.Count);
+        Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
+        Assert.Equal(method, _decodedHeaders["Method"]);
+        _decodedHeaders.Clear();
+
+        // Second request (will use dynamic table indexes)
         await StartStreamAsync(3, headers, endStream: true);
 
-        // Can't check length this time because it will be different with compression.
         var headersFrame2 = await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 7,
             withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
             withStreamId: 3);
 
@@ -126,6 +137,7 @@ public class Http2StreamTests : Http2TestBase
         Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
         Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
         Assert.Equal(method, _decodedHeaders["Method"]);
+        _decodedHeaders.Clear();
     }
 
     [Fact]

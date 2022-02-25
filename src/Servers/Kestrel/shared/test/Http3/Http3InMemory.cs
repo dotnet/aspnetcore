@@ -107,7 +107,7 @@ internal class Http3InMemory
         if (_inboundControlStream == null)
         {
             var reader = MultiplexedConnectionContext.ToClientAcceptQueue.Reader;
-#if IS_FUNCTIONAL_TESTS
+#if IS_TESTS
             while (await reader.WaitToReadAsync().DefaultTimeout())
 #else
             while (await reader.WaitToReadAsync())
@@ -147,7 +147,7 @@ internal class Http3InMemory
         AssertConnectionError<TException>(expectedErrorCode, matchExpectedErrorMessage, expectedErrorMessage);
 
         // Verify HttpConnection.ProcessRequestsAsync has exited.
-#if IS_FUNCTIONAL_TESTS
+#if IS_TESTS
         await _connectionTask.DefaultTimeout();
 #else
         await _connectionTask;
@@ -461,7 +461,7 @@ internal class Http3StreamBase
     protected static Task FlushAsync(PipeWriter writableBuffer)
     {
         var task = writableBuffer.FlushAsync();
-#if IS_FUNCTIONAL_TESTS
+#if IS_TESTS
         return task.AsTask().DefaultTimeout();
 #else
         return task.GetAsTask();
@@ -477,7 +477,7 @@ internal class Http3StreamBase
         }
     }
 
-#if IS_FUNCTIONAL_TESTS
+#if IS_TESTS
     protected Task<ReadResult> ReadApplicationInputAsync()
     {
         return Pair.Application.Input.ReadAsync().AsTask().DefaultTimeout();

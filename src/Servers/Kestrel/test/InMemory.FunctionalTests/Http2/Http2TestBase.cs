@@ -1183,18 +1183,6 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         return frame;
     }
 
-
-    internal async Task<Http2FrameWithPayload> ExpectAsync(Http2FrameType type, byte withFlags, int withStreamId)
-    {
-        var frame = await ReceiveFrameAsync();
-
-        Assert.Equal(type, frame.Type);
-        Assert.Equal(withFlags, frame.Flags);
-        Assert.Equal(withStreamId, frame.StreamId);
-
-        return frame;
-    }
-
     protected Task StopConnectionAsync(int expectedLastStreamId, bool ignoreNonGoAwayFrames)
     {
         _pair.Application.Output.Complete();
