@@ -15,12 +15,12 @@ public class EmptyResultTest
 
         // Act
         var httpContext = GetHttpContext();
-        var memoryStream = httpContext.Response.Body;
+        var memoryStream = httpContext.Response.Body as MemoryStream;
         await emptyResult.ExecuteAsync(httpContext);
 
         // Assert
         Assert.Equal(StatusCodes.Status200OK, httpContext.Response.StatusCode);
-        Assert.Equal(memoryStream, httpContext.Response.Body);
+        Assert.Equal(0, memoryStream.Length);
     }
 
     private static HttpContext GetHttpContext()
