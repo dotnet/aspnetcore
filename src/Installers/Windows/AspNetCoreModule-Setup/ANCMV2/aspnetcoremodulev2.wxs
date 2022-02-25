@@ -225,7 +225,7 @@
             
            <!-- ARM64 Support -->
            <?if $(var.Platform) = "arm64" ?>
-           <Component Id="C_DiscoverabilityKeyWow" Guid="2eeb90e8-28d0-4543-9c2f-843b03bd6d05" Win64="no">
+           <Component Id="C_DiscoverabilityKeyARM64" Guid="2eeb90e8-28d0-4543-9c2f-843b03bd6d05" Win64="no">
                <RegistryKey Root="HKLM" Key="$(var.DiscoverabilityKeyRoot)">
                     <RegistryKey Key="$(var.ProductShortName)">
                         <RegistryValue Type="integer" Name="Install" Value="1" />
