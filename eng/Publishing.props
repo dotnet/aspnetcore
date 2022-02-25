@@ -85,11 +85,13 @@
       </ItemsToPushToBlobFeed>
 
       <ItemsToPushToBlobFeed Include="$(ProductVersionFileLocation)" Condition=" '$(PublishInstallerBaseVersion)' == 'true'">
+        <ManifestArtifactData>NonShipping=true</ManifestArtifactData>
         <PublishFlatContainer>true</PublishFlatContainer>
         <RelativeBlobPath>$(_UploadPathRoot)/Runtime/$(_PackageVersion)/$(ProductVersionFileName)</RelativeBlobPath>
       </ItemsToPushToBlobFeed>
 
       <ItemsToPushToBlobFeed Include="$(RepoProductVersionFileLocation)" Condition=" '$(PublishInstallerBaseVersion)' == 'true'">
+        <ManifestArtifactData>NonShipping=true</ManifestArtifactData>
         <PublishFlatContainer>true</PublishFlatContainer>
         <RelativeBlobPath>$(_UploadPathRoot)/Runtime/$(_PackageVersion)/$(RepoProductVersionFileName)</RelativeBlobPath>
       </ItemsToPushToBlobFeed>
