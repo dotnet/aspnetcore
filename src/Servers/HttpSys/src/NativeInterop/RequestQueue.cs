@@ -134,7 +134,7 @@ internal sealed partial class RequestQueue
     {
         if (UrlGroup == null)
         {
-            throw new NotSupportedException("Can't attach when UrlGroup is null");
+            throw new NotSupportedException("Can't detach when UrlGroup is null");
         }
 
         Debug.Assert(Created);
