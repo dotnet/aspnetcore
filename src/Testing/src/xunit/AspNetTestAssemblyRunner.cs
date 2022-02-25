@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -14,7 +15,7 @@ namespace Microsoft.AspNetCore.Testing;
 
 public class AspNetTestAssemblyRunner : XunitTestAssemblyRunner
 {
-    private readonly Dictionary<Type, object> _assemblyFixtureMappings = new Dictionary<Type, object>();
+    private readonly Dictionary<Type, object> _assemblyFixtureMappings = new();
 
     public AspNetTestAssemblyRunner(
         ITestAssembly testAssembly,
@@ -33,8 +34,8 @@ public class AspNetTestAssemblyRunner : XunitTestAssemblyRunner
         // Find all the AssemblyFixtureAttributes on the test assembly
         await Aggregator.RunAsync(async () =>
         {
-            var fixturesAttributes = ((IReflectionAssemblyInfo)TestAssembly.Assembly)
-                .Assembly
+            var assembly = ((IReflectionAssemblyInfo)TestAssembly.Assembly).Assembly;
+            var fixturesAttributes = assembly
                 .GetCustomAttributes(typeof(AssemblyFixtureAttribute), false)
                 .Cast<AssemblyFixtureAttribute>()
                 .ToList();
@@ -42,15 +43,30 @@ public class AspNetTestAssemblyRunner : XunitTestAssemblyRunner
             // Instantiate all the fixtures
             foreach (var fixtureAttribute in fixturesAttributes)
             {
-                var ctorWithDiagnostics = fixtureAttribute.FixtureType.GetConstructor(new[] { typeof(IMessageSink) });
                 object instance = null;
-                if (ctorWithDiagnostics != null)
+                var staticCreator = fixtureAttribute.FixtureType.GetMethod(
+                    name: "ForAssembly",
+                    bindingAttr: BindingFlags.Public | BindingFlags.Static,
+                    binder: null,
+                    types: new[] { typeof(Assembly) },
+                    modifiers: null);
+                if (staticCreator is null)
                 {
-                    instance = Activator.CreateInstance(fixtureAttribute.FixtureType, DiagnosticMessageSink);
+                    var ctorWithDiagnostics = fixtureAttribute
+                        .FixtureType
+                        .GetConstructor(new[] { typeof(IMessageSink) });
+                    if (ctorWithDiagnostics is null)
+                    {
+                        instance = Activator.CreateInstance(fixtureAttribute.FixtureType);
+                    }
+                    else
+                    {
+                        instance = Activator.CreateInstance(fixtureAttribute.FixtureType, DiagnosticMessageSink);
+                    }
                 }
                 else
                 {
-                    instance = Activator.CreateInstance(fixtureAttribute.FixtureType);
+                    instance = staticCreator.Invoke(obj: null, parameters: new[] { assembly });
                 }
 
                 _assemblyFixtureMappings[fixtureAttribute.FixtureType] = instance;
@@ -79,12 +95,13 @@ public class AspNetTestAssemblyRunner : XunitTestAssemblyRunner
         await base.BeforeTestAssemblyFinishedAsync().ConfigureAwait(false);
     }
 
-    protected override Task<RunSummary> RunTestCollectionAsync(
+    protected override async Task<RunSummary> RunTestCollectionAsync(
         IMessageBus messageBus,
         ITestCollection testCollection,
         IEnumerable<IXunitTestCase> testCases,
         CancellationTokenSource cancellationTokenSource)
-        => new AspNetTestCollectionRunner(
+    {
+        var runSummary = await new AspNetTestCollectionRunner(
             _assemblyFixtureMappings,
             testCollection,
             testCases,
@@ -92,5 +109,17 @@ public class AspNetTestAssemblyRunner : XunitTestAssemblyRunner
             messageBus,
             TestCaseOrderer,
             new ExceptionAggregator(Aggregator),
-            cancellationTokenSource).RunAsync();
+            cancellationTokenSource)
+            .RunAsync()
+            .ConfigureAwait(false);
+        if (runSummary.Failed != 0)
+        {
+            foreach (var fixture in _assemblyFixtureMappings.Values.OfType<IAcceptFailureReports>())
+            {
+                fixture.ReportTestFailure();
+            }
+        }
+
+        return runSummary;
+    }
 }

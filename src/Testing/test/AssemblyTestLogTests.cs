@@ -95,6 +95,7 @@ public class AssemblyTestLogTests : LoggedTest
 
             using (var testAssemblyLog = AssemblyTestLog.Create(ThisAssembly, baseDirectory: tempDir))
             {
+                testAssemblyLog.OnCI = false;
                 logger.LogInformation("Created test log in {baseDirectory}", tempDir);
 
                 using (testAssemblyLog.StartTestLog(
@@ -142,6 +143,7 @@ public class AssemblyTestLogTests : LoggedTest
             var logger = LoggerFactory.CreateLogger("Test");
             using (var testAssemblyLog = AssemblyTestLog.Create(ThisAssembly, baseDirectory: tempDir))
             {
+                testAssemblyLog.OnCI = false;
                 logger.LogInformation("Created test log in {baseDirectory}", tempDir);
 
                 using (testAssemblyLog.StartTestLog(
@@ -174,6 +176,7 @@ public class AssemblyTestLogTests : LoggedTest
             var logger = LoggerFactory.CreateLogger("Test");
             using (var testAssemblyLog = AssemblyTestLog.Create(ThisAssembly, baseDirectory: tempDir))
             {
+                testAssemblyLog.OnCI = false;
                 logger.LogInformation("Created test log in {baseDirectory}", tempDir);
 
                 for (var i = 0; i < 10; i++)

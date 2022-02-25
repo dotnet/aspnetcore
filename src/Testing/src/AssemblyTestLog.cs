@@ -20,20 +20,21 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Microsoft.AspNetCore.Testing;
 
-public class AssemblyTestLog : IDisposable
+public class AssemblyTestLog : IAcceptFailureReports, IDisposable
 {
     private const string MaxPathLengthEnvironmentVariableName = "ASPNETCORE_TEST_LOG_MAXPATH";
     private const string LogFileExtension = ".log";
     private static readonly int MaxPathLength = GetMaxPathLength();
 
-    private static readonly object _lock = new object();
-    private static readonly Dictionary<Assembly, AssemblyTestLog> _logs = new Dictionary<Assembly, AssemblyTestLog>();
+    private static readonly object _lock = new();
+    private static readonly Dictionary<Assembly, AssemblyTestLog> _logs = new();
 
     private readonly ILoggerFactory _globalLoggerFactory;
     private readonly ILogger _globalLogger;
     private readonly string _baseDirectory;
     private readonly Assembly _assembly;
     private readonly IServiceProvider _serviceProvider;
+    private bool _testFailureReported;
 
     private static int GetMaxPathLength()
     {
@@ -50,6 +51,9 @@ public class AssemblyTestLog : IDisposable
         _assembly = assembly;
         _serviceProvider = serviceProvider;
     }
+
+    // internal for testing
+    internal bool OnCI { get; set; } = SkipOnCIAttribute.OnCI();
 
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
     public IDisposable StartTestLog(ITestOutputHelper output, string className, out ILoggerFactory loggerFactory, [CallerMemberName] string testName = null) =>
@@ -218,6 +222,22 @@ public class AssemblyTestLog : IDisposable
         {
             if (!_logs.TryGetValue(assembly, out var log))
             {
+                var stackTrace = Environment.StackTrace;
+                if (!(stackTrace.Contains(
+                    "Microsoft.AspNetCore.Testing"
+#if NETCOREAPP
+                    , StringComparison.Ordinal
+#endif
+                    ) || stackTrace.Contains(
+                    "Microsoft.Extensions.Logging.Testing.Tests"
+#if NETCOREAPP
+                    , StringComparison.Ordinal
+#endif
+                    )))
+                {
+                    throw new InvalidOperationException($"Unexpected initial {nameof(ForAssembly)} caller.");
+                }
+
                 var baseDirectory = TestFileOutputContext.GetOutputDirectory(assembly);
 
                 log = Create(assembly, baseDirectory);
@@ -235,8 +255,14 @@ public class AssemblyTestLog : IDisposable
                     catch { }
                 }
             }
+
             return log;
         }
+    }
+
+    public void ReportTestFailure()
+    {
+        _testFailureReported = true;
     }
 
     private static TestFrameworkFileLoggerAttribute GetFileLoggerAttribute(Assembly assembly)
@@ -268,10 +294,28 @@ public class AssemblyTestLog : IDisposable
         return new SerilogLoggerProvider(serilogger, dispose: true);
     }
 
-    public void Dispose()
+    void IDisposable.Dispose()
     {
         (_serviceProvider as IDisposable)?.Dispose();
         _globalLoggerFactory.Dispose();
+
+        // Clean up if no tests failed and we're not running local tests. (Ignoring tests of this class, OnCI is
+        // true on both build and Helix agents.) In particular, remove the directory containing the global.log
+        // file. All test class log files for this assembly are in subdirectories of this location.
+        if (!_testFailureReported &&
+            OnCI &&
+            _baseDirectory is not null &&
+            Directory.Exists(_baseDirectory))
+        {
+            try
+            {
+                Directory.Delete(_baseDirectory, recursive: true);
+            }
+            catch
+            {
+                // Best effort. Ignore problems deleting locked logged files.
+            }
+        }
     }
 
     private class AssemblyLogTimestampOffsetEnricher : ILogEventEnricher
