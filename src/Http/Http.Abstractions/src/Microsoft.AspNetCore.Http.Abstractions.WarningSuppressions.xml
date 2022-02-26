@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<linker>
+  <assembly fullname="Microsoft.AspNetCore.Http.Abstractions, Version=7.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2055</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.Extensions.Internal.PropertyHelper.MakeFastPropertyGetter(System.Type,System.Reflection.MethodInfo,System.Reflection.MethodInfo)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2060</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.Extensions.Internal.PropertyHelper.MakeFastPropertyGetter(System.Type,System.Reflection.MethodInfo,System.Reflection.MethodInfo)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2060</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.Extensions.Internal.PropertyHelper.MakeFastPropertySetter(System.Reflection.PropertyInfo)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2072</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.Extensions.Internal.ParameterDefaultValue.TryGetDefaultValue(System.Reflection.ParameterInfo,System.Object@)</property>
+    </attribute>
+  </assembly>
+</linker>
