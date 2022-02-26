@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?include ..\AspNetCoreModule-Setup\IIS-Setup\include.wxi ?>
-
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
     <Product Id="$(var.ProductCode)" Name="$(var.ProductName)" Language="1033" Version="$(var.Version)" 
              Manufacturer="Microsoft Corporation" UpgradeCode="$(var.UpgradeCode)">
