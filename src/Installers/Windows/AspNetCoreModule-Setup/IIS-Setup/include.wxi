@@ -3,9 +3,7 @@
 <Include>
   <?define DiscoverabilityKeyRoot = "SOFTWARE\Microsoft\IIS Extensions"?>
   
-  <?if $(var.BLDNUMMAJOR) != "" ?>
-    <?define OOBBuildVersion = $(var.BLDVERMAJOR).$(var.BLDVERMINOR).$(var.BLDNUMMAJOR).$(var.BLDNUMMINOR)?>
-  <?endif?>
+  <?define OOBBuildVersion = $(var.BLDVERMAJOR).$(var.BLDVERMINOR).$(var.BLDNUMMAJOR).$(var.BLDNUMMINOR)?>
   
   <!-- Allow build number as argument or use default -->
   <?if $(var.BLDNUMMAJOR) = "" ?>
