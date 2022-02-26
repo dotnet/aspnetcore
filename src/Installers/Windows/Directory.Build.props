@@ -3,10 +3,15 @@
 
   <Import Project="Wix.props"  Condition="'$(MSBuildProjectExtension)' == '.wixproj'" />
   
+  <PropertyGroup>
     <!-- Properties used by IIS-Common and IIS-Setup for libs/dlls -->
+    <_TwoDigitYear>$([MSBuild]::Subtract($([System.DateTime]::UtcNow.Year), 2000))</_TwoDigitYear>
+    <_ThreeDigitDayOfYear>$([System.DateTime]::UtcNow.DayOfYear.ToString().PadLeft(3, '0'))</_ThreeDigitDayOfYear>    
     <BUILD_MAJOR>$(_TwoDigitYear)$(_ThreeDigitDayOfYear)</BUILD_MAJOR>
     <BLDVERMAJOR>$(PRODUCT_MAJOR)</BLDVERMAJOR>
     <BLDVERMINOR>$(PRODUCT_MINOR)</BLDVERMINOR>
     <BLDNUMMAJOR>$(BUILD_MAJOR)</BLDNUMMAJOR>
     <BLDNUMMINOR>$(BUILD_MINOR)</BLDNUMMINOR>  
+  
+    <DefineConstants>BLDVERMAJOR=$(BLDVERMAJOR);BLDVERMINOR=$(BLDVERMINOR);BLDNUMMAJOR=$(BLDNUMMAJOR);BLDNUMMINOR=$(BLDNUMMINOR);$(DefineConstants)</DefineConstants>
 </Project>
