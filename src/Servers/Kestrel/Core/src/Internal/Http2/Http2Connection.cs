@@ -1668,7 +1668,7 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
         // write operations. This essentially doubles the MaxResponseBufferSize for HTTP/2 connections compared to
         // HTTP/1.x. This seems reasonable given HTTP/2's support for many concurrent streams per connection. We don't
         // want every write to return an incomplete ValueTask now that we're dispatching TLS write operations which
-        // would likely happen with a pauseWriterThreashold of 1, but we still need to respect connection back pressure.
+        // would likely happen with a pauseWriterThreshold of 1, but we still need to respect connection back pressure.
         var pauseWriterThreshold = _context.ServiceContext.ServerOptions.Limits.MaxResponseBufferSize switch
         {
             // null means that we have no back pressure
@@ -1680,7 +1680,7 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
 
         var resumeWriterThreshold = pauseWriterThreshold switch
         {
-            // The resumeWriterThreashould must be at least 1 to ever resume after pausing.
+            // The resumeWriterThreshold must be at least 1 to ever resume after pausing.
             1 => 1,
             long limit => limit / 2,
         };
