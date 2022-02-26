@@ -2,4 +2,11 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
 
   <Import Project="Wix.props"  Condition="'$(MSBuildProjectExtension)' == '.wixproj'" />
+  
+    <!-- Properties used by IIS-Common and IIS-Setup for libs/dlls -->
+    <BUILD_MAJOR>$(_TwoDigitYear)$(_ThreeDigitDayOfYear)</BUILD_MAJOR>
+    <BLDVERMAJOR>$(PRODUCT_MAJOR)</BLDVERMAJOR>
+    <BLDVERMINOR>$(PRODUCT_MINOR)</BLDVERMINOR>
+    <BLDNUMMAJOR>$(BUILD_MAJOR)</BLDNUMMAJOR>
+    <BLDNUMMINOR>$(BUILD_MINOR)</BLDNUMMINOR>  
 </Project>
