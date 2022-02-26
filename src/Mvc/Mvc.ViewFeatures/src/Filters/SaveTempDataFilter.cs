@@ -50,7 +50,7 @@ internal class SaveTempDataFilter : IResourceFilter, IResultFilter
     private static Task OnStarting(HttpContext httpContext)
     {
         var saveTempDataContext = GetTempDataContext(httpContext);
-        if (saveTempDataContext.RequestHasUnhandledException)
+        if (saveTempDataContext is null || saveTempDataContext.RequestHasUnhandledException)
         {
             return Task.CompletedTask;
         }
