@@ -27,12 +27,10 @@
 <?if $(var.Platform) = "x64" ?>
     <?define AspNetCoreV2ProgramFilesTargetPath = "$(var.AspNetCoreV2.TargetPath)" ?>
     <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(var.AspNetCoreV2Handler.TargetPath)" ?>
-<?endif ?>
-<?if $(var.Platform) = "x86" ?>
+<?elseif $(var.Platform) = "x86" ?>
     <?define AspNetCoreV2ProgramFilesTargetPath = "$(var.AspNetCoreV2WoW64.TargetPath)" ?>
     <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(var.AspNetCoreV2HandlerWoW64.TargetPath)" ?>
-<?endif ?>
-<?if $(var.Platform) = "arm64" ?>
+<?elseif $(var.Platform) = "arm64" ?>
     <?define AspNetCoreV2ProgramFilesTargetPath = "$(var.AspNetCoreV2ARM64.TargetPath)" ?>
     <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(var.AspNetCoreV2HandlerARM64.TargetPath)" ?>
 <?endif ?>
