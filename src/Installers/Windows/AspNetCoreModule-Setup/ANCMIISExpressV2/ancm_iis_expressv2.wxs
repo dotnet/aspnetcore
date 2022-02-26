@@ -35,22 +35,13 @@
 <?define AspNetCoreTraceProviderValue = "65536" ?>
 <?define AspNetCoreModuleName = "AspNetCoreModuleV2" ?>
 
-<?if $(var.Platform) = "x64" ?>
-    <?define SchemaGuid = "ab582af2-d6c0-43f7-8412-76a19c65d7f2" ?>
-    <?define SchemaGuid32 = "e629b31a-3d56-4b5c-959c-586fc1c55599" ?>
-    <?define AspNetCoreV2ProgramFilesTargetPath = "$(var.AspNetCoreV2.TargetPath)" ?>
-    <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(var.AspNetCoreV2Handler.TargetPath)" ?>
-<?endif ?>
-
 <?if $(var.Platform) = "x86" ?>
     <?define SchemaGuid = "e629b31a-3d56-4b5c-959c-586fc1c55599" ?>
     <?define AspNetCoreV2ProgramFilesTargetPath = "$(var.AspNetCoreV2WoW64.TargetPath)" ?>
     <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(var.AspNetCoreV2HandlerWoW64.TargetPath)" ?>
-<?endif ?>
-
-<!-- REVIEW what guids to use here?-->
-<?if $(var.Platform) = "arm64" ?>
-    <?define SchemaGuid = "e629b31a-3d56-4b5c-959c-586fc1c55599" ?>
+<?else ?>
+<!-- REVIEW does arm64 need to be different than x64 for anything?-->
+    <?define SchemaGuid = "ab582af2-d6c0-43f7-8412-76a19c65d7f2" ?>
     <?define SchemaGuid32 = "e629b31a-3d56-4b5c-959c-586fc1c55599" ?>
     <?define AspNetCoreV2ProgramFilesTargetPath = "$(var.AspNetCoreV2.TargetPath)" ?>
     <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(var.AspNetCoreV2Handler.TargetPath)" ?>
