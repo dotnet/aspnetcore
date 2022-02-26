@@ -2,8 +2,11 @@
 
 <Include>
   <?define DiscoverabilityKeyRoot = "SOFTWARE\Microsoft\IIS Extensions"?>
-  <?define OOBBuildVersion = $(var.BLDVERMAJOR).$(var.BLDVERMINOR).$(var.BLDNUMMAJOR).$(var.BLDNUMMINOR)?>
-
+  
+  <?if $(var.BLDNUMMAJOR) != "" ?>
+    <?define OOBBuildVersion = $(var.BLDVERMAJOR).$(var.BLDVERMINOR).$(var.BLDNUMMAJOR).$(var.BLDNUMMINOR)?>
+  <?endif?>
+  
   <!-- Allow build number as argument or use default -->
   <?if $(var.BLDNUMMAJOR) = "" ?>
     <?error Build number undefined ?>
