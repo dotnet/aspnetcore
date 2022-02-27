@@ -3,7 +3,13 @@
     <Content Include="..\Common.FunctionalTests\Infrastructure\*.config" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
-  <Target Name="CopyAssets" BeforeTargets="Publish" Condition=" '$(ExcludeFromBuild)' != 'true' ">
+  <!--
+    Hook into Build target in addition to Publish (for Helix), RunTests (for Arcade), and VSTest (for dotnet test)
+    because VS does not use a target when discovering or executing tests (examines test assembly instead). Need
+    those targets too to ensure everything is up-to-date when executing tests.
+  -->
+  <Target Name="CopyAssets" BeforeTargets="Build;Publish;RunTests;VSTest"
+      Condition=" '$(ExcludeFromBuild)' != 'true' AND '$(DotNetBuildFromSource)' != 'true' ">
     <MSBuild Projects="@(ProjectReference)"
         Targets="PublishTestsAssets"
         SkipNonexistentTargets="true"
