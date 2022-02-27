@@ -24,16 +24,8 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-    <!-- there is no debug version of libnethost.lib currently -->
-    <UseDebugLibraries>false</UseDebugLibraries>
-    <WholeProgramOptimization>false</WholeProgramOptimization>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-    <UseDebugLibraries>false</UseDebugLibraries>
-    <WholeProgramOptimization Condition="'$(Platform)'=='Win32'">true</WholeProgramOptimization>
-  </PropertyGroup>
+  <Import Project="release.props" />
+  <Import Project="debug.props" />
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
 
@@ -62,29 +54,6 @@
       <!-- https://github.com/dotnet/runtime/issues/63602 libnethost.lib missing symbols -->
       <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
       <SubSystem>Windows</SubSystem>
-    </Link>
-  </ItemDefinitionGroup>
-
-  <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
-    <ClCompile>
-      <Optimization>Disabled</Optimization>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-    </ClCompile>
-    <Link>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-    </Link>
-  </ItemDefinitionGroup>
-
-  <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
-    <ClCompile>
-      <Optimization>MaxSpeed</Optimization>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-    </ClCompile>
-    <Link>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
 </Project>
