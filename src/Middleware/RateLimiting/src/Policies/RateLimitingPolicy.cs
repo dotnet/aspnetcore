@@ -5,8 +5,22 @@ using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.RateLimiting.Policies;
-public class RateLimitingPolicy
+internal class RateLimitingPolicy
 {
     private readonly RateLimiter _limiter;
-    private readonly QueueProcessingOrder _order;
+    //private readonly RateLimiter<HttpContext> _limiterOfT;
+
+    public RateLimitingPolicy(RateLimiter limiter)
+    {
+        //Error handling()
+        _limiter = limiter;
+    }
+
+    /*
+    public RateLimitingPolicy(RateLimiter<HttpContext> limiter)
+    {
+        //Error handling()
+        _limiter = limiter;
+    }
+    */
 }

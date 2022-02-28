@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.RateLimiting.Policies;
 public interface IRateLimitingPolicyMetadata
 {
     /// <summary>
-    /// The policy which needs to be applied.
+    /// The name of the policy which needs to be applied.
     /// </summary>
-    RateLimitingPolicy Policy { get; }
+    string Name { get; }
 }

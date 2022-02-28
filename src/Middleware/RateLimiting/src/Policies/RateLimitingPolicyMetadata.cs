@@ -12,14 +12,14 @@ public class RateLimitingPolicyMetadata : IRateLimitingPolicyMetadata
     /// <summary>
     /// Creates a new instance of <see cref="RateLimitingPolicyMetadata"/> using the specified policy.
     /// </summary>
-    /// <param name="policy">The policy which needs to be applied.</param>
-    public RateLimitingPolicyMetadata(RateLimitingPolicy policy)
+    /// <param name="name">The name of the policy which needs to be applied.</param>
+    public RateLimitingPolicyMetadata(string name)
     {
-        Policy = policy;
+        Name = name;
     }
 
     /// <summary>
-    /// The policy which needs to be applied.
+    /// The name of the policy which needs to be applied.
     /// </summary>
-    public RateLimitingPolicy Policy { get; }
+    public string Name { get; }
 }

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting.Policies;
 
 namespace Microsoft.AspNetCore.Builder;
@@ -11,28 +12,25 @@ public static class RateLimitingEndpointConventionBuilderExtensions
     /// Adds the specified Rate Limiting policy to the endpoint(s).
     /// </summary>
     /// <param name="builder">The endpoint convention builder.</param>
-    /// <param name="configurePolicy">A delegate which can use a policy builder to build a policy.</param>
+    /// <param name="name">The name of the RateLimiter to add to the endpoint.</param>
     /// <returns>The original convention builder parameter.</returns>
-    public static TBuilder RequireRateLimiting<TBuilder>(this TBuilder builder, Action<RateLimitingPolicyBuilder> configurePolicy) where TBuilder : IEndpointConventionBuilder
+    public static TBuilder RequireRateLimiting<TBuilder>(this TBuilder builder, String name) where TBuilder : IEndpointConventionBuilder
     {
         if (builder == null)
         {
             throw new ArgumentNullException(nameof(builder));
         }
 
-        if (configurePolicy == null)
+        if (name == null)
         {
-            throw new ArgumentNullException(nameof(configurePolicy));
+            throw new ArgumentNullException(nameof(name));
         }
-
-        var policyBuilder = new RateLimitingPolicyBuilder();
-        configurePolicy(policyBuilder);
-        var policy = policyBuilder.Build();
 
         builder.Add(endpointBuilder =>
         {
-            endpointBuilder.Metadata.Add(new RateLimitingPolicyMetadata(policy));
+            endpointBuilder.Metadata.Add(new RateLimitingPolicyMetadata(name));
         });
+
         return builder;
     }
 }
