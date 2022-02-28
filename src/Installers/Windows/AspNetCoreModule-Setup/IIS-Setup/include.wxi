@@ -3,11 +3,6 @@
 <Include>
   <?define DiscoverabilityKeyRoot = "SOFTWARE\Microsoft\IIS Extensions"?>
   
-  <!-- Allow build number as argument or use default -->
-  <?if $(var.BLDNUMMAJOR) = "" ?>
-    <?error Build number undefined ?>
-  <?endif?>
-
   <?if $(var.Platform) = "x64"?>
     <?define IsWin64 = yes ?>
     <?define PlatformArchitecture = x64 ?>
