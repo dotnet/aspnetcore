@@ -79,7 +79,7 @@
     <Exec Command="scl enable rh-ruby25 'fpm @(FpmArgs,' ')'" />
 
     <Copy SourceFiles="$(TargetPath)"
-          DestinationFiles="$(CblMarinerTargetPath)"
+          DestinationFiles="$(CblMarinerTargetPath);$(CblMariner2TargetPath)"
           OverwriteReadOnlyFiles="True"
           SkipUnchangedFiles="False"
           UseHardlinksIfPossible="False" />
