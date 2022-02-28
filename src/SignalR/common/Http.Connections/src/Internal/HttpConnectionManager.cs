@@ -14,7 +14,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal;
 
-internal partial class HttpConnectionManager
+internal sealed partial class HttpConnectionManager
 {
     // TODO: Consider making this configurable? At least for testing?
     private static readonly TimeSpan _heartbeatTickRate = TimeSpan.FromSeconds(1);

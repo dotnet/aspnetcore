@@ -47,13 +47,24 @@
     <HelixPreCommand Include="call RunPowershell.cmd InstallNode.ps1 $(NodeVersion) || exit /b 1" />
   </ItemGroup>
 
-  <!-- $(TestDependsOnAspNetRuntime) implies $(TestDependsOnAspNetPackages). Separate for the App.UnitTests case. -->
-  <PropertyGroup Condition=" $(TestDependsOnAspNetRuntime) AND !$(TestDependsOnAspNetPackages) ">
-    <TestDependsOnAspNetPackages>true</TestDependsOnAspNetPackages>
+  <!-- $(TestDependsOnAspNetPackages) implies $(TestDependsOnAspNetRuntime). -->
+  <PropertyGroup Condition=" $(TestDependsOnAspNetPackages) AND !$(TestDependsOnAspNetRuntime) ">
+    <TestDependsOnAspNetRuntime>true</TestDependsOnAspNetRuntime>
   </PropertyGroup>
-  <ItemGroup Condition=" $(TestDependsOnAspNetPackages) ">
+
+  <!--
+    Note wildcards mean work items may be submitted without necessary packages when using RunHelix.ps1. Without
+    the packages, the RunHelix.ps1 build won't fail fast and tests will fail on the Helix agents.
+    Similarly, the artifacts/packages/ folder may contain old packages e.g. some built on
+    another local branch when using RunHelix.ps1, invalidating tests to some extent.
+  -->
+  <ItemGroup>
     <!-- Grab all shipping packages. -->
-    <HelixContent Include="$(RepoRoot)artifacts\packages\$(Configuration)\Shipping\*$(SharedFxVersion).nupkg" />
+    <HelixContent Include="$(ArtifactsShippingPackagesDir)*$(SharedFxVersion).nupkg"
+        Condition=" $(TestDependsOnAspNetPackages) "/>
+    <!-- Grab just the App.Ref and App.Runtime packages. -->
+    <HelixContent Include="$(ArtifactsShippingPackagesDir)Microsoft.AspNetCore.App.*$(SharedFxVersion).nupkg"
+        Condition=" $(TestDependsOnAspNetAppPackages) "/>
   </ItemGroup>
 
   <ItemGroup>

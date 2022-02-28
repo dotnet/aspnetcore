@@ -18,7 +18,7 @@ internal class MonoDatabaseOperations : DatabaseOperations
     {
     }
 
-    protected override byte[] GetCacheItem(string key, bool includeValue)
+    protected override byte[]? GetCacheItem(string key, bool includeValue)
     {
         var utcNow = SystemClock.UtcNow;
 
@@ -32,7 +32,7 @@ internal class MonoDatabaseOperations : DatabaseOperations
             query = SqlQueries.GetCacheItemWithoutValue;
         }
 
-        byte[] value = null;
+        byte[]? value = null;
         using (var connection = new SqlConnection(ConnectionString))
         {
             var command = new SqlCommand(query, connection);
@@ -60,7 +60,7 @@ internal class MonoDatabaseOperations : DatabaseOperations
         return value;
     }
 
-    protected override async Task<byte[]> GetCacheItemAsync(string key, bool includeValue, CancellationToken token = default(CancellationToken))
+    protected override async Task<byte[]?> GetCacheItemAsync(string key, bool includeValue, CancellationToken token = default(CancellationToken))
     {
         token.ThrowIfCancellationRequested();
 
@@ -76,7 +76,7 @@ internal class MonoDatabaseOperations : DatabaseOperations
             query = SqlQueries.GetCacheItemWithoutValue;
         }
 
-        byte[] value = null;
+        byte[]? value = null;
         using (var connection = new SqlConnection(ConnectionString))
         {
             var command = new SqlCommand(query, connection);

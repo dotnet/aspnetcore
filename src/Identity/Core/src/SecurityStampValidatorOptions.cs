@@ -19,5 +19,5 @@ public class SecurityStampValidatorOptions
     /// <summary>
     /// Invoked when the default security stamp validator replaces the user's ClaimsPrincipal in the cookie.
     /// </summary>
-    public Func<SecurityStampRefreshingPrincipalContext, Task> OnRefreshingPrincipal { get; set; }
+    public Func<SecurityStampRefreshingPrincipalContext, Task>? OnRefreshingPrincipal { get; set; }
 }

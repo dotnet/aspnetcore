@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http2Cat;
+using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
@@ -24,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 /// on IIS Express even on the new Windows versions because IIS Express has its own outdated copy of IIS.
 /// </summary>
 [Collection(IISHttpsTestSiteCollection.Name)]
-public class Http2TrailerResetTests
+public class Http2TrailerResetTests : FunctionalTestsBase
 {
     private const string WindowsVersionForTrailers = "10.0.20238";
 

@@ -24,7 +24,7 @@ public static class IdentityServiceCollectionExtensions
         this IServiceCollection services)
         where TUser : class
         where TRole : class
-        => services.AddIdentity<TUser, TRole>(setupAction: null);
+        => services.AddIdentity<TUser, TRole>(setupAction: null!);
 
     /// <summary>
     /// Adds and configures the identity system for the specified User and Role types.

@@ -27,9 +27,14 @@ public class PostConfigureCookieAuthenticationOptions : IPostConfigureOptions<Co
     /// </summary>
     /// <param name="name">The name of the options instance being configured.</param>
     /// <param name="options">The options instance to configure.</param>
-    public void PostConfigure(string name, CookieAuthenticationOptions options)
+    public void PostConfigure(string? name, CookieAuthenticationOptions options)
     {
         options.DataProtectionProvider ??= _dp;
+
+        if (name is null)
+        {
+            throw new ArgumentNullException(nameof(name));
+        }
 
         if (string.IsNullOrEmpty(options.Cookie.Name))
         {

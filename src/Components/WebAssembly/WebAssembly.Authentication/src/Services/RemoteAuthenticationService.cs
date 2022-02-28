@@ -165,6 +165,7 @@ public class RemoteAuthenticationService<
     }
 
     /// <inheritdoc />
+    [DynamicDependency(JsonSerialized, typeof(AccessToken))]
     [DynamicDependency(JsonSerialized, typeof(AccessTokenRequestOptions))]
     public virtual async ValueTask<AccessTokenResult> RequestAccessToken(AccessTokenRequestOptions options)
     {

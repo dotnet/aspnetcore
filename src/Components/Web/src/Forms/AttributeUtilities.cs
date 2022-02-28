@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Components.Forms;
 
 internal static class AttributeUtilities
 {
-    public static string CombineClassNames(IReadOnlyDictionary<string, object>? additionalAttributes, string classNames)
+    public static string? CombineClassNames(IReadOnlyDictionary<string, object>? additionalAttributes, string? classNames)
     {
         if (additionalAttributes is null || !additionalAttributes.TryGetValue("class", out var @class))
         {

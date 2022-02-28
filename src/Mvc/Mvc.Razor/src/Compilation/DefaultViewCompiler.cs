@@ -96,14 +96,14 @@ internal partial class DefaultViewCompiler : IViewCompiler
         // normalized and a cache entry exists.
         if (_compiledViews.TryGetValue(relativePath, out var cachedResult))
         {
-            _logger.ViewCompilerLocatedCompiledViewForPath(relativePath);
+            Log.ViewCompilerLocatedCompiledViewForPath(_logger, relativePath);
             return cachedResult;
         }
 
         var normalizedPath = GetNormalizedPath(relativePath);
         if (_compiledViews.TryGetValue(normalizedPath, out cachedResult))
         {
-            _logger.ViewCompilerLocatedCompiledViewForPath(normalizedPath);
+            Log.ViewCompilerLocatedCompiledViewForPath(_logger, normalizedPath);
             return cachedResult;
         }
 
@@ -140,6 +140,9 @@ internal partial class DefaultViewCompiler : IViewCompiler
 
         [LoggerMessage(4, LogLevel.Debug, "Initializing Razor view compiler with no compiled views.", EventName = "ViewCompilerNoCompiledViewsFound")]
         public static partial void ViewCompilerNoCompiledViewsFound(ILogger logger);
+
+        [LoggerMessage(5, LogLevel.Trace, "Located compiled view for view at path '{Path}'.", EventName = "ViewCompilerLocatedCompiledViewForPath")]
+        public static partial void ViewCompilerLocatedCompiledViewForPath(ILogger logger, string path);
 
         [LoggerMessage(7, LogLevel.Trace, "Could not find a file for view at path '{Path}'.", EventName = "ViewCompilerCouldNotFindFileAtPath")]
         public static partial void ViewCompilerCouldNotFindFileAtPath(ILogger logger, string path);

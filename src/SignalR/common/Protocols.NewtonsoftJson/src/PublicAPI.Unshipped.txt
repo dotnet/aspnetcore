@@ -1,1 +1,3 @@
 #nullable enable
+*REMOVED*~Microsoft.AspNetCore.SignalR.Protocol.NewtonsoftJsonHubProtocol.NewtonsoftJsonHubProtocol(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.SignalR.NewtonsoftJsonHubProtocolOptions!>! options) -> void
+Microsoft.AspNetCore.SignalR.Protocol.NewtonsoftJsonHubProtocol.NewtonsoftJsonHubProtocol(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.SignalR.NewtonsoftJsonHubProtocolOptions!>! options) -> void

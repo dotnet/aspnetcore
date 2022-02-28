@@ -120,6 +120,15 @@ while :; do
             __UbuntuRepo="http://ftp.debian.org/debian/"
             __CodeName=jessie
             ;;
+        ppc64le)
+            __BuildArch=ppc64le
+            __UbuntuArch=ppc64el
+            __UbuntuRepo="http://ports.ubuntu.com/ubuntu-ports/"
+            __UbuntuPackages=$(echo ${__UbuntuPackages} | sed 's/ libunwind8-dev//')
+            __UbuntuPackages=$(echo ${__UbuntuPackages} | sed 's/ libomp-dev//')
+            __UbuntuPackages=$(echo ${__UbuntuPackages} | sed 's/ libomp5//')
+            unset __LLDB_Package
+            ;;
         s390x)
             __BuildArch=s390x
             __UbuntuArch=s390x
