@@ -2,5 +2,7 @@
 *REMOVED*abstract Microsoft.AspNetCore.Http.HttpResponse.ContentType.get -> string!
 Microsoft.AspNetCore.Http.Metadata.IFromFormMetadata
 Microsoft.AspNetCore.Http.Metadata.IFromFormMetadata.Name.get -> string?
+Microsoft.AspNetCore.Http.Metadata.IRequestSizeLimitMetadata
+Microsoft.AspNetCore.Http.Metadata.IRequestSizeLimitMetadata.MaxRequestBodySize.get -> long
 abstract Microsoft.AspNetCore.Http.HttpResponse.ContentType.get -> string?
 Microsoft.AspNetCore.Http.Metadata.ISkipStatusCodePagesMetadata
