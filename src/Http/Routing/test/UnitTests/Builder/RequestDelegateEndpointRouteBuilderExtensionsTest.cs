@@ -77,7 +77,7 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
     [Fact]
     public async Task MapEndpoint_ReturnGenericTypeTask_GeneratedDelegate()
     {
-        var httpContext = CreateHttpContext();
+        var httpContext = new DefaultHttpContext();
         var responseBodyStream = new MemoryStream();
         httpContext.Response.Body = responseBodyStream;
 
@@ -245,12 +245,5 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
 
     private class Attribute2 : Attribute
     {
-    }
-
-    private DefaultHttpContext CreateHttpContext()
-    {
-        return new()
-        {
-        };
     }
 }
