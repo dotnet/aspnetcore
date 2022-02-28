@@ -8,14 +8,11 @@ namespace Microsoft.AspNetCore.RequestDecompression;
 /// <summary>
 /// Brotli decompression provider.
 /// </summary>
-public sealed class BrotliDecompressionProvider : IDecompressionProvider
+internal sealed class BrotliDecompressionProvider : IDecompressionProvider
 {
     /// <inheritdoc />
-    public string EncodingName => "br";
-
-    /// <inheritdoc />
-    public Stream CreateStream(Stream outputStream)
+    public Stream GetDecompressionStream(Stream stream)
     {
-        return new BrotliStream(outputStream, CompressionMode.Decompress);
+        return new BrotliStream(stream, CompressionMode.Decompress);
     }
 }

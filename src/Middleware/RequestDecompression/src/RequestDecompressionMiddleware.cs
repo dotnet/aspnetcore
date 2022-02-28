@@ -2,7 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
-using Microsoft.Net.Http.Headers;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Metadata;
 
 namespace Microsoft.AspNetCore.RequestDecompression;
 
@@ -23,12 +24,12 @@ public class RequestDecompressionMiddleware
         RequestDelegate next,
         IRequestDecompressionProvider provider)
     {
-        if (next == null)
+        if (next is null)
         {
             throw new ArgumentNullException(nameof(next));
         }
 
-        if (provider == null)
+        if (provider is null)
         {
             throw new ArgumentNullException(nameof(provider));
         }
@@ -44,33 +45,32 @@ public class RequestDecompressionMiddleware
     /// <returns>A task that represents the execution of this middleware.</returns>
     public Task Invoke(HttpContext context)
     {
-        var decompressionProvider = _provider.GetDecompressionProvider(context);
-        if (decompressionProvider == null)
+        var provider = _provider.GetDecompressionProvider(context);
+        if (provider is null)
         {
             return _next(context);
         }
 
-        return InvokeCore(context, decompressionProvider);
+        return InvokeCore(context, provider);
     }
 
-    private async Task InvokeCore(HttpContext context, IDecompressionProvider decompressionProvider)
+    private async Task InvokeCore(HttpContext context, IDecompressionProvider provider)
     {
-        var originalBody = context.Request.Body;
-
-        await using var decompressionStream = decompressionProvider.CreateStream(originalBody);
-
-        context.Request.Body = decompressionStream;
-        context.Request.Headers.Remove(HeaderNames.ContentEncoding);
-
-        _provider.SetRequestSizeLimit(context);
-
+        var request = context.Request.Body;
         try
         {
+            await using var stream = provider.GetDecompressionStream(request);
+
+            var sizeLimit =
+                context.GetEndpoint()?.Metadata?.GetMetadata<IRequestSizeLimitMetadata>()?.MaxRequestBodySize
+                    ?? context.Features.GetRequiredFeature<IHttpMaxRequestBodySizeFeature>().MaxRequestBodySize;
+
+            context.Request.Body = new SizeLimitedStream(stream, sizeLimit);
             await _next(context);
         }
         finally
         {
-            context.Request.Body = originalBody;
+            context.Request.Body = request;
         }
     }
 }

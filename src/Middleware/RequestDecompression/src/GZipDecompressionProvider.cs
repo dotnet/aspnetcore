@@ -8,14 +8,11 @@ namespace Microsoft.AspNetCore.RequestDecompression;
 /// <summary>
 /// GZip decompression provider.
 /// </summary>
-public sealed class GZipDecompressionProvider : IDecompressionProvider
+internal sealed class GZipDecompressionProvider : IDecompressionProvider
 {
     /// <inheritdoc />
-    public string EncodingName => "gzip";
-
-    /// <inheritdoc />
-    public Stream CreateStream(Stream outputStream)
+    public Stream GetDecompressionStream(Stream stream)
     {
-        return new GZipStream(outputStream, CompressionMode.Decompress);
+        return new GZipStream(stream, CompressionMode.Decompress);
     }
 }

@@ -8,14 +8,11 @@ namespace Microsoft.AspNetCore.RequestDecompression;
 /// <summary>
 /// DEFLATE decompression provider.
 /// </summary>
-public sealed class DeflateDecompressionProvider : IDecompressionProvider
+internal sealed class DeflateDecompressionProvider : IDecompressionProvider
 {
     /// <inheritdoc />
-    public string EncodingName => "deflate";
-
-    /// <inheritdoc />
-    public Stream CreateStream(Stream outputStream)
+    public Stream GetDecompressionStream(Stream stream)
     {
-        return new DeflateStream(outputStream, CompressionMode.Decompress);
+        return new DeflateStream(stream, CompressionMode.Decompress);
     }
 }

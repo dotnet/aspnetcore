@@ -9,14 +9,9 @@ namespace Microsoft.AspNetCore.RequestDecompression;
 public interface IDecompressionProvider
 {
     /// <summary>
-    /// The encoding name used in the 'Content-Encoding' request header.
-    /// </summary>
-    string EncodingName { get; }
-
-    /// <summary>
     /// Creates a new decompression stream.
     /// </summary>
-    /// <param name="outputStream">The stream where the decompressed data will be written.</param>
+    /// <param name="stream">The compressed data stream.</param>
     /// <returns>The decompression stream.</returns>
-    Stream CreateStream(Stream outputStream);
+    Stream GetDecompressionStream(Stream stream);
 }

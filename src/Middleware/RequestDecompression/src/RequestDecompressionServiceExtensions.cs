@@ -19,12 +19,12 @@ public static class RequestDecompressionServiceExtensions
     /// <returns>The <see cref="IServiceCollection"/>.</returns>
     public static IServiceCollection AddRequestDecompression(this IServiceCollection services)
     {
-        if (services == null)
+        if (services is null)
         {
             throw new ArgumentNullException(nameof(services));
         }
 
-        services.TryAddSingleton<IRequestDecompressionProvider, RequestDecompressionProvider>();
+        services.TryAddSingleton<IRequestDecompressionProvider, DefaultRequestDecompressionProvider>();
         return services;
     }
 
@@ -36,17 +36,18 @@ public static class RequestDecompressionServiceExtensions
     /// <returns>The <see cref="IServiceCollection"/>.</returns>
     public static IServiceCollection AddRequestDecompression(this IServiceCollection services, Action<RequestDecompressionOptions> configureOptions)
     {
-        if (services == null)
+        if (services is null)
         {
             throw new ArgumentNullException(nameof(services));
         }
-        if (configureOptions == null)
+
+        if (configureOptions is null)
         {
             throw new ArgumentNullException(nameof(configureOptions));
         }
 
         services.Configure(configureOptions);
-        services.TryAddSingleton<IRequestDecompressionProvider, RequestDecompressionProvider>();
+        services.TryAddSingleton<IRequestDecompressionProvider, DefaultRequestDecompressionProvider>();
         return services;
     }
 }

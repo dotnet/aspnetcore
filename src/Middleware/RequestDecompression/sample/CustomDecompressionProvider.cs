@@ -7,11 +7,9 @@ namespace RequestDecompressionSample;
 
 public class CustomDecompressionProvider : IDecompressionProvider
 {
-    public string EncodingName => "custom";
-
-    public Stream CreateStream(Stream outputStream)
+    public Stream GetDecompressionStream(Stream stream)
     {
         // Create a custom decompression stream wrapper here.
-        return outputStream;
+        return stream;
     }
 }

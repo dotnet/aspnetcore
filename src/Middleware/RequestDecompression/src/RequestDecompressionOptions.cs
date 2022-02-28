@@ -6,15 +6,15 @@ namespace Microsoft.AspNetCore.RequestDecompression;
 /// <summary>
 /// Options for the HTTP request decompression middleware.
 /// </summary>
-public class RequestDecompressionOptions
+public sealed class RequestDecompressionOptions
 {
     /// <summary>
     /// The <see cref="IDecompressionProvider"/> types to use for request decompression.
     /// </summary>
-    public DecompressionProviderCollection Providers { get; } = new DecompressionProviderCollection();
-
-    /// <summary>
-    /// The maximum allowed size of the decompressed request body in bytes.
-    /// </summary>
-    public long MaxRequestBodySize { get; set; }
+    public IDictionary<string, IDecompressionProvider> DecompressionProviders { get; } = new Dictionary<string, IDecompressionProvider>(StringComparer.OrdinalIgnoreCase)
+    {
+        ["br"] = new BrotliDecompressionProvider(),
+        ["deflate"] = new DeflateDecompressionProvider(),
+        ["gzip"] = new GZipDecompressionProvider()
+    };
 }

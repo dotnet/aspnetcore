@@ -16,7 +16,7 @@ public static class RequestDecompressionBuilderExtensions
     /// <param name="builder">The <see cref="IApplicationBuilder"/> instance this method extends.</param>
     public static IApplicationBuilder UseRequestDecompression(this IApplicationBuilder builder)
     {
-        if (builder == null)
+        if (builder is null)
         {
             throw new ArgumentNullException(nameof(builder));
         }
