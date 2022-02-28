@@ -1,10 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.IO.Pipelines;
 using System.Linq.Expressions;
+using System.Text;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Moq;
 
 namespace Microsoft.AspNetCore.Builder;
@@ -70,24 +75,27 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
     }
 
     [Fact]
-    public void MapEndpoint_ReturnGenericTypeTask_GeneratedDelegate()
+    public async void MapEndpoint_ReturnGenericTypeTask_GeneratedDelegate()
     {
+        var httpContext = CreateHttpContext();
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
+
         // Arrange
         var builder = new DefaultEndpointRouteBuilder(Mock.Of<IApplicationBuilder>());
-        static async Task<string> GenericTypeTaskDelegate(HttpContext context) => await Task.FromResult("response");
+        static async Task<string> GenericTypeTaskDelegate(HttpContext context) => await Task.FromResult("String Test");
 
         // Act
         var endpointBuilder = builder.MapGet("/", GenericTypeTaskDelegate);
 
         // Assert
         var endpointBuilder1 = GetRouteEndpointBuilder(builder);
-        var target = endpointBuilder1.RequestDelegate.Target;
-        Assert.NotNull(target);
-        var handlerField = target.GetType().GetField("handler");
-        Assert.NotNull(handlerField);
-        var handler = handlerField.GetValue(target) as Delegate;
-        Assert.NotNull(handler);
-        Assert.True(handler.Method.ReturnType.IsGenericType);
+        var requestDelegate = endpointBuilder1.RequestDelegate;
+        await requestDelegate(httpContext);
+
+        var responseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+
+        Assert.Equal("String Test", responseBody);
     }
 
     [Fact]
@@ -237,5 +245,103 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
 
     private class Attribute2 : Attribute
     {
+    }
+
+    private DefaultHttpContext CreateHttpContext()
+    {
+        var responseFeature = new TestHttpResponseFeature();
+
+        return new()
+        {
+            RequestServices = new ServiceCollection().BuildServiceProvider(),
+            Features =
+                {
+                    [typeof(IHttpResponseFeature)] = responseFeature,
+                    [typeof(IHttpResponseBodyFeature)] = responseFeature,
+                    [typeof(IHttpRequestLifetimeFeature)] = new TestHttpRequestLifetimeFeature(),
+                }
+        };
+    }
+
+    private class TestHttpRequestLifetimeFeature : IHttpRequestLifetimeFeature
+    {
+        private readonly CancellationTokenSource _requestAbortedCts = new();
+
+        public CancellationToken RequestAborted { get => _requestAbortedCts.Token; set => throw new NotImplementedException(); }
+
+        public void Abort()
+        {
+            _requestAbortedCts.Cancel();
+        }
+    }
+
+    private class TestHttpResponseFeature : IHttpResponseFeature, IHttpResponseBodyFeature
+    {
+        public int StatusCode { get; set; } = 200;
+        public string? ReasonPhrase { get; set; }
+        public IHeaderDictionary Headers { get; set; } = new HeaderDictionary();
+
+        public bool HasStarted { get; private set; }
+
+        // Assume any access to the response Body/Stream/Writer is writing for test purposes.
+        public Stream Body
+        {
+            get
+            {
+                HasStarted = true;
+                return Stream.Null;
+            }
+            set
+            {
+            }
+        }
+
+        public Stream Stream
+        {
+            get
+            {
+                HasStarted = true;
+                return Stream.Null;
+            }
+        }
+
+        public PipeWriter Writer
+        {
+            get
+            {
+                HasStarted = true;
+                return PipeWriter.Create(Stream.Null);
+            }
+        }
+
+        public Task StartAsync(CancellationToken cancellationToken = default)
+        {
+            HasStarted = true;
+            return Task.CompletedTask;
+        }
+
+        public Task CompleteAsync()
+        {
+            HasStarted = true;
+            return Task.CompletedTask;
+        }
+
+        public Task SendFileAsync(string path, long offset, long? count, CancellationToken cancellationToken = default)
+        {
+            HasStarted = true;
+            return Task.CompletedTask;
+        }
+
+        public void DisableBuffering()
+        {
+        }
+
+        public void OnStarting(Func<object, Task> callback, object state)
+        {
+        }
+
+        public void OnCompleted(Func<object, Task> callback, object state)
+        {
+        }
     }
 }
