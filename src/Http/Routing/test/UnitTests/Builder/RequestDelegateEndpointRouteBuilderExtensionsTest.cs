@@ -75,7 +75,7 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
     }
 
     [Fact]
-    public async void MapEndpoint_ReturnGenericTypeTask_GeneratedDelegate()
+    public async Task MapEndpoint_ReturnGenericTypeTask_GeneratedDelegate()
     {
         var httpContext = CreateHttpContext();
         var responseBodyStream = new MemoryStream();
