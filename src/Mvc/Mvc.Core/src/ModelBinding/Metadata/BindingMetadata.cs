@@ -63,16 +63,6 @@ public class BindingMetadata
     public bool IsBindingAllowed { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets a value indicating whether or not the property can be model bound
-    /// from a TryParse method
-    /// <see cref="ModelMetadata.IsParseableType"/>
-    /// </summary>
-    /// <remarks>
-    /// Always <c>false</c> when <see cref="MvcOptions.SuppressParseableTypesBinding"/> is set to <c>true</c>
-    /// </remarks>
-    internal bool IsBindingFromTryParseAllowed { get; set; }
-
-    /// <summary>
     /// Gets or sets a value indicating whether or not the request must contain a value for the model.
     /// Will be ignored if the model metadata being created does not represent a property.
     /// See <see cref="ModelMetadata.IsBindingRequired"/>.

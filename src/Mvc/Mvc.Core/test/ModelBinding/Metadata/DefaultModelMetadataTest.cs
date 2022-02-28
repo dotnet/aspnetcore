@@ -355,13 +355,7 @@ public class DefaultModelMetadataTest
         var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
 
         var key = ModelMetadataIdentity.ForType(modelType);
-        var cache = new DefaultMetadataDetails(key, new ModelAttributes(Array.Empty<object>(), null, null))
-        {
-            BindingMetadata = new BindingMetadata()
-            {
-                IsBindingFromTryParseAllowed = true,
-            },
-        };
+        var cache = new DefaultMetadataDetails(key, new ModelAttributes(Array.Empty<object>(), null, null));
 
         var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
 
@@ -384,38 +378,7 @@ public class DefaultModelMetadataTest
         var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
 
         var key = ModelMetadataIdentity.ForType(modelType);
-        var cache = new DefaultMetadataDetails(key, new ModelAttributes(Array.Empty<object>(), null, null))
-        {
-            BindingMetadata = new BindingMetadata()
-            {
-                IsBindingFromTryParseAllowed = true,
-            },
-        };
-
-        var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
-
-        // Act
-        var isParseableType = metadata.IsParseableType;
-
-        // Assert
-        Assert.False(isParseableType);
-    }
-
-    [Fact]
-    public void IsParseableType_ReturnsFalse_WhenTryParseNotAllowed()
-    {
-        // Arrange
-        var provider = new EmptyModelMetadataProvider();
-        var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
-
-        var key = ModelMetadataIdentity.ForType(typeof(int));
-        var cache = new DefaultMetadataDetails(key, new ModelAttributes(Array.Empty<object>(), null, null))
-        {
-            BindingMetadata = new BindingMetadata()
-            {
-                IsBindingFromTryParseAllowed = false,
-            },
-        };
+        var cache = new DefaultMetadataDetails(key, new ModelAttributes(Array.Empty<object>(), null, null));
 
         var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
 

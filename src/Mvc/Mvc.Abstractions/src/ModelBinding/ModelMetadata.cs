@@ -482,7 +482,7 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
     /// <summary>
     /// Gets a value indicating whether or not <see cref="ModelType"/> has a TryParse method.
     /// </summary>
-    internal virtual bool IsParseableType { get; }
+    internal virtual bool IsParseableType { get; private set; }
 
     /// <summary>
     /// Gets a value indicating whether or not <see cref="ModelType"/> has a <see cref="TypeConverter"/>
@@ -648,6 +648,7 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
         Debug.Assert(ModelType != null);
 
         IsConvertibleType = TypeDescriptor.GetConverter(ModelType).CanConvertFrom(typeof(string));
+        IsParseableType = ModelMetadata.FindTryParseMethod(ModelType) is not null;
         IsNullableValueType = Nullable.GetUnderlyingType(ModelType) != null;
         IsReferenceOrNullableType = !ModelType.IsValueType || IsNullableValueType;
         UnderlyingOrModelType = Nullable.GetUnderlyingType(ModelType) ?? ModelType;

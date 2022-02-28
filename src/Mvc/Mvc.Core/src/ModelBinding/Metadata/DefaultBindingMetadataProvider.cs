@@ -85,8 +85,6 @@ internal class DefaultBindingMetadataProvider : IBindingMetadataProvider
         {
             context.BindingMetadata.BoundConstructor = constructorInfo;
         }
-
-        context.BindingMetadata.IsBindingFromTryParseAllowed = !_options.SuppressParseableTypesBinding;
     }
 
     internal static ConstructorInfo? GetBoundConstructor(Type type)
