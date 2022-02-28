@@ -114,7 +114,7 @@ internal sealed class TryParseModelBinder : IModelBinder
             bindingContext.ModelMetadata);
     }
 
-    private Func<ValueProviderResult, ModelBindingContext, object?> CreateTryParseOperation(Type modelType)
+    private static Func<ValueProviderResult, ModelBindingContext, object?> CreateTryParseOperation(Type modelType)
     {
         modelType = Nullable.GetUnderlyingType(modelType) ?? modelType;
         var tryParseMethodExpession = ModelMetadata.FindTryParseMethod(modelType)
