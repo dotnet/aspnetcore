@@ -287,12 +287,12 @@ public class PageConventionCollection : Collection<IPageConvention>
     {
         if (string.IsNullOrEmpty(pageName))
         {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(pageName));
+            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, argumentName);
         }
 
         if (pageName[0] != '/' || pageName.EndsWith(".cshtml", StringComparison.OrdinalIgnoreCase))
         {
-            throw new ArgumentException(Resources.FormatInvalidValidPageName(pageName), nameof(pageName));
+            throw new ArgumentException(Resources.FormatInvalidValidPageName(pageName), argumentName);
         }
     }
 

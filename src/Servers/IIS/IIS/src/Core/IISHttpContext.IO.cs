@@ -278,7 +278,7 @@ internal partial class IISHttpContext
 
     public void Abort(Exception reason)
     {
-        _bodyOutput.Abort(reason);
+        _bodyOutput.Abort();
         _streams.Abort(reason);
         NativeMethods.HttpCloseConnection(_requestNativeHandle);
 

@@ -47,7 +47,7 @@ public class BlazorServerTemplateTest : BlazorTemplateTest
             {
                 var page = await browser.NewPageAsync();
                 await aspNetProcess.VisitInBrowserAsync(page);
-                await TestBasicNavigation(project, page);
+                await TestBasicNavigation(page);
                 await page.CloseAsync();
             }
             else
@@ -67,7 +67,7 @@ public class BlazorServerTemplateTest : BlazorTemplateTest
             {
                 var page = await browser.NewPageAsync();
                 await aspNetProcess.VisitInBrowserAsync(page);
-                await TestBasicNavigation(project, page);
+                await TestBasicNavigation(page);
                 await page.CloseAsync();
             }
             else
@@ -102,7 +102,7 @@ public class BlazorServerTemplateTest : BlazorTemplateTest
             {
                 var page = await browser.NewPageAsync();
                 await aspNetProcess.VisitInBrowserAsync(page);
-                await TestBasicNavigation(project, page);
+                await TestBasicNavigation(page);
                 await page.CloseAsync();
             }
             else
@@ -122,7 +122,7 @@ public class BlazorServerTemplateTest : BlazorTemplateTest
             {
                 var page = await browser.NewPageAsync();
                 await aspNetProcess.VisitInBrowserAsync(page);
-                await TestBasicNavigation(project, page);
+                await TestBasicNavigation(page);
                 await page.CloseAsync();
             }
             else
@@ -132,7 +132,7 @@ public class BlazorServerTemplateTest : BlazorTemplateTest
         }
     }
 
-    private async Task TestBasicNavigation(Project project, IPage page)
+    private async Task TestBasicNavigation(IPage page)
     {
         var socket = await page.WaitForWebSocketAsync();
 
@@ -188,5 +188,4 @@ public class BlazorServerTemplateTest : BlazorTemplateTest
     [InlineData("SingleOrg", new string[] { "--calls-graph" })]
     public Task BlazorServerTemplate_IdentityWeb_BuildAndPublish(string auth, string[] args)
         => CreateBuildPublishAsync("blazorserveridweb" + Guid.NewGuid().ToString().Substring(0, 10).ToLowerInvariant(), auth, args);
-
 }

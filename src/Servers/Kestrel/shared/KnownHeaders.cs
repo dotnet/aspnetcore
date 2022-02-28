@@ -517,7 +517,7 @@ public class KnownHeaders
 
         }
 
-        private static string EqualityTerm(string name, int offset, int count, string type, string suffix)
+        private static string EqualityTerm(string name, int offset, int count, string suffix)
         {
             GetMaskAndComp(name, offset, count, out _, out var comp);
 
@@ -528,7 +528,7 @@ public class KnownHeaders
         {
             GetMaskAndComp(name, offset, count, out _, out _);
 
-            return $"({NameTerm(name, offset, count, type, suffix)} == {EqualityTerm(name, offset, count, type, suffix)})";
+            return $"({NameTerm(name, offset, count, type, suffix)} == {EqualityTerm(name, offset, count, suffix)})";
         }
 
         public string FirstNameIgnoreCaseSegment()
@@ -602,7 +602,7 @@ public class KnownHeaders
                     {
                         if (isFirst)
                         {
-                            result = $"({firstTermVar} == {EqualityTerm(Name, index, 8, "ulong", "uL")})";
+                            result = $"({firstTermVar} == {EqualityTerm(Name, index, 8, "uL")})";
                         }
                         else
                         {
@@ -615,7 +615,7 @@ public class KnownHeaders
                     {
                         if (isFirst)
                         {
-                            result = $"({firstTermVar} == {EqualityTerm(Name, index, 4, "uint", "u")})";
+                            result = $"({firstTermVar} == {EqualityTerm(Name, index, 4, "u")})";
                         }
                         else
                         {
@@ -627,7 +627,7 @@ public class KnownHeaders
                     {
                         if (isFirst)
                         {
-                            result = $"({firstTermVar} == {EqualityTerm(Name, index, 2, "ushort", "u")})";
+                            result = $"({firstTermVar} == {EqualityTerm(Name, index, 2, "u")})";
                         }
                         else
                         {
@@ -639,7 +639,7 @@ public class KnownHeaders
                     {
                         if (isFirst)
                         {
-                            result = $"({firstTermVar} == {EqualityTerm(Name, index, 1, "byte", "u")})";
+                            result = $"({firstTermVar} == {EqualityTerm(Name, index, 1, "u")})";
                         }
                         else
                         {

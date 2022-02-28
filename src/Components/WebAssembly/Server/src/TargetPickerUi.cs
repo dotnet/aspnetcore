@@ -87,7 +87,7 @@ public class TargetPickerUi
         if (matchingTabs.Count == 1)
         {
             // We know uniquely which tab to debug, so just redirect
-            var devToolsUrlWithProxy = GetDevToolsUrlWithProxy(request, matchingTabs.Single());
+            var devToolsUrlWithProxy = GetDevToolsUrlWithProxy(matchingTabs.Single());
             context.Response.Redirect(devToolsUrlWithProxy);
         }
         else if (matchingTabs.Count == 0)
@@ -134,7 +134,7 @@ public class TargetPickerUi
 
             foreach (var tab in matchingTabs)
             {
-                var devToolsUrlWithProxy = GetDevToolsUrlWithProxy(request, tab);
+                var devToolsUrlWithProxy = GetDevToolsUrlWithProxy(tab);
                 await context.Response.WriteAsync(
                     $"<a class='inspectable-page' href='{WebUtility.HtmlEncode(devToolsUrlWithProxy)}'>"
                     + $"<h3>{WebUtility.HtmlEncode(tab.Title)}</h3>{WebUtility.HtmlEncode(tab.Url)}"
@@ -143,7 +143,7 @@ public class TargetPickerUi
         }
     }
 
-    private string GetDevToolsUrlWithProxy(HttpRequest request, BrowserTab tabToDebug)
+    private string GetDevToolsUrlWithProxy(BrowserTab tabToDebug)
     {
         var underlyingV8Endpoint = new Uri(tabToDebug.WebSocketDebuggerUrl);
         var proxyEndpoint = new Uri(_debugProxyUrl);

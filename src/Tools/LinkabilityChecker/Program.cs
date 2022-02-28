@@ -3,7 +3,7 @@
 
 internal class Program
 {
-    private static int Main(string[] args)
+    private static int Main()
     {
         // This is empty on purpose. Linkability check happens on publish.
         return 0;

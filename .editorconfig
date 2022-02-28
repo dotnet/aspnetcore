@@ -245,6 +245,10 @@ dotnet_diagnostic.IDE0055.severity = suggestion
 # IDE0059: Unnecessary assignment to a value
 dotnet_diagnostic.IDE0059.severity = warning
 
+# IDE0060: Remove unused parameter
+dotnet_code_quality_unused_parameters = non_public
+dotnet_diagnostic.IDE0060.severity = warning
+
 # IDE0062: Make local function static
 dotnet_diagnostic.IDE0062.severity = warning
 
@@ -259,7 +263,7 @@ dotnet_diagnostic.IDE0161.severity = warning
 dotnet_style_allow_multiple_blank_lines_experimental = false
 dotnet_diagnostic.IDE2000.severity = warning
 
-[{eng/tools/**.cs,**/{test,samples,perf}/**.cs}]
+[{eng/tools/**.cs,**/{test,testassets,samples,Samples,perf}/**.cs}]
 # CA1018: Mark attributes with AttributeUsageAttribute
 dotnet_diagnostic.CA1018.severity = suggestion
 # CA1507: Use nameof to express symbol names
@@ -312,6 +316,8 @@ dotnet_diagnostic.IDE0044.severity = suggestion
 dotnet_diagnostic.IDE0051.severity = suggestion
 # IDE0059: Unnecessary assignment to a value
 dotnet_diagnostic.IDE0059.severity = suggestion
+# IDE0060: Remove unused parameters
+dotnet_diagnostic.IDE0060.severity = suggestion
 # IDE0062: Make local function static
 dotnet_diagnostic.IDE0062.severity = suggestion
 
@@ -327,6 +333,8 @@ dotnet_diagnostic.CA1822.severity = silent
 dotnet_diagnostic.IDE0011.severity = silent
 # IDE0055: Fix formatting
 dotnet_diagnostic.IDE0055.severity = silent
+# IDE0060: Remove unused parameters
+dotnet_diagnostic.IDE0060.severity = silent
 # IDE0062: Make local function static
 dotnet_diagnostic.IDE0062.severity = silent
 # IDE0161: Convert to file-scoped namespace

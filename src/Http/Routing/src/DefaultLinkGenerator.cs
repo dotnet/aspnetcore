@@ -33,7 +33,6 @@ internal sealed partial class DefaultLinkGenerator : LinkGenerator, IDisposable
     private readonly Func<RouteEndpoint, TemplateBinder> _createTemplateBinder;
 
     public DefaultLinkGenerator(
-        ParameterPolicyFactory parameterPolicyFactory,
         TemplateBinderFactory binderFactory,
         EndpointDataSource dataSource,
         IOptions<RouteOptions> routeOptions,
