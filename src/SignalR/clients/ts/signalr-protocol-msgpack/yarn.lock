@@ -3,13 +3,8 @@
 
 
 "@microsoft/signalr@link:../signalr":
-  version "5.0.0-dev"
-  dependencies:
-    abort-controller "^3.0.0"
-    eventsource "^1.0.7"
-    fetch-cookie "^0.11.0"
-    node-fetch "^2.6.7"
-    ws "^7.4.5"
+  version "0.0.0"
+  uid ""
 
 "@msgpack/msgpack@^2.7.0":
   version "2.7.0"
