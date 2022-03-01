@@ -32,7 +32,7 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>
     /// Thread-safe collection of blocks which are currently in the pool. A slab will pre-allocate all of the block tracking objects
     /// and add them to this collection. When memory is requested it is taken from here first, and when it is returned it is re-added.
     /// </summary>
-    private readonly ConcurrentQueue<MemoryPoolBlock> _blocks = new ConcurrentQueue<MemoryPoolBlock>();
+    private readonly ConcurrentQueue<MemoryPoolBlock>[] _queues;
 
     /// <summary>
     /// This is part of implementing the IDisposable pattern.
@@ -46,6 +46,15 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>
     /// </summary>
     private const int AnySize = -1;
 
+    public PinnedBlockMemoryPool()
+    {
+        _queues = new ConcurrentQueue<MemoryPoolBlock>[Environment.ProcessorCount];
+
+        for (var i = 0; i < _queues.Length; i++)
+        {
+            _queues[i] = new ConcurrentQueue<MemoryPoolBlock>();
+        }
+    }
     public override IMemoryOwner<byte> Rent(int size = AnySize)
     {
         if (size > _blockSize)
@@ -58,7 +67,10 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>
             MemoryPoolThrowHelper.ThrowObjectDisposedException(MemoryPoolThrowHelper.ExceptionArgument.MemoryPool);
         }
 
-        if (_blocks.TryDequeue(out var block))
+        
+        var partition = Thread.GetCurrentProcessorId() % _queues.Length;
+        
+        if (_queues[partition].TryDequeue(out var block))
         {
             // block successfully taken from the stack - return it
             return block;
@@ -84,7 +96,9 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>
 
         if (!_isDisposed)
         {
-            _blocks.Enqueue(block);
+            var partition = Thread.GetCurrentProcessorId() % _queues.Length;
+
+            _queues[partition].Enqueue(block);
         }
     }
 
@@ -101,11 +115,13 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>
 
             if (disposing)
             {
-                // Discard blocks in pool
-                while (_blocks.TryDequeue(out _))
+                foreach (var queue in _queues)
                 {
-
-                }
+                    while (queue.TryDequeue(out var block))
+                    {
+                        block.Dispose();
+                    }
+                }         
             }
         }
     }

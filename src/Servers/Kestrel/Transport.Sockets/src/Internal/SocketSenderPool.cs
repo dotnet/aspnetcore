@@ -10,7 +10,7 @@ internal class SocketSenderPool : IDisposable
 {
     private const int MaxQueueSize = 1024; // REVIEW: Is this good enough?
 
-    private readonly ConcurrentQueue<SocketSender> _queue = new();
+    private readonly ConcurrentQueue<SocketSender>[] _queues;
     private int _count;
     private readonly PipeScheduler _scheduler;
     private bool _disposed;
@@ -18,11 +18,20 @@ internal class SocketSenderPool : IDisposable
     public SocketSenderPool(PipeScheduler scheduler)
     {
         _scheduler = scheduler;
+
+        _queues = new ConcurrentQueue<SocketSender>[Environment.ProcessorCount];
+
+        for (var i = 0; i < _queues.Length; i++)
+        {
+            _queues[i] = new ConcurrentQueue<SocketSender>();
+        }
     }
 
     public SocketSender Rent()
     {
-        if (_queue.TryDequeue(out var sender))
+        var partition = Thread.GetCurrentProcessorId() % _queues.Length;
+
+        if (_queues[partition].TryDequeue(out var sender))
         {
             Interlocked.Decrement(ref _count);
             return sender;
@@ -40,8 +49,10 @@ internal class SocketSenderPool : IDisposable
             return;
         }
 
+        var partition = Thread.GetCurrentProcessorId() % _queues.Length;
+
         sender.Reset();
-        _queue.Enqueue(sender);
+        _queues[partition].Enqueue(sender);
     }
 
     public void Dispose()
@@ -49,9 +60,12 @@ internal class SocketSenderPool : IDisposable
         if (!_disposed)
         {
             _disposed = true;
-            while (_queue.TryDequeue(out var sender))
+            foreach (var queue in _queues)
             {
-                sender.Dispose();
+                while (queue.TryDequeue(out var sender))
+                {
+                    sender.Dispose();
+                }
             }
         }
     }
