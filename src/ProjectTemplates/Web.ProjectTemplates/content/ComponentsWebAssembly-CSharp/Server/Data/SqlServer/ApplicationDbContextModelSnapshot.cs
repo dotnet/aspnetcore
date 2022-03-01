@@ -56,7 +56,7 @@ namespace ComponentsWebAssembly_CSharp.Server.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(32)");
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
