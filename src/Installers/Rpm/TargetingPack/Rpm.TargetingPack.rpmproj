@@ -30,11 +30,9 @@
 
   <PropertyGroup>
     <TargetFileName>$(TargetingPackInstallerBaseName)-$(TargetingPackVersion).rpm</TargetFileName>
-    <CblMarinerTargetFileName>$(TargetingPackInstallerBaseName)-$(TargetingPackVersion)-cm.1.rpm</CblMarinerTargetFileName>
-    <CblMariner2TargetFileName>$(TargetingPackInstallerBaseName)-$(TargetingPackVersion)-cm.2.rpm</CblMariner2TargetFileName>
     <TargetPath>$(InstallersOutputPath)$(TargetFileName)</TargetPath>
-    <CblMarinerTargetPath>$(InstallersOutputPath)$(CblMarinerTargetFileName)</CblMarinerTargetPath>
-    <CblMariner2TargetPath>$(InstallersOutputPath)$(CblMariner2TargetFileName)</CblMariner2TargetPath>
+    <CblMarinerBaseName>$(TargetingPackInstallerBaseName)-$(TargetingPackVersion)</CblMarinerBaseName>
+    <CblMarinerExtension>.rpm</CblMarinerExtension>
 
     <PackageVersion>$(TargetingPackVersionPrefix)</PackageVersion>
 

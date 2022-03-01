@@ -7,6 +7,8 @@
   <!-- Output paths -->
   <PropertyGroup>
     <RpmPackageInstallRoot Condition="'$(RpmPackageInstallRoot)' != '' AND !HasTrailingSlash('$(RpmPackageInstallRoot)')">$(RpmPackageInstallRoot)/</RpmPackageInstallRoot>
+    <CblMariner1TargetPath>$(InstallersOutputPath)$(CblMarinerBaseName)$(CblMariner1VersionSuffix)$(CblMarinerExtension)</CblMariner1TargetPath>
+    <CblMariner2TargetPath>$(InstallersOutputPath)$(CblMarinerBaseName)$(CblMariner2VersionSuffix)$(CblMarinerExtension)</CblMariner2TargetPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -79,12 +81,12 @@
     <Exec Command="scl enable rh-ruby25 'fpm @(FpmArgs,' ')'" />
 
     <Copy SourceFiles="$(TargetPath)"
-          DestinationFiles="$(CblMarinerTargetPath)"
+          DestinationFiles="$(CblMariner1TargetPath)"
           OverwriteReadOnlyFiles="True"
           SkipUnchangedFiles="False"
           UseHardlinksIfPossible="False" />
 
-    <Message Text="$(TargetPath) -> $(CblMarinerTargetPath)" Importance="high" />
+    <Message Text="$(TargetPath) -> $(CblMariner1TargetPath)" Importance="high" />
 
     <Copy SourceFiles="$(TargetPath)"
           DestinationFiles="$(CblMariner2TargetPath)"
