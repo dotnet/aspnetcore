@@ -213,10 +213,6 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>68fb7fc68cc1af800bee1d38af22b5027bf4ab4e</Sha>
     </Dependency>
-    <Dependency Name="System.Runtime.CompilerServices.Unsafe" Version="7.0.0-preview.3.22118.9">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>ca6f4206f535458ab82561cd517ded0615728d58</Sha>
-    </Dependency>
     <Dependency Name="System.Security.Cryptography.Pkcs" Version="7.0.0-preview.3.22127.1">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>68fb7fc68cc1af800bee1d38af22b5027bf4ab4e</Sha>

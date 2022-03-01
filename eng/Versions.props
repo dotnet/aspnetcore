@@ -113,7 +113,6 @@
     <SystemNetHttpWinHttpHandlerVersion>7.0.0-preview.3.22127.1</SystemNetHttpWinHttpHandlerVersion>
     <SystemReflectionMetadataVersion>7.0.0-preview.3.22127.1</SystemReflectionMetadataVersion>
     <SystemResourcesExtensionsVersion>7.0.0-preview.3.22127.1</SystemResourcesExtensionsVersion>
-    <SystemRuntimeCompilerServicesUnsafeVersion>7.0.0-preview.3.22118.9</SystemRuntimeCompilerServicesUnsafeVersion>
     <SystemSecurityCryptographyPkcsVersion>7.0.0-preview.3.22127.1</SystemSecurityCryptographyPkcsVersion>
     <SystemSecurityCryptographyXmlVersion>7.0.0-preview.3.22127.1</SystemSecurityCryptographyXmlVersion>
     <SystemSecurityPermissionsVersion>7.0.0-preview.3.22127.1</SystemSecurityPermissionsVersion>

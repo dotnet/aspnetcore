@@ -40,7 +40,6 @@
     <Reference Include="FSharp.Core" />
     <Reference Include="System.IO.Pipelines" />
     <Reference Include="System.Reflection.Metadata" />
-    <Reference Include="System.Runtime.CompilerServices.Unsafe" />
     <Reference Include="System.Threading.Tasks.Extensions" />
     <Reference Include="Microsoft.AspNetCore.Http.Features" />
     <Reference Include="Microsoft.AspNetCore.Http" />
