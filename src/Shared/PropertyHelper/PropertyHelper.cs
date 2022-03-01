@@ -9,7 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Reflection.Metadata;
 
-[assembly: MetadataUpdateHandler(typeof(Microsoft.Extensions.Internal.PropertyHelper))]
+[assembly: MetadataUpdateHandler(typeof(Microsoft.Extensions.Internal.PropertyHelper.MetadataUpdateHandler))]
 
 namespace Microsoft.Extensions.Internal;
 
@@ -65,12 +65,6 @@ internal sealed class PropertyHelper
     /// Gets (or sets in derived types) the property name.
     /// </summary>
     public string Name { get; }
-
-    public static void ClearCache(Type[]? _)
-    {
-        PropertiesCache.Clear();
-        VisiblePropertiesCache.Clear();
-    }
 
     /// <summary>
     /// Gets the property value getter.
@@ -555,5 +549,17 @@ internal sealed class PropertyHelper
             IsByRefLikeAttribute != null &&
             property.PropertyType.IsValueType &&
             property.PropertyType.IsDefined(IsByRefLikeAttribute);
+    }
+
+    internal static class MetadataUpdateHandler
+    {
+        /// <summary>
+        /// Invoked as part of <see cref="MetadataUpdateHandlerAttribute" /> contract for hot reload.
+        /// </summary>
+        public static void ClearCache(Type[]? _)
+        {
+            PropertiesCache.Clear();
+            VisiblePropertiesCache.Clear();
+        }
     }
 }

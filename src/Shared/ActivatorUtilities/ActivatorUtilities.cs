@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Internal;
 
 internal static class ActivatorUtilities
 {
-    private const DynamicallyAccessedMemberTypes ActivatorAccessibility = DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors;
+    private const DynamicallyAccessedMemberTypes ActivatorAccessibility = DynamicallyAccessedMemberTypes.PublicConstructors;
 
     /// <summary>
     /// Instantiate a type with constructor arguments provided directly and/or from an <see cref="IServiceProvider"/>.
@@ -144,26 +144,25 @@ internal static class ActivatorUtilities
 
         public object CreateInstance(IServiceProvider provider)
         {
-            for (var index = 0; index != _parameters.Length; index++)
+            for (var index = 0; index < _parameters.Length; index++)
             {
-                if (_parameterValues[index] == null)
+                var parameter = _parameters[index];
+
+                if (_parameterValues[index] is null)
                 {
-                    var value = provider.GetService(_parameters[index].ParameterType);
-                    if (value == null)
+                    var value = provider.GetService(parameter.ParameterType);
+                    if (value is null)
                     {
-                        if (!ParameterDefaultValue.TryGetDefaultValue(_parameters[index], out var defaultValue))
+                        if (!parameter.HasDefaultValue)
                         {
+
                             throw new InvalidOperationException($"Unable to resolve service for type '{_parameters[index].ParameterType}' while attempting to activate '{_constructor.DeclaringType}'.");
                         }
-                        else
-                        {
-                            _parameterValues[index] = defaultValue;
-                        }
+
+                        value = parameter.DefaultValue;
                     }
-                    else
-                    {
-                        _parameterValues[index] = value;
-                    }
+
+                    _parameterValues[index] = value;
                 }
             }
 

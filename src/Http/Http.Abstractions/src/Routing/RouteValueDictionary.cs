@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Http.Abstractions;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Internal;
 
-[assembly: MetadataUpdateHandler(typeof(RouteValueDictionary))]
+[assembly: MetadataUpdateHandler(typeof(RouteValueDictionary.MetadataUpdateHandler))]
 
 namespace Microsoft.AspNetCore.Routing;
 
@@ -185,13 +185,7 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
         }
     }
 
-    /// <summary>
-    /// Invoked as part of <see cref="MetadataUpdateHandlerAttribute" /> contract for hot reload.
-    /// </summary>
-    internal static void ClearCache(Type[]? _)
-    {
-        _propertyCache.Clear();
-    }
+    
 
     [MemberNotNull(nameof(_arrayStorage))]
     private void Initialize(IEnumerable<KeyValuePair<string, string?>> stringValueEnumerable)
@@ -817,7 +811,7 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
         }
     }
 
-    internal class PropertyStorage
+    internal sealed class PropertyStorage
     {
         public readonly object Value;
         public readonly PropertyHelper[] Properties;
@@ -857,6 +851,17 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
 
                 names.Add(property.Name, property);
             }
+        }
+    }
+
+    internal static class MetadataUpdateHandler
+    {
+        /// <summary>
+        /// Invoked as part of <see cref="MetadataUpdateHandlerAttribute" /> contract for hot reload.
+        /// </summary>
+        internal static void ClearCache(Type[]? _)
+        {
+            _propertyCache.Clear();
         }
     }
 }
