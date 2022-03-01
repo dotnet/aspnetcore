@@ -7,20 +7,32 @@ using System.Text;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.Extensions.Primitives;
 
+#if !(IS_TESTS || IS_BENCHMARKS)
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
+#else
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
+#endif
 
+#nullable enable
+
+// This file is used by Kestrel to write response headers and tests to write request headers.
+// To avoid adding test code to Kestrel this file is shared. Test specifc code is excluded from Kestrel by ifdefs.
 internal sealed class Http2HeadersEnumerator : IEnumerator<KeyValuePair<string, string>>
 {
     private enum HeadersType : byte
     {
         Headers,
         Trailers,
-        Untyped
+#if IS_TESTS || IS_BENCHMARKS
+        Untyped,
+#endif
     }
     private HeadersType _headersType;
     private HttpResponseHeaders.Enumerator _headersEnumerator;
     private HttpResponseTrailers.Enumerator _trailersEnumerator;
+#if IS_TESTS || IS_BENCHMARKS
     private IEnumerator<KeyValuePair<string, StringValues>>? _genericEnumerator;
+#endif
     private StringValues.Enumerator _stringValuesEnumerator;
     private bool _hasMultipleValues;
     private KnownHeaderType _knownHeaderType;
@@ -47,6 +59,7 @@ internal sealed class Http2HeadersEnumerator : IEnumerator<KeyValuePair<string, 
         _hasMultipleValues = false;
     }
 
+#if IS_TESTS || IS_BENCHMARKS
     public void Initialize(IDictionary<string, StringValues> headers)
     {
         switch (headers)
@@ -67,6 +80,7 @@ internal sealed class Http2HeadersEnumerator : IEnumerator<KeyValuePair<string, 
 
         _hasMultipleValues = false;
     }
+#endif
 
     public bool MoveNext()
     {
@@ -89,11 +103,35 @@ internal sealed class Http2HeadersEnumerator : IEnumerator<KeyValuePair<string, 
         }
         else
         {
+#if IS_TESTS || IS_BENCHMARKS
             return _genericEnumerator!.MoveNext()
-                ? SetCurrent(_genericEnumerator.Current.Key, _genericEnumerator.Current.Value, default)
+                ? SetCurrent(_genericEnumerator.Current.Key, _genericEnumerator.Current.Value, GetKnownRequestHeaderType(_genericEnumerator.Current.Key))
                 : false;
+#else
+            ThrowUnexpectedHeadersType();
+            return false;
+#endif
         }
     }
+
+#if IS_TESTS || IS_BENCHMARKS
+    private static KnownHeaderType GetKnownRequestHeaderType(string headerName)
+    {
+        switch (headerName)
+        {
+            case ":method":
+                return KnownHeaderType.Method;
+            default:
+                return default;
+        }
+    }
+#else
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    private static void ThrowUnexpectedHeadersType()
+    {
+        throw new InvalidOperationException("Unexpected headers collection type.");
+    }
+#endif
 
     private bool MoveNextOnStringEnumerator(string key)
     {
@@ -134,7 +172,11 @@ internal sealed class Http2HeadersEnumerator : IEnumerator<KeyValuePair<string, 
         }
         else
         {
+#if IS_TESTS || IS_BENCHMARKS
             _genericEnumerator!.Reset();
+#else
+            ThrowUnexpectedHeadersType();
+#endif
         }
         _stringValuesEnumerator = default;
         _knownHeaderType = default;
@@ -199,6 +241,11 @@ internal sealed class Http2HeadersEnumerator : IEnumerator<KeyValuePair<string, 
                 return H2StaticTable.ContentLength;
             default:
                 return -1;
+#if IS_TESTS || IS_BENCHMARKS
+            // Include request headers for tests.
+            case KnownHeaderType.Method:
+                return H2StaticTable.MethodGet;
+#endif
         }
     }
 }

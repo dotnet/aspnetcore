@@ -314,7 +314,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
                         {
                             UpdateHeaderParsingState(value, GetPseudoHeaderField(staticTableIndex.GetValueOrDefault()));
 
-                            OnHeader(staticTableIndex.GetValueOrDefault(), indexOnly: true, name, value);
+                            OnHeader(staticTableIndex.GetValueOrDefault(), indexOnly: false, name, value);
                         }
                         else
                         {
