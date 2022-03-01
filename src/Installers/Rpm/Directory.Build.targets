@@ -55,6 +55,7 @@
     <!-- Run fpm -->
     <PropertyGroup>
       <RpmArch Condition=" '$(TargetArchitecture)' == 'x64' ">amd64</RpmArch>
+      <RpmArch Condition=" '$(TargetArchitecture)' == 'arm64' ">aarch64</RpmArch>
     </PropertyGroup>
 
     <ItemGroup>
