@@ -12,6 +12,7 @@
 #include "StringHelpers.h"
 #include "RegistryKey.h"
 
+// This is needed to use libnethost as a static library
 #define NETHOST_USE_AS_STATIC
 #include <nethost.h>
 
@@ -59,7 +60,7 @@ HostFxrResolver::GetHostFxrParameters(
             throw InvalidOperationException(L"Application arguments are empty.");
         }
 
-        BOOL gotHostFxrPath = FALSE;
+        bool gotHostFxrPath = false;
         if (dotnetExePath.empty())
         {
             // need to find dotnet for get_host_fxr_path when dotnet is launched from the path
@@ -186,7 +187,7 @@ HostFxrResolver::GetHostFxrParameters(
     }
 }
 
-BOOL
+bool
 HostFxrResolver::TryGetHostFxrPath(
     fs::path& hostFxrDllPath,
     const fs::path& dotnetRoot,
@@ -214,7 +215,7 @@ HostFxrResolver::TryGetHostFxrPath(
     return TRUE;
 }
 
-BOOL
+bool
 HostFxrResolver::IsDotnetExecutable(const std::filesystem::path& dotnetPath)
 {
     std::wstring filename = dotnetPath.filename().wstring();

@@ -1,32 +1,22 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
 <!--
-  FunctionLevelLinking (/Gy)    Enables function-level linking.
-  StringPooling (/GF)    Enables string pooling.
--->
-
-  <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
-    <ClCompile>
-      <StringPooling>true</StringPooling>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
-    </ClCompile>
-  </ItemDefinitionGroup>
-
-<!--
   LinkIncremental (/INCREMENTAL:NO)    build does not contain padding or thunks
 -->
 
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <LinkIncremental>false</LinkIncremental>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
   </PropertyGroup>
 
 <!--
   Optimization - Full (/Ox)    Uses maximum optimization
   FavorSizeOrSpeed - Size (/Ot)    Favors fast code
   RuntimeTypeInfo (GR-)    Disables run-time type information (RTTI)
+  FunctionLevelLinking (/Gy)    Enables function-level linking.
   IntrinsicFunctions (/Oi) Requests the compiler to use intrinsic functions
+  StringPooling (/GF)    Enables string pooling.
 
   OptimizeReferences (/OPT:REF)    eliminates functions and data that are never referenced
   EnableCOMDATFolding (/OPT:ICF    perform identical COMDAT folding
@@ -40,6 +30,7 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
+      <StringPooling>true</StringPooling>
     </ClCompile>
     <Link>
       <OptimizeReferences>true</OptimizeReferences>
