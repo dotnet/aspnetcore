@@ -16,10 +16,6 @@
   <?define ANCMDepProviderKey = "IISExpress_AspNetCore_Module_V2,x64" ?>
 <?endif?>
 
-<!--
-    What about arm64 def?
--->
-
 <?define ProductShortName="IIS Express AspNetCore Module V2" ?>
 <?define ProductNameShort="IISExpress_ANCM_V2" ?>
 <?define ProductVersionString = "V2"?>
