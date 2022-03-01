@@ -13,6 +13,6 @@ internal sealed class GZipDecompressionProvider : IDecompressionProvider
     /// <inheritdoc />
     public Stream GetDecompressionStream(Stream stream)
     {
-        return new GZipStream(stream, CompressionMode.Decompress);
+        return new GZipStream(stream, CompressionMode.Decompress, leaveOpen: true);
     }
 }

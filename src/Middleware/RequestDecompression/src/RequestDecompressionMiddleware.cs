@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.RequestDecompression;
 /// <summary>
 /// Enables HTTP request decompression.
 /// </summary>
-public class RequestDecompressionMiddleware
+internal sealed class RequestDecompressionMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly IRequestDecompressionProvider _provider;
@@ -63,7 +63,7 @@ public class RequestDecompressionMiddleware
 
             var sizeLimit =
                 context.GetEndpoint()?.Metadata?.GetMetadata<IRequestSizeLimitMetadata>()?.MaxRequestBodySize
-                    ?? context.Features.GetRequiredFeature<IHttpMaxRequestBodySizeFeature>().MaxRequestBodySize;
+                    ?? context.Features.Get<IHttpMaxRequestBodySizeFeature>()?.MaxRequestBodySize;
 
             context.Request.Body = new SizeLimitedStream(stream, sizeLimit);
             await _next(context);

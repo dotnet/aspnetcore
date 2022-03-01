@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.RequestDecompression;
-
 namespace RequestDecompressionSample;
 
 public class Startup
@@ -11,15 +9,13 @@ public class Startup
     {
         services.AddRequestDecompression(options =>
         {
-            options.Providers.Add<GZipDecompressionProvider>();
-            options.Providers.Add<CustomDecompressionProvider>();
+            options.DecompressionProviders.Add("custom", new CustomDecompressionProvider());
         });
     }
 
     public void Configure(IApplicationBuilder app)
     {
         app.UseRequestDecompression();
-
         app.Map("/test", testApp =>
         {
             testApp.Run(async context =>

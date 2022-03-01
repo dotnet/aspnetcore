@@ -13,6 +13,6 @@ internal sealed class DeflateDecompressionProvider : IDecompressionProvider
     /// <inheritdoc />
     public Stream GetDecompressionStream(Stream stream)
     {
-        return new DeflateStream(stream, CompressionMode.Decompress);
+        return new DeflateStream(stream, CompressionMode.Decompress, leaveOpen: true);
     }
 }

@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Builder;
 public static class RequestDecompressionBuilderExtensions
 {
     /// <summary>
-    /// Adds middleware for dynamically decompressing HTTP requests.
+    /// Adds middleware for dynamically decompressing HTTP request bodies.
     /// </summary>
     /// <param name="builder">The <see cref="IApplicationBuilder"/> instance this method extends.</param>
     public static IApplicationBuilder UseRequestDecompression(this IApplicationBuilder builder)

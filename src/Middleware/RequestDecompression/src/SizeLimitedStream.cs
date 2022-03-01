@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.RequestDecompression;
 
-internal class SizeLimitedStream : Stream
+internal sealed class SizeLimitedStream : Stream
 {
     private readonly Stream _innerStream;
     private readonly long? _sizeLimit;
@@ -23,19 +23,22 @@ internal class SizeLimitedStream : Stream
 
     public override bool CanRead => _innerStream.CanRead;
 
-    public override bool CanSeek => false;
+    public override bool CanSeek => _innerStream.CanSeek;
 
     public override bool CanWrite => false;
 
-    public override long Length
-    {
-        get { throw new NotSupportedException(); }
-    }
+    public override long Length => _innerStream.Length;
 
     public override long Position
     {
-        get { throw new NotSupportedException(); }
-        set { throw new NotSupportedException(); }
+        get
+        {
+            return _innerStream.Position;
+        }
+        set
+        {
+            _innerStream.Position = value;
+        }
     }
 
     public override void Flush()
@@ -58,12 +61,12 @@ internal class SizeLimitedStream : Stream
 
     public override long Seek(long offset, SeekOrigin origin)
     {
-        throw new NotSupportedException();
+        return _innerStream.Seek(offset, origin);
     }
 
     public override void SetLength(long value)
     {
-        throw new NotSupportedException();
+        _innerStream.SetLength(value);
     }
 
     public override void Write(byte[] buffer, int offset, int count)
