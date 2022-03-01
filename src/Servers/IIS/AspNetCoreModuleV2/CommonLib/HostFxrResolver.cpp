@@ -207,12 +207,12 @@ HostFxrResolver::TryGetHostFxrPath(
     int result = get_hostfxr_path(hostfxrPath.data(), &size, &params);
     if (result != 0) {
         LOG_INFOF(L"get_hostfxr_path failed (%x)", result);
-        return FALSE;
+        return false;
     }
 
     hostfxrPath.resize(size);
     hostFxrDllPath = hostfxrPath;
-    return TRUE;
+    return true;
 }
 
 bool
