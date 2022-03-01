@@ -457,7 +457,7 @@ public partial class HubConnection : IAsyncDisposable
         // StartAsyncCore is invoked and awaited by StartAsyncInner and ReconnectAsync with the connection lock still acquired.
         if (!(connection.Features.Get<IConnectionInherentKeepAliveFeature>()?.HasInherentKeepAlive ?? false))
         {
-            await SendHubMessage(startingConnectionState, PingMessage.Instance).ConfigureAwait(false);
+            await SendHubMessage(startingConnectionState, PingMessage.Instance, cancellationToken).ConfigureAwait(false);
         }
         startingConnectionState.ReceiveTask = ReceiveLoop(startingConnectionState);
 
@@ -591,7 +591,7 @@ public partial class HubConnection : IAsyncDisposable
                     Log.SendingCancellation(_logger, irq.InvocationId);
 
                     // Fire and forget, if it fails that means we aren't connected anymore.
-                    _ = SendHubMessage(_state.CurrentConnectionStateUnsynchronized, new CancelInvocationMessage(irq.InvocationId));
+                    _ = SendHubMessage(_state.CurrentConnectionStateUnsynchronized, new CancelInvocationMessage(irq.InvocationId), irq.CancellationToken);
                 }
                 else
                 {
@@ -622,7 +622,7 @@ public partial class HubConnection : IAsyncDisposable
 
             // I just want an excuse to use 'irq' as a variable name...
             var irq = InvocationRequest.Stream(cancellationToken, returnType, connectionState.GetNextId(), _loggerFactory, this, out channel);
-            await InvokeStreamCore(connectionState, methodName, irq, args, streamIds?.ToArray()).ConfigureAwait(false);
+            await InvokeStreamCore(connectionState, methodName, irq, args, streamIds?.ToArray(), cancellationToken).ConfigureAwait(false);
 
             if (cancellationToken.CanBeCanceled)
             {
@@ -804,7 +804,7 @@ public partial class HubConnection : IAsyncDisposable
             readers = PackageStreamingParams(connectionState, ref args, out var streamIds);
 
             var irq = InvocationRequest.Invoke(cancellationToken, returnType, connectionState.GetNextId(), _loggerFactory, this, out invocationTask);
-            await InvokeCore(connectionState, methodName, irq, args, streamIds?.ToArray()).ConfigureAwait(false);
+            await InvokeCore(connectionState, methodName, irq, args, streamIds?.ToArray(), cancellationToken).ConfigureAwait(false);
 
             LaunchStreams(connectionState, readers, cancellationToken);
         }
@@ -817,7 +817,7 @@ public partial class HubConnection : IAsyncDisposable
         return await invocationTask.ConfigureAwait(false);
     }
 
-    private async Task InvokeCore(ConnectionState connectionState, string methodName, InvocationRequest irq, object?[] args, string[]? streams)
+    private async Task InvokeCore(ConnectionState connectionState, string methodName, InvocationRequest irq, object?[] args, string[]? streams, CancellationToken cancellationToken)
     {
         Log.PreparingBlockingInvocation(_logger, irq.InvocationId, methodName, irq.ResultType.FullName!, args.Length);
 
@@ -832,7 +832,7 @@ public partial class HubConnection : IAsyncDisposable
 
         try
         {
-            await SendHubMessage(connectionState, invocationMessage).ConfigureAwait(false);
+            await SendHubMessage(connectionState, invocationMessage, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -842,7 +842,7 @@ public partial class HubConnection : IAsyncDisposable
         }
     }
 
-    private async Task InvokeStreamCore(ConnectionState connectionState, string methodName, InvocationRequest irq, object?[] args, string[]? streams)
+    private async Task InvokeStreamCore(ConnectionState connectionState, string methodName, InvocationRequest irq, object?[] args, string[]? streams, CancellationToken cancellationToken)
     {
         _state.AssertConnectionValid();
 
@@ -859,7 +859,7 @@ public partial class HubConnection : IAsyncDisposable
 
         try
         {
-            await SendHubMessage(connectionState, invocationMessage).ConfigureAwait(false);
+            await SendHubMessage(connectionState, invocationMessage, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -869,16 +869,20 @@ public partial class HubConnection : IAsyncDisposable
         }
     }
 
-    private async Task SendHubMessage(ConnectionState connectionState, HubMessage hubMessage)
+#pragma warning disable IDE0060 // Remove unused parameter. Resolving tracked via https://github.com/dotnet/aspnetcore/issues/40475
+    private async Task SendHubMessage(ConnectionState connectionState, HubMessage hubMessage, CancellationToken cancellationToken = default)
+#pragma warning restore IDE0060 // Remove unused parameter
     {
         _state.AssertConnectionValid();
         _protocol.WriteMessage(hubMessage, connectionState.Connection.Transport.Output);
 
         Log.SendingMessage(_logger, hubMessage);
 
+#pragma warning disable CA2016 // Forward the 'CancellationToken' parameter to methods
         // REVIEW: If a token is passed in and is canceled during FlushAsync it seems to break .Complete()...
         await connectionState.Connection.Transport.Output.FlushAsync().ConfigureAwait(false);
-       Log.MessageSent(_logger, hubMessage);
+#pragma warning restore CA2016 // Forward the 'CancellationToken' parameter to methods
+        Log.MessageSent(_logger, hubMessage);
 
         // We've sent a message, so don't ping for a while
         connectionState.ResetSendPing();
@@ -898,7 +902,7 @@ public partial class HubConnection : IAsyncDisposable
 
             Log.PreparingNonBlockingInvocation(_logger, methodName, args.Length);
             var invocationMessage = new InvocationMessage(null, methodName, args, streamIds?.ToArray());
-            await SendHubMessage(connectionState, invocationMessage).ConfigureAwait(false);
+            await SendHubMessage(connectionState, invocationMessage, cancellationToken).ConfigureAwait(false);
 
             LaunchStreams(connectionState, readers, cancellationToken);
         }
@@ -918,7 +922,7 @@ public partial class HubConnection : IAsyncDisposable
 
             SafeAssert(ReferenceEquals(expectedConnectionState, connectionState), "The connection state changed unexpectedly!");
 
-            await SendHubMessage(connectionState, message).ConfigureAwait(false);
+            await SendHubMessage(connectionState, message, cancellationToken).ConfigureAwait(false);
         }
         finally
         {
