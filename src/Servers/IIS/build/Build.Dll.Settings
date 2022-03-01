@@ -19,7 +19,7 @@
       <OmitDefaultLibName>true</OmitDefaultLibName>
     </ClCompile>
     <Link>
-      <-- This is needed for the corehostr tracing tests to work in StdOutRedirectionTests -->
+      <!-- This is needed for the corehostr tracing tests to work in StdOutRedirectionTests -->
       <AdditionalOptions>/NODEFAULTLIB:libucrt.lib /DEFAULTLIB:ucrt.lib %(AdditionalOptions)</AdditionalOptions>
       <AdditionalLibraryDirectories>$(LibNetHostPath)</AdditionalLibraryDirectories>
       <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
