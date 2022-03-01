@@ -22,7 +22,7 @@ public static class UseMiddlewareExtensions
 
     // We're going to keep all public constructors and public methods on middleware
     private const DynamicallyAccessedMemberTypes MiddlewareAccessibility =
-        DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods | DynamicallyAccessedMemberTypes.NonPublicConstructors;
+        DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods;
 
     /// <summary>
     /// Adds a middleware type to the application's request pipeline.

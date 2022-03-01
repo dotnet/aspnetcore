@@ -22,12 +22,6 @@
       <!-- Link all assemblies -->
       <ILLinkArgs>$(ILLinkArgs) --action link</ILLinkArgs>
       <ILLinkArgs Condition="'$(GenerateLinkerWarningSuppressions)' == 'true'">$(ILLinkArgs) --generate-warning-suppressions xml</ILLinkArgs>
-      <!-- suppress warnings with the following codes:
-           IL2026: Calling A which has B can break functionality when trimming application code. The target method might be removed.
-           IL2111: Method with parameters or return value with 'DynamicallyAccessedMembersAttribute' is accessed via reflection.
-      -->
-      <LinkerNoWarn>IL2026;IL2111</LinkerNoWarn>
-      <ILLinkArgs>$(ILLinkArgs) --nowarn $(LinkerNoWarn)</ILLinkArgs>
     </PropertyGroup>
     <ItemGroup>
       <RootAssemblies Include="@(ReferencePath->HasMetadata('ProjectPath'))" RootMode="visible" />
