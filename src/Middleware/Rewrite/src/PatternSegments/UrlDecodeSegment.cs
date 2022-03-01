@@ -5,11 +5,11 @@ using System.Text;
 
 namespace Microsoft.AspNetCore.Rewrite.PatternSegments;
 
-internal class UrlEncodeSegment : PatternSegment
+internal class UrlDecodeSegment: PatternSegment
 {
     private readonly Pattern _pattern;
 
-    public UrlEncodeSegment(Pattern pattern)
+    public UrlDecodeSegment(Pattern pattern)
     {
         _pattern = pattern;
     }
@@ -24,6 +24,6 @@ internal class UrlEncodeSegment : PatternSegment
         context.Builder = new StringBuilder(64);
         var pattern = _pattern.Evaluate(context, ruleBackReferences, conditionBackReferences);
         context.Builder = oldBuilder;
-        return Uri.EscapeDataString(pattern);
+        return Uri.UnescapeDataString(pattern);
     }
 }

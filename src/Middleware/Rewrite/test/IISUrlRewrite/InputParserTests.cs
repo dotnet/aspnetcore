@@ -69,6 +69,14 @@ public class InputParserTests
         var result = middle.Evaluate(CreateTestRewriteContext(), CreateTestRuleBackReferences(), CreateTestCondBackReferences());
         Assert.Equal(expected, result);
     }
+    [Theory]
+    [InlineData("hey/{UrlDecode:%3Chey%3E}","hey/<hey>")]
+    public void EvaluateUriDecodeRule(string testString, string expected)
+    {
+        var middle = new InputParser().ParseInputString(testString, UriMatchPart.Path);
+        var result = middle.Evaluate(CreateTestRewriteContext(), CreateTestRuleBackReferences(), CreateTestCondBackReferences());
+        Assert.Equal(expected, result);
+    }
 
     [Theory]
     [InlineData("{")]
