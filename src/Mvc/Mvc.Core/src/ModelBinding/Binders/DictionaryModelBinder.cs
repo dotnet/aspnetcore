@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 /// </summary>
 /// <typeparam name="TKey">Type of keys in the dictionary.</typeparam>
 /// <typeparam name="TValue">Type of values in the dictionary.</typeparam>
-public class DictionaryModelBinder<TKey, TValue> : CollectionModelBinder<KeyValuePair<TKey, TValue?>> where TKey : notnull
+public partial class DictionaryModelBinder<TKey, TValue> : CollectionModelBinder<KeyValuePair<TKey, TValue?>> where TKey : notnull
 {
     private readonly IModelBinder _valueBinder;
 
@@ -140,7 +140,7 @@ public class DictionaryModelBinder<TKey, TValue> : CollectionModelBinder<KeyValu
             return;
         }
 
-        Logger.NoKeyValueFormatForDictionaryModelBinder(bindingContext);
+        Log.NoKeyValueFormatForDictionaryModelBinder(Logger, bindingContext);
 
         if (bindingContext.ValueProvider is not IEnumerableValueProvider enumerableValueProvider)
         {
@@ -261,5 +261,14 @@ public class DictionaryModelBinder<TKey, TValue> : CollectionModelBinder<KeyValu
         }
 
         return base.CanCreateInstance(targetType);
+    }
+
+    private static partial class Log
+    {
+        public static void NoKeyValueFormatForDictionaryModelBinder(ILogger logger, ModelBindingContext bindingContext)
+            => NoKeyValueFormatForDictionaryModelBinder(logger, bindingContext.ModelName);
+
+        [LoggerMessage(33, LogLevel.Debug, "Attempting to bind model with name '{ModelName}' using the format {ModelName}[key1]=value1&{ModelName}[key2]=value2", EventName = "NoKeyValueFormatForDictionaryModelBinder")]
+        private static partial void NoKeyValueFormatForDictionaryModelBinder(ILogger logger, string modelName);
     }
 }

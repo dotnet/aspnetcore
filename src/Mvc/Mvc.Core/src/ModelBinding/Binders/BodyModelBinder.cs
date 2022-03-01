@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 /// An <see cref="IModelBinder"/> which binds models from the request body using an <see cref="IInputFormatter"/>
 /// when a model has the binding source <see cref="BindingSource.Body"/>.
 /// </summary>
-public class BodyModelBinder : IModelBinder
+public partial class BodyModelBinder : IModelBinder
 {
     private readonly IList<IInputFormatter> _formatters;
     private readonly Func<Stream, Encoding, TextReader> _readerFactory;
@@ -129,12 +129,12 @@ public class BodyModelBinder : IModelBinder
             if (_formatters[i].CanRead(formatterContext))
             {
                 formatter = _formatters[i];
-                _logger.InputFormatterSelected(formatter, formatterContext);
+                Log.InputFormatterSelected(_logger, formatter, formatterContext);
                 break;
             }
             else
             {
-                _logger.InputFormatterRejected(_formatters[i], formatterContext);
+                Log.InputFormatterRejected(_logger, _formatters[i], formatterContext);
             }
         }
 
@@ -151,7 +151,7 @@ public class BodyModelBinder : IModelBinder
                 }
             }
 
-            _logger.NoInputFormatterSelected(formatterContext);
+            Log.NoInputFormatterSelected(_logger, formatterContext);
 
             var message = Resources.FormatUnsupportedContentType(httpContext.Request.ContentType);
             var exception = new UnsupportedContentTypeException(message);
@@ -205,5 +205,53 @@ public class BodyModelBinder : IModelBinder
             InputFormatterExceptionPolicy.MalformedInputExceptions;
 
         return policy == InputFormatterExceptionPolicy.AllExceptions;
+    }
+
+    private partial class Log
+    {
+        public static void InputFormatterSelected(ILogger logger, IInputFormatter inputFormatter, InputFormatterContext formatterContext)
+        {
+            if (logger.IsEnabled(LogLevel.Debug))
+            {
+                var contentType = formatterContext.HttpContext.Request.ContentType;
+                InputFormatterSelected(logger, inputFormatter, contentType);
+            }
+        }
+
+        [LoggerMessage(1, LogLevel.Debug, "Selected input formatter '{InputFormatter}' for content type '{ContentType}'.", EventName = "InputFormatterSelected", SkipEnabledCheck = true)]
+        private static partial void InputFormatterSelected(ILogger logger, IInputFormatter inputFormatter, string? contentType);
+
+        public static void InputFormatterRejected(ILogger logger, IInputFormatter inputFormatter, InputFormatterContext formatterContext)
+        {
+            if (logger.IsEnabled(LogLevel.Debug))
+            {
+                var contentType = formatterContext.HttpContext.Request.ContentType;
+                InputFormatterRejected(logger, inputFormatter, contentType);
+            }
+        }
+
+        [LoggerMessage(2, LogLevel.Debug, "Rejected input formatter '{InputFormatter}' for content type '{ContentType}'.", EventName = "InputFormatterRejected", SkipEnabledCheck = true)]
+        private static partial void InputFormatterRejected(ILogger logger, IInputFormatter inputFormatter, string? contentType);
+
+        public static void NoInputFormatterSelected(ILogger logger, InputFormatterContext formatterContext)
+        {
+            if (logger.IsEnabled(LogLevel.Debug))
+            {
+                var contentType = formatterContext.HttpContext.Request.ContentType;
+                NoInputFormatterSelected(logger, contentType);
+                if (formatterContext.HttpContext.Request.HasFormContentType)
+                {
+                    var modelType = formatterContext.ModelType.FullName;
+                    var modelName = formatterContext.ModelName;
+                    RemoveFromBodyAttribute(logger, modelName, modelType);
+                }
+            }
+        }
+
+        [LoggerMessage(3, LogLevel.Debug, "No input formatter was found to support the content type '{ContentType}' for use with the [FromBody] attribute.", EventName = "NoInputFormatterSelected", SkipEnabledCheck = true)]
+        private static partial void NoInputFormatterSelected(ILogger logger, string? contentType);
+
+        [LoggerMessage(4, LogLevel.Debug, "To use model binding, remove the [FromBody] attribute from the property or parameter named '{ModelName}' with model type '{ModelType}'.", EventName = "RemoveFromBodyAttribute", SkipEnabledCheck = true)]
+        private static partial void RemoveFromBodyAttribute(ILogger logger, string modelName, string? modelType);
     }
 }
