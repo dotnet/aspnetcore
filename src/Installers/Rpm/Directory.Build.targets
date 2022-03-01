@@ -20,7 +20,7 @@
   <Target Name="PrepareForBuild">
     <MakeDir Directories="$(IntermediateOutputPath)" />
 
-    <Error Text="Currently only linux-x64 is supported by Rpm installers." Condition=" '$(TargetRuntimeIdentifier)' != 'linux-x64' " />
+    <Error Text="Currently only linux-x64 and linux-arm64 are supported by Rpm installers." Condition=" '$(TargetRuntimeIdentifier)' != 'linux-x64' AND '$(TargetRuntimeIdentifier)' != 'linux-arm64'" />
 
     <Error Text="Missing required property: RpmPackageInstallRoot" Condition=" '$(RpmPackageInstallRoot)' == '' " />
     <Error Text="Missing required property: PackageContentRoot" Condition=" '$(PackageContentRoot)' == '' " />
