@@ -86,6 +86,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("Connection: keep-alive"));
         Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("Body: test"));
         Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("StatusCode: 200"));
+        Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("Response:"));
     }
 
     [Fact]
