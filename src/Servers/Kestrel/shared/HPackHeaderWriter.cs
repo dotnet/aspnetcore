@@ -4,8 +4,14 @@
 using System.Net.Http;
 using System.Net.Http.HPack;
 
+#if !(IS_TESTS || IS_BENCHMARKS)
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
+#else
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
+#endif
 
+// This file is used by Kestrel to write response headers and tests to write request headers.
+// To avoid adding test code to Kestrel this file is shared. Test specifc code is excluded from Kestrel by ifdefs.
 internal static class HPackHeaderWriter
 {
     /// <summary>

@@ -1443,7 +1443,7 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
                         {
                             UpdateHeaderParsingState(value, GetPseudoHeaderField(staticTableIndex.GetValueOrDefault()));
 
-                            _currentHeadersStream.OnHeader(staticTableIndex.GetValueOrDefault(), indexOnly: true, name, value);
+                            _currentHeadersStream.OnHeader(staticTableIndex.GetValueOrDefault(), indexOnly: false, name, value);
                         }
                         else
                         {
