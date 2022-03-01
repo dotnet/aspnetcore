@@ -4,7 +4,7 @@
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <TestGroupName>InMemory.FunctionalTests</TestGroupName>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <DefineConstants>$(DefineConstants);IS_FUNCTIONAL_TESTS</DefineConstants>
+    <DefineConstants>$(DefineConstants);IS_TESTS</DefineConstants>
    </PropertyGroup>
 
   <ItemGroup>
@@ -12,6 +12,8 @@
     <Compile Include="$(SharedSourceRoot)SyncPoint\SyncPoint.cs" Link="SyncPoint.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\*.cs" LinkBase="shared" />
     <Compile Include="$(KestrelSharedSourceRoot)test\Http3\*.cs" LinkBase="shared" />
+    <Compile Include="$(KestrelSharedSourceRoot)\HPackHeaderWriter.cs" Link="Http2\HPackHeaderWriter.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)\Http2HeadersEnumerator.cs" Link="Http2\Http2HeadersEnumerator.cs" />
     <Compile Include="$(RepoRoot)src\Shared\Buffers.MemoryPool\*.cs" LinkBase="MemoryPool" />
     <Compile Include="$(KestrelSharedSourceRoot)\CompletionPipeReader.cs" Link="Internal\CompletionPipeReader.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)\CompletionPipeWriter.cs" Link="Internal\CompletionPipeWriter.cs" />

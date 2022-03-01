@@ -108,7 +108,7 @@ internal abstract partial class ResourceInvoker
 
                 var actionScope = logger.ActionScope(actionContext.ActionDescriptor);
 
-                logger.ExecutingAction(actionContext.ActionDescriptor);
+                Log.ExecutingAction(logger, actionContext.ActionDescriptor);
 
                 var filters = invoker._filters;
                 logger.AuthorizationFiltersExecutionPlan(filters);
@@ -126,7 +126,7 @@ internal abstract partial class ResourceInvoker
                 finally
                 {
                     await invoker.ReleaseResourcesCore(actionScope);
-                    logger.ExecutedAction(actionContext.ActionDescriptor, stopwatch.GetElapsedTime());
+                    Log.ExecutedAction(logger, actionContext.ActionDescriptor, stopwatch.GetElapsedTime());
                 }
             }
             finally
@@ -1601,30 +1601,5 @@ internal abstract partial class ResourceInvoker
     private sealed class AuthorizationFilterContextSealed : AuthorizationFilterContext
     {
         public AuthorizationFilterContextSealed(ActionContext actionContext, IList<IFilterMetadata> filters) : base(actionContext, filters) { }
-    }
-
-    private static partial class Log
-    {
-        [LoggerMessage(3, LogLevel.Information, "Authorization failed for the request at filter '{AuthorizationFilter}'.", EventName = "AuthorizationFailure")]
-        public static partial void AuthorizationFailure(ILogger logger, IFilterMetadata authorizationFilter);
-
-        [LoggerMessage(4, LogLevel.Debug, "Request was short circuited at resource filter '{ResourceFilter}'.", EventName = "ResourceFilterShortCircuit")]
-        public static partial void ResourceFilterShortCircuited(ILogger logger, IFilterMetadata resourceFilter);
-
-        [LoggerMessage(5, LogLevel.Trace, "Before executing action result {ActionResult}.", EventName = "BeforeExecutingActionResult")]
-        private static partial void BeforeExecutingActionResult(ILogger logger, Type actionResult);
-
-        public static void BeforeExecutingActionResult(ILogger logger, IActionResult actionResult)
-        {
-            BeforeExecutingActionResult(logger, actionResult.GetType());
-        }
-
-        [LoggerMessage(6, LogLevel.Trace, "After executing action result {ActionResult}.", EventName = "AfterExecutingActionResult")]
-        private static partial void AfterExecutingActionResult(ILogger logger, Type actionResult);
-
-        public static void AfterExecutingActionResult(ILogger logger, IActionResult actionResult)
-        {
-            AfterExecutingActionResult(logger, actionResult.GetType());
-        }
     }
 }

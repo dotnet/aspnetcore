@@ -37,7 +37,7 @@ public partial class FileStreamResultExecutor : FileResultExecutorBase, IActionR
 
         using (result.FileStream)
         {
-            Logger.ExecutingFileResult(result);
+            Log.ExecutingFileResult(Logger, result);
 
             long? fileLength = null;
             if (result.FileStream.CanSeek)
@@ -100,6 +100,18 @@ public partial class FileStreamResultExecutor : FileResultExecutorBase, IActionR
 
     private static partial class Log
     {
+        public static void ExecutingFileResult(ILogger logger, FileResult fileResult)
+        {
+            if (logger.IsEnabled(LogLevel.Information))
+            {
+                var fileResultType = fileResult.GetType().Name;
+                ExecutingFileResultWithNoFileName(logger, fileResultType, fileResult.FileDownloadName);
+            }
+        }
+
+        [LoggerMessage(1, LogLevel.Information, "Executing {FileResultType}, sending file with download name '{FileDownloadName}' ...", EventName = "ExecutingFileResultWithNoFileName", SkipEnabledCheck = true)]
+        private static partial void ExecutingFileResultWithNoFileName(ILogger logger, string fileResultType, string fileDownloadName);
+
         [LoggerMessage(17, LogLevel.Debug, "Writing the requested range of bytes to the body...", EventName = "WritingRangeToBody")]
         public static partial void WritingRangeToBody(ILogger logger);
     }

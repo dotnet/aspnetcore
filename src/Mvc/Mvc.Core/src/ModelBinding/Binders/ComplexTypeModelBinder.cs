@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 /// <see cref="IModelBinder"/> implementation for binding complex types.
 /// </summary>
 [Obsolete("This type is obsolete and will be removed in a future version. Use ComplexObjectModelBinder instead.")]
-public class ComplexTypeModelBinder : IModelBinder
+public partial class ComplexTypeModelBinder : IModelBinder
 {
     // Don't want a new public enum because communication between the private and internal methods of this class
     // should not be exposed. Can't use an internal enum because types of [TheoryData] values must be public.
@@ -358,7 +358,7 @@ public class ComplexTypeModelBinder : IModelBinder
         // level object. So we return false.
         if (bindingContext.ModelMetadata.Properties.Count == 0)
         {
-            _logger.NoPublicSettableProperties(bindingContext);
+            Log.NoPublicSettableProperties(_logger, bindingContext);
             return NoDataAvailable;
         }
 
@@ -424,7 +424,7 @@ public class ComplexTypeModelBinder : IModelBinder
             return GreedyPropertiesMayHaveData;
         }
 
-        _logger.CannotBindToComplexType(bindingContext);
+        Log.CannotBindToComplexType(_logger, bindingContext);
 
         return NoDataAvailable;
     }
@@ -591,5 +591,20 @@ public class ComplexTypeModelBinder : IModelBinder
         {
             modelState.AddModelError(modelName, exception, bindingContext.ModelMetadata);
         }
+    }
+
+    private static partial class Log
+    {
+        public static void NoPublicSettableProperties(ILogger logger, ModelBindingContext bindingContext)
+            => NoPublicSettableProperties(logger, bindingContext.ModelName, bindingContext.ModelType);
+
+        [LoggerMessage(17, LogLevel.Debug, "Could not bind to model with name '{ModelName}' and type '{ModelType}' as the type has no public settable properties.", EventName = "NoPublicSettableProperties")]
+        private static partial void NoPublicSettableProperties(ILogger logger, string modelName, Type modelType);
+
+        public static void CannotBindToComplexType(ILogger logger, ModelBindingContext bindingContext)
+            => CannotBindToComplexType(logger, bindingContext.ModelType);
+
+        [LoggerMessage(18, LogLevel.Debug, "Could not bind to model of type '{ModelType}' as there were no values in the request for any of the properties.", EventName = "CannotBindToComplexType")]
+        private static partial void CannotBindToComplexType(ILogger logger, Type modelType);
     }
 }

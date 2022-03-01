@@ -8,18 +8,23 @@ namespace Microsoft.AspNetCore.Server.HttpSys;
 internal class ServerDelegationPropertyFeature : IServerDelegationFeature
 {
     private readonly ILogger _logger;
-    private readonly RequestQueue _queue;
+    private readonly UrlGroup _urlGroup;
 
     public ServerDelegationPropertyFeature(RequestQueue queue, ILogger logger)
     {
-        _queue = queue;
+        if (queue.UrlGroup == null)
+        {
+            throw new ArgumentException($"{nameof(queue)}.UrlGroup can't be null");
+        }
+
+        _urlGroup = queue.UrlGroup;
         _logger = logger;
     }
 
     public DelegationRule CreateDelegationRule(string queueName, string uri)
     {
-        var rule = new DelegationRule(_queue.UrlGroup, queueName, uri, _logger);
-        _queue.UrlGroup.SetDelegationProperty(rule.Queue);
+        var rule = new DelegationRule(_urlGroup, queueName, uri, _logger);
+        _urlGroup.SetDelegationProperty(rule.Queue);
         return rule;
     }
 }
