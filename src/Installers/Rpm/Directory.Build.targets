@@ -7,8 +7,6 @@
   <!-- Output paths -->
   <PropertyGroup>
     <RpmPackageInstallRoot Condition="'$(RpmPackageInstallRoot)' != '' AND !HasTrailingSlash('$(RpmPackageInstallRoot)')">$(RpmPackageInstallRoot)/</RpmPackageInstallRoot>
-    <CblMariner1TargetPath>$(InstallersOutputPath)$(CblMarinerBaseName)$(CblMariner1VersionSuffix)$(CblMarinerExtension)</CblMariner1TargetPath>
-    <CblMariner2TargetPath>$(InstallersOutputPath)$(CblMarinerBaseName)$(CblMariner2VersionSuffix)$(CblMarinerExtension)</CblMariner2TargetPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -39,6 +37,11 @@
   <Target Name="Pack" />
 
   <Target Name="RpmBuild" DependsOnTargets="$(RpmBuildDependsOn)">
+    <PropertyGroup>
+      <CblMariner1TargetPath>$(InstallersOutputPath)$(CblMarinerBaseName)$(CblMariner1VersionSuffix)$(CblMarinerExtension)</CblMariner1TargetPath>
+      <CblMariner2TargetPath>$(InstallersOutputPath)$(CblMarinerBaseName)$(CblMariner2VersionSuffix)$(CblMarinerExtension)</CblMariner2TargetPath>
+    </PropertyGroup>
+    
     <!-- Create layout: Create changelog -->
     <PropertyGroup>
       <ChangeLogProps>DATE=$([System.DateTime]::UtcNow.ToString(ddd MMM dd yyyy))</ChangeLogProps>
