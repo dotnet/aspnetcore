@@ -45,27 +45,25 @@ internal sealed class RequestDecompressionMiddleware
     /// <returns>A task that represents the execution of this middleware.</returns>
     public Task Invoke(HttpContext context)
     {
-        var provider = _provider.GetDecompressionProvider(context);
-        if (provider is null)
+        using var decompressionStream = _provider.GetDecompressionStream(context);
+        if (decompressionStream is null)
         {
             return _next(context);
         }
 
-        return InvokeCore(context, provider);
+        return InvokeCore(context, decompressionStream);
     }
 
-    private async Task InvokeCore(HttpContext context, IDecompressionProvider provider)
+    private async Task InvokeCore(HttpContext context, Stream decompressionStream)
     {
         var request = context.Request.Body;
         try
         {
-            await using var stream = provider.GetDecompressionStream(request);
-
             var sizeLimit =
                 context.GetEndpoint()?.Metadata?.GetMetadata<IRequestSizeLimitMetadata>()?.MaxRequestBodySize
                     ?? context.Features.Get<IHttpMaxRequestBodySizeFeature>()?.MaxRequestBodySize;
 
-            context.Request.Body = new SizeLimitedStream(stream, sizeLimit);
+            context.Request.Body = new SizeLimitedStream(decompressionStream, sizeLimit);
             await _next(context);
         }
         finally

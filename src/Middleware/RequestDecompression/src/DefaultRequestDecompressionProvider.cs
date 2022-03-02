@@ -34,7 +34,7 @@ internal sealed partial class DefaultRequestDecompressionProvider : IRequestDeco
     }
 
     /// <inheritdoc />
-    public IDecompressionProvider? GetDecompressionProvider(HttpContext context)
+    public Stream? GetDecompressionStream(HttpContext context)
     {
         var encodings = context.Request.Headers.ContentEncoding;
 
@@ -54,10 +54,11 @@ internal sealed partial class DefaultRequestDecompressionProvider : IRequestDeco
 
         if (_providers.TryGetValue(encodingName, out var matchingProvider))
         {
+            Log.DecompressingWith(_logger, encodingName.ToLowerInvariant());
+
             context.Request.Headers.Remove(HeaderNames.ContentEncoding);
 
-            Log.DecompressingWith(_logger, encodingName.ToLowerInvariant());
-            return matchingProvider;
+            return matchingProvider.GetDecompressionStream(context.Request.Body);
         }
 
         Log.NoDecompressionProvider(_logger);

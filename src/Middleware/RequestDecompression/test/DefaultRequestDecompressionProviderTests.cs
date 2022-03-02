@@ -7,14 +7,19 @@ using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
 using Microsoft.Extensions.Primitives;
+using System.IO.Compression;
 
 namespace Microsoft.AspNetCore.RequestDecompression.Tests;
 
 public class DefaultRequestDecompressionProviderTests
 {
     [Theory]
-    [InlineData("br", typeof(BrotliDecompressionProvider))]
-    [InlineData("BR", typeof(BrotliDecompressionProvider))]
+    [InlineData("br", typeof(BrotliStream))]
+    [InlineData("BR", typeof(BrotliStream))]
+    [InlineData("deflate", typeof(DeflateStream))]
+    [InlineData("DEFLATE", typeof(DeflateStream))]
+    [InlineData("gzip", typeof(GZipStream))]
+    [InlineData("GZIP", typeof(GZipStream))]
     public void GetDecompressionProvider_SupportedContentEncoding_ReturnsProvider(
         string contentEncoding,
         Type expectedProviderType)
@@ -29,7 +34,7 @@ public class DefaultRequestDecompressionProviderTests
         var provider = new DefaultRequestDecompressionProvider(logger, options);
 
         // Act
-        var matchingProvider = provider.GetDecompressionProvider(httpContext);
+        var matchingProvider = provider.GetDecompressionStream(httpContext);
 
         // Assert
         Assert.NotNull(matchingProvider);
@@ -55,7 +60,7 @@ public class DefaultRequestDecompressionProviderTests
         var provider = new DefaultRequestDecompressionProvider(logger, options);
 
         // Act
-        var matchingProvider = provider.GetDecompressionProvider(httpContext);
+        var matchingProvider = provider.GetDecompressionStream(httpContext);
 
         // Assert
         Assert.Null(matchingProvider);
@@ -82,7 +87,7 @@ public class DefaultRequestDecompressionProviderTests
         var provider = new DefaultRequestDecompressionProvider(logger, options);
 
         // Act
-        var matchingProvider = provider.GetDecompressionProvider(httpContext);
+        var matchingProvider = provider.GetDecompressionStream(httpContext);
 
         // Assert
         Assert.Null(matchingProvider);
@@ -110,7 +115,7 @@ public class DefaultRequestDecompressionProviderTests
         var provider = new DefaultRequestDecompressionProvider(logger, options);
 
         // Act
-        var matchingProvider = provider.GetDecompressionProvider(httpContext);
+        var matchingProvider = provider.GetDecompressionStream(httpContext);
 
         // Assert
         Assert.Null(matchingProvider);

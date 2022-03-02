@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.RequestDecompression;
 namespace Microsoft.AspNetCore.Builder;
 
 /// <summary>
-/// Extension methods for the request decompression middleware.
+/// Extension methods for the HTTP request decompression middleware.
 /// </summary>
 public static class RequestDecompressionBuilderExtensions
 {

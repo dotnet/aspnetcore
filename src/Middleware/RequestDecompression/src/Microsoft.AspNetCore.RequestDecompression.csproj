@@ -7,7 +7,6 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore</PackageTags>
     <IsPackable>false</IsPackable>
-    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,11 +17,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="Microsoft.AspNetCore.RequestDecompression.Tests" />
+    <Compile Include="$(RepoRoot)src\Shared\TaskToApm.cs" Link="TaskToApm.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="$(RepoRoot)src\Shared\TaskToApm.cs" Link="TaskToApm.cs" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.RequestDecompression.Tests" />
   </ItemGroup>
 
 </Project>

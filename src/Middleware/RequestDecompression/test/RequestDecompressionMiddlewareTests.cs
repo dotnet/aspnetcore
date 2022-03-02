@@ -519,7 +519,7 @@ public class RequestDecompressionMiddlewareTests
     private class FakeRequestDecompressionProvider : IRequestDecompressionProvider
     {
 #nullable enable
-        public IDecompressionProvider? GetDecompressionProvider(HttpContext context) => null;
+        public Stream? GetDecompressionStream(HttpContext context) => null;
 #nullable disable
     }
 

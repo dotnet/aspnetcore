@@ -3,7 +3,7 @@ Microsoft.AspNetCore.Builder.RequestDecompressionBuilderExtensions
 Microsoft.AspNetCore.RequestDecompression.IDecompressionProvider
 Microsoft.AspNetCore.RequestDecompression.IDecompressionProvider.GetDecompressionStream(System.IO.Stream! stream) -> System.IO.Stream!
 Microsoft.AspNetCore.RequestDecompression.IRequestDecompressionProvider
-Microsoft.AspNetCore.RequestDecompression.IRequestDecompressionProvider.GetDecompressionProvider(Microsoft.AspNetCore.Http.HttpContext! context) -> Microsoft.AspNetCore.RequestDecompression.IDecompressionProvider?
+Microsoft.AspNetCore.RequestDecompression.IRequestDecompressionProvider.GetDecompressionStream(Microsoft.AspNetCore.Http.HttpContext! context) -> System.IO.Stream?
 Microsoft.AspNetCore.RequestDecompression.RequestDecompressionOptions
 Microsoft.AspNetCore.RequestDecompression.RequestDecompressionOptions.DecompressionProviders.get -> System.Collections.Generic.IDictionary<string!, Microsoft.AspNetCore.RequestDecompression.IDecompressionProvider!>!
 Microsoft.AspNetCore.RequestDecompression.RequestDecompressionOptions.RequestDecompressionOptions() -> void
