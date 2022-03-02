@@ -79,7 +79,7 @@ public static partial class RequestDelegateFactory
     private static readonly BinaryExpression TempSourceStringNullExpr = Expression.Equal(TempSourceStringExpr, Expression.Constant(null));
     private static readonly UnaryExpression TempSourceStringIsNotNullOrEmptyExpr = Expression.Not(Expression.Call(StringIsNullOrEmptyMethod, TempSourceStringExpr));
 
-    private static readonly ConstructorInfo RouteHandlerFilterContextConstructor = typeof(RouteHandlerFilterContext).GetConstructors().Single();
+    private static readonly ConstructorInfo RouteHandlerFilterContextConstructor = typeof(RouteHandlerFilterContext).GetConstructor(new[] { typeof(HttpContext), typeof(object[]) })!;
     private static readonly ParameterExpression FilterContextExpr = Expression.Parameter(typeof(RouteHandlerFilterContext), "context");
     private static readonly MemberExpression FilterContextParametersExpr = Expression.Property(FilterContextExpr, typeof(RouteHandlerFilterContext).GetProperty(nameof(RouteHandlerFilterContext.Parameters))!);
     private static readonly MemberExpression FilterContextHttpContextExpr = Expression.Property(FilterContextExpr, typeof(RouteHandlerFilterContext).GetProperty(nameof(RouteHandlerFilterContext.HttpContext))!);
@@ -224,6 +224,7 @@ public static partial class RequestDelegateFactory
 
     private static Func<RouteHandlerFilterContext, ValueTask<object?>> CreateFilterPipeline(MethodInfo methodInfo, Expression? target, FactoryContext factoryContext)
     {
+        Debug.Assert(factoryContext.Filters is not null);
         // httpContext.Response.StatusCode == 400
         // ? Task.CompletedTask
         // : handler((string)context.Parameters[0], (int)context.Parameters[1])
@@ -240,7 +241,7 @@ public static partial class RequestDelegateFactory
                 )),
             FilterContextExpr).Compile();
 
-        for (int i = factoryContext.Filters!.Count - 1; i >= 0; i--)
+        for (var i = factoryContext.Filters.Count - 1; i >= 0; i--)
         {
             var currentFilter = factoryContext.Filters![i];
             var nextFilter = filteredInvocation;
