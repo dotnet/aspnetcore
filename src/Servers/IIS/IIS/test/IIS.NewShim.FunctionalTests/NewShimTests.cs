@@ -2,11 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Testing;
-using Xunit;
 using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Server.IIS.NewShim.FunctionalTests;

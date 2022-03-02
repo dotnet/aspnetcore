@@ -41,6 +41,7 @@
       "src\\Servers\\IIS\\IIS\\test\\IIS.NewHandler.FunctionalTests\\IIS.NewHandler.FunctionalTests.csproj",
       "src\\Servers\\IIS\\IIS\\test\\IIS.NewShim.FunctionalTests\\IIS.NewShim.FunctionalTests.csproj",
       "src\\Servers\\IIS\\IIS\\test\\IIS.ShadowCopy.Tests\\IIS.ShadowCopy.Tests.csproj",
+      "src\\Servers\\IIS\\IIS\\test\\IIS.LongTests\\IIS.LongTests.csproj",
       "src\\Servers\\IIS\\IIS\\test\\IIS.Tests\\IIS.Tests.csproj",
       "src\\Servers\\IIS\\IIS\\test\\IISExpress.FunctionalTests\\IISExpress.FunctionalTests.csproj",
       "src\\Servers\\IIS\\IIS\\test\\testassets\\IIS.Common.TestLib\\IIS.Common.TestLib.csproj",

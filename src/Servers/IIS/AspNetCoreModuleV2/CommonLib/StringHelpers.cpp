@@ -4,7 +4,7 @@
 #include "StringHelpers.h"
 #include "exceptions.h"
 
-bool ends_with(const std::wstring &source, const std::wstring &suffix, bool ignoreCase)
+bool endsWith(const std::wstring& source, const std::wstring& suffix, bool ignoreCase)
 {
     if (source.length() < suffix.length())
     {
