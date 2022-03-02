@@ -584,6 +584,9 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
         return TryGetValueSlow(key, out value);
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2026",
+        Justification = "The constructor that would result in _propertyStorage being non-null is annotated with RequiresUnreferencedCodeAttribute. " +
+        "We do not need to additionally produce an error in this method since it is shared by trimmer friendly code paths.")]
     private bool TryGetValueSlow(string key, out object? value)
     {
         if (_propertyStorage != null)
@@ -618,6 +621,9 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
         }
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2026",
+        Justification = "The constructor that would result in _propertyStorage being non-null is annotated with RequiresUnreferencedCodeAttribute. " +
+        "We do not need to additionally produce an error in this method since it is shared by trimmer friendly code paths.")]
     private void EnsureCapacitySlow(int capacity)
     {
         if (_propertyStorage != null)
@@ -786,6 +792,9 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
             return MoveNextRare();
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2026",
+            Justification = "The constructor that would result in _propertyStorage being non-null is annotated with RequiresUnreferencedCodeAttribute. " +
+            "We do not need to additionally produce an error in this method since it is shared by trimmer friendly code paths.")]
         private bool MoveNextRare()
         {
             var dictionary = _dictionary;

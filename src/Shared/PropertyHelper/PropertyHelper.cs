@@ -71,6 +71,7 @@ internal sealed class PropertyHelper
     /// </summary>
     public Func<object, object?> ValueGetter
     {
+        [RequiresUnreferencedCode("This API is not trim safe.")]
         get
         {
             if (_valueGetter == null)
@@ -87,6 +88,7 @@ internal sealed class PropertyHelper
     /// </summary>
     public Action<object, object?> ValueSetter
     {
+        [RequiresUnreferencedCode("This API is not trim safe.")]
         get
         {
             if (_valueSetter == null)
@@ -103,6 +105,7 @@ internal sealed class PropertyHelper
     /// </summary>
     /// <param name="instance">The object whose property value will be returned.</param>
     /// <returns>The property value.</returns>
+    [RequiresUnreferencedCode("This API is not trim safe.")]
     public object? GetValue(object instance)
     {
         return ValueGetter(instance);
@@ -113,6 +116,7 @@ internal sealed class PropertyHelper
     /// </summary>
     /// <param name="instance">The object whose property value will be set.</param>
     /// <param name="value">The property value.</param>
+    [RequiresUnreferencedCode("This API is not trim safe.")]
     public void SetValue(object instance, object? value)
     {
         ValueSetter(instance, value);
@@ -162,7 +166,7 @@ internal sealed class PropertyHelper
     /// This method is more memory efficient than a dynamically compiled lambda, and about the
     /// same speed.
     /// </remarks>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicMethods, typeof(PropertyHelper))]
+    [RequiresUnreferencedCode("This API is not trimmer safe.")]
     public static Func<object, object?> MakeFastPropertyGetter(PropertyInfo propertyInfo)
     {
         Debug.Assert(propertyInfo != null);
@@ -182,7 +186,7 @@ internal sealed class PropertyHelper
     /// This method is more memory efficient than a dynamically compiled lambda, and about the
     /// same speed.
     /// </remarks>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicMethods, typeof(PropertyHelper))]
+    [RequiresUnreferencedCode("This API is not trimmer safe.")]
     public static Func<object, object?> MakeNullSafeFastPropertyGetter(PropertyInfo propertyInfo)
     {
         Debug.Assert(propertyInfo != null);
@@ -193,6 +197,7 @@ internal sealed class PropertyHelper
             CallNullSafePropertyGetterByReferenceOpenGenericMethod);
     }
 
+    [RequiresUnreferencedCode("This API is not trimmer safe.")]
     private static Func<object, object?> MakeFastPropertyGetter(
         PropertyInfo propertyInfo,
         MethodInfo propertyGetterWrapperMethod,
@@ -236,6 +241,7 @@ internal sealed class PropertyHelper
         }
     }
 
+    [RequiresUnreferencedCode("This API is not trimmer safe.")]
     private static Func<object, object?> MakeFastPropertyGetter(
         Type openGenericDelegateType,
         MethodInfo propertyGetMethod,
@@ -264,7 +270,7 @@ internal sealed class PropertyHelper
     /// This method is more memory efficient than a dynamically compiled lambda, and about the
     /// same speed. This only works for reference types.
     /// </remarks>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicMethods, typeof(PropertyHelper))]
+    [RequiresUnreferencedCode("This API is not trimmer safe.")]
     public static Action<object, object?> MakeFastPropertySetter(PropertyInfo propertyInfo)
     {
         Debug.Assert(propertyInfo != null);
