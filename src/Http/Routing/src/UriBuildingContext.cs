@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.AspNetCore.Routing;
 
 [DebuggerDisplay("{DebuggerToString(),nq}")]
-internal class UriBuildingContext
+internal sealed class UriBuildingContext
 {
     // Holds the 'accepted' parts of the path.
     private readonly StringBuilder _path;
@@ -133,7 +133,7 @@ internal class UriBuildingContext
         return true;
     }
 
-    public void Remove(string literal)
+    public void Remove()
     {
         Debug.Assert(_lastValueOffset != -1, "Cannot invoke Remove more than once.");
         _path.Length = _lastValueOffset;

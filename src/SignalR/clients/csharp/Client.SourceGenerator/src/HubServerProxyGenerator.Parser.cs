@@ -105,7 +105,7 @@ internal partial class HubServerProxyGenerator
             return true;
         }
 
-        private static bool IsExtensionClassSignatureValid(ClassDeclarationSyntax syntax, SourceProductionContext context)
+        private static bool IsExtensionClassSignatureValid(ClassDeclarationSyntax syntax)
         {
             // Check partialness
             var hasPartialModifier = false;
@@ -203,7 +203,7 @@ internal partial class HubServerProxyGenerator
             {
                 return sourceGenerationSpec;
             }
-            if (!IsExtensionClassSignatureValid((ClassDeclarationSyntax)methodDeclarationSyntax.Parent, _context))
+            if (!IsExtensionClassSignatureValid((ClassDeclarationSyntax)methodDeclarationSyntax.Parent))
             {
                 return sourceGenerationSpec;
             }

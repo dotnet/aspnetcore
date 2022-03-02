@@ -318,7 +318,7 @@ internal static class NativeMethods
 
     internal static unsafe void HttpResponseSetTrailer(NativeSafeHandle pInProcessHandler, byte* pHeaderName, byte* pHeaderValue, ushort length, bool replace)
     {
-        Validate(http_response_set_trailer(pInProcessHandler, pHeaderName, pHeaderValue, length, false));
+        Validate(http_response_set_trailer(pInProcessHandler, pHeaderName, pHeaderValue, length, replace));
     }
 
     internal static unsafe void HttpResetStream(NativeSafeHandle pInProcessHandler, ulong errorCode)

@@ -7,26 +7,23 @@ using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 
-internal class ApiBehaviorApplicationModelProvider : IApplicationModelProvider
+internal sealed class ApiBehaviorApplicationModelProvider : IApplicationModelProvider
 {
     public ApiBehaviorApplicationModelProvider(
         IOptions<ApiBehaviorOptions> apiBehaviorOptions,
         IModelMetadataProvider modelMetadataProvider,
-        IClientErrorFactory clientErrorFactory,
-        ILoggerFactory loggerFactory,
         IServiceProvider serviceProvider)
     {
         var options = apiBehaviorOptions.Value;
 
         ActionModelConventions = new List<IActionModelConvention>()
-            {
-                new ApiVisibilityConvention(),
-            };
+        {
+            new ApiVisibilityConvention(),
+        };
 
         if (!options.SuppressMapClientErrors)
         {

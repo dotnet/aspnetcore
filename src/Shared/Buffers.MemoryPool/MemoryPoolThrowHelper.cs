@@ -44,7 +44,7 @@ internal class MemoryPoolThrowHelper
 
     public static void ThrowInvalidOperationException_BlockDoubleDispose(DiagnosticPoolBlock block)
     {
-        throw new InvalidOperationException("Block is being disposed twice");
+        throw new InvalidOperationException(GenerateMessage("Block is being disposed twice", block));
     }
 
     public static void ThrowInvalidOperationException_BlockReturnedToDisposedPool(DiagnosticPoolBlock block)

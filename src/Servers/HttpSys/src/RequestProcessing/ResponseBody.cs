@@ -377,7 +377,7 @@ internal sealed partial class ResponseBody : Stream
         if (statusCode == ErrorCodes.ERROR_SUCCESS && HttpSysListener.SkipIOCPCallbackOnSuccess)
         {
             // IO operation completed synchronously - callback won't be called to signal completion.
-            asyncResult.IOCompleted(statusCode, bytesSent);
+            asyncResult.IOCompleted(statusCode);
         }
 
         // Last write, cache it for special cancellation handling.
@@ -676,7 +676,7 @@ internal sealed partial class ResponseBody : Stream
         if (statusCode == ErrorCodes.ERROR_SUCCESS && HttpSysListener.SkipIOCPCallbackOnSuccess)
         {
             // IO operation completed synchronously - callback won't be called to signal completion.
-            asyncResult.IOCompleted(statusCode, bytesSent);
+            asyncResult.IOCompleted(statusCode);
         }
 
         // Last write, cache it for special cancellation handling.
