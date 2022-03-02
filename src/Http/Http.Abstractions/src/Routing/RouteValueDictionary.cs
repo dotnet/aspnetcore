@@ -177,7 +177,7 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
     {
         if (dictionary is not null)
         {
-        Initialize(dictionary);
+            Initialize(dictionary);
         }
         else
         {
@@ -185,7 +185,7 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
         }
     }
 
-    
+
 
     [MemberNotNull(nameof(_arrayStorage))]
     private void Initialize(IEnumerable<KeyValuePair<string, string?>> stringValueEnumerable)
