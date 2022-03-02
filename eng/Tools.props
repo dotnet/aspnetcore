@@ -7,7 +7,7 @@
       Since this project is evaluated before .npmproj files are loaded, this should cause the package to end up in
       the NuGet cache ahead of time. This is not needed in source build.
     -->
-    <PackageReference Include="Yarn.MSBuild" Version="1.15.2" />
+    <PackageReference Include="Yarn.MSBuild" Version="1.22.10" />
   </ItemGroup>
 
   <!-- Update the generated files when we restore projects. Skip in desktop msbuild due to VS 16.8 requirements. -->

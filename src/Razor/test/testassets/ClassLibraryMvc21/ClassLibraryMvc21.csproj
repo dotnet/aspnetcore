@@ -14,5 +14,6 @@
       <!-- Avoid exporting types from real MVC that will conflict with the test shim -->
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="System.Text.Encodings.Web" Version="4.5.1" />
   </ItemGroup>
 </Project>
