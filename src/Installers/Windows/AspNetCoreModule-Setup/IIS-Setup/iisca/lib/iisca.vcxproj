@@ -76,8 +76,9 @@
     <ProjectGuid>{7324770c-0871-4d73-be3d-5e2f3e9e1b1e}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>iisca</RootNamespace>
-    <PlatformToolsetVersion Condition=" '$(VisualStudioVersion)' == '17.0' ">v143</PlatformToolsetVersion>
-    <PlatformToolsetVersion Condition=" '$(PlatformToolsetVersion)' == '' ">v142</PlatformToolsetVersion>
+    <WindowsTargetPlatformVersion Condition=" '$(WindowsTargetPlatformVersion)' == '' ">10.0.18362.0</WindowsTargetPlatformVersion>
+    <PlatformToolsetVersion>v142</PlatformToolsetVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup>
@@ -87,13 +88,16 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <PropertyGroup Label="Configuration">
-    <VCToolsVersion />
+    <VCToolsVersion>14.29.30133</VCToolsVersion>
   </PropertyGroup>
   <PropertyGroup>
     <AdditionalIncludeDirectories>$(IIS-Common)version;$(IIS-Common)Include;$(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     <PrecompiledHeader>Create</PrecompiledHeader>
     <PrecompiledHeaderFile>precomp.h</PrecompiledHeaderFile>
     <PrecompiledHeaderOutputFile>$(IntDir)precomp.pch</PrecompiledHeaderOutputFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
+    <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
