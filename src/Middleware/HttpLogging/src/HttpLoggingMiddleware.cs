@@ -212,9 +212,12 @@ internal sealed class HttpLoggingMiddleware
             FilterHeaders(list, response.Headers, options._internalResponseHeaders);
         }
 
-        var httpResponseLog = new HttpResponseLog(list);
+        if (list.Count > 0)
+        {
+            var httpResponseLog = new HttpResponseLog(list);
 
-        logger.ResponseLog(httpResponseLog);
+            logger.ResponseLog(httpResponseLog);
+        }
     }
 
     internal static void FilterHeaders(List<KeyValuePair<string, object?>> keyValues,
