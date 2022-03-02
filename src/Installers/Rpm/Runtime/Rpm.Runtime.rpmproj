@@ -14,7 +14,9 @@
   <PropertyGroup>
     <TargetFileName>$(RuntimeInstallerBaseName)-$(SharedFxVersion)-x64.rpm</TargetFileName>
     <CblMarinerTargetFileName>$(RuntimeInstallerBaseName)-$(SharedFxVersion)-cm.1-x64.rpm</CblMarinerTargetFileName>
+    <CblMariner2TargetFileName>$(RuntimeInstallerBaseName)-$(SharedFxVersion)-cm.2-x64.rpm</CblMariner2TargetFileName>
     <TargetPath>$(InstallersOutputPath)$(TargetFileName)</TargetPath>
     <CblMarinerTargetPath>$(InstallersOutputPath)$(CblMarinerTargetFileName)</CblMarinerTargetPath>
+    <CblMariner2TargetPath>$(InstallersOutputPath)$(CblMariner2TargetFileName)</CblMariner2TargetPath>
   </PropertyGroup>
 </Project>
