@@ -125,14 +125,14 @@
     <!-- Only listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
     <MicrosoftNETCorePlatformsVersion>7.0.0-preview.3.22127.1</MicrosoftNETCorePlatformsVersion>
     <!-- Packages from dotnet/efcore -->
-    <dotnetefVersion>7.0.0-preview.3.22152.6</dotnetefVersion>
-    <MicrosoftEntityFrameworkCoreInMemoryVersion>7.0.0-preview.3.22152.6</MicrosoftEntityFrameworkCoreInMemoryVersion>
-    <MicrosoftEntityFrameworkCoreRelationalVersion>7.0.0-preview.3.22152.6</MicrosoftEntityFrameworkCoreRelationalVersion>
-    <MicrosoftEntityFrameworkCoreSqliteVersion>7.0.0-preview.3.22152.6</MicrosoftEntityFrameworkCoreSqliteVersion>
-    <MicrosoftEntityFrameworkCoreSqlServerVersion>7.0.0-preview.3.22152.6</MicrosoftEntityFrameworkCoreSqlServerVersion>
-    <MicrosoftEntityFrameworkCoreToolsVersion>7.0.0-preview.3.22152.6</MicrosoftEntityFrameworkCoreToolsVersion>
-    <MicrosoftEntityFrameworkCoreVersion>7.0.0-preview.3.22152.6</MicrosoftEntityFrameworkCoreVersion>
-    <MicrosoftEntityFrameworkCoreDesignVersion>7.0.0-preview.3.22152.6</MicrosoftEntityFrameworkCoreDesignVersion>
+    <dotnetefVersion>7.0.0-preview.3.22152.8</dotnetefVersion>
+    <MicrosoftEntityFrameworkCoreInMemoryVersion>7.0.0-preview.3.22152.8</MicrosoftEntityFrameworkCoreInMemoryVersion>
+    <MicrosoftEntityFrameworkCoreRelationalVersion>7.0.0-preview.3.22152.8</MicrosoftEntityFrameworkCoreRelationalVersion>
+    <MicrosoftEntityFrameworkCoreSqliteVersion>7.0.0-preview.3.22152.8</MicrosoftEntityFrameworkCoreSqliteVersion>
+    <MicrosoftEntityFrameworkCoreSqlServerVersion>7.0.0-preview.3.22152.8</MicrosoftEntityFrameworkCoreSqlServerVersion>
+    <MicrosoftEntityFrameworkCoreToolsVersion>7.0.0-preview.3.22152.8</MicrosoftEntityFrameworkCoreToolsVersion>
+    <MicrosoftEntityFrameworkCoreVersion>7.0.0-preview.3.22152.8</MicrosoftEntityFrameworkCoreVersion>
+    <MicrosoftEntityFrameworkCoreDesignVersion>7.0.0-preview.3.22152.8</MicrosoftEntityFrameworkCoreDesignVersion>
     <!-- Packages from dotnet/arcade -->
     <MicrosoftDotNetBuildTasksInstallersVersion>7.0.0-beta.22124.4</MicrosoftDotNetBuildTasksInstallersVersion>
     <MicrosoftDotNetBuildTasksTemplatingVersion>7.0.0-beta.22124.4</MicrosoftDotNetBuildTasksTemplatingVersion>
