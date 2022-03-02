@@ -41,7 +41,8 @@
     "webpack-cli": "^4.8.0"
   },
   "resolutions": {
-    "**/set-value": "^3.0.2",
-    "url-parse": ">=1.5.0"
+    "**/set-value": "^4.0.1",
+    "url-parse": ">=1.5.6",
+    "node-fetch": ">=2.6.7"
   }
 }
