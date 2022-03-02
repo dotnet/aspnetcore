@@ -45,7 +45,18 @@ internal sealed class RequestDecompressionMiddleware
     /// <returns>A task that represents the execution of this middleware.</returns>
     public Task Invoke(HttpContext context)
     {
-        using var decompressionStream = _provider.GetDecompressionStream(context);
+        var decompressionStream = _provider.GetDecompressionStream(context);
+        if (decompressionStream is null)
+        {
+            return _next(context);
+        }
+
+        return InvokeCore(context, decompressionStream);
+    }
+
+    public Task Invoke(HttpContext context)
+    {
+        var decompressionStream = _provider.GetDecompressionStream(context);
         if (decompressionStream is null)
         {
             return _next(context);
@@ -69,6 +80,7 @@ internal sealed class RequestDecompressionMiddleware
         finally
         {
             context.Request.Body = request;
+            await decompressionStream.DisposeAsync();
         }
     }
 }
