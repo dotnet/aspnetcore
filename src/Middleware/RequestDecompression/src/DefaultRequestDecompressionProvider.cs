@@ -78,7 +78,7 @@ internal sealed partial class DefaultRequestDecompressionProvider : IRequestDeco
 
         public static void DecompressingWith(ILogger logger, string contentEncoding)
         {
-            if (logger.IsEnabled(LogLevel.Debug)
+            if (logger.IsEnabled(LogLevel.Debug))
             {
                 DecompressingWithCore(logger, contentEncoding.ToLowerInvariant());
             }
