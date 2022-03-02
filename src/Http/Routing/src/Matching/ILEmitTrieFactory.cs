@@ -32,10 +32,10 @@ internal static class ILEmitTrieFactory
             typeof(int),
             new[] { typeof(string), typeof(int), typeof(int), });
 
-        GenerateMethodBody(method.GetILGenerator(), defaultDestination, exitDestination, entries, vectorize);
+        GenerateMethodBody(method.GetILGenerator(), defaultDestination, entries, vectorize);
 
 #if IL_EMIT_SAVE_ASSEMBLY
-            SaveAssembly(method.GetILGenerator(), defaultDestination, exitDestination, entries, vectorize);
+            SaveAssembly(method.GetILGenerator(), defaultDestination, entries, vectorize);
 #endif
 
         return (Func<string, int, int, int>)method.CreateDelegate(typeof(Func<string, int, int, int>));
@@ -59,7 +59,6 @@ internal static class ILEmitTrieFactory
     private static void GenerateMethodBody(
         ILGenerator il,
         int defaultDestination,
-        int exitDestination,
         (string text, int destination)[] entries,
         bool? vectorize)
     {

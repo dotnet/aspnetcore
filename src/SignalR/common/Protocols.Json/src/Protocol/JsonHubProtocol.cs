@@ -380,7 +380,7 @@ public sealed class JsonHubProtocol : IHubProtocol
                         }
                     }
 
-                    message = BindStreamItemMessage(invocationId, item, hasItem, binder);
+                    message = BindStreamItemMessage(invocationId, item, hasItem);
                     break;
                 case HubProtocolConstants.CompletionMessageType:
                     if (invocationId is null)
@@ -394,7 +394,7 @@ public sealed class JsonHubProtocol : IHubProtocol
                         result = BindType(ref resultToken, returnType);
                     }
 
-                    message = BindCompletionMessage(invocationId, error, result, hasResult, binder);
+                    message = BindCompletionMessage(invocationId, error, result, hasResult);
                     break;
                 case HubProtocolConstants.CancelInvocationMessageType:
                     message = BindCancelInvocationMessage(invocationId);
@@ -650,7 +650,7 @@ public sealed class JsonHubProtocol : IHubProtocol
         return new CancelInvocationMessage(invocationId);
     }
 
-    private static HubMessage BindCompletionMessage(string invocationId, string? error, object? result, bool hasResult, IInvocationBinder binder)
+    private static HubMessage BindCompletionMessage(string invocationId, string? error, object? result, bool hasResult)
     {
         if (string.IsNullOrEmpty(invocationId))
         {
@@ -670,7 +670,7 @@ public sealed class JsonHubProtocol : IHubProtocol
         return new CompletionMessage(invocationId, error, result: null, hasResult: false);
     }
 
-    private static HubMessage BindStreamItemMessage(string invocationId, object? item, bool hasItem, IInvocationBinder binder)
+    private static HubMessage BindStreamItemMessage(string invocationId, object? item, bool hasItem)
     {
         if (string.IsNullOrEmpty(invocationId))
         {

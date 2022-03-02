@@ -49,7 +49,6 @@ public class MultiApplicationTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
-    [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
     public async Task FailsAndLogsWhenRunningTwoInProcessApps()
     {
         var parameters = Fixture.GetBaseDeploymentParameters(HostingModel.InProcess);
@@ -71,7 +70,6 @@ public class MultiApplicationTests : IISFunctionalTestBase
     }
 
     [ConditionalTheory]
-    [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
     [InlineData(HostingModel.OutOfProcess)]
     [InlineData(HostingModel.InProcess)]
     public async Task FailsAndLogsEventLogForMixedHostingModel(HostingModel firstApp)

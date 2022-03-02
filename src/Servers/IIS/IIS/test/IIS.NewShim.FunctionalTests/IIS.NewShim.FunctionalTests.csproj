@@ -5,6 +5,7 @@
     <TestGroupName>IISNewShim.FunctionalTests</TestGroupName>
     <DefineConstants>NEWSHIM_FUNCTIONALS</DefineConstants>
     <SkipTests Condition=" '$(SkipIISNewShimTests)' == 'true' ">true</SkipTests>
+    <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 

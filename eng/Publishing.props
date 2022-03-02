@@ -61,22 +61,31 @@
       <ItemsToPushToBlobFeed Remove="@(ItemsToPushToBlobFeed)" Condition="'$(OS)' != 'Windows_NT' and '$(PostBuildSign)' != 'true'" />
 
       <ItemsToPushToBlobFeed Include="@(_ChecksumsToPublish)">
+        <ManifestArtifactData>NonShipping=true</ManifestArtifactData>
         <PublishFlatContainer>true</PublishFlatContainer>
         <RelativeBlobPath>$(_UploadPathRoot)/Runtime/$(_PackageVersion)/%(Filename)%(Extension)</RelativeBlobPath>
       </ItemsToPushToBlobFeed>
 
-      <ItemsToPushToBlobFeed Include="@(_InstallersToPublish)">
-        <IsShipping>true</IsShipping>
+      <ItemsToPushToBlobFeed Include="@(_InstallersToPublish)" Condition="! $([System.String]::Copy('%(Filename)').ToLower().Contains('internal'))">
+        <ManifestArtifactData>NonShipping=false</ManifestArtifactData>
+        <PublishFlatContainer>true</PublishFlatContainer>
+        <RelativeBlobPath>$(_UploadPathRoot)/%(_InstallersToPublish.UploadPathSegment)/$(_PackageVersion)/%(Filename)%(Extension)</RelativeBlobPath>
+      </ItemsToPushToBlobFeed>
+
+      <ItemsToPushToBlobFeed Include="@(_InstallersToPublish)" Condition="$([System.String]::Copy('%(Filename)').ToLower().Contains('internal'))">
+        <ManifestArtifactData>NonShipping=true</ManifestArtifactData>
         <PublishFlatContainer>true</PublishFlatContainer>
         <RelativeBlobPath>$(_UploadPathRoot)/%(_InstallersToPublish.UploadPathSegment)/$(_PackageVersion)/%(Filename)%(Extension)</RelativeBlobPath>
       </ItemsToPushToBlobFeed>
 
       <ItemsToPushToBlobFeed Include="$(ProductVersionFileLocation)" Condition=" '$(PublishInstallerBaseVersion)' == 'true'">
+        <ManifestArtifactData>NonShipping=true</ManifestArtifactData>
         <PublishFlatContainer>true</PublishFlatContainer>
         <RelativeBlobPath>$(_UploadPathRoot)/Runtime/$(_PackageVersion)/$(ProductVersionFileName)</RelativeBlobPath>
       </ItemsToPushToBlobFeed>
 
       <ItemsToPushToBlobFeed Include="$(RepoProductVersionFileLocation)" Condition=" '$(PublishInstallerBaseVersion)' == 'true'">
+        <ManifestArtifactData>NonShipping=true</ManifestArtifactData>
         <PublishFlatContainer>true</PublishFlatContainer>
         <RelativeBlobPath>$(_UploadPathRoot)/Runtime/$(_PackageVersion)/$(RepoProductVersionFileName)</RelativeBlobPath>
       </ItemsToPushToBlobFeed>

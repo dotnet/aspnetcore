@@ -8,6 +8,7 @@
     <PackageTags>aspnetcore;kestrel</PackageTags>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <NoWarn>CA1416;CS0436;$(NoWarn)</NoWarn><!-- Conflicts between internal and public Quic APIs; Platform support warnings. -->
+    <NoWarn>$(NoWarn);IDE0060</NoWarn> <!-- This project is work in progress and has incomplete APIs -->
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
   </PropertyGroup>

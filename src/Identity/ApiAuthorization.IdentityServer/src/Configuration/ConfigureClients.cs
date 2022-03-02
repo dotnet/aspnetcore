@@ -52,7 +52,7 @@ internal class ConfigureClients : IConfigureOptions<ApiAuthorizationOptions>
                         yield return GetLocalSPA(name, definition);
                         break;
                     case ApplicationProfiles.NativeApp:
-                        yield return GetNativeApp(name, definition);
+                        yield return GetNativeApp(name);
                         break;
                     default:
                         throw new InvalidOperationException($"Type '{definition.Profile}' is not supported.");
@@ -97,7 +97,7 @@ internal class ConfigureClients : IConfigureOptions<ApiAuthorizationOptions>
         return client.Build();
     }
 
-    private static Client GetNativeApp(string name, ClientDefinition definition)
+    private static Client GetNativeApp(string name)
     {
         var client = ClientBuilder.NativeApp(name)
             .FromConfiguration();

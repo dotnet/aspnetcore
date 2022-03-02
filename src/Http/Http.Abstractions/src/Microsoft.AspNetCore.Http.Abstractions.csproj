@@ -13,6 +13,7 @@ Microsoft.AspNetCore.Http.HttpResponse</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore</PackageTags>
     <IsPackable>false</IsPackable>
+    <Trimmable>true</Trimmable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,7 +22,6 @@ Microsoft.AspNetCore.Http.HttpResponse</Description>
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
 
     <Compile Include="$(SharedSourceRoot)ActivatorUtilities\*.cs" />
-    <Compile Include="$(SharedSourceRoot)ParameterDefaultValue\*.cs" />
     <Compile Include="$(SharedSourceRoot)PropertyHelper\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)\UrlDecoder\UrlDecoder.cs" Link="UrlDecoder.cs" />
     <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" />

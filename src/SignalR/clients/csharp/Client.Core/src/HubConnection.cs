@@ -869,7 +869,9 @@ public partial class HubConnection : IAsyncDisposable
         }
     }
 
+#pragma warning disable IDE0060 // Remove unused parameter. Resolving tracked via https://github.com/dotnet/aspnetcore/issues/40475
     private async Task SendHubMessage(ConnectionState connectionState, HubMessage hubMessage, CancellationToken cancellationToken = default)
+#pragma warning restore IDE0060 // Remove unused parameter
     {
         _state.AssertConnectionValid();
         _protocol.WriteMessage(hubMessage, connectionState.Connection.Transport.Output);
@@ -2005,7 +2007,7 @@ public partial class HubConnection : IAsyncDisposable
         }
 
         // Don't call this method in a try/finally that releases the lock since we're also potentially releasing the connection lock here.
-        public async Task<ConnectionState> WaitForActiveConnectionAsync(string methodName, CancellationToken token, [CallerMemberName] string? memberName = null, [CallerFilePath] string? filePath = null, [CallerLineNumber] int lineNumber = 0)
+        public async Task<ConnectionState> WaitForActiveConnectionAsync(string methodName, CancellationToken token)
         {
             await WaitConnectionLockAsync(token, methodName).ConfigureAwait(false);
 

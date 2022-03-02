@@ -76,7 +76,7 @@ internal sealed partial class HttpConnectionDispatcher
             if (HttpMethods.IsPost(context.Request.Method))
             {
                 // POST /{path}
-                await ProcessSend(context, options);
+                await ProcessSend(context);
             }
             else if (HttpMethods.IsGet(context.Request.Method))
             {
@@ -136,7 +136,7 @@ internal sealed partial class HttpConnectionDispatcher
                 return;
             }
 
-            if (!await EnsureConnectionStateAsync(connection, context, HttpTransportType.ServerSentEvents, supportedTransports, logScope, options))
+            if (!await EnsureConnectionStateAsync(connection, context, HttpTransportType.ServerSentEvents, supportedTransports, logScope))
             {
                 // Bad connection state. It's already set the response status code.
                 return;
@@ -162,7 +162,7 @@ internal sealed partial class HttpConnectionDispatcher
                 return;
             }
 
-            if (!await EnsureConnectionStateAsync(connection, context, HttpTransportType.WebSockets, supportedTransports, logScope, options))
+            if (!await EnsureConnectionStateAsync(connection, context, HttpTransportType.WebSockets, supportedTransports, logScope))
             {
                 // Bad connection state. It's already set the response status code.
                 return;
@@ -191,7 +191,7 @@ internal sealed partial class HttpConnectionDispatcher
                 return;
             }
 
-            if (!await EnsureConnectionStateAsync(connection, context, HttpTransportType.LongPolling, supportedTransports, logScope, options))
+            if (!await EnsureConnectionStateAsync(connection, context, HttpTransportType.LongPolling, supportedTransports, logScope))
             {
                 // Bad connection state. It's already set the response status code.
                 return;
@@ -385,7 +385,7 @@ internal sealed partial class HttpConnectionDispatcher
 
     private static StringValues GetConnectionToken(HttpContext context) => context.Request.Query["id"];
 
-    private async Task ProcessSend(HttpContext context, HttpConnectionDispatcherOptions options)
+    private async Task ProcessSend(HttpContext context)
     {
         var connection = await GetConnectionAsync(context);
         if (connection == null)
@@ -506,7 +506,7 @@ internal sealed partial class HttpConnectionDispatcher
         context.Response.ContentType = "text/plain";
     }
 
-    private async Task<bool> EnsureConnectionStateAsync(HttpConnectionContext connection, HttpContext context, HttpTransportType transportType, HttpTransportType supportedTransports, ConnectionLogScope logScope, HttpConnectionDispatcherOptions options)
+    private async Task<bool> EnsureConnectionStateAsync(HttpConnectionContext connection, HttpContext context, HttpTransportType transportType, HttpTransportType supportedTransports, ConnectionLogScope logScope)
     {
         if ((supportedTransports & transportType) == 0)
         {

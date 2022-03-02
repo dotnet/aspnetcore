@@ -6,7 +6,7 @@
 #include <string>
 
 [[nodiscard]]
-bool ends_with(const std::wstring &source, const std::wstring &suffix, bool ignoreCase = false);
+bool endsWith(const std::wstring &source, const std::wstring &suffix, bool ignoreCase = false);
 
 [[nodiscard]]
 bool equals_ignore_case(const std::wstring& s1, const std::wstring& s2);

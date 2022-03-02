@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
 #nullable enable
+#pragma warning disable IDE0060 // Unused members are required by codegen.
 
 namespace Microsoft.AspNetCore.DiagnosticsViewPage.Views;
 

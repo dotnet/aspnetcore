@@ -169,12 +169,9 @@ public class ApiBehaviorApplicationModelProviderTest
         };
         var optionsAccessor = Options.Create(options);
 
-        var loggerFactory = NullLoggerFactory.Instance;
         return new ApiBehaviorApplicationModelProvider(
             optionsAccessor,
             new EmptyModelMetadataProvider(),
-            Mock.Of<IClientErrorFactory>(),
-            loggerFactory,
             Mock.Of<IServiceProvider>());
     }
 

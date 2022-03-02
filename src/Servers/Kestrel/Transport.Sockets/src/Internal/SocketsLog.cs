@@ -7,11 +7,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal;
 
 internal static partial class SocketsLog
 {
-    public static void ConnectionRead(SocketConnection connection, int count)
-    {
-        // Don't log for now since this could be *too* verbose.
-        // Reserved: Event ID 3
-    }
+    // Reserved: Event ID 3, EventName = ConnectionRead
 
     [LoggerMessage(6, LogLevel.Debug, @"Connection id ""{ConnectionId}"" received FIN.", EventName = "ConnectionReadFin", SkipEnabledCheck = true)]
     private static partial void ConnectionReadFinCore(ILogger logger, string connectionId);
@@ -35,17 +31,9 @@ internal static partial class SocketsLog
         }
     }
 
-    public static void ConnectionWrite(SocketConnection connection, int count)
-    {
-        // Don't log for now since this could be *too* verbose.
-        // Reserved: Event ID 11
-    }
+    // Reserved: Event ID 11, EventName = ConnectionWrite
 
-    public static void ConnectionWriteCallback(SocketConnection connection, int status)
-    {
-        // Don't log for now since this could be *too* verbose.
-        // Reserved: Event ID 12
-    }
+    // Reserved: Event ID 12, EventName = ConnectionWriteCallback
 
     [LoggerMessage(14, LogLevel.Debug, @"Connection id ""{ConnectionId}"" communication error.", EventName = "ConnectionError", SkipEnabledCheck = true)]
     private static partial void ConnectionErrorCore(ILogger logger, string connectionId, Exception ex);

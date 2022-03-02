@@ -9,11 +9,14 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IsPackable>false</IsPackable>
     <DefineConstants>$(DefineConstants);KESTREL</DefineConstants>
+    <NoWarn>$(NoWarn);IDE0060</NoWarn><!-- APIs in HTTP3 are work in progress and produce these warnings frequently-->
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="$(KestrelSharedSourceRoot)\PooledStreamStack.cs" Link="Internal\PooledStreamStack.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)\HPackHeaderWriter.cs" Link="Internal\Http2\HPackHeaderWriter.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)\Http2HeadersEnumerator.cs" Link="Internal\Http2\Http2HeadersEnumerator.cs" />
     <Compile Include="$(SharedSourceRoot)CertificateGeneration\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)UrlDecoder\**\*.cs" />

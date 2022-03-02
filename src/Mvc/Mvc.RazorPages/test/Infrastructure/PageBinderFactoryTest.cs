@@ -592,8 +592,7 @@ public class PageBinderFactoryTest
             modelMetadataProvider,
             modelBinderFactory,
             actionDescriptor,
-            actionDescriptor.HandlerMethods[0],
-            _options);
+            actionDescriptor.HandlerMethods[0]);
 
         var page = new PageWithProperty
         {
@@ -636,8 +635,7 @@ public class PageBinderFactoryTest
             modelMetadataProvider,
             modelBinderFactory,
             actionDescriptor,
-            actionDescriptor.HandlerMethods[0],
-            _options);
+            actionDescriptor.HandlerMethods[0]);
 
         var page = new PageWithProperty
         {
@@ -680,8 +678,7 @@ public class PageBinderFactoryTest
             modelMetadataProvider,
             modelBinderFactory,
             actionDescriptor,
-            actionDescriptor.HandlerMethods[0],
-            _options);
+            actionDescriptor.HandlerMethods[0]);
 
         var page = new PageWithProperty
         {
@@ -725,8 +722,7 @@ public class PageBinderFactoryTest
             modelMetadataProvider,
             modelBinderFactory,
             actionDescriptor,
-            actionDescriptor.HandlerMethods[0],
-            _options);
+            actionDescriptor.HandlerMethods[0]);
 
         var pageContext = GetPageContext();
         var page = new PageWithProperty

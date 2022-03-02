@@ -8,6 +8,7 @@
 <Project>
   <ItemGroup>
     <TrimmableProject Include="Microsoft.Net.Http.Headers" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Http.Abstractions" />
     <TrimmableProject Include="Microsoft.AspNetCore.Http.Features" />
     <TrimmableProject Include="Microsoft.AspNetCore.Metadata" />
     <TrimmableProject Include="Microsoft.AspNetCore.WebUtilities" />
