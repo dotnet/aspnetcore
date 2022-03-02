@@ -54,17 +54,6 @@ internal sealed class RequestDecompressionMiddleware
         return InvokeCore(context, decompressionStream);
     }
 
-    public Task Invoke(HttpContext context)
-    {
-        var decompressionStream = _provider.GetDecompressionStream(context);
-        if (decompressionStream is null)
-        {
-            return _next(context);
-        }
-
-        return InvokeCore(context, decompressionStream);
-    }
-
     private async Task InvokeCore(HttpContext context, Stream decompressionStream)
     {
         var request = context.Request.Body;
