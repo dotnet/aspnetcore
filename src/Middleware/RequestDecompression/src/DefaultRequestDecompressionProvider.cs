@@ -54,7 +54,7 @@ internal sealed partial class DefaultRequestDecompressionProvider : IRequestDeco
 
         if (_providers.TryGetValue(encodingName, out var matchingProvider))
         {
-            Log.DecompressingWith(_logger, encodingName.ToLowerInvariant());
+            Log.DecompressingWith(_logger, encodingName);
 
             context.Request.Headers.Remove(HeaderNames.ContentEncoding);
 
@@ -76,7 +76,15 @@ internal sealed partial class DefaultRequestDecompressionProvider : IRequestDeco
         [LoggerMessage(3, LogLevel.Debug, "No matching request decompression provider found.", EventName = "NoDecompressionProvider")]
         public static partial void NoDecompressionProvider(ILogger logger);
 
-        [LoggerMessage(4, LogLevel.Debug, "The request will be decompressed with '{ContentEncoding}'.", EventName = "DecompressingWith")]
-        public static partial void DecompressingWith(ILogger logger, string contentEncoding);
+        public static void DecompressingWith(ILogger logger, string contentEncoding)
+        {
+            if (logger.IsEnabled(LogLevel.Debug)
+            {
+                DecompressingWithCore(logger, contentEncoding.ToLowerInvariant());
+            }
+        }
+        
+        [LoggerMessage(4, LogLevel.Debug, "The request will be decompressed with '{ContentEncoding}'.", EventName = "DecompressingWith", SkipEnabledCheck = true)]
+        private static partial void DecompressingWithCore(ILogger logger, string contentEncoding);
     }
 }
