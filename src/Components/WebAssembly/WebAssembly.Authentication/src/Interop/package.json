@@ -14,5 +14,8 @@
   },
   "dependencies": {
     "oidc-client": "^1.10.1"
+  },
+  "resolutions": {
+    "tar": ">=4.4.18"
   }
 }
