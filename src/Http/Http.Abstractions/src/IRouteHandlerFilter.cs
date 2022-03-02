@@ -15,5 +15,5 @@ public interface IRouteHandlerFilter
     /// <param name="context">The <see cref="RouteHandlerFilterContext"/> associated with the current request/response.</param>
     /// <param name="next">The next filter in the pipeline.</param>
     /// <returns>The result of calling the current filter.</returns>
-    abstract ValueTask<object?> InvokeAsync(RouteHandlerFilterContext context, Func<RouteHandlerFilterContext, ValueTask<object?>> next);
+    ValueTask<object?> InvokeAsync(RouteHandlerFilterContext context, Func<RouteHandlerFilterContext, ValueTask<object?>> next);
 }

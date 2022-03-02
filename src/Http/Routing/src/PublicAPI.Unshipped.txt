@@ -1,6 +1,5 @@
 #nullable enable
 Microsoft.AspNetCore.Http.RouteHandlerFilterExtensions
-Microsoft.AspNetCore.Routing.RouteEndpointBuilder.RouteEndpointBuilder(Microsoft.AspNetCore.Routing.Patterns.RoutePattern! routePattern, int order) -> void
 Microsoft.AspNetCore.Routing.RouteOptions.SetParameterPolicy(string! token, System.Type! type) -> void
 Microsoft.AspNetCore.Routing.RouteOptions.SetParameterPolicy<T>(string! token) -> void
 static Microsoft.AspNetCore.Builder.EndpointRouteBuilderExtensions.MapPatch(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! pattern, System.Delegate! handler) -> Microsoft.AspNetCore.Builder.RouteHandlerBuilder!

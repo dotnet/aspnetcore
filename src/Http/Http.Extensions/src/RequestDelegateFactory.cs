@@ -95,10 +95,9 @@ public static partial class RequestDelegateFactory
     /// </summary>
     /// <param name="handler">A request handler with any number of custom parameters that often produces a response with its return value.</param>
     /// <param name="options">The <see cref="RequestDelegateFactoryOptions"/> used to configure the behavior of the handler.</param>
-    /// <param name="filters">A collection of <see cref="IRouteHandlerFilter"/>s invoked in the endpoint associated with this handler.</param>
     /// <returns>The <see cref="RequestDelegateResult"/>.</returns>
 #pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
-    public static RequestDelegateResult Create(Delegate handler, RequestDelegateFactoryOptions? options = null, IEnumerable<IRouteHandlerFilter>? filters = null)
+    public static RequestDelegateResult Create(Delegate handler, RequestDelegateFactoryOptions? options = null)
 #pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
     {
         if (handler is null)
@@ -113,10 +112,6 @@ public static partial class RequestDelegateFactory
         };
 
         var factoryContext = CreateFactoryContext(options);
-        if (filters is not null)
-        {
-            factoryContext.Filters.AddRange(filters);
-        }
 
         var targetableRequestDelegate = CreateTargetableRequestDelegate(handler.Method, targetExpression, factoryContext);
 
@@ -129,10 +124,9 @@ public static partial class RequestDelegateFactory
     /// <param name="methodInfo">A request handler with any number of custom parameters that often produces a response with its return value.</param>
     /// <param name="targetFactory">Creates the <see langword="this"/> for the non-static method.</param>
     /// <param name="options">The <see cref="RequestDelegateFactoryOptions"/> used to configure the behavior of the handler.</param>
-    /// <param name="filters">A collection of <see cref="IRouteHandlerFilter"/>s invoked in the endpoint associated with this handler.</param>
     /// <returns>The <see cref="RequestDelegate"/>.</returns>
 #pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
-    public static RequestDelegateResult Create(MethodInfo methodInfo, Func<HttpContext, object>? targetFactory = null, RequestDelegateFactoryOptions? options = null, IEnumerable<IRouteHandlerFilter>? filters = null)
+    public static RequestDelegateResult Create(MethodInfo methodInfo, Func<HttpContext, object>? targetFactory = null, RequestDelegateFactoryOptions? options = null)
 #pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
     {
         if (methodInfo is null)
@@ -146,10 +140,6 @@ public static partial class RequestDelegateFactory
         }
 
         var factoryContext = CreateFactoryContext(options);
-        if (filters is not null)
-        {
-            factoryContext.Filters.AddRange(filters);
-        }
 
         if (targetFactory is null)
         {
@@ -176,6 +166,7 @@ public static partial class RequestDelegateFactory
             RouteParameters = options?.RouteParameterNames?.ToList(),
             ThrowOnBadRequest = options?.ThrowOnBadRequest ?? false,
             DisableInferredFromBody = options?.DisableInferBodyFromParameters ?? false,
+            Filters = options?.RouteHandlerFilters?.ToList()
         };
 
     private static Func<object?, HttpContext, Task> CreateTargetableRequestDelegate(MethodInfo methodInfo, Expression? targetExpression, FactoryContext factoryContext)
@@ -202,7 +193,7 @@ public static partial class RequestDelegateFactory
 
         // If there are filters registered on the route handler, then we update the method call and
         // return type associated with the request to allow for the filter invocation pipeline.
-        if (factoryContext.Filters.Count > 0)
+        if (factoryContext.Filters is { Count: > 0 })
         {
             var filterPipeline = CreateFilterPipeline(methodInfo, targetExpression, factoryContext);
             Expression<Func<RouteHandlerFilterContext, ValueTask<object?>>> invokePipeline = (context) => filterPipeline(context);
@@ -220,7 +211,7 @@ public static partial class RequestDelegateFactory
         }
 
         var responseWritingMethodCall = factoryContext.ParamCheckExpressions.Count > 0 ?
-            CreateParamCheckingResponseWritingMethodCall(returnType, targetExpression, arguments, factoryContext) :
+            CreateParamCheckingResponseWritingMethodCall(returnType, factoryContext) :
             AddResponseWritingToMethodCall(factoryContext.MethodCall, returnType);
 
         if (factoryContext.UsingTempSourceString)
@@ -249,9 +240,9 @@ public static partial class RequestDelegateFactory
                 )),
             FilterContextExpr).Compile();
 
-        for (int i = factoryContext.Filters.Count - 1; i >= 0; i--)
+        for (int i = factoryContext.Filters!.Count - 1; i >= 0; i--)
         {
-            var currentFilter = factoryContext.Filters[i];
+            var currentFilter = factoryContext.Filters![i];
             var nextFilter = filteredInvocation;
             filteredInvocation = (RouteHandlerFilterContext context) => currentFilter.InvokeAsync(context, nextFilter);
 
@@ -468,8 +459,7 @@ public static partial class RequestDelegateFactory
 
     // If we're calling TryParse or validating parameter optionality and
     // wasParamCheckFailure indicates it failed, set a 400 StatusCode instead of calling the method.
-    private static Expression CreateParamCheckingResponseWritingMethodCall(
-        Type returnType, Expression? target, Expression[] arguments, FactoryContext factoryContext)
+    private static Expression CreateParamCheckingResponseWritingMethodCall(Type returnType, FactoryContext factoryContext)
     {
         // {
         //     string tempSourceString;
@@ -519,8 +509,15 @@ public static partial class RequestDelegateFactory
 
         localVariables[factoryContext.ExtraLocals.Count] = WasParamCheckFailureExpr;
 
-        if (factoryContext.Filters.Count > 0)
+        // If filters have been registered, we set the `wasParamCheckFailure` property
+        // but do not return from the invocation to allow the filters to run.
+        if (factoryContext.Filters is { Count: > 0 })
         {
+            // if (wasParamCheckFailure)
+            // {
+            //   httpContext.Response.StatusCode = 400;
+            // }
+            // return RequestDelegateFactory.ExecuteObjectReturn(invocationPipeline.Invoke(context) as object);
             var checkWasParamCheckFailureWithFilters = Expression.Block(
                 Expression.IfThen(
                     WasParamCheckFailureExpr,
@@ -532,6 +529,12 @@ public static partial class RequestDelegateFactory
         }
         else
         {
+            // wasParamCheckFailure ? {
+            //  httpContext.Response.StatusCode = 400;
+            //  return Task.CompletedTask;
+            // } : {
+            //  return RequestDelegateFactory.ExecuteObjectReturn(invocationPipeline.Invoke(context) as object);
+            // }
             var checkWasParamCheckFailure = Expression.Condition(
                 WasParamCheckFailureExpr,
                 Expression.Block(
@@ -1689,8 +1692,7 @@ public static partial class RequestDelegateFactory
         public List<Expression> ContextArgAccess { get; } = new();
         public Expression? MethodCall { get; set; }
         public List<Expression> BoxedArgs { get; } = new();
-        public List<IRouteHandlerFilter> Filters { get; set; } = new();
-
+        public List<IRouteHandlerFilter>? Filters { get; init; }
     }
 
     private static class RequestDelegateFactoryConstants

@@ -4214,7 +4214,10 @@ public class RequestDelegateFactoryTests : LoggedTest
         var httpContext = CreateHttpContext();
 
         // Act
-        var factoryResult = RequestDelegateFactory.Create(HelloName, null, new List<IRouteHandlerFilter>() { new ModifyStringArgumentFilter() });
+        var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
+        {
+            RouteHandlerFilters = new List<IRouteHandlerFilter>() { new ModifyStringArgumentFilter() }
+        });
         var requestDelegate = factoryResult.RequestDelegate;
         await requestDelegate(httpContext);
 
@@ -4238,7 +4241,10 @@ public class RequestDelegateFactoryTests : LoggedTest
         httpContext.Response.Body = responseBodyStream;
 
         // Act
-        var factoryResult = RequestDelegateFactory.Create(HelloName, null, new List<IRouteHandlerFilter>() { new ProvideCustomErrorMessageFilter() });
+        var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
+        {
+            RouteHandlerFilters = new List<IRouteHandlerFilter>() { new ProvideCustomErrorMessageFilter() }
+        });
         var requestDelegate = factoryResult.RequestDelegate;
         await requestDelegate(httpContext);
 
@@ -4272,7 +4278,10 @@ public class RequestDelegateFactoryTests : LoggedTest
         });
 
         // Act
-        var factoryResult = RequestDelegateFactory.Create(HelloName, null, new List<IRouteHandlerFilter>() { new ModifyIntArgumentFilter(), new LogArgumentsFilter(Log) });
+        var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
+        {
+            RouteHandlerFilters = new List<IRouteHandlerFilter>() { new ModifyIntArgumentFilter(), new LogArgumentsFilter(Log) }
+        });
         var requestDelegate = factoryResult.RequestDelegate;
         await requestDelegate(httpContext);
 
@@ -4305,7 +4314,10 @@ public class RequestDelegateFactoryTests : LoggedTest
         httpContext.Response.Body = responseBodyStream;
 
         // Act
-        var factoryResult = RequestDelegateFactory.Create(PrintTodo, null, new List<IRouteHandlerFilter>() { new ModifyTodoArgumentFilter() });
+        var factoryResult = RequestDelegateFactory.Create(PrintTodo, new RequestDelegateFactoryOptions()
+        {
+            RouteHandlerFilters = new List<IRouteHandlerFilter>() { new ModifyTodoArgumentFilter() }
+        });
         var requestDelegate = factoryResult.RequestDelegate;
         await requestDelegate(httpContext);
 
@@ -4334,7 +4346,10 @@ public class RequestDelegateFactoryTests : LoggedTest
         });
 
         // Act
-        var factoryResult = RequestDelegateFactory.Create(HelloName, null, new List<IRouteHandlerFilter>() { new ModifyStringResultFilter() });
+        var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
+        {
+            RouteHandlerFilters = new List<IRouteHandlerFilter>() { new ModifyStringResultFilter() }
+        });
         var requestDelegate = factoryResult.RequestDelegate;
         await requestDelegate(httpContext);
 
@@ -4363,7 +4378,10 @@ public class RequestDelegateFactoryTests : LoggedTest
         });
 
         // Act
-        var factoryResult = RequestDelegateFactory.Create(HelloName, null, new List<IRouteHandlerFilter>() { new ModifyStringResultFilter(), new ModifyStringArgumentFilter() });
+        var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
+        {
+            RouteHandlerFilters = new List<IRouteHandlerFilter>() { new ModifyStringResultFilter(), new ModifyStringArgumentFilter() }
+        });
         var requestDelegate = factoryResult.RequestDelegate;
         await requestDelegate(httpContext);
 

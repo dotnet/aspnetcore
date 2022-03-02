@@ -484,14 +484,6 @@ public static class EndpointRouteBuilderExtensions
 
         var routeHandlerOptions = endpoints.ServiceProvider?.GetService<IOptions<RouteHandlerOptions>>();
 
-        var options = new RequestDelegateFactoryOptions
-        {
-            ServiceProvider = endpoints.ServiceProvider,
-            RouteParameterNames = routeParams,
-            ThrowOnBadRequest = routeHandlerOptions?.Value.ThrowOnBadRequest ?? false,
-            DisableInferBodyFromParameters = disableInferBodyFromParameters,
-        };
-
         var builder = new RouteEndpointBuilder(
             pattern,
             defaultOrder)
@@ -537,7 +529,15 @@ public static class EndpointRouteBuilderExtensions
         var routeHandlerBuilder = new RouteHandlerBuilder(dataSource.AddEndpointBuilder(builder));
         routeHandlerBuilder.Add(endpointBuilder =>
         {
-            var filteredRequestDelegateResult = RequestDelegateFactory.Create(handler, options, routeHandlerBuilder.RouteHandlerFilters);
+            var options = new RequestDelegateFactoryOptions
+            {
+                ServiceProvider = endpoints.ServiceProvider,
+                RouteParameterNames = routeParams,
+                ThrowOnBadRequest = routeHandlerOptions?.Value.ThrowOnBadRequest ?? false,
+                DisableInferBodyFromParameters = disableInferBodyFromParameters,
+                RouteHandlerFilters = routeHandlerBuilder.RouteHandlerFilters
+            };
+            var filteredRequestDelegateResult = RequestDelegateFactory.Create(handler, options);
             // Add add request delegate metadata
             foreach (var metadata in filteredRequestDelegateResult.EndpointMetadata)
             {

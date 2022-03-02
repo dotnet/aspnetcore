@@ -48,7 +48,7 @@ public sealed class RouteEndpointBuilder : EndpointBuilder
     /// <see cref="RouteEndpointBuilder"/> after construction but before <see cref="Build"/>
     /// is invoked.
     /// </remarks>
-    public RouteEndpointBuilder(
+    internal RouteEndpointBuilder(
         RoutePattern routePattern,
         int order)
     {
