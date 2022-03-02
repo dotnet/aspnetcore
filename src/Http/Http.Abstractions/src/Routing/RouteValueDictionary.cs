@@ -185,8 +185,6 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
         }
     }
 
-
-
     [MemberNotNull(nameof(_arrayStorage))]
     private void Initialize(IEnumerable<KeyValuePair<string, string?>> stringValueEnumerable)
     {
