@@ -9,6 +9,6 @@
 
       This is not needed in source build.
     -->
-    <PackageReference Condition="'$(DotNetBuildFromSource)' != 'true'" Include="Yarn.MSBuild" Version="1.15.2" />
+    <PackageReference Condition="'$(DotNetBuildFromSource)' != 'true'" Include="Yarn.MSBuild" Version="1.22.10" />
   </ItemGroup>
 </Project>

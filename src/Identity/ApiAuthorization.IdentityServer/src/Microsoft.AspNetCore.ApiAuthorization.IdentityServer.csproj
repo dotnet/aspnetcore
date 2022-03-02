@@ -28,6 +28,7 @@
     <Reference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <Reference Include="Microsoft.AspNetCore.Mvc" />
     <Reference Include="Microsoft.Extensions.Http" />
+    <Reference Include="System.Text.Encodings.Web" />
   </ItemGroup>
 
 </Project>

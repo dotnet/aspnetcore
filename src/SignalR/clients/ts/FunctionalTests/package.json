@@ -52,7 +52,8 @@
     "sauce": "yarn run test:sauce"
   },
   "resolutions": {
-    "lodash": ">=4.7.14"
+    "lodash": ">=4.7.14",
+    "url-parse": ">=1.5.6"
   },
   "author": "",
   "license": "Apache-2.0"
