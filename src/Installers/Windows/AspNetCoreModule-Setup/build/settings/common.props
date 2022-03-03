@@ -13,10 +13,14 @@
 
   <!-- General properties -->
 
-  <PropertyGroup>
-    <IisOobWinSdkVersion Condition="'$(IisOobWinSdkVersion)' == ''">10.0.18362.0</IisOobWinSdkVersion>
-    <WindowsTargetPlatformVersion Condition="'$(WindowsTargetPlatformVersion)' == ''">$(IisOobWinSdkVersion)</WindowsTargetPlatformVersion>
+  <PropertyGroup Label="Configuration">
+    <Keyword>Win32Proj</Keyword>
+    <PlatformToolsetVersion>v142</PlatformToolsetVersion>
+    <PlatformToolset>$(PlatformToolsetVersion)</PlatformToolset>
+    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
     <CharacterSet>Unicode</CharacterSet>
+    <VCToolsVersion>14.29.30133</VCToolsVersion>
+    <VCProjectVersion>15.0</VCProjectVersion>
   </PropertyGroup>
 
   <!--
