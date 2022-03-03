@@ -220,7 +220,7 @@ public abstract class ControllerBase
     /// <summary>
     /// Creates the <see cref="EmptyResult"/>
     /// </summary>
-    public static EmptyResult Empty => new();
+    public static EmptyResult Empty { get; } = new();
 
     /// <summary>
     /// Creates a <see cref="StatusCodeResult"/> object by specifying a <paramref name="statusCode"/>.
