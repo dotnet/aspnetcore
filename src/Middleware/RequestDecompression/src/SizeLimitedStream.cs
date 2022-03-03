@@ -74,16 +74,6 @@ internal sealed class SizeLimitedStream : Stream
         throw new NotSupportedException();
     }
 
-    public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
-    {
-        return TaskToApm.Begin(ReadAsync(buffer, offset, count, CancellationToken.None), callback, state);
-    }
-
-    public override int EndRead(IAsyncResult asyncResult)
-    {
-        return TaskToApm.End<int>(asyncResult);
-    }
-
     public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
         return await ReadAsync(buffer.AsMemory(offset, count), cancellationToken);
