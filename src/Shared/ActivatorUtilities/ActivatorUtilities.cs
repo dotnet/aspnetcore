@@ -153,13 +153,12 @@ internal static class ActivatorUtilities
                     var value = provider.GetService(parameter.ParameterType);
                     if (value is null)
                     {
-                        if (!parameter.HasDefaultValue)
+                        if (!ParameterDefaultValue.TryGetDefaultValue(parameter, out var defaultValue))
                         {
-
                             throw new InvalidOperationException($"Unable to resolve service for type '{_parameters[index].ParameterType}' while attempting to activate '{_constructor.DeclaringType}'.");
                         }
 
-                        value = parameter.DefaultValue;
+                        value = defaultValue;
                     }
 
                     _parameterValues[index] = value;
