@@ -73,7 +73,7 @@ internal sealed class TryParseModelBinder : IModelBinder
             var value = valueProviderResult.FirstValue;
             if (string.IsNullOrWhiteSpace(value))
             {
-                // Is expected to the TryParse() method trims the value then fail if the result is empty.
+                // Most TryParse() methods trim the value and fail if the result is empty.
 
                 // When converting newModel a null value may indicate a failed conversion for an otherwise required
                 // model (can't set a ValueType to null). This detects if a null model value is acceptable given the
