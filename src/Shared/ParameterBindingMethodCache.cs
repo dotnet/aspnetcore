@@ -28,7 +28,7 @@ internal sealed class ParameterBindingMethodCache
     private readonly MethodInfo _enumTryParseMethod;
 
     // Since this is shared source, the cache won't be shared between RequestDelegateFactory and the ApiDescriptionProvider sadly :(
-    private readonly ConcurrentDictionary<Type, Func<ParameterExpression, Expression>?> _stringMethodCallCache = new();
+    private readonly ConcurrentDictionary<Type, Func<ParameterExpression, Expression, Expression>?> _stringMethodCallCache = new();
     private readonly ConcurrentDictionary<Type, (Func<ParameterInfo, Expression>?, int)> _bindAsyncMethodCallCache = new();
 
     // If IsDynamicCodeSupported is false, we can't use the static Enum.TryParse<T> since there's no easy way for
@@ -52,9 +52,9 @@ internal sealed class ParameterBindingMethodCache
     public bool HasBindAsyncMethod(ParameterInfo parameter) =>
         FindBindAsyncMethod(parameter).Expression is not null;
 
-    public Func<ParameterExpression, Expression>? FindTryParseMethod(Type type)
+    public Func<ParameterExpression, Expression, Expression>? FindTryParseMethod(Type type)
     {
-        Func<ParameterExpression, Expression>? Finder(Type type)
+        Func<ParameterExpression, Expression, Expression>? Finder(Type type)
         {
             MethodInfo? methodInfo;
 
@@ -64,10 +64,10 @@ internal sealed class ParameterBindingMethodCache
                 {
                     methodInfo = _enumTryParseMethod.MakeGenericMethod(type);
 
-                    return (expression) => Expression.Call(methodInfo!, TempSourceStringExpr, expression);
+                    return (expression, formatProvider) => Expression.Call(methodInfo!, TempSourceStringExpr, expression);
                 }
 
-                return (expression) =>
+                return (expression, formatProvider) =>
                 {
                     var enumAsObject = Expression.Variable(typeof(object), "enumAsObject");
                     var success = Expression.Variable(typeof(bool), "success");
@@ -108,21 +108,21 @@ internal sealed class ParameterBindingMethodCache
                     _ => DateTimeStyles.AllowWhiteSpaces
                 };
 
-                return (expression) => Expression.Call(
+                return (expression, formatProvider) => Expression.Call(
                     methodInfo!,
                     TempSourceStringExpr,
-                    Expression.Constant(CultureInfo.InvariantCulture),
+                    formatProvider,
                     Expression.Constant(dateTimeStyles),
                     expression);
             }
 
             if (TryGetNumberStylesTryGetMethod(type, out methodInfo, out var numberStyle))
             {
-                return (expression) => Expression.Call(
+                return (expression, formatProvider) => Expression.Call(
                     methodInfo!,
                     TempSourceStringExpr,
                     Expression.Constant(numberStyle),
-                    Expression.Constant(CultureInfo.InvariantCulture),
+                    formatProvider,
                     expression);
             }
 
@@ -130,10 +130,10 @@ internal sealed class ParameterBindingMethodCache
 
             if (methodInfo is not null)
             {
-                return (expression) => Expression.Call(
+                return (expression, formatProvider) => Expression.Call(
                     methodInfo,
                     TempSourceStringExpr,
-                    Expression.Constant(CultureInfo.InvariantCulture),
+                    formatProvider,
                     expression);
             }
 
@@ -141,7 +141,7 @@ internal sealed class ParameterBindingMethodCache
 
             if (methodInfo is not null)
             {
-                return (expression) => Expression.Call(methodInfo, TempSourceStringExpr, expression);
+                return (expression, formatProvider) => Expression.Call(methodInfo, TempSourceStringExpr, expression);
             }
 
             if (GetAnyMethodFromHierarchy(type, "TryParse") is MethodInfo invalidMethod)
