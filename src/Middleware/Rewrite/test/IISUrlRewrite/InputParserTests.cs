@@ -3,8 +3,10 @@
 
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Rewrite.IISUrlRewrite;
 using Microsoft.AspNetCore.Rewrite.PatternSegments;
+using Microsoft.AspNetCore.Rewrite.Tests.IISUrlRewrite;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite;
@@ -75,6 +77,25 @@ public class InputParserTests
     {
         var middle = new InputParser().ParseInputString(testString, UriMatchPart.Path);
         var result = middle.Evaluate(CreateTestRewriteContext(), CreateTestRuleBackReferences(), CreateTestCondBackReferences());
+        Assert.Equal(expected, result);
+    }
+
+    [Theory]
+    [InlineData("hey/{HTTP_URL}","hey/TEST_VARIABLE")]
+    public void ParseString_WithContextContainingServerVariableString_ShouldReturnResultContainingValueOfVariable(string testString, string expected)
+    {
+        var variablesDict = new Dictionary<string, string>()
+        {
+            { "HTTP_URL", "TEST_VARIABLE"}
+        };
+        var features = new FeatureCollection(1);
+        features.Set<IServerVariablesFeature>(new TestServerVariablesFeature(variablesDict));
+
+        var rewriteContext= new RewriteContext { HttpContext = new DefaultHttpContext(features), StaticFileProvider = null, Logger = NullLogger.Instance };
+
+        var middle = new InputParser().ParseInputString(testString, UriMatchPart.Path);
+        var result = middle.Evaluate(rewriteContext, CreateTestRuleBackReferences(), CreateTestCondBackReferences());
+
         Assert.Equal(expected, result);
     }
 
