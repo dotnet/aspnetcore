@@ -218,6 +218,11 @@ public abstract class ControllerBase
     public ClaimsPrincipal User => HttpContext?.User!;
 
     /// <summary>
+    /// Creates the <see cref="EmptyResult"/>
+    /// </summary>
+    public static EmptyResult Empty => new();
+
+    /// <summary>
     /// Creates a <see cref="StatusCodeResult"/> object by specifying a <paramref name="statusCode"/>.
     /// </summary>
     /// <param name="statusCode">The status code to set on the response.</param>
