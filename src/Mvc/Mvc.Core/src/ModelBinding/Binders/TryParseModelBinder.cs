@@ -75,7 +75,7 @@ internal sealed class TryParseModelBinder : IModelBinder
             {
                 // Is expected to the TryParse() method trims the value then fail if the result is empty.
 
-                // When converting newModel a null value may indicate a failed conversion for an otherwise required
+                // When converting a null value may indicate a failed conversion for an otherwise required
                 // model (can't set a ValueType to null). This detects if a null model value is acceptable given the
                 // current bindingContext. If not, an error is logged.
                 if (!bindingContext.ModelMetadata.IsReferenceOrNullableType)

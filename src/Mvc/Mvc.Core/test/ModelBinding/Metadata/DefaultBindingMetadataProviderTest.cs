@@ -914,6 +914,6 @@ public class DefaultModelMetadataBindingDetailsProviderTest
         public string Identifier { get; set; }
     }
 
-    private DefaultBindingMetadataProvider CreateBindingMetadataProvider(MvcOptions options = null)
-        => new DefaultBindingMetadataProvider(options ?? new MvcOptions());
+    private DefaultBindingMetadataProvider CreateBindingMetadataProvider()
+        => new DefaultBindingMetadataProvider();
 }

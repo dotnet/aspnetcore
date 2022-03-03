@@ -26,13 +26,13 @@ public class TestModelMetadataProvider : DefaultModelMetadataProvider
     {
         var detailsProviders = new List<IMetadataDetailsProvider>
             {
-                new DefaultBindingMetadataProvider(new MvcOptions()),
+                new DefaultBindingMetadataProvider(),
                 new DefaultValidationMetadataProvider(),
                 CreateDefaultDataAnnotationsProvider(stringLocalizerFactory),
                 new DataMemberRequiredBindingMetadataProvider(),
             };
 
-        MvcCoreMvcOptionsSetup.ConfigureAdditionalModelMetadataDetailsProviders(detailsProviders, new MvcOptions());
+        MvcCoreMvcOptionsSetup.ConfigureAdditionalModelMetadataDetailsProviders(detailsProviders);
 
         var validationProviders = TestModelValidatorProvider.CreateDefaultProvider();
         detailsProviders.Add(new HasValidatorsValidationMetadataProvider(validationProviders.ValidatorProviders));
@@ -45,7 +45,7 @@ public class TestModelMetadataProvider : DefaultModelMetadataProvider
     {
         var detailsProviders = new List<IMetadataDetailsProvider>()
             {
-                new DefaultBindingMetadataProvider(new MvcOptions()),
+                new DefaultBindingMetadataProvider(),
                 new DefaultValidationMetadataProvider(),
                 new DataAnnotationsMetadataProvider(
                     new MvcOptions(),
@@ -54,7 +54,7 @@ public class TestModelMetadataProvider : DefaultModelMetadataProvider
                 new DataMemberRequiredBindingMetadataProvider(),
             };
 
-        MvcCoreMvcOptionsSetup.ConfigureAdditionalModelMetadataDetailsProviders(detailsProviders, new MvcOptions());
+        MvcCoreMvcOptionsSetup.ConfigureAdditionalModelMetadataDetailsProviders(detailsProviders);
 
         detailsProviders.AddRange(providers);
 
@@ -88,7 +88,7 @@ public class TestModelMetadataProvider : DefaultModelMetadataProvider
         : base(
               new DefaultCompositeMetadataDetailsProvider(new IMetadataDetailsProvider[]
               {
-                      new DefaultBindingMetadataProvider(new MvcOptions()),
+                      new DefaultBindingMetadataProvider(),
                       new DefaultValidationMetadataProvider(),
                       new DataAnnotationsMetadataProvider(
                           new MvcOptions(),

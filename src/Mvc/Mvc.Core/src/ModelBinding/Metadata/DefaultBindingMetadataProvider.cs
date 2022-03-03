@@ -14,13 +14,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 /// </summary>
 internal class DefaultBindingMetadataProvider : IBindingMetadataProvider
 {
-    private readonly MvcOptions _options;
-
-    public DefaultBindingMetadataProvider(MvcOptions options)
-    {
-        _options = options;
-    }
-
     public void CreateBindingMetadata(BindingMetadataProviderContext context)
     {
         if (context == null)

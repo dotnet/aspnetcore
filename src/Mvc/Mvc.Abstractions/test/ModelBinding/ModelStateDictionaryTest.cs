@@ -1599,8 +1599,8 @@ public class ModelStateDictionaryTest
         Assert.Equal("value1", property.RawValue);
     }
 
-    private DefaultBindingMetadataProvider CreateBindingMetadataProvider(MvcOptions options = null)
-        => new DefaultBindingMetadataProvider(options ?? new MvcOptions());
+    private DefaultBindingMetadataProvider CreateBindingMetadataProvider()
+        => new DefaultBindingMetadataProvider();
 
     private class OptionsAccessor : IOptions<MvcOptions>
     {
