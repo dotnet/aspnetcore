@@ -225,12 +225,12 @@ public static partial class RequestDelegateFactory
     private static Func<RouteHandlerFilterContext, ValueTask<object?>> CreateFilterPipeline(MethodInfo methodInfo, Expression? target, FactoryContext factoryContext)
     {
         Debug.Assert(factoryContext.Filters is not null);
-        // httpContext.Response.StatusCode == 400
+        // httpContext.Response.StatusCode >= 400
         // ? Task.CompletedTask
         // : handler((string)context.Parameters[0], (int)context.Parameters[1])
         var filteredInvocation = Expression.Lambda<Func<RouteHandlerFilterContext, ValueTask<object?>>>(
             Expression.Condition(
-                Expression.Equal(FilterContextHttpContextStatusCodeExpr, Expression.Constant(400)),
+                Expression.GreaterThanOrEqual(FilterContextHttpContextStatusCodeExpr, Expression.Constant(400)),
                 CompletedValueTaskExpr,
                 Expression.Block(
                     new[] { TargetExpr },
