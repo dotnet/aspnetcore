@@ -113,7 +113,12 @@ public static class DotNetDispatcher
         else if (syncResult?.GetType().GetGenericTypeDefinition() == typeof(ValueTask<>))
         {
             //since syncResult is generic we have to get AsTask method for its type
-            var valueTaskAsTaskMethod = syncResult.GetType().GetMethod("AsTask");
+            var valueTaskAsTaskMethod = syncResult.GetType().GetMethod("AsTask", BindingFlags.Instance | BindingFlags.Public);
+            if (valueTaskAsTaskMethod == null)
+            {
+                throw new MissingMethodException("AsTask method was expected on type ValueTask<>");
+            }
+
             var innerTask = valueTaskAsTaskMethod!.Invoke(syncResult, Array.Empty<object>()) as Task;
 
             innerTask!.ContinueWith(t => EndInvokeDotNetAfterTask(t, jsRuntime, invocationInfo), TaskScheduler.Current);
