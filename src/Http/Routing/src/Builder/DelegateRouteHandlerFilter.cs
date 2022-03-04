@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Http;
 
-internal class DelegateRouteHandlerFilter : IRouteHandlerFilter
+internal sealed class DelegateRouteHandlerFilter : IRouteHandlerFilter
 {
     private readonly Func<RouteHandlerFilterContext, Func<RouteHandlerFilterContext, ValueTask<object?>>, ValueTask<object?>> _routeHandlerFilter;
 
