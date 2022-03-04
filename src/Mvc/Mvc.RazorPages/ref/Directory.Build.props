@@ -1,0 +1,9 @@
+<Project>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
+
+  <ItemGroup>
+    <Compile Include="Microsoft.AspNetCore.Mvc.RazorPages.netcoreapp3.0.Manual.cs" />
+  </ItemGroup>
+
+</Project>

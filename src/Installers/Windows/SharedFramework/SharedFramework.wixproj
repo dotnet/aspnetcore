@@ -2,11 +2,11 @@
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
 
-  <Import Project="Product.props" />
-
   <PropertyGroup>
+    <ProductNameFolder>Microsoft ASP.NET Core Shared Framework</ProductNameFolder>
+    <ProductNameShort>AspNetCore.SharedFramework</ProductNameShort>
     <Name>AspNetCoreSharedFramework</Name>
-    <OutputName>$(RuntimeInstallerBaseName)-$(PackageVersion)-win-$(Platform)</OutputName>
+    <OutputName>$(Name)-$(Platform)</OutputName>
     <OutputType>Package</OutputType>
     <EmbedCab>no</EmbedCab>
     <Cabinet>sfx_$(Platform).cab</Cabinet>
@@ -14,9 +14,14 @@
     <HarvestDirectoryAutoGenerateGuids>true</HarvestDirectoryAutoGenerateGuids>
     <HarvestDirectorySuppressSpecificWarnings>5150;5151</HarvestDirectorySuppressSpecificWarnings>
     <HarvestDirectorySuppressRegistry>true</HarvestDirectorySuppressRegistry>
-    <HarvestSource>$(SharedFrameworkHarvestRootPath)\$(Platform)\</HarvestSource>
+    <HarvestSource>$(IntermediateOutputPath)fx\</HarvestSource>
+    <IsShipping>true</IsShipping>
+    <DefineConstants>$(DefineConstants);ProductNameFolder=$(ProductNameFolder)</DefineConstants>
+    <DefineConstants>$(DefineConstants);ProductNameShort=$(ProductNameShort)</DefineConstants>
     <DefineConstants>$(DefineConstants);AspNetCoreSharedFrameworkSource=$(HarvestSource)</DefineConstants>
     <NamespaceGuid>$(SharedFrameworkNamespaceGuid)</NamespaceGuid>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ToolsetInstallerNuspecFile>$(RepoRoot)\src\Installers\Windows\SharedFramework\SharedFrameworkPackage.nuspec</ToolsetInstallerNuspecFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -39,6 +44,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="DependencyProvider.wxs" />
+    <Compile Include="Product.wxs" />
+    <EmbeddedResource Include="Strings.wxl" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(BuildingInsideVisualStudio)' != 'true'">
     <HarvestDirectory Include="$(HarvestSource)">
       <SuppressRootDirectory>true</SuppressRootDirectory>
       <ComponentGroupName>CG_AspNetCoreSharedFramework</ComponentGroupName>
@@ -47,5 +58,44 @@
     </HarvestDirectory>
   </ItemGroup>
 
+  <!-- TODO: https://github.com/aspnet/AspNetCore/issues/6304. Harvest shared frameworks from a project reference -->
+  <Target Name="ExtractIntermediateSharedFx" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <SharedFrameworkX64HarvestRootPath Condition="'$(SharedFrameworkX64HarvestRootPath)' == ''">$(InstallersOutputPath)</SharedFrameworkX64HarvestRootPath>
+      <SharedFrameworkX86HarvestRootPath Condition="'$(SharedFrameworkX86HarvestRootPath)' == ''">$(InstallersOutputPath)</SharedFrameworkX86HarvestRootPath>
+      <IntermediateX64SharedFxZip>$(SharedFrameworkX64HarvestRootPath)aspnetcore-runtime-internal-$(PackageVersion)-win-x64.zip</IntermediateX64SharedFxZip>
+      <IntermediateX86SharedFxZip>$(SharedFrameworkX86HarvestRootPath)aspnetcore-runtime-internal-$(PackageVersion)-win-x86.zip</IntermediateX86SharedFxZip>
+    </PropertyGroup>
+
+    <Unzip Condition="'$(Platform)' == 'x64'"
+           SourceFiles="$(IntermediateX64SharedFxZip)" DestinationFolder="$(HarvestSource)" />
+    <Unzip Condition="'$(Platform)' == 'x86'"
+           SourceFiles="$(IntermediateX86SharedFxZip)" DestinationFolder="$(HarvestSource)" />
+  </Target>
+
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
+
+  <PropertyGroup>
+    <PackageFileName>$(RuntimeInstallerBaseName)-$(PackageVersion)-win-$(Platform)$(TargetExt)</PackageFileName>
+    <ProductName>Microsoft ASP.NET Core $(PackageBrandingVersion) Shared Framework ($(Platform))</ProductName>
+    <DefineConstants>$(DefineConstants);ProductName=$(ProductName)</DefineConstants>
+  </PropertyGroup>
+
+  <Target Name="CreateSharedFrameworkNugetPackage" AfterTargets="CopyToArtifactsDirectory;Build">
+    <PropertyGroup>
+      <MsiFullPath>$(InstallersOutputPath)$(PackageFileName)</MsiFullPath>
+      <CabFullPath>$(InstallersOutputPath)$(Cabinet)</CabFullPath>
+    </PropertyGroup>
+      <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
+                      '$(ProductNameShort)' ^
+                      '$(MsiFullPath)' ^
+                      '$(CabFullPath)' ^
+                      '$(ToolsetInstallerNuspecFile)' ^
+                      '$(ArtifactsNonShippingPackagesDir)' ^
+                      '$(Platform)' ^
+                      '$(PackageVersion)' ^
+                      '$(RepoRoot)' ^
+                      '$(AspNetCoreMajorVersion)' ^
+                      '$(AspNetCoreMinorVersion)'" />
+  </Target>
 </Project>

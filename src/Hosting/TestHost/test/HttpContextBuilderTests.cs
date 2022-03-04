@@ -109,6 +109,7 @@ namespace Microsoft.AspNetCore.TestHost
                 {
                     c.Response.Headers["TestHeader"] = "TestValue";
                     var bytes = Encoding.UTF8.GetBytes("BodyStarted" + Environment.NewLine);
+                    c.Features.Get<IHttpBodyControlFeature>().AllowSynchronousIO = true;
                     c.Response.Body.Write(bytes, 0, bytes.Length);
                     await block.Task;
                     bytes = Encoding.UTF8.GetBytes("BodyFinished");
@@ -193,8 +194,7 @@ namespace Microsoft.AspNetCore.TestHost
             Task<int> readTask = responseStream.ReadAsync(new byte[100], 0, 100);
             Assert.False(readTask.IsCompleted);
             responseStream.Dispose();
-            var read = await readTask.WithTimeout();
-            Assert.Equal(0, read);
+            await Assert.ThrowsAsync<OperationCanceledException>(() => readTask.WithTimeout());
             block.SetResult(0);
         }
 
@@ -307,6 +307,27 @@ namespace Microsoft.AspNetCore.TestHost
 
             // The HttpContext will be created and the logger will make sure that the HttpRequest exists and contains reasonable values
             var ctx = await server.SendAsync(c => { });
+        }
+
+        [Fact]
+        public async Task CallingAbortInsideHandlerShouldSetRequestAborted()
+        {
+            var requestAborted = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.Run(context =>
+                    {
+                        context.RequestAborted.Register(() => requestAborted.SetResult(0));
+                        context.Abort();
+                        return Task.CompletedTask;
+                    });
+                });
+            var server = new TestServer(builder);
+
+            var ex = await Assert.ThrowsAsync<Exception>(() => server.SendAsync(c => { }));
+            Assert.Equal("The application aborted the request.", ex.Message);
+            await requestAborted.Task.WithTimeout();
         }
 
         private class VerifierLogger : ILogger<IWebHost>

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.Protocols;
@@ -176,5 +177,11 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
         /// is not set.
         /// </summary>
         public string SignOutScheme { get; set; }
+        
+        /// <summary>
+        /// SaveTokens is not supported in WsFederation
+        /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public new bool SaveTokens { get; set; }
     }
 }

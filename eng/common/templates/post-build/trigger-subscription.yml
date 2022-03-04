@@ -1,0 +1,11 @@
+parameters:
+  ChannelId: 0
+
+steps:
+- task: PowerShell@2
+  displayName: Triggering subscriptions
+  inputs:
+    filePath: $(Build.SourcesDirectory)/eng/common/post-build/trigger-subscriptions.ps1
+    arguments: -SourceRepo $(Build.Repository.Uri)
+      -ChannelId ${{ parameters.ChannelId }}
+      -BarToken $(MaestroAccessTokenInt)

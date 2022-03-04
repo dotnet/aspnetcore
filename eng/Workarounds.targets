@@ -1,0 +1,71 @@
+<!-- Use this file to workaround issues. List the issue tracking the item to fix so we can remove the workaround when the issue is resolved. -->
+<Project>
+  <!--
+    Workaround https://github.com/aspnet/AspNetCore/issues/4257.
+    The web sdk adds an implicit framework reference. This removes it until we can update our build to use framework references.
+  -->
+  <ItemGroup>
+    <FrameworkReference Remove="Microsoft.AspNetCore.App" />
+    <!-- Required because the Razor SDK will generate attributes -->
+    <Reference Include="Microsoft.AspNetCore.Mvc" Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' AND '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(GenerateRazorAssemblyInfo)' == 'true'" />
+  </ItemGroup>
+
+  <!-- Workaround https://github.com/dotnet/cli/issues/10528 -->
+  <PropertyGroup>
+    <BundledNETCorePlatformsPackageVersion>$(MicrosoftNETCorePlatformsPackageVersion)</BundledNETCorePlatformsPackageVersion>
+  </PropertyGroup>
+
+  <!-- Workaround https://github.com/dotnet/sdk/issues/2976 -->
+  <ItemGroup>
+    <PackageReference Update="Microsoft.NETCore.Platforms" PrivateAssets="All" />
+  </ItemGroup>
+
+  <!-- Workaround https://github.com/aspnet/AspNetCore/issues/7503. This chains GenerateSourceLinkFile before razor component targets run. -->
+  <!-- Workaround https://github.com/dotnet/source-build/issues/1112. Source link is currently disabled in source build so do not apply this worksaround. -->
+  <Target Condition="'$(DotNetBuildFromSource)' != 'true'"
+          Name="_EnsureSourceLinkHappensBeforeRazorComponentGeneration"
+          BeforeTargets="PrepareForRazorComponentGenerate"
+          DependsOnTargets="GenerateSourceLinkFile" />
+
+  <!-- Workaround https://github.com/dotnet/source-build/issues/1112. Source link is currently disabled in source build so define this dummy target which is required for pack. -->
+  <Import Condition="'$(DotNetBuildFromSource)' == 'true'" Project="WorkaroundsImported.targets" />
+
+  <!-- Workaround https://github.com/aspnet/websdk/pull/646. If merged, once we update to a websdk with this fix, we can move the setting below to Directory.Build.props. -->
+  <PropertyGroup>
+    <!-- Ignore warning about calling the Pack target on Web SDK projects. Our build scripts call /t:pack on everything in this repo. -->
+    <WarnOnPackingNonPackableProject>false</WarnOnPackingNonPackableProject>
+  </PropertyGroup>
+
+  <!-- Workaround for https://github.com/dotnet/arcade/issues/204 -->
+  <ItemGroup>
+    <PackageReference Include="Internal.AspNetCore.BuildTasks" PrivateAssets="All" Version="$(InternalAspNetCoreBuildTasksPackageVersion)" IsImplicitlyDefined="true" />
+  </ItemGroup>
+  <PropertyGroup>
+    <RestoreSources>
+      $(RestoreSources);
+      https://dotnet.myget.org/F/aspnetcore-tools/api/v3/index.json;
+    </RestoreSources>
+  </PropertyGroup>
+
+  <!-- Workaround until we can build our repo with a 3.0 Preview 7 SDK which has https://github.com/dotnet/core-sdk/pull/2401. -->
+  <ItemGroup Condition="'$(PreReleasePreviewNumber)' == '7' ">
+    <KnownFrameworkReference Update="Microsoft.NETCore.App">
+      <!--
+        Temporary until we can update to build with the Preview7 SDK .
+        Using PreReleasePreviewNumber to time-bomb this so we can remove this before RTM.
+
+        This workaround was also applied to src\ProjectTemplates\test\Infrastructure\TemplateTests.props.in.
+      -->
+      <RuntimePackNamePatterns>Microsoft.NETCore.App.Runtime.**RID**</RuntimePackNamePatterns>
+      <AppHostPackNamePattern />
+      <AppHostRuntimeIdentifiers />
+    </KnownFrameworkReference>
+  </ItemGroup>
+
+  <!-- Work around https://github.com/dotnet/cli/issues/11378. -->
+  <Target Name="_WorkaroundNetStandard" AfterTargets="ResolvePackageAssets">
+    <ItemGroup>
+      <TransitiveFrameworkReference Remove="NETStandard.Library" />
+    </ItemGroup>
+  </Target>
+</Project>

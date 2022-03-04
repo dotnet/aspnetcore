@@ -4,14 +4,14 @@
 module.exports = {
     globals: {
         "ts-jest": {
-            "tsConfigFile": "./tsconfig.jest.json",
-            "skipBabel": true,
-            "enableTsDiagnostics": true
+            "tsConfig": "./tsconfig.jest.json",
+            "babelConfig": true,
+            "diagnostics": true
         }
     },
     reporters: [
         "default",
-        ["./common/node_modules/jest-junit/index.js", { "output": "../../artifacts/logs/" + `${process.platform}` + ".signalr.junit.xml" }]
+        ["./common/node_modules/jest-junit/index.js", { "output": "../../../../artifacts/log/" + `${process.platform}` + ".signalr.junit.xml" }]
     ],
     transform: {
         "^.+\\.tsx?$": "./common/node_modules/ts-jest"
@@ -20,7 +20,7 @@ module.exports = {
     testRegex: "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
     moduleNameMapper: {
         "^ts-jest$": "<rootDir>/common/node_modules/ts-jest",
-        "^@aspnet/signalr$": "<rootDir>/signalr/dist/cjs/index.js"
+        "^@microsoft/signalr$": "<rootDir>/signalr/dist/cjs/index.js"
     },
     moduleFileExtensions: [
         "ts",

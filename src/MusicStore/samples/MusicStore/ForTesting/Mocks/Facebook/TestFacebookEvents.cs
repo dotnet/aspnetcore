@@ -21,7 +21,7 @@ namespace MusicStore.Mocks.Facebook
                 Helpers.ThrowIfConditionFailed(() => context.Identity.FindFirst(ClaimTypes.NameIdentifier)?.Value == "Id", "");
                 Helpers.ThrowIfConditionFailed(() => context.Identity.FindFirst("urn:facebook:link")?.Value == "https://www.facebook.com/myLink", "");
                 Helpers.ThrowIfConditionFailed(() => context.Identity.FindFirst(ClaimTypes.Name)?.Value == "AspnetvnextTest AspnetvnextTest", "");
-                Helpers.ThrowIfConditionFailed(() => context.User.SelectToken("id").ToString() == context.Identity.FindFirst(ClaimTypes.NameIdentifier)?.Value, "");
+                Helpers.ThrowIfConditionFailed(() => context.User.GetString("id") == context.Identity.FindFirst(ClaimTypes.NameIdentifier)?.Value, "");
                 Helpers.ThrowIfConditionFailed(() => context.ExpiresIn.Value == TimeSpan.FromSeconds(100), "");
                 Helpers.ThrowIfConditionFailed(() => context.AccessToken == "ValidAccessToken", "");
                 context.Principal.Identities.First().AddClaim(new Claim("ManageStore", "false"));

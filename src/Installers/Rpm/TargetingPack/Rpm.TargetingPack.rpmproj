@@ -1,0 +1,42 @@
+<Project DefaultTargets="Build">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" />
+
+  <PropertyGroup>
+    <RpmPackageInstallRoot>/usr/share/dotnet/</RpmPackageInstallRoot>
+
+    <PackageContentRoot>$(TargetingPackLayoutRoot)</PackageContentRoot>
+
+    <!-- installer versions -->
+    <!-- CLI would take a dependency such as 'aspnetcore-targeting-pack-M.N >= M.N.P'. Here M.N is the part of the id and M.N.P is the package version -->
+    <PackageId>$(TargetingPackInstallerBaseName)-$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</PackageId>
+
+    <PackageSummary>ASP.NET Core Targeting Pack</PackageSummary>
+    <PackageDescription>Provides a default set of APIs for building an ASP.NET Core $(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion) application. Contains reference assemblies, documentation, and other design-time assets.</PackageDescription>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Framework\ref\Microsoft.AspNetCore.App.Ref.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+    </ProjectReference>
+
+    <InstallerOwnedDirectory Include="$(RpmPackageInstallRoot)packs/$(TargetingPackName)/" />
+    <RpmDependency Include="dotnet-targeting-pack-$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)" Version="$(MicrosoftNETCoreAppRuntimeVersion.Split('-')[0])" />
+  </ItemGroup>
+
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
+
+  <PropertyGroup>
+    <TargetFileName>$(TargetingPackInstallerBaseName)-$(TargetingPackVersion).rpm</TargetFileName>
+    <TargetPath>$(InstallersOutputPath)$(TargetFileName)</TargetPath>
+
+    <PackageVersion>$(TargetingPackVersionPrefix)</PackageVersion>
+
+    <!-- Set package revision to '1' for RTM releases, but include the build number in pre-releases -->
+    <PackageRevision Condition=" '$(VersionSuffix)' == '' ">1</PackageRevision>
+    <PackageRevision Condition=" '$(VersionSuffix)' != '' ">0.1.$(VersionSuffix.Replace('-', '_'))</PackageRevision>
+
+    <!-- Suppresses building this project completely during servicing builds. -->
+    <RpmBuildDependsOn Condition="'$(IsTargetingPackBuilding)' == 'false'" />
+  </PropertyGroup>
+</Project>

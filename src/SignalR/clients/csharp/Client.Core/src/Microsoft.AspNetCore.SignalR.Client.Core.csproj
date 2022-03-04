@@ -1,0 +1,45 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Client for ASP.NET Core SignalR</Description>
+    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
+    <RootNamespace>Microsoft.AspNetCore.SignalR.Client</RootNamespace>
+    <IsShippingPackage>true</IsShippingPackage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SignalRSharedSourceRoot)AwaitableThreadPool.cs" Link="AwaitableThreadPool.cs" />
+    <Compile Include="$(SignalRSharedSourceRoot)ForceAsyncAwaiter.cs" Link="ForceAsyncAwaiter.cs" />
+    <Compile Include="$(SignalRSharedSourceRoot)PipeWriterStream.cs" Link="PipeWriterStream.cs" />
+    <Compile Include="$(SignalRSharedSourceRoot)ReflectionHelper.cs" Link="ReflectionHelper.cs" />
+    <Compile Include="$(SignalRSharedSourceRoot)TimerAwaitable.cs" Link="Internal\TimerAwaitable.cs" />
+    <Compile Include="$(SignalRSharedSourceRoot)AsyncEnumerableAdapters.cs" Link="Internal\AsyncEnumerableAdapters.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.SignalR.Common" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" />
+    <Reference Include="Microsoft.Extensions.DependencyInjection" />
+    <Reference Include="Microsoft.Extensions.Logging" />
+    <Reference Include="System.Threading.Channels" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <Reference Include="Microsoft.Bcl.AsyncInterfaces" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(AspNetCoreMajorMinorVersion)' == '3.0'">
+    <!-- This dependency was replaced by Protocols.NewtonsoftJson between 3.0 and 2.2. This suppression can be removed after 3.0 is complete. -->
+    <SuppressBaselineReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Client.FunctionalTests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Client.Tests" />
+  </ItemGroup>
+
+</Project>

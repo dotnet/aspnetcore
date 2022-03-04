@@ -6,9 +6,10 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <!-- https://github.com/aspnet/KestrelHttpServer/issues/2350 -->
-    <EnableApiCheck>false</EnableApiCheck>
+    <KestrelRoot>$(MSBuildThisFileDirectory)</KestrelRoot>
     <KestrelSharedSourceRoot>$(MSBuildThisFileDirectory)shared\</KestrelSharedSourceRoot>
+    <GenerateResxSource>true</GenerateResxSource>
+    <GenerateResxSourceEmitFormatMethods>true</GenerateResxSourceEmitFormatMethods>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(IsTestProject)' == 'true' ">

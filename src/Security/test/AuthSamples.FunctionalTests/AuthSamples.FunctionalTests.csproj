@@ -1,0 +1,82 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <IsSampleProject>false</IsSampleProject>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <!-- Test asset publishing not working on arm64 https://github.com/aspnet/AspNetCore/issues/11205 -->
+    <SkipHelixArm>true</SkipHelixArm>
+  </PropertyGroup>
+
+  <Import Project="$(MvcTestingTargets)" Condition="'$(MvcTestingTargets)' != ''" />
+
+  <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
+    <ProjectReference Include="..\..\samples\Cookies\Cookies.csproj" />
+    <ProjectReference Include="..\..\samples\ClaimsTransformation\ClaimsTransformation.csproj" />
+    <ProjectReference Include="..\..\samples\CustomPolicyProvider\CustomPolicyProvider.csproj" />
+    <ProjectReference Include="..\..\samples\DynamicSchemes\DynamicSchemes.csproj" />
+    <ProjectReference Include="..\..\samples\Identity.ExternalClaims\Identity.ExternalClaims.csproj" />
+    <ProjectReference Include="..\..\samples\PathSchemeSelection\PathSchemeSelection.csproj" />
+    <ProjectReference Include="..\..\samples\StaticFilesAuth\StaticFilesAuth.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore" />
+    <Reference Include="Microsoft.AspNetCore.Hosting" />
+    <Reference Include="Microsoft.AspNetCore.TestHost" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <Reference Include="AngleSharp" />
+  </ItemGroup>
+
+  <Target Name="PublishAssets" AfterTargets="Publish">
+    <ItemGroup>
+      <_PublishFiles Include="$(ArtifactsBinDir)ClaimsTransformation\$(Configuration)\netcoreapp3.0\ClaimsTransformation.deps.json" />
+      <_PublishFiles Include="$(ArtifactsBinDir)Cookies\$(Configuration)\netcoreapp3.0\Cookies.deps.json" />
+      <_PublishFiles Include="$(ArtifactsBinDir)CustomPolicyProvider\$(Configuration)\netcoreapp3.0\CustomPolicyProvider.deps.json" />
+      <_PublishFiles Include="$(ArtifactsBinDir)DynamicSchemes\$(Configuration)\netcoreapp3.0\DynamicSchemes.deps.json" />
+      <_PublishFiles Include="$(ArtifactsBinDir)Identity.ExternalClaims\$(Configuration)\netcoreapp3.0\Identity.ExternalClaims.deps.json" />
+      <_PublishFiles Include="$(ArtifactsBinDir)PathSchemeSelection\$(Configuration)\netcoreapp3.0\PathSchemeSelection.deps.json" />
+      <_PublishFiles Include="$(ArtifactsBinDir)StaticFilesAuth\$(Configuration)\netcoreapp3.0\StaticFilesAuth.deps.json" />
+      <_claimsWwwrootFiles Include="$(MSBuildThisFileDirectory)..\..\samples\ClaimsTransformation\wwwroot\**\*.*" />
+      <_cookiesWwwrootFiles Include="$(MSBuildThisFileDirectory)..\..\samples\Cookies\wwwroot\**\*.*" />
+      <_customProviderFiles Include="$(MSBuildThisFileDirectory)..\..\samples\CustomPolicyProvider\**\*.*" />
+      <_schemesWwwrootFiles Include="$(MSBuildThisFileDirectory)..\..\samples\DynamicSchemes\wwwroot\**\*.*" />
+      <_identityWwwrootFiles Include="$(MSBuildThisFileDirectory)..\..\samples\Identity.ExternalClaims\wwwroot\**\*.*" />
+      <_pathWwwrootFiles Include="$(MSBuildThisFileDirectory)..\..\samples\PathSchemeSelection\wwwroot\**\*.*" />
+      <_staticFiles Include="$(MSBuildThisFileDirectory)..\..\samples\StaticFilesAuth\**\*.*" />
+    </ItemGroup>
+    <Copy
+      SourceFiles="@(_PublishFiles)"
+      DestinationFolder="$(PublishDir)" />
+    <Copy
+      SourceFiles="@(_claimsWwwrootFiles)"
+      DestinationFolder="$(PublishDir)\ClaimsTransformation\wwwroot" />
+    <Copy
+      SourceFiles="@(_cookiesWwwrootFiles)"
+      DestinationFolder="$(PublishDir)\Cookies\wwwroot"  />
+    <Copy
+      SourceFiles="@(_customProviderFiles)"
+      DestinationFolder="$(PublishDir)\CustomPolicyProvider\\%(RecursiveDir)" />
+    <Copy
+      SourceFiles="@(_schemesWwwrootFiles)"
+      DestinationFolder="$(PublishDir)\DynamicSchemes\wwwroot" />
+    <Copy
+      SourceFiles="@(_pathWwwrootFiles)"
+      DestinationFolder="$(PublishDir)\Identity.ExternalClaims\wwwroot" />
+    <Copy
+      SourceFiles="@(_schemesWwwrootFiles)"
+      DestinationFolder="$(PublishDir)\PathSchemeSelection\wwwroot" />
+    <Copy
+      SourceFiles="@(_staticFiles)"
+      DestinationFolder="$(PublishDir)\StaticFilesAuth\\%(RecursiveDir)" />
+    
+    <!-- Drop a dummy sln to specify content root location -->
+    <WriteLinesToFile
+        File="$(PublishDir)\contentroot.sln"
+        Lines="Ignored"
+        Overwrite="true"
+        Encoding="Unicode" />
+  </Target>
+
+</Project>

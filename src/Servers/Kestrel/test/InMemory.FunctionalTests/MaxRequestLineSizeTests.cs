@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [InlineData("DELETE /a%20b%20c/d%20e?f=ghi HTTP/1.1\r\nHost:\r\n\r\n", 1027)]
         public async Task ServerAcceptsRequestLineWithinLimit(string request, int limit)
         {
-            using (var server = CreateServer(limit))
+            await using (var server = CreateServer(limit))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [InlineData("DELETE /a%20b%20c/d%20e?f=ghi HTTP/1.1\r\n")]
         public async Task ServerRejectsRequestLineExceedingLimit(string requestLine)
         {
-            using (var server = CreateServer(requestLine.Length - 1))
+            await using (var server = CreateServer(requestLine.Length - 1))
             {
                 using (var connection = server.CreateConnection())
                 {

@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Mvc.Performance
         }
 
 
-        private class BenchmarkHostingEnvironment : IHostingEnvironment
+        private class BenchmarkHostingEnvironment : IWebHostEnvironment
         {
             public BenchmarkHostingEnvironment()
             {
@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Mvc.Performance
                 .AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>()
                 .AddSingleton<DiagnosticSource>(listener)
                 .AddSingleton(listener)
-                .AddSingleton<IHostingEnvironment, BenchmarkHostingEnvironment>()
+                .AddSingleton<IWebHostEnvironment, BenchmarkHostingEnvironment>()
                 .AddSingleton<ApplicationPartManager>(partManager)
                 .AddScoped<BenchmarkViewExecutor>()
                 .AddMvc();

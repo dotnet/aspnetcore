@@ -69,13 +69,13 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public void ConstructorNullChecks()
         {
-            Assert.Throws<ArgumentNullException>("userManager", () => new SignInManager<PocoUser>(null, null, null, null, null, null));
+            Assert.Throws<ArgumentNullException>("userManager", () => new SignInManager<PocoUser>(null, null, null, null, null, null, null));
             var userManager = MockHelpers.MockUserManager<PocoUser>().Object;
-            Assert.Throws<ArgumentNullException>("contextAccessor", () => new SignInManager<PocoUser>(userManager, null, null, null, null, null));
+            Assert.Throws<ArgumentNullException>("contextAccessor", () => new SignInManager<PocoUser>(userManager, null, null, null, null, null, null));
             var contextAccessor = new Mock<IHttpContextAccessor>();
             var context = new Mock<HttpContext>();
             contextAccessor.Setup(a => a.HttpContext).Returns(context.Object);
-            Assert.Throws<ArgumentNullException>("claimsFactory", () => new SignInManager<PocoUser>(userManager, contextAccessor.Object, null, null, null, null));
+            Assert.Throws<ArgumentNullException>("claimsFactory", () => new SignInManager<PocoUser>(userManager, contextAccessor.Object, null, null, null, null, null));
         }
 
         //[Fact]
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             options.Setup(a => a.Value).Returns(identityOptions);
             var claimsFactory = new UserClaimsPrincipalFactory<PocoUser, PocoRole>(manager.Object, roleManager.Object, options.Object);
             var logger = new TestLogger<SignInManager<PocoUser>>();
-            var helper = new SignInManager<PocoUser>(manager.Object, contextAccessor.Object, claimsFactory, options.Object, logger, new Mock<IAuthenticationSchemeProvider>().Object);
+            var helper = new SignInManager<PocoUser>(manager.Object, contextAccessor.Object, claimsFactory, options.Object, logger, new Mock<IAuthenticationSchemeProvider>().Object, new DefaultUserConfirmation<PocoUser>());
 
             // Act
             var result = await helper.PasswordSignInAsync(user.UserName, "bogus", false, false);
@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             options.Setup(a => a.Value).Returns(identityOptions);
             var claimsFactory = new UserClaimsPrincipalFactory<PocoUser, PocoRole>(manager.Object, roleManager.Object, options.Object);
             var logger = new TestLogger<SignInManager<PocoUser>>();
-            var helper = new SignInManager<PocoUser>(manager.Object, contextAccessor.Object, claimsFactory, options.Object, logger, new Mock<IAuthenticationSchemeProvider>().Object);
+            var helper = new SignInManager<PocoUser>(manager.Object, contextAccessor.Object, claimsFactory, options.Object, logger, new Mock<IAuthenticationSchemeProvider>().Object, new DefaultUserConfirmation<PocoUser>());
 
             // Act
             var result = await helper.CheckPasswordSignInAsync(user, "bogus", false);
@@ -186,7 +186,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             options.Setup(a => a.Value).Returns(identityOptions);
             var claimsFactory = new UserClaimsPrincipalFactory<PocoUser, PocoRole>(manager, roleManager.Object, options.Object);
             schemeProvider = schemeProvider ?? new Mock<IAuthenticationSchemeProvider>().Object;
-            var sm = new SignInManager<PocoUser>(manager, contextAccessor.Object, claimsFactory, options.Object, null, schemeProvider);
+            var sm = new SignInManager<PocoUser>(manager, contextAccessor.Object, claimsFactory, options.Object, null, schemeProvider, new DefaultUserConfirmation<PocoUser>());
             sm.Logger = logger ?? NullLogger<SignInManager<PocoUser>>.Instance;
             return sm;
         }
@@ -202,10 +202,9 @@ namespace Microsoft.AspNetCore.Identity.Test
             manager.Setup(m => m.SupportsUserLockout).Returns(true).Verifiable();
             manager.Setup(m => m.IsLockedOutAsync(user)).ReturnsAsync(false).Verifiable();
             manager.Setup(m => m.CheckPasswordAsync(user, "password")).ReturnsAsync(true).Verifiable();
-
             var context = new DefaultHttpContext();
             var auth = MockAuth(context);
-            SetupSignIn(context, auth, user.Id, isPersistent);
+            SetupSignIn(context, auth, user.Id, isPersistent, loginProvider: null, amr: "pwd");
             var helper = SetupSignInManager(manager.Object, context);
 
             // Act
@@ -229,7 +228,7 @@ namespace Microsoft.AspNetCore.Identity.Test
 
             var context = new DefaultHttpContext();
             var auth = MockAuth(context);
-            SetupSignIn(context, auth, user.Id, false);
+            SetupSignIn(context, auth, user.Id, false, loginProvider: null, amr: "pwd");
             var helper = SetupSignInManager(manager.Object, context);
 
             // Act
@@ -323,6 +322,8 @@ namespace Microsoft.AspNetCore.Identity.Test
             // Assert
             Assert.True(result.Succeeded);
             manager.Verify();
+
+            AppContext.SetSwitch("Microsoft.AspNetCore.Identity.CheckPasswordSignInAlwaysResetLockoutOnSuccess", false);
         }
 
         [Theory]
@@ -575,11 +576,11 @@ namespace Microsoft.AspNetCore.Identity.Test
             var signInManager = new Mock<SignInManager<PocoUser>>(manager.Object,
                 new HttpContextAccessor { HttpContext = context },
                 new Mock<IUserClaimsPrincipalFactory<PocoUser>>().Object,
-                null, null, new Mock<IAuthenticationSchemeProvider>().Object)
+                null, null, new Mock<IAuthenticationSchemeProvider>().Object, null)
             { CallBase = true };
             //signInManager.Setup(s => s.SignInAsync(user, It.Is<AuthenticationProperties>(p => p.IsPersistent == isPersistent),
             //externalLogin? loginProvider : null)).Returns(Task.FromResult(0)).Verifiable();
-            signInManager.Setup(s => s.SignInAsync(user, It.IsAny<AuthenticationProperties>(), null)).Returns(Task.FromResult(0)).Verifiable();
+            signInManager.Setup(s => s.SignInWithClaimsAsync(user, It.IsAny<AuthenticationProperties>(), It.IsAny<IEnumerable<Claim>>())).Returns(Task.FromResult(0)).Verifiable();
             signInManager.Object.Context = context;
 
             // Act
@@ -632,6 +633,7 @@ namespace Microsoft.AspNetCore.Identity.Test
                 auth.Setup(a => a.SignInAsync(context,
                     IdentityConstants.ApplicationScheme,
                     It.Is<ClaimsPrincipal>(i => i.FindFirstValue(ClaimTypes.AuthenticationMethod) == loginProvider
+                        && i.FindFirstValue("amr") == "mfa"
                         && i.FindFirstValue(ClaimTypes.NameIdentifier) == user.Id),
                     It.IsAny<AuthenticationProperties>())).Returns(Task.FromResult(0)).Verifiable();
                 // REVIEW: restore ability to test is persistent
@@ -641,7 +643,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             }
             else
             {
-                SetupSignIn(context, auth, user.Id);
+                SetupSignIn(context, auth, user.Id, isPersistent, null, "mfa");
             }
             if (rememberClient)
             {
@@ -864,7 +866,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             if (confirmed)
             {
                 manager.Setup(m => m.CheckPasswordAsync(user, "password")).ReturnsAsync(true).Verifiable();
-                SetupSignIn(context, auth);
+                SetupSignIn(context, auth, user.Id, isPersistent: null, loginProvider: null, amr: "pwd");
             }
             var identityOptions = new IdentityOptions();
             identityOptions.SignIn.RequireConfirmedEmail = true;
@@ -893,13 +895,14 @@ namespace Microsoft.AspNetCore.Identity.Test
             auth.Verify();
         }
 
-        private static void SetupSignIn(HttpContext context, Mock<IAuthenticationService> auth, string userId = null, bool? isPersistent = null, string loginProvider = null)
+        private static void SetupSignIn(HttpContext context, Mock<IAuthenticationService> auth, string userId = null, bool? isPersistent = null, string loginProvider = null, string amr = null)
         {
             auth.Setup(a => a.SignInAsync(context,
                 IdentityConstants.ApplicationScheme,
                 It.Is<ClaimsPrincipal>(id =>
                     (userId == null || id.FindFirstValue(ClaimTypes.NameIdentifier) == userId) &&
-                    (loginProvider == null || id.FindFirstValue(ClaimTypes.AuthenticationMethod) == loginProvider)),
+                    (loginProvider == null || id.FindFirstValue(ClaimTypes.AuthenticationMethod) == loginProvider) &&
+                    (amr == null || id.FindFirstValue("amr") == amr)),
                 It.Is<AuthenticationProperties>(v => isPersistent == null || v.IsPersistent == isPersistent))).Returns(Task.FromResult(0)).Verifiable();
         }
 
@@ -917,7 +920,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             if (confirmed)
             {
                 manager.Setup(m => m.CheckPasswordAsync(user, "password")).ReturnsAsync(true).Verifiable();
-                SetupSignIn(context, auth);
+                SetupSignIn(context, auth, user.Id, isPersistent: null, loginProvider: null, amr: "pwd");
             }
 
             var identityOptions = new IdentityOptions();

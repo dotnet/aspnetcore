@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,11 +9,11 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Hosting.Builder;
-using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
 
@@ -174,6 +174,10 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 host.Initialize();
 
+                // resolve configuration explicitly once to mark it as resolved within the
+                // service provider, ensuring it will be properly disposed with the provider
+                _ = host.Services.GetService<IConfiguration>();
+
                 var logger = host.Services.GetRequiredService<ILogger<WebHost>>();
 
                 // Warn about duplicate HostingStartupAssemblies
@@ -186,8 +190,8 @@ namespace Microsoft.AspNetCore.Hosting
             }
             catch
             {
-                // Dispose the host if there's a failure to initialize, this should clean up
-                // will dispose services that were constructed until the exception was thrown
+                // Dispose the host if there's a failure to initialize, this should dispose
+                // services that were constructed until the exception was thrown
                 host.Dispose();
                 throw;
             }
@@ -248,23 +252,28 @@ namespace Microsoft.AspNetCore.Hosting
             var contentRootPath = ResolveContentRootPath(_options.ContentRootPath, AppContext.BaseDirectory);
 
             // Initialize the hosting environment
-            _hostingEnvironment.Initialize(contentRootPath, _options);
+            ((IWebHostEnvironment)_hostingEnvironment).Initialize(contentRootPath, _options);
             _context.HostingEnvironment = _hostingEnvironment;
 
             var services = new ServiceCollection();
             services.AddSingleton(_options);
-            services.AddSingleton<IHostingEnvironment>(_hostingEnvironment);
+            services.AddSingleton<IWebHostEnvironment>(_hostingEnvironment);
+            services.AddSingleton<IHostEnvironment>(_hostingEnvironment);
+#pragma warning disable CS0618 // Type or member is obsolete
+            services.AddSingleton<AspNetCore.Hosting.IHostingEnvironment>(_hostingEnvironment);
             services.AddSingleton<Extensions.Hosting.IHostingEnvironment>(_hostingEnvironment);
+#pragma warning restore CS0618 // Type or member is obsolete
             services.AddSingleton(_context);
 
             var builder = new ConfigurationBuilder()
                 .SetBasePath(_hostingEnvironment.ContentRootPath)
-                .AddConfiguration(_config);
+                .AddConfiguration(_config, shouldDisposeConfiguration: true);
 
             _configureAppConfigurationBuilder?.Invoke(_context, builder);
 
             var configuration = builder.Build();
-            services.AddSingleton<IConfiguration>(configuration);
+            // register configuration as factory to make it dispose with the service provider
+            services.AddSingleton<IConfiguration>(_ => configuration);
             _context.Configuration = configuration;
 
             var listener = new DiagnosticListener("Microsoft.AspNetCore");
@@ -272,17 +281,12 @@ namespace Microsoft.AspNetCore.Hosting
             services.AddSingleton<DiagnosticSource>(listener);
 
             services.AddTransient<IApplicationBuilderFactory, ApplicationBuilderFactory>();
-            services.AddTransient<IHttpContextFactory, HttpContextFactory>();
+            services.AddTransient<IHttpContextFactory, DefaultHttpContextFactory>();
             services.AddScoped<IMiddlewareFactory, MiddlewareFactory>();
             services.AddOptions();
             services.AddLogging();
 
-            // Conjure up a RequestServices
-            services.AddTransient<IStartupFilter, AutoRequestServicesStartupFilter>();
             services.AddTransient<IServiceProviderFactory<IServiceCollection>, DefaultServiceProviderFactory>();
-
-            // Ensure object pooling is available everywhere.
-            services.AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
 
             if (!string.IsNullOrEmpty(_options.StartupAssembly))
             {
@@ -298,7 +302,7 @@ namespace Microsoft.AspNetCore.Hosting
                     {
                         services.AddSingleton(typeof(IStartup), sp =>
                         {
-                            var hostingEnvironment = sp.GetRequiredService<IHostingEnvironment>();
+                            var hostingEnvironment = sp.GetRequiredService<IHostEnvironment>();
                             var methods = StartupLoader.LoadMethods(sp, startupType, hostingEnvironment.EnvironmentName);
                             return new ConventionBasedStartup(methods);
                         });

@@ -22,7 +22,7 @@ namespace Microsoft.DotNet.Watcher.Internal
             _fileWatcher = new FileWatcher(reporter);
         }
 
-        public async Task<string> GetChangedFileAsync(CancellationToken cancellationToken)
+        public async Task<string> GetChangedFileAsync(CancellationToken cancellationToken, Action startedWatching)
         {
             foreach (var file in _fileSet)
             {
@@ -41,10 +41,17 @@ namespace Microsoft.DotNet.Watcher.Internal
             };
 
             _fileWatcher.OnFileChange += callback;
+            startedWatching();
             var changedFile = await tcs.Task;
             _fileWatcher.OnFileChange -= callback;
 
             return changedFile;
+        }
+
+
+        public Task<string> GetChangedFileAsync(CancellationToken cancellationToken)
+        {
+            return GetChangedFileAsync(cancellationToken, () => {});
         }
 
         public void Dispose()

@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 return false;
             }
 
-            public Task ApplyAsync(HttpContext httpContext, EndpointSelectorContext context, CandidateSet candidates)
+            public Task ApplyAsync(HttpContext httpContext, CandidateSet candidates)
             {
                 throw new NotImplementedException();
             }
@@ -179,7 +179,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 return false;
             }
 
-            public Task ApplyAsync(HttpContext httpContext, EndpointSelectorContext context, CandidateSet candidates)
+            public Task ApplyAsync(HttpContext httpContext, CandidateSet candidates)
             {
                 throw new NotImplementedException();
             }

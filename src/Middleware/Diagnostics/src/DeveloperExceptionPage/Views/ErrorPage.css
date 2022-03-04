@@ -1,4 +1,4 @@
-﻿body {
+body {
     font-family: 'Segoe UI', Tahoma, Arial, Helvetica, sans-serif;
     font-size: .813em;
     color: #222;
@@ -107,6 +107,11 @@ body .location {
     #stackpage .source ol.collapsible li span {
         color: #606060;
     }
+
+#routingpage .subheader {
+    padding: 5px;
+    border-bottom: 1px #ddd solid;
+}
 
 .page table {
     border-collapse: separate;

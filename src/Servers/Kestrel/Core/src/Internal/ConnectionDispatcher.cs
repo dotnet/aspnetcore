@@ -1,24 +1,22 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Buffers;
-using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
-    public class ConnectionDispatcher : IConnectionDispatcher
+    internal class ConnectionDispatcher
     {
         private static long _lastConnectionId = long.MinValue;
 
         private readonly ServiceContext _serviceContext;
         private readonly ConnectionDelegate _connectionDelegate;
+        private readonly TaskCompletionSource<object> _acceptLoopTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public ConnectionDispatcher(ServiceContext serviceContext, ConnectionDelegate connectionDelegate)
         {
@@ -28,26 +26,47 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         private IKestrelTrace Log => _serviceContext.Log;
 
-        public Task OnConnection(TransportConnection connection)
+        public Task StartAcceptingConnections(IConnectionListener listener)
         {
-            // REVIEW: Unfortunately, we still need to use the service context to create the pipes since the settings
-            // for the scheduler and limits are specified here
-            var inputOptions = GetInputPipeOptions(_serviceContext, connection.MemoryPool, connection.InputWriterScheduler);
-            var outputOptions = GetOutputPipeOptions(_serviceContext, connection.MemoryPool, connection.OutputReaderScheduler);
-
-            var pair = DuplexPipe.CreateConnectionPair(inputOptions, outputOptions);
-
-            // Set the transport and connection id
-            connection.ConnectionId = CorrelationIdGenerator.GetNextId();
-            connection.Transport = pair.Transport;
-
-            // This *must* be set before returning from OnConnection
-            connection.Application = pair.Application;
-
-            return Execute(new KestrelConnection(connection));
+            ThreadPool.UnsafeQueueUserWorkItem(StartAcceptingConnectionsCore, listener, preferLocal: false);
+            return _acceptLoopTcs.Task;
         }
 
-        private async Task Execute(KestrelConnection connection)
+        private void StartAcceptingConnectionsCore(IConnectionListener listener)
+        {
+            // REVIEW: Multiple accept loops in parallel?
+            _ = AcceptConnectionsAsync();
+
+            async Task AcceptConnectionsAsync()
+            {
+                try
+                {
+                    while (true)
+                    {
+                        var connection = await listener.AcceptAsync();
+
+                        if (connection == null)
+                        {
+                            // We're done listening
+                            break;
+                        }
+
+                        _ = Execute(new KestrelConnection(connection, _serviceContext.Log));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // REVIEW: If the accept loop ends should this trigger a server shutdown? It will manifest as a hang
+                    Log.LogCritical(0, ex, "The connection listener failed to accept any new connections.");
+                }
+                finally
+                {
+                    _acceptLoopTcs.TrySetResult(null);
+                }
+            }
+        }
+
+        internal async Task Execute(KestrelConnection connection)
         {
             var id = Interlocked.Increment(ref _lastConnectionId);
             var connectionContext = connection.TransportConnection;
@@ -67,25 +86,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                     }
                     catch (Exception ex)
                     {
-                        Log.LogCritical(0, ex, $"{nameof(ConnectionDispatcher)}.{nameof(Execute)}() {connectionContext.ConnectionId}");
+                        Log.LogError(0, ex, "Unhandled exception while processing {ConnectionId}.", connectionContext.ConnectionId);
                     }
-                    finally
-                    {
-                        // Complete the transport PipeReader and PipeWriter after calling into application code
-                        connectionContext.Transport.Input.Complete();
-                        connectionContext.Transport.Output.Complete();
-                    }
-
-                    // Wait for the transport to close
-                    await CancellationTokenAsTask(connectionContext.ConnectionClosed);
                 }
             }
             finally
             {
+                await connection.FireOnCompletedAsync();
+
                 Log.ConnectionStop(connectionContext.ConnectionId);
                 KestrelEventSource.Log.ConnectionStop(connectionContext);
 
-                connection.Complete();
+                // Dispose the transport connection, this needs to happen before removing it from the
+                // connection manager so that we only signal completion of this connection after the transport
+                // is properly torn down.
+                await connection.TransportConnection.DisposeAsync();
 
                 _serviceContext.ConnectionManager.RemoveConnection(id);
             }
@@ -99,56 +114,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
 
             return null;
-        }
-
-        private static Task CancellationTokenAsTask(CancellationToken token)
-        {
-            if (token.IsCancellationRequested)
-            {
-                return Task.CompletedTask;
-            }
-
-            // Transports already dispatch prior to tripping ConnectionClosed
-            // since application code can register to this token.
-            var tcs = new TaskCompletionSource<object>();
-            token.Register(state => ((TaskCompletionSource<object>)state).SetResult(null), tcs);
-            return tcs.Task;
-        }
-
-        // Internal for testing
-        internal static PipeOptions GetInputPipeOptions(ServiceContext serviceContext, MemoryPool<byte> memoryPool, PipeScheduler writerScheduler) => new PipeOptions
-        (
-            pool: memoryPool,
-            readerScheduler: serviceContext.Scheduler,
-            writerScheduler: writerScheduler,
-            pauseWriterThreshold: serviceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0,
-            resumeWriterThreshold: serviceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0,
-            useSynchronizationContext: false,
-            minimumSegmentSize: KestrelMemoryPool.MinimumSegmentSize
-        );
-
-        internal static PipeOptions GetOutputPipeOptions(ServiceContext serviceContext, MemoryPool<byte> memoryPool, PipeScheduler readerScheduler) => new PipeOptions
-        (
-            pool: memoryPool,
-            readerScheduler: readerScheduler,
-            writerScheduler: serviceContext.Scheduler,
-            pauseWriterThreshold: GetOutputResponseBufferSize(serviceContext),
-            resumeWriterThreshold: GetOutputResponseBufferSize(serviceContext),
-            useSynchronizationContext: false,
-            minimumSegmentSize: KestrelMemoryPool.MinimumSegmentSize
-        );
-
-        private static long GetOutputResponseBufferSize(ServiceContext serviceContext)
-        {
-            var bufferSize = serviceContext.ServerOptions.Limits.MaxResponseBufferSize;
-            if (bufferSize == 0)
-            {
-                // 0 = no buffering so we need to configure the pipe so the writer waits on the reader directly
-                return 1;
-            }
-
-            // null means that we have no back pressure
-            return bufferSize ?? 0;
         }
     }
 }

@@ -11,3 +11,4 @@ import "./LogBannerReporter";
 import "./ConnectionTests";
 import "./HubConnectionTests";
 import "./WebSocketTests";
+import "./WebWorkerTests";

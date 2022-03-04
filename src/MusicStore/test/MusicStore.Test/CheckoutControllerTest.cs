@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
@@ -15,26 +14,21 @@ using Xunit;
 
 namespace MusicStore.Controllers
 {
-    public class CheckoutControllerTest
+    public class CheckoutControllerTest : IClassFixture<SqliteInMemoryFixture>
     {
-        private readonly IServiceProvider _serviceProvider;
+        private readonly SqliteInMemoryFixture _fixture;
 
-        public CheckoutControllerTest()
+        public CheckoutControllerTest(SqliteInMemoryFixture fixture)
         {
-            var efServiceProvider = new ServiceCollection().AddEntityFrameworkInMemoryDatabase().BuildServiceProvider();
-
-            var services = new ServiceCollection();
-
-            services.AddDbContext<MusicStoreContext>(b => b.UseInMemoryDatabase("Scratch").UseInternalServiceProvider(efServiceProvider));
-
-            _serviceProvider = services.BuildServiceProvider();
+            _fixture = fixture;
+            _fixture.CreateDatabase();
         }
 
         [Fact]
         public void AddressAndPayment_ReturnsDefaultView()
         {
             // Arrange
-            var controller = new CheckoutController(_serviceProvider.GetService<ILogger<CheckoutController>>());
+            var controller = new CheckoutController(_fixture.ServiceProvider.GetService<ILogger<CheckoutController>>());
 
             // Act
             var result = controller.AddressAndPayment();
@@ -51,10 +45,7 @@ namespace MusicStore.Controllers
             var httpContext = new DefaultHttpContext();
 
             var orderId = 10;
-            var order = new Order()
-            {
-                OrderId = orderId,
-            };
+            var order = CreateOrder(10);
 
             // Session initialization
             var cartId = "CartId_A";
@@ -73,7 +64,7 @@ namespace MusicStore.Controllers
             httpContext.User = new ClaimsPrincipal(new ClaimsIdentity(claims));
 
             // DbContext initialization
-            var dbContext = _serviceProvider.GetRequiredService<MusicStoreContext>();
+            var dbContext = _fixture.Context;
             var cartItems = CreateTestCartItems(
                 cartId,
                 itemPrice: 10,
@@ -82,7 +73,7 @@ namespace MusicStore.Controllers
             dbContext.AddRange(cartItems);
             dbContext.SaveChanges();
 
-            var controller = new CheckoutController(_serviceProvider.GetService<ILogger<CheckoutController>>());
+            var controller = new CheckoutController(_fixture.ServiceProvider.GetService<ILogger<CheckoutController>>());
             controller.ControllerContext.HttpContext = httpContext;
 
             // Act
@@ -102,17 +93,17 @@ namespace MusicStore.Controllers
         {
             // Arrange
             var context = new DefaultHttpContext();
-            var dbContext = _serviceProvider.GetRequiredService<MusicStoreContext>();
+            var dbContext = _fixture.Context;
 
             // AddressAndPayment action reads the Promo code from FormCollection.
             context.Request.Form =
                 new FormCollection(new Dictionary<string, StringValues>());
 
-            var controller = new CheckoutController(_serviceProvider.GetService<ILogger<CheckoutController>>());
+            var controller = new CheckoutController(_fixture.ServiceProvider.GetService<ILogger<CheckoutController>>());
             controller.ControllerContext.HttpContext = context;
 
             // Do not need actual data for Order; the Order object will be checked for the reference equality.
-            var order = new Order();
+            var order = CreateOrder();
 
             // Act
             var result = await controller.AddressAndPayment(dbContext, order, CancellationToken.None);
@@ -132,12 +123,12 @@ namespace MusicStore.Controllers
             var context = new DefaultHttpContext();
             context.Request.Form =
                 new FormCollection(new Dictionary<string, StringValues>());
-            var dbContext = _serviceProvider.GetRequiredService<MusicStoreContext>();
+            var dbContext = _fixture.Context;
 
-            var controller = new CheckoutController(_serviceProvider.GetService<ILogger<CheckoutController>>());
+            var controller = new CheckoutController(_fixture.ServiceProvider.GetService<ILogger<CheckoutController>>());
             controller.ControllerContext.HttpContext = context;
 
-            var order = new Order();
+            var order = CreateOrder();
 
             // Act
             var result = await controller.AddressAndPayment(dbContext, order, new CancellationToken(true));
@@ -154,11 +145,11 @@ namespace MusicStore.Controllers
         public async Task AddressAndPayment_ReturnsOrderIfInvalidOrderModel()
         {
             // Arrange
-            var controller = new CheckoutController(_serviceProvider.GetService<ILogger<CheckoutController>>());
+            var controller = new CheckoutController(_fixture.ServiceProvider.GetService<ILogger<CheckoutController>>());
             controller.ModelState.AddModelError("a", "ModelErrorA");
-            var dbContext = _serviceProvider.GetRequiredService<MusicStoreContext>();
+            var dbContext = _fixture.Context;
 
-            var order = new Order();
+            var order = CreateOrder();
 
             // Act
             var result = await controller.AddressAndPayment(dbContext, order, CancellationToken.None);
@@ -170,6 +161,22 @@ namespace MusicStore.Controllers
             Assert.NotNull(viewResult.ViewData);
             Assert.Same(order, viewResult.ViewData.Model);
         }
+
+        private Order CreateOrder(int orderId = 100, string userName = "TestUserA")
+            => new Order
+            {
+                OrderId = orderId,
+                Username = userName,
+                FirstName = "Macavity",
+                LastName = "Clark",
+                Address = "11 Meadow Drive",
+                City = "Healing",
+                State = "IA",
+                PostalCode = "DN37 7RU",
+                Country = "USK",
+                Phone = "555 887876",
+                Email = "mc@sample.com"
+            };
 
         [Fact]
         public async Task Complete_ReturnsOrderIdIfValid()
@@ -184,16 +191,11 @@ namespace MusicStore.Controllers
                 User = new ClaimsPrincipal(new ClaimsIdentity(claims)),
             };
 
-            var dbContext =
-                _serviceProvider.GetRequiredService<MusicStoreContext>();
-            dbContext.Add(new Order()
-            {
-                OrderId = orderId,
-                Username = userName
-            });
+            var dbContext = _fixture.Context;
+            dbContext.Add(CreateOrder(orderId, userName));
             dbContext.SaveChanges();
 
-            var controller = new CheckoutController(_serviceProvider.GetService<ILogger<CheckoutController>>());
+            var controller = new CheckoutController(_fixture.ServiceProvider.GetService<ILogger<CheckoutController>>());
             controller.ControllerContext.HttpContext = httpContext;
 
             // Act
@@ -212,10 +214,9 @@ namespace MusicStore.Controllers
         {
             // Arrange
             var invalidOrderId = 100;
-            var dbContext =
-                _serviceProvider.GetRequiredService<MusicStoreContext>();
+            var dbContext = _fixture.Context;
 
-            var controller = new CheckoutController(_serviceProvider.GetService<ILogger<CheckoutController>>());
+            var controller = new CheckoutController(_fixture.ServiceProvider.GetService<ILogger<CheckoutController>>());
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
             // Act
@@ -230,10 +231,21 @@ namespace MusicStore.Controllers
         private static CartItem[] CreateTestCartItems(string cartId, decimal itemPrice, int numberOfItem)
         {
             var albums = Enumerable.Range(1, 10).Select(n =>
-                new Album()
+                new Album
                 {
                     AlbumId = n,
                     Price = itemPrice,
+                    Title = "Greatest Hits",
+                    Artist = new Artist
+                    {
+                        ArtistId = 1,
+                        Name = "Kung Fu Kenny"
+                    },
+                    Genre = new Genre
+                    {
+                        GenreId = 1,
+                        Name = "Rap"
+                    }
                 }).ToArray();
 
             var cartItems = Enumerable.Range(1, numberOfItem).Select(n =>

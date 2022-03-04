@@ -3,56 +3,64 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <RootNamespace>Microsoft.AspNetCore</RootNamespace>
-    <IsPackable>false</IsPackable>
+    <!-- https://github.com/aspnet/AspNetCore/issues/7939: This unit test requires the shared framework be available in Helix. -->
+    <BuildHelixPayload>false</BuildHelixPayload>
   </PropertyGroup>
 
-  <Import Project="..\Microsoft.AspNetCore.App.props" />
-
   <ItemGroup>
+    <_ExpectedSharedFrameworkBinaries Include="@(AspNetCoreAppReference);@(AspNetCoreAppReferenceAndPackage);@(ExternalAspNetCoreAppReference);@(_TransitiveExternalAspNetCoreAppReference)" />
+    <_ExpectedSharedFrameworkBinaries Condition="'$(TargetOsName)' == 'win' AND '$(TargetArchitecture)' != 'arm'" Include="aspnetcorev2_inprocess" />
+
     <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
-      <_Parameter1>PackageVersion</_Parameter1>
-      <_Parameter2>$(PackageVersion)</_Parameter2>
+      <_Parameter1>SharedFxVersion</_Parameter1>
+      <_Parameter2>$(SharedFxVersion)</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
-      <_Parameter1>SharedFxRid</_Parameter1>
-      <_Parameter2>$(SharedFxRid)</_Parameter2>
+      <_Parameter1>TargetingPackVersion</_Parameter1>
+      <_Parameter2>$(TargetingPackVersion)</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
-      <_Parameter1>RepositoryCommit</_Parameter1>
-      <_Parameter2>$(RepositoryCommit)</_Parameter2>
+      <_Parameter1>TargetRuntimeIdentifier</_Parameter1>
+      <_Parameter2>$(TargetRuntimeIdentifier)</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
-      <_Parameter1>MicrosoftNETCoreAppPackageVersion</_Parameter1>
-      <_Parameter2>$(RuntimeFrameworkVersion)</_Parameter2>
+      <_Parameter1>MicrosoftNETCoreAppRuntimeVersion</_Parameter1>
+      <_Parameter2>$(MicrosoftNETCoreAppRuntimeVersion)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
+      <_Parameter1>SharedFxDependencies</_Parameter1>
+      <_Parameter2>@(_ExpectedSharedFrameworkBinaries)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
+      <_Parameter1>SharedFrameworkLayoutRoot</_Parameter1>
+      <_Parameter2>$(SharedFrameworkLayoutRoot)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
+      <_Parameter1>TargetingPackLayoutRoot</_Parameter1>
+      <_Parameter2>$(TargetingPackLayoutRoot)</_Parameter2>
     </AssemblyAttribute>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
+    <Reference Include="Newtonsoft.Json" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\Microsoft.AspNetCore.App.shfxproj">
+    <ProjectReference Include="..\ref\Microsoft.AspNetCore.App.Ref.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <OutputItemType>_ResolvedFrameworkReference</OutputItemType>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+    </ProjectReference>
+    <ProjectReference Include="..\src\Microsoft.AspNetCore.App.Runtime.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
     </ProjectReference>
   </ItemGroup>
 
-  <Target Name="GenerateTestData" BeforeTargets="GetAssemblyAttributes" DependsOnTargets="ResolveProjectReferences">
+  <Target Name="GenerateTestData" BeforeTargets="GetAssemblyAttributes" DependsOnTargets="InitializeSourceControlInformation">
     <ItemGroup>
-      <ExpectedAssemblyNames Include="%(Dependency.AssemblyName)" />
-      <ExpectedAssemblyNames Include="@(Dependency)" Condition="'%(Dependency.AssemblyName)' == '' " />
       <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
-        <_Parameter1>SharedFxDependencies</_Parameter1>
-        <_Parameter2>@(ExpectedAssemblyNames)</_Parameter2>
-      </AssemblyAttribute>
-      <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
-        <_Parameter1>MetadataOutputPath</_Parameter1>
-        <_Parameter2>%(_ResolvedFrameworkReference.MetadataOutputPath)</_Parameter2>
-      </AssemblyAttribute>
-      <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
-        <_Parameter1>ManifestOutputDir</_Parameter1>
-        <_Parameter2>%(_ResolvedFrameworkReference.ManifestOutputDir)</_Parameter2>
+        <_Parameter1>RepositoryCommit</_Parameter1>
+        <_Parameter2>$(SourceRevisionId)</_Parameter2>
       </AssemblyAttribute>
     </ItemGroup>
   </Target>

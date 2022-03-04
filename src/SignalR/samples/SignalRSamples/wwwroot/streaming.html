@@ -17,6 +17,7 @@
     </div>
 
     <div>
+        <button id="asyncEnumerableButton" name="asyncEnumerable" type="button" disabled>From IAsyncEnumerable</button>
         <button id="observableButton" name="observable" type="button" disabled>From Observable</button>
         <button id="channelButton" name="channel" type="button" disabled>From Channel</button>
     </div>
@@ -32,7 +33,7 @@
             let resultsList = document.getElementById('resultsList');
             let channelButton = document.getElementById('channelButton');
             let observableButton = document.getElementById('observableButton');
-            let clearButton = document.getElementById('clearButton');
+            let asyncEnumerableButton = document.getElementById('asyncEnumerableButton');
 
             let connectButton = document.getElementById('connectButton');
             let disconnectButton = document.getElementById('disconnectButton');
@@ -61,6 +62,7 @@
                 connection.onclose(function () {
                     channelButton.disabled = true;
                     observableButton.disabled = true;
+                    asyncEnumerableButton.disabled = true;
                     connectButton.disabled = false;
                     disconnectButton.disabled = true;
 
@@ -71,11 +73,16 @@
                     .then(function () {
                         channelButton.disabled = false;
                         observableButton.disabled = false;
+                        asyncEnumerableButton.disabled = false;
                         connectButton.disabled = true;
                         disconnectButton.disabled = false;
                         addLine('resultsList', 'connected', 'green');
                     });
             });
+
+            click('asyncEnumerableButton', function () {
+                run('AsyncEnumerableCounter');
+            })
 
             click('observableButton', function () {
                 run('ObservableCounter');

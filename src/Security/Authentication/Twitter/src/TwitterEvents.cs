@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         /// <summary>
         /// Called when a Challenge causes a redirect to authorize endpoint in the Twitter handler
         /// </summary>
-        /// <param name="context">Contains redirect URI and <see cref="Http.Authentication.AuthenticationProperties"/> of the challenge </param>
+        /// <param name="context">Contains redirect URI and <see cref="AuthenticationProperties"/> of the challenge </param>
         public virtual Task RedirectToAuthorizationEndpoint(RedirectContext<TwitterOptions> context) => OnRedirectToAuthorizationEndpoint(context);
     }
 }

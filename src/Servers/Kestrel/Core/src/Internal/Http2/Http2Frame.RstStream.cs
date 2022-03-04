@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         |                        Error Code (32)                        |
         +---------------------------------------------------------------+
     */
-    public partial class Http2Frame
+    internal partial class Http2Frame
     {
         public Http2ErrorCode RstStreamErrorCode { get; set; }
 

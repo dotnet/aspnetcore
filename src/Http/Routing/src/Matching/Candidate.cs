@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             int score,
             KeyValuePair<string, object>[] slots,
             (string parameterName, int segmentIndex, int slotIndex)[] captures,
-            (string parameterName, int segmentIndex, int slotIndex) catchAll,
+            in (string parameterName, int segmentIndex, int slotIndex) catchAll,
             (RoutePatternPathSegment pathSegment, int segmentIndex)[] complexSegments,
             KeyValuePair<string, IRouteConstraint>[] constraints)
         {

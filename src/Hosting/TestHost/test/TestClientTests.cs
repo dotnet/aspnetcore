@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -87,8 +88,8 @@ namespace Microsoft.AspNetCore.TestHost
         public async Task PutAsyncWorks()
         {
             // Arrange
-            RequestDelegate appDelegate = ctx =>
-                ctx.Response.WriteAsync(new StreamReader(ctx.Request.Body).ReadToEnd() + " PUT Response");
+            RequestDelegate appDelegate = async ctx =>
+                await ctx.Response.WriteAsync(await new StreamReader(ctx.Request.Body).ReadToEndAsync() + " PUT Response");
             var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
             var server = new TestServer(builder);
             var client = server.CreateClient();
@@ -106,7 +107,7 @@ namespace Microsoft.AspNetCore.TestHost
         {
             // Arrange
             RequestDelegate appDelegate = async ctx =>
-                await ctx.Response.WriteAsync(new StreamReader(ctx.Request.Body).ReadToEnd() + " POST Response");
+                await ctx.Response.WriteAsync(await new StreamReader(ctx.Request.Body).ReadToEndAsync() + " POST Response");
             var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
             var server = new TestServer(builder);
             var client = server.CreateClient();
@@ -132,16 +133,15 @@ namespace Microsoft.AspNetCore.TestHost
             }
 
             var builder = new WebHostBuilder();
-            RequestDelegate app = (ctx) =>
+            RequestDelegate app = async ctx =>
             {
                 var disposable = new TestDisposable();
                 ctx.Response.RegisterForDispose(disposable);
-                ctx.Response.Body.Write(data, 0, 1024);
+                await ctx.Response.Body.WriteAsync(data, 0, 1024);
 
                 Assert.False(disposable.IsDisposed);
 
-                ctx.Response.Body.Write(data, 1024, 1024);
-                return Task.FromResult(0);
+                await ctx.Response.Body.WriteAsync(data, 1024, 1024);
             };
 
             builder.Configure(appBuilder => appBuilder.Run(app));
@@ -420,10 +420,63 @@ namespace Microsoft.AspNetCore.TestHost
             var client = server.CreateClient();
             var cts = new CancellationTokenSource();
             cts.CancelAfter(500);
-            var response = await client.GetAsync("http://localhost:12345", cts.Token);
+            var response = await Assert.ThrowsAnyAsync<OperationCanceledException>(() => client.GetAsync("http://localhost:12345", cts.Token));
 
             // Assert
             var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await tcs.Task);
+        }
+
+        [Fact]
+        public async Task AsyncLocalValueOnClientIsNotPreserved()
+        {
+            var asyncLocal = new AsyncLocal<object>();
+            var value = new object();
+            asyncLocal.Value = value;
+
+            object capturedValue = null;
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.Run((context) =>
+                    {
+                        capturedValue = asyncLocal.Value;
+                        return context.Response.WriteAsync("Done");
+                    });
+                });
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var resp = await client.GetAsync("/");
+
+            Assert.NotSame(value, capturedValue);
+        }
+
+        [Fact]
+        public async Task AsyncLocalValueOnClientIsPreservedIfPreserveExecutionContextIsTrue()
+        {
+            var asyncLocal = new AsyncLocal<object>();
+            var value = new object();
+            asyncLocal.Value = value;
+
+            object capturedValue = null;
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.Run((context) =>
+                    {
+                        capturedValue = asyncLocal.Value;
+                        return context.Response.WriteAsync("Done");
+                    });
+                });
+            var server = new TestServer(builder)
+            {
+                PreserveExecutionContext = true
+            };
+            var client = server.CreateClient();
+
+            var resp = await client.GetAsync("/");
+
+            Assert.Same(value, capturedValue);
         }
     }
 }

@@ -1,0 +1,83 @@
+<!-- Licensed to the .NET Foundation under one or more agreements. The .NET Foundation licenses this file to you under the MIT license. See the LICENSE file in the project root for more information. -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    This MSBuild file is intended to be used as the body of the default 
+    publishing release pipeline. The release pipeline will use this file
+    to invoke the the SignCheck tool to validate that packages about to
+    be published are correctly signed.
+  
+    Parameters:
+  
+      - PackageBasePath   : Directory containing all files that need to be validated.
+      - SignCheckVersion  : Version of SignCheck package to be used.
+      - SignValidationExclusionList   : ItemGroup containing exclusion list to be forwarded to SignCheck.
+      - EnableJarSigningCheck    : Whether .jar files should be validated.
+      - EnableStrongNameCheck    : Whether strong name check should be performed.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+
+  <!--
+    From 'Signing.props' we import $(SignValidationExclusionList)
+  -->
+  <Import Project="$(MSBuildThisFileDirectory)Signing.props" Condition="Exists('$(MSBuildThisFileDirectory)Signing.props')" />
+
+  <Target Name="ValidateSigning">
+    <PropertyGroup>
+      <SignCheckToolPath>$(NuGetPackageRoot)Microsoft.DotNet.SignCheck\$(SignCheckVersion)\tools\Microsoft.DotNet.SignCheck.exe</SignCheckToolPath>
+
+      <SignCheckInputDir>$(PackageBasePath)</SignCheckInputDir>
+      <SignCheckLog>signcheck.log</SignCheckLog>
+      <SignCheckErrorLog>signcheck.errors.log</SignCheckErrorLog>
+      <SignCheckExclusionsFile>signcheck.exclusions.txt</SignCheckExclusionsFile>
+    </PropertyGroup>
+    
+    <ItemGroup>
+      <!--
+        Documentation for these arguments is available here:
+        https://github.com/dotnet/arcade/tree/master/src/SignCheck
+      -->
+      <SignCheckArgs Include="--recursive" />
+      <SignCheckArgs Include="--traverse-subfolders" />
+      <SignCheckArgs Include="--file-status AllFiles" />
+      <SignCheckArgs Include="--log-file $(SignCheckLog)" />
+      <SignCheckArgs Include="--error-log-file $(SignCheckErrorLog)" />
+      <SignCheckArgs Include="--input-files $(SignCheckInputDir)" />
+      
+      <SignCheckArgs Include="--exclusions-file $(SignCheckExclusionsFile)" Condition="'@(SignValidationExclusionList)' != ''" />
+      <SignCheckArgs Include="--verify-jar" Condition="'$(EnableJarSigningCheck)' == 'true'" />
+      <SignCheckArgs Include="--verify-strongname" Condition="'$(EnableStrongNameCheck)' == 'true'" />
+    </ItemGroup>
+   
+    <WriteLinesToFile 
+      File="$(SignCheckExclusionsFile)"
+      Lines="@(SignValidationExclusionList)"
+      Condition="'@(SignValidationExclusionList)' != ''"
+      Overwrite="true"
+      Encoding="Unicode"/>
+    
+    <!--
+      IgnoreExitCode='true' because the tool doesn't return '0' on success.
+    -->
+    <Exec 
+      Command="&quot;$(SignCheckToolPath)&quot; @(SignCheckArgs, ' ')"
+      IgnoreExitCode='true' 
+      ConsoleToMsBuild="false" 
+      StandardErrorImportance="high" />
+
+    <Error 
+      Text="Signing validation failed. Check $(SignCheckErrorLog) for more information." 
+      Condition="Exists($(SignCheckErrorLog)) and '$([System.IO.File]::ReadAllText($(SignCheckErrorLog)))' != ''" />
+
+    <Message
+      Text="##vso[artifact.upload containerfolder=LogFiles;artifactname=LogFiles]{SignCheckErrorLog}"
+      Condition="Exists($(SignCheckErrorLog)) and '$([System.IO.File]::ReadAllText($(SignCheckErrorLog)))' != ''" />
+    
+  </Target>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.DotNet.SignCheck" Version="$(SignCheckVersion)" />
+  </ItemGroup>
+</Project>

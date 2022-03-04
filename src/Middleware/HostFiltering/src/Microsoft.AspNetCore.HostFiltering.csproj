@@ -5,6 +5,7 @@
       ASP.NET Core middleware for filtering out requests with unknown HTTP host headers.
     </Description>
     <TargetFramework>netcoreapp3.0</TargetFramework>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore</PackageTags>
   </PropertyGroup>
@@ -13,6 +14,6 @@
     <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
     <Reference Include="Microsoft.Extensions.Options" />
-    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" /> 
+    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
   </ItemGroup>
 </Project>

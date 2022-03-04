@@ -13,16 +13,52 @@ Later on, this will be checked using this condition:
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.2.1' ">
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '3.0.1' ">
+    <PackagesInPatch>
+    </PackagesInPatch>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.2.2' ">
+    <PackagesInPatch>
+      @aspnet/signalr;
+      Microsoft.AspNetCore.AspNetCoreModuleV2;
+      Microsoft.AspNetCore.Authentication.Google;
+      Microsoft.AspNetCore.Http;
+      Microsoft.AspNetCore.Mvc.Core;
+      Microsoft.AspNetCore.Routing;
+      Microsoft.AspNetCore.Server.IIS;
+      java:signalr;
+    </PackagesInPatch>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.2.3' ">
+    <PackagesInPatch>
+    </PackagesInPatch>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.2.4' ">
+    <PackagesInPatch>
+      @aspnet/signalr;
+      Microsoft.AspNetCore.AspNetCoreModuleV2;
+    </PackagesInPatch>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.2.5' ">
     <PackagesInPatch>
       Microsoft.AspNetCore.AspNetCoreModule;
       Microsoft.AspNetCore.AspNetCoreModuleV2;
-      Microsoft.AspNetCore.Server.IIS;
-      Microsoft.AspNetCore.Server.IISIntegration;
-      Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
-      Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
-      Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore;
+      Microsoft.AspNetCore.Identity.UI;
+      java:signalr;
+      Microsoft.AspNetCore.SignalR.Protocols.MessagePack;
+      Microsoft.AspNetCore.SignalR.Redis;
+      Microsoft.AspNetCore.SignalR.StackExchangeRedis;
+      Microsoft.AspNetCore.DataProtection.StackExchangeRedis;
+      Microsoft.AspNetCore.Mvc.Core;
+      Microsoft.AspNetCore.Mvc.RazorPages;
+      Microsoft.AspNetCore.AzureAppServicesIntegration;
+      Microsoft.AspNetCore.AzureAppServices.HostingStartup;
+      Microsoft.AspNetCore.AzureAppServices.SiteExtension;
     </PackagesInPatch>
   </PropertyGroup>
-
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.2.6' ">
+    <PackagesInPatch>
+      Microsoft.AspNetCore.Mvc.Api.Analyzers;
+    </PackagesInPatch>
+  </PropertyGroup>
 </Project>

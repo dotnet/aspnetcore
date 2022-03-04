@@ -1,0 +1,42 @@
+{
+  "solution": {
+    "path": "..\\Middleware.sln",
+    "projects": [
+      "..\\DataProtection\\Abstractions\\src\\Microsoft.AspNetCore.DataProtection.Abstractions.csproj",
+      "..\\DataProtection\\Cryptography.Internal\\src\\Microsoft.AspNetCore.Cryptography.Internal.csproj",
+      "..\\DataProtection\\DataProtection\\src\\Microsoft.AspNetCore.DataProtection.csproj",
+      "..\\DefaultBuilder\\src\\Microsoft.AspNetCore.csproj",
+      "..\\Hosting\\Abstractions\\src\\Microsoft.AspNetCore.Hosting.Abstractions.csproj",
+      "..\\Hosting\\Hosting\\src\\Microsoft.AspNetCore.Hosting.csproj",
+      "..\\Hosting\\Server.Abstractions\\src\\Microsoft.AspNetCore.Hosting.Server.Abstractions.csproj",
+      "..\\Hosting\\Server.IntegrationTesting\\src\\Microsoft.AspNetCore.Server.IntegrationTesting.csproj",
+      "..\\Hosting\\TestHost\\src\\Microsoft.AspNetCore.TestHost.csproj",
+      "..\\Http\\Authentication.Abstractions\\src\\Microsoft.AspNetCore.Authentication.Abstractions.csproj",
+      "..\\Http\\Authentication.Core\\src\\Microsoft.AspNetCore.Authentication.Core.csproj",
+      "..\\Http\\Http.Abstractions\\src\\Microsoft.AspNetCore.Http.Abstractions.csproj",
+      "..\\Http\\Http.Extensions\\src\\Microsoft.AspNetCore.Http.Extensions.csproj",
+      "..\\Http\\Http.Features\\src\\Microsoft.AspNetCore.Http.Features.csproj",
+      "..\\Http\\Metadata\\src\\Microsoft.AspNetCore.Metadata.csproj",
+      "..\\Http\\Routing.Abstractions\\src\\Microsoft.AspNetCore.Routing.Abstractions.csproj",
+      "..\\Http\\WebUtilities\\src\\Microsoft.AspNetCore.WebUtilities.csproj",
+      "..\\Security\\Authorization\\Core\\src\\Microsoft.AspNetCore.Authorization.csproj",
+      "..\\Servers\\Connections.Abstractions\\src\\Microsoft.AspNetCore.Connections.Abstractions.csproj",
+      "..\\Servers\\HttpSys\\src\\Microsoft.AspNetCore.Server.HttpSys.csproj",
+      "..\\Servers\\IIS\\IISIntegration\\src\\Microsoft.AspNetCore.Server.IISIntegration.csproj",
+      "..\\Servers\\IIS\\IIS\\src\\Microsoft.AspNetCore.Server.IIS.csproj",
+      "..\\Servers\\Kestrel\\Core\\src\\Microsoft.AspNetCore.Server.Kestrel.Core.csproj",
+      "..\\Servers\\Kestrel\\Kestrel\\src\\Microsoft.AspNetCore.Server.Kestrel.csproj",
+      "..\\Servers\\Kestrel\\Transport.Sockets\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj",
+      "..\\http\\Headers\\src\\Microsoft.Net.Http.Headers.csproj",
+      "..\\http\\Routing\\src\\Microsoft.AspNetCore.Routing.csproj",
+      "..\\http\\http\\src\\Microsoft.AspNetCore.Http.csproj",
+      "Diagnostics.Abstractions\\src\\Microsoft.AspNetCore.Diagnostics.Abstractions.csproj",
+      "Diagnostics\\src\\Microsoft.AspNetCore.Diagnostics.csproj",
+      "HostFiltering\\src\\Microsoft.AspNetCore.HostFiltering.csproj",
+      "HttpOverrides\\src\\Microsoft.AspNetCore.HttpOverrides.csproj",
+      "Session\\samples\\SessionSample.csproj",
+      "Session\\src\\Microsoft.AspNetCore.Session.csproj",
+      "Session\\test\\Microsoft.AspNetCore.Session.Tests.csproj"
+    ]
+  }
+}

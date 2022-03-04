@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Tests for users to verify their own implementations of SignalR types</Description>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <IsShippingPackage>true</IsShippingPackage>
+    <HasReferenceAssembly>false</HasReferenceAssembly>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SignalRSharedSourceRoot)DuplexPipe.cs" Link="DuplexPipe.cs" />
+    <Compile Include="$(SignalRSharedSourceRoot)MemoryBufferWriter.cs" Link="Internal\MemoryBufferWriter.cs" />
+    <Compile Include="..\..\..\common\testassets\Tests.Utils\HubConnectionContextUtils.cs" Link="HubConnectionContextUtils.cs" />
+    <Compile Include="..\..\..\common\testassets\Tests.Utils\TaskExtensions.cs" Link="TaskExtensions.cs" />
+    <Compile Include="..\..\..\common\testassets\Tests.Utils\TestClient.cs" Link="TestClient.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.SignalR.Common" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Core" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson" />
+    <Reference Include="xunit.assert" />
+    <Reference Include="xunit.extensibility.core" />
+  </ItemGroup>
+
+</Project>

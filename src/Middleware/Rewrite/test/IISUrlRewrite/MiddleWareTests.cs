@@ -11,10 +11,9 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.AspNetCore.Rewrite.Internal;
-using Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite;
-using Microsoft.AspNetCore.Rewrite.Internal.UrlActions;
-using Microsoft.AspNetCore.Rewrite.Internal.UrlMatches;
+using Microsoft.AspNetCore.Rewrite.IISUrlRewrite;
+using Microsoft.AspNetCore.Rewrite.UrlActions;
+using Microsoft.AspNetCore.Rewrite.UrlMatches;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Net.Http.Headers;
 using Xunit;
@@ -553,9 +552,9 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         }
 
         [Theory]
-        [InlineData(@"^http://localhost(/.*)", "http://localhost/foo/bar", UriMatchPart.Path)]
-        [InlineData(@"^http://localhost(/.*)", "http://www.test.com/foo/bar", UriMatchPart.Full)]
-        public async Task Invoke_GlobalRuleConditionMatchesAgainstFullUri_CodedRule(string conditionInputPattern, string expectedResult, UriMatchPart uriMatchPart)
+        [InlineData(@"^http://localhost(/.*)", "http://localhost/foo/bar", (int)UriMatchPart.Path)]
+        [InlineData(@"^http://localhost(/.*)", "http://www.test.com/foo/bar", (int)UriMatchPart.Full)]
+        public async Task Invoke_GlobalRuleConditionMatchesAgainstFullUri_CodedRule(string conditionInputPattern, string expectedResult, int uriMatchPart)
         {
             // arrange
             var inputParser = new InputParser();
@@ -571,7 +570,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 inputParser,
                 "{REQUEST_URI}",
                 conditionInputPattern,
-                uriMatchPart,
+                (UriMatchPart)uriMatchPart,
                 ignoreCase: true,
                 negate: false);
             ruleBuilder.ConfigureConditionBehavior(LogicalGrouping.MatchAll, trackAllCaptures: true);
@@ -579,7 +578,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
 
             var action = new RewriteAction(
                 RuleResult.SkipRemainingRules,
-                inputParser.ParseInputString(@"http://www.test.com{C:1}", uriMatchPart),
+                inputParser.ParseInputString(@"http://www.test.com{C:1}", (UriMatchPart)uriMatchPart),
                 queryStringAppend: false);
             ruleBuilder.AddUrlAction(action);
 

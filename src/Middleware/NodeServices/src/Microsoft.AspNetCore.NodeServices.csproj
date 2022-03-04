@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Description>Invoke Node.js modules at runtime in ASP.NET Core applications.</Description>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <IsShippingPackage>true</IsShippingPackage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="node_modules\**\*" />
+    <EmbeddedResource Include="Content\**\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Logging.Console" />
+    <Reference Include="Newtonsoft.Json" />
+  </ItemGroup>
+
+  <!-- Version of this SDK is set in global.json -->
+  <Sdk Name="Yarn.MSBuild" />
+
+  <Target Name="YarnInstall">
+    <Message Text="Running yarn install on $(MSBuildProjectFile)" Importance="High" />
+    <Yarn Command="install --mutex network" />
+  </Target>
+
+  <Target Name="PrepublishScript" DependsOnTargets="YarnInstall" BeforeTargets="PrepareForPublish" Condition=" '$(IsCrossTargetingBuild)' != 'true' ">
+    <Exec Command="node node_modules/webpack/bin/webpack.js" />
+  </Target>
+
+</Project>

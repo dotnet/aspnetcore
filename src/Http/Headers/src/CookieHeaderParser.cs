@@ -6,14 +6,14 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Net.Http.Headers
 {
-    internal class CookieHeaderParser : HttpHeaderParser<CookieHeaderValue>
+    internal sealed class CookieHeaderParser : HttpHeaderParser<CookieHeaderValue>
     {
         internal CookieHeaderParser(bool supportsMultipleValues)
             : base(supportsMultipleValues)
         {
         }
 
-        public sealed override bool TryParseValue(StringSegment value, ref int index, out CookieHeaderValue parsedValue)
+        public override bool TryParseValue(StringSegment value, ref int index, out CookieHeaderValue parsedValue)
         {
             parsedValue = null;
 
@@ -27,8 +27,7 @@ namespace Microsoft.Net.Http.Headers
                 return SupportsMultipleValues;
             }
 
-            var separatorFound = false;
-            var current = GetNextNonEmptyOrWhitespaceIndex(value, index, SupportsMultipleValues, out separatorFound);
+            var current = GetNextNonEmptyOrWhitespaceIndex(value, index, SupportsMultipleValues, out bool separatorFound);
 
             if (separatorFound && !SupportsMultipleValues)
             {

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.0;net461</TargetFrameworks>
     <DebugType>portable</DebugType>
   </PropertyGroup>
 
@@ -19,7 +19,8 @@
   <ItemGroup>
     <Reference Include="FSharp.Core" />
     <Reference Include="System.Reflection.Metadata" />
-    <Reference Include="Microsoft.Extensions.TypeNameHelper.Sources" PrivateAssets="All" />
+    <Reference Include="System.Threading.Tasks.Extensions" />
+    <Reference Include="Microsoft.Extensions.TypeNameHelper.Sources" />
   </ItemGroup>
 
   <ItemGroup>

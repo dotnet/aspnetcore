@@ -69,7 +69,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {{
-    public static partial class HttpUtilities
+    internal static partial class HttpUtilities
     {{
         // readonly primitive statics can be Jit'd to consts https://github.com/dotnet/coreclr/issues/1079
 {0}

@@ -30,6 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.Http2
         private static X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate();
 
         [ConditionalFact]
+        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/7000")]
         public async Task TlsHandshakeRejectsTlsLessThan12()
         {
             using (var server = new TestServer(context =>
@@ -65,6 +66,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.Http2
                     await WaitForConnectionErrorAsync(reader, ignoreNonGoAwayFrames: false, expectedLastStreamId: 0, expectedErrorCode: Http2ErrorCode.INADEQUATE_SECURITY);
                     reader.Complete();
                 }
+                await server.StopAsync();
             }
         }
 

@@ -1,0 +1,34 @@
+@page "/prerendered-transition"
+@using Microsoft.AspNetCore.Components
+@inject IComponentContext ComponentContext
+
+<h1>Hello</h1>
+
+<p>
+    Current state:
+    <strong id="connected-state">@(ComponentContext.IsConnected ? "connected" : "not connected")</strong>
+</p>
+
+<p>
+    Clicks:
+    <strong id="count">@count</strong>
+    <button id="increment-count" @onclick="@(() => count++)">Click me</button>
+</p>
+
+@code {
+    int count;
+    bool firstRender = false;
+    protected override Task OnAfterRenderAsync()
+    {
+        if (!firstRender)
+        {
+            firstRender = true;
+
+            // We need to queue another render when we connect, otherwise the
+            // browser won't see anything.
+            StateHasChanged();
+        }
+
+        return Task.CompletedTask;
+    }
+}

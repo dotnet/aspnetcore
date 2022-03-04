@@ -1,0 +1,20 @@
+{
+  "name": "nodeservices",
+  "version": "1.0.0",
+  "description": "This is not really an NPM package and will not be published. This file exists only to reference compilation tools.",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack --mode production"
+  },
+  "author": "Microsoft",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@types/node": "^10.9.2",
+    "ts-loader": "^4.5.0",
+    "typescript": "^3.0.1",
+    "webpack": "^4.17.1",
+    "webpack-cli": "^3.1.0"
+  }
+}

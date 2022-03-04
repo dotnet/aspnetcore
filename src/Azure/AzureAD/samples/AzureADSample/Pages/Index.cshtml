@@ -1,0 +1,10 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<div>
+    <h1>@User.Identity.Name</h1>
+    <a asp-page="/About">Denied page</a>
+</div>

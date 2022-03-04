@@ -334,7 +334,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             var shouldRedirect = Options.LoginPath.HasValue && OriginalPath == Options.LoginPath;
             await ApplyHeaders(shouldRedirect, signedInContext.Properties);
 
-            Logger.SignedIn(Scheme.Name);
+            Logger.AuthenticationSchemeSignedIn(Scheme.Name);
         }
 
         protected async override Task HandleSignOutAsync(AuthenticationProperties properties)
@@ -369,7 +369,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             var shouldRedirect = Options.LogoutPath.HasValue && OriginalPath == Options.LogoutPath;
             await ApplyHeaders(shouldRedirect, context.Properties);
 
-            Logger.SignedOut(Scheme.Name);
+            Logger.AuthenticationSchemeSignedOut(Scheme.Name);
         }
 
         private async Task ApplyHeaders(bool shouldRedirectToReturnUrl, AuthenticationProperties properties)

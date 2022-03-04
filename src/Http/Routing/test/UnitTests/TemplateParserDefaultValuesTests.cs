@@ -1,9 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -95,8 +93,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             Assert.Equal(message, ex.Message);
 
             Assert.NotNull(ex.InnerException);
-            message = "An optional parameter cannot have default value." + Environment.NewLine +
-                "Parameter name: routeTemplate";
+            message = "An optional parameter cannot have default value. (Parameter 'routeTemplate')";
             Assert.Equal(message, ex.InnerException.Message);
         }
 
@@ -122,8 +119,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             Assert.Equal(message, ex.Message);
 
             Assert.NotNull(ex.InnerException);
-            message = "An optional parameter cannot have default value." + Environment.NewLine +
-                "Parameter name: routeTemplate";
+            message = "An optional parameter cannot have default value. (Parameter 'routeTemplate')";
             Assert.Equal(message, ex.InnerException.Message);
         }
 

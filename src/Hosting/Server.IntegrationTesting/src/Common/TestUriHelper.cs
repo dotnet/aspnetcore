@@ -32,6 +32,10 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.Common
                     // it should provide a hint URL with "localhost" (IPv4 and IPv6) or "[::1]" (IPv6-only).
                     return new UriBuilder(scheme, "127.0.0.1", 0).Uri;
                 }
+                else if (serverType == ServerType.HttpSys)
+                {
+                    return new UriBuilder(scheme, "localhost", TestPortHelper.GetNextHttpSysPort(scheme)).Uri;
+                }
                 else
                 {
                     // If the server type is not Kestrel, or status messages are disabled, there is no status message

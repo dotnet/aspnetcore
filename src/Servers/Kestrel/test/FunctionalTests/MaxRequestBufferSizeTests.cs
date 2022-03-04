@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         // When connectionAdapter=true, the MaxRequestBufferSize is set on two pipes, so it's effectively doubled.
         //
         // To ensure reliability, _dataLength must be greater than the largest "max pause" in any configuration
-        private const int _dataLength = 40 * 1024 * 1024;
+        private const int _dataLength = 100 * 1024 * 1024;
 
         private static readonly string[] _requestLines = new[]
         {
@@ -108,15 +108,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                        };
             }
         }
-
-        private bool LargeUploadRetryPredicate(Exception e)
-            => e is IOException && e.Message.Contains("Unable to read data from the transport connection: The I/O operation has been aborted because of either a thread exit or an application request");
-
         [Theory]
-        [RetryTest(nameof(LargeUploadRetryPredicate),
-            "Active investigation into potential corefx sockets bug: https://github.com/dotnet/corefx/issues/30691",
-            OperatingSystems.Windows,
-            5)]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2489", FlakyOn.AzP.All)]
         [MemberData(nameof(LargeUploadData))]
         public async Task LargeUpload(long? maxRequestBufferSize, bool connectionAdapter, bool expectPause)
         {
@@ -132,7 +125,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             var memoryPoolFactory = new DiagnosticMemoryPoolFactory(allowLateReturn: true);
 
-            using (var host = StartWebHost(maxRequestBufferSize, data, connectionAdapter, startReadingRequestBody, clientFinishedSendingRequestBody, memoryPoolFactory.Create))
+            using (var host = await StartWebHost(maxRequestBufferSize, data, connectionAdapter, startReadingRequestBody, clientFinishedSendingRequestBody, memoryPoolFactory.Create))
             {
                 var port = host.GetPort();
                 using (var socket = CreateSocket(port))
@@ -204,6 +197,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                     await AssertStreamContains(stream, $"bytesRead: {data.Length}");
                 }
+                await host.StopAsync();
             }
 
             await memoryPoolFactory.WhenAllBlocksReturned(TestConstants.DefaultTimeout);
@@ -224,7 +218,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             var memoryPoolFactory = new DiagnosticMemoryPoolFactory(allowLateReturn: true);
 
-            using (var host = StartWebHost(16 * 1024, data, false, startReadingRequestBody, clientFinishedSendingRequestBody, memoryPoolFactory.Create))
+            using (var host = await StartWebHost(16 * 1024, data, false, startReadingRequestBody, clientFinishedSendingRequestBody, memoryPoolFactory.Create))
             {
                 var port = host.GetPort();
                 using (var socket = CreateSocket(port))
@@ -278,6 +272,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                     // Dispose host prior to closing connection to verify the server doesn't throw during shutdown
                     // if a connection no longer has alloc and read callbacks configured.
+                    await host.StopAsync();
                     host.Dispose();
                 }
             }
@@ -287,14 +282,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             await memoryPoolFactory.WhenAllBlocksReturned(TestConstants.DefaultTimeout);
         }
 
-        private IWebHost StartWebHost(long? maxRequestBufferSize,
+        private async Task<IWebHost> StartWebHost(long? maxRequestBufferSize,
             byte[] expectedBody,
             bool useConnectionAdapter,
             TaskCompletionSource<object> startReadingRequestBody,
             TaskCompletionSource<object> clientFinishedSendingRequestBody,
             Func<MemoryPool<byte>> memoryPoolFactory = null)
         {
-            var host = TransportSelector.GetWebHostBuilder(memoryPoolFactory)
+            var host = TransportSelector.GetWebHostBuilder(memoryPoolFactory, maxRequestBufferSize)
                 .ConfigureServices(AddTestLogging)
                 .UseKestrel(options =>
                 {
@@ -302,7 +297,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     {
                         if (useConnectionAdapter)
                         {
-                            listenOptions.ConnectionAdapters.Add(new PassThroughConnectionAdapter());
+                            listenOptions.UsePassThrough();
                         }
                     });
 
@@ -350,7 +345,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 }))
                 .Build();
 
-            host.Start();
+            await host.StartAsync();
 
             return host;
         }

@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
-    public class ConnectionReference
+    internal class ConnectionReference
     {
         private readonly WeakReference<KestrelConnection> _weakReference;
 

@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
         where TStartup : class
         where TContext : DbContext
     {
-        public AuthorizationTests(ServerFactory<TStartup, TContext> serverFactory)
+        protected AuthorizationTests(ServerFactory<TStartup, TContext> serverFactory)
         {
             ServerFactory = serverFactory;
         }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -13,11 +13,11 @@ namespace Microsoft.Extensions.Logging
         static LoggingExtensions()
         {
             _userAuthorizationSucceeded = LoggerMessage.Define(
-                eventId: 1,
+                eventId: new EventId(1, "UserAuthorizationSucceeded"),
                 logLevel: LogLevel.Information,
                 formatString: "Authorization was successful.");
             _userAuthorizationFailed = LoggerMessage.Define(
-                eventId: 2,
+                eventId: new EventId(2, "UserAuthorizationFailed"),
                 logLevel: LogLevel.Information,
                 formatString: "Authorization failed.");
         }

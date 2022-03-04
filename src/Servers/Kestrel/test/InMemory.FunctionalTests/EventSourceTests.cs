@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Concurrent;
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             string connectionId = null;
             string requestId = null;
             int port;
-            using (var server = new TestServer(context =>
+            await using (var server = new TestServer(context =>
             {
                 connectionId = context.Features.Get<IHttpConnectionFeature>().ConnectionId;
                 requestId = context.TraceIdentifier;

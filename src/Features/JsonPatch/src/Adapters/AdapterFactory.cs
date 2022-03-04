@@ -13,7 +13,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
     public class AdapterFactory : IAdapterFactory
     {
         /// <inheritdoc />
+#pragma warning disable PUB0001
         public virtual IAdapter Create(object target, IContractResolver contractResolver)
+#pragma warning restore PUB0001
         {
             if (target == null)
             {

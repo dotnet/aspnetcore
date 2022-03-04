@@ -6,6 +6,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Authentication
 {
@@ -18,13 +19,15 @@ namespace Microsoft.AspNetCore.Authentication
         /// Constructor.
         /// </summary>
         /// <param name="schemes">The <see cref="IAuthenticationSchemeProvider"/>.</param>
-        /// <param name="handlers">The <see cref="IAuthenticationRequestHandler"/>.</param>
+        /// <param name="handlers">The <see cref="IAuthenticationHandlerProvider"/>.</param>
         /// <param name="transform">The <see cref="IClaimsTransformation"/>.</param>
-        public AuthenticationService(IAuthenticationSchemeProvider schemes, IAuthenticationHandlerProvider handlers, IClaimsTransformation transform)
+        /// <param name="options">The <see cref="AuthenticationOptions"/>.</param>
+        public AuthenticationService(IAuthenticationSchemeProvider schemes, IAuthenticationHandlerProvider handlers, IClaimsTransformation transform, IOptions<AuthenticationOptions> options)
         {
             Schemes = schemes;
             Handlers = handlers;
             Transform = transform;
+            Options = options.Value;
         }
 
         /// <summary>
@@ -43,6 +46,11 @@ namespace Microsoft.AspNetCore.Authentication
         public IClaimsTransformation Transform { get; }
 
         /// <summary>
+        /// The <see cref="AuthenticationOptions"/>.
+        /// </summary>
+        public AuthenticationOptions Options { get; }
+
+        /// <summary>
         /// Authenticate for the specified authentication scheme.
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/>.</param>
@@ -56,7 +64,7 @@ namespace Microsoft.AspNetCore.Authentication
                 scheme = defaultScheme?.Name;
                 if (scheme == null)
                 {
-                    throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultAuthenticateScheme found.");
+                    throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultAuthenticateScheme found. The default schemes can be set using either AddAuthentication(string defaultScheme) or AddAuthentication(Action<AuthenticationOptions> configureOptions).");
                 }
             }
 
@@ -90,7 +98,7 @@ namespace Microsoft.AspNetCore.Authentication
                 scheme = defaultChallengeScheme?.Name;
                 if (scheme == null)
                 {
-                    throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultChallengeScheme found.");
+                    throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultChallengeScheme found. The default schemes can be set using either AddAuthentication(string defaultScheme) or AddAuthentication(Action<AuthenticationOptions> configureOptions).");
                 }
             }
 
@@ -118,7 +126,7 @@ namespace Microsoft.AspNetCore.Authentication
                 scheme = defaultForbidScheme?.Name;
                 if (scheme == null)
                 {
-                    throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultForbidScheme found.");
+                    throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultForbidScheme found. The default schemes can be set using either AddAuthentication(string defaultScheme) or AddAuthentication(Action<AuthenticationOptions> configureOptions).");
                 }
             }
 
@@ -146,13 +154,25 @@ namespace Microsoft.AspNetCore.Authentication
                 throw new ArgumentNullException(nameof(principal));
             }
 
+            if (Options.RequireAuthenticatedSignIn)
+            {
+                if (principal.Identity == null)
+                {
+                    throw new InvalidOperationException("SignInAsync when principal.Identity == null is not allowed when AuthenticationOptions.RequireAuthenticatedSignIn is true.");
+                }
+                if (!principal.Identity.IsAuthenticated)
+                {
+                    throw new InvalidOperationException("SignInAsync when principal.Identity.IsAuthenticated is false is not allowed when AuthenticationOptions.RequireAuthenticatedSignIn is true.");
+                }
+            }
+
             if (scheme == null)
             {
                 var defaultScheme = await Schemes.GetDefaultSignInSchemeAsync();
                 scheme = defaultScheme?.Name;
                 if (scheme == null)
                 {
-                    throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultSignInScheme found.");
+                    throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultSignInScheme found. The default schemes can be set using either AddAuthentication(string defaultScheme) or AddAuthentication(Action<AuthenticationOptions> configureOptions).");
                 }
             }
 
@@ -186,7 +206,7 @@ namespace Microsoft.AspNetCore.Authentication
                 scheme = defaultScheme?.Name;
                 if (scheme == null)
                 {
-                    throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultSignOutScheme found.");
+                    throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultSignOutScheme found. The default schemes can be set using either AddAuthentication(string defaultScheme) or AddAuthentication(Action<AuthenticationOptions> configureOptions).");
                 }
             }
 

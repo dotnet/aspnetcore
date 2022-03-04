@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Xunit;
@@ -11,6 +12,25 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
 {
     public class CorsServiceTests
     {
+        [Fact]
+        public void EvaluatePolicy_Throws_IfPolicyIsIncorrectlyConfigured()
+        {
+            // Arrange
+            var corsService = GetCorsService();
+            var requestContext = GetHttpContext("POST", origin: null);
+            var policy = new CorsPolicy
+            {
+                Origins = { "*" },
+                SupportsCredentials = true,
+            };
+
+            // Act & Assert
+            ExceptionAssert.ThrowsArgument(
+                () => corsService.EvaluatePolicy(requestContext, policy),
+                "policy",
+                Resources.InsecureConfiguration);
+        }
+
         [Fact]
         public void EvaluatePolicy_NoOrigin_ReturnsInvalidResult()
         {
@@ -103,10 +123,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             // Arrange
             var corsService = GetCorsService();
             var requestContext = GetHttpContext(origin: "http://example.com");
-            var policy = new CorsPolicy
-            {
-                SupportsCredentials = true
-            };
+            var policy = new CorsPolicy();
             policy.Origins.Add(CorsConstants.AnyOrigin);
 
             // Act
@@ -145,7 +162,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             {
                 SupportsCredentials = true
             };
-            policy.Origins.Add(CorsConstants.AnyOrigin);
+            policy.Origins.Add("http://example.com");
 
             // Act
             var result = corsService.EvaluatePolicy(requestContext, policy);
@@ -169,27 +186,6 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             // Assert
             Assert.Equal("*", result.AllowedOrigin);
             Assert.False(result.VaryByOrigin);
-        }
-
-        [Fact]
-        public void EvaluatePolicy_AllowAnyOrigin_SupportsCredentials_DoesNotVaryByOrigin()
-        {
-            // Arrange
-            var corsService = GetCorsService();
-            var requestContext = GetHttpContext(origin: "http://example.com");
-            var policy = new CorsPolicy
-            {
-                SupportsCredentials = true
-            };
-            policy.Origins.Add(CorsConstants.AnyOrigin);
-
-            // Act
-            var result = corsService.EvaluatePolicy(requestContext, policy);
-
-            // Assert
-            Assert.Equal("*", result.AllowedOrigin);
-            Assert.True(result.SupportsCredentials);
-            Assert.True(result.VaryByOrigin);
         }
 
         [Fact]
@@ -369,7 +365,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             {
                 SupportsCredentials = true
             };
-            policy.Origins.Add(CorsConstants.AnyOrigin);
+            policy.Origins.Add("http://example.com");
             policy.Methods.Add("*");
 
             // Act
@@ -532,7 +528,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             var corsService = GetCorsService();
             var httpContext = GetHttpContext(method: "OPTIONS", origin: "http://example.com", accessControlRequestMethod: "PUT");
             var policy = new CorsPolicy();
-            policy.Origins.Add(CorsConstants.AnyOrigin);
+            policy.Origins.Add("http://example.com");
             policy.Methods.Add("*");
             policy.Headers.Add("*");
             policy.SupportsCredentials = true;

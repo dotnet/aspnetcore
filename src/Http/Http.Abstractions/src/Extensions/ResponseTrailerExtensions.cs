@@ -4,13 +4,12 @@
 using System;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http
 {
     public static class ResponseTrailerExtensions
     {
-        private const string Trailer = "Trailer";
-
         /// <summary>
         /// Adds the given trailer name to the 'Trailer' response header. This must happen before the response headers are sent.
         /// </summary>
@@ -18,7 +17,7 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="trailerName"></param>
         public static void DeclareTrailer(this HttpResponse response, string trailerName)
         {
-            response.Headers.AppendCommaSeparatedValues(Trailer, trailerName);
+            response.Headers.AppendCommaSeparatedValues(HeaderNames.Trailer, trailerName);
         }
 
         /// <summary>

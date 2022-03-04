@@ -3,11 +3,11 @@
 
 using System;
 using System.Threading;
-using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Testing
 {
-    public class LifetimeNotImplemented : IApplicationLifetime
+    public class LifetimeNotImplemented : IHostApplicationLifetime
     {
         public CancellationToken ApplicationStarted
         {

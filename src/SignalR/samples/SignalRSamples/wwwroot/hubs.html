@@ -29,6 +29,9 @@
 
         <input type="button" id="connect" value="Connect" />
         <input type="button" id="disconnect" value="Disconnect" />
+
+        <input type="checkbox" id="autoReconnect" checked />
+        Enable automatic reconnects
     </div>
 
 
@@ -105,6 +108,7 @@
 
     let connectButton = document.getElementById('connect');
     let disconnectButton = document.getElementById('disconnect');
+    let autoReconnectCheckbox = document.getElementById('autoReconnect');
     let broadcastButton = document.getElementById('broadcast');
     let broadcastExceptMeButton = document.getElementById('broadcast-exceptme');
     let sendToConnectionButton = document.getElementById('connection-send');
@@ -145,11 +149,18 @@
         }
 
         console.log('http://' + document.location.host + '/' + hubRoute);
-        connection = new signalR.HubConnectionBuilder()
-            .configureLogging(signalR.LogLevel.Trace)
+
+        var connectionBuilder = new signalR.HubConnectionBuilder()
+            .configureLogging("trace")
             .withUrl(hubRoute, options)
-            .withHubProtocol(protocol)
-            .build();
+            .withHubProtocol(protocol);
+
+        if (autoReconnectCheckbox.checked) {
+            connectionBuilder.withAutomaticReconnect();
+        }
+
+        connection = connectionBuilder.build();
+
         connection.on('Send', function (msg) {
             addLine('message-list', msg);
         });
@@ -162,6 +173,14 @@
                 addLine('message-list', 'Disconnected', 'green');
             }
             updateButtonState(false);
+        });
+
+        connection.onreconnecting(function (e) {
+            addLine('message-list', 'Connection reconnecting: ' + e, 'orange');
+        });
+
+        connection.onreconnected(function (e) {
+            addLine('message-list', 'Connection reconnected!', 'green');
         });
 
         connection.start()

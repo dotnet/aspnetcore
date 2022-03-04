@@ -1,0 +1,9 @@
+﻿@inject IUriHelper Helper
+
+@functions{
+
+    protected override void OnInitialized()
+    {
+        Helper.NavigateTo("/navigation-redirect");
+    }
+}

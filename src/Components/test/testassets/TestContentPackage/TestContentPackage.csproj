@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <OutputType>library</OutputType>
+    <RazorLangVersion>3.0</RazorLangVersion>
+    <StaticWebAssetBasePath>_content/TestContentPackage</StaticWebAssetBasePath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Components" />
+  </ItemGroup>
+
+</Project>

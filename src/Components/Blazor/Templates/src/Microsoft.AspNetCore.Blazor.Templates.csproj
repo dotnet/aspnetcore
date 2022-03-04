@@ -1,0 +1,56 @@
+﻿<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <NuspecFile>Microsoft.AspNetCore.Blazor.Templates.nuspec</NuspecFile>
+    <IsShippingPackage>true</IsShippingPackage>
+    <EnableDefaultItems>False</EnableDefaultItems>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <IncludeBuildOutput>False</IncludeBuildOutput>
+    <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>
+    <DebugType>none</DebugType>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);2008</NoWarn>
+    <Description>Templates for ASP.NET Core Blazor projects.</Description>
+    <PackageTags>aspnet;templates;blazor;spa</PackageTags>
+    <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
+  </PropertyGroup>
+
+  <Target Name="TransformTemplateConfigs" BeforeTargets="CoreBuild" DependsOnTargets="SetTemplateJsonSymbolReplacements">
+    <!--
+      For each template, copy its '.template.config.src' directory to '.template.config',
+      removing any earlier output at that location
+    -->
+    <ItemGroup>
+      <_TemplateConfigMainFile Include="content\**\.template.config.src\template.json" />
+      <_TemplateConfigDir Include="@(_TemplateConfigMainFile-&gt;'$([System.IO.Path]::GetDirectoryName('%(_TemplateConfigMainFile.FullPath)'))')" />
+      <_TemplateConfigFileToCopy Include="%(_TemplateConfigDir.Identity)\**\*.*">
+        <DestDir>$([System.IO.Path]::GetDirectoryName('%(_TemplateConfigDir.Identity)'))\.template.config\</DestDir>
+      </_TemplateConfigFileToCopy>
+    </ItemGroup>
+    <RemoveDir Directories="%(_TemplateConfigFileToCopy.DestDir)" />
+    <Copy SourceFiles="%(_TemplateConfigFileToCopy.Identity)" DestinationFolder="%(_TemplateConfigFileToCopy.DestDir)" />
+
+    <!--
+      Modify the .json files in the .template.config dirs to stamp MSBuild properties into them
+    -->
+    <ItemGroup>
+      <GeneratedContent Include="@(_TemplateConfigFileToCopy->WithMetadataValue('Extension','.json'))">
+        <OutputPath>%(DestDir)%(RecursiveDir)%(Filename)%(Extension)</OutputPath>
+        <Properties>$(GeneratedContentProperties)</Properties>
+      </GeneratedContent>
+    </ItemGroup>
+    <GenerateFileFromTemplate
+      TemplateFile="%(GeneratedContent.Identity)"
+      Properties="%(GeneratedContent.Properties)"
+      OutputPath="%(GeneratedContent.OutputPath)">
+
+      <Output TaskParameter="OutputPath" ItemName="FileWrites" />
+      <Output TaskParameter="OutputPath" ItemName="Content" />
+    </GenerateFileFromTemplate>
+  </Target>
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+  <!-- Override SDK targets. This project does not produce a .dll. -->
+  <Target Name="CoreCompile" />
+  <Target Name="GetTargetPath" />
+</Project>

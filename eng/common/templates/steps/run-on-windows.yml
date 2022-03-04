@@ -1,0 +1,7 @@
+parameters:
+  agentOs: ''
+  steps: []
+
+steps:
+- ${{ if eq(parameters.agentOs, 'Windows_NT') }}:
+  - ${{ parameters.steps }}

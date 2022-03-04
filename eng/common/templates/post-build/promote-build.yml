@@ -1,0 +1,24 @@
+parameters:
+  ChannelId: 0
+
+jobs:
+- job:
+  displayName: Promote Build
+  dependsOn: setupMaestroVars
+  condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], ${{ parameters.ChannelId }})
+  variables:
+    - name: BARBuildId
+      value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.BARBuildId'] ]
+    - name: ChannelId
+      value: ${{ parameters.ChannelId }}
+    - group: Publish-Build-Assets
+  pool:
+    vmImage: 'windows-2019'
+  steps:
+    - task: PowerShell@2
+      displayName: Add Build to Channel
+      inputs:
+        filePath: $(Build.SourcesDirectory)/eng/common/post-build/promote-build.ps1
+        arguments: -BuildId $(BARBuildId) 
+          -ChannelId $(ChannelId) 
+          -BarToken $(MaestroAccessToken)

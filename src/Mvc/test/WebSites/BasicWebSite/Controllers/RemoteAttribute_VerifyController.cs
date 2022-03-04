@@ -38,7 +38,7 @@ namespace BasicWebSite.Controllers
                 value = string.Empty;
             }
 
-            return Json(data: $"/RemoteAttribute_Verify/IsIdAvailable rejects {name}: '{value}'.");
+            return new JsonResult($"/RemoteAttribute_Verify/IsIdAvailable rejects {name}: '{value}'.");
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
-    public class HttpParserBenchmark : IHttpRequestLineHandler, IHttpHeadersHandler
+    internal class HttpParserBenchmark : IHttpRequestLineHandler, IHttpHeadersHandler
     {
         private readonly HttpParser<Adapter> _parser = new HttpParser<Adapter>();
 
@@ -51,23 +51,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         private void ParseData()
         {
-            var reader = new BufferReader<byte>(_buffer);
-            if (!_parser.ParseRequestLine(new Adapter(this), ref reader))
+            if (!_parser.ParseRequestLine(new Adapter(this), _buffer, out var consumed, out var examined))
             {
                 ErrorUtilities.ThrowInvalidRequestHeaders();
             }
 
+            _buffer = _buffer.Slice(consumed, _buffer.End);
+
+            var reader = new SequenceReader<byte>(_buffer);
             if (!_parser.ParseHeaders(new Adapter(this), ref reader))
             {
                 ErrorUtilities.ThrowInvalidRequestHeaders();
             }
         }
 
-        public void OnStartLine(HttpMethod method, HttpVersion version, ReadOnlySpan<byte> target, ReadOnlySpan<byte> path, ReadOnlySpan<byte> query, ReadOnlySpan<byte> customMethod, bool pathEncoded)
+        public void OnStartLine(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)
         {
         }
 
-        public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+        public void OnHeader(Span<byte> name, Span<byte> value)
+        {
+        }
+
+        public void OnHeadersComplete()
         {
         }
 
@@ -80,10 +86,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 RequestHandler = requestHandler;
             }
 
-            public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+            public void OnHeader(Span<byte> name, Span<byte> value)
                 => RequestHandler.OnHeader(name, value);
 
-            public void OnStartLine(HttpMethod method, HttpVersion version, ReadOnlySpan<byte> target, ReadOnlySpan<byte> path, ReadOnlySpan<byte> query, ReadOnlySpan<byte> customMethod, bool pathEncoded)
+            public void OnHeadersComplete()
+                => RequestHandler.OnHeadersComplete();
+
+            public void OnStartLine(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)
                 => RequestHandler.OnStartLine(method, version, target, path, query, customMethod, pathEncoded);
         }
     }

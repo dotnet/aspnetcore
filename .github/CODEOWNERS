@@ -1,0 +1,22 @@
+# Users referenced in this file will automatically be requested as reviewers for PRs that modify the given paths.
+# See https://help.github.com/articles/about-code-owners/
+
+/global.json                    @aspnet/build
+/.azure/                        @aspnet/build
+/.config/                       @aspnet/build
+/build/                         @aspnet/build
+/eng/                           @aspnet/build
+/eng/common/                    @dotnet-maestro-bot
+/eng/Versions.props             @dotnet-maestro-bot @dougbu
+/eng/Version.Details.xml        @dotnet-maestro-bot @dougbu
+/src/Components/                @SteveSandersonMS
+/src/DefaultBuilder/            @tratcher @anurse
+/src/Hosting/                   @tratcher @anurse
+/src/Http/                      @tratcher @jkotalik @anurse
+/src/Middleware/                @tratcher @anurse
+/src/ProjectTemplates/          @ryanbrandenburg
+/src/Security/                  @tratcher @anurse
+/src/Servers/                   @tratcher @jkotalik @anurse @halter73
+/src/Middleware/Rewrite         @jkotalik @anurse
+/src/Middleware/HttpsPolicy     @jkotalik @anurse
+/src/SignalR/                   @mikaelm12 @BrennanConroy @halter73 @anurse

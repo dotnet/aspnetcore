@@ -100,6 +100,8 @@ namespace Interop.FunctionalTests
                 var chromeOutput = RunHeadlessChrome($"https://localhost:{host.GetPort()}/{requestSuffix}");
 
                 AssertExpectedResponseOrShowDebugInstructions(expectedResponse, chromeOutput);
+
+                await host.StopAsync();
             }
         }
 

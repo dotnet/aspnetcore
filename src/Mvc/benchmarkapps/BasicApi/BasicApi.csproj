@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.0</TargetFrameworks>
     <TargetFrameworks Condition="'$(BenchmarksTargetFramework)' != ''">$(BenchmarksTargetFramework)</TargetFrameworks>
@@ -6,42 +6,40 @@
     <DefineConstants Condition=" '$(GenerateSqlScripts)'=='true' ">$(DefineConstants);GENERATE_SQL_SCRIPTS</DefineConstants>
     <DefineConstants>$(DefineConstants);__RemoveThisBitTo__GENERATE_SQL_SCRIPTS</DefineConstants>
 
-    <WarningsNotAsErrors>CS8002;$(WarningsNotAsErrors)</WarningsNotAsErrors>
+    <!-- Pomelo.EntityFrameworkCore.MySql is not strong named, so this test assembly cannot be strong-named signed either. -->
+    <SignAssembly>false</SignAssembly>
+    <IsTestAssetProject>true</IsTestAssetProject>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(BenchmarksOnlyNpgsqlEntityFrameworkCorePostgreSQLPackageVersion)" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.1.1" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.1.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.1.1" />
+    <PackageReference Include="MySqlConnector" Version="0.43.0" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="2.1.1.1" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="2.1.1" />
+
+    <PackageReference Update="@(PackageReference)" AllowExplicitReference="true" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' != 'net461'">
-    <PackageReference Include="MySqlConnector" Version="$(BenchmarksOnlyMySqlConnectorPackageVersion)" />
-    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="$(BenchmarksOnlyPomeloEntityFrameworkCoreMySqlPackageVersion)" />
-
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="$(BenchmarksOnlyMicrosoftEntityFrameworkCoreDesignPackageVersion)" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="$(BenchmarksOnlyMicrosoftEntityFrameworkCoreSqlitePackageVersion)" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(BenchmarksOnlyMicrosoftEntityFrameworkCoreSqlServerPackageVersion)" />
-  </ItemGroup>
-
-  <!-- These references are used when running locally -->
+  <!-- These references are used when building locally or on CI. -->
   <ItemGroup Condition="'$(BenchmarksTargetFramework)' == ''">
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="$(MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="$(MicrosoftAspNetCoreServerKestrelPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="$(MicrosoftExtensionsConfigurationCommandLinePackageVersion)" />
-
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Mvc.Core\Microsoft.AspNetCore.Mvc.Core.csproj" />
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Mvc.DataAnnotations\Microsoft.AspNetCore.Mvc.DataAnnotations.csproj" />
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Mvc.Formatters.Json\Microsoft.AspNetCore.Mvc.Formatters.Json.csproj" />
+    <Reference Include="Microsoft.AspNetCore.Authentication" />
+    <Reference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.DataAnnotations" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <Reference Include="Microsoft.Extensions.Configuration.CommandLine" />
   </ItemGroup>
 
-  <!--
-    These references are used when running on the Benchmarks Server.
-    Use All meta-package and not App to include Microsoft.EntityFrameworkCore.Sqlite.
-  -->
+  <!-- These references are used when building on the Benchmarks Server. -->
   <ItemGroup Condition="'$(BenchmarksTargetFramework)' != ''">
-    <KnownFrameworkReference 
-      Update="Microsoft.AspNetCore.App"
-      DefaultRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)"
-      LatestRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)"
-      TargetingPackVersion="$(MicrosoftAspNetCoreAppPackageVersion)" />
+
+    <FrameworkReference Update="Microsoft.AspNetCore.App" RuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)" />
+    <FrameworkReference Update="Microsoft.NETCore.App" RuntimeFrameworkVersion="$(MicrosoftNETCoreAppPackageVersion)" />
+
+    <!-- Special-case the JwtBearer package because assembly no longer ships in Microsoft.AspNetCore.App. -->
+    <!-- Cannot use <Reference> because it's unsupported when building an isolated project. -->
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
   </ItemGroup>
 </Project>

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Buffers;
@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
@@ -19,12 +18,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         public Pipe Pipe { get; set; }
 
-        public Http1Connection Http1Connection { get; set; }
+        internal Http1Connection Http1Connection { get; set; }
 
         [IterationSetup]
         public void Setup()
         {
-            _memoryPool = KestrelMemoryPool.Create();
+            _memoryPool = SlabMemoryPoolFactory.Create();
             var options = new PipeOptions(_memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
             var pair = DuplexPipe.CreateConnectionPair(options, options);
 
@@ -148,24 +147,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             }
 
             var readableBuffer = awaitable.GetAwaiter().GetResult().Buffer;
-            var reader = new BufferReader<byte>(readableBuffer);
-            var length = readableBuffer.Length;
-
             do
             {
                 Http1Connection.Reset();
 
-                if (!Http1Connection.TakeStartLine(ref reader, length))
+                if (!Http1Connection.TakeStartLine(readableBuffer, out var consumed, out var examined))
                 {
                     ErrorUtilities.ThrowInvalidRequestLine();
                 }
 
-                if (!Http1Connection.TakeMessageHeaders(ref reader, length))
+                readableBuffer = readableBuffer.Slice(consumed);
+
+                if (!Http1Connection.TakeMessageHeaders(readableBuffer, trailers: false, out consumed, out examined))
                 {
                     ErrorUtilities.ThrowInvalidRequestHeaders();
                 }
+
+                readableBuffer = readableBuffer.Slice(consumed);
             }
-            while (!reader.End);
+            while (readableBuffer.Length > 0);
 
             Pipe.Reader.AdvanceTo(readableBuffer.End);
         }
@@ -183,26 +183,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
                 var result = awaitable.GetAwaiter().GetResult();
                 var readableBuffer = result.Buffer;
-                var length = readableBuffer.Length;
-                var reader = new BufferReader<byte>(readableBuffer);
 
                 Http1Connection.Reset();
 
-                if (!Http1Connection.TakeStartLine(ref reader, length))
+                if (!Http1Connection.TakeStartLine(readableBuffer, out var consumed, out var examined))
                 {
                     ErrorUtilities.ThrowInvalidRequestLine();
                 }
-                Pipe.Reader.AdvanceTo(reader.Position);
+                Pipe.Reader.AdvanceTo(consumed, examined);
 
                 result = Pipe.Reader.ReadAsync().GetAwaiter().GetResult();
                 readableBuffer = result.Buffer;
-                reader = new BufferReader<byte>(readableBuffer);
 
-                if (!Http1Connection.TakeMessageHeaders(ref reader, length))
+                if (!Http1Connection.TakeMessageHeaders(readableBuffer, trailers: false, out consumed, out examined))
                 {
                     ErrorUtilities.ThrowInvalidRequestHeaders();
                 }
-                Pipe.Reader.AdvanceTo(reader.Position);
+                Pipe.Reader.AdvanceTo(consumed, examined);
             }
             while (true);
         }

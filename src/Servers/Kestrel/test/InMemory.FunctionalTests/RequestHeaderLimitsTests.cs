@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             var headers = MakeHeaders(headerCount);
 
-            using (var server = CreateServer(maxRequestHeadersTotalSize: headers.Length + extraLimit))
+            await using (var server = CreateServer(maxRequestHeadersTotalSize: headers.Length + extraLimit))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             var headers = MakeHeaders(headerCount);
 
-            using (var server = CreateServer(maxRequestHeaderCount: maxHeaderCount))
+            await using (var server = CreateServer(maxRequestHeaderCount: maxHeaderCount))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             var headers = MakeHeaders(headerCount);
 
-            using (var server = CreateServer(maxRequestHeadersTotalSize: headers.Length - 1))
+            await using (var server = CreateServer(maxRequestHeadersTotalSize: headers.Length - 1))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             var headers = MakeHeaders(headerCount);
 
-            using (var server = CreateServer(maxRequestHeaderCount: maxHeaderCount))
+            await using (var server = CreateServer(maxRequestHeaderCount: maxHeaderCount))
             {
                 using (var connection = server.CreateConnection())
                 {

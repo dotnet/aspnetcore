@@ -279,8 +279,6 @@ namespace Microsoft.AspNetCore.Owin
             }
         }
 
-        IAuthenticationHandler IHttpAuthenticationFeature.Handler { get; set; }
-
         /// <summary>
         /// Gets or sets if the underlying server supports WebSockets. This is enabled by default.
         /// The value should be consistent across requests.

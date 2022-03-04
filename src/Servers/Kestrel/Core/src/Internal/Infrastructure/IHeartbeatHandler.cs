@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
-    public interface IHeartbeatHandler
+    internal interface IHeartbeatHandler
     {
         void OnHeartbeat(DateTimeOffset now);
     }

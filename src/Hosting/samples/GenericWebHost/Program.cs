@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -11,17 +11,11 @@ namespace GenericWebHost
     {
         public static async Task Main(string[] args)
         {
-            var host = new HostBuilder()
-                .ConfigureAppConfiguration((hostContext, config) =>
-                {
-                    config.AddEnvironmentVariables();
-                    config.AddJsonFile("appsettings.json", optional: true);
-                    config.AddCommandLine(args);
-                })
-                .UseFakeServer()
+            var host = Host.CreateDefaultBuilder()
                 .ConfigureWebHost(builder =>
                 {
-                    builder.Configure(app =>
+                    builder.UseKestrel()
+                    .Configure(app =>
                     {
                         app.Run(async (context) =>
                         {
@@ -29,7 +23,6 @@ namespace GenericWebHost
                         });
                     });
                 })
-                .UseConsoleLifetime()
                 .Build();
 
             await host.RunAsync();

@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Authentication.Cookies
@@ -140,20 +141,15 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         }
 
         [Fact]
-        public async Task CookieExpirationOptionIsIgnored()
+        public void SettingCookieExpirationOptionThrows()
         {
-            var server = CreateServerWithServices(s => s.AddAuthentication().AddCookie(o =>
+            var services = new ServiceCollection();
+            services.AddAuthentication().AddCookie(o =>
             {
-                o.Cookie.Name = "TestCookie";
-                // this is currently ignored. Users should set o.ExpireTimeSpan instead
                 o.Cookie.Expiration = TimeSpan.FromDays(10);
-            }), SignInAsAlice);
-
-            var transaction = await SendAsync(server, "http://example.com/testpath");
-
-            var setCookie = transaction.SetCookie;
-            Assert.StartsWith("TestCookie=", setCookie);
-            Assert.DoesNotContain("; expires=", setCookie);
+            });
+            var options = services.BuildServiceProvider().GetRequiredService<IOptionsMonitor<CookieAuthenticationOptions>>();
+            Assert.Throws<OptionsValidationException>(() => options.Get(CookieAuthenticationDefaults.AuthenticationScheme));
         }
 
         [Fact]
@@ -1005,7 +1001,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 .Configure(app =>
                 {
                     app.UseAuthentication();
-                    app.Run(context => context.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(new ClaimsIdentity())));
+                    app.Run(context => context.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(new ClaimsIdentity("whatever"))));
                 })
                 .ConfigureServices(services =>
                 {
@@ -1028,7 +1024,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 .Configure(app =>
                 {
                     app.UseAuthentication();
-                    app.Run(context => context.SignInAsync("Cookie1", new ClaimsPrincipal(new ClaimsIdentity())));
+                    app.Run(context => context.SignInAsync("Cookie1", new ClaimsPrincipal(new ClaimsIdentity("whatever"))));
                 })
                 .ConfigureServices(services =>
                 {
@@ -1052,7 +1048,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 {
                     app.UseAuthentication();
                     app.Map("/notlogin", signoutApp => signoutApp.Run(context => context.SignInAsync("Cookies",
-                        new ClaimsPrincipal())));
+                        new ClaimsPrincipal(new ClaimsIdentity("whatever")))));
                 })
                 .ConfigureServices(services => services.AddAuthentication().AddCookie(o => o.LoginPath = new PathString("/login")));
             var server = new TestServer(builder);
@@ -1069,7 +1065,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 .Configure(app =>
                 {
                     app.UseAuthentication();
-                    app.Map("/login", signoutApp => signoutApp.Run(context => context.SignInAsync("Cookies", new ClaimsPrincipal())));
+                    app.Map("/login", signoutApp => signoutApp.Run(context => context.SignInAsync("Cookies", new ClaimsPrincipal(new ClaimsIdentity("whatever")))));
                 })
                 .ConfigureServices(services => services.AddAuthentication().AddCookie(o => o.LoginPath = new PathString("/login")));
 
@@ -1302,7 +1298,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                     app.Use(async (context, next) =>
                     {
                         var result = await context.AuthenticateAsync("Cookies");
-                        Describe(context.Response, result);
+                        await DescribeAsync(context.Response, result);
                     });
                 })
                 .ConfigureServices(services => services.AddAuthentication().AddCookie("Cookies", o =>
@@ -1478,12 +1474,12 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                         }
                         else if (req.Path == new PathString("/me"))
                         {
-                            Describe(res, AuthenticateResult.Success(new AuthenticationTicket(context.User, new AuthenticationProperties(), CookieAuthenticationDefaults.AuthenticationScheme)));
+                            await DescribeAsync(res, AuthenticateResult.Success(new AuthenticationTicket(context.User, new AuthenticationProperties(), CookieAuthenticationDefaults.AuthenticationScheme)));
                         }
                         else if (req.Path.StartsWithSegments(new PathString("/me"), out remainder))
                         {
                             var ticket = await context.AuthenticateAsync(remainder.Value.Substring(1));
-                            Describe(res, ticket);
+                            await DescribeAsync(res, ticket);
                         }
                         else if (req.Path == new PathString("/testpath") && testpath != null)
                         {
@@ -1510,7 +1506,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             return server;
         }
 
-        private static void Describe(HttpResponse res, AuthenticateResult result)
+        private static Task DescribeAsync(HttpResponse res, AuthenticateResult result)
         {
             res.StatusCode = 200;
             res.ContentType = "text/xml";
@@ -1524,7 +1520,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 xml.Add(result.Ticket.Properties.Items.Select(extra => new XElement("extra", new XAttribute("type", extra.Key), new XAttribute("value", extra.Value))));
             }
             var xmlBytes = Encoding.UTF8.GetBytes(xml.ToString());
-            res.Body.Write(xmlBytes, 0, xmlBytes.Length);
+            return res.Body.WriteAsync(xmlBytes, 0, xmlBytes.Length);
         }
 
         private static async Task<Transaction> SendAsync(TestServer server, string uri, string cookieHeader = null)

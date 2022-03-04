@@ -4,6 +4,7 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace System
 {
@@ -37,7 +38,7 @@ namespace System
         {
             // Compiler won't allow us to use static types as the type parameter
             // for the call to CreateLogger<T>, so we'll duplicate its logic here.
-            return services?.GetService<ILoggerFactory>()?.CreateLogger(type.FullName);
+            return services?.GetService<ILoggerFactory>()?.CreateLogger(type.FullName) ?? NullLogger.Instance;
         }
     }
 }

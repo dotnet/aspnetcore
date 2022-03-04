@@ -1,0 +1,3 @@
+# We only track the .template.config.src items in source control
+# The .template.config files are generated on build
+src/content/**/.template.config/

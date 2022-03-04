@@ -40,7 +40,7 @@ namespace System.Buffers
             _rentTracking = rentTracking;
             _blocks = new HashSet<DiagnosticPoolBlock>();
             _syncObj = new object();
-            _allBlocksReturned = new TaskCompletionSource<object>();
+            _allBlocksReturned = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             _blockAccessExceptions = new List<Exception>();
         }
 

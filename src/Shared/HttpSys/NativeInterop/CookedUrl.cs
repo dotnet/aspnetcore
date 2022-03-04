@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 namespace Microsoft.AspNetCore.HttpSys.Internal
 {
     // Note this type should only be used while the request buffer remains pinned
-    internal class CookedUrl
+    internal readonly struct CookedUrl
     {
         private readonly HttpApiTypes.HTTP_COOKED_URL _nativeCookedUrl;
 

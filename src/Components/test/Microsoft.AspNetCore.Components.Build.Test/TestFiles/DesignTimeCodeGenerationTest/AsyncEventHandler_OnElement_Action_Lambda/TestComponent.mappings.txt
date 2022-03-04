@@ -1,5 +1,0 @@
-Source Location: (1:0,1 [28] x:\dir\subdir\Test\TestComponent.cshtml)
-|using System.Threading.Tasks|
-Generated Location: (266:10,0 [28] )
-|using System.Threading.Tasks|
-

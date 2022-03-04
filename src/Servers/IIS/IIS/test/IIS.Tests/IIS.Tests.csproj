@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\..\build\testsite.props" />
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <InProcessTestSite>true</InProcessTestSite>
+  </PropertyGroup>
+
+  <Import Project="../FunctionalTest.props" />
+
+  <ItemGroup>
+    <ProjectReference Include="..\testassets\IIS.Common.TestLib\IIS.Common.TestLib.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Hosting" />
+    <Reference Include="Microsoft.AspNetCore.Server.IIS" />
+    <Reference Include="Microsoft.Extensions.Logging.Testing" />
+    <Reference Include="Microsoft.Extensions.Logging" />
+    <Reference Include="System.Diagnostics.EventLog" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="AppHostConfig\HostableWebCore.config" CopyToOutputDirectory="PreserveNewest" Link="%(FileName)%(Extension)" />
+    <None Include="$(AspNetCoreModuleV2ShimDll)" Condition="$(PackNativeAssets) == 'true'" CopyToOutputDirectory="PreserveNewest" Link="%(FileName)%(Extension)" />
+  </ItemGroup>
+
+</Project>

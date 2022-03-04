@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RazorLangVersion>3.0</RazorLangVersion>
+
+    <ReferenceBlazorBuildLocally>true</ReferenceBlazorBuildLocally>
+    <!-- Must be defined before ReferenceFromSource.props is imported -->
+    <AdditionalRunArguments>--pathbase /subdir</AdditionalRunArguments>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="System.ComponentModel" />
+    <Reference Include="Microsoft.AspNetCore.Blazor" />
+    <Reference Include="Microsoft.AspNetCore.Blazor.HttpClient" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TestContentPackage\TestContentPackage.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+
+    <EmbeddedResource Update="Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

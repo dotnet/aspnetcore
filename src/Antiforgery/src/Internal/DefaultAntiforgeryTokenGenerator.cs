@@ -7,9 +7,9 @@ using System.Security.Claims;
 using System.Security.Principal;
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Antiforgery.Internal
+namespace Microsoft.AspNetCore.Antiforgery
 {
-    public class DefaultAntiforgeryTokenGenerator : IAntiforgeryTokenGenerator
+    internal class DefaultAntiforgeryTokenGenerator : IAntiforgeryTokenGenerator
     {
         private readonly IClaimUidExtractor _claimUidExtractor;
         private readonly IAntiforgeryAdditionalDataProvider _additionalDataProvider;

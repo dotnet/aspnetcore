@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -20,16 +20,11 @@ namespace Microsoft.AspNetCore.Routing.Matching
             Matchers = matchers;
         }
 
-        public override Task MatchAsync(HttpContext httpContext, EndpointSelectorContext context)
+        public override Task MatchAsync(HttpContext httpContext)
         {
             if (httpContext == null)
             {
                 throw new ArgumentNullException(nameof(httpContext));
-            }
-
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
             }
 
             var path = httpContext.Request.Path.Value;
@@ -37,8 +32,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
             {
                 if (Matchers[i].TryMatch(path))
                 {
-                    context.Endpoint = Matchers[i].Endpoint;
-                    context.RouteValues = new RouteValueDictionary();
+                    httpContext.SetEndpoint(Matchers[i].Endpoint);
+                    httpContext.Request.RouteValues = new RouteValueDictionary();
                 }
             }
 
@@ -121,12 +116,12 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 return Array.Empty<Candidate>();
             }
 
-            public override Task MatchAsync(HttpContext httpContext, EndpointSelectorContext context)
+            public override Task MatchAsync(HttpContext httpContext)
             {
                 if (TryMatch(httpContext.Request.Path.Value))
                 {
-                    context.Endpoint = Endpoint;
-                    context.RouteValues = new RouteValueDictionary();
+                    httpContext.SetEndpoint(Endpoint);
+                    httpContext.Request.RouteValues = new RouteValueDictionary();
                 }
 
                 return Task.CompletedTask;

@@ -131,11 +131,6 @@ namespace BasicWebSite
             public Task BindModelAsync(ModelBindingContext bindingContext)
             {
                 var val = bindingContext.ValueProvider.GetValue(bindingContext.ModelName);
-                if (val == null)
-                {
-                    return Task.CompletedTask;
-                }
-
                 bindingContext.Result = ModelBindingResult.Success("From TestModelBinder: " + val);
                 return Task.CompletedTask;
             }

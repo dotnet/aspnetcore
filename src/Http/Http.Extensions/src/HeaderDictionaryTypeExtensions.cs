@@ -161,11 +161,11 @@ namespace Microsoft.AspNetCore.Http
 
         private static IDictionary<Type, object> KnownListParsers = new Dictionary<Type, object>()
         {
-            { typeof(MediaTypeHeaderValue), new Func<IList<string>, IList<MediaTypeHeaderValue>>(value => { IList<MediaTypeHeaderValue> result; return MediaTypeHeaderValue.TryParseList(value, out result) ? result : null; })  },
-            { typeof(StringWithQualityHeaderValue), new Func<IList<string>, IList<StringWithQualityHeaderValue>>(value => { IList<StringWithQualityHeaderValue> result; return StringWithQualityHeaderValue.TryParseList(value, out result) ? result : null; })  },
-            { typeof(CookieHeaderValue), new Func<IList<string>, IList<CookieHeaderValue>>(value => { IList<CookieHeaderValue> result; return CookieHeaderValue.TryParseList(value, out result) ? result : null; })  },
-            { typeof(EntityTagHeaderValue), new Func<IList<string>, IList<EntityTagHeaderValue>>(value => { IList<EntityTagHeaderValue> result; return EntityTagHeaderValue.TryParseList(value, out result) ? result : null; })  },
-            { typeof(SetCookieHeaderValue), new Func<IList<string>, IList<SetCookieHeaderValue>>(value => { IList<SetCookieHeaderValue> result; return SetCookieHeaderValue.TryParseList(value, out result) ? result : null; })  },
+            { typeof(MediaTypeHeaderValue), new Func<IList<string>, IList<MediaTypeHeaderValue>>(value => { return MediaTypeHeaderValue.TryParseList(value, out IList<MediaTypeHeaderValue> result) ? result : Array.Empty<MediaTypeHeaderValue>(); })  },
+            { typeof(StringWithQualityHeaderValue), new Func<IList<string>, IList<StringWithQualityHeaderValue>>(value => { return StringWithQualityHeaderValue.TryParseList(value, out IList<StringWithQualityHeaderValue> result) ? result : Array.Empty<StringWithQualityHeaderValue>(); })  },
+            { typeof(CookieHeaderValue), new Func<IList<string>, IList<CookieHeaderValue>>(value => { return CookieHeaderValue.TryParseList(value, out IList<CookieHeaderValue> result) ? result : Array.Empty<CookieHeaderValue>(); })  },
+            { typeof(EntityTagHeaderValue), new Func<IList<string>, IList<EntityTagHeaderValue>>(value => { return EntityTagHeaderValue.TryParseList(value, out IList<EntityTagHeaderValue> result) ? result : Array.Empty<EntityTagHeaderValue>(); })  },
+            { typeof(SetCookieHeaderValue), new Func<IList<string>, IList<SetCookieHeaderValue>>(value => { return SetCookieHeaderValue.TryParseList(value, out IList<SetCookieHeaderValue> result) ? result : Array.Empty<SetCookieHeaderValue>(); })  },
         };
 
         internal static T Get<T>(this IHeaderDictionary headers, string name)
@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.Http
 
             if (StringValues.IsNullOrEmpty(values))
             {
-                return null;
+                return Array.Empty<T>();
             }
 
             if (KnownListParsers.TryGetValue(typeof(T), out temp))
@@ -281,7 +281,7 @@ namespace Microsoft.AspNetCore.Http
             {
                 return (IList<T>)parameters[1];
             }
-            return null;
+            return Array.Empty<T>();
         }
     }
 }

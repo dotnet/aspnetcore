@@ -3,10 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text.Encodings.Web;
-using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
@@ -25,40 +23,12 @@ namespace Microsoft.AspNetCore.Routing.Tree
         private readonly IInlineConstraintResolver _constraintResolver;
 
         /// <summary>
-        /// <para>
-        /// This constructor is obsolete and will be removed in a future version. The recommended
-        /// alternative is the overload that does not take a UrlEncoder.
-        /// </para>
-        /// <para>Initializes a new instance of <see cref="TreeRouteBuilder"/>.</para>
-        /// </summary>
-        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
-        /// <param name="urlEncoder">The <see cref="UrlEncoder"/>.</param>
-        /// <param name="objectPool">The <see cref="ObjectPool{UrlBuildingContext}"/>.</param>
-        /// <param name="constraintResolver">The <see cref="IInlineConstraintResolver"/>.</param>
-        [Obsolete("This constructor is obsolete and will be removed in a future version. The recommended " +
-            "alternative is the overload that does not take a UrlEncoder.")]
-        public TreeRouteBuilder(
-            ILoggerFactory loggerFactory,
-            UrlEncoder urlEncoder,
-            ObjectPool<UriBuildingContext> objectPool,
-            IInlineConstraintResolver constraintResolver)
-            : this(loggerFactory, objectPool, constraintResolver)
-        {
-            if (urlEncoder == null)
-            {
-                throw new ArgumentNullException(nameof(urlEncoder));
-            }
-
-            _urlEncoder = urlEncoder;
-        }
-
-        /// <summary>
         /// Initializes a new instance of <see cref="TreeRouteBuilder"/>.
         /// </summary>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         /// <param name="objectPool">The <see cref="ObjectPool{UrlBuildingContext}"/>.</param>
         /// <param name="constraintResolver">The <see cref="IInlineConstraintResolver"/>.</param>
-        public TreeRouteBuilder(
+        internal TreeRouteBuilder(
             ILoggerFactory loggerFactory,
             ObjectPool<UriBuildingContext> objectPool,
             IInlineConstraintResolver constraintResolver)

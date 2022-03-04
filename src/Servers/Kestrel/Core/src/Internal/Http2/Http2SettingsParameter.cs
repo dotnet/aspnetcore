@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
-    public enum Http2SettingsParameter : ushort
+    internal enum Http2SettingsParameter : ushort
     {
         SETTINGS_HEADER_TABLE_SIZE = 0x1,
         SETTINGS_ENABLE_PUSH = 0x2,

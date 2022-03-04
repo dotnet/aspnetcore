@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SignalRSharedSourceRoot)BinaryMessageFormatter.cs" Link="BinaryMessageFormatter.cs" />
+    <Compile Include="$(SignalRSharedSourceRoot)BinaryMessageParser.cs" Link="BinaryMessageParser.cs" />
+    <Compile Include="$(SignalRSharedSourceRoot)TextMessageFormatter.cs" Link="Internal\TextMessageFormatter.cs" />
+    <Compile Include="$(SignalRSharedSourceRoot)TextMessageParser.cs" Link="Internal\TextMessageParser.cs" />
+    <Compile Include="..\..\common\Http.Connections\src\ServerSentEventsMessageFormatter.cs" Link="ServerSentEventsMessageFormatter.cs" />
+    <Compile Include="$(SharedSourceRoot)Buffers.Testing\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(SignalRTestUtilsProject)" />
+
+    <ProjectReference Include="..\..\server\StackExchangeRedis\test\Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="BenchmarkDotNet" />
+    <Reference Include="Microsoft.AspNetCore.BenchmarkRunner.Sources" />
+    <Reference Include="Microsoft.AspNetCore.Http.Connections.Client" />
+    <Reference Include="Microsoft.AspNetCore.Http.Connections" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Client.Core" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Common" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Core" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" />
+    <Reference Include="Microsoft.Extensions.DependencyInjection" />
+    <Reference Include="Microsoft.Extensions.ValueStopwatch.Sources" />
+    <Reference Include="Moq" />
+    <Reference Include="System.Reactive.Linq" />
+    <Reference Include="System.Threading.Channels" />
+    <Reference Include="System.Threading.Tasks.Extensions" />
+  </ItemGroup>
+</Project>

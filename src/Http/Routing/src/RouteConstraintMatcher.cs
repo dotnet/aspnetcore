@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Routing
                     {
                         routeValues.TryGetValue(kvp.Key, out var routeValue);
 
-                        logger.RouteValueDoesNotMatchConstraint(routeValue, kvp.Key, kvp.Value);
+                        logger.ConstraintNotMatched(routeValue, kvp.Key, kvp.Value);
                     }
 
                     return false;

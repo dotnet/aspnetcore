@@ -7,9 +7,9 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.Extensions.Configuration;
 
-namespace Microsoft.AspNetCore.Hosting.Internal
+namespace Microsoft.AspNetCore.Hosting
 {
-    public class WebHostOptions
+    internal class WebHostOptions
     {
         public WebHostOptions() { }
 

@@ -12,6 +12,10 @@ namespace RazorWebSite
             return View();
         }
 
+        public IActionResult FlushFollowedByLargeContent() => View();
+
+        public IActionResult FlushInvokedInComponent() => View();
+
         public IActionResult PageWithoutLayout()
         {
             return View();

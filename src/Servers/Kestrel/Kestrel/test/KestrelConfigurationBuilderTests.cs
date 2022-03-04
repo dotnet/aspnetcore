@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,12 +7,14 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Tests
@@ -22,9 +24,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
         private KestrelServerOptions CreateServerOptions()
         {
             var serverOptions = new KestrelServerOptions();
+            var env = new MockHostingEnvironment { ApplicationName = "TestApplication" };
             serverOptions.ApplicationServices = new ServiceCollection()
                 .AddLogging()
-                .AddSingleton<IHostingEnvironment>(new HostingEnvironment { ApplicationName = "TestApplication" })
+                .AddSingleton<IHostEnvironment>(env)
                 .BuildServiceProvider();
             return serverOptions;
         }
@@ -130,8 +133,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
 
             serverOptions.ConfigureEndpointDefaults(opt =>
             {
-                opt.NoDelay = false;
-                opt.Protocols = HttpProtocols.Http2;
+                opt.Protocols = HttpProtocols.Http1;
             });
 
             serverOptions.ConfigureHttpsDefaults(opt =>
@@ -153,22 +155,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
                     Assert.True(opt.IsHttps);
                     Assert.NotNull(opt.HttpsOptions.ServerCertificate);
                     Assert.Equal(ClientCertificateMode.RequireCertificate, opt.HttpsOptions.ClientCertificateMode);
-                    Assert.False(opt.ListenOptions.NoDelay);
-                    Assert.Equal(HttpProtocols.Http2, opt.ListenOptions.Protocols);
+                    Assert.Equal(HttpProtocols.Http1, opt.ListenOptions.Protocols);
                 })
                 .LocalhostEndpoint(5002, opt =>
                 {
                     ran2 = true;
-                    Assert.False(opt.NoDelay);
-                    Assert.Equal(HttpProtocols.Http2, opt.Protocols);
+                    Assert.Equal(HttpProtocols.Http1, opt.Protocols);
                 })
                 .Load();
 
             Assert.True(ran1);
             Assert.True(ran2);
 
-            Assert.NotNull(serverOptions.ListenOptions[0].ConnectionAdapters.Where(adapter => adapter.IsHttps).SingleOrDefault());
-            Assert.Null(serverOptions.ListenOptions[1].ConnectionAdapters.Where(adapter => adapter.IsHttps).SingleOrDefault());
+            Assert.True(serverOptions.ListenOptions[0].IsTls);
+            Assert.False(serverOptions.ListenOptions[1].IsTls);
         }
 
         [Fact]
@@ -178,7 +178,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
 
             serverOptions.ConfigureEndpointDefaults(opt =>
             {
-                opt.NoDelay = false;
                 opt.UseHttps(TestResources.GetTestCertificate());
             });
 
@@ -199,12 +198,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
                     ran1 = true;
                     Assert.True(opt.IsHttps);
                     Assert.Equal(ClientCertificateMode.RequireCertificate, opt.HttpsOptions.ClientCertificateMode);
-                    Assert.False(opt.ListenOptions.NoDelay);
                 })
                 .LocalhostEndpoint(5002, opt =>
                 {
                     ran2 = true;
-                    Assert.False(opt.NoDelay);
                 })
                 .Load();
 
@@ -212,8 +209,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             Assert.True(ran2);
 
             // You only get Https once per endpoint.
-            Assert.NotNull(serverOptions.ListenOptions[0].ConnectionAdapters.Where(adapter => adapter.IsHttps).SingleOrDefault());
-            Assert.NotNull(serverOptions.ListenOptions[1].ConnectionAdapters.Where(adapter => adapter.IsHttps).SingleOrDefault());
+            Assert.True(serverOptions.ListenOptions[0].IsTls);
+            Assert.True(serverOptions.ListenOptions[1].IsTls);
         }
 
         [Fact]
@@ -319,11 +316,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
+        [InlineData("http1", HttpProtocols.Http1)]
+        // [InlineData("http2", HttpProtocols.Http2)] // Not supported due to missing ALPN support. https://github.com/dotnet/corefx/issues/33016
+        [InlineData("http1AndHttp2", HttpProtocols.Http1AndHttp2)] // Gracefully falls back to HTTP/1
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.Windows)]
+        public void DefaultConfigSectionCanSetProtocols_Mac(string input, HttpProtocols expected)
+            => DefaultConfigSectionCanSetProtocols(input, expected);
+
+        [ConditionalTheory]
         [InlineData("http1", HttpProtocols.Http1)]
         [InlineData("http2", HttpProtocols.Http2)]
         [InlineData("http1AndHttp2", HttpProtocols.Http1AndHttp2)]
-        public void DefaultConfigSectionCanSetProtocols(string input, HttpProtocols expected)
+        [OSSkipCondition(OperatingSystems.MacOSX)]
+        public void DefaultConfigSectionCanSetProtocols_NonMac(string input, HttpProtocols expected)
+            => DefaultConfigSectionCanSetProtocols(input, expected);
+
+        private void DefaultConfigSectionCanSetProtocols(string input, HttpProtocols expected)
         {
             var serverOptions = CreateServerOptions();
             var ranDefault = false;
@@ -374,11 +383,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             Assert.True(ran3);
         }
 
-        [Theory]
+        [ConditionalTheory]
+        [InlineData("http1", HttpProtocols.Http1)]
+        // [InlineData("http2", HttpProtocols.Http2)] // Not supported due to missing ALPN support. https://github.com/dotnet/corefx/issues/33016
+        [InlineData("http1AndHttp2", HttpProtocols.Http1AndHttp2)] // Gracefully falls back to HTTP/1
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.Windows)]
+        public void EndpointConfigSectionCanSetProtocols_Mac(string input, HttpProtocols expected) =>
+            EndpointConfigSectionCanSetProtocols(input, expected);
+
+        [ConditionalTheory]
         [InlineData("http1", HttpProtocols.Http1)]
         [InlineData("http2", HttpProtocols.Http2)]
         [InlineData("http1AndHttp2", HttpProtocols.Http1AndHttp2)]
-        public void EndpointConfigSectionCanSetProtocols(string input, HttpProtocols expected)
+        [OSSkipCondition(OperatingSystems.MacOSX)]
+        public void EndpointConfigSectionCanSetProtocols_NonMac(string input, HttpProtocols expected) =>
+            EndpointConfigSectionCanSetProtocols(input, expected);
+
+        private void EndpointConfigSectionCanSetProtocols(string input, HttpProtocols expected)
         {
             var serverOptions = CreateServerOptions();
             var ranDefault = false;
@@ -439,6 +460,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             var basePath = appData != null ? Path.Combine(appData, "ASP.NET", "https") : null;
             basePath = basePath ?? (home != null ? Path.Combine(home, ".aspnet", "https") : null);
             return Path.Combine(basePath, $"TestApplication.pfx");
+        }
+
+        private class MockHostingEnvironment : IHostEnvironment
+        {
+            public string ApplicationName { get; set; }
+            public string EnvironmentName { get; set; }
+            public string ContentRootPath { get; set; }
+            public IFileProvider ContentRootFileProvider { get; set; }
         }
     }
 }

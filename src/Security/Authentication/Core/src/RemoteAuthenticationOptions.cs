@@ -3,7 +3,6 @@
 
 using System;
 using System.Net.Http;
-using Microsoft.AspNetCore.Authentication.Internal;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 
@@ -126,7 +125,7 @@ namespace Microsoft.AspNetCore.Authentication
 
         /// <summary>
         /// Defines whether access and refresh tokens should be stored in the
-        /// <see cref="Http.Authentication.AuthenticationProperties"/> after a successful authorization.
+        /// <see cref="AuthenticationProperties"/> after a successful authorization.
         /// This property is set to <c>false</c> by default to reduce
         /// the size of the final authentication cookie.
         /// </summary>

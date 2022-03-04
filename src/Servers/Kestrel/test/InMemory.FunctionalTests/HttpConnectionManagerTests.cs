@@ -1,11 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 {
     public class HttpConnectionManagerTests : LoggedTest
     {
-// This test causes MemoryPoolBlocks to be finalized which in turn causes an assert failure in debug builds.
+        // This test causes MemoryPoolBlocks to be finalized which in turn causes an assert failure in debug builds.
 #if !DEBUG
         [ConditionalFact]
         [NoDebuggerCondition]
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var testContext = new TestServiceContext(new LoggerFactory(), mockTrace.Object);
             testContext.InitializeHeartbeat();
 
-            using (var server = new TestServer(context =>
+            await using (var server = new TestServer(context =>
                 {
                     appStartedWh.Release();
                     var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);

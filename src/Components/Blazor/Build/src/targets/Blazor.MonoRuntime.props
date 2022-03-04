@@ -1,0 +1,22 @@
+<Project>
+
+  <PropertyGroup Condition="'$(BlazorBuildReferenceFromSource)'==''">
+    <BlazorJsPath>$(MSBuildThisFileDirectory)../tools/blazor/blazor.*.js</BlazorJsPath>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Blazor build outputs">
+    <MonoLinkerI18NAssemblies>none</MonoLinkerI18NAssemblies> <!-- See Mono linker docs - allows comma-separated values from: none,all,cjk,mideast,other,rare,west -->
+    <AdditionalMonoLinkerOptions>--disable-opt unreachablebodies --verbose --strip-security true --exclude-feature com --exclude-feature sre -v false -c link -u link -b true</AdditionalMonoLinkerOptions>
+    <BaseBlazorDistPath>dist/</BaseBlazorDistPath>
+    <BaseBlazorPackageContentOutputPath>$(BaseBlazorDistPath)_content/</BaseBlazorPackageContentOutputPath>
+    <BaseBlazorRuntimeOutputPath>$(BaseBlazorDistPath)_framework/</BaseBlazorRuntimeOutputPath>
+    <BaseBlazorRuntimeBinOutputPath>$(BaseBlazorRuntimeOutputPath)_bin/</BaseBlazorRuntimeBinOutputPath>
+    <BaseBlazorRuntimeWasmOutputPath>$(BaseBlazorRuntimeOutputPath)wasm/</BaseBlazorRuntimeWasmOutputPath>
+    <BaseBlazorJsOutputPath>$(BaseBlazorRuntimeOutputPath)</BaseBlazorJsOutputPath>
+    <BaseBlazorIntermediateOutputPath>blazor/</BaseBlazorIntermediateOutputPath>
+    <BlazorWebRootName>wwwroot/</BlazorWebRootName>
+    <BlazorBootJsonName>blazor.boot.json</BlazorBootJsonName>
+    <BlazorBootJsonOutputPath>$(BaseBlazorRuntimeOutputPath)$(BlazorBootJsonName)</BlazorBootJsonOutputPath>
+  </PropertyGroup>
+
+</Project>

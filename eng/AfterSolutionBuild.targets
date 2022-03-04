@@ -1,0 +1,31 @@
+<Project>
+
+  <Import Project="tools\RepoTasks\RepoTasks.tasks" />
+  <Import Project="SharedFramework.External.props" />
+  <Import Project="SharedFramework.Local.props" />
+
+  <!-- This is temporary until we can use FrameworkReference to build our own packages. -->
+  <Target Name="RemoveSharedFrameworkOnlyRefsFromNuspec" AfterTargets="Pack">
+    <ItemGroup>
+      <_BuildOutput Include="$(ArtifactsShippingPackagesDir)*.nupkg"
+                    Exclude="$(ArtifactsShippingPackagesDir)*.symbols.nupkg" />
+    </ItemGroup>
+
+    <RepoTasks.RemoveSharedFrameworkDependencies Condition="@(_BuildOutput->Count()) != 0"
+      Files="@(_BuildOutput)"
+      FrameworkOnlyPackages="@(AspNetCoreAppReference)"
+      SharedFrameworkTargetFramework="netcoreapp$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)" />
+  </Target>
+
+  <Target Name="GenerateBuildAssetManifest" AfterTargets="Pack" Condition="'$(ContinuousIntegrationBuild)' == 'true' and '$(DotNetBuildFromSource)' != 'true'">
+    <!-- Generate build manifests. These manifests are used by Maestro and the Build Asset Registry to flow dependencies to other repos. -->
+    <MSBuild Projects="$(MSBuildThisFileDirectory)tools\Maestro\Maestro.csproj"
+          Targets="Restore"
+          Properties="__DummyTarget=Restore" />
+
+    <MSBuild Projects="$(MSBuildThisFileDirectory)tools\Maestro\Maestro.csproj"
+             Targets="GenerateBuildAssetManifest"
+             Properties="__DummyTarget=GenerateBuildAssetManifest" />
+  </Target>
+
+</Project>

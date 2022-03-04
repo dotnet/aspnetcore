@@ -14,7 +14,7 @@ namespace BasicWebSite.Ares.Area2.Controllers
         [HttpGet]
         public IActionResult IsIdAvailable(RemoteAttributeUser user)
         {
-            return Json(data: string.Format(
+            return new JsonResult(value: string.Format(
                 "/Area2/RemoteAttribute_Verify/IsIdAvailable rejects '{0}' with '{1}', '{2}', and '{3}'.",
                 user.UserId4,
                 user.UserId1,

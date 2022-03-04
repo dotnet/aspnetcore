@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
-    public interface ITimeoutHandler
+    internal interface ITimeoutHandler
     {
         void OnTimeout(TimeoutReason reason);
     }

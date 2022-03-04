@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
@@ -157,10 +158,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         [ConditionalFact]
         public async Task ResponseBody_WriteContentLengthExtraWritten_Throws()
         {
-            var waitHandle = new ManualResetEvent(false);
-            bool? appThrew = null;
-            string address;
-            using (Utilities.CreateHttpServer(out address, httpContext =>
+            var requestThrew = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            using (Utilities.CreateHttpServer(out var address, httpContext =>
             {
                 try
                 {
@@ -168,13 +167,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     httpContext.Response.Headers["Content-lenGth"] = " 10 ";
                     httpContext.Response.Body.Write(new byte[10], 0, 10);
                     httpContext.Response.Body.Write(new byte[9], 0, 9);
-                    appThrew = false;
+                    requestThrew.SetResult(false);
                 }
                 catch (Exception)
                 {
-                    appThrew = true;
+                    requestThrew.SetResult(true);
                 }
-                waitHandle.Set();
                 return Task.FromResult(0);
             }))
             {
@@ -188,9 +186,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 Assert.Null(response.Headers.TransferEncodingChunked);
                 Assert.Equal(new byte[10], await response.Content.ReadAsByteArrayAsync());
 
-                Assert.True(waitHandle.WaitOne(100));
-                Assert.True(appThrew.HasValue, "appThrew.HasValue");
-                Assert.True(appThrew.Value, "appThrew.Value");
+                Assert.True(await requestThrew.Task.TimeoutAfter(TimeSpan.FromSeconds(10)));
             }
         }
 

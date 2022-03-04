@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    $CommonMetadataElements$
+    <dependencies>
+      <dependency id="Microsoft.AspNetCore.Blazor.Mono" version="$blazormonoversion$" include="all" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="..\..\..\THIRD-PARTY-NOTICES.txt" />
+    <file src="build\**" target="build" />
+    <file src="targets\**" target="targets" />
+    <file src="$publishdir$**\*" target="tools/" />
+    <file src="..\..\..\Web.JS\dist\$configuration$\blazor.*.js" target="tools/blazor" />
+  </files>
+</package>

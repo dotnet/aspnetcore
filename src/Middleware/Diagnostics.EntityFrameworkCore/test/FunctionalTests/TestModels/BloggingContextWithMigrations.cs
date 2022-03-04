@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             {
                 builder.Entity("Blogging.Models.Blog", b =>
                 {
-                    b.Property<int>("BlogId");
+                    b.Property<int>("BlogId").ValueGeneratedOnAdd();
                     b.Property<string>("Name");
                     b.HasKey("BlogId");
                 });
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                 migrationBuilder.CreateTable("Blogs",
                 c => new
                 {
-                    BlogId = c.Column<int>().Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                    BlogId = c.Column<int>().Annotation("Sqlite:Autoincrement", true),
                     Name = c.Column<string>(nullable: true),
                 })
                 .PrimaryKey("PK_Blog", t => t.BlogId);

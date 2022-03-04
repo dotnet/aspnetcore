@@ -7,12 +7,9 @@ Commonly used types:
 Microsoft.AspNetCore.Html.HtmlString
 Microsoft.AspNetCore.Html.IHtmlContent</Description>
     <TargetFramework>netcoreapp3.0</TargetFramework>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore</PackageTags>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Reference Include="System.Text.Encodings.Web" />
-  </ItemGroup>
 
 </Project>

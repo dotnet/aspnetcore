@@ -3,28 +3,18 @@
 
 package com.microsoft.signalr;
 
-final class StreamInvocationMessage extends HubMessage {
-    private final int type = HubMessageType.STREAM_INVOCATION.value;
-    private final String invocationId;
-    private final String target;
-    private final Object[] arguments;
+import java.util.Collection;
+
+final class StreamInvocationMessage extends InvocationMessage {
 
     public StreamInvocationMessage(String invocationId, String target, Object[] args) {
-        this.invocationId = invocationId;
-        this.target = target;
-        this.arguments = args;
+        super(invocationId, target, args);
+        super.type = HubMessageType.STREAM_INVOCATION.value;
     }
 
-    public String getInvocationId() {
-        return invocationId;
-    }
-
-    public String getTarget() {
-        return target;
-    }
-
-    public Object[] getArguments() {
-        return arguments;
+    public StreamInvocationMessage(String invocationId, String target, Object[] args, Collection<String> streamIds) {
+        super(invocationId, target, args, streamIds);
+        super.type = HubMessageType.STREAM_INVOCATION.value;
     }
 
     @Override

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.ResponseCaching.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -22,7 +21,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Xunit;
-using ISystemClock = Microsoft.AspNetCore.ResponseCaching.Internal.ISystemClock;
+using ISystemClock = Microsoft.AspNetCore.ResponseCaching.ISystemClock;
 
 namespace Microsoft.AspNetCore.ResponseCaching.Tests
 {
@@ -81,6 +80,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             var uniqueId = Guid.NewGuid().ToString();
             if (TestRequestDelegate(context, uniqueId))
             {
+                var feature = context.Features.Get<IHttpBodyControlFeature>();
+                if (feature != null)
+                {
+                    feature.AllowSynchronousIO = true;
+                }
                 context.Response.Write(uniqueId);
             }
             return Task.CompletedTask;

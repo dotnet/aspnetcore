@@ -42,8 +42,18 @@ class WebSocketTransportTest {
         }
 
         @Override
+        public Single<HttpResponse> send(HttpRequest request, String body) {
+            return null;
+        }
+
+        @Override
         public WebSocketWrapper createWebSocket(String url, Map<String, String> headers) {
             return new TestWrapper();
+        }
+
+        @Override
+        public HttpClient cloneWithTimeOut(int timeoutInMilliseconds) {
+            return null;
         }
     }
 

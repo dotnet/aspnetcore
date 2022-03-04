@@ -4,13 +4,12 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <!--  Workaround https://github.com/dotnet/core-setup/issues/3726 -->
     <GenerateDependencyFile>false</GenerateDependencyFile>
-
-    <_EnableAllInclusiveRazorSdk>true</_EnableAllInclusiveRazorSdk>
+    <IsBenchmarkProject>true</IsBenchmarkProject>
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Mvc\Microsoft.AspNetCore.Mvc.csproj" />
-    <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="$(MicrosoftNETSdkRazorPackageVersion)" PrivateAssets="All" />
+    <Reference Include="Microsoft.AspNetCore.Mvc" />
   </ItemGroup>
 
 </Project>

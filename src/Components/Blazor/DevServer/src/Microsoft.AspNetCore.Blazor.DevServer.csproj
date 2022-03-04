@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>blazor-devserver</AssemblyName>
+    <PackageId>Microsoft.AspNetCore.Blazor.DevServer</PackageId>
+    <IsShippingPackage>true</IsShippingPackage>
+    <HasReferenceAssembly>false</HasReferenceAssembly>
+    <StartupObject>Microsoft.AspNetCore.Blazor.DevServer.Program</StartupObject>
+    <Description>Development server for use when building Blazor applications.</Description>
+    <!-- Set this to false because assemblies should not reference this assembly directly, (except for tests, of course). -->
+    <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Blazor.Server" />
+    <Reference Include="Microsoft.AspNetCore.Components.Server" />
+    <Reference Include="Microsoft.AspNetCore.ResponseCompression" />
+    <Reference Include="Microsoft.AspNetCore" />
+    <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" />
+    <Reference Include="Microsoft.Extensions.Hosting" />
+  </ItemGroup>
+
+  <!-- Pack settings -->
+  <PropertyGroup>
+    <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);publish</GenerateNuspecDependsOn>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <NuspecFile>Microsoft.AspNetCore.Blazor.DevServer.nuspec</NuspecFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <NuspecProperty Include="publishDir=$(PublishDir)" />
+    <NuspecProperty Include="componentsrootdir=..\..\..\" />
+    <NuspecProperty Include="blazorversion=$(PackageVersion)" />
+  </ItemGroup>
+
+</Project>

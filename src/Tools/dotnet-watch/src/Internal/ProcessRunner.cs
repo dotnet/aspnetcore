@@ -37,17 +37,31 @@ namespace Microsoft.DotNet.Watcher.Internal
             {
                 cancellationToken.Register(() => processState.TryKill());
 
+                process.OutputDataReceived += (_, a) =>
+                {
+                    if (!string.IsNullOrEmpty(a.Data))
+                    {
+                        processSpec.OutputCapture.AddLine(a.Data);
+                    }
+                };
+                process.ErrorDataReceived += (_, a) =>
+                {
+                    if (!string.IsNullOrEmpty(a.Data))
+                    {
+                        processSpec.OutputCapture.AddLine(a.Data);
+                    }
+                };
+
                 stopwatch.Start();
                 process.Start();
+
                 _reporter.Verbose($"Started '{processSpec.Executable}' with process id {process.Id}");
 
                 if (processSpec.IsOutputCaptured)
                 {
-                    await Task.WhenAll(
-                        processState.Task,
-                        ConsumeStreamAsync(process.StandardOutput, processSpec.OutputCapture.AddLine),
-                        ConsumeStreamAsync(process.StandardError, processSpec.OutputCapture.AddLine)
-                    );
+                    process.BeginErrorReadLine();
+                    process.BeginOutputReadLine();
+                    await processState.Task;
                 }
                 else
                 {
@@ -84,15 +98,6 @@ namespace Microsoft.DotNet.Watcher.Internal
             }
 
             return process;
-        }
-
-        private static async Task ConsumeStreamAsync(StreamReader reader, Action<string> consume)
-        {
-            string line;
-            while ((line = await reader.ReadLineAsync().ConfigureAwait(false)) != null)
-            {
-                consume?.Invoke(line);
-            }
         }
 
         private class ProcessState : IDisposable

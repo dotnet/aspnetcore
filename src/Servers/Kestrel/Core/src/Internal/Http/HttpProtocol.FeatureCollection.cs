@@ -2,25 +2,35 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.IO.Pipelines;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public partial class HttpProtocol : IHttpRequestFeature,
-                                        IHttpResponseFeature,
-                                        IHttpUpgradeFeature,
-                                        IHttpConnectionFeature,
-                                        IHttpRequestLifetimeFeature,
-                                        IHttpRequestIdentifierFeature,
-                                        IHttpBodyControlFeature,
-                                        IHttpMaxRequestBodySizeFeature
+    internal partial class HttpProtocol : IHttpRequestFeature,
+                                          IHttpResponseFeature,
+                                          IResponseBodyPipeFeature,
+                                          IRequestBodyPipeFeature,
+                                          IHttpUpgradeFeature,
+                                          IHttpConnectionFeature,
+                                          IHttpRequestLifetimeFeature,
+                                          IHttpRequestIdentifierFeature,
+                                          IHttpRequestTrailersFeature,
+                                          IHttpBodyControlFeature,
+                                          IHttpMaxRequestBodySizeFeature,
+                                          IHttpResponseStartFeature,
+                                          IEndpointFeature,
+                                          IRouteValuesFeature
     {
         // NOTE: When feature interfaces are added to or removed from this HttpProtocol class implementation,
         // then the list of `implementedFeatures` in the generated code project MUST also be updated.
@@ -92,6 +102,40 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set => RequestBody = value;
         }
 
+        PipeReader IRequestBodyPipeFeature.Reader
+        {
+            get
+            {
+                if (!ReferenceEquals(_requestStreamInternal, RequestBody))
+                {
+                    _requestStreamInternal = RequestBody;
+                    RequestBodyPipeReader = PipeReader.Create(RequestBody, new StreamPipeReaderOptions(_context.MemoryPool, _context.MemoryPool.GetMinimumSegmentSize(), _context.MemoryPool.GetMinimumAllocSize()));
+
+                    OnCompleted((self) =>
+                    {
+                        ((PipeReader)self).Complete();
+                        return Task.CompletedTask;
+                    }, RequestBodyPipeReader);
+                }
+
+                return RequestBodyPipeReader;
+            }
+        }
+
+        bool IHttpRequestTrailersFeature.Available => RequestTrailersAvailable;
+
+        IHeaderDictionary IHttpRequestTrailersFeature.Trailers
+        {
+            get
+            {
+                if (!RequestTrailersAvailable)
+                {
+                    throw new InvalidOperationException(CoreStrings.RequestTrailersNotAvailable);
+                }
+                return RequestTrailers;
+            }
+        }
+
         int IHttpResponseFeature.StatusCode
         {
             get => StatusCode;
@@ -108,12 +152,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get => ResponseHeaders;
             set => ResponseHeaders = value;
-        }
-
-        Stream IHttpResponseFeature.Body
-        {
-            get => ResponseBody;
-            set => ResponseBody = value;
         }
 
         CancellationToken IHttpRequestLifetimeFeature.RequestAborted
@@ -192,6 +230,44 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
+        Stream IHttpResponseFeature.Body
+        {
+            get => ResponseBody;
+            set => ResponseBody = value;
+        }
+
+        PipeWriter IResponseBodyPipeFeature.Writer
+        {
+            get
+            {
+                if (!ReferenceEquals(_responseStreamInternal, ResponseBody))
+                {
+                    _responseStreamInternal = ResponseBody;
+                    ResponseBodyPipeWriter = PipeWriter.Create(ResponseBody, new StreamPipeWriterOptions(_context.MemoryPool));
+
+                    OnCompleted((self) =>
+                    {
+                        ((PipeWriter)self).Complete();
+                        return Task.CompletedTask;
+                    }, ResponseBodyPipeWriter);
+                }
+
+                return ResponseBodyPipeWriter;
+            }
+        }
+
+        Endpoint IEndpointFeature.Endpoint
+        {
+            get => _endpoint;
+            set => _endpoint = value;
+        }
+
+        RouteValueDictionary IRouteValuesFeature.RouteValues
+        {
+            get => _routeValues ??= new RouteValueDictionary();
+            set => _routeValues = value;
+        }
+
         protected void ResetHttp1Features()
         {
             _currentIHttpMinRequestBodyDataRateFeature = this;
@@ -201,7 +277,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         protected void ResetHttp2Features()
         {
             _currentIHttp2StreamIdFeature = this;
+            _currentIHttpResponseCompletionFeature = this;
             _currentIHttpResponseTrailersFeature = this;
+            _currentIHttpResetFeature = this;
         }
 
         void IHttpResponseFeature.OnStarting(Func<object, Task> callback, object state)
@@ -237,11 +315,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             StatusCode = StatusCodes.Status101SwitchingProtocols;
             ReasonPhrase = "Switching Protocols";
-            ResponseHeaders["Connection"] = "Upgrade";
+            ResponseHeaders[HeaderNames.Connection] = "Upgrade";
 
             await FlushAsync();
 
-            return _streams.Upgrade();
+            return _bodyControl.Upgrade();
         }
 
         void IHttpRequestLifetimeFeature.Abort()
@@ -249,6 +327,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             ApplicationAbort();
         }
 
-        protected abstract void ApplicationAbort();
+        Task IHttpResponseStartFeature.StartAsync(CancellationToken cancellationToken)
+        {
+            if (HasResponseStarted)
+            {
+                return Task.CompletedTask;
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            return InitializeResponseAsync(0);
+        }
     }
 }

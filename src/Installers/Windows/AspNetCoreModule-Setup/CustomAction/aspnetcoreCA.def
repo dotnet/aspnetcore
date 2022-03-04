@@ -18,6 +18,8 @@ EXPORTS
     ExecuteCleanUpWindowsHotfixCA
     ScheduleRebootIfRequiredCA
 
+    AddConfigSection
+    RemoveConfigSection
     RegisterANCMCompressionCA
 
     CheckForServicesRunningCA

@@ -1,0 +1,35 @@
+<Project>
+  <PropertyGroup>
+    <_DefaultProjectFilter>$(MSBuildProjectDirectory)\..\..</_DefaultProjectFilter>
+    <DefaultItemExcludes>$(DefaultItemExcludes);node_modules\**</DefaultItemExcludes>
+    <SeleniumProcessTrackingFolder Condition="'$(SeleniumProcessTrackingFolder)' == ''">$([MSBuild]::EnsureTrailingSlash('$(RepoRoot)'))artifacts\tmp\selenium\</SeleniumProcessTrackingFolder>
+    <SeleniumE2ETestsSupported Condition="'$(SeleniumE2ETestsSupported)' == '' and '$(TargetArchitecture)' != 'arm' and '$(OS)' == 'Windows_NT'">true</SeleniumE2ETestsSupported>
+
+    <!-- We want to enforce prerequisites when we build from the CI or within Visual Studio -->
+    <EnforcedE2EBuildEnvironment Condition="'$(ContinuousIntegrationBuild)' == 'true' or '$(BuildingInsideVisualStudio)' == 'true'">true</EnforcedE2EBuildEnvironment>
+
+    <!-- If not explicitly set, enforce E2E test prerequisites when the platform is supported and we are building on the CI or visual studio -->
+    <EnforceE2ETestPrerequisites Condition="'$(SeleniumE2ETestsSupported)' == 'true' and $(EnforcedE2EBuildEnvironment) == 'true' and '$(EnforceE2ETestPrerequisites)' == ''">true</EnforceE2ETestPrerequisites>
+
+    <!-- Never enforce E2E test prerequisites if the platform is not supported -->
+    <EnforceE2ETestPrerequisites Condition="'$(SeleniumE2ETestsSupported)' != 'true'">false</EnforceE2ETestPrerequisites>
+
+    <!-- WebDriver is not strong-named, so this test project cannot be strong named either. -->
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)E2ETesting\**\*.cs" LinkBase="Selenium" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="$(SharedSourceRoot)E2ETesting\E2ETesting.props" Link="Selenium\E2ETesting.props" />
+    <None Include="$(SharedSourceRoot)E2ETesting\E2ETesting.targets" Link="Selenium\E2ETesting.targets" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Selenium.Support" />
+    <Reference Include="Selenium.WebDriver" />
+  </ItemGroup>
+
+</Project>

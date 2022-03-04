@@ -1,0 +1,31 @@
+<Project>
+
+  <PropertyGroup>
+    <HelixTimeout>00:45:00</HelixTimeout>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
+
+    <Content Include="..\Common.FunctionalTests\AppHostConfig\*.config" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <Target Name="BuildAssets" AfterTargets="Build">
+    <MSBuild Projects="@(ProjectReference)" Targets="PublishTestsAssets" SkipNonexistentTargets="true" BuildInParallel="True">
+      <Output TaskParameter="TargetOutputs" ItemName="PublishedTestAsset" />
+    </MSBuild>
+  </Target>
+
+  <Target Name="CopyAssets" AfterTargets="Publish" Condition="'@(PublishedTestAsset->Count())' != '0'">
+
+    <ItemGroup>
+     <_FilesToCopy Include="%(PublishedTestAsset.Path)\**\*">
+        <DestinationDir>$(PublishDir)\%(PublishedTestAsset.Identity)\</DestinationDir>
+      </_FilesToCopy>
+    </ItemGroup>
+
+    <Copy SourceFiles="@(_FilesToCopy)" DestinationFiles="@(_FilesToCopy->'%(DestinationDir)%(RecursiveDir)%(FileName)%(Extension)')" />
+
+  </Target>
+
+</Project>

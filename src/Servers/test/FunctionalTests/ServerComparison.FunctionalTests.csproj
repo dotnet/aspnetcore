@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+
+    <!-- Tests do not work on Helix or when bin/ directory is not in project directory due to undeclared dependency on test content. -->
+    <BuildHelixPayload>false</BuildHelixPayload>
+    <BaseOutputPath />
+    <OutputPath />
+
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="*.config;*.conf" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)src\Servers\IIS\IntegrationTesting.IIS\src\Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Servers\testassets\ServerComparison.TestSites\ServerComparison.TestSites.csproj" ReferenceOutputAssemblies="false" />
+    <Reference Include="Microsoft.Extensions.Logging" />
+    <Reference Include="Microsoft.Extensions.Logging.Testing" />
+    <Reference Include="Microsoft.Net.Http.Headers" />
+    <Reference Include="Serilog.Extensions.Logging" />
+    <Reference Include="Serilog.Sinks.File" />
+  </ItemGroup>
+
+</Project>

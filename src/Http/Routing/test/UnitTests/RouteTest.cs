@@ -8,13 +8,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Constraints;
-using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.TestObjects;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
@@ -654,11 +652,11 @@ namespace Microsoft.AspNetCore.Routing
         public void GetVirtualPath_AlwaysUsesDefaultUrlEncoder()
         {
             // Arrange
-            var nameRouteValue = "name with %special #characters Jörn";
+            var nameRouteValue = "name with %special #characters JÃ¶rn";
             var expected = "/Home/Index?name=" + UrlEncoder.Default.Encode(nameRouteValue);
             var services = new ServiceCollection();
             services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
-            services.AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
+            services.AddOptions();
             services.AddRouting();
             // This test encoder should not be used by Routing and should always use the default one.
             services.AddSingleton<UrlEncoder>(new UrlTestEncoder());
@@ -1521,7 +1519,7 @@ namespace Microsoft.AspNetCore.Routing
         {
             var services = new ServiceCollection();
             services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
-            services.AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
+            services.AddOptions();
             services.AddRouting();
 
             var context = new DefaultHttpContext

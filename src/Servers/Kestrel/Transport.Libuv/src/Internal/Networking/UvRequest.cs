@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking
 {
-    public class UvRequest : UvMemory
+    internal class UvRequest : UvMemory
     {
         protected UvRequest(ILibuvTrace logger) : base(logger, GCHandleType.Normal)
         {

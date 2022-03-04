@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,12 +14,12 @@ namespace Microsoft.AspNetCore.Routing.Matching
     public class HttpMethodMatcherPolicyTest
     {
         [Fact]
-        public void AppliesToNode_EndpointWithoutMetadata_ReturnsFalse()
+        public void INodeBuilderPolicy_AppliesToNode_EndpointWithoutMetadata_ReturnsFalse()
         {
             // Arrange
             var endpoints = new[] { CreateEndpoint("/", null), };
 
-            var policy = CreatePolicy();
+            var policy = (INodeBuilderPolicy)CreatePolicy();
 
             // Act
             var result = policy.AppliesToEndpoints(endpoints);
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         }
 
         [Fact]
-        public void AppliesToNode_EndpointWithoutHttpMethods_ReturnsFalse()
+        public void INodeBuilderPolicy_AppliesToNode_EndpointWithoutHttpMethods_ReturnsFalse()
         {
             // Arrange
             var endpoints = new[] 
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 CreateEndpoint("/", new HttpMethodMetadata(Array.Empty<string>())),
             };
 
-            var policy = CreatePolicy();
+            var policy = (INodeBuilderPolicy)CreatePolicy();
 
             // Act
             var result = policy.AppliesToEndpoints(endpoints);
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         }
 
         [Fact]
-        public void AppliesToNode_EndpointHasHttpMethods_ReturnsTrue()
+        public void INodeBuilderPolicy_AppliesToNode_EndpointHasHttpMethods_ReturnsTrue()
         {
             // Arrange
             var endpoints = new[]
@@ -56,13 +56,103 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 CreateEndpoint("/", new HttpMethodMetadata(new[] { "GET", })),
             };
 
-            var policy = CreatePolicy();
+            var policy = (INodeBuilderPolicy)CreatePolicy();
 
             // Act
             var result = policy.AppliesToEndpoints(endpoints);
 
             // Assert
             Assert.True(result);
+        }
+
+        [Fact]
+        public void INodeBuilderPolicy_AppliesToNode_EndpointIsDynamic_ReturnsFalse()
+        {
+            // Arrange
+            var endpoints = new[]
+            {
+                CreateEndpoint("/", new HttpMethodMetadata(Array.Empty<string>())),
+                CreateEndpoint("/", new HttpMethodMetadata(new[] { "GET", }), new DynamicEndpointMetadata()),
+            };
+
+            var policy = (INodeBuilderPolicy)CreatePolicy();
+
+            // Act
+            var result = policy.AppliesToEndpoints(endpoints);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void IEndpointSelectorPolicy_AppliesToNode_EndpointWithoutMetadata_ReturnsTrue()
+        {
+            // Arrange
+            var endpoints = new[] { CreateEndpoint("/", null, new DynamicEndpointMetadata()), };
+
+            var policy = (IEndpointSelectorPolicy)CreatePolicy();
+
+            // Act
+            var result = policy.AppliesToEndpoints(endpoints);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void IEndpointSelectorPolicy_AppliesToNode_EndpointWithoutHttpMethods_ReturnsTrue()
+        {
+            // Arrange
+            var endpoints = new[]
+            {
+                CreateEndpoint("/", new HttpMethodMetadata(Array.Empty<string>()), new DynamicEndpointMetadata()),
+            };
+
+            var policy = (IEndpointSelectorPolicy)CreatePolicy();
+
+            // Act
+            var result = policy.AppliesToEndpoints(endpoints);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void IEndpointSelectorPolicy_AppliesToNode_EndpointHasHttpMethods_ReturnsTrue()
+        {
+            // Arrange
+            var endpoints = new[]
+            {
+                CreateEndpoint("/", new HttpMethodMetadata(Array.Empty<string>()), new DynamicEndpointMetadata()),
+                CreateEndpoint("/", new HttpMethodMetadata(new[] { "GET", })),
+            };
+
+            var policy = (IEndpointSelectorPolicy)CreatePolicy();
+
+            // Act
+            var result = policy.AppliesToEndpoints(endpoints);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void IEndpointSelectorPolicy_AppliesToNode_EndpointIsNotDynamic_ReturnsFalse()
+        {
+            // Arrange
+            var endpoints = new[]
+            {
+                CreateEndpoint("/", new HttpMethodMetadata(Array.Empty<string>())),
+                CreateEndpoint("/", new HttpMethodMetadata(new[] { "GET", })),
+            };
+
+            var policy = (IEndpointSelectorPolicy)CreatePolicy();
+
+            // Act
+            var result = policy.AppliesToEndpoints(endpoints);
+
+            // Assert
+            Assert.False(result);
         }
 
         [Fact]
@@ -277,12 +367,17 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 });
         }
 
-        private static RouteEndpoint CreateEndpoint(string template, HttpMethodMetadata httpMethodMetadata)
+        private static RouteEndpoint CreateEndpoint(string template, HttpMethodMetadata httpMethodMetadata, params object[] more)
         {
             var metadata = new List<object>();
             if (httpMethodMetadata != null)
             {
                 metadata.Add(httpMethodMetadata);
+            }
+
+            if (more != null)
+            {
+                metadata.AddRange(more);
             }
 
             return new RouteEndpoint(
@@ -296,6 +391,11 @@ namespace Microsoft.AspNetCore.Routing.Matching
         private static HttpMethodMatcherPolicy CreatePolicy()
         {
             return new HttpMethodMatcherPolicy();
+        }
+
+        private class DynamicEndpointMetadata : IDynamicEndpointMetadata
+        {
+            public bool IsDynamic => true;
         }
     }
 }

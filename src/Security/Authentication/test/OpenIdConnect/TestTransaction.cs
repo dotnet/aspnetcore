@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             {
                 if (SetCookie != null && SetCookie.Count > 0)
                 {
-                    var authCookie = SetCookie.SingleOrDefault(c => c.Contains(".AspNetCore.Cookie="));
+                    var authCookie = SetCookie.SingleOrDefault(c => c.Contains(".AspNetCore.Cookies="));
                     if (authCookie != null)
                     {
                         return authCookie.Substring(0, authCookie.IndexOf(';'));

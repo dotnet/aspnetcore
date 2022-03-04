@@ -1,0 +1,59 @@
+<Project DefaultTargets="Build">
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
+
+  <PropertyGroup>
+
+    <!-- This package ID is only ever used along with eng/PatchConfig.props to determine when to patch the Java client. -->
+    <PackageId>java:signalr</PackageId>
+
+    <!-- In servicing builds, this will be set to value if the Java client is not configured to be released in the currently building patch. -->
+    <IsPackable>true</IsPackable>
+
+    <IsShippingPackage>true</IsShippingPackage>
+
+    <!-- Disable gradle daemon on CI since the CI seems to try to wait for the daemon to shut down, which it doesn't do :) -->
+    <GradleOptions Condition="'$(ContinuousIntegrationBuild)' == 'true'">$(GradleOptions) -Dorg.gradle.daemon=false</GradleOptions>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Jars Include="
+        signalr-$(PackageVersion).jar;
+        signalr-$(PackageVersion)-javadoc.jar;
+        signalr-$(PackageVersion)-sources.jar;" />
+    <PomFile Include="signalr-$(PackageVersion).pom" />
+    <JavaBuildFiles Include="@(Jars);@(PomFile)"/>
+  </ItemGroup>
+
+  <Target Name="Restore" />
+
+  <PropertyGroup>
+    <PackDependsOn Condition=" '$(NoBuild)' != 'true' ">
+      $(PackDependsOn);
+      Build
+    </PackDependsOn>
+  </PropertyGroup>
+
+  <Target Name="Pack" DependsOnTargets="$(PackDependsOn)" Condition="'$(IsPackable)' == 'true'">
+    <Message Text="> gradlew $(GradleOptions) createPackage" Importance="high" />
+    <Exec Command="./gradlew $(GradleOptions) createPackage" />
+    <Message Importance="high" Text="java:signalr -> $(PackageOutputPath)%(JavaBuildFiles.Identity)" />
+    <Copy SourceFiles="build\libs\%(JavaBuildFiles.Identity)" DestinationFolder="$(PackageOutputPath)" />
+  </Target>
+
+  <Target Name="Build">
+    <Exec Command="./gradlew $(GradleOptions) compileJava" />
+  </Target>
+
+  <Target Name="Test">
+    <Message Text="Running Java client tests" Importance="high" />
+    <Message Text="> gradlew $(GradleOptions) test" Importance="high" />
+    <Exec Command="./gradlew $(GradleOptions) test" IgnoreStandardErrorWarningFormat="true" />
+  </Target>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
+
+  <PropertyGroup>
+    <!-- Pass the Java Package Version down to Gradle -->
+    <GradleOptions>-PpackageVersion="$(PackageVersion)"</GradleOptions>
+  </PropertyGroup>
+</Project>

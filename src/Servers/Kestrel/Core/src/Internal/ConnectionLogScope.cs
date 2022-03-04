@@ -8,7 +8,7 @@ using System.Globalization;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
-    public class ConnectionLogScope : IReadOnlyList<KeyValuePair<string, object>>
+    internal class ConnectionLogScope : IReadOnlyList<KeyValuePair<string, object>>
     {
         private readonly string _connectionId;
 

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,7 +7,7 @@ namespace Microsoft.Extensions.Logging
 {
     internal static class LoggingExtensions
     {
-        private static Action<ILogger, Exception> _signInWithoutWresult;
+        private static Action<ILogger, Exception> _signInWithoutWResult;
         private static Action<ILogger, Exception> _signInWithoutToken;
         private static Action<ILogger, Exception> _exceptionProcessingMessage;
         private static Action<ILogger, string, Exception> _malformedRedirectUri;
@@ -17,39 +17,39 @@ namespace Microsoft.Extensions.Logging
 
         static LoggingExtensions()
         {
-            _signInWithoutWresult = LoggerMessage.Define(
-                eventId: 1,
+            _signInWithoutWResult = LoggerMessage.Define(
+                eventId: new EventId(1, "SignInWithoutWResult"),
                 logLevel: LogLevel.Debug,
                 formatString: "Received a sign-in message without a WResult.");
             _signInWithoutToken = LoggerMessage.Define(
-                eventId: 2,
+                eventId: new EventId(2, "SignInWithoutToken"),
                 logLevel: LogLevel.Debug,
                 formatString: "Received a sign-in message without a token.");
             _exceptionProcessingMessage = LoggerMessage.Define(
-                eventId: 3,
+                eventId: new EventId(3, "ExceptionProcessingMessage"),
                 logLevel: LogLevel.Error,
                 formatString: "Exception occurred while processing message.");
             _malformedRedirectUri = LoggerMessage.Define<string>(
-                eventId: 4,
+                eventId: new EventId(4, "MalformedRedirectUri"),
                 logLevel: LogLevel.Warning,
                 formatString: "The sign-out redirect URI '{0}' is malformed.");
             _remoteSignOutHandledResponse = LoggerMessage.Define(
-               eventId: 5,
+                eventId: new EventId(5, "RemoteSignOutHandledResponse"),
                logLevel: LogLevel.Debug,
                formatString: "RemoteSignOutContext.HandledResponse");
             _remoteSignOutSkipped = LoggerMessage.Define(
-               eventId: 6,
+                eventId: new EventId(6, "RemoteSignOutSkipped"),
                logLevel: LogLevel.Debug,
                formatString: "RemoteSignOutContext.Skipped");
             _remoteSignOut = LoggerMessage.Define(
-               eventId: 7,
+                eventId: new EventId(7, "RemoteSignOut"),
                logLevel: LogLevel.Information,
                formatString: "Remote signout request processed.");
         }
 
-        public static void SignInWithoutWresult(this ILogger logger)
+        public static void SignInWithoutWResult(this ILogger logger)
         {
-            _signInWithoutWresult(logger, null);
+            _signInWithoutWResult(logger, null);
         }
 
         public static void SignInWithoutToken(this ILogger logger)

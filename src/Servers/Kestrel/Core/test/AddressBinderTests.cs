@@ -2,14 +2,19 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
@@ -53,10 +58,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [InlineData("contoso.com")]
         public void ParseAddressDefaultsToAnyIPOnInvalidIPAddress(string host)
         {
-            var options = new KestrelServerOptions();
             var listenOptions = AddressBinder.ParseAddress($"http://{host}", out var https);
             Assert.IsType<AnyIPListenOptions>(listenOptions);
-            Assert.Equal(ListenType.IPEndPoint, listenOptions.Type);
+            Assert.IsType<IPEndPoint>(listenOptions.EndPoint);
             Assert.Equal(IPAddress.IPv6Any, listenOptions.IPEndPoint.Address);
             Assert.Equal(80, listenOptions.IPEndPoint.Port);
             Assert.False(https);
@@ -65,21 +69,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void ParseAddressLocalhost()
         {
-            var options = new KestrelServerOptions();
             var listenOptions = AddressBinder.ParseAddress("http://localhost", out var https);
             Assert.IsType<LocalhostListenOptions>(listenOptions);
-            Assert.Equal(ListenType.IPEndPoint, listenOptions.Type);
+            Assert.IsType<IPEndPoint>(listenOptions.EndPoint);
             Assert.Equal(IPAddress.Loopback, listenOptions.IPEndPoint.Address);
             Assert.Equal(80, listenOptions.IPEndPoint.Port);
             Assert.False(https);
         }
 
-        [Fact]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win8, WindowsVersions.Win81, WindowsVersions.Win2008R2, SkipReason = "UnixDomainSocketEndPoint is not supported on older versions of Windows")]
+        [ConditionalFact]
         public void ParseAddressUnixPipe()
         {
-            var options = new KestrelServerOptions();
             var listenOptions = AddressBinder.ParseAddress("http://unix:/tmp/kestrel-test.sock", out var https);
-            Assert.Equal(ListenType.SocketPath, listenOptions.Type);
+            Assert.IsType<UnixDomainSocketEndPoint>(listenOptions.EndPoint);
             Assert.Equal("/tmp/kestrel-test.sock", listenOptions.SocketPath);
             Assert.False(https);
         }
@@ -92,9 +95,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [InlineData("https://127.0.0.1", "127.0.0.1", 443, true)]
         public void ParseAddressIP(string address, string ip, int port, bool isHttps)
         {
-            var options = new KestrelServerOptions();
             var listenOptions = AddressBinder.ParseAddress(address, out var https);
-            Assert.Equal(ListenType.IPEndPoint, listenOptions.Type);
+            Assert.IsType<IPEndPoint>(listenOptions.EndPoint);
             Assert.Equal(IPAddress.Parse(ip), listenOptions.IPEndPoint.Address);
             Assert.Equal(port, listenOptions.IPEndPoint.Port);
             Assert.Equal(isHttps, https);
@@ -150,6 +152,40 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.True(ipV4Attempt, "Should have attempted to bind to IPAddress.Any");
             Assert.True(ipV6Attempt, "Should have attempted to bind to IPAddress.IPv6Any");
             Assert.Contains(logger.Messages, f => f.Equals(CoreStrings.FormatFallbackToIPv4Any(80)));
+        }
+
+        [Fact]
+        public async Task DefaultAddressBinderWithoutDevCertButHttpsConfiguredBindsToHttpsPorts()
+        {
+            var x509Certificate2 = TestResources.GetTestCertificate();
+            var logger = new MockLogger();
+            var addresses = new ServerAddressesFeature();
+            var services = new ServiceCollection();
+            services.AddLogging();
+            var options = new KestrelServerOptions()
+            {
+                // This stops the dev cert from being loaded
+                IsDevCertLoaded = true,
+                ApplicationServices = services.BuildServiceProvider()
+            };
+
+            options.ConfigureEndpointDefaults(e =>
+            {
+                if (e.IPEndPoint.Port == 5001)
+                {
+                    e.UseHttps(new HttpsConnectionAdapterOptions { ServerCertificate = x509Certificate2 });
+                }
+            });
+
+            var endpoints = new List<ListenOptions>();
+            await AddressBinder.BindAsync(addresses, options, logger, listenOptions =>
+            {
+                endpoints.Add(listenOptions);
+                return Task.CompletedTask;
+            });
+
+            Assert.Contains(endpoints, e => e.IPEndPoint.Port == 5000 && !e.IsTls);
+            Assert.Contains(endpoints, e => e.IPEndPoint.Port == 5001 && e.IsTls);
         }
     }
 }

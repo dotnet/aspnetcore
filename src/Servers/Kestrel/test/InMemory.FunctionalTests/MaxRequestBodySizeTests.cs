@@ -1,10 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
@@ -23,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var globalMaxRequestBodySize = 0x100000000;
             BadHttpRequestException requestRejectedEx = null;
 
-            using (var server = new TestServer(async context =>
+            await using (var server = new TestServer(async context =>
             {
                 var buffer = new byte[1];
                 requestRejectedEx = await Assert.ThrowsAsync<BadHttpRequestException>(
@@ -63,7 +64,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var perRequestMaxRequestBodySize = 0x100000000;
             BadHttpRequestException requestRejectedEx = null;
 
-            using (var server = new TestServer(async context =>
+            await using (var server = new TestServer(async context =>
             {
                 var feature = context.Features.Get<IHttpMaxRequestBodySizeFeature>();
                 Assert.Equal(globalMaxRequestBodySize, feature.MaxRequestBodySize);
@@ -103,7 +104,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task DoesNotRejectRequestWithContentLengthHeaderExceedingGlobalLimitIfLimitDisabledPerRequest()
         {
-            using (var server = new TestServer(async context =>
+            await using (var server = new TestServer(async context =>
             {
                 var feature = context.Features.Get<IHttpMaxRequestBodySizeFeature>();
                 Assert.Equal(0, feature.MaxRequestBodySize);
@@ -143,7 +144,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task DoesNotRejectBodylessGetRequestWithZeroMaxRequestBodySize()
         {
-            using (var server = new TestServer(context => context.Request.Body.CopyToAsync(Stream.Null),
+            await using (var server = new TestServer(context => context.Request.Body.CopyToAsync(Stream.Null),
                 new TestServiceContext { ServerOptions = { Limits = { MaxRequestBodySize = 0 } } }))
             {
                 using (var connection = server.CreateConnection())
@@ -180,7 +181,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var payload = new string('A', payloadSize);
             InvalidOperationException invalidOpEx = null;
 
-            using (var server = new TestServer(async context =>
+            await using (var server = new TestServer(async context =>
             {
                 var buffer = new byte[1];
                 Assert.Equal(1, await context.Request.Body.ReadAsync(buffer, 0, 1));
@@ -220,7 +221,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             InvalidOperationException invalidOpEx = null;
 
-            using (var server = new TestServer(async context =>
+            await using (var server = new TestServer(async context =>
             {
                 var upgradeFeature = context.Features.Get<IHttpUpgradeFeature>();
                 var stream = await upgradeFeature.UpgradeAsync();
@@ -260,7 +261,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             BadHttpRequestException requestRejectedEx1 = null;
             BadHttpRequestException requestRejectedEx2 = null;
 
-            using (var server = new TestServer(async context =>
+            await using (var server = new TestServer(async context =>
             {
                 var buffer = new byte[1];
                 requestRejectedEx1 = await Assert.ThrowsAsync<BadHttpRequestException>(
@@ -302,7 +303,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var globalMaxRequestBodySize = chunkedPayload.Length - 1;
             BadHttpRequestException requestRejectedEx = null;
 
-            using (var server = new TestServer(async context =>
+            await using (var server = new TestServer(async context =>
             {
                 var buffer = new byte[11];
                 requestRejectedEx = await Assert.ThrowsAsync<BadHttpRequestException>(async () =>
@@ -347,7 +348,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var trailingHeaders = "Trailing-Header: trailing-value\r\n\r\n";
             var globalMaxRequestBodySize = chunkedPayload.Length;
 
-            using (var server = new TestServer(async context =>
+            await using (var server = new TestServer(async context =>
             {
                 var offset = 0;
                 var count = 0;
@@ -360,7 +361,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 } while (count != 0);
 
                 Assert.Equal("Hello World", Encoding.ASCII.GetString(buffer));
-                Assert.Equal("trailing-value", context.Request.Headers["Trailing-Header"].ToString());
+                Assert.Equal("trailing-value", context.Request.GetTrailer("Trailing-Header").ToString());
             },
             new TestServiceContext(LoggerFactory) { ServerOptions = { Limits = { MaxRequestBodySize = globalMaxRequestBodySize } } }))
             {
@@ -390,7 +391,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var firstRequest = true;
             BadHttpRequestException requestRejectedEx = null;
 
-            using (var server = new TestServer(async context =>
+            await using (var server = new TestServer(async context =>
             {
                 var feature = context.Features.Get<IHttpMaxRequestBodySizeFeature>();
                 Assert.Equal(globalMaxRequestBodySize, feature.MaxRequestBodySize);
@@ -459,7 +460,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             BadHttpRequestException requestRejectedEx1 = null;
             BadHttpRequestException requestRejectedEx2 = null;
 
-            using (var server = new TestServer(async context =>
+            await using (var server = new TestServer(async context =>
             {
                 var buffer = new byte[1];
                 requestRejectedEx1 = await Assert.ThrowsAsync<BadHttpRequestException>(

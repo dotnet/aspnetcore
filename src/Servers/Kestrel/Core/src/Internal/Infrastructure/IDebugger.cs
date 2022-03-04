@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
-    public interface IDebugger
+    internal interface IDebugger
     {
         bool IsAttached { get; }
     }

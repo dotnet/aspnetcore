@@ -8,10 +8,10 @@ namespace VersioningWebSite
 {
     public class RoutingController : Controller
     {
-        public ActionResult HasEndpointMatch()
+        public bool HasEndpointMatch()
         {
             var endpointFeature = HttpContext.Features.Get<IEndpointFeature>();
-            return Json(endpointFeature?.Endpoint != null);
+            return endpointFeature?.Endpoint != null;
         }
     }
 }

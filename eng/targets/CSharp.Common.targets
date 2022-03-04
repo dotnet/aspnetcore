@@ -6,6 +6,29 @@
     <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
   </PropertyGroup>
 
+  <Target Name="GetCustomAssemblyAttributes"
+          BeforeTargets="GetAssemblyAttributes"
+          DependsOnTargets="InitializeSourceControlInformation">
+
+    <ItemGroup>
+      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(SourceRevisionId)' != ''">
+        <_Parameter1>CommitHash</_Parameter1>
+        <_Parameter2>$(SourceRevisionId)</_Parameter2>
+      </AssemblyAttribute>
+
+      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="$(RepositoryUrl.StartsWith('https://github.com'))">
+        <_Parameter1>SourceCommitUrl</_Parameter1>
+        <_Parameter2>$(RepositoryUrl)/tree/$(SourceRevisionId)</_Parameter2>
+      </AssemblyAttribute>
+
+      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(Serviceable)' == 'true'">
+        <_Parameter1>Serviceable</_Parameter1>
+        <_Parameter2>True</_Parameter2>
+      </AssemblyAttribute>
+    </ItemGroup>
+  </Target>
+
   <Import Project="Packaging.targets" />
   <Import Project="ResolveReferences.targets" />
+  <Import Project="Helix.targets" Condition="'$(IsTestProject)' == 'true'" />
 </Project>

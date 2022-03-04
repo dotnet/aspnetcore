@@ -12,11 +12,12 @@ namespace StaticFilesSample
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDirectoryBrowser();
+            services.AddResponseCompression();
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment host)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment host)
         {
-            Console.WriteLine("webroot: " + host.WebRootPath);
+            app.UseResponseCompression();
 
             app.UseFileServer(new FileServerOptions
             {
@@ -34,6 +35,7 @@ namespace StaticFilesSample
                 })
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseKestrel()
+                // .UseHttpSys()
                 .UseIISIntegration()
                 .UseStartup<Startup>()
                 .Build();

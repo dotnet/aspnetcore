@@ -13,15 +13,20 @@ namespace CodeGenerator
             {
                 "IHttpRequestFeature",
                 "IHttpResponseFeature",
+                "IResponseBodyPipeFeature",
+                "IRequestBodyPipeFeature",
                 "IHttpRequestIdentifierFeature",
                 "IServiceProvidersFeature",
                 "IHttpRequestLifetimeFeature",
                 "IHttpConnectionFeature",
+                "IRouteValuesFeature",
+                "IEndpointFeature"
             };
 
             var commonFeatures = new[]
             {
                 "IHttpAuthenticationFeature",
+                "IHttpRequestTrailersFeature",
                 "IQueryFeature",
                 "IFormFeature",
             };
@@ -30,6 +35,7 @@ namespace CodeGenerator
             {
                 "IHttpUpgradeFeature",
                 "IHttp2StreamIdFeature",
+                "IHttpResponseCompletionFeature",
                 "IHttpResponseTrailersFeature",
                 "IResponseCookiesFeature",
                 "IItemsFeature",
@@ -40,6 +46,8 @@ namespace CodeGenerator
                 "IHttpMinRequestBodyDataRateFeature",
                 "IHttpMinResponseDataRateFeature",
                 "IHttpBodyControlFeature",
+                "IHttpResponseStartFeature",
+                "IHttpResetFeature"
             };
 
             var rareFeatures = new[]
@@ -59,14 +67,21 @@ namespace CodeGenerator
             {
                 "IHttpRequestFeature",
                 "IHttpResponseFeature",
+                "IResponseBodyPipeFeature",
+                "IRequestBodyPipeFeature",
                 "IHttpUpgradeFeature",
                 "IHttpRequestIdentifierFeature",
                 "IHttpRequestLifetimeFeature",
+                "IHttpRequestTrailersFeature",
                 "IHttpConnectionFeature",
                 "IHttpMaxRequestBodySizeFeature",
+                "IHttpMinRequestBodyDataRateFeature",
                 "IHttpBodyControlFeature",
+                "IHttpResponseStartFeature",
+                "IRouteValuesFeature",
+                "IEndpointFeature"
             };
-
+            
             var usings = $@"
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;

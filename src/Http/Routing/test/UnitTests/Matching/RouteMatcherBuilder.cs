@@ -1,10 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.TestObjects;
@@ -95,14 +96,11 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             public async Task RouteAsync(RouteContext routeContext)
             {
-                var context = (EndpointSelectorContext)routeContext.HttpContext.Features.Get<IEndpointFeature>();
-                
-                // This is needed due to a quirk of our tests - they reuse the endpoint feature
-                // across requests.
-                context.Endpoint = null;
+                // This is needed due to a quirk of our tests - they reuse the endpoint feature.
+                routeContext.HttpContext.SetEndpoint(null);
 
-                await _selector.SelectAsync(routeContext.HttpContext, context, new CandidateSet(_candidates, _values, _scores));
-                if (context.Endpoint != null)
+                await _selector.SelectAsync(routeContext.HttpContext, new CandidateSet(_candidates, _values, _scores));
+                if (routeContext.HttpContext.GetEndpoint() != null)
                 {
                     routeContext.Handler = (_) => Task.CompletedTask;
                 }

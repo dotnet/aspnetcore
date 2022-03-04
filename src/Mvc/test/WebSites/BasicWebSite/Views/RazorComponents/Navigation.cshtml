@@ -1,0 +1,13 @@
+﻿@using BasicWebSite.RazorComponents;
+@model bool;
+<h1>Navigation components</h1>
+<div id="Navigation">
+    @if (Model)
+    {
+        @(await Html.RenderStaticComponentAsync<NavigationComponent>())
+    }
+    else
+    {
+        @(await Html.RenderComponentAsync<NavigationComponent>())
+    }
+</div>

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SignalRSamples.ConnectionHandlers;
@@ -30,21 +31,10 @@ namespace SignalRSamples
             })
             .AddMessagePackProtocol();
             //.AddStackExchangeRedis();
-
-            services.AddCors(o =>
-            {
-                o.AddPolicy("Everything", p =>
-                {
-                    p.AllowAnyHeader()
-                     .AllowAnyMethod()
-                     .AllowAnyOrigin()
-                     .AllowCredentials();
-                });
-            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseFileServer();
 
@@ -53,25 +43,21 @@ namespace SignalRSamples
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseCors("Everything");
+            app.UseRouting();
 
-            app.UseSignalR(routes =>
-            {
-                routes.MapHub<DynamicChat>("/dynamic");
-                routes.MapHub<Chat>("/default");
-                routes.MapHub<Streaming>("/streaming");
-                routes.MapHub<UploadHub>("/uploading");
-                routes.MapHub<HubTChat>("/hubT");
-            });
+            app.UseAuthorization();
 
-            app.UseConnections(routes =>
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapConnectionHandler<MessagesConnectionHandler>("/chat");
-            });
+                endpoints.MapHub<DynamicChat>("/dynamic");
+                endpoints.MapHub<Chat>("/default");
+                endpoints.MapHub<Streaming>("/streaming");
+                endpoints.MapHub<UploadHub>("/uploading");
+                endpoints.MapHub<HubTChat>("/hubT");
 
-            app.Use(next => (context) =>
-            {
-                if (context.Request.Path.StartsWithSegments("/deployment"))
+                endpoints.MapConnectionHandler<MessagesConnectionHandler>("/chat");
+
+                endpoints.MapGet("/deployment", context =>
                 {
                     var attributes = Assembly.GetAssembly(typeof(Startup)).GetCustomAttributes<AssemblyMetadataAttribute>();
 
@@ -99,8 +85,9 @@ namespace SignalRSamples
 
                         json.WriteTo(writer);
                     }
-                }
-                return Task.CompletedTask;
+
+                    return Task.CompletedTask;
+                });
             });
         }
     }

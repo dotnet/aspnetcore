@@ -8,7 +8,6 @@ using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -34,6 +33,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         [ConditionalFact]
         [HostNameIsReachable]
+        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/7267")]
         public async Task RegisterAddresses_HostName_Success()
         {
             var hostName = Dns.GetHostName();
@@ -47,8 +47,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             await RegisterAddresses_Success(addressInput, testUrl);
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(AddressRegistrationDataIPv4Port5000Default))]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2711", FlakyOn.AzP.All)]
         public async Task RegisterAddresses_IPv4Port5000Default_Success(string addressInput, string testUrl)
         {
             if (!CanBindToEndpoint(IPAddress.Loopback, 5000))
@@ -59,8 +60,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             await RegisterAddresses_Success(addressInput, testUrl, 5000);
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(AddressRegistrationDataIPv4Port80))]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2711", FlakyOn.AzP.All)]
         public async Task RegisterAddresses_IPv4Port80_Success(string addressInput, string testUrl)
         {
             if (!CanBindToEndpoint(IPAddress.Loopback, 80))
@@ -99,6 +101,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [ConditionalTheory]
         [MemberData(nameof(IPEndPointRegistrationDataDynamicPort))]
         [IPv6SupportedCondition]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2074", FlakyOn.AzP.macOS)]
         public async Task RegisterIPEndPoint_DynamicPort_Success(IPEndPoint endPoint, string testUrl)
         {
             await RegisterIPEndPoint_Success(endPoint, testUrl);
@@ -107,6 +110,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [ConditionalTheory]
         [MemberData(nameof(IPEndPointRegistrationDataPort443))]
         [IPv6SupportedCondition]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2711", FlakyOn.AzP.All)]
         public async Task RegisterIPEndPoint_Port443_Success(IPEndPoint endpoint, string testUrl)
         {
             if (!CanBindToEndpoint(endpoint.Address, 443))
@@ -128,6 +132,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [ConditionalTheory]
         [MemberData(nameof(AddressRegistrationDataIPv6Port5000Default))]
         [IPv6SupportedCondition]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2711", FlakyOn.AzP.All)]
         public async Task RegisterAddresses_IPv6Port5000Default_Success(string addressInput, string[] testUrls)
         {
             if (!CanBindToEndpoint(IPAddress.Loopback, 5000) || !CanBindToEndpoint(IPAddress.IPv6Loopback, 5000))
@@ -141,6 +146,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [ConditionalTheory]
         [MemberData(nameof(AddressRegistrationDataIPv6Port80))]
         [IPv6SupportedCondition]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2711", FlakyOn.AzP.All)]
         public async Task RegisterAddresses_IPv6Port80_Success(string addressInput, string[] testUrls)
         {
             if (!CanBindToEndpoint(IPAddress.Loopback, 80) || !CanBindToEndpoint(IPAddress.IPv6Loopback, 80))
@@ -152,6 +158,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [ConditionalTheory]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2179", FlakyOn.Helix.All)]
         [MemberData(nameof(AddressRegistrationDataIPv6ScopeId))]
         [IPv6SupportedCondition]
         [IPv6ScopeIdPresentCondition]
@@ -297,7 +304,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             using (var host = hostBuilder.Build())
             {
-                host.Start();
+                await host.StartAsync();
 
                 var testUrlWithPort = $"{testUrl}:{(testPort == 0 ? host.GetPort() : testPort)}";
 
@@ -309,13 +316,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 // Compare the response with Uri.ToString(), rather than testUrl directly.
                 // Required to handle IPv6 addresses with zone index, like "fe80::3%1"
                 Assert.Equal(new Uri(testUrlWithPort).ToString(), response);
+
+                await host.StopAsync();
             }
         }
 
         private Task RegisterIPEndPoint_StaticPort_Success(IPAddress address, string testUrl)
             => RunTestWithStaticPort(port => RegisterIPEndPoint_Success(new IPEndPoint(address, port), testUrl, port));
 
-        [ConditionalFact]
+        [Fact]
         public async Task ListenAnyIP_IPv4_Success()
         {
             await ListenAnyIP_Success(new[] { "http://localhost", "http://127.0.0.1" });
@@ -330,6 +339,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         [ConditionalFact]
         [HostNameIsReachable]
+        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/7267")]
         public async Task ListenAnyIP_HostName_Success()
         {
             var hostName = Dns.GetHostName();
@@ -348,7 +358,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             using (var host = hostBuilder.Build())
             {
-                host.Start();
+                await host.StartAsync();
 
                 foreach (var testUrl in testUrls.Select(testUrl => $"{testUrl}:{(testPort == 0 ? host.GetPort() : testPort)}"))
                 {
@@ -358,10 +368,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     // Required to handle IPv6 addresses with zone index, like "fe80::3%1"
                     Assert.Equal(new Uri(testUrl).ToString(), response);
                 }
+
+                await host.StopAsync();
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public async Task ListenLocalhost_IPv4LocalhostStaticPort_Success()
         {
             await ListenLocalhost_StaticPort_Success(new[] { "http://localhost", "http://127.0.0.1" });
@@ -389,7 +401,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             using (var host = hostBuilder.Build())
             {
-                host.Start();
+                await host.StartAsync();
 
                 foreach (var testUrl in testUrls.Select(testUrl => $"{testUrl}:{(testPort == 0 ? host.GetPort() : testPort)}"))
                 {
@@ -399,10 +411,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     // Required to handle IPv6 addresses with zone index, like "fe80::3%1"
                     Assert.Equal(new Uri(testUrl).ToString(), response);
                 }
+
+                await host.StopAsync();
             }
         }
 
         [Fact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2711", FlakyOn.AzP.All)]
         public Task DefaultsServerAddress_BindsToIPv4()
         {
             if (!CanBindToEndpoint(IPAddress.Loopback, 5000))
@@ -415,6 +430,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         [ConditionalFact]
         [IPv6SupportedCondition]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2711", FlakyOn.AzP.All)]
         public Task DefaultsServerAddress_BindsToIPv6()
         {
             if (!CanBindToEndpoint(IPAddress.Loopback, 5000) || !CanBindToEndpoint(IPAddress.IPv6Loopback, 5000))
@@ -425,7 +441,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             return RegisterDefaultServerAddresses_Success(new[] { "http://127.0.0.1:5000", "http://[::1]:5000" });
         }
 
-        [ConditionalFact]
+        [Fact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2711", FlakyOn.AzP.All)]
         public Task DefaultsServerAddress_BindsToIPv4WithHttps()
         {
             if (!CanBindToEndpoint(IPAddress.Loopback, 5000) || !CanBindToEndpoint(IPAddress.Loopback, 5001))
@@ -439,6 +456,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         [ConditionalFact]
         [IPv6SupportedCondition]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1756", FlakyOn.AzP.All)]
         public Task DefaultsServerAddress_BindsToIPv6WithHttps()
         {
             if (!CanBindToEndpoint(IPAddress.Loopback, 5000) || !CanBindToEndpoint(IPAddress.IPv6Loopback, 5000)
@@ -468,7 +486,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             using (var host = hostBuilder.Build())
             {
-                host.Start();
+                await host.StartAsync();
 
                 Assert.Equal(5000, host.GetPort());
 
@@ -485,6 +503,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     Assert.Equal(new Uri(address).ToString(), await HttpClientSlim.GetStringAsync(address, validateCertificate: false));
                 }
+
+                await host.StopAsync();
             }
         }
 
@@ -555,7 +575,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             using (var host = hostBuilder.Build())
             {
-                host.Start();
+                await host.StartAsync();
 
                 var port = host.GetPort();
 
@@ -571,10 +591,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     log.Message, StringComparison.Ordinal));
 
                 Assert.Equal(new Uri(useUrlsAddressWithPort).ToString(), await HttpClientSlim.GetStringAsync(useUrlsAddressWithPort));
+
+                await host.StopAsync();
             }
         }
 
         [Fact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2178", FlakyOn.All)]
         public async Task DoesNotOverrideDirectConfigurationWithIServerAddressesFeature_IfPreferHostingUrlsFalse()
         {
             var useUrlsAddress = $"http://127.0.0.1:0";
@@ -594,7 +617,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             using (var host = hostBuilder.Build())
             {
-                host.Start();
+                await host.StartAsync();
 
                 var port = host.GetPort();
 
@@ -610,6 +633,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     log.Message, StringComparison.Ordinal));
 
                 Assert.Equal(new Uri(endPointAddress).ToString(), await HttpClientSlim.GetStringAsync(endPointAddress, validateCertificate: false));
+                await host.StopAsync();
             }
         }
 
@@ -630,7 +654,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             using (var host = hostBuilder.Build())
             {
-                host.Start();
+                await host.StartAsync();
 
                 var port = host.GetPort();
 
@@ -641,6 +665,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 Assert.Equal(serverAddresses.First(), endPointAddress);
 
                 Assert.Equal(new Uri(endPointAddress).ToString(), await HttpClientSlim.GetStringAsync(endPointAddress, validateCertificate: false));
+
+                await host.StopAsync();
             }
         }
 
@@ -709,9 +735,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             using (var host = hostBuilder.Build())
             {
-                host.Start();
+                await host.StartAsync();
 
                 Assert.Equal(endPointAddress, await HttpClientSlim.GetStringAsync(endPointAddress));
+
+                await host.StopAsync();
             }
 
             hostBuilder = TransportSelector.GetWebHostBuilder()
@@ -723,9 +751,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             using (var host = hostBuilder.Build())
             {
-                host.Start();
+                await host.StartAsync();
 
                 Assert.Equal(endPointAddress, await HttpClientSlim.GetStringAsync(endPointAddress));
+
+                await host.StopAsync();
             }
         }
 
@@ -748,10 +778,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             using (var host = hostBuilder.Build())
             {
-                host.Start();
+                await host.StartAsync();
 
                 Assert.Equal(ipv4endPointAddress, await HttpClientSlim.GetStringAsync(ipv4endPointAddress));
                 Assert.Equal(ipv6endPointAddress, await HttpClientSlim.GetStringAsync(ipv6endPointAddress));
+
+                await host.StopAsync();
             }
 
             hostBuilder = TransportSelector.GetWebHostBuilder()
@@ -764,10 +796,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             using (var host = hostBuilder.Build())
             {
-                host.Start();
+                await host.StartAsync();
 
                 Assert.Equal(ipv4endPointAddress, await HttpClientSlim.GetStringAsync(ipv4endPointAddress));
                 Assert.Equal(ipv6endPointAddress, await HttpClientSlim.GetStringAsync(ipv6endPointAddress));
+
+                await host.StopAsync();
             }
         }
 
@@ -775,7 +809,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [InlineData("http1", HttpProtocols.Http1)]
         [InlineData("http2", HttpProtocols.Http2)]
         [InlineData("http1AndHttp2", HttpProtocols.Http1AndHttp2)]
-        public void EndpointDefaultsConfig_CanSetProtocolForUrlsConfig(string input, HttpProtocols expected)
+        public async Task EndpointDefaultsConfig_CanSetProtocolForUrlsConfig(string input, HttpProtocols expected)
         {
             KestrelServerOptions capturedOptions = null;
             var hostBuilder = TransportSelector.GetWebHostBuilder()
@@ -795,9 +829,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             using (var host = hostBuilder.Build())
             {
-                host.Start();
+                await host.StartAsync();
                 Assert.Single(capturedOptions.ListenOptions);
                 Assert.Equal(expected, capturedOptions.ListenOptions[0].Protocols);
+                await host.StopAsync();
             }
         }
 

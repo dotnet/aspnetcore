@@ -1,0 +1,12 @@
+<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
+
+  <PropertyGroup>
+    <PackageId>@microsoft/signalr</PackageId>
+    <IsPackable>true</IsPackable>
+    <IsTestProject>false</IsTestProject>
+    <IsShippingPackage>true</IsShippingPackage>
+  </PropertyGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
+</Project>

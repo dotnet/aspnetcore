@@ -9,9 +9,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Hosting.Internal
+namespace Microsoft.AspNetCore.Hosting
 {
-    public class HostingApplication : IHttpApplication<HostingApplication.Context>
+    internal class HostingApplication : IHttpApplication<HostingApplication.Context>
     {
         private readonly RequestDelegate _application;
         private readonly IHttpContextFactory _httpContextFactory;
@@ -55,13 +55,14 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             _diagnostics.ContextDisposed(context);
         }
 
-        public struct Context
+        internal struct Context
         {
             public HttpContext HttpContext { get; set; }
             public IDisposable Scope { get; set; }
             public long StartTimestamp { get; set; }
             public bool EventLogEnabled { get; set; }
             public Activity Activity { get; set; }
+            internal bool HasDiagnosticListener { get; set; }
         }
     }
 }

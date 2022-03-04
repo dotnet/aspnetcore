@@ -4,7 +4,7 @@
 namespace Microsoft.AspNetCore.Http
 {
     /// <summary>
-    /// Respresents a logical endpoint in an application.
+    /// Represents a logical endpoint in an application.
     /// </summary>
     public class Endpoint
     {
