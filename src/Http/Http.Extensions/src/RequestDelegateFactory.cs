@@ -2,11 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
@@ -22,6 +24,11 @@ namespace Microsoft.AspNetCore.Http;
 /// <summary>
 /// Creates <see cref="RequestDelegate"/> implementations from <see cref="Delegate"/> request handlers.
 /// </summary>
+[UnconditionalSuppressMessage("Trimmer", "IL2026", Justification = "RequestDelegateFactory.Create requires unreferenced code.")]
+[UnconditionalSuppressMessage("Trimmer", "IL2060", Justification = "RequestDelegateFactory.Create requires unreferenced code.")]
+[UnconditionalSuppressMessage("Trimmer", "IL2072", Justification = "RequestDelegateFactory.Create requires unreferenced code.")]
+[UnconditionalSuppressMessage("Trimmer", "IL2075", Justification = "RequestDelegateFactory.Create requires unreferenced code.")]
+[UnconditionalSuppressMessage("Trimmer", "IL2077", Justification = "RequestDelegateFactory.Create requires unreferenced code.")]
 public static partial class RequestDelegateFactory
 {
     private static readonly ParameterBindingMethodCache ParameterBindingMethodCache = new();
@@ -96,9 +103,8 @@ public static partial class RequestDelegateFactory
     /// <param name="handler">A request handler with any number of custom parameters that often produces a response with its return value.</param>
     /// <param name="options">The <see cref="RequestDelegateFactoryOptions"/> used to configure the behavior of the handler.</param>
     /// <returns>The <see cref="RequestDelegateResult"/>.</returns>
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+    [RequiresUnreferencedCode("RequestDelegateFactory performs object creation, serialization and deserialization on the delegates and its parameters. This cannot be statically analyzed.")]
     public static RequestDelegateResult Create(Delegate handler, RequestDelegateFactoryOptions? options = null)
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
     {
         if (handler is null)
         {
@@ -125,9 +131,9 @@ public static partial class RequestDelegateFactory
     /// <param name="targetFactory">Creates the <see langword="this"/> for the non-static method.</param>
     /// <param name="options">The <see cref="RequestDelegateFactoryOptions"/> used to configure the behavior of the handler.</param>
     /// <returns>The <see cref="RequestDelegate"/>.</returns>
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+
+    [RequiresUnreferencedCode("RequestDelegateFactory performs object creation, serialization and deserialization on the delegates and its parameters. This cannot be statically analyzed.")]
     public static RequestDelegateResult Create(MethodInfo methodInfo, Func<HttpContext, object>? targetFactory = null, RequestDelegateFactoryOptions? options = null)
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
     {
         if (methodInfo is null)
         {
@@ -782,7 +788,7 @@ public static partial class RequestDelegateFactory
 
         static async Task<(object? FormValue, bool Successful)> TryReadBodyAsync(
             HttpContext httpContext,
-            Type bodyType,
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type bodyType,
             string parameterTypeName,
             string parameterName,
             bool allowEmptyRequestBody,
@@ -792,7 +798,7 @@ public static partial class RequestDelegateFactory
 
             if (allowEmptyRequestBody && bodyType.IsValueType)
             {
-                defaultBodyValue = Activator.CreateInstance(bodyType);
+                defaultBodyValue = CreateValueType(bodyType);
             }
 
             var bodyValue = defaultBodyValue;
@@ -826,6 +832,10 @@ public static partial class RequestDelegateFactory
             return (bodyValue, true);
         }
     }
+
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2067:UnrecognizedReflectionPattern",
+        Justification = "CreateValueType is only called on a ValueType. You can always create an instance of a ValueType.")]
+    private static object? CreateValueType(Type t) => RuntimeHelpers.GetUninitializedObject(t);
 
     private static Func<object?, HttpContext, Task> HandleRequestBodyAndCompileRequestDelegateForForm(
         Expression responseWritingMethodCall,
