@@ -108,6 +108,15 @@ public static class DotNetDispatcher
             // Returned a task - we need to continue that task and then report an exception
             // or return the value.
             task.ContinueWith(t => EndInvokeDotNetAfterTask(t, jsRuntime, invocationInfo), TaskScheduler.Current);
+
+        }
+        else if (syncResult?.GetType().GetGenericTypeDefinition() == typeof(ValueTask<>))
+        {
+            //since syncResult is generic we have to get AsTask method for its type
+            var valueTaskAsTaskMethod = syncResult.GetType().GetMethod("AsTask");
+            var innerTask = valueTaskAsTaskMethod!.Invoke(syncResult, Array.Empty<object>()) as Task;
+
+            innerTask!.ContinueWith(t => EndInvokeDotNetAfterTask(t, jsRuntime, invocationInfo), TaskScheduler.Current);
         }
         else
         {

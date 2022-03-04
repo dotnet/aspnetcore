@@ -609,6 +609,45 @@ public class DotNetDispatcherTest
         Assert.Equal(2468, resultDto2.IntVal);
     }
 
+        [Fact]
+        public async Task CanInvokeAsyncMethodReturningValueTask()
+        {
+            // Arrange: Track some instance plus another object we'll pass as a param
+            var jsRuntime = new TestJSRuntime();
+            var targetInstance = new SomePublicType();
+            var arg2 = new TestDTO { IntVal = 1234, StringVal = "My string" };
+            var arg1Ref = DotNetObjectReference.Create(targetInstance);
+            var arg2Ref = DotNetObjectReference.Create(arg2);
+            jsRuntime.Invoke<object>("unimportant", arg1Ref, arg2Ref);
+
+            // Arrange: all args
+            var argsJson = JsonSerializer.Serialize(new object[]
+            {
+                new TestDTO { IntVal = 1000, StringVal = "String via JSON" },
+                arg2Ref,
+            }, jsRuntime.JsonSerializerOptions);
+
+            // Act
+            var callId = "123";
+            var resultTask = jsRuntime.NextInvocationTask;
+            DotNetDispatcher.BeginInvokeDotNet(jsRuntime, new DotNetInvocationInfo(null, "InvokableAsyncMethodReturningValueTask", 1, callId), argsJson);
+            await resultTask;
+
+            // Assert: Correct completion information
+            Assert.Equal(callId, jsRuntime.LastCompletionCallId);
+            Assert.True(jsRuntime.LastCompletionResult.Success);
+            var resultJson = Assert.IsType<string>(jsRuntime.LastCompletionResult.ResultJson);
+            var result = JsonSerializer.Deserialize<SomePublicType.InvokableAsyncMethodResult>(resultJson, jsRuntime.JsonSerializerOptions);
+
+            Assert.Equal("STRING VIA JSON", result.SomeDTO.StringVal);
+            Assert.Equal(2000, result.SomeDTO.IntVal);
+
+            // Assert: Second result value marshalled by ref
+            var resultDto2 = result.SomeDTORef.Value;
+            Assert.Equal("MY STRING", resultDto2.StringVal);
+            Assert.Equal(2468, resultDto2.IntVal);
+        }
+
     [Fact]
     public async Task CanInvokeSyncThrowingMethod()
     {
@@ -860,6 +899,26 @@ public class DotNetDispatcherTest
 
         [JSInvokable]
         public async Task<InvokableAsyncMethodResult> InvokableAsyncMethod(TestDTO dtoViaJson, DotNetObjectReference<TestDTO> dtoByRefWrapper)
+        {
+            await Task.Delay(50);
+            var dtoByRef = dtoByRefWrapper.Value;
+            return new InvokableAsyncMethodResult
+            {
+                SomeDTO = new TestDTO // Return via JSON
+                {
+                    StringVal = dtoViaJson.StringVal.ToUpperInvariant(),
+                    IntVal = dtoViaJson.IntVal * 2,
+                },
+                SomeDTORef = DotNetObjectReference.Create(new TestDTO // Return by ref
+                {
+                    StringVal = dtoByRef.StringVal.ToUpperInvariant(),
+                    IntVal = dtoByRef.IntVal * 2,
+                })
+            };
+        }
+
+        [JSInvokable]
+        public async ValueTask<InvokableAsyncMethodResult> InvokableAsyncMethodReturningValueTask(TestDTO dtoViaJson, DotNetObjectReference<TestDTO> dtoByRefWrapper)
         {
             await Task.Delay(50);
             var dtoByRef = dtoByRefWrapper.Value;
