@@ -61,9 +61,6 @@
     <PrecompiledHeaderFile>precomp.h</PrecompiledHeaderFile>
     <PrecompiledHeaderOutputFile>$(IntDir)precomp.pch</PrecompiledHeaderOutputFile>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
-    <TargetName>$(ProjectName)</TargetName>
-  </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>$(WIX)sdk\$(WixPlatformToolset)\inc;$(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
