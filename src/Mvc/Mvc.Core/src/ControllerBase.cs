@@ -218,7 +218,7 @@ public abstract class ControllerBase
     public ClaimsPrincipal User => HttpContext?.User!;
 
     /// <summary>
-    /// Creates the <see cref="EmptyResult"/>
+    /// Gets an instance of <see cref="EmptyResult"/>.
     /// </summary>
     public static EmptyResult Empty { get; } = new();
 
