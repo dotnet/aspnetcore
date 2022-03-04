@@ -208,7 +208,9 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest
     public void MapGet_ThrowsWithImplicitFromBody()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
-        var ex = Assert.Throws<InvalidOperationException>(() => builder.MapGet("/", (Todo todo) => { }));
+        _ = builder.MapGet("/", (Todo todo) => { });
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        var ex = Assert.Throws<InvalidOperationException>(() => dataSource.Endpoints);
         Assert.Contains("Body was inferred but the method does not allow inferred body parameters.", ex.Message);
         Assert.Contains("Did you mean to register the \"Body (Inferred)\" parameter(s) as a Service or apply the [FromServices] or [FromBody] attribute?", ex.Message);
     }
@@ -217,7 +219,9 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest
     public void MapDelete_ThrowsWithImplicitFromBody()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
-        var ex = Assert.Throws<InvalidOperationException>(() => builder.MapDelete("/", (Todo todo) => { }));
+        _ = builder.MapDelete("/", (Todo todo) => { });
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        var ex = Assert.Throws<InvalidOperationException>(() => dataSource.Endpoints);
         Assert.Contains("Body was inferred but the method does not allow inferred body parameters.", ex.Message);
         Assert.Contains("Did you mean to register the \"Body (Inferred)\" parameter(s) as a Service or apply the [FromServices] or [FromBody] attribute?", ex.Message);
     }
@@ -243,7 +247,9 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest
     public void MapVerb_ThrowsWithImplicitFromBody(string method)
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
-        var ex = Assert.Throws<InvalidOperationException>(() => builder.MapMethods("/", new[] { method }, (Todo todo) => { }));
+        _ = builder.MapMethods("/", new[] { method }, (Todo todo) => { });
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        var ex = Assert.Throws<InvalidOperationException>(() => dataSource.Endpoints);
         Assert.Contains("Body was inferred but the method does not allow inferred body parameters.", ex.Message);
         Assert.Contains("Did you mean to register the \"Body (Inferred)\" parameter(s) as a Service or apply the [FromServices] or [FromBody] attribute?", ex.Message);
     }
@@ -581,7 +587,9 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest
     public void MapGetWithRouteParameter_ThrowsIfRouteParameterDoesNotExist()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
-        var ex = Assert.Throws<InvalidOperationException>(() => builder.MapGet("/", ([FromRoute] int id) => { }));
+        _ = builder.MapGet("/", ([FromRoute] int id) => { });
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        var ex = Assert.Throws<InvalidOperationException>(() => dataSource.Endpoints);
         Assert.Equal("'id' is not a route parameter.", ex.Message);
     }
 
@@ -637,7 +645,9 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest
     public void MapGetWithNamedFromRouteParameter_ThrowsForMismatchedPattern()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
-        var ex = Assert.Throws<InvalidOperationException>(() => builder.MapGet("/{id}", ([FromRoute(Name = "value")] int id, HttpContext httpContext) => { }));
+        _ = builder.MapGet("/{id}", ([FromRoute(Name = "value")] int id, HttpContext httpContext) => { });
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        var ex = Assert.Throws<InvalidOperationException>(() => dataSource.Endpoints);
         Assert.Equal("'value' is not a route parameter.", ex.Message);
     }
 
@@ -677,7 +687,6 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest
         Assert.False(endpointMetadata!.IsOptional);
         Assert.Equal(typeof(Todo), endpointMetadata.RequestType);
         Assert.Equal(new[] { "application/xml" }, endpointMetadata.ContentTypes);
-
     }
 
     [Fact]

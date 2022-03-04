@@ -89,8 +89,9 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
         var endpointBuilder = builder.MapGet("/", GenericTypeTaskDelegate);
 
         // Assert
-        var endpointBuilder1 = GetRouteEndpointBuilder(builder);
-        var requestDelegate = endpointBuilder1.RequestDelegate;
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        var endpoint = Assert.Single(dataSource.Endpoints); // Triggers build and construction of delegate
+        var requestDelegate = endpoint.RequestDelegate;
         await requestDelegate(httpContext);
 
         var responseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
