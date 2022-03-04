@@ -18,6 +18,7 @@ $ProgressPreference = 'SilentlyContinue' # Workaround PowerShell/PowerShell#2138
 Set-StrictMode -Version 1
 
 $repoRoot = Resolve-Path "$PSScriptRoot\..\.."
+$installDir = "$repoRoot\.tools\jdk\win-x64\"
 $javacExe = "$repoRoot\.tools\jdk\win-x64\bin\javac.exe"
 $tempDir = "$repoRoot\obj"
 if (-not $JdkVersion) {
