@@ -33,7 +33,12 @@
     </RpmBuildDependsOn>
   </PropertyGroup>
 
-  <Target Name="Build" DependsOnTargets="RpmBuild" />
+  <!-- Do not build platform-neutral targeting-pack RPM in arm64 build. -->
+  <Target Name="Build"
+      Condition=" '$(MSBuildProjectName)' == 'Rpm.TargetingPack' AND '$(TargetRuntimeIdentifier)' == 'linux-arm64' "/>
+  <Target Name="Build"
+      Condition=" !('$(MSBuildProjectName)' == 'Rpm.TargetingPack' AND '$(TargetRuntimeIdentifier)' == 'linux-arm64') "
+      DependsOnTargets="RpmBuild"/>
   <Target Name="Pack" />
 
   <Target Name="RpmBuild" DependsOnTargets="$(RpmBuildDependsOn)">
@@ -41,7 +46,7 @@
       <CblMariner1TargetPath>$(InstallersOutputPath)$(CblMarinerBaseName)$(CblMariner1VersionSuffix)$(CblMarinerExtension)</CblMariner1TargetPath>
       <CblMariner2TargetPath>$(InstallersOutputPath)$(CblMarinerBaseName)$(CblMariner2VersionSuffix)$(CblMarinerExtension)</CblMariner2TargetPath>
     </PropertyGroup>
-    
+
     <!-- Create layout: Create changelog -->
     <PropertyGroup>
       <ChangeLogProps>DATE=$([System.DateTime]::UtcNow.ToString(ddd MMM dd yyyy))</ChangeLogProps>
