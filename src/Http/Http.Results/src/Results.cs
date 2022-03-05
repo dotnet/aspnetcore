@@ -724,7 +724,7 @@ public static class Results
         => new AcceptedAtRouteResult(routeName, routeValues, value);
 
     /// <summary>
-    /// Produces a empty result response, that when executed will do nothing.
+    /// Produces an empty result response, that when executed will do nothing.
     /// </summary>
     public static IResult Empty { get; } = EmptyResult.Instance;
 
