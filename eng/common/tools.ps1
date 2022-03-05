@@ -287,6 +287,18 @@ function InstallDotNet([string] $dotnetRoot,
   [string] $runtimeSourceFeedKey = '',
   [switch] $noPath) {
 
+  $runtimePath = $dotnetRoot
+
+  $runtimePath = $runtimePath + "\shared"
+  if ($runtime -eq "dotnet") { $runtimePath = $runtimePath + "\Microsoft.NETCore.App" }
+  if ($runtime -eq "aspnetcore") { $runtimePath = $runtimePath + "\Microsoft.AspNetCore.App" }
+  $runtimePath = $runtimePath + "\" + $version
+
+  if (Test-Path $runtimePath) {
+    $installSuccess = $true
+    Exit
+  }
+
   $installScript = GetDotNetInstallScript $dotnetRoot
   $installParameters = @{
     Version = $version
