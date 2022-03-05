@@ -143,7 +143,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
         {
             if (_pipeWriterCompleted)
             {
-                return default;
+                return new ValueTask<FlushResult>(new FlushResult(false, true));
             }
 
             if (_autoChunk)

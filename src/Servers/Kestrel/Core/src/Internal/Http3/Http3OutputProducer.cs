@@ -163,7 +163,7 @@ internal class Http3OutputProducer : IHttpOutputProducer, IHttpOutputAborter
 
             if (_streamCompleted)
             {
-                return default;
+                return new ValueTask<FlushResult>(new FlushResult(false, true));
             }
 
             if (_startedWritingDataFrames)

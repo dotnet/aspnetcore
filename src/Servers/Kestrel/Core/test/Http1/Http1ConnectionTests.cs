@@ -697,6 +697,20 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
     }
 
     [Fact]
+    public async void BodyWriter_OnAbortedConnection_ReturnsFlushResultWithIsCanceledTrue()
+    {
+        var payload = Encoding.UTF8.GetBytes("hello, web browser" + new string(' ', 512) + "\n");
+        var writer = _application.Output;
+
+        var successResult= await writer.WriteAsync(payload);
+        Assert.False(successResult.IsCanceled);
+
+        _http1Connection.Abort(new ConnectionAbortedException());
+        var failResult= await _http1Connection.FlushPipeAsync(new CancellationToken());
+        Assert.True(failResult.IsCompleted);
+    }
+
+    [Fact]
     public async Task RequestAbortedTokenIsResetBeforeLastWriteAsyncAwaitedWithContentLength()
     {
         _http1Connection.ResponseHeaders["Content-Length"] = "12";

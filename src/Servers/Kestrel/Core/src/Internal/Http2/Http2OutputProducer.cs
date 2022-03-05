@@ -149,10 +149,9 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
         lock (_dataWriterLock)
         {
             ThrowIfSuffixSentOrCompleted();
-
             if (_streamCompleted)
             {
-                return default;
+                return new ValueTask<FlushResult>(new FlushResult(false, true));
             }
 
             if (_startedWritingDataFrames)
