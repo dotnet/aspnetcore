@@ -28,6 +28,7 @@ internal class Http3OutputProducer : IHttpOutputProducer, IHttpOutputAborter
     private ValueTask<FlushResult> _dataWriteProcessingTask;
     private bool _startedWritingDataFrames;
     private bool _streamCompleted;
+    private bool _pendingFlushCanceled;
     private bool _disposed;
     private bool _suffixSent;
     private IMemoryOwner<byte>? _fakeMemoryOwner;
@@ -62,6 +63,7 @@ internal class Http3OutputProducer : IHttpOutputProducer, IHttpOutputAborter
         _suffixSent = false;
         _startedWritingDataFrames = false;
         _streamCompleted = false;
+        _pendingFlushCanceled = false;
 
         _pipe.Reset();
 
@@ -132,6 +134,7 @@ internal class Http3OutputProducer : IHttpOutputProducer, IHttpOutputAborter
             }
 
             _pipeWriter.CancelPendingFlush();
+            _pendingFlushCanceled = true;
         }
     }
 
@@ -164,6 +167,10 @@ internal class Http3OutputProducer : IHttpOutputProducer, IHttpOutputAborter
             if (_streamCompleted)
             {
                 return new ValueTask<FlushResult>(new FlushResult(false, true));
+            }
+            if (_pendingFlushCanceled)
+            {
+                return new ValueTask<FlushResult>(new FlushResult(true, false));
             }
 
             if (_startedWritingDataFrames)

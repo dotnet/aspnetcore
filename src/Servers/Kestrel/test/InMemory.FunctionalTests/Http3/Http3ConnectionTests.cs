@@ -81,7 +81,7 @@ public class Http3ConnectionTests : Http3TestBase
     }
 
     [Fact]
-    public async Task FlushPipeAsync_OnStoppedHttp3Stream_ReturnsFlushResultWithIsCanceledTrue()
+    public async Task FlushPipeAsync_OnStoppedHttp3Stream_ReturnsFlushResultWithIsCompletedTrue()
     {
         await Http3Api.InitializeConnectionAsync(_echoApplication);
         KeyValuePair<string, string>[] requestHeaders = new[]
@@ -104,8 +104,36 @@ public class Http3ConnectionTests : Http3TestBase
         http3Stream.Output.Stop();
 
         var result= await http3Stream.FlushPipeAsync(new CancellationToken());
-
         Assert.True(result.IsCompleted);
+
+        http3Stream.CancelPendingFlush();
+    }
+
+    [Fact]
+    public async Task FlushPipeAsync_OnCanceledPendingFlush_ReturnsFlushResultWithIsCanceledTrue()
+    {
+        await Http3Api.InitializeConnectionAsync(_echoApplication);
+        KeyValuePair<string, string>[] requestHeaders = new[]
+        {
+            new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(HeaderNames.Path, "/hello"),
+            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            new KeyValuePair<string, string>(HeaderNames.ContentType, "application/json")
+        };
+
+        //var z=await MakeRequestAsync(0, requestHeaders1, sendData: false, waitForServerDispose: false);
+        var requestStream = await Http3Api.CreateRequestStream();
+        var streamContext = requestStream.StreamContext;
+
+        await requestStream.SendHeadersAsync(requestHeaders, endStream: false);
+
+        //requestStream.Connection.Abort(new ConnectionAbortedException());
+        var http3Stream = (Http3Stream)streamContext.Features.Get<IPersistentStateFeature>().State[Http3Connection.StreamPersistentStateKey];
+
+        http3Stream.CancelPendingFlush();
+        var result= await http3Stream.FlushPipeAsync(new CancellationToken());
+        Assert.True(result.IsCanceled);
     }
 
     [Fact]

@@ -55,7 +55,34 @@ public class Http1OutputProducerTests : IDisposable
     }
 
     [Fact]
-    public async Task FlushAsync_OnDisposedSocket_ReturnsResultWithIsCanceledTrue()
+    public async Task FlushAsync_OnDisposedSocket_ReturnsResultWithIsCompletedTrue()
+    {
+        var pipeOptions = new PipeOptions
+        (
+            pool: _memoryPool,
+            readerScheduler: Mock.Of<PipeScheduler>(),
+            writerScheduler: PipeScheduler.Inline,
+            useSynchronizationContext: false
+        );
+
+        var socketOutput = CreateOutputProducer(pipeOptions);
+
+        await socketOutput.WriteDataAsync(new byte[] { 1, 2, 3, 4 }, default);
+        var successResult = await socketOutput.FlushAsync();
+        Assert.False(successResult.IsCompleted);
+
+        // Close
+        socketOutput.Dispose();
+
+        await socketOutput.WriteDataAsync(new byte[] { 1, 2, 3, 4 }, default);
+        var cancelResult = await socketOutput.FlushAsync();
+        Assert.True(cancelResult.IsCompleted);
+
+        socketOutput.Pipe.Writer.Complete();
+        socketOutput.Pipe.Reader.Complete();
+    }
+    [Fact]
+    public async Task FlushAsync_OnSocketWithCanceledPendingFlush_ReturnsResultWithIsCanceledTrue()
     {
         var pipeOptions = new PipeOptions
         (
@@ -72,11 +99,11 @@ public class Http1OutputProducerTests : IDisposable
         Assert.False(successResult.IsCanceled);
 
         // Close
-        socketOutput.Dispose();
+        socketOutput.CancelPendingFlush();
 
         await socketOutput.WriteDataAsync(new byte[] { 1, 2, 3, 4 }, default);
         var cancelResult = await socketOutput.FlushAsync();
-        Assert.True(cancelResult.IsCompleted);
+        Assert.True(cancelResult.IsCanceled);
 
         socketOutput.Pipe.Writer.Complete();
         socketOutput.Pipe.Reader.Complete();
