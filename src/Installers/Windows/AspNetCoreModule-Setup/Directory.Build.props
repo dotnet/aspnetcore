@@ -70,5 +70,20 @@
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <SetPlatform>Platform=Win32</SetPlatform>
     </ProjectReference>
+   
+    <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj">
+      <Name>AspNetCoreV2ARM64</Name>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SetPlatform>Platform=ARM64</SetPlatform>
+    </ProjectReference>
+    <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj">
+      <Name>AspNetCoreV2HandlerARM64</Name>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SetPlatform>Platform=ARM64</SetPlatform>
+    </ProjectReference>
   </ItemGroup>
 </Project>
