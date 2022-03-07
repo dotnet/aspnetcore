@@ -28,6 +28,8 @@ public static class DotNetDispatcher
 
     private static readonly ConcurrentDictionary<Type, IReadOnlyDictionary<string, (MethodInfo, Type[])>> _cachedMethodsByType = new();
 
+    private static readonly ConcurrentDictionary<Type, Func<object, Task>> _cachedConvertToTaskByType = new();
+
     /// <summary>
     /// Receives a call from JS to .NET, locating and invoking the specified method.
     /// </summary>
@@ -110,16 +112,13 @@ public static class DotNetDispatcher
             task.ContinueWith(t => EndInvokeDotNetAfterTask(t, jsRuntime, invocationInfo), TaskScheduler.Current);
 
         }
-        else if (syncResult?.GetType().GetGenericTypeDefinition() == typeof(ValueTask<>))
+        else if(syncResult is ValueTask valueTaskResult)
         {
-            //since syncResult is generic we have to get AsTask method for its type
-            var valueTaskAsTaskMethod = syncResult.GetType().GetMethod("AsTask", BindingFlags.Instance | BindingFlags.Public);
-            if (valueTaskAsTaskMethod == null)
-            {
-                throw new MissingMethodException("AsTask method was expected on type ValueTask<>");
-            }
-
-            var innerTask = valueTaskAsTaskMethod!.Invoke(syncResult, Array.Empty<object>()) as Task;
+            valueTaskResult.AsTask().ContinueWith(t => EndInvokeDotNetAfterTask(t, jsRuntime, invocationInfo), TaskScheduler.Current);
+        }
+        else if (syncResult?.GetType().GetGenericTypeDefinition()== typeof(ValueTask<>))
+        {
+            var innerTask = GetTaskByType(syncResult.GetType().GenericTypeArguments[0], syncResult);
 
             innerTask!.ContinueWith(t => EndInvokeDotNetAfterTask(t, jsRuntime, invocationInfo), TaskScheduler.Current);
         }
@@ -362,6 +361,16 @@ public static class DotNetDispatcher
         }
     }
 
+    private static Task GetTaskByType(Type type, object obj)
+    {
+        var assemblyMethods = _cachedConvertToTaskByType.GetOrAdd(type, (Type t)=>
+            _taskConverterMethodInfo.MakeGenericMethod(t).CreateDelegate<Func<object, Task>>());
+
+        return assemblyMethods.Invoke(obj);
+    }
+    private static readonly MethodInfo _taskConverterMethodInfo = typeof(DotNetDispatcher).GetMethod(nameof(CreateValueTaskConverter), BindingFlags.NonPublic | BindingFlags.Static)!;
+    private static Task CreateValueTaskConverter<T>(object? result) => ((ValueTask<T>)result!).AsTask();
+    
     private static (MethodInfo methodInfo, Type[] parameterTypes) GetCachedMethodInfo(IDotNetObjectReference objectReference, string methodIdentifier)
     {
         var type = objectReference.Value.GetType();
@@ -484,6 +493,7 @@ public static class DotNetDispatcher
     {
         _cachedMethodsByAssembly.Clear();
         _cachedMethodsByType.Clear();
+        _cachedConvertToTaskByType.Clear();
     }
 
     private readonly struct AssemblyKey : IEquatable<AssemblyKey>

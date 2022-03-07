@@ -630,23 +630,39 @@ public class DotNetDispatcherTest
             // Act
             var callId = "123";
             var resultTask = jsRuntime.NextInvocationTask;
-            DotNetDispatcher.BeginInvokeDotNet(jsRuntime, new DotNetInvocationInfo(null, "InvokableAsyncMethodReturningValueTask", 1, callId), argsJson);
+            DotNetDispatcher.BeginInvokeDotNet(jsRuntime, new DotNetInvocationInfo(null,
+                nameof(SomePublicType.InvokableAsyncMethodReturningValueTask), 1, callId), argsJson);
             await resultTask;
 
             // Assert: Correct completion information
             Assert.Equal(callId, jsRuntime.LastCompletionCallId);
             Assert.True(jsRuntime.LastCompletionResult.Success);
-            var resultJson = Assert.IsType<string>(jsRuntime.LastCompletionResult.ResultJson);
-            var result = JsonSerializer.Deserialize<SomePublicType.InvokableAsyncMethodResult>(resultJson, jsRuntime.JsonSerializerOptions);
-
-            Assert.Equal("STRING VIA JSON", result.SomeDTO.StringVal);
-            Assert.Equal(2000, result.SomeDTO.IntVal);
-
-            // Assert: Second result value marshalled by ref
-            var resultDto2 = result.SomeDTORef.Value;
-            Assert.Equal("MY STRING", resultDto2.StringVal);
-            Assert.Equal(2468, resultDto2.IntVal);
         }
+
+        [Fact]
+        public async Task CanInvokeAsyncMethodReturningNonGenericValueTask()
+        {
+            // Arrange: Track some instance plus another object we'll pass as a param
+            var jsRuntime = new TestJSRuntime();
+            var targetInstance = new SomePublicType();
+            var arg1Ref = DotNetObjectReference.Create(targetInstance);
+            jsRuntime.Invoke<object>("unimportant", arg1Ref);
+
+            // Arrange: all args
+            var argsJson = JsonSerializer.Serialize(new object[] { }, jsRuntime.JsonSerializerOptions);
+
+            // Act
+            var callId = "123";
+            var resultTask = jsRuntime.NextInvocationTask;
+            DotNetDispatcher.BeginInvokeDotNet(jsRuntime, new DotNetInvocationInfo(null,
+                nameof(SomePublicType.InvokableAsyncMethodReturningValueTaskNonGeneric), 1, callId), argsJson);
+            await resultTask;
+
+            // Assert: Correct completion information
+            Assert.Equal(callId, jsRuntime.LastCompletionCallId);
+            Assert.True(jsRuntime.LastCompletionResult.Success);
+        }
+
 
     [Fact]
     public async Task CanInvokeSyncThrowingMethod()
@@ -920,7 +936,6 @@ public class DotNetDispatcherTest
         [JSInvokable]
         public async ValueTask<InvokableAsyncMethodResult> InvokableAsyncMethodReturningValueTask(TestDTO dtoViaJson, DotNetObjectReference<TestDTO> dtoByRefWrapper)
         {
-            await Task.Delay(50);
             var dtoByRef = dtoByRefWrapper.Value;
             return new InvokableAsyncMethodResult
             {
@@ -935,6 +950,12 @@ public class DotNetDispatcherTest
                     IntVal = dtoByRef.IntVal * 2,
                 })
             };
+        }
+
+        [JSInvokable]
+        public async ValueTask InvokableAsyncMethodReturningValueTaskNonGeneric()
+        {
+            return;
         }
 
         public class InvokableAsyncMethodResult
