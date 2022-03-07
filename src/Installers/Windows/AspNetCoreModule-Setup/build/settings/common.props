@@ -8,7 +8,7 @@
   <PropertyGroup>
     <PlatformShortname Condition="'$(PlatformShortname)' == '' AND '$(Platform)' == 'x64'">x64</PlatformShortname>
     <PlatformShortname Condition="'$(PlatformShortname)' == '' AND '$(Platform)' == 'arm64'">arm64</PlatformShortname>
-    <PlatformShortname Condition="'$(PlatformShortname)' == '' AND ('$(Platform.ToLower())' == 'win32' OR '$(Platform)' == 'x86')">x86</PlatformShortname>
+    <PlatformShortname Condition="'$(PlatformShortname)' == '' AND ('$(Platform)' == 'win32' OR '$(Platform)' == 'x86')">x86</PlatformShortname>
   </PropertyGroup>
 
   <!-- General properties -->
