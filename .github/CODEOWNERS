@@ -30,10 +30,11 @@
 /src/Http/Routing/**/PublicAPI.*Shipped.txt                                       @dotnet/aspnet-api-review @javiercn
 /src/HttpClientFactory/                                                           @captainsafia @halter73
 /src/HttpClientFactory/**/PublicAPI.*Shipped.txt                                  @dotnet/aspnet-api-review @captainsafia @halter73
+/src/JSInterop/                                                                   @dotnet/aspnet-blazor-eng
 /src/Middleware/                                                                  @tratcher @BrennanConroy
 /src/Middleware/**/PublicAPI.*Shipped.txt                                         @dotnet/aspnet-api-review @tratcher @BrennanConroy
-/src/Mvc/                                                                         @pranavkm @javiercn
-/src/Mvc/**/PublicAPI.*Shipped.txt                                                @dotnet/aspnet-api-review @pranavkm @javiercn
+/src/Mvc/                                                                         @dotnet/aspnet-blazor-eng
+/src/Mvc/**/PublicAPI.*Shipped.txt                                                @dotnet/aspnet-api-review @dotnet/aspnet-blazor-eng
 /src/ProjectTemplates/Web.ProjectTemplates/content/BlazorServerWeb-CSharp/        @dotnet/aspnet-blazor-eng
 /src/ProjectTemplates/Web.ProjectTemplates/content/ComponentsWebAssembly-CSharp/  @dotnet/aspnet-blazor-eng
 /src/Security/                                                                    @tratcher
