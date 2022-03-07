@@ -40,7 +40,7 @@
     </DefineConstants>
   </PropertyGroup>
 
- <ItemGroup>
+ <ItemGroup Condition="$(BuildNative)">
     <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj">
       <Name>AspNetCoreV2</Name>
       <Private>True</Private>
@@ -86,4 +86,10 @@
       <SetPlatform>Platform=ARM64</SetPlatform>
     </ProjectReference>
   </ItemGroup>
+
+  <Target Name="CopyANCM" BeforeTargets="_PrepareForBuild" Condition="!$(BuildNative)">
+    <ItemGroup>
+      <None Include="%(RunShimComponents.DllLocation)" CopyToOutputDirectory="PreserveNewest" Condition="Exists('%(RunShimComponents.DllLocation)')" Link="%(RunShimComponents.Platform)\%(RunShimComponents.NativeAsset).dll" />
+    </ItemGroup>
+  </Target>
 </Project>
