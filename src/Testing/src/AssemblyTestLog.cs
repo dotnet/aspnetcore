@@ -176,10 +176,6 @@ public class AssemblyTestLog : IDisposable
         return serviceCollection.BuildServiceProvider();
     }
 
-    // For back compat
-    public static AssemblyTestLog Create(string assemblyName, string baseDirectory)
-        => Create(Assembly.Load(new AssemblyName(assemblyName)), baseDirectory);
-
     public static AssemblyTestLog Create(Assembly assembly, string baseDirectory)
     {
         var logStart = DateTimeOffset.UtcNow;
@@ -229,7 +225,8 @@ public class AssemblyTestLog : IDisposable
 
                 // Try to clear previous logs, continue if it fails.
                 var assemblyBaseDirectory = TestFileOutputContext.GetAssemblyBaseDirectory(assembly);
-                if (!string.IsNullOrEmpty(assemblyBaseDirectory) && !TestFileOutputContext.GetPreserveExistingLogsInOutput(assembly))
+                if (!string.IsNullOrEmpty(assemblyBaseDirectory) &&
+                    !TestFileOutputContext.GetPreserveExistingLogsInOutput(assembly))
                 {
                     try
                     {
@@ -267,6 +264,7 @@ public class AssemblyTestLog : IDisposable
             .MinimumLevel.Verbose()
             .WriteTo.File(fileName, outputTemplate: "[{TimestampOffset}] [{SourceContext}] [{Level}] {Message:l}{NewLine}{Exception}", flushToDiskInterval: TimeSpan.FromSeconds(1), shared: true)
             .CreateLogger();
+
         return new SerilogLoggerProvider(serilogger, dispose: true);
     }
 

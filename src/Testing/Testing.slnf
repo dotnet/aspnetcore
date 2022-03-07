@@ -1,0 +1,10 @@
+{
+  "solution": {
+    "path": "..\\..\\AspNetCore.sln",
+    "projects": [
+      "src\\Analyzers\\Microsoft.AspNetCore.Analyzer.Testing\\src\\Microsoft.AspNetCore.Analyzer.Testing.csproj",
+      "src\\Testing\\src\\Microsoft.AspNetCore.Testing.csproj",
+      "src\\Testing\\test\\Microsoft.AspNetCore.Testing.Tests.csproj"
+    ]
+  }
+}
