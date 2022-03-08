@@ -135,6 +135,7 @@ internal sealed partial class GenericWebHostService : IHostedService
         var httpApplication = new HostingApplication(application, Logger, DiagnosticListener, ActivitySource, Propagator, HttpContextFactory);
 
         await Server.StartAsync(httpApplication, cancellationToken);
+        HostingEventSource.Log.ServerReady();
 
         if (addresses != null)
         {
