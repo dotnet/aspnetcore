@@ -31,7 +31,7 @@
     <?define AspNetCoreV2ProgramFilesTargetPath = "$(var.ANCMArtifactsWoW64)\aspnetcorev2.dll" ?>
     <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(var.ANCMHandlerArtifactsWoW64)\aspnetcorev2_outofprocess.dll" ?>
 <?elseif $(var.Platform) = "arm64" ?>
-    <?define AspNetCoreV2ProgramFilesTargetPath = "$(varANCMArtifactsARM64)\aspnetcorev2.dll" ?>
+    <?define AspNetCoreV2ProgramFilesTargetPath = "$(var.ANCMArtifactsARM64)\aspnetcorev2.dll" ?>
     <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(var.ANCMHandlerArtifactsARM64.TargetPath)\aspnetcorev2_outofprocess.dll" ?>
 <?endif ?>
 
@@ -195,7 +195,7 @@
                             <Component Id="AspNetCoreModuleV2.wow" Guid="1b8ecba0-c002-442a-92c0-0fa9c0f21df4" Win64="no">
                                 <File Id="AspNetCoreModuleV2Dll.wow"
                                     Name="aspnetcorev2.dll"
-                                    Source="$(var.AspNetCoreV2WoW64.TargetPath)"
+                                    Source="$(var.ANCMArtifactsWoW64)\aspnetcorev2.dll"
                                     DiskId="1"
                                     Vital="yes">
                                 </File>
@@ -209,7 +209,7 @@
                                 <Component Id="AspNetCoreModuleHandler.wow" Guid="d927e5d3-c8b2-400c-b85c-ae5c2772d6c3" Win64="no">
                                     <File Id="AspNetCoreModuleHandlerDll.wow"
                                           Name="aspnetcorev2_outofprocess.dll"
-                                          Source="$(var.AspNetCoreV2HandlerWoW64.TargetPath)"
+                                          Source="$(var.ANCMHandlerArtifactsWoW64)\aspnetcorev2_outofprocess.dll"
                                           DiskId="1"
                                           Vital="yes">
                                     </File>
