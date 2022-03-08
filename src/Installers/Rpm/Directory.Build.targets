@@ -33,12 +33,7 @@
     </RpmBuildDependsOn>
   </PropertyGroup>
 
-  <!-- Do not build platform-neutral targeting-pack RPM in arm64 build. -->
-  <Target Name="Build"
-      Condition=" '$(MSBuildProjectName)' == 'Rpm.TargetingPack' AND '$(TargetRuntimeIdentifier)' == 'linux-arm64' "/>
-  <Target Name="Build"
-      Condition=" !('$(MSBuildProjectName)' == 'Rpm.TargetingPack' AND '$(TargetRuntimeIdentifier)' == 'linux-arm64') "
-      DependsOnTargets="RpmBuild"/>
+  <Target Name="Build" DependsOnTargets="RpmBuild" />
   <Target Name="Pack" />
 
   <Target Name="RpmBuild" DependsOnTargets="$(RpmBuildDependsOn)">
