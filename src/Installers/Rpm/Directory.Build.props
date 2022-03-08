@@ -17,7 +17,7 @@
     <IsPackable>true</IsPackable>
 
     <!-- RPM files are platform-specific and should be named appropriately. -->
-    <RpmArch Condition=" '$(TargetArchitecture)' == 'x64' ">amd64</RpmArch>
+    <RpmArch Condition=" '$(TargetArchitecture)' == 'x64' ">x64</RpmArch>
     <RpmArch Condition=" '$(TargetArchitecture)' == 'arm64' ">aarch64</RpmArch>
   </PropertyGroup>
 </Project>
