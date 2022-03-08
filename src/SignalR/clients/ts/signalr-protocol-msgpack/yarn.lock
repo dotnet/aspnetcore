@@ -124,9 +124,9 @@ isarray@~1.0.0:
   integrity sha1-u5NdSFgsuhaMBoNJV6VKPgcSTxE=
 
 msgpack5@^4.5.0:
-  version "4.5.0"
-  resolved "https://registry.yarnpkg.com/msgpack5/-/msgpack5-4.5.0.tgz#c7e6c0fcd5c1aab76e6f551496a57a7ba2e5428d"
-  integrity sha512-LYuyrhCncpw29VSAsoYyW8x+eubDtkkXCJQzHKren//b70/71GZcFpys+OpR8Qo5Seeeju6ULz5vIhTblFEMPg==
+  version "4.5.1"
+  resolved "https://registry.yarnpkg.com/msgpack5/-/msgpack5-4.5.1.tgz#2da4dba4ea20c09fd4309c9c04f046e38cb4975e"
+  integrity sha512-zC1vkcliryc4JGlL6OfpHumSYUHWFGimSI+OgfRCjTFLmKA2/foR9rMTOhWiqfOrfxJOctrpWPvrppf8XynJxw==
   dependencies:
     bl "^2.0.1"
     inherits "^2.0.3"
@@ -230,10 +230,10 @@ tough-cookie@^2.3.3:
     psl "^1.1.28"
     punycode "^2.1.1"
 
-url-parse@>=1.5.6, url-parse@^1.4.3:
-  version "1.5.7"
-  resolved "https://registry.yarnpkg.com/url-parse/-/url-parse-1.5.7.tgz#00780f60dbdae90181f51ed85fb24109422c932a"
-  integrity sha512-HxWkieX+STA38EDk7CE9MEryFeHCKzgagxlGvsdS7WBImq9Mk+PGwiT56w82WI3aicwJA8REp42Cxo98c8FZMA==
+url-parse@>=1.5.8, url-parse@^1.4.3:
+  version "1.5.10"
+  resolved "https://registry.yarnpkg.com/url-parse/-/url-parse-1.5.10.tgz#9d3c2f736c1d75dd3bd2be507dcc111f1e2ea9c1"
+  integrity sha512-WypcfiRhfeUP9vvF0j6rw0J3hrWrw6iZv3+22h6iRMJ/8z1Tj6XfLP4DsUix5MhMPnXpiHDoKyoZ/bdCkwBCiQ==
   dependencies:
     querystringify "^2.1.1"
     requires-port "^1.0.0"
