@@ -157,7 +157,7 @@ internal class RuleBuilder
     }
 
     public void AddMatch(
-        [StringSyntax(StringSyntaxAttribute.Regex)] ParsedModRewriteInput input,
+        ParsedModRewriteInput input,
         Flags flags)
     {
         Debug.Assert(input.Operand != null);

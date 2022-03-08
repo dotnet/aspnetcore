@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.AspNetCore.Routing.Constraints;
 
@@ -14,7 +15,7 @@ public class RegexInlineRouteConstraint : RegexRouteConstraint
     /// Initializes a new instance of the <see cref="RegexInlineRouteConstraint" /> class.
     /// </summary>
     /// <param name="regexPattern">The regular expression pattern to match.</param>
-    public RegexInlineRouteConstraint([StringSyntax(StringSyntaxAttribute.Regex)] string regexPattern)
+    public RegexInlineRouteConstraint([StringSyntax(StringSyntaxAttribute.Regex, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase)] string regexPattern)
         : base(regexPattern)
     {
     }

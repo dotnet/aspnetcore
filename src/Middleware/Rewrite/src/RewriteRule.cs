@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -15,7 +14,7 @@ internal class RewriteRule : IRule
     public Regex InitialMatch { get; }
     public string Replacement { get; }
     public bool StopProcessing { get; }
-    public RewriteRule([StringSyntax(StringSyntaxAttribute.Regex)] string regex, string replacement, bool stopProcessing)
+    public RewriteRule(string regex, string replacement, bool stopProcessing)
     {
         if (string.IsNullOrEmpty(regex))
         {

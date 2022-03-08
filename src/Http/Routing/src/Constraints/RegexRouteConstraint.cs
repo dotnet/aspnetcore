@@ -34,7 +34,7 @@ public class RegexRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatch
     /// Constructor for a <see cref="RegexRouteConstraint"/> given a <paramref name="regexPattern"/>.
     /// </summary>
     /// <param name="regexPattern">A string containing the regex pattern.</param>
-    public RegexRouteConstraint([StringSyntax(StringSyntaxAttribute.Regex)] string regexPattern)
+    public RegexRouteConstraint([StringSyntax(StringSyntaxAttribute.Regex, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase)] string regexPattern)
     {
         if (regexPattern == null)
         {
