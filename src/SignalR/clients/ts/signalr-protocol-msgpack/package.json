@@ -50,6 +50,6 @@
     "buffer": "^5.0.8"
   },
   "resolutions": {
-    "url-parse": ">=1.5.6"
+    "url-parse": ">=1.5.8"
   }
 }

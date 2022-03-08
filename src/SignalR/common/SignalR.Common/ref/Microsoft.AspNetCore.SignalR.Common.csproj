@@ -8,6 +8,7 @@
     <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
     <Reference Include="Microsoft.Extensions.Options" />
     <Reference Include="System.Text.Json" />
+    <Reference Include="System.Text.Encodings.Web" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Common.Tests" Key="" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Json50.Tests" Key="" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Tests.Utils" Key="" />

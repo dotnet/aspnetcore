@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <Description>Common primitives for ASP.NET Connection Handlers and clients</Description>
     <TargetFrameworks>netstandard2.0;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
@@ -21,6 +20,7 @@
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' OR
       ('$(MSBuildRestoreSessionId)' == '' AND '$(CompileUsingReferenceAssemblies)' != 'false') " >
+    <Reference Include="System.Text.Encodings.Web" />
     <Reference Include="System.Text.Json" />
   </ItemGroup>
 
@@ -31,5 +31,4 @@
     <!-- System.Text.Json (for .NET Standard 2.0) and ShardFx bring System.Buffers in (transitively). No need for both here. -->
     <SuppressBaselineReference Include="System.Buffers" />
   </ItemGroup>
-
 </Project>

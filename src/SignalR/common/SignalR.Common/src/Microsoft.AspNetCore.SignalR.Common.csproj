@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <Description>Common serialiation primitives for SignalR Clients Servers</Description>
     <TargetFrameworks>netstandard2.0;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
@@ -27,6 +26,7 @@
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' OR
       ('$(MSBuildRestoreSessionId)' == '' AND '$(CompileUsingReferenceAssemblies)' != 'false') ">
     <Reference Include="System.Text.Json" />
+    <Reference Include="System.Text.Encodings.Web" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(AspNetCoreMajorMinorVersion)' == '3.1'">
@@ -42,5 +42,4 @@
     <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Json50.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Tests.Utils" />
   </ItemGroup>
-
 </Project>
