@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Rewrite.UrlMatches;
 
@@ -10,7 +11,7 @@ internal class UriMatchCondition : Condition
 {
     private static readonly TimeSpan _regexTimeout = TimeSpan.FromSeconds(1);
 
-    public UriMatchCondition(InputParser inputParser, string input, string pattern, UriMatchPart uriMatchPart, bool ignoreCase, bool negate)
+    public UriMatchCondition(InputParser inputParser, string input, [StringSyntax(StringSyntaxAttribute.Regex)] string pattern, UriMatchPart uriMatchPart, bool ignoreCase, bool negate)
         : base(CreatePattern(inputParser, input, uriMatchPart), CreateRegexMatch(pattern, ignoreCase, negate))
     {
     }
@@ -20,7 +21,7 @@ internal class UriMatchCondition : Condition
         return inputParser.ParseInputString(input, uriMatchPart);
     }
 
-    private static RegexMatch CreateRegexMatch(string pattern, bool ignoreCase, bool negate)
+    private static RegexMatch CreateRegexMatch([StringSyntax(StringSyntaxAttribute.Regex)] string pattern, bool ignoreCase, bool negate)
     {
         var regexOptions = RegexOptions.CultureInvariant | RegexOptions.Compiled;
         regexOptions = ignoreCase ? regexOptions | RegexOptions.IgnoreCase : regexOptions;

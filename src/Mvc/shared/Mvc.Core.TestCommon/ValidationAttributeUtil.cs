@@ -24,7 +24,7 @@ public static class ValidationAttributeUtil
         return attr.FormatErrorMessage(field);
     }
 
-    public static string GetRegExErrorMessage(string pattern, string field)
+    public static string GetRegExErrorMessage([StringSyntax(StringSyntaxAttribute.Regex)] string pattern, string field)
     {
         var attr = new RegularExpressionAttribute(pattern);
         return attr.FormatErrorMessage(field);

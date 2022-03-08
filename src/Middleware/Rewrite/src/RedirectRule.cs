@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -14,7 +15,7 @@ internal class RedirectRule : IRule
     public Regex InitialMatch { get; }
     public string Replacement { get; }
     public int StatusCode { get; }
-    public RedirectRule(string regex, string replacement, int statusCode)
+    public RedirectRule([StringSyntax(StringSyntaxAttribute.Regex)] string regex, string replacement, int statusCode)
     {
         if (string.IsNullOrEmpty(regex))
         {
