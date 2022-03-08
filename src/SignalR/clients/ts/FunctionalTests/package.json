@@ -53,7 +53,7 @@
   },
   "resolutions": {
     "lodash": ">=4.7.14",
-    "url-parse": ">=1.5.6"
+    "url-parse": ">=1.5.8"
   },
   "author": "",
   "license": "Apache-2.0"
