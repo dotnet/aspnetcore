@@ -663,7 +663,6 @@ public class DotNetDispatcherTest
             Assert.True(jsRuntime.LastCompletionResult.Success);
         }
 
-
     [Fact]
     public async Task CanInvokeSyncThrowingMethod()
     {
@@ -937,7 +936,7 @@ public class DotNetDispatcherTest
         public async ValueTask<InvokableAsyncMethodResult> InvokableAsyncMethodReturningValueTask(TestDTO dtoViaJson, DotNetObjectReference<TestDTO> dtoByRefWrapper)
         {
             var dtoByRef = dtoByRefWrapper.Value;
-            return new InvokableAsyncMethodResult
+            return await new ValueTask<InvokableAsyncMethodResult>( new InvokableAsyncMethodResult()
             {
                 SomeDTO = new TestDTO // Return via JSON
                 {
@@ -949,12 +948,13 @@ public class DotNetDispatcherTest
                     StringVal = dtoByRef.StringVal.ToUpperInvariant(),
                     IntVal = dtoByRef.IntVal * 2,
                 })
-            };
+            });
         }
 
         [JSInvokable]
         public async ValueTask InvokableAsyncMethodReturningValueTaskNonGeneric()
         {
+            await Task.CompletedTask;
             return;
         }
 
