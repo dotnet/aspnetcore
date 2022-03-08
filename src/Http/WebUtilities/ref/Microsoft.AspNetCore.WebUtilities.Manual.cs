@@ -46,4 +46,19 @@ namespace Microsoft.AspNetCore.WebUtilities
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task MoveToAsync(System.IO.Stream stream, System.Threading.CancellationToken cancellationToken) { throw null; }
     }
+
+    internal static partial class Resources
+    {
+        internal static System.Globalization.CultureInfo Culture { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        internal static string FormPipeReader_KeyOrValueTooLarge { get { throw null; } }
+        internal static string HttpRequestStreamReader_StreamNotReadable { get { throw null; } }
+        internal static string HttpResponseStreamWriter_StreamNotWritable { get { throw null; } }
+        internal static System.Resources.ResourceManager ResourceManager { get { throw null; } }
+        internal static string FormPipeReader_KeyTooLarge(object p0) { throw null; }
+        internal static string FormPipeReader_ValueTooLarge(object p0) { throw null; }
+        internal static string WebEncoders_InvalidCountOffsetOrLength(object p0, object p1, object p2) { throw null; }
+
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        internal static string GetResourceString(string resourceKey, string defaultValue = null) { throw null; }
+    }
 }
