@@ -25,14 +25,14 @@
 <?endif?>
 
 <?if $(var.Platform) = "x64" ?>
-    <?define AspNetCoreV2ProgramFilesTargetPath = "$(var.ANCMArtifacts)\aspnetcorev2.dll" ?>
-    <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(var.ANCMHandlerArtifacts)\aspnetcorev2_outofprocess.dll" ?>
+    <?define AspNetCoreV2ProgramFilesTargetPath = "$(var.ArtifactsDir)\bin\AspNetCoreModuleShim\x64\Release\aspnetcorev2.dll" ?>
+    <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(var.ArtifactsDir)\bin\OutOfProcessRequestHandler\x64\Release\aspnetcorev2_outofprocess.dll" ?>
 <?elseif $(var.Platform) = "x86" ?>
-    <?define AspNetCoreV2ProgramFilesTargetPath = "$(var.ANCMArtifactsWoW64)\aspnetcorev2.dll" ?>
-    <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(var.ANCMHandlerArtifactsWoW64)\aspnetcorev2_outofprocess.dll" ?>
+    <?define AspNetCoreV2ProgramFilesTargetPath = "$(var.ArtifactsDir)\bin\AspNetCoreModuleShim\Win32\Release\aspnetcorev2.dll" ?>
+    <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(var.ArtifactsDir)\bin\OutOfProcessRequestHandler\Win32\Release\aspnetcorev2_outofprocess.dll" ?>
 <?elseif $(var.Platform) = "arm64" ?>
-    <?define AspNetCoreV2ProgramFilesTargetPath = "$(var.ANCMArtifactsARM64)\aspnetcorev2.dll" ?>
-    <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(var.ANCMHandlerArtifactsARM64.TargetPath)\aspnetcorev2_outofprocess.dll" ?>
+    <?define AspNetCoreV2ProgramFilesTargetPath = "$(var.ArtifactsDir)\bin\AspNetCoreModuleShim\arm64\Release\aspnetcorev2.dll" ?>
+    <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(var.ArtifactsDir)\bin\OutOfProcessRequestHandler\arm64\Release\aspnetcorev2_outofprocess.dll" ?>
 <?endif ?>
 
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:dep="http://schemas.microsoft.com/wix/DependencyExtension">
