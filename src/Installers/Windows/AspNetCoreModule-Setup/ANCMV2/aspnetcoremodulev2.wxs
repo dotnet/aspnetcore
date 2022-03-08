@@ -239,7 +239,7 @@
                             <Component Id="AspNetCoreModuleV2.arm64" Guid="1b8ecba0-c002-442a-92c0-0fa9c0f21df4" Win64="no">
                                 <File Id="AspNetCoreModuleV2Dll.arm64"
                                     Name="aspnetcorev2.dll"
-                                    Source="$(var.AspNetCoreV2ARM64.TargetPath)"
+                                    Source="$(var.ArtifactsDir)\bin\AspNetCoreModuleShim\arm64\Release\aspnetcorev2.dll"
                                     DiskId="1"
                                     Vital="yes">
                                 </File>
@@ -253,7 +253,7 @@
                                 <Component Id="AspNetCoreModuleHandler.arm64" Guid="d927e5d3-c8b2-400c-b85c-ae5c2772d6c3" Win64="no">
                                     <File Id="AspNetCoreModuleHandlerDll.arm64"
                                           Name="aspnetcorev2_outofprocess.dll"
-                                          Source="$(var.AspNetCoreV2HandlerARM64.TargetPath)"
+                                          Source="$(var.ArtifactsDir)\bin\OutOfProcessRequestHandler\arm64\Release\aspnetcorev2_outofprocess.dll"
                                           DiskId="1"
                                           Vital="yes">
                                     </File>
