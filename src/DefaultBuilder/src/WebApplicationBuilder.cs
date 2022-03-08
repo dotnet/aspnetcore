@@ -22,7 +22,6 @@ namespace Microsoft.AspNetCore.Builder
         private readonly BootstrapHostBuilder _bootstrapHostBuilder;
         private readonly WebApplicationServiceCollection _services = new();
         private readonly List<KeyValuePair<string, string>> _hostConfigurationValues;
-        private readonly ConfigurationManager _hostConfigurationManager = new();
 
         private WebApplication? _builtApplication;
 
@@ -77,8 +76,6 @@ namespace Microsoft.AspNetCore.Builder
             });
 
             Configuration = new();
-            // This is chained as the first configuration source in Configuration so host config can be added later without overriding app config.
-            Configuration.AddConfiguration(_hostConfigurationManager, shouldDisposeConfiguration: true);
 
             // Collect the hosted services separately since we want those to run after the user's hosted services
             _services.TrackHostedServices = true;
@@ -197,9 +194,6 @@ namespace Microsoft.AspNetCore.Builder
                 // to the new one. This allows code that has references to the service collection to still function.
                 _services.InnerCollection = services;
 
-                // Keep any configuration sources added before the TrackingChainedConfigurationSource (namely host configuration from _hostConfigurationValues)
-                // from overriding config values set via Configuration by inserting them at beginning using _hostConfigurationValues.
-                var beforeChainedConfig = true;
                 var hostBuilderProviders = ((IConfigurationRoot)context.Configuration).Providers;
 
                 if (!hostBuilderProviders.Contains(chainedConfigSource.BuiltProvider))
@@ -207,22 +201,15 @@ namespace Microsoft.AspNetCore.Builder
                     // Something removed the _hostBuilder's TrackingChainedConfigurationSource pointing back to the ConfigurationManager.
                     // This is likely a test using WebApplicationFactory. Replicate the effect by clearing the ConfingurationManager sources.
                     ((IConfigurationBuilder)Configuration).Sources.Clear();
-                    beforeChainedConfig = false;
                 }
 
-                // Make the ConfigurationManager match the final _hostBuilder's configuration. To do that, we add the additional providers
-                // to the inner _hostBuilders's configuration to the ConfigurationManager. We wrap the existing provider in a
-                // configuration source to avoid rebuilding or reloading the already added configuration sources.
+                // Make builder.Configuration match the final configuration. To do that, we add the additional
+                // providers in the inner _hostBuilders's Configuration to the ConfigurationManager.
                 foreach (var provider in hostBuilderProviders)
                 {
-                    if (ReferenceEquals(provider, chainedConfigSource.BuiltProvider))
+                    if (!ReferenceEquals(provider, chainedConfigSource.BuiltProvider))
                     {
-                        beforeChainedConfig = false;
-                    }
-                    else
-                    {
-                        IConfigurationBuilder configBuilder = beforeChainedConfig ? _hostConfigurationManager : Configuration;
-                        configBuilder.Add(new ConfigurationProviderSource(provider));
+                        ((IConfigurationBuilder)Configuration).Add(new ConfigurationProviderSource(provider));
                     }
                 }
             });
