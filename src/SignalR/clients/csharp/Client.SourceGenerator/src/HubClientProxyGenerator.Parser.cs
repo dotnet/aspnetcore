@@ -121,7 +121,7 @@ internal partial class HubClientProxyGenerator
             var hasPartialModifier = false;
             foreach (var modifier in syntax.Modifiers)
             {
-                if (modifier.Kind() == SyntaxKind.PartialKeyword)
+                if (modifier.IsKind(SyntaxKind.PartialKeyword))
                 {
                     hasPartialModifier = true;
                 }
