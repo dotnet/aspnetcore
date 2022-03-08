@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">$(DefaultNetCoreTargetFramework)</TargetFrameworks>
@@ -16,4 +15,8 @@
     <Reference Include="Microsoft.JSInterop" />
   </ItemGroup>
 
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' OR
+      ('$(MSBuildRestoreSessionId)' == '' AND '$(CompileUsingReferenceAssemblies)' != 'false') " >
+    <Reference Include="System.Text.Encodings.Web" />
+  </ItemGroup>
 </Project>
