@@ -36,12 +36,6 @@
     <DefineConstants>
       AspNetCoreSchemaPath=$(_ServerIISBasePath)AspNetCoreModuleV2\AspNetCore\aspnetcore_schema_v2.xml;
       AspNetCoreMofPath=$(_ServerIISBasePath)AspNetCoreModuleV2\AspNetCore\ancm.mof;
-      ANCMArtifacts=$(ArtifactsDir)bin\AspNetCoreModuleShim\x64\$(Configuration)\;
-      ANCMArtifactsWow64=$(ArtifactsDir)bin\AspNetCoreModuleShim\Win32\$(Configuration)\;
-      ANCMArtifactsARM64=$(ArtifactsDir)bin\AspNetCoreModuleShim\arm64\$(Configuration)\;
-      ANCMHandlerArtifacts=$(ArtifactsDir)bin\OutOfProcessRequestHandler\x64\$(Configuration)\;
-      ANCMHandlerArtifactsWow64=$(ArtifactsDir)bin\OutOfProcessRequestHandler\Win32\$(Configuration)\;
-      ANCMHandlerArtifactsARM64=$(ArtifactsDir)bin\OutOfProcessRequestHandler\arm64\$(Configuration)\;
       $(DefineConstants)
     </DefineConstants>
   </PropertyGroup>
