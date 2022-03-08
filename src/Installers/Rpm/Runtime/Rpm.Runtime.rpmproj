@@ -12,9 +12,9 @@
   <Import Project="..\Rpm.Runtime.Common.targets" />
 
   <PropertyGroup>
-    <TargetFileName>$(RuntimeInstallerBaseName)-$(SharedFxVersion)-$(TargetArchitecture).rpm</TargetFileName>
+    <TargetFileName>$(RuntimeInstallerBaseName)-$(SharedFxVersion)-$(RpmArch).rpm</TargetFileName>
     <TargetPath>$(InstallersOutputPath)$(TargetFileName)</TargetPath>
     <CblMarinerBaseName>$(RuntimeInstallerBaseName)-$(SharedFxVersion)</CblMarinerBaseName>
-    <CblMarinerExtension>-$(TargetArchitecture).rpm</CblMarinerExtension>
+    <CblMarinerExtension>-$(RpmArch).rpm</CblMarinerExtension>
   </PropertyGroup>
 </Project>
