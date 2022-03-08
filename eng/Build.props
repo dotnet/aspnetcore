@@ -52,10 +52,10 @@
       <ItemGroup>
         <ProjectToBuild Include="$(ProjectToBuild)"
             Exclude="@(ProjectToExclude);$(RepoRoot)**\bin\**\*;$(RepoRoot)**\obj\**\*">
-          <BuildInParallel Condition=" '%(Extension)' == '.npmproj' ">false</BuildInParallel>
+          <BuildInParallel Condition=" '%(Extension)' == '.npmproj' OR '%(Extension)' == '.vcxproj' ">false</BuildInParallel>
           <RestoreInParallel Condition=" '%(Extension)' == '.npmproj' ">false</RestoreInParallel>
           <!-- Also do not build in parallel w/in npm projects. -->
-          <AdditionalProperties Condition=" '%(Extension)' == '.npmproj' ">BuildInParallel=false</AdditionalProperties>
+          <AdditionalProperties Condition=" '%(Extension)' == '.npmproj' OR '%(Extension)' == '.vcxproj' ">BuildInParallel=false</AdditionalProperties>
         </ProjectToBuild>
       </ItemGroup>
     </When>
