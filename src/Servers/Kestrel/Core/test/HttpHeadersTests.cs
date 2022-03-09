@@ -289,28 +289,36 @@ public class HttpHeadersTests
     }
 
     [Theory]
-    [InlineData("foo", "bar", true)]
-    [InlineData("foo", "ba\tr", true)]
-    [InlineData("foo", "ba r", true)]
-    [InlineData("foo", "ba\rr", false)]
-    [InlineData("foo", "ba\r\nr", false)]
-    [InlineData("foo", "ba\nr", false)]
-    [InlineData("fo\to", "bar", false)]
-    public void TestParseCustomHeaderValues(string headerName, string headerValue, bool expectSuccess)
+    [InlineData("foo", true)]
+    [InlineData("fo\to", false)]
+    public void TestParseCustomHeaderNames(string headerName, bool expectSuccess)
     {
         if (expectSuccess)
         {
-            ValidateHeaderNameAndValue();
+            HttpHeaders.ValidateHeaderNameCharacters(headerName);
         }
         else
         {
-            Assert.Throws<InvalidOperationException>(() => ValidateHeaderNameAndValue());
+            Assert.Throws<InvalidOperationException>(() => HttpHeaders.ValidateHeaderNameCharacters(headerName));
         }
+    }
 
-        void ValidateHeaderNameAndValue()
+    [Theory]
+    [InlineData("bar", true)]
+    [InlineData("ba\tr", true)]
+    [InlineData("ba r", true)]
+    [InlineData("ba\rr", false)]
+    [InlineData("ba\r\nr", false)]
+    [InlineData("ba\nr", false)]
+    public void TestParseCustomHeaderValues(string headerValue, bool expectSuccess)
+    {
+        if (expectSuccess)
         {
-            HttpHeaders.ValidateHeaderNameCharacters(headerName);
             HttpHeaders.ValidateHeaderValueCharacters(headerValue, false);
+        }
+        else
+        {
+            Assert.Throws<InvalidOperationException>(() => HttpHeaders.ValidateHeaderValueCharacters(headerValue, false));
         }
     }
 }
