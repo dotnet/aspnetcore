@@ -107,6 +107,9 @@ internal static class HttpCharacters
     {
         // field-value https://tools.ietf.org/html/rfc7230#section-3.2
         var fieldValue = new bool[_tableSize];
+
+        fieldValue[0x9] = true; // HTAB
+
         for (var c = 0x20; c <= 0x7e; c++) // VCHAR and SP
         {
             fieldValue[c] = true;

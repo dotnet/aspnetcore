@@ -287,4 +287,30 @@ public class HttpHeadersTests
         Assert.Null(httpHeaders.ContentLength);
         Assert.False(httpHeaders.ContentLength.HasValue);
     }
+
+    [Theory]
+    [InlineData("foo", "bar", true)]
+    [InlineData("foo", "ba\tr", true)]
+    [InlineData("foo", "ba r", true)]
+    [InlineData("foo", "ba\rr", false)]
+    [InlineData("foo", "ba\r\nr", false)]
+    [InlineData("foo", "ba\nr", false)]
+    [InlineData("fo\to", "bar", false)]
+    public void TestParseCustomHeaderValues(string headerName, string headerValue, bool expectSuccess)
+    {
+        if (expectSuccess)
+        {
+            ValidateHeaderNameAndValue();
+        }
+        else
+        {
+            Assert.Throws<InvalidOperationException>(() => ValidateHeaderNameAndValue());
+        }
+
+        void ValidateHeaderNameAndValue()
+        {
+            HttpHeaders.ValidateHeaderNameCharacters(headerName);
+            HttpHeaders.ValidateHeaderValueCharacters(headerValue, false);
+        }
+    }
 }
