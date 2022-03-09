@@ -1,16 +1,16 @@
 <Project Sdk="Microsoft.DotNet.Helix.Sdk" DefaultTargets="Test" TreatAsLocalProperty="ProjectToBuild">
 
-  <!-- 
+  <!--
     TEMPORARY workaround while we wait for https://github.com/dotnet/arcade/issues/8336 to be addressed.
-    When the runtime version we're ingesting was built publicly, or we're building in public CI, IsPublicRuntime should be true, 
+    When the runtime version we're ingesting was built publicly, or we're building in public CI, IsPublicRuntime should be true,
     causing us to use the normal workflow of downloading it from the public location in Helix.
-    When the runtime was built internally (which necessarily also means we're building in the internal project), IsPublicRuntime should be false, 
+    When the runtime was built internally (which necessarily also means we're building in the internal project), IsPublicRuntime should be false,
     causing us to pass the right Sas token to get Helx to download it from the internal location.
     Once https://github.com/dotnet/arcade/issues/8336, we only need to set AdditionalDotNetPackage below,
     not HelixCorrelationPayload.
   -->
   <PropertyGroup>
-    <IsPublicRuntime>false</IsPublicRuntime>
+    <IsPublicRuntime>true</IsPublicRuntime>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -59,7 +59,7 @@
         Condition="'$(SYSTEM_TEAMPROJECT)' == 'internal' AND '$(IsPublicRuntime)' == 'false'"
         Destination="dotnet-cli"
         Uri="https://dotnetbuilds.blob.core.windows.net/internal/Runtime/$(MicrosoftNETCoreBrowserDebugHostTransportVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-$(DotNetCliRuntime)$(ArchiveExtension)$([System.Environment]::GetEnvironmentVariable('DotNetBuildsInternalReadSasToken'))" />
-      
+
     <AdditionalDotNetPackage Include="$(MicrosoftNETCoreBrowserDebugHostTransportVersion)"
                              Condition="'$(SYSTEM_TEAMPROJECT)' != 'internal' OR '$(IsPublicRuntime)' == 'true'">
       <PackageType>runtime</PackageType>
