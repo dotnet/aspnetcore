@@ -4,16 +4,24 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Http.Result;
+namespace Microsoft.AspNetCore.Http;
 
-internal partial class StatusCodeResult : IResult
+/// <summary>
+/// 
+/// </summary>
+public partial class StatusCodeHttpResult : IResult
 {
+    internal StatusCodeHttpResult()
+       : this(StatusCodes.Status200OK)
+    {
+    }
+
     /// <summary>
     /// Initializes a new instance of the <see cref="StatusCodeResult"/> class
     /// with the given <paramref name="statusCode"/>.
     /// </summary>
     /// <param name="statusCode">The HTTP status code of the response.</param>
-    public StatusCodeResult(int statusCode)
+    protected StatusCodeHttpResult(int statusCode)
     {
         StatusCode = statusCode;
     }
@@ -21,7 +29,7 @@ internal partial class StatusCodeResult : IResult
     /// <summary>
     /// Gets the HTTP status code.
     /// </summary>
-    public int StatusCode { get; }
+    public int StatusCode { get; init; }
 
     /// <summary>
     /// Sets the status code on the HTTP response.
@@ -34,8 +42,13 @@ internal partial class StatusCodeResult : IResult
         var logger = factory.CreateLogger(GetType());
 
         Log.StatusCodeResultExecuting(logger, StatusCode);
-
         httpContext.Response.StatusCode = StatusCode;
+
+        return WriteContentAsync(httpContext);
+    }
+
+    internal virtual Task WriteContentAsync(HttpContext httpContext)
+    {
         return Task.CompletedTask;
     }
 

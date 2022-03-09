@@ -6,12 +6,19 @@ using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Http.Result;
+namespace Microsoft.AspNetCore.Http;
 
-internal sealed partial class ContentResult : IResult
+/// <summary>
+/// 
+/// </summary>
+public sealed partial class ContentHttpResult : StatusCodeHttpResult
 {
     private const string DefaultContentType = "text/plain; charset=utf-8";
     private static readonly Encoding DefaultEncoding = Encoding.UTF8;
+
+    internal ContentHttpResult()
+    {
+    }
 
     /// <summary>
     /// Gets or set the content representing the body of the response.
@@ -24,36 +31,24 @@ internal sealed partial class ContentResult : IResult
     public string? ContentType { get; init; }
 
     /// <summary>
-    /// Gets or sets the HTTP status code.
-    /// </summary>
-    public int? StatusCode { get; init; }
-
-    /// <summary>
     /// Writes the content to the HTTP response.
     /// </summary>
     /// <param name="httpContext">The <see cref="HttpContext"/> for the current request.</param>
     /// <returns>A task that represents the asynchronous execute operation.</returns>
-    public async Task ExecuteAsync(HttpContext httpContext)
+    internal override async Task WriteContentAsync(HttpContext httpContext)
     {
         var response = httpContext.Response;
-
         ResponseContentTypeHelper.ResolveContentTypeAndEncoding(
-            ContentType,
-            response.ContentType,
-            (DefaultContentType, DefaultEncoding),
-            ResponseContentTypeHelper.GetEncoding,
-            out var resolvedContentType,
-            out var resolvedContentTypeEncoding);
+               ContentType,
+               response.ContentType,
+               (DefaultContentType, DefaultEncoding),
+               ResponseContentTypeHelper.GetEncoding,
+               out var resolvedContentType,
+               out var resolvedContentTypeEncoding);
 
         response.ContentType = resolvedContentType;
 
-        if (StatusCode != null)
-        {
-            response.StatusCode = StatusCode.Value;
-        }
-
-        var logger = httpContext.RequestServices.GetRequiredService<ILogger<ContentResult>>();
-
+        var logger = httpContext.RequestServices.GetRequiredService<ILogger<ContentHttpResult>>();
         Log.ContentResultExecuting(logger, resolvedContentType);
 
         if (Content != null)
