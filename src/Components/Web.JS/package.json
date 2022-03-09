@@ -33,7 +33,6 @@
   },
   "resolutions": {
     "**/set-value": "^2.0.1",
-    "bl": ">=2.2.1",
     "chokidar": ">=3.5.3",
     "lodash": ">=4.17.21",
     "url-parse": ">=1.5.8"
