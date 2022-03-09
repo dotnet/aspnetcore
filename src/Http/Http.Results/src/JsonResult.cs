@@ -3,7 +3,7 @@
 
 using System.Text.Json;
 
-namespace Microsoft.AspNetCore.Http.Result;
+namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
 /// An action result which formats the given object as JSON.

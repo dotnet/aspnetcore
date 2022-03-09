@@ -39,12 +39,12 @@ public sealed partial class ContentHttpResult : StatusCodeHttpResult
     {
         var response = httpContext.Response;
         ResponseContentTypeHelper.ResolveContentTypeAndEncoding(
-               ContentType,
-               response.ContentType,
-               (DefaultContentType, DefaultEncoding),
-               ResponseContentTypeHelper.GetEncoding,
-               out var resolvedContentType,
-               out var resolvedContentTypeEncoding);
+            ContentType,
+            response.ContentType,
+            (DefaultContentType, DefaultEncoding),
+            ResponseContentTypeHelper.GetEncoding,
+            out var resolvedContentType,
+            out var resolvedContentTypeEncoding);
 
         response.ContentType = resolvedContentType;
 
