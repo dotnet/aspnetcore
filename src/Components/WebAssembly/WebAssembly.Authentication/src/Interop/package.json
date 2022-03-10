@@ -16,6 +16,6 @@
     "oidc-client": "^1.10.1"
   },
   "resolutions": {
-    "chokidar": ">=3.5.3"
+    "tar": ">=4.4.18"
   }
 }

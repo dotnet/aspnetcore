@@ -24,7 +24,7 @@
     "@typescript-eslint/parser": "^1.13.0",
     "eslint": "^5.16.0",
     "jest": "^24.9.0",
-    "rimraf": "^3.0.2",
+    "rimraf": "^2.7.1",
     "ts-jest": "^24.3.0",
     "ts-loader": "^4.4.1",
     "typescript": "^3.8.3",
@@ -33,8 +33,9 @@
   },
   "resolutions": {
     "**/set-value": "^2.0.1",
-    "chokidar": ">=3.5.3",
+    "bl": ">=2.2.1",
     "lodash": ">=4.17.21",
+    "tar": ">=4.4.18",
     "url-parse": ">=1.5.8"
   }
 }
