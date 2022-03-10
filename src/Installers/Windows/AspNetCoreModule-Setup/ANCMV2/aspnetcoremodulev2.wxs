@@ -91,8 +91,6 @@
         </Condition>
         <?endif ?>
 
-        <!-- REVIEW need arm64 checks too? -->
-        
         <Property Id="ALLUSERS">1</Property>
 
         <!-- Detect IIS version and require 7.5 -->
