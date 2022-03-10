@@ -43,14 +43,9 @@ jobs:
       value: ${{ parameters.AzDOPipelineId }}
     - name: AzDOBuildId
       value: ${{ parameters.AzDOBuildId }}
-    # The Guardian version specified in 'eng/common/sdl/packages.config'. This value must be kept in
-    # sync with the packages.config file.
-    - name: DefaultGuardianVersion
-      value: 0.110.1
+    - template: /eng/common/templates/variables/sdl-variables.yml
     - name: GuardianVersion
       value: ${{ coalesce(parameters.overrideGuardianVersion, '$(DefaultGuardianVersion)') }}
-    - name: GuardianPackagesConfigFile
-      value: $(Build.SourcesDirectory)\eng\common\sdl\packages.config
   pool:
     # We don't use the collection uri here because it might vary (.visualstudio.com vs. dev.azure.com)
     ${{ if eq(variables['System.TeamProject'], 'DevDiv') }}:
@@ -126,57 +121,11 @@ jobs:
       displayName: Extract Archive Artifacts
       continueOnError: ${{ parameters.sdlContinueOnError }}
   
-  - ${{ if ne(parameters.overrideGuardianVersion, '') }}:
-    - powershell: |
-        $content = Get-Content $(GuardianPackagesConfigFile)
-
-        Write-Host "packages.config content was:`n$content"
-
-        $content = $content.Replace('$(DefaultGuardianVersion)', '$(GuardianVersion)')
-        $content | Set-Content $(GuardianPackagesConfigFile)
-
-        Write-Host "packages.config content updated to:`n$content"
-      displayName: Use overridden Guardian version ${{ parameters.overrideGuardianVersion }}
-
-  - task: NuGetToolInstaller@1
-    displayName: 'Install NuGet.exe'
-  - task: NuGetCommand@2
-    displayName: 'Install Guardian'
-    inputs:
-      restoreSolution: $(Build.SourcesDirectory)\eng\common\sdl\packages.config
-      feedsToUse: config
-      nugetConfigPath: $(Build.SourcesDirectory)\eng\common\sdl\NuGet.config
-      externalFeedCredentials: GuardianConnect
-      restoreDirectory: $(Build.SourcesDirectory)\.packages
-
-  - ${{ if ne(parameters.overrideParameters, '') }}:
-    - powershell: ${{ parameters.executeAllSdlToolsScript }} ${{ parameters.overrideParameters }}
-      displayName: Execute SDL
-      continueOnError: ${{ parameters.sdlContinueOnError }}
-  - ${{ if eq(parameters.overrideParameters, '') }}:
-    - powershell: ${{ parameters.executeAllSdlToolsScript }}
-        -GuardianPackageName Microsoft.Guardian.Cli.$(GuardianVersion)
-        -NugetPackageDirectory $(Build.SourcesDirectory)\.packages
-        -AzureDevOpsAccessToken $(dn-bot-dotnet-build-rw-code-rw)
-        ${{ parameters.additionalParameters }}
-      displayName: Execute SDL
-      continueOnError: ${{ parameters.sdlContinueOnError }}
-
-  - ${{ if ne(parameters.publishGuardianDirectoryToPipeline, 'false') }}:
-    # We want to publish the Guardian results and configuration for easy diagnosis. However, the
-    # '.gdn' dir is a mix of configuration, results, extracted dependencies, and Guardian default
-    # tooling files. Some of these files are large and aren't useful during an investigation, so
-    # exclude them by simply deleting them before publishing. (As of writing, there is no documented
-    # way to selectively exclude a dir from the pipeline artifact publish task.)
-    - task: DeleteFiles@1
-      displayName: Delete Guardian dependencies to avoid uploading
-      inputs:
-        SourceFolder: $(Agent.BuildDirectory)/.gdn
-        Contents: |
-          c
-          i
-      condition: succeededOrFailed()
-    - publish: $(Agent.BuildDirectory)/.gdn
-      artifact: GuardianConfiguration
-      displayName: Publish GuardianConfiguration
-      condition: succeededOrFailed()
+  - template: /eng/common/templates/steps/execute-sdl.yml
+    parameters:
+      overrideGuardianVersion: ${{ parameters.overrideGuardianVersion }}
+      executeAllSdlToolsScript: ${{ parameters.executeAllSdlToolsScript }}
+      overrideParameters: ${{ parameters.overrideParameters }}
+      additionalParameters: ${{ parameters.additionalParameters }}
+      publishGuardianDirectoryToPipeline: ${{ parameters.publishGuardianDirectoryToPipeline }}
+      sdlContinueOnError: ${{ parameters.sdlContinueOnError }}
