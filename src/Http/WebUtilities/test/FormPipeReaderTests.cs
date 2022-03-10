@@ -213,7 +213,7 @@ public class FormPipeReaderTests
     [Fact]
     public void ReadFormAsync_ChunkedDataNoDelimiter_ThrowsEarly()
     {
-        var bytes = CreateBytes_NoDelimiter((10 * 1024) + 2);
+        var bytes = CreateBytes_NoDelimiter(10 * 1024);
         var readOnlySequence = ReadOnlySequenceFactory.SegmentPerByteFactory.CreateWithContent(bytes);
         KeyValueAccumulator accumulator = default;
         var valueLengthLimit = 1024;
