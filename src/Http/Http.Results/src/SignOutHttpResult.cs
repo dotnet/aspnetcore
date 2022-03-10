@@ -6,69 +6,69 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Http.Result;
+namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
 /// An <see cref="IResult"/> that on execution invokes <see cref="M:HttpContext.SignOutAsync"/>.
 /// </summary>
-internal sealed partial class SignOutResult : IResult
+public sealed partial class SignOutHttpResult : IResult
 {
     /// <summary>
-    /// Initializes a new instance of <see cref="SignOutResult"/> with the default sign out scheme.
+    /// Initializes a new instance of <see cref="SignOutHttpResult"/> with the default sign out scheme.
     /// </summary>
-    public SignOutResult()
+    internal SignOutHttpResult()
         : this(Array.Empty<string>())
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of <see cref="SignOutResult"/> with the default sign out scheme.
+    /// Initializes a new instance of <see cref="SignOutHttpResult"/> with the default sign out scheme.
     /// specified authentication scheme and <paramref name="properties"/>.
     /// </summary>
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-out operation.</param>
-    public SignOutResult(AuthenticationProperties properties)
+    internal SignOutHttpResult(AuthenticationProperties properties)
         : this(Array.Empty<string>(), properties)
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of <see cref="SignOutResult"/> with the
+    /// Initializes a new instance of <see cref="SignOutHttpResult"/> with the
     /// specified authentication scheme.
     /// </summary>
     /// <param name="authenticationScheme">The authentication scheme to use when signing out the user.</param>
-    public SignOutResult(string authenticationScheme)
+    internal SignOutHttpResult(string authenticationScheme)
         : this(new[] { authenticationScheme })
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of <see cref="SignOutResult"/> with the
+    /// Initializes a new instance of <see cref="SignOutHttpResult"/> with the
     /// specified authentication schemes.
     /// </summary>
     /// <param name="authenticationSchemes">The authentication schemes to use when signing out the user.</param>
-    public SignOutResult(IList<string> authenticationSchemes)
+    internal SignOutHttpResult(IList<string> authenticationSchemes)
         : this(authenticationSchemes, properties: null)
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of <see cref="SignOutResult"/> with the
+    /// Initializes a new instance of <see cref="SignOutHttpResult"/> with the
     /// specified authentication scheme and <paramref name="properties"/>.
     /// </summary>
     /// <param name="authenticationScheme">The authentication schemes to use when signing out the user.</param>
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-out operation.</param>
-    public SignOutResult(string authenticationScheme, AuthenticationProperties? properties)
+    internal SignOutHttpResult(string authenticationScheme, AuthenticationProperties? properties)
         : this(new[] { authenticationScheme }, properties)
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of <see cref="SignOutResult"/> with the
+    /// Initializes a new instance of <see cref="SignOutHttpResult"/> with the
     /// specified authentication schemes and <paramref name="properties"/>.
     /// </summary>
     /// <param name="authenticationSchemes">The authentication scheme to use when signing out the user.</param>
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-out operation.</param>
-    public SignOutResult(IList<string> authenticationSchemes, AuthenticationProperties? properties)
+    internal SignOutHttpResult(IList<string> authenticationSchemes, AuthenticationProperties? properties)
     {
         AuthenticationSchemes = authenticationSchemes ?? throw new ArgumentNullException(nameof(authenticationSchemes));
         Properties = properties;
@@ -87,7 +87,7 @@ internal sealed partial class SignOutResult : IResult
     /// <inheritdoc />
     public async Task ExecuteAsync(HttpContext httpContext)
     {
-        var logger = httpContext.RequestServices.GetRequiredService<ILogger<SignOutResult>>();
+        var logger = httpContext.RequestServices.GetRequiredService<ILogger<SignOutHttpResult>>();
 
         Log.SignOutResultExecuting(logger, AuthenticationSchemes);
 

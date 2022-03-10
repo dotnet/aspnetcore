@@ -9,7 +9,7 @@ public class UnauthorizedResultTests
     public void UnauthorizedResult_InitializesStatusCode()
     {
         // Arrange & act
-        var result = new UnauthorizedResult();
+        var result = new UnauthorizedHttpResult();
 
         // Assert
         Assert.Equal(StatusCodes.Status401Unauthorized, result.StatusCode);

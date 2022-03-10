@@ -16,7 +16,7 @@ public class LocalRedirectResultTest
         var url = "/test/url";
 
         // Act
-        var result = new LocalRedirectResult(url);
+        var result = new LocalRedirectHttpResult(url);
 
         // Assert
         Assert.False(result.PreserveMethod);
@@ -31,7 +31,7 @@ public class LocalRedirectResultTest
         var url = "/test/url";
 
         // Act
-        var result = new LocalRedirectResult(url, permanent: true);
+        var result = new LocalRedirectHttpResult(url, permanent: true);
 
         // Assert
         Assert.False(result.PreserveMethod);
@@ -46,7 +46,7 @@ public class LocalRedirectResultTest
         var url = "/test/url";
 
         // Act
-        var result = new LocalRedirectResult(url, permanent: true, preserveMethod: true);
+        var result = new LocalRedirectHttpResult(url, permanent: true, preserveMethod: true);
 
         // Assert
         Assert.True(result.PreserveMethod);
@@ -63,7 +63,7 @@ public class LocalRedirectResultTest
         var expectedPath = "/Home/About";
 
         var httpContext = GetHttpContext(appRoot);
-        var result = new LocalRedirectResult(contentPath);
+        var result = new LocalRedirectHttpResult(contentPath);
 
         // Act
         await result.ExecuteAsync(httpContext);
@@ -86,7 +86,7 @@ public class LocalRedirectResultTest
     {
         // Arrange
         var httpContext = GetHttpContext(appRoot);
-        var result = new LocalRedirectResult(contentPath);
+        var result = new LocalRedirectHttpResult(contentPath);
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => result.ExecuteAsync(httpContext));
@@ -107,7 +107,7 @@ public class LocalRedirectResultTest
     {
         // Arrange
         var httpContext = GetHttpContext(appRoot);
-        var result = new LocalRedirectResult(contentPath);
+        var result = new LocalRedirectHttpResult(contentPath);
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => result.ExecuteAsync(httpContext));

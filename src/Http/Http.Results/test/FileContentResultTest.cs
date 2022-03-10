@@ -19,7 +19,7 @@ public class FileContentResultTest : FileContentResultTestBase
         EntityTagHeaderValue entityTag = null,
         bool enableRangeProcessing = false)
     {
-        var result = new FileContentResult(buffer, contentType)
+        var result = new FileContentHttpResult(buffer, contentType)
         {
             EntityTag = entityTag,
             LastModified = lastModified,

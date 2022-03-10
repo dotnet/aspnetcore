@@ -13,7 +13,7 @@ public class OkObjectResultTest
     public async Task OkObjectResult_SetsStatusCodeAndValue()
     {
         // Arrange
-        var result = new OkObjectResult("Hello world");
+        var result = new OkObjectHttpResult("Hello world");
         var httpContext = GetHttpContext();
 
         // Act

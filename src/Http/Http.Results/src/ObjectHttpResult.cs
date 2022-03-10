@@ -9,12 +9,13 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
-/// 
+/// An <see cref="IResult"/> that on execution will write an object to the response.
 /// </summary>
-public abstract partial class ObjectHttpResult : StatusCodeHttpResult
+public partial class ObjectHttpResult : StatusCodeHttpResult
 {
     /// <summary>
-    /// Creates a new <see cref="ObjectHttpResult"/> instance with the provided <paramref name="value"/>.
+    /// Creates a new <see cref="ObjectHttpResult"/> instance
+    /// with the provided <paramref name="value"/>.
     /// </summary>
     internal ObjectHttpResult(object? value)
         : this(value, null)
@@ -22,7 +23,8 @@ public abstract partial class ObjectHttpResult : StatusCodeHttpResult
     }
 
     /// <summary>
-    /// Creates a new <see cref="ObjectHttpResult"/> instance with the provided <paramref name="value"/> and a specific <paramref name="statusCode"/>.
+    /// Creates a new <see cref="ObjectHttpResult"/> instance with the provided
+    /// <paramref name="value"/> and <paramref name="statusCode"/>.
     /// </summary>
     internal ObjectHttpResult(object? value, int? statusCode)
     {
@@ -40,14 +42,14 @@ public abstract partial class ObjectHttpResult : StatusCodeHttpResult
     }
 
     /// <summary>
-    /// The object result.
+    /// Gets or sets the object result.
     /// </summary>
-    public object? Value { get; }
+    public object? Value { get; init; }
 
     /// <summary>
-    /// Gets the value for the <c>Content-Type</c> header.
+    /// Gets or sets the value for the <c>Content-Type</c> header.
     /// </summary>
-    public string? ContentType { get; set; }
+    public string? ContentType { get; init; }
 
     internal override Task WriteContentAsync(HttpContext httpContext)
     {

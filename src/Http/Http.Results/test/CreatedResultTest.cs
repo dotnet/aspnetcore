@@ -16,7 +16,7 @@ public class CreatedResultTests
         var location = "http://test/location";
 
         // Act
-        var result = new CreatedResult(location, "testInput");
+        var result = new CreatedHttpResult(location, "testInput");
 
         // Assert
         Assert.Same(location, result.Location);
@@ -28,7 +28,7 @@ public class CreatedResultTests
         // Arrange
         var location = "/test/";
         var httpContext = GetHttpContext();
-        var result = new CreatedResult(location, "testInput");
+        var result = new CreatedHttpResult(location, "testInput");
 
         // Act
         await result.ExecuteAsync(httpContext);
@@ -45,7 +45,7 @@ public class CreatedResultTests
         var location = "/test/";
         var httpContext = GetHttpContext();
         httpContext.Response.Headers["Location"] = "/different/location/";
-        var result = new CreatedResult(location, "testInput");
+        var result = new CreatedHttpResult(location, "testInput");
 
         // Act
         await result.ExecuteAsync(httpContext);

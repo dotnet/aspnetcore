@@ -1,39 +1,42 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Http.Result;
+namespace Microsoft.AspNetCore.Http;
 
-internal sealed class AcceptedResult : ObjectResult
+/// <summary>
+/// An <see cref="IResult"/> that on execution will write an object to the response
+/// with a Location header to the supplied URL.
+/// </summary>
+public abstract class ObjectAtLocationHttpResult : ObjectHttpResult
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="AcceptedResult"/> class with the values
-    /// provided.
-    /// </summary>
-    public AcceptedResult()
-        : base(value: null, StatusCodes.Status202Accepted)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="AcceptedResult"/> class with the values
+    /// Initializes a new instance of the <see cref="ObjectAtLocationHttpResult"/> class with the values
     /// provided.
     /// </summary>
     /// <param name="location">The location at which the status of requested content can be monitored.</param>
     /// <param name="value">The value to format in the entity body.</param>
-    public AcceptedResult(string? location, object? value)
-        : base(value, StatusCodes.Status202Accepted)
+    /// <param name="statusCode">The HTTP status code of the response.</param>
+    internal ObjectAtLocationHttpResult(
+        string? location,
+        object? value,
+        int? statusCode)
+        : base(value, statusCode)
     {
         Location = location;
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AcceptedResult"/> class with the values
+    /// Initializes a new instance of the <see cref="AcceptedHttpResult"/> class with the values
     /// provided.
     /// </summary>
     /// <param name="locationUri">The location at which the status of requested content can be monitored.</param>
     /// <param name="value">The value to format in the entity body.</param>
-    public AcceptedResult(Uri locationUri, object? value)
-        : base(value, StatusCodes.Status202Accepted)
+    /// <param name="statusCode">The HTTP status code of the response.</param>
+    internal ObjectAtLocationHttpResult(
+        Uri locationUri,
+        object? value,
+        int? statusCode)
+        : base(value, statusCode)
     {
         if (locationUri == null)
         {
@@ -51,12 +54,12 @@ internal sealed class AcceptedResult : ObjectResult
     }
 
     /// <summary>
-    /// Gets or sets the location at which the status of the requested content can be monitored.
+    /// Gets the location at which the status of the requested content can be monitored.
     /// </summary>
-    public string? Location { get; set; }
+    public string? Location { get; }
 
     /// <inheritdoc />
-    protected override void ConfigureResponseHeaders(HttpContext context)
+    protected internal override void ConfigureResponseHeaders(HttpContext context)
     {
         if (!string.IsNullOrEmpty(Location))
         {

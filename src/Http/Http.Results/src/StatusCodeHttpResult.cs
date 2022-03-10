@@ -7,7 +7,8 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
-/// 
+/// Represents an <see cref="IResult"/> that when executed will
+/// produce an HTTP response with the given response status code.
 /// </summary>
 public partial class StatusCodeHttpResult : IResult
 {
@@ -17,17 +18,17 @@ public partial class StatusCodeHttpResult : IResult
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="StatusCodeResult"/> class
+    /// Initializes a new instance of the <see cref="StatusCodeHttpResult"/> class
     /// with the given <paramref name="statusCode"/>.
     /// </summary>
     /// <param name="statusCode">The HTTP status code of the response.</param>
-    protected StatusCodeHttpResult(int statusCode)
+    internal StatusCodeHttpResult(int statusCode)
     {
         StatusCode = statusCode;
     }
 
     /// <summary>
-    /// Gets the HTTP status code.
+    /// Gets or sets the HTTP status code.
     /// </summary>
     public int StatusCode { get; init; }
 

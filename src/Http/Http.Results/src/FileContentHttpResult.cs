@@ -6,18 +6,18 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Http.Result;
+namespace Microsoft.AspNetCore.Http;
 
-internal sealed partial class FileContentResult : FileResult
+internal sealed partial class FileContentHttpResult : FileHttpResult
 {
     /// <summary>
-    /// Creates a new <see cref="FileContentResult"/> instance with
+    /// Creates a new <see cref="FileContentHttpResult"/> instance with
     /// the provided <paramref name="fileContents"/> and the
     /// provided <paramref name="contentType"/>.
     /// </summary>
     /// <param name="fileContents">The bytes that represent the file contents.</param>
     /// <param name="contentType">The Content-Type header of the response.</param>
-    public FileContentResult(ReadOnlyMemory<byte> fileContents, string? contentType)
+    public FileContentHttpResult(ReadOnlyMemory<byte> fileContents, string? contentType)
         : base(contentType)
     {
         FileContents = fileContents;
@@ -29,12 +29,12 @@ internal sealed partial class FileContentResult : FileResult
     /// </summary>
     public ReadOnlyMemory<byte> FileContents { get; init; }
 
-    protected override ILogger GetLogger(HttpContext httpContext)
+    protected internal override ILogger GetLogger(HttpContext httpContext)
     {
-        return httpContext.RequestServices.GetRequiredService<ILogger<FileContentResult>>();
+        return httpContext.RequestServices.GetRequiredService<ILogger<FileContentHttpResult>>();
     }
 
-    protected override Task ExecuteCoreAsync(HttpContext httpContext, RangeItemHeaderValue? range, long rangeLength)
+    protected internal override Task ExecuteCoreAsync(HttpContext httpContext, RangeItemHeaderValue? range, long rangeLength)
     {
         return FileResultHelper.WriteFileAsync(httpContext, FileContents, range, rangeLength);
     }

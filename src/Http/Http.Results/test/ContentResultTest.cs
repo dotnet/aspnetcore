@@ -15,7 +15,7 @@ public class ContentResultTest
     public async Task ContentResult_ExecuteAsync_Response_NullContent_SetsContentTypeAndEncoding()
     {
         // Arrange
-        var contentResult = new ContentResult
+        var contentResult = new ContentHttpResult
         {
             Content = null,
             ContentType = new MediaTypeHeaderValue("text/plain")
@@ -109,7 +109,7 @@ public class ContentResultTest
         byte[] expectedContentData)
     {
         // Arrange
-        var contentResult = new ContentResult
+        var contentResult = new ContentHttpResult
         {
             Content = content,
             ContentType = contentType?.ToString()
@@ -133,6 +133,7 @@ public class ContentResultTest
     {
         var services = new ServiceCollection();
         services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
+        services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
         return services;
     }
 

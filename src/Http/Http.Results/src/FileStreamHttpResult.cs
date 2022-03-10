@@ -6,22 +6,22 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Http.Result;
+namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
-/// Represents an <see cref="FileResultBase"/> that when executed will
+/// Represents an <see cref="FileHttpResult"/> that when executed will
 /// write a file from a stream to the response.
 /// </summary>
-internal sealed class FileStreamResult : FileResult, IResult
+internal sealed class FileStreamHttpResult : FileHttpResult, IResult
 {
     /// <summary>
-    /// Creates a new <see cref="FileStreamResult"/> instance with
+    /// Creates a new <see cref="FileStreamHttpResult"/> instance with
     /// the provided <paramref name="fileStream"/> and the
     /// provided <paramref name="contentType"/>.
     /// </summary>
     /// <param name="fileStream">The stream with the file.</param>
     /// <param name="contentType">The Content-Type header of the response.</param>
-    public FileStreamResult(Stream fileStream, string? contentType)
+    public FileStreamHttpResult(Stream fileStream, string? contentType)
         : base(contentType)
     {
         if (fileStream == null)
@@ -41,9 +41,9 @@ internal sealed class FileStreamResult : FileResult, IResult
     /// </summary>
     public Stream FileStream { get; }
 
-    protected override ILogger GetLogger(HttpContext httpContext)
+    protected internal override ILogger GetLogger(HttpContext httpContext)
     {
-        return httpContext.RequestServices.GetRequiredService<ILogger<FileStreamResult>>();
+        return httpContext.RequestServices.GetRequiredService<ILogger<FileStreamHttpResult>>();
     }
 
     public override async Task ExecuteAsync(HttpContext httpContext)
@@ -54,7 +54,7 @@ internal sealed class FileStreamResult : FileResult, IResult
         }
     }
 
-    protected override Task ExecuteCoreAsync(HttpContext context, RangeItemHeaderValue? range, long rangeLength)
+    protected internal override Task ExecuteCoreAsync(HttpContext context, RangeItemHeaderValue? range, long rangeLength)
     {
         return FileResultHelper.WriteFileAsync(context, FileStream, range, rangeLength);
     }

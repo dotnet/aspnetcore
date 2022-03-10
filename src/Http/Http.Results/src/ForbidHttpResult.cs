@@ -6,69 +6,69 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Http.Result;
+namespace Microsoft.AspNetCore.Http;
 
-internal sealed partial class ForbidResult : IResult
+internal sealed partial class ForbidHttpResult : IResult
 {
     /// <summary>
-    /// Initializes a new instance of <see cref="ForbidResult"/>.
+    /// Initializes a new instance of <see cref="ForbidHttpResult"/>.
     /// </summary>
-    public ForbidResult()
+    public ForbidHttpResult()
         : this(Array.Empty<string>())
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of <see cref="ForbidResult"/> with the
+    /// Initializes a new instance of <see cref="ForbidHttpResult"/> with the
     /// specified authentication scheme.
     /// </summary>
     /// <param name="authenticationScheme">The authentication scheme to challenge.</param>
-    public ForbidResult(string authenticationScheme)
+    public ForbidHttpResult(string authenticationScheme)
         : this(new[] { authenticationScheme })
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of <see cref="ForbidResult"/> with the
+    /// Initializes a new instance of <see cref="ForbidHttpResult"/> with the
     /// specified authentication schemes.
     /// </summary>
     /// <param name="authenticationSchemes">The authentication schemes to challenge.</param>
-    public ForbidResult(IList<string> authenticationSchemes)
+    public ForbidHttpResult(IList<string> authenticationSchemes)
         : this(authenticationSchemes, properties: null)
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of <see cref="ForbidResult"/> with the
+    /// Initializes a new instance of <see cref="ForbidHttpResult"/> with the
     /// specified <paramref name="properties"/>.
     /// </summary>
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
     /// challenge.</param>
-    public ForbidResult(AuthenticationProperties? properties)
+    public ForbidHttpResult(AuthenticationProperties? properties)
         : this(Array.Empty<string>(), properties)
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of <see cref="ForbidResult"/> with the
+    /// Initializes a new instance of <see cref="ForbidHttpResult"/> with the
     /// specified authentication scheme and <paramref name="properties"/>.
     /// </summary>
     /// <param name="authenticationScheme">The authentication schemes to challenge.</param>
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
     /// challenge.</param>
-    public ForbidResult(string authenticationScheme, AuthenticationProperties? properties)
+    public ForbidHttpResult(string authenticationScheme, AuthenticationProperties? properties)
         : this(new[] { authenticationScheme }, properties)
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of <see cref="ForbidResult"/> with the
+    /// Initializes a new instance of <see cref="ForbidHttpResult"/> with the
     /// specified authentication schemes and <paramref name="properties"/>.
     /// </summary>
     /// <param name="authenticationSchemes">The authentication scheme to challenge.</param>
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
     /// challenge.</param>
-    public ForbidResult(IList<string> authenticationSchemes, AuthenticationProperties? properties)
+    public ForbidHttpResult(IList<string> authenticationSchemes, AuthenticationProperties? properties)
     {
         AuthenticationSchemes = authenticationSchemes;
         Properties = properties;
@@ -87,7 +87,7 @@ internal sealed partial class ForbidResult : IResult
     /// <inheritdoc />
     public async Task ExecuteAsync(HttpContext httpContext)
     {
-        var logger = httpContext.RequestServices.GetRequiredService<ILogger<ForbidResult>>();
+        var logger = httpContext.RequestServices.GetRequiredService<ILogger<ForbidHttpResult>>();
 
         Log.ForbidResultExecuting(logger, AuthenticationSchemes);
 

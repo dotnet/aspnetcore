@@ -13,7 +13,7 @@ public class NotFoundObjectResultTest
     public void NotFoundObjectResult_InitializesStatusCode()
     {
         // Arrange & act
-        var notFound = new NotFoundObjectResult(null);
+        var notFound = new NotFoundObjectHttpResult(null);
 
         // Assert
         Assert.Equal(StatusCodes.Status404NotFound, notFound.StatusCode);
@@ -23,7 +23,7 @@ public class NotFoundObjectResultTest
     public void NotFoundObjectResult_InitializesStatusCodeAndResponseContent()
     {
         // Arrange & act
-        var notFound = new NotFoundObjectResult("Test Content");
+        var notFound = new NotFoundObjectHttpResult("Test Content");
 
         // Assert
         Assert.Equal(StatusCodes.Status404NotFound, notFound.StatusCode);
@@ -35,7 +35,7 @@ public class NotFoundObjectResultTest
     {
         // Arrange
         var httpContext = GetHttpContext();
-        var result = new NotFoundObjectResult("Test Content");
+        var result = new NotFoundObjectHttpResult("Test Content");
 
         // Act
         await result.ExecuteAsync(httpContext);

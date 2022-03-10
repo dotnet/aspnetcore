@@ -27,7 +27,7 @@ public class AcceptedAtRouteResultTests
             });
 
         // Act
-        var result = new AcceptedAtRouteResult(
+        var result = new AcceptedAtRouteHttpResult(
             routeName: "sample",
             routeValues: routeValues,
             value: "Hello world");
@@ -69,7 +69,7 @@ public class AcceptedAtRouteResultTests
         var httpContext = GetHttpContext(linkGenerator);
 
         // Act
-        var result = new AcceptedAtRouteResult(routeValues: values, value: null);
+        var result = new AcceptedAtRouteHttpResult(routeValues: values, value: null);
         await result.ExecuteAsync(httpContext);
 
         // Assert
@@ -85,7 +85,7 @@ public class AcceptedAtRouteResultTests
         var httpContext = GetHttpContext(linkGenerator);
 
         // Act
-        var result = new AcceptedAtRouteResult(
+        var result = new AcceptedAtRouteHttpResult(
             routeName: null,
             routeValues: new Dictionary<string, object>(),
             value: null);

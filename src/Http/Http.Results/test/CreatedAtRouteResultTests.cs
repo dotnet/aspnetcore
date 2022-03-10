@@ -39,7 +39,7 @@ public partial class CreatedAtRouteResultTests
         var httpContext = GetHttpContext(expectedUrl);
 
         // Act
-        var result = new CreatedAtRouteResult(routeName: null, routeValues: values, value: null);
+        var result = new CreatedAtRouteHttpResult(routeName: null, routeValues: values, value: null);
         await result.ExecuteAsync(httpContext);
 
         // Assert
@@ -53,7 +53,7 @@ public partial class CreatedAtRouteResultTests
         // Arrange
         var httpContext = GetHttpContext(expectedUrl: null);
 
-        var result = new CreatedAtRouteResult(
+        var result = new CreatedAtRouteHttpResult(
             routeName: null,
             routeValues: new Dictionary<string, object>(),
             value: null);

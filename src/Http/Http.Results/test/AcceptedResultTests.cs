@@ -16,7 +16,7 @@ public class AcceptedResultTests
         var stream = new MemoryStream();
         httpContext.Response.Body = stream;
         // Act
-        var result = new AcceptedResult("my-location", value: "Hello world");
+        var result = new AcceptedHttpResult("my-location", value: "Hello world");
         await result.ExecuteAsync(httpContext);
 
         // Assert
@@ -32,7 +32,7 @@ public class AcceptedResultTests
         var httpContext = GetHttpContext();
 
         // Act
-        var result = new AcceptedResult(expectedUrl, value: "some-value");
+        var result = new AcceptedHttpResult(expectedUrl, value: "some-value");
         await result.ExecuteAsync(httpContext);
 
         // Assert

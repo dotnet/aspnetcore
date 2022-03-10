@@ -8,24 +8,24 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Http.Result;
+namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
-/// A <see cref="FileResultBase" /> that on execution writes the file specified using a virtual path to the response
+/// A <see cref="FileHttpResult" /> that on execution writes the file specified using a virtual path to the response
 /// using mechanisms provided by the host.
 /// </summary>
-internal sealed class VirtualFileResult : FileResult, IResult
+internal sealed class VirtualFileHttpResult : FileHttpResult, IResult
 {
     private string _fileName;
     private IFileInfo? _fileInfo;
 
     /// <summary>
-    /// Creates a new <see cref="VirtualFileResult"/> instance with the provided <paramref name="fileName"/>
+    /// Creates a new <see cref="VirtualFileHttpResult"/> instance with the provided <paramref name="fileName"/>
     /// and the provided <paramref name="contentType"/>.
     /// </summary>
     /// <param name="fileName">The path to the file. The path must be relative/virtual.</param>
     /// <param name="contentType">The Content-Type header of the response.</param>
-    public VirtualFileResult(string fileName, string? contentType)
+    public VirtualFileHttpResult(string fileName, string? contentType)
         : base(contentType)
     {
         FileName = fileName ?? throw new ArgumentNullException(nameof(fileName));
@@ -41,7 +41,7 @@ internal sealed class VirtualFileResult : FileResult, IResult
         set => _fileName = value ?? throw new ArgumentNullException(nameof(value));
     }
 
-    protected override Task ExecuteCoreAsync(HttpContext httpContext, RangeItemHeaderValue? range, long rangeLength)
+    protected internal override Task ExecuteCoreAsync(HttpContext httpContext, RangeItemHeaderValue? range, long rangeLength)
     {
         var response = httpContext.Response;
         var offset = 0L;
@@ -58,9 +58,9 @@ internal sealed class VirtualFileResult : FileResult, IResult
             count);
     }
 
-    protected override ILogger GetLogger(HttpContext httpContext)
+    protected internal override ILogger GetLogger(HttpContext httpContext)
     {
-        return httpContext.RequestServices.GetRequiredService<ILogger<VirtualFileResult>>();
+        return httpContext.RequestServices.GetRequiredService<ILogger<VirtualFileHttpResult>>();
     }
 
     /// <inheritdoc/>

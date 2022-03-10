@@ -5,21 +5,21 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Http.Result;
+namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
-/// A <see cref="PhysicalFileResult"/> on execution will write a file from disk to the response
+/// A <see cref="PhysicalFileHttpResult"/> on execution will write a file from disk to the response
 /// using mechanisms provided by the host.
 /// </summary>
-internal sealed partial class PhysicalFileResult : FileResult, IResult
+internal sealed partial class PhysicalFileHttpResult : FileHttpResult, IResult
 {
     /// <summary>
-    /// Creates a new <see cref="PhysicalFileResult"/> instance with
+    /// Creates a new <see cref="PhysicalFileHttpResult"/> instance with
     /// the provided <paramref name="fileName"/> and the provided <paramref name="contentType"/>.
     /// </summary>
     /// <param name="fileName">The path to the file. The path must be an absolute path.</param>
     /// <param name="contentType">The Content-Type header of the response.</param>
-    public PhysicalFileResult(string fileName, string? contentType)
+    public PhysicalFileHttpResult(string fileName, string? contentType)
         : base(contentType)
     {
         FileName = fileName;
@@ -34,9 +34,9 @@ internal sealed partial class PhysicalFileResult : FileResult, IResult
     public Func<string, FileInfoWrapper> GetFileInfoWrapper { get; init; } =
         static path => new FileInfoWrapper(path);
 
-    protected override ILogger GetLogger(HttpContext httpContext)
+    protected internal override ILogger GetLogger(HttpContext httpContext)
     {
-        return httpContext.RequestServices.GetRequiredService<ILogger<PhysicalFileResult>>();
+        return httpContext.RequestServices.GetRequiredService<ILogger<PhysicalFileHttpResult>>();
     }
 
     public override Task ExecuteAsync(HttpContext httpContext)
@@ -53,7 +53,7 @@ internal sealed partial class PhysicalFileResult : FileResult, IResult
         return base.ExecuteAsync(httpContext);
     }
 
-    protected override Task ExecuteCoreAsync(HttpContext httpContext, RangeItemHeaderValue? range, long rangeLength)
+    protected internal override Task ExecuteCoreAsync(HttpContext httpContext, RangeItemHeaderValue? range, long rangeLength)
     {
         var response = httpContext.Response;
         if (!Path.IsPathRooted(FileName))

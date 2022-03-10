@@ -5,24 +5,24 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Http.Result;
+namespace Microsoft.AspNetCore.Http;
 
-internal sealed class PushStreamResult : FileResult
+internal sealed class PushStreamHttpResult : FileHttpResult
 {
     private readonly Func<Stream, Task> _streamWriterCallback;
 
-    public PushStreamResult(Func<Stream, Task> streamWriterCallback, string? contentType)
+    public PushStreamHttpResult(Func<Stream, Task> streamWriterCallback, string? contentType)
         : base(contentType)
     {
         _streamWriterCallback = streamWriterCallback;
     }
 
-    protected override ILogger GetLogger(HttpContext httpContext)
+    protected internal override ILogger GetLogger(HttpContext httpContext)
     {
-        return httpContext.RequestServices.GetRequiredService<ILogger<PushStreamResult>>();
+        return httpContext.RequestServices.GetRequiredService<ILogger<PushStreamHttpResult>>();
     }
 
-    protected override Task ExecuteCoreAsync(HttpContext httpContext, RangeItemHeaderValue? range, long rangeLength)
+    protected internal override Task ExecuteCoreAsync(HttpContext httpContext, RangeItemHeaderValue? range, long rangeLength)
     {
         return _streamWriterCallback(httpContext.Response.Body);
     }

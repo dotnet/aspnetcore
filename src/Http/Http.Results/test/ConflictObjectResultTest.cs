@@ -10,7 +10,7 @@ public class ConflictObjectResultTest
     {
         // Arrange & Act
         var obj = new object();
-        var conflictObjectResult = new ConflictObjectResult(obj);
+        var conflictObjectResult = new ConflictObjectHttpResult(obj);
 
         // Assert
         Assert.Equal(StatusCodes.Status409Conflict, conflictObjectResult.StatusCode);

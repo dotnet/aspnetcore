@@ -10,7 +10,7 @@ public class BadRequestObjectResultTests
     {
         // Arrange & Act
         var obj = new object();
-        var badRequestObjectResult = new BadRequestObjectResult(obj);
+        var badRequestObjectResult = new BadRequestObjectHttpResult(obj);
 
         // Assert
         Assert.Equal(StatusCodes.Status400BadRequest, badRequestObjectResult.StatusCode);

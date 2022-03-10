@@ -7,14 +7,15 @@ namespace Microsoft.AspNetCore.Http;
 /// Represents an <see cref="IResult"/> that when executed will
 /// do nothing.
 /// </summary>
-internal sealed class EmptyResult : IResult
+public sealed class EmptyHttpResult : IResult
 {
-    internal static readonly EmptyResult Instance = new();
+    internal static readonly EmptyHttpResult Instance = new();
 
-    private EmptyResult()
+    private EmptyHttpResult()
     {
     }
 
+    /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {
         return Task.CompletedTask;

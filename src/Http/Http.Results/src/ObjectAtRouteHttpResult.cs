@@ -4,33 +4,28 @@
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Http.Result;
+namespace Microsoft.AspNetCore.Http;
 
-internal sealed class CreatedAtRouteResult : ObjectResult
+/// <summary>
+/// An <see cref="IResult"/> that on execution will write an object to the response
+/// with a Location header. Targets a registered route.
+/// </summary>
+public abstract class ObjectAtRouteHttpResult : ObjectHttpResult
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="CreatedAtRouteResult"/> class with the values
-    /// provided.
-    /// </summary>
-    /// <param name="routeValues">The route data to use for generating the URL.</param>
-    /// <param name="value">The value to format in the entity body.</param>
-    public CreatedAtRouteResult(object? routeValues, object? value)
-        : this(routeName: null, routeValues: routeValues, value: value)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="CreatedAtRouteResult"/> class with the values
+    /// Initializes a new instance of the <see cref="ObjectAtRouteHttpResult"/> class with the values
     /// provided.
     /// </summary>
     /// <param name="routeName">The name of the route to use for generating the URL.</param>
     /// <param name="routeValues">The route data to use for generating the URL.</param>
     /// <param name="value">The value to format in the entity body.</param>
-    public CreatedAtRouteResult(
+    /// <param name="statusCode">The HTTP status code of the response.</param>
+    internal ObjectAtRouteHttpResult(
         string? routeName,
         object? routeValues,
-        object? value)
-        : base(value, StatusCodes.Status201Created)
+        object? value,
+        int? statusCode)
+        : base(value, statusCode)
     {
         RouteName = routeName;
         RouteValues = routeValues == null ? null : new RouteValueDictionary(routeValues);
@@ -39,15 +34,15 @@ internal sealed class CreatedAtRouteResult : ObjectResult
     /// <summary>
     /// Gets or sets the name of the route to use for generating the URL.
     /// </summary>
-    public string? RouteName { get; set; }
+    public string? RouteName { get; }
 
     /// <summary>
     /// Gets or sets the route data to use for generating the URL.
     /// </summary>
-    public RouteValueDictionary? RouteValues { get; set; }
+    public RouteValueDictionary? RouteValues { get; }
 
     /// <inheritdoc />
-    protected override void ConfigureResponseHeaders(HttpContext context)
+    protected internal override void ConfigureResponseHeaders(HttpContext context)
     {
         var linkGenerator = context.RequestServices.GetRequiredService<LinkGenerator>();
         var url = linkGenerator.GetUriByRouteValues(

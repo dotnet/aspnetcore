@@ -10,7 +10,7 @@ public class UnprocessableEntityObjectResultTests
     {
         // Arrange & Act
         var obj = new object();
-        var result = new UnprocessableEntityObjectResult(obj);
+        var result = new UnprocessableEntityObjectHttpResult(obj);
 
         // Assert
         Assert.Equal(StatusCodes.Status422UnprocessableEntity, result.StatusCode);
