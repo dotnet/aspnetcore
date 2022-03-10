@@ -31,6 +31,9 @@
           $(MSBuildProjectName.EndsWith('.FunctionalTest')) ) ">true</IsUnitTestProject>
     <IsUnitTestProject Condition=" '$(IsUnitTestProject)' == '' ">false</IsUnitTestProject>
     <IsTestAssetProject Condition=" $(RepoRelativeProjectDir.Contains('testassets')) OR $(MSBuildProjectName.Contains('TestCommon'))">true</IsTestAssetProject>
+    <IsProjectTemplateProject Condition=" ($(RepoRelativeProjectDir.Contains('ProjectTemplates')) OR $(MSBuildProjectName.Contains('ProjectTemplates')) ) AND
+        '$(IsUnitTestProject)' != 'true' AND
+        '$(IsTestAssetProject)' != 'true' ">true</IsProjectTemplateProject>
     <IsSampleProject Condition=" $(RepoRelativeProjectDir.ToUpperInvariant().Contains('SAMPLE')) ">true</IsSampleProject>
     <IsAnalyzersProject Condition="$(MSBuildProjectName.EndsWith('.Analyzers'))">true</IsAnalyzersProject>
     <IsShipping Condition=" '$(IsSampleProject)' == 'true' OR
