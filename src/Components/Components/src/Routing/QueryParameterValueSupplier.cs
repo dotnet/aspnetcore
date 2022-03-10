@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.Reflection;
@@ -15,7 +16,7 @@ internal sealed class QueryParameterValueSupplier
 {
     public static void ClearCache() => _cacheByType.Clear();
 
-    private static readonly Dictionary<Type, QueryParameterValueSupplier?> _cacheByType = new();
+    private static readonly ConcurrentDictionary<Type, QueryParameterValueSupplier?> _cacheByType = new();
 
     // These two arrays contain the same number of entries, and their corresponding positions refer to each other.
     // Holding the info like this means we can use Array.BinarySearch with less custom implementation.
@@ -24,18 +25,13 @@ internal sealed class QueryParameterValueSupplier
 
     public static QueryParameterValueSupplier? ForType([DynamicallyAccessedMembers(Component)] Type componentType)
     {
-        lock (_cacheByType)
+        return _cacheByType.GetOrAdd(componentType, static (componentType) =>
         {
-            if (!_cacheByType.TryGetValue(componentType, out var instanceOrNull))
-            {
-                // If the component doesn't have any query parameters, store a null value for it
-                // so we know the upstream code can't try to render query parameter frames for it.
-                var sortedMappings = GetSortedMappings(componentType);
-                instanceOrNull = sortedMappings == null ? null : new QueryParameterValueSupplier(sortedMappings);
-                _cacheByType.TryAdd(componentType, instanceOrNull);
-            }
-            return instanceOrNull;
-        }
+            // If the component doesn't have any query parameters, store a null value for it
+            // so we know the upstream code can't try to render query parameter frames for it.
+            var sortedMappings = GetSortedMappings(componentType);
+            return sortedMappings == null ? null : new QueryParameterValueSupplier(sortedMappings);
+        });
     }
 
     private QueryParameterValueSupplier(QueryParameterMapping[] sortedMappings)
