@@ -1,7 +1,7 @@
 ﻿<Project>
 
   <PropertyGroup>
-    <!-- Only build Microsoft.AspNetCore.App, Microsoft.AspNetCore.App.Ref, and ref/ assemblies in source build. -->
+    <!-- Only build Microsoft.AspNetCore.App, Microsoft.AspNetCore.App.Ref, ref/ assemblies, and ProjectTemplates in source build. -->
     <!-- Analyzer package are needed in source build for WebSDK -->
     <ExcludeFromSourceBuild
         Condition="'$(ExcludeFromSourceBuild)' == '' and 
