@@ -25,13 +25,16 @@ internal sealed class QueryParameterValueSupplier
 
     public static QueryParameterValueSupplier? ForType([DynamicallyAccessedMembers(Component)] Type componentType)
     {
-        return _cacheByType.GetOrAdd(componentType, static (componentType) =>
+        if (!_cacheByType.TryGetValue(componentType, out var instanceOrNull))
         {
             // If the component doesn't have any query parameters, store a null value for it
             // so we know the upstream code can't try to render query parameter frames for it.
             var sortedMappings = GetSortedMappings(componentType);
-            return sortedMappings == null ? null : new QueryParameterValueSupplier(sortedMappings);
-        });
+            instanceOrNull = sortedMappings == null ? null : new QueryParameterValueSupplier(sortedMappings);
+            _cacheByType.TryAdd(componentType, instanceOrNull);
+        }
+
+        return instanceOrNull;
     }
 
     private QueryParameterValueSupplier(QueryParameterMapping[] sortedMappings)
