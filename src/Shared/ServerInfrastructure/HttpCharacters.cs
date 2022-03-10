@@ -185,7 +185,8 @@ internal static class HttpCharacters
         return -1;
     }
 
-    // Disallows control characters and anything more than 0x7F
+    // Follows field-value rules in https://tools.ietf.org/html/rfc7230#section-3.2
+    // Disallows characters > 0x7E.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int IndexOfInvalidFieldValueChar(string s)
     {
@@ -203,7 +204,7 @@ internal static class HttpCharacters
         return -1;
     }
 
-    // Disallows control characters but allows extended characters > 0x7F
+    // Follows field-value rules for chars <= 0x7F. Allows extended characters > 0x7F.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int IndexOfInvalidFieldValueCharExtended(string s)
     {
