@@ -532,7 +532,9 @@ public class SniOptionsSelectorTests
                     "www.example.org",
                     new SniConfig
                     {
+#pragma warning disable SYSLIB0039 // TLS 1.0 and 1.1 are obsolete
                         SslProtocols = SslProtocols.Tls13 | SslProtocols.Tls11,
+#pragma warning restore SYSLIB0039
                         Certificate = new CertificateConfig()
                     }
                 }
@@ -550,7 +552,9 @@ public class SniOptionsSelectorTests
             logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
 
         var (options, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
+#pragma warning disable SYSLIB0039 // TLS 1.0 and 1.1 are obsolete
         Assert.Equal(SslProtocols.Tls13 | SslProtocols.Tls11, options.EnabledSslProtocols);
+#pragma warning restore SYSLIB0039
     }
 
     [Fact]
@@ -690,9 +694,13 @@ public class SniOptionsSelectorTests
             // Defaults to false
             ClientCertificateRequired = true,
             // Defaults to SslProtocols.None
+#pragma warning disable SYSLIB0039 // TLS 1.0 and 1.1 are obsolete
             EnabledSslProtocols = SslProtocols.Tls13 | SslProtocols.Tls11,
+#pragma warning restore SYSLIB0039
+#pragma warning disable SYSLIB0040 // EncryptionPolicy.NoEncryption is obsolete
             // Defaults to EncryptionPolicy.RequireEncryption
             EncryptionPolicy = EncryptionPolicy.NoEncryption,
+#pragma warning restore SYSLIB0040
             // Defaults to null
             RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true,
             // Defaults to null
