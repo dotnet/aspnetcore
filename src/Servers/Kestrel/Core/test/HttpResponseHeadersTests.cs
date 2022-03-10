@@ -160,6 +160,19 @@ public class HttpResponseHeadersTests
     }
 
     [Theory]
+    [InlineData("Da\tta")]
+    public void AddingTabCharactersToHeaderPropertyWorks(string value)
+    {
+        var responseHeaders = (IHeaderDictionary)new HttpResponseHeaders();
+
+        // Known special header
+        responseHeaders.Allow = value;
+
+        // Unknown header fallback
+        responseHeaders.Accept = value;
+    }
+
+    [Theory]
     [InlineData("\r\nData")]
     [InlineData("\0Data")]
     [InlineData("Data\r")]
