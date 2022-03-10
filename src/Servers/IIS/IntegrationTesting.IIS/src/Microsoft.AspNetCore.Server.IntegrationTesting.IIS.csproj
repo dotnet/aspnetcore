@@ -40,6 +40,9 @@
     <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\..\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" Platform="Win32" />
     <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\..\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" Platform="Win32" />
 
+    <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\..\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" Platform="ARM64" />
+    <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\..\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" Platform="ARM64" />
+
     <UpToDateCheckInput Include="$(AspNetCoreModuleV2ShimDll)" />
     <UpToDateCheckInput Include="$(AspNetCoreModuleV2OutOfProcessHandlerDll)" />
   </ItemGroup>
