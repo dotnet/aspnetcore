@@ -23,12 +23,12 @@ public sealed partial class ContentHttpResult : StatusCodeHttpResult
     /// <summary>
     /// Gets or set the content representing the body of the response.
     /// </summary>
-    public string? Content { get; init; }
+    public string? Content { get; internal init; }
 
     /// <summary>
     /// Gets or sets the Content-Type header for the response.
     /// </summary>
-    public string? ContentType { get; init; }
+    public string? ContentType { get; internal init; }
 
     /// <summary>
     /// Writes the content to the HTTP response.

@@ -77,12 +77,12 @@ public sealed partial class SignOutHttpResult : IResult
     /// <summary>
     /// Gets or sets the authentication schemes that are challenged.
     /// </summary>
-    public IList<string> AuthenticationSchemes { get; init; }
+    public IList<string> AuthenticationSchemes { get; internal init; }
 
     /// <summary>
     /// Gets or sets the <see cref="AuthenticationProperties"/> used to perform the sign-out operation.
     /// </summary>
-    public AuthenticationProperties? Properties { get; init; }
+    public AuthenticationProperties? Properties { get; internal init; }
 
     /// <inheritdoc />
     public async Task ExecuteAsync(HttpContext httpContext)

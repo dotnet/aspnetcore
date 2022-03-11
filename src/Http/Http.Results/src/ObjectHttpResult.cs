@@ -44,12 +44,12 @@ public partial class ObjectHttpResult : StatusCodeHttpResult
     /// <summary>
     /// Gets or sets the object result.
     /// </summary>
-    public object? Value { get; init; }
+    public object? Value { get; internal init; }
 
     /// <summary>
     /// Gets or sets the value for the <c>Content-Type</c> header.
     /// </summary>
-    public string? ContentType { get; init; }
+    public string? ContentType { get; internal init; }
 
     internal override Task WriteContentAsync(HttpContext httpContext)
     {

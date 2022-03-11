@@ -62,12 +62,12 @@ public sealed partial class SignInHttpResult : IResult
     /// <summary>
     /// Gets or sets the authentication scheme that is used to perform the sign-in operation.
     /// </summary>
-    public string? AuthenticationScheme { get; init; }
+    public string? AuthenticationScheme { get; internal init; }
 
     /// <summary>
     /// Gets or sets the <see cref="ClaimsPrincipal"/> containing the user claims.
     /// </summary>
-    public ClaimsPrincipal Principal { get; init; }
+    public ClaimsPrincipal Principal { get; internal init; }
 
     /// <summary>
     /// Gets or sets the <see cref="AuthenticationProperties"/> used to perform the sign-in operation.

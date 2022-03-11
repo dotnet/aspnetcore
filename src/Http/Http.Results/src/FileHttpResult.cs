@@ -33,28 +33,28 @@ public abstract partial class FileHttpResult : IResult
     public string FileDownloadName
     {
         get { return _fileDownloadName ?? string.Empty; }
-        init { _fileDownloadName = value; }
+        internal init { _fileDownloadName = value; }
     }
 
     /// <summary>
     /// Gets or sets the last modified information associated with the <see cref="FileHttpResult"/>.
     /// </summary>
-    public DateTimeOffset? LastModified { get; set; }
+    public DateTimeOffset? LastModified { get; internal set; }
 
     /// <summary>
     /// Gets or sets the etag associated with the <see cref="FileHttpResult"/>.
     /// </summary>
-    public EntityTagHeaderValue? EntityTag { get; init; }
+    public EntityTagHeaderValue? EntityTag { get; internal init; }
 
     /// <summary>
     /// Gets or sets the value that enables range processing for the <see cref="FileHttpResult"/>.
     /// </summary>
-    public bool EnableRangeProcessing { get; init; }
+    public bool EnableRangeProcessing { get; internal init; }
 
     /// <summary>
     /// Gets or sets the file length information associated with the <see cref="FileHttpResult"/>.
     /// </summary>
-    public long? FileLength { get; set; }
+    public long? FileLength { get; internal set; }
 
     /// <summary>
     /// 

@@ -30,7 +30,7 @@ public partial class StatusCodeHttpResult : IResult
     /// <summary>
     /// Gets or sets the HTTP status code.
     /// </summary>
-    public int StatusCode { get; init; }
+    public int StatusCode { get; internal init; }
 
     /// <summary>
     /// Sets the status code on the HTTP response.
