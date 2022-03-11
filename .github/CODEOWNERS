@@ -33,8 +33,8 @@
 /src/JSInterop/                                                                   @dotnet/aspnet-blazor-eng
 /src/Middleware/                                                                  @tratcher @BrennanConroy
 /src/Middleware/**/PublicAPI.*Shipped.txt                                         @dotnet/aspnet-api-review @tratcher @BrennanConroy
-/src/Mvc/                                                                         @dotnet/aspnet-blazor-eng
-/src/Mvc/**/PublicAPI.*Shipped.txt                                                @dotnet/aspnet-api-review @dotnet/aspnet-blazor-eng
+/src/Mvc/                                                                         @rafikiassumani-msft
+/src/Mvc/**/PublicAPI.*Shipped.txt                                                @dotnet/aspnet-api-review @rafikiassumani-msft
 /src/ProjectTemplates/Web.ProjectTemplates/content/BlazorServerWeb-CSharp/        @dotnet/aspnet-blazor-eng
 /src/ProjectTemplates/Web.ProjectTemplates/content/ComponentsWebAssembly-CSharp/  @dotnet/aspnet-blazor-eng
 /src/Security/                                                                    @tratcher
