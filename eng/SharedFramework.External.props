@@ -114,6 +114,7 @@
     <_CompilationOnlyReference Include="System.ComponentModel.Annotations" />
     <_CompilationOnlyReference Include="System.Runtime.CompilerServices.Unsafe" />
     <_CompilationOnlyReference Include="System.Text.Json" />
+    <_CompilationOnlyReference Include="System.Text.Encodings.Web" />
   </ItemGroup>
 
   <!--
@@ -124,6 +125,7 @@
     <_CompilationOnlyReference Include="Microsoft.Win32.Registry" />
     <_CompilationOnlyReference Include="System.Security.Cryptography.Cng" />
     <_CompilationOnlyReference Include="System.Security.Principal.Windows" />
+    <_CompilationOnlyReference Include="System.Text.Encodings.Web" />
   </ItemGroup>
 
 </Project>
