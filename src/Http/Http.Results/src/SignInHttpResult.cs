@@ -72,7 +72,7 @@ public sealed partial class SignInHttpResult : IResult
     /// <summary>
     /// Gets or sets the <see cref="AuthenticationProperties"/> used to perform the sign-in operation.
     /// </summary>
-    public AuthenticationProperties? Properties { get; init; }
+    public AuthenticationProperties? Properties { get; internal init; }
 
     /// <inheritdoc />
     public Task ExecuteAsync(HttpContext httpContext)

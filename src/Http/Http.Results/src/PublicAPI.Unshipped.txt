@@ -1,29 +1,20 @@
 #nullable enable
 Microsoft.AspNetCore.Http.ChallengeHttpResult
 Microsoft.AspNetCore.Http.ChallengeHttpResult.AuthenticationSchemes.get -> System.Collections.Generic.IList<string!>!
-Microsoft.AspNetCore.Http.ChallengeHttpResult.AuthenticationSchemes.init -> void
 Microsoft.AspNetCore.Http.ChallengeHttpResult.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Http.ChallengeHttpResult.Properties.get -> Microsoft.AspNetCore.Authentication.AuthenticationProperties?
-Microsoft.AspNetCore.Http.ChallengeHttpResult.Properties.init -> void
 Microsoft.AspNetCore.Http.ContentHttpResult
 Microsoft.AspNetCore.Http.ContentHttpResult.Content.get -> string?
-Microsoft.AspNetCore.Http.ContentHttpResult.Content.init -> void
 Microsoft.AspNetCore.Http.ContentHttpResult.ContentType.get -> string?
-Microsoft.AspNetCore.Http.ContentHttpResult.ContentType.init -> void
 Microsoft.AspNetCore.Http.EmptyHttpResult
 Microsoft.AspNetCore.Http.EmptyHttpResult.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Http.FileHttpResult
 Microsoft.AspNetCore.Http.FileHttpResult.ContentType.get -> string!
 Microsoft.AspNetCore.Http.FileHttpResult.EnableRangeProcessing.get -> bool
-Microsoft.AspNetCore.Http.FileHttpResult.EnableRangeProcessing.init -> void
 Microsoft.AspNetCore.Http.FileHttpResult.EntityTag.get -> Microsoft.Net.Http.Headers.EntityTagHeaderValue?
-Microsoft.AspNetCore.Http.FileHttpResult.EntityTag.init -> void
 Microsoft.AspNetCore.Http.FileHttpResult.FileDownloadName.get -> string!
-Microsoft.AspNetCore.Http.FileHttpResult.FileDownloadName.init -> void
 Microsoft.AspNetCore.Http.FileHttpResult.FileLength.get -> long?
-Microsoft.AspNetCore.Http.FileHttpResult.FileLength.set -> void
 Microsoft.AspNetCore.Http.FileHttpResult.LastModified.get -> System.DateTimeOffset?
-Microsoft.AspNetCore.Http.FileHttpResult.LastModified.set -> void
 Microsoft.AspNetCore.Http.ObjectAtLocationHttpResult
 Microsoft.AspNetCore.Http.ObjectAtLocationHttpResult.Location.get -> string?
 Microsoft.AspNetCore.Http.ObjectAtRouteHttpResult
@@ -31,9 +22,7 @@ Microsoft.AspNetCore.Http.ObjectAtRouteHttpResult.RouteName.get -> string?
 Microsoft.AspNetCore.Http.ObjectAtRouteHttpResult.RouteValues.get -> Microsoft.AspNetCore.Routing.RouteValueDictionary?
 Microsoft.AspNetCore.Http.ObjectHttpResult
 Microsoft.AspNetCore.Http.ObjectHttpResult.ContentType.get -> string?
-Microsoft.AspNetCore.Http.ObjectHttpResult.ContentType.init -> void
 Microsoft.AspNetCore.Http.ObjectHttpResult.Value.get -> object?
-Microsoft.AspNetCore.Http.ObjectHttpResult.Value.init -> void
 Microsoft.AspNetCore.Http.ProblemHttpResult
 Microsoft.AspNetCore.Http.ProblemHttpResult.ProblemDetails.get -> Microsoft.AspNetCore.Mvc.ProblemDetails!
 Microsoft.AspNetCore.Http.RedirectHttpResult
@@ -51,22 +40,16 @@ Microsoft.AspNetCore.Http.RedirectToRouteHttpResult.RouteName.get -> string?
 Microsoft.AspNetCore.Http.RedirectToRouteHttpResult.RouteValues.get -> Microsoft.AspNetCore.Routing.RouteValueDictionary?
 Microsoft.AspNetCore.Http.SignInHttpResult
 Microsoft.AspNetCore.Http.SignInHttpResult.AuthenticationScheme.get -> string?
-Microsoft.AspNetCore.Http.SignInHttpResult.AuthenticationScheme.init -> void
 Microsoft.AspNetCore.Http.SignInHttpResult.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Http.SignInHttpResult.Principal.get -> System.Security.Claims.ClaimsPrincipal!
-Microsoft.AspNetCore.Http.SignInHttpResult.Principal.init -> void
 Microsoft.AspNetCore.Http.SignInHttpResult.Properties.get -> Microsoft.AspNetCore.Authentication.AuthenticationProperties?
-Microsoft.AspNetCore.Http.SignInHttpResult.Properties.init -> void
 Microsoft.AspNetCore.Http.SignOutHttpResult
 Microsoft.AspNetCore.Http.SignOutHttpResult.AuthenticationSchemes.get -> System.Collections.Generic.IList<string!>!
-Microsoft.AspNetCore.Http.SignOutHttpResult.AuthenticationSchemes.init -> void
 Microsoft.AspNetCore.Http.SignOutHttpResult.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Http.SignOutHttpResult.Properties.get -> Microsoft.AspNetCore.Authentication.AuthenticationProperties?
-Microsoft.AspNetCore.Http.SignOutHttpResult.Properties.init -> void
 Microsoft.AspNetCore.Http.StatusCodeHttpResult
 Microsoft.AspNetCore.Http.StatusCodeHttpResult.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Http.StatusCodeHttpResult.StatusCode.get -> int
-Microsoft.AspNetCore.Http.StatusCodeHttpResult.StatusCode.init -> void
 static Microsoft.AspNetCore.Http.Results.Bytes(System.ReadOnlyMemory<byte> contents, string? contentType = null, string? fileDownloadName = null, bool enableRangeProcessing = false, System.DateTimeOffset? lastModified = null, Microsoft.Net.Http.Headers.EntityTagHeaderValue? entityTag = null) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.Empty.get -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.Stream(System.Func<System.IO.Stream!, System.Threading.Tasks.Task!>! streamWriterCallback, string? contentType = null, string? fileDownloadName = null, System.DateTimeOffset? lastModified = null, Microsoft.Net.Http.Headers.EntityTagHeaderValue? entityTag = null) -> Microsoft.AspNetCore.Http.IResult!
