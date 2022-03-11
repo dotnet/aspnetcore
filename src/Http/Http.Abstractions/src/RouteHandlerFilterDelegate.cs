@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Http.Abstractions;
+namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
 /// A delegate that is applied as a filter on a route handler.

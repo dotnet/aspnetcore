@@ -10,7 +10,6 @@ using System.Reflection;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
-using Microsoft.AspNetCore.Http.Abstractions;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
@@ -80,7 +79,7 @@ public static partial class RequestDelegateFactory
     private static readonly BinaryExpression TempSourceStringNullExpr = Expression.Equal(TempSourceStringExpr, Expression.Constant(null));
     private static readonly UnaryExpression TempSourceStringIsNotNullOrEmptyExpr = Expression.Not(Expression.Call(StringIsNullOrEmptyMethod, TempSourceStringExpr));
 
-    private static readonly ConstructorInfo RouteHandlerFilterContextConstructor = typeof(RouteHandlerFilterContext).GetConstructor(new[] { typeof(HttpContext), typeof(IServiceProvider), typeof(object[]) })!;
+    private static readonly ConstructorInfo RouteHandlerFilterContextConstructor = typeof(RouteHandlerFilterContext).GetConstructor(new[] { typeof(HttpContext), typeof(object[]) })!;
     private static readonly ParameterExpression FilterContextExpr = Expression.Parameter(typeof(RouteHandlerFilterContext), "context");
     private static readonly MemberExpression FilterContextParametersExpr = Expression.Property(FilterContextExpr, typeof(RouteHandlerFilterContext).GetProperty(nameof(RouteHandlerFilterContext.Parameters))!);
     private static readonly MemberExpression FilterContextHttpContextExpr = Expression.Property(FilterContextExpr, typeof(RouteHandlerFilterContext).GetProperty(nameof(RouteHandlerFilterContext.HttpContext))!);
@@ -206,7 +205,7 @@ public static partial class RequestDelegateFactory
                 Expression.Assign(
                     InvokedFilterContextExpr,
                     Expression.New(RouteHandlerFilterContextConstructor,
-                        new Expression[] { HttpContextExpr, RequestServicesExpr, Expression.NewArrayInit(typeof(object), factoryContext.BoxedArgs) })),
+                        new Expression[] { HttpContextExpr, Expression.NewArrayInit(typeof(object), factoryContext.BoxedArgs) })),
                     Expression.Invoke(invokePipeline, InvokedFilterContextExpr)
                 );
         }
@@ -244,9 +243,10 @@ public static partial class RequestDelegateFactory
 
         for (var i = factoryContext.Filters.Count - 1; i >= 0; i--)
         {
-            var currentFilterFactory = factoryContext.Filters![i];
+            var currentFilterFactory = factoryContext.Filters[i];
             var nextFilter = filteredInvocation;
-            filteredInvocation = (RouteHandlerFilterContext context) => currentFilterFactory(methodInfo, nextFilter)(context);
+            var currentFilter = currentFilterFactory(methodInfo, nextFilter);
+            filteredInvocation = (RouteHandlerFilterContext context) => currentFilter(context);
 
         }
         return filteredInvocation;

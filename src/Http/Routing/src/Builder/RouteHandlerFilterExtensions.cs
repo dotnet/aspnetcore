@@ -4,7 +4,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Http;
@@ -34,12 +33,14 @@ public static class RouteHandlerFilterExtensions
     /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the route handler.</returns>
     public static RouteHandlerBuilder AddFilter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TFilterType>(this RouteHandlerBuilder builder) where TFilterType : IRouteHandlerFilter
     {
-        builder.RouteHandlerFilterFactories.Add((methodInfo, next) => async (context) =>
+        var type = typeof(TFilterType);
+        // We can provide the `MethodInfo` as an argument to the factory here so that `IRouteHandlerFilter`
+        // implementors can access the MethodInfo in their constructors.
+        var filterFactory = ActivatorUtilities.CreateFactory(type, Array.Empty<Type>());
+        builder.RouteHandlerFilterFactories.Add((methodInfo, next) => (context) =>
         {
-            var type = typeof(TFilterType);
-            var filterFactory = ActivatorUtilities.CreateFactory(type, Array.Empty<Type>());
-            IRouteHandlerFilter filter = (IRouteHandlerFilter)filterFactory.Invoke(context.ServiceProvider, Array.Empty<object>());
-            return await filter.InvokeAsync(context, next);
+            IRouteHandlerFilter filter = (IRouteHandlerFilter)filterFactory.Invoke(context.HttpContext.RequestServices, Array.Empty<object>());
+            return filter.InvokeAsync(context, next);
         });
         return builder;
     }
