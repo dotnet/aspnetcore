@@ -5,10 +5,10 @@
   "tools": {
     "dotnet": "7.0.100-preview.2.22114.1",
     "runtimes": {
-      "dotnet": [
+      "dotnet/x86": [
         "$(MicrosoftNETCoreBrowserDebugHostTransportVersion)"
       ],
-      "dotnet/x86": [
+      "dotnet": [
         "$(MicrosoftNETCoreBrowserDebugHostTransportVersion)"
       ]
     },
