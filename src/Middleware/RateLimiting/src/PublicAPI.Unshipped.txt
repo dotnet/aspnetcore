@@ -15,4 +15,7 @@ Microsoft.AspNetCore.RateLimiting.Policies.RateLimitingPolicyMetadata.RateLimiti
 Microsoft.AspNetCore.RateLimiting.RateLimitingMiddleware
 Microsoft.AspNetCore.RateLimiting.RateLimitingMiddleware.RateLimitingMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.RateLimiting.RateLimitingOptions!>! options) -> void
 Microsoft.AspNetCore.RateLimiting.RateLimitingOptions
-static Microsoft.AspNetCore.Builder.RateLimitingEndpointConventionBuilderExtensions.RequireRateLimiting<TBuilder>(this TBuilder builder, Microsoft.AspNetCore.RateLimiting.RateLimitingOptions! options, string! name) -> TBuilder
+Microsoft.AspNetCore.RateLimiting.RateLimitingOptionsExtensions
+static Microsoft.AspNetCore.Builder.RateLimitingEndpointConventionBuilderExtensions.RequireRateLimiting<TBuilder>(this TBuilder builder, string! name) -> TBuilder
+static Microsoft.AspNetCore.RateLimiting.RateLimitingOptionsExtensions.AddConcurrencyLimiter(this Microsoft.AspNetCore.RateLimiting.RateLimitingOptions! options, string! name, System.Threading.RateLimiting.ConcurrencyLimiterOptions! concurrencyLimiterOptions) -> Microsoft.AspNetCore.RateLimiting.RateLimitingOptions!
+static Microsoft.AspNetCore.RateLimiting.RateLimitingOptionsExtensions.AddTokenBucketRateLimiter(this Microsoft.AspNetCore.RateLimiting.RateLimitingOptions! options, string! name, System.Threading.RateLimiting.TokenBucketRateLimiterOptions! tokenBucketRateLimiterOptions) -> Microsoft.AspNetCore.RateLimiting.RateLimitingOptions!

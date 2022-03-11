@@ -12,7 +12,10 @@ internal class RateLimitingPolicy
 
     public RateLimitingPolicy(RateLimiter limiter)
     {
-        //Error handling()
+        if (limiter == null)
+        {
+            throw new ArgumentNullException(nameof(limiter));
+        }
         _limiter = limiter;
     }
 

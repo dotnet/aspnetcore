@@ -30,7 +30,7 @@ public class RateLimitingOptions
     /// Gets the policy based on the <paramref name="name"/>
     /// </summary>
     /// <param name="name">The name of the policy to lookup.</param>
-    /// <returns>The <see cref="CorsPolicy"/> if the policy was added.<c>null</c> otherwise.</returns>
+    /// <returns>The <see cref="RateLimitingPolicy"/> if the policy was added.<c>null</c> otherwise.</returns>
     internal RateLimitingPolicy? GetPolicy(string name)
     {
         if (name == null)
