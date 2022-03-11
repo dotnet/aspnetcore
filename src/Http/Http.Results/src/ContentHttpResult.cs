@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
-/// 
+/// An <see cref="StatusCodeHttpResult"/> that when executed will produce a response with content.
 /// </summary>
 public sealed partial class ContentHttpResult : StatusCodeHttpResult
 {
