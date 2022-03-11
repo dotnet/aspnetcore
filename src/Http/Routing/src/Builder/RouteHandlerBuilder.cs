@@ -1,7 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Http;
+using System.Reflection;
+using Microsoft.AspNetCore.Http.Abstractions;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -13,7 +14,7 @@ public sealed class RouteHandlerBuilder : IEndpointConventionBuilder
     private readonly IEnumerable<IEndpointConventionBuilder>? _endpointConventionBuilders;
     private readonly IEndpointConventionBuilder? _endpointConventionBuilder;
 
-    internal List<IRouteHandlerFilter> RouteHandlerFilters { get; } = new();
+    internal List<Func<MethodInfo, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>> RouteHandlerFilterFactories { get; } = new();
 
     /// <summary>
     /// Instantiates a new <see cref="RouteHandlerBuilder" /> given a single

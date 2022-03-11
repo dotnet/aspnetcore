@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Reflection;
+using Microsoft.AspNetCore.Http.Abstractions;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.Logging;
 
@@ -35,5 +37,5 @@ public sealed class RequestDelegateFactoryOptions
     /// <summary>
     /// The list of filters that must run in the pipeline for a given route handler.
     /// </summary>
-    public IReadOnlyList<IRouteHandlerFilter>? RouteHandlerFilters { get; init; }
+    public IReadOnlyList<Func<MethodInfo, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>? RouteHandlerFilterFactories { get; init; }
 }

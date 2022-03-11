@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Http.Abstractions;
+
 namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
@@ -16,5 +18,5 @@ public interface IRouteHandlerFilter
     /// <param name="next">The next filter in the pipeline.</param>
     /// <returns>An awaitable result of calling the handler and apply
     /// any modifications made by filters in the pipeline.</returns>
-    ValueTask<object?> InvokeAsync(RouteHandlerFilterContext context, Func<RouteHandlerFilterContext, ValueTask<object?>> next);
+    ValueTask<object?> InvokeAsync(RouteHandlerFilterContext context, RouteHandlerFilterDelegate next);
 }

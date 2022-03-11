@@ -13,11 +13,13 @@ public class RouteHandlerFilterContext
     /// Creates a new instance of the <see cref="RouteHandlerFilterContext"/> for a given request.
     /// </summary>
     /// <param name="httpContext">The <see cref="HttpContext"/> associated with the current request.</param>
+    /// <param name="serviceProvider">The <see cref="IServiceProvider"/> associated with the current request.</param>
     /// <param name="parameters">A list of parameters provided in the current request.</param>
-    public RouteHandlerFilterContext(HttpContext httpContext, params object[] parameters)
+    public RouteHandlerFilterContext(HttpContext httpContext, IServiceProvider serviceProvider, params object[] parameters)
     {
         HttpContext = httpContext;
         Parameters = parameters;
+        ServiceProvider = serviceProvider;
     }
 
     /// <summary>
@@ -28,8 +30,13 @@ public class RouteHandlerFilterContext
     /// <summary>
     /// A list of parameters provided in the current request to the filter.
     /// <remarks>
-    /// This list is not read-only to premit modifying of existing parameters by filters.
+    /// This list is not read-only to permit modifying of existing parameters by filters.
     /// </remarks>
     /// </summary>
     public IList<object?> Parameters { get; }
+
+    /// <summary>
+    /// The <see cref="IServiceProvider"/> associated with the current request.
+    /// </summary>
+    public IServiceProvider ServiceProvider { get; }
 }

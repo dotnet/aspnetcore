@@ -19,6 +19,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Abstractions;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Http.Metadata;
@@ -4216,7 +4217,14 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
         {
-            RouteHandlerFilters = new List<IRouteHandlerFilter>() { new ModifyStringArgumentFilter() }
+            RouteHandlerFilterFactories = new List<Func<MethodInfo, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            {
+                (methodInfo, next) => async (context) =>
+                {
+                    context.Parameters[0] = context.Parameters[0] != null ? $"{((string)context.Parameters[0]!)}Prefix" : "NULL";
+                    return await next(context);
+                }
+            }
         });
         var requestDelegate = factoryResult.RequestDelegate;
         await requestDelegate(httpContext);
@@ -4243,7 +4251,16 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
         {
-            RouteHandlerFilters = new List<IRouteHandlerFilter>() { new ProvideCustomErrorMessageFilter() }
+            RouteHandlerFilterFactories = new List<Func<MethodInfo, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>() {
+                (methodInfo, next) => async (context) =>
+                {
+                    if (context.HttpContext.Response.StatusCode == 400)
+                    {
+                        return Results.Problem("New response", statusCode: 400);
+                    }
+                    return await next(context);
+                }
+            }
         });
         var requestDelegate = factoryResult.RequestDelegate;
         await requestDelegate(httpContext);
@@ -4280,7 +4297,22 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
         {
-            RouteHandlerFilters = new List<IRouteHandlerFilter>() { new ModifyIntArgumentFilter(), new LogArgumentsFilter(Log) }
+            RouteHandlerFilterFactories = new List<Func<MethodInfo, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            {
+                (methodInfo, next) => async (context) =>
+                {
+                    context.Parameters[1] = ((int)context.Parameters[1]!) + 2;
+                    return await next(context);
+                },
+                (methodInfo, next) => async (context) =>
+                {
+                    foreach (var parameter in context.Parameters)
+                    {
+                        Log(parameter!.ToString() ?? "no arg");
+                    }
+                    return await next(context);
+                }
+            }
         });
         var requestDelegate = factoryResult.RequestDelegate;
         await requestDelegate(httpContext);
@@ -4289,6 +4321,54 @@ public class RequestDelegateFactoryTests : LoggedTest
         var responseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
         Assert.Equal("Hello, TestName! You are 27 years old.", responseBody);
         Assert.Equal(2, loggerInvoked);
+    }
+
+    [Fact]
+    public async Task RequestDelegateFactory_CanInvokeEndpointFilter_ThatUsesMethodInfo()
+    {
+        // Arrange
+        string HelloName(string name)
+        {
+            return $"Hello, {name}!.";
+        };
+
+        var httpContext = CreateHttpContext();
+
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
+
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["name"] = "TestName"
+        });
+
+        // Act
+        var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
+        {
+            RouteHandlerFilterFactories = new List<Func<MethodInfo, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            {
+                (methodInfo, next) =>
+                {
+                    var parameters = methodInfo.GetParameters();
+                    var isInt = parameters.Length == 2 && parameters[1].ParameterType == typeof(int);
+                    return async (context) =>
+                    {
+                        if (isInt)
+                        {
+                            context.Parameters[1] = ((int)context.Parameters[1]!) + 2;
+                            return await next(context);
+                        }
+                        return "Is not an int.";
+                    };
+                },
+            }
+        });
+        var requestDelegate = factoryResult.RequestDelegate;
+        await requestDelegate(httpContext);
+
+        // Assert
+        var responseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+        Assert.Equal("Is not an int.", responseBody);
     }
 
     [Fact]
@@ -4316,7 +4396,16 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create(PrintTodo, new RequestDelegateFactoryOptions()
         {
-            RouteHandlerFilters = new List<IRouteHandlerFilter>() { new ModifyTodoArgumentFilter() }
+            RouteHandlerFilterFactories = new List<Func<MethodInfo, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            {
+                (methodInfo, next) => async (context) =>
+                {
+                    Todo originalTodo = (Todo)context.Parameters[0]!;
+                    originalTodo!.IsComplete = !originalTodo.IsComplete;
+                    context.Parameters[0] = originalTodo;
+                    return await next(context);
+                }
+            }
         });
         var requestDelegate = factoryResult.RequestDelegate;
         await requestDelegate(httpContext);
@@ -4348,7 +4437,18 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
         {
-            RouteHandlerFilters = new List<IRouteHandlerFilter>() { new ModifyStringResultFilter() }
+            RouteHandlerFilterFactories = new List<Func<MethodInfo, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            {
+                (methodInfo, next) => async (context) =>
+                {
+                    var previousResult = await next(context);
+                    if (previousResult is string stringResult)
+                    {
+                        return stringResult.ToUpperInvariant();
+                    }
+                    return previousResult;
+                }
+            }
         });
         var requestDelegate = factoryResult.RequestDelegate;
         await requestDelegate(httpContext);
@@ -4380,7 +4480,23 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
         {
-            RouteHandlerFilters = new List<IRouteHandlerFilter>() { new ModifyStringResultFilter(), new ModifyStringArgumentFilter() }
+            RouteHandlerFilterFactories = new List<Func<MethodInfo, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            {
+                (methodInfo, next) => async (context) =>
+                {
+                    var previousResult = await next(context);
+                    if (previousResult is string stringResult)
+                    {
+                        return stringResult.ToUpperInvariant();
+                    }
+                    return previousResult;
+                },
+                (methodInfo, next) => async (context) =>
+                {
+                    context.Parameters[0] = context.Parameters[0] != null ? $"{((string)context.Parameters[0]!)}Prefix" : "NULL";
+                    return await next(context);
+                }
+            }
         });
         var requestDelegate = factoryResult.RequestDelegate;
         await requestDelegate(httpContext);
@@ -4747,78 +4863,6 @@ public class RequestDelegateFactoryTests : LoggedTest
         public Task<X509Certificate2?> GetClientCertificateAsync(CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
-        }
-    }
-
-    private class ModifyStringArgumentFilter : IRouteHandlerFilter
-    {
-        public async ValueTask<object?> InvokeAsync(RouteHandlerFilterContext context, Func<RouteHandlerFilterContext, ValueTask<object?>> next)
-        {
-            context.Parameters[0] = context.Parameters[0] != null ? $"{((string)context.Parameters[0]!)}Prefix" : "NULL";
-            return await next(context);
-        }
-    }
-
-    private class ModifyIntArgumentFilter : IRouteHandlerFilter
-    {
-        public async ValueTask<object?> InvokeAsync(RouteHandlerFilterContext context, Func<RouteHandlerFilterContext, ValueTask<object?>> next)
-        {
-            context.Parameters[1] = ((int)context.Parameters[1]!) + 2;
-            return await next(context);
-        }
-    }
-
-    private class ModifyTodoArgumentFilter : IRouteHandlerFilter
-    {
-        public async ValueTask<object?> InvokeAsync(RouteHandlerFilterContext context, Func<RouteHandlerFilterContext, ValueTask<object?>> next)
-        {
-            Todo originalTodo = (Todo)context.Parameters[0]!;
-            originalTodo!.IsComplete = !originalTodo.IsComplete;
-            context.Parameters[0] = originalTodo;
-            return await next(context);
-        }
-    }
-
-    private class ProvideCustomErrorMessageFilter : IRouteHandlerFilter
-    {
-        public async ValueTask<object?> InvokeAsync(RouteHandlerFilterContext context, Func<RouteHandlerFilterContext, ValueTask<object?>> next)
-        {
-            if (context.HttpContext.Response.StatusCode == 400)
-            {
-                return Results.Problem("New response", statusCode: 400);
-            }
-            return await next(context);
-        }
-    }
-
-    private class LogArgumentsFilter : IRouteHandlerFilter
-    {
-        private Action<string> _logger;
-
-        public LogArgumentsFilter(Action<string> logger)
-        {
-            _logger = logger;
-        }
-        public async ValueTask<object?> InvokeAsync(RouteHandlerFilterContext context, Func<RouteHandlerFilterContext, ValueTask<object?>> next)
-        {
-            foreach (var parameter in context.Parameters)
-            {
-                _logger(parameter!.ToString() ?? "no arg");
-            }
-            return await next(context);
-        }
-    }
-
-    private class ModifyStringResultFilter : IRouteHandlerFilter
-    {
-        public async ValueTask<object?> InvokeAsync(RouteHandlerFilterContext context, Func<RouteHandlerFilterContext, ValueTask<object?>> next)
-        {
-            var previousResult = await next(context);
-            if (previousResult is string stringResult)
-            {
-                return stringResult.ToUpperInvariant();
-            }
-            return previousResult;
         }
     }
 }
