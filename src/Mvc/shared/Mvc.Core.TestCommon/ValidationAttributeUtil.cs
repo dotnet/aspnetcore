@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding;
 
@@ -25,7 +24,7 @@ public static class ValidationAttributeUtil
         return attr.FormatErrorMessage(field);
     }
 
-    public static string GetRegExErrorMessage([StringSyntax(StringSyntaxAttribute.Regex)] string pattern, string field)
+    public static string GetRegExErrorMessage(string pattern, string field)
     {
         var attr = new RegularExpressionAttribute(pattern);
         return attr.FormatErrorMessage(field);
