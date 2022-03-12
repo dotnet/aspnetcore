@@ -8,6 +8,6 @@ namespace Microsoft.AspNetCore.Http;
 /// </summary>
 /// <param name="context">The <see cref="RouteHandlerFilterContext"/> associated with the current request.</param>
 /// <returns>
-/// An awaitable result of calling the handler and applying any modifications made by filters in the pipeline.
+/// A <see cref="ValueTask{object}"/> result of calling the handler and applying any modifications made by filters in the pipeline.
 /// </returns>
 public delegate ValueTask<object?> RouteHandlerFilterDelegate(RouteHandlerFilterContext context);
