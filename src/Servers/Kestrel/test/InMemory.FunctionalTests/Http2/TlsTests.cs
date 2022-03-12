@@ -47,7 +47,9 @@ public class TlsTests : LoggedTest
             listenOptions.Protocols = HttpProtocols.Http2;
             listenOptions.UseHttps(_x509Certificate2, httpsOptions =>
             {
+#pragma warning disable SYSLIB0039 // TLS 1.0 and 1.1 are obsolete
                 httpsOptions.SslProtocols = SslProtocols.Tls11 | SslProtocols.Tls12;
+#pragma warning restore SYSLIB0039
             });
         }))
         {
@@ -59,7 +61,9 @@ public class TlsTests : LoggedTest
                     TargetHost = "localhost",
                     RemoteCertificateValidationCallback = (_, __, ___, ____) => true,
                     ApplicationProtocols = new List<SslApplicationProtocol> { SslApplicationProtocol.Http2, SslApplicationProtocol.Http11 },
+#pragma warning disable SYSLIB0039 // TLS 1.0 and 1.1 are obsolete
                     EnabledSslProtocols = SslProtocols.Tls11, // Intentionally less than the required 1.2
+#pragma warning restore SYSLIB0039
                 }, CancellationToken.None);
 
                 var reader = PipeReaderFactory.CreateFromStream(PipeOptions.Default, sslStream, CancellationToken.None);
