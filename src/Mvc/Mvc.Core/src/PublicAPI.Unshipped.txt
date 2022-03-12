@@ -3,6 +3,9 @@
 Microsoft.AspNetCore.Mvc.ApiBehaviorOptions.DisableImplicitFromServicesParameters.get -> bool
 Microsoft.AspNetCore.Mvc.ApiBehaviorOptions.DisableImplicitFromServicesParameters.set -> void
 Microsoft.AspNetCore.Mvc.ApplicationModels.InferParameterBindingInfoConvention.InferParameterBindingInfoConvention(Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider! modelMetadataProvider, Microsoft.Extensions.DependencyInjection.IServiceProviderIsService! serviceProviderIsService) -> void
+Microsoft.AspNetCore.Mvc.HttpResultsActionResult
+Microsoft.AspNetCore.Mvc.HttpResultsActionResult.HttpResultsActionResult(Microsoft.AspNetCore.Http.IResult! result) -> void
+Microsoft.AspNetCore.Mvc.HttpResultsActionResult.Result.get -> Microsoft.AspNetCore.Http.IResult!
 Microsoft.AspNetCore.Mvc.ModelBinding.Binders.TryParseModelBinderProvider
 Microsoft.AspNetCore.Mvc.ModelBinding.Binders.TryParseModelBinderProvider.GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext! context) -> Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder?
 Microsoft.AspNetCore.Mvc.ModelBinding.Binders.TryParseModelBinderProvider.TryParseModelBinderProvider() -> void
@@ -13,6 +16,7 @@ Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.SystemTextJsonValidationMetadataP
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.SystemTextJsonValidationMetadataProvider.SystemTextJsonValidationMetadataProvider(System.Text.Json.JsonNamingPolicy! namingPolicy) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ValidationMetadata.ValidationModelName.get -> string?
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ValidationMetadata.ValidationModelName.set -> void
+override Microsoft.AspNetCore.Mvc.HttpResultsActionResult.ExecuteResultAsync(Microsoft.AspNetCore.Mvc.ActionContext! context) -> System.Threading.Tasks.Task!
 virtual Microsoft.AspNetCore.Mvc.Infrastructure.ConfigureCompatibilityOptions<TOptions>.PostConfigure(string? name, TOptions! options) -> void
 *REMOVED*~Microsoft.AspNetCore.Mvc.Formatters.FormatFilter.FormatFilter(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
 Microsoft.AspNetCore.Mvc.Formatters.FormatFilter.FormatFilter(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void

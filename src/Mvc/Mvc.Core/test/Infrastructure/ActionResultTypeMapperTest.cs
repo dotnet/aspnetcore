@@ -1,6 +1,7 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Http;
 using Moq;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -21,6 +22,22 @@ public class ActionResultTypeMapperTest
 
         // Assert
         Assert.Same(expected, result);
+    }
+
+    [Fact]
+    public void Convert_WithIResult_DelegatesToInterface()
+    {
+        // Arrange
+        var mapper = new ActionResultTypeMapper();
+
+        var returnValue = Mock.Of<IResult>();
+
+        // Act
+        var result = mapper.Convert(returnValue, returnValue.GetType());
+
+        // Assert
+        var httpResultsResult = Assert.IsType<HttpResultsActionResult>(result);
+        Assert.Same(returnValue, httpResultsResult.Result);
     }
 
     [Fact]
