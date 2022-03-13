@@ -180,7 +180,8 @@ public class AssemblyTestLog : IAcceptFailureReports, IDisposable
         return serviceCollection.BuildServiceProvider();
     }
 
-    public static AssemblyTestLog Create(Assembly assembly, string baseDirectory)
+    // internal for testing. Expectation is AspNetTestAssembly runner calls ForAssembly() first for every Assembly.
+    internal static AssemblyTestLog Create(Assembly assembly, string baseDirectory)
     {
         var logStart = DateTimeOffset.UtcNow;
         SerilogLoggerProvider serilogLoggerProvider = null;
@@ -223,17 +224,12 @@ public class AssemblyTestLog : IAcceptFailureReports, IDisposable
             if (!_logs.TryGetValue(assembly, out var log))
             {
                 var stackTrace = Environment.StackTrace;
-                if (!(stackTrace.Contains(
+                if (!stackTrace.Contains(
                     "Microsoft.AspNetCore.Testing"
 #if NETCOREAPP
                     , StringComparison.Ordinal
 #endif
-                    ) || stackTrace.Contains(
-                    "Microsoft.Extensions.Logging.Testing.Tests"
-#if NETCOREAPP
-                    , StringComparison.Ordinal
-#endif
-                    )))
+                    ))
                 {
                     throw new InvalidOperationException($"Unexpected initial {nameof(ForAssembly)} caller.");
                 }

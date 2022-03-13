@@ -27,6 +27,9 @@ public class AspNetTestAssemblyRunner : XunitTestAssemblyRunner
     {
     }
 
+    // internal for testing
+    internal IEnumerable<object> Fixtures => _assemblyFixtureMappings.Values;
+
     protected override async Task AfterTestAssemblyStartingAsync()
     {
         await base.AfterTestAssemblyStartingAsync().ConfigureAwait(false);
@@ -82,12 +85,12 @@ public class AspNetTestAssemblyRunner : XunitTestAssemblyRunner
     protected override async Task BeforeTestAssemblyFinishedAsync()
     {
         // Dispose fixtures
-        foreach (var disposable in _assemblyFixtureMappings.Values.OfType<IDisposable>())
+        foreach (var disposable in Fixtures.OfType<IDisposable>())
         {
             Aggregator.Run(disposable.Dispose);
         }
 
-        foreach (var disposable in _assemblyFixtureMappings.Values.OfType<IAsyncLifetime>())
+        foreach (var disposable in Fixtures.OfType<IAsyncLifetime>())
         {
             await Aggregator.RunAsync(disposable.DisposeAsync).ConfigureAwait(false);
         }
@@ -114,7 +117,7 @@ public class AspNetTestAssemblyRunner : XunitTestAssemblyRunner
             .ConfigureAwait(false);
         if (runSummary.Failed != 0)
         {
-            foreach (var fixture in _assemblyFixtureMappings.Values.OfType<IAcceptFailureReports>())
+            foreach (var fixture in Fixtures.OfType<IAcceptFailureReports>())
             {
                 fixture.ReportTestFailure();
             }
