@@ -5,11 +5,15 @@
   "tools": {
     "dotnet": "7.0.100-preview.3.22163.1",
     "runtimes": {
+      "dotnet": [
+        "2.1.30",
+        "$(MicrosoftNETCoreBrowserDebugHostTransportVersion)"
+      ],
       "dotnet/x86": [
         "$(MicrosoftNETCoreBrowserDebugHostTransportVersion)"
       ],
-      "dotnet": [
-        "$(MicrosoftNETCoreBrowserDebugHostTransportVersion)"
+      "aspnetcore": [
+        "3.1.21"
       ]
     },
     "Git": "2.22.0",
