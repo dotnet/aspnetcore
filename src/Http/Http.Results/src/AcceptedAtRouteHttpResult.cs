@@ -39,7 +39,7 @@ public sealed class AcceptedAtRouteHttpResult : IResult, IObjectHttpResult, IAtR
     {
         Value = value;
         RouteName = routeName;
-        RouteValues = routeValues == null ? null : new RouteValueDictionary(routeValues);
+        RouteValues = new RouteValueDictionary(routeValues);
     }
 
     /// <inheritdoc/>

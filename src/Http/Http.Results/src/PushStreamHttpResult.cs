@@ -41,5 +41,5 @@ public sealed class PushStreamHttpResult : IResult, IFileHttpResult
     public Task ExecuteAsync(HttpContext httpContext) => HttpResultsWriter.WriteResultAsFileAsync(
             httpContext,
             fileHttpResult: this,
-            (context, _, _) => _streamWriterCallback(httpContext.Response.Body));
+            (context, _, _) => _streamWriterCallback(context.Response.Body));
 }
