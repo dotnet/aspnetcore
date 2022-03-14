@@ -240,16 +240,15 @@ public static partial class RequestDelegateFactory
                             : Expression.Call(target, methodInfo, factoryContext.ContextArgAccess))
                 )),
             FilterContextExpr).Compile();
+        var routeHandlerContext = new RouteHandlerContext(
+            methodInfo,
+            new EndpointMetadataCollection(factoryContext.Metadata));
 
         for (var i = factoryContext.Filters.Count - 1; i >= 0; i--)
         {
             var currentFilterFactory = factoryContext.Filters[i];
             var nextFilter = filteredInvocation;
-            var currentFilter = currentFilterFactory(
-                new RouteHandlerContext(
-                    methodInfo,
-                    new EndpointMetadataCollection(factoryContext.Metadata)),
-                nextFilter);
+            var currentFilter = currentFilterFactory(routeHandlerContext, nextFilter);
             filteredInvocation = (RouteHandlerInvocationContext context) => currentFilter(context);
 
         }
