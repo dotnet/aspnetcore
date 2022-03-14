@@ -3,10 +3,26 @@
 
 namespace Microsoft.AspNetCore.Http;
 
-internal sealed class NotFoundObjectHttpResult : ObjectHttpResult
+/// <summary>
+/// 
+/// </summary>
+public sealed class NotFoundObjectHttpResult : IResult, IObjectHttpResult, IStatusCodeHttpResult
 {
-    public NotFoundObjectHttpResult(object? value)
-        : base(value, StatusCodes.Status404NotFound)
+    internal NotFoundObjectHttpResult(object? value)
     {
+        Value = value;
     }
+
+    /// <summary>
+    /// Gets or sets the object result.
+    /// </summary>
+    public object? Value { get; internal init; }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public int? StatusCode => StatusCodes.Status404NotFound;
+
+    public Task ExecuteAsync(HttpContext httpContext)
+        => HttpResultsWriter.WriteResultAsJson(httpContext, Value, statusCode: StatusCode);
 }

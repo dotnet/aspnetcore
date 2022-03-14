@@ -9,17 +9,24 @@ using Microsoft.AspNetCore.Mvc;
 /// An <see cref="IResult"/> that on execution will write Problem Details
 /// HTTP API responses based on https://tools.ietf.org/html/rfc7807
 /// </summary>
-public sealed class ProblemHttpResult : ObjectHttpResult
+public sealed class ProblemHttpResult : IResult, IProblemHttpResult
 {
+    internal ProblemHttpResult(ProblemDetails problemDetails)
+    {
+        ProblemDetails = problemDetails;
+    }
+
     /// <summary>
     /// Gets the <see cref="ProblemDetails"/> instance.
     /// </summary>
     public ProblemDetails ProblemDetails { get; }
 
-    internal ProblemHttpResult(ProblemDetails problemDetails)
-        : base(problemDetails)
-    {
-        ContentType = "application/problem+json";
-        ProblemDetails = problemDetails;
-    }
+    /// <summary>
+    /// Gets or sets the value for the <c>Content-Type</c> header.
+    /// </summary>
+    public string ContentType => "application/problem+json";
+
+    /// <inheritdoc/>
+    public Task ExecuteAsync(HttpContext httpContext)
+        => HttpResultsWriter.WriteResultAsJson(httpContext, ProblemDetails, ContentType);
 }

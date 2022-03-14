@@ -3,10 +3,28 @@
 
 namespace Microsoft.AspNetCore.Http;
 
-internal sealed class OkObjectHttpResult : ObjectHttpResult
+using System.Threading.Tasks;
+
+/// <summary>
+/// 
+/// </summary>
+public sealed class OkObjectHttpResult : IResult, IObjectHttpResult, IStatusCodeHttpResult
 {
-    public OkObjectHttpResult(object? value)
-        : base(value, StatusCodes.Status200OK)
+    internal OkObjectHttpResult(object? value)
     {
+        Value = value;
     }
+
+    /// <summary>
+    /// Gets or sets the object result.
+    /// </summary>
+    public object? Value { get; internal init; }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public int? StatusCode => StatusCodes.Status200OK;
+
+    public Task ExecuteAsync(HttpContext httpContext)
+        => HttpResultsWriter.WriteResultAsJson(httpContext, Value, statusCode: StatusCode);
 }

@@ -3,10 +3,25 @@
 
 namespace Microsoft.AspNetCore.Http;
 
-internal class NoContentHttpResult : StatusCodeHttpResult
+/// <summary>
+/// 
+/// </summary>
+public class NoContentHttpResult : IResult, IStatusCodeHttpResult
 {
-    public NoContentHttpResult()
-        : base(StatusCodes.Status204NoContent)
+    private readonly int _statuCode = StatusCodes.Status204NoContent;
+
+    internal NoContentHttpResult()
     {
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public int? StatusCode => _statuCode;
+
+    public Task ExecuteAsync(HttpContext httpContext)
+    {
+        HttpResultsWriter.SetHttpStatusCode(httpContext, _statuCode);
+        return Task.CompletedTask;
     }
 }

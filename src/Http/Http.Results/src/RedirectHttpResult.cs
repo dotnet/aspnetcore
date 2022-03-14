@@ -11,8 +11,33 @@ namespace Microsoft.AspNetCore.Http;
 /// An <see cref="IResult"/> that returns a Found (302), Moved Permanently (301), Temporary Redirect (307),
 /// or Permanent Redirect (308) response with a Location header to the supplied URL.
 /// </summary>
-public partial class RedirectHttpResult : IResult
+public sealed partial class RedirectHttpResult : IResult, IRedirectHttpResult
 {
+    private readonly string _url;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="RedirectHttpResult"/> class with the values
+    /// provided.
+    /// </summary>
+    /// <param name="url">The URL to redirect to.</param>
+    /// <param name="acceptLocalUrlOnly">If set to true, only local URLs are accepted and will throw an exception when the supplied URL is not considered local. (Default: false)</param>
+    internal RedirectHttpResult(string url, bool acceptLocalUrlOnly = false)
+         : this(url, permanent: false, acceptLocalUrlOnly)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="RedirectHttpResult"/> class with the values
+    /// provided.
+    /// </summary>
+    /// <param name="url">The URL to redirect to.</param>
+    /// <param name="permanent">Specifies whether the redirect should be permanent (301) or temporary (302).</param>
+    /// <param name="acceptLocalUrlOnly">If set to true, only local URLs are accepted and will throw an exception when the supplied URL is not considered local. (Default: false)</param>
+    internal RedirectHttpResult(string url, bool permanent, bool acceptLocalUrlOnly = false)
+        : this(url, permanent, preserveMethod: false, acceptLocalUrlOnly)
+    {
+    }
+
     /// <summary>
     /// Initializes a new instance of the <see cref="RedirectHttpResult"/> class with the values
     /// provided.
@@ -36,7 +61,8 @@ public partial class RedirectHttpResult : IResult
         Permanent = permanent;
         PreserveMethod = preserveMethod;
         AcceptLocalUrlOnly = acceptLocalUrlOnly;
-        Url = url;
+
+        _url = url;
     }
 
     /// <summary>
@@ -52,7 +78,7 @@ public partial class RedirectHttpResult : IResult
     /// <summary>
     /// Gets the URL to redirect to.
     /// </summary>
-    public string Url { get; }
+    public string? Url => _url;
 
     /// <summary>
     /// Gets an indication that only local URLs are accepted.
@@ -71,7 +97,7 @@ public partial class RedirectHttpResult : IResult
         }
 
         // IsLocalUrl is called to handle URLs starting with '~/'.
-        var destinationUrl = isLocalUrl ? SharedUrlHelper.Content(httpContext, Url) : Url;
+        var destinationUrl = isLocalUrl ? SharedUrlHelper.Content(httpContext, contentPath: _url) : _url;
 
         Log.RedirectResultExecuting(logger, destinationUrl);
 

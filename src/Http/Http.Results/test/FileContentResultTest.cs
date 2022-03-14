@@ -28,6 +28,7 @@ public class FileContentResultTest : FileContentResultTestBase
 
         httpContext.RequestServices = new ServiceCollection()
             .AddSingleton(typeof(ILogger<>), typeof(NullLogger<>))
+            .AddSingleton<ILoggerFactory, NullLoggerFactory>()
             .BuildServiceProvider();
 
         return result.ExecuteAsync(httpContext);

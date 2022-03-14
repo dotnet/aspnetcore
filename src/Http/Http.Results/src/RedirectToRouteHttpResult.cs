@@ -12,8 +12,10 @@ namespace Microsoft.AspNetCore.Http;
 /// or Permanent Redirect (308) response with a Location header.
 /// Targets a registered route.
 /// </summary>
-public sealed partial class RedirectToRouteHttpResult : IResult
+public sealed partial class RedirectToRouteHttpResult : IResult, IRedirectHttpResult, IAtRouteHttpResult
 {
+    private string? _destinationUrl;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="RedirectToRouteHttpResult"/> with the values
     /// provided.
@@ -149,33 +151,44 @@ public sealed partial class RedirectToRouteHttpResult : IResult
     /// </summary>
     public string? Fragment { get; }
 
+    /// <summary>
+    /// Gets an indication that only local URLs are accepted.
+    /// </summary>
+    public bool AcceptLocalUrlOnly => true;
+
+    /// <summary>
+    /// Gets the URL to redirect to.
+    /// </summary>
+    public string? Url => _destinationUrl;
+
     /// <inheritdoc />
     public Task ExecuteAsync(HttpContext httpContext)
     {
         var linkGenerator = httpContext.RequestServices.GetRequiredService<LinkGenerator>();
 
-        var destinationUrl = linkGenerator.GetUriByRouteValues(
+        _destinationUrl = linkGenerator.GetUriByRouteValues(
             httpContext,
             RouteName,
             RouteValues,
             fragment: Fragment == null ? FragmentString.Empty : new FragmentString("#" + Fragment));
-        if (string.IsNullOrEmpty(destinationUrl))
+
+        if (string.IsNullOrEmpty(_destinationUrl))
         {
             throw new InvalidOperationException("No route matches the supplied values.");
         }
 
         var logger = httpContext.RequestServices.GetRequiredService<ILogger<RedirectToRouteHttpResult>>();
-        Log.RedirectToRouteResultExecuting(logger, destinationUrl, RouteName);
+        Log.RedirectToRouteResultExecuting(logger, _destinationUrl, RouteName);
 
         if (PreserveMethod)
         {
             httpContext.Response.StatusCode = Permanent ?
                 StatusCodes.Status308PermanentRedirect : StatusCodes.Status307TemporaryRedirect;
-            httpContext.Response.Headers.Location = destinationUrl;
+            httpContext.Response.Headers.Location = _destinationUrl;
         }
         else
         {
-            httpContext.Response.Redirect(destinationUrl, Permanent);
+            httpContext.Response.Redirect(_destinationUrl, Permanent);
         }
 
         return Task.CompletedTask;

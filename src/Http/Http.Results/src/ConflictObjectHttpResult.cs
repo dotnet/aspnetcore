@@ -3,10 +3,26 @@
 
 namespace Microsoft.AspNetCore.Http;
 
-internal sealed class ConflictObjectHttpResult : ObjectHttpResult
+/// <summary>
+/// 
+/// </summary>
+public sealed class ConflictObjectHttpResult : IResult, IObjectHttpResult, IStatusCodeHttpResult
 {
-    public ConflictObjectHttpResult(object? error) :
-        base(error, StatusCodes.Status409Conflict)
+    internal ConflictObjectHttpResult(object? error)
     {
+        Value = error;
     }
+
+    /// <summary>
+    /// Gets or sets the object result.
+    /// </summary>
+    public object? Value { get; internal init; }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public int? StatusCode => StatusCodes.Status409Conflict;
+
+    public Task ExecuteAsync(HttpContext httpContext)
+        => HttpResultsWriter.WriteResultAsJson(httpContext, Value, statusCode: StatusCode);
 }

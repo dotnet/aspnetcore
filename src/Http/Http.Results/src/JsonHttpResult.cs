@@ -8,17 +8,17 @@ namespace Microsoft.AspNetCore.Http;
 /// <summary>
 /// An action result which formats the given object as JSON.
 /// </summary>
-internal sealed partial class JsonHttpResult : ObjectHttpResult
+public sealed class JsonHttpResult : IResult, IObjectHttpResult, IStatusCodeHttpResult
 {
     public JsonHttpResult(object? value, JsonSerializerOptions? jsonSerializerOptions)
-        : base(value)
+        : this(value, statusCode: null, jsonSerializerOptions: jsonSerializerOptions)
     {
-        JsonSerializerOptions = jsonSerializerOptions;
     }
 
     public JsonHttpResult(object? value, int? statusCode, JsonSerializerOptions? jsonSerializerOptions)
-        : base(value, statusCode)
     {
+        Value = value;
+        StatusCode = statusCode;
         JsonSerializerOptions = jsonSerializerOptions;
     }
 
@@ -33,6 +33,21 @@ internal sealed partial class JsonHttpResult : ObjectHttpResult
     /// </summary>
     public JsonSerializerOptions? JsonSerializerOptions { get; init; }
 
-    protected internal override Task WriteHttpResultAsync(HttpContext httpContext)
-        => httpContext.Response.WriteAsJsonAsync(Value, JsonSerializerOptions, ContentType);
+    /// <summary>
+    /// Gets or sets the object result.
+    /// </summary>
+    public object? Value { get; }
+
+    /// <summary>
+    /// Gets or sets the value for the <c>Content-Type</c> header.
+    /// </summary>
+    public string? ContentType { get; internal set; }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public int? StatusCode { get; }
+
+    public Task ExecuteAsync(HttpContext httpContext)
+        => HttpResultsWriter.WriteResultAsJson(httpContext, Value, ContentType, StatusCode, JsonSerializerOptions);
 }

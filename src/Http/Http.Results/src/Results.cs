@@ -472,7 +472,7 @@ public static class Results
     /// <param name="preserveMethod">If set to true, make the temporary redirect (307) or permanent redirect (308) preserve the initial request method.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult LocalRedirect(string localUrl, bool permanent = false, bool preserveMethod = false)
-        => new LocalRedirectHttpResult(localUrl, permanent, preserveMethod);
+        => new RedirectHttpResult(localUrl, permanent, preserveMethod, acceptLocalUrlOnly: true);
 
     /// <summary>
     /// Redirects to the specified route.

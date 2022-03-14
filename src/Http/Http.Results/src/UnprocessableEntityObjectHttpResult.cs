@@ -3,10 +3,26 @@
 
 namespace Microsoft.AspNetCore.Http;
 
-internal sealed class UnprocessableEntityObjectHttpResult : ObjectHttpResult
+/// <summary>
+/// 
+/// </summary>
+public sealed class UnprocessableEntityObjectHttpResult : IResult, IObjectHttpResult, IStatusCodeHttpResult
 {
-    public UnprocessableEntityObjectHttpResult(object? error)
-        : base(error, StatusCodes.Status422UnprocessableEntity)
+    internal UnprocessableEntityObjectHttpResult(object? error)
     {
+        Value = error;
     }
+
+    /// <summary>
+    /// Gets or sets the object result.
+    /// </summary>
+    public object? Value { get; internal init; }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public int? StatusCode => StatusCodes.Status422UnprocessableEntity;
+
+    public Task ExecuteAsync(HttpContext httpContext)
+        => HttpResultsWriter.WriteResultAsJson(httpContext, Value, statusCode: StatusCode);
 }

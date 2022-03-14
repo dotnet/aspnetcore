@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http;
@@ -11,7 +9,7 @@ namespace Microsoft.AspNetCore.Http;
 /// A <see cref="PhysicalFileHttpResult"/> on execution will write a file from disk to the response
 /// using mechanisms provided by the host.
 /// </summary>
-internal sealed partial class PhysicalFileHttpResult : FileHttpResult, IResult
+public sealed partial class PhysicalFileHttpResult : IResult, IFileHttpResult
 {
     /// <summary>
     /// Creates a new <see cref="PhysicalFileHttpResult"/> instance with
@@ -19,11 +17,41 @@ internal sealed partial class PhysicalFileHttpResult : FileHttpResult, IResult
     /// </summary>
     /// <param name="fileName">The path to the file. The path must be an absolute path.</param>
     /// <param name="contentType">The Content-Type header of the response.</param>
-    public PhysicalFileHttpResult(string fileName, string? contentType)
-        : base(contentType)
+    internal PhysicalFileHttpResult(string fileName, string? contentType)
     {
         FileName = fileName;
+        ContentType = contentType ?? "application/octet-stream";
     }
+
+    /// <summary>
+    /// Gets the Content-Type header for the response.
+    /// </summary>
+    public string ContentType { get; internal set;}
+
+    /// <summary>
+    /// Gets the file name that will be used in the Content-Disposition header of the response.
+    /// </summary>
+    public string? FileDownloadName { get; internal set;}
+
+    /// <summary>
+    /// Gets or sets the last modified information associated with the <see cref="IFileHttpResult"/>.
+    /// </summary>
+    public DateTimeOffset? LastModified { get; internal set; }
+
+    /// <summary>
+    /// Gets or sets the etag associated with the <see cref="FileHttpResult"/>.
+    /// </summary>
+    public EntityTagHeaderValue? EntityTag { get; internal init; }
+
+    /// <summary>
+    /// Gets or sets the value that enables range processing for the <see cref="IFileHttpResult"/>.
+    /// </summary>
+    public bool EnableRangeProcessing { get; internal init; }
+
+    /// <summary>
+    /// Gets or sets the file length information associated with the <see cref="IFileHttpResult"/>.
+    /// </summary>
+    public long? FileLength { get; internal set; }
 
     /// <summary>
     /// Gets or sets the path to the file that will be sent back as the response.
@@ -31,15 +59,16 @@ internal sealed partial class PhysicalFileHttpResult : FileHttpResult, IResult
     public string FileName { get; }
 
     // For testing
-    public Func<string, FileInfoWrapper> GetFileInfoWrapper { get; init; } =
+    internal Func<string, FileInfoWrapper> GetFileInfoWrapper { get; init; } =
         static path => new FileInfoWrapper(path);
 
-    protected internal override ILogger GetLogger(HttpContext httpContext)
-    {
-        return httpContext.RequestServices.GetRequiredService<ILogger<PhysicalFileHttpResult>>();
-    }
-
-    public override Task ExecuteAsync(HttpContext httpContext)
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="httpContext"></param>
+    /// <returns></returns>
+    /// <exception cref="FileNotFoundException"></exception>
+    public Task ExecuteAsync(HttpContext httpContext)
     {
         var fileInfo = GetFileInfoWrapper(FileName);
         if (!fileInfo.Exists)
@@ -50,10 +79,17 @@ internal sealed partial class PhysicalFileHttpResult : FileHttpResult, IResult
         LastModified = LastModified ?? fileInfo.LastWriteTimeUtc;
         FileLength = fileInfo.Length;
 
-        return base.ExecuteAsync(httpContext);
+        return HttpResultsWriter.WriteResultAsFileAsync(httpContext,
+            ExecuteCoreAsync,
+            FileDownloadName,
+            FileLength,
+            ContentType,
+            EnableRangeProcessing,
+            LastModified,
+            EntityTag);
     }
 
-    protected internal override Task ExecuteCoreAsync(HttpContext httpContext, RangeItemHeaderValue? range, long rangeLength)
+    private Task ExecuteCoreAsync(HttpContext httpContext, RangeItemHeaderValue? range, long rangeLength)
     {
         var response = httpContext.Response;
         if (!Path.IsPathRooted(FileName))

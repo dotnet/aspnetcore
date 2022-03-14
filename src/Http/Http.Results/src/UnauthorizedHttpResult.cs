@@ -3,10 +3,31 @@
 
 namespace Microsoft.AspNetCore.Http;
 
-internal sealed class UnauthorizedHttpResult : StatusCodeHttpResult
+/// <summary>
+/// 
+/// </summary>
+public sealed class UnauthorizedHttpResult : IResult, IStatusCodeHttpResult
 {
-    public UnauthorizedHttpResult()
-        : base(StatusCodes.Status401Unauthorized)
+    private readonly int _statuCode = StatusCodes.Status401Unauthorized;
+
+    internal UnauthorizedHttpResult()
     {
     }
+
+    /// <summary>
+    /// Gets or sets the HTTP status code.
+    /// </summary>
+    public int? StatusCode => _statuCode;
+
+    /// <summary>
+    /// Sets the status code on the HTTP response.
+    /// </summary>
+    /// <param name="httpContext">The <see cref="HttpContext"/> for the current request.</param>
+    /// <returns>A task that represents the asynchronous execute operation.</returns>
+    public Task ExecuteAsync(HttpContext httpContext)
+    {
+        HttpResultsWriter.SetHttpStatusCode(httpContext, _statuCode);
+        return Task.CompletedTask;
+    }
+
 }

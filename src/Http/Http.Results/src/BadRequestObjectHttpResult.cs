@@ -3,10 +3,27 @@
 
 namespace Microsoft.AspNetCore.Http;
 
-internal sealed class BadRequestObjectHttpResult : ObjectHttpResult
+/// <summary>
+/// 
+/// </summary>
+public sealed class BadRequestObjectHttpResult : IResult, IObjectHttpResult, IStatusCodeHttpResult
 {
-    public BadRequestObjectHttpResult(object? error)
-        : base(error, StatusCodes.Status400BadRequest)
+    internal BadRequestObjectHttpResult(object? error)
     {
+        Value = error;
     }
+
+    /// <summary>
+    /// Gets or sets the object result.
+    /// </summary>
+    public object? Value { get; internal init; }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public int? StatusCode => StatusCodes.Status400BadRequest;
+
+    /// <inheritdoc/>
+    public Task ExecuteAsync(HttpContext httpContext)
+        => HttpResultsWriter.WriteResultAsJson(httpContext, Value, statusCode: StatusCode);
 }
