@@ -1,6 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
     <Fragment>
+        <util:ProductSearch Id="SharedFxRedistProductSearch_x86"
+                            Condition="NOT VersionNT64"
+                            ProductCode="$(var.SharedFxInstallerProductCodex86)"
+                            Result="version"
+                            Variable="SharedFxRedistProductVersion_x86" />
+
+        <util:ProductSearch Id="SharedFxRedistProductSearch_x64"
+                            Condition="VersionNT64"
+                            ProductCode="$(var.SharedFxInstallerProductCodex64)"
+                            Result="version"
+                            Variable="SharedFxRedistProductVersion_x64" />
+                            
         <PackageGroup Id="PG_SHAREDFX_REDIST_BUNDLE">
             <RollbackBoundary Id="RB_SHAREDFX_REDIST_BUNDLE" />
 
@@ -28,19 +40,5 @@
                         DetectCondition="SharedFxRedistProductVersion_x86 = v$(var.SharedFxInstallerProductVersionx86)">
             </ExePackage>
         </PackageGroup>
-    </Fragment>
-
-    <Fragment>
-        <util:ProductSearch Id="SharedFxRedistProductSearch_x86"
-                            Condition="NOT VersionNT64"
-                            ProductCode="$(var.SharedFxInstallerProductCodex86)"
-                            Result="version"
-                            Variable="SharedFxRedistProductVersion_x86" />
-
-        <util:ProductSearch Id="SharedFxRedistProductSearch_x64"
-                            Condition="VersionNT64"
-                            ProductCode="$(var.SharedFxInstallerProductCodex64)"
-                            Result="version"
-                            Variable="SharedFxRedistProductVersion_x64" />
     </Fragment>
 </Wix>
