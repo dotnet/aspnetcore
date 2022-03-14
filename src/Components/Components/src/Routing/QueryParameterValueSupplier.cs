@@ -3,7 +3,7 @@
 
 using System;
 using System.Buffers;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.Reflection;
@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Components.Routing
     {
         public static void ClearCache() => _cacheByType.Clear();
 
-        private static readonly Dictionary<Type, QueryParameterValueSupplier?> _cacheByType = new();
+        private static readonly ConcurrentDictionary<Type, QueryParameterValueSupplier?> _cacheByType = new();
 
         // These two arrays contain the same number of entries, and their corresponding positions refer to each other.
         // Holding the info like this means we can use Array.BinarySearch with less custom implementation.
