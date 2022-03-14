@@ -4,7 +4,7 @@
 using System;
 using System.Runtime.CompilerServices;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
+namespace Microsoft.AspNetCore.Http
 {
     internal static class HttpCharacters
     {
@@ -107,6 +107,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         {
             // field-value https://tools.ietf.org/html/rfc7230#section-3.2
             var fieldValue = new bool[_tableSize];
+
+            fieldValue[0x9] = true; // HTAB
+
             for (var c = 0x20; c <= 0x7e; c++) // VCHAR and SP
             {
                 fieldValue[c] = true;
@@ -182,7 +185,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             return -1;
         }
 
-        // Disallows control characters and anything more than 0x7F
+        // Follows field-value rules in https://tools.ietf.org/html/rfc7230#section-3.2
+        // Disallows characters > 0x7E.
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int IndexOfInvalidFieldValueChar(string s)
         {
@@ -200,7 +204,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             return -1;
         }
 
-        // Disallows control characters but allows extended characters > 0x7F
+        // Follows field-value rules for chars <= 0x7F. Allows extended characters > 0x7F.
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int IndexOfInvalidFieldValueCharExtended(string s)
         {
