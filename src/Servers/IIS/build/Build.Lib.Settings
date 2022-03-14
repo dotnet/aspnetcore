@@ -5,7 +5,7 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
   </PropertyGroup>
 
-  <Import Project="Build.Common.Settings" />
+  <Import Project="Build.Compiler.Settings" />
 
   <ItemDefinitionGroup>
     <ClCompile>

@@ -1,5 +1,31 @@
 <!-- Targets for making .vcxproj better. -->
 <Project>
+   <ItemGroup Label="ProjectConfigurations"> 
+     <ProjectConfiguration Include="Debug|Win32"> 
+       <Configuration>Debug</Configuration> 
+       <Platform>Win32</Platform> 
+     </ProjectConfiguration> 
+     <ProjectConfiguration Include="Debug|x64"> 
+       <Configuration>Debug</Configuration> 
+       <Platform>x64</Platform> 
+     </ProjectConfiguration> 
+     <ProjectConfiguration Include="Debug|arm64"> 
+       <Configuration>Debug</Configuration> 
+       <Platform>arm64</Platform> 
+     </ProjectConfiguration> 
+     <ProjectConfiguration Include="Release|Win32"> 
+       <Configuration>Release</Configuration> 
+       <Platform>Win32</Platform> 
+     </ProjectConfiguration> 
+     <ProjectConfiguration Include="Release|x64"> 
+       <Configuration>Release</Configuration> 
+       <Platform>x64</Platform> 
+     </ProjectConfiguration> 
+     <ProjectConfiguration Include="Release|arm64"> 
+       <Configuration>Release</Configuration> 
+       <Platform>arm64</Platform> 
+     </ProjectConfiguration> 
+   </ItemGroup>
 
   <PropertyGroup>
     <SignOutput Condition=" '$(SignType)' != '' ">true</SignOutput>
@@ -17,5 +43,6 @@
 
   <Import Project="MicroBuild.Plugin.props" Condition="'$(MicroBuildSentinelFile)' == ''" />
   <Import Project="$(MicroBuildPluginDirectory)\MicroBuild.Plugins.*\**\build\MicroBuild.Plugins.*.props" Condition=" '$(MicroBuildPluginDirectory)' != ''" />
+
 
 </Project>
