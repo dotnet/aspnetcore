@@ -21,6 +21,8 @@ import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.Serv
 let renderingFailed = false;
 let started = false;
 
+let _connection: HubConnection;
+
 async function boot(userOptions?: Partial<CircuitStartOptions>): Promise<void> {
   if (started) {
     throw new Error('Blazor has already started.');
@@ -94,22 +96,22 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
 
   options.configureSignalR(connectionBuilder);
 
-  const connection = connectionBuilder.build();
+  _connection = connectionBuilder.build();
 
   // Configure navigation via SignalR
   Blazor._internal.navigationManager.listenForNavigationEvents((uri: string, intercepted: boolean): Promise<void> => {
-    return connection.send('OnLocationChanged', uri, intercepted);
+    return _connection.send('OnLocationChanged', uri, intercepted);
   });
 
-  connection.on('JS.AttachComponent', (componentId, selector) => attachRootComponentToLogicalElement(0, circuit.resolveElement(selector), componentId, false));
-  connection.on('JS.BeginInvokeJS', DotNet.jsCallDispatcher.beginInvokeJSFromDotNet);
-  connection.on('JS.EndInvokeDotNet', DotNet.jsCallDispatcher.endInvokeDotNetFromJS);
-  connection.on('JS.ReceiveByteArray', DotNet.jsCallDispatcher.receiveByteArray);
+  _connection.on('JS.AttachComponent', (componentId, selector) => attachRootComponentToLogicalElement(0, circuit.resolveElement(selector), componentId, false));
+  _connection.on('JS.BeginInvokeJS', DotNet.jsCallDispatcher.beginInvokeJSFromDotNet);
+  _connection.on('JS.EndInvokeDotNet', DotNet.jsCallDispatcher.endInvokeDotNetFromJS);
+  _connection.on('JS.ReceiveByteArray', DotNet.jsCallDispatcher.receiveByteArray);
 
-  connection.on('JS.BeginTransmitStream', (streamId: number) => {
+  _connection.on('JS.BeginTransmitStream', (streamId: number) => {
     const readableStream = new ReadableStream({
       start(controller) {
-        connection.stream('SendDotNetStreamToJS', streamId).subscribe({
+        _connection.stream('SendDotNetStreamToJS', streamId).subscribe({
           next: (chunk: Uint8Array) => controller.enqueue(chunk),
           complete: () => controller.close(),
           error: (err) => controller.error(err),
@@ -121,26 +123,26 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
   });
 
   const renderQueue = RenderQueue.getOrCreate(logger);
-  connection.on('JS.RenderBatch', (batchId: number, batchData: Uint8Array) => {
+  _connection.on('JS.RenderBatch', (batchId: number, batchData: Uint8Array) => {
     logger.log(LogLevel.Debug, `Received render batch with id ${batchId} and ${batchData.byteLength} bytes.`);
-    renderQueue.processBatch(batchId, batchData, connection);
+    renderQueue.processBatch(batchId, batchData, _connection);
   });
 
-  connection.onclose(error => !renderingFailed && options.reconnectionHandler!.onConnectionDown(options.reconnectionOptions, error));
-  connection.on('JS.Error', error => {
+  _connection.onclose(error => !renderingFailed && options.reconnectionHandler!.onConnectionDown(options.reconnectionOptions, error));
+  _connection.on('JS.Error', error => {
     renderingFailed = true;
-    unhandledError(connection, error, logger);
+    unhandledError(_connection, error, logger);
     showErrorNotification();
   });
 
-  Blazor._internal.forceCloseConnection = () => connection.stop();
+  Blazor._internal.forceCloseConnection = () => _connection.stop();
 
-  Blazor._internal.sendJSDataStream = (data: ArrayBufferView | Blob, streamId: number, chunkSize: number) => sendJSDataStream(connection, data, streamId, chunkSize);
+  Blazor._internal.sendJSDataStream = (data: ArrayBufferView | Blob, streamId: number, chunkSize: number) => sendJSDataStream(_connection, data, streamId, chunkSize);
 
   try {
-    await connection.start();
+    await _connection.start();
   } catch (ex: any) {
-    unhandledError(connection, ex as Error, logger);
+    unhandledError(_connection, ex as Error, logger);
 
     if (ex.errorType === 'FailedToNegotiateWithServerError') {
       // Connection with the server has been interrupted, and we're in the process of reconnecting.
@@ -164,23 +166,24 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
 
   // Check if the connection is established using the long polling transport,
   // using the `features.inherentKeepAlive` property only present with long polling.
-  if ((connection as any).connection?.features?.inherentKeepAlive) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if ((_connection as any).connection?.features?.inherentKeepAlive) {
     logger.log(LogLevel.Warning, 'Failed to connect via WebSockets, using the Long Polling fallback transport. This may be due to a VPN or proxy blocking the connection. To troubleshoot this, visit https://aka.ms/blazor-server-using-fallback-long-polling.');
   }
 
   DotNet.attachDispatcher({
     beginInvokeDotNetFromJS: (callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson): void => {
-      connection.send('BeginInvokeDotNetFromJS', callId ? callId.toString() : null, assemblyName, methodIdentifier, dotNetObjectId || 0, argsJson);
+      _connection.send('BeginInvokeDotNetFromJS', callId ? callId.toString() : null, assemblyName, methodIdentifier, dotNetObjectId || 0, argsJson);
     },
     endInvokeJSFromDotNet: (asyncHandle, succeeded, argsJson): void => {
-      connection.send('EndInvokeJSFromDotNet', asyncHandle, succeeded, argsJson);
+      _connection.send('EndInvokeJSFromDotNet', asyncHandle, succeeded, argsJson);
     },
     sendByteArray: (id: number, data: Uint8Array): void => {
-      connection.send('ReceiveByteArray', id, data);
+      _connection.send('ReceiveByteArray', id, data);
     },
   });
 
-  return connection;
+  return _connection;
 }
 
 function unhandledError(connection: HubConnection, err: Error, logger: Logger): void {
