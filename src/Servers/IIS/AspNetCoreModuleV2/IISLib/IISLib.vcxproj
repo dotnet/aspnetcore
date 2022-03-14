@@ -8,7 +8,7 @@
   </PropertyGroup>
   <Import Project="..\..\build\Build.Common.Settings" />
   <PropertyGroup Label="UserMacros" />
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32' OR'$(Configuration)|$(Platform)'=='Debug|x64' OR '$(Configuration)|$(Platform)'=='Debug|ARM64' OR '$(Configuration)|$(Platform)'=='Debug|Any CPU'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32' OR'$(Configuration)|$(Platform)'=='Debug|x64' OR '$(Configuration)|$(Platform)'=='Debug|arm64' OR '$(Configuration)|$(Platform)'=='Debug|Any CPU'">
     <ClCompile>
       <PrecompiledHeader>
       </PrecompiledHeader>
@@ -27,7 +27,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32' OR '$(Configuration)|$(Platform)'=='Release|x64' OR '$(Configuration)|$(Platform)'=='Release|ARM64' OR '$(Configuration)|$(Platform)'=='Release|Any CPU'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32' OR '$(Configuration)|$(Platform)'=='Release|x64' OR '$(Configuration)|$(Platform)'=='Release|arm64' OR '$(Configuration)|$(Platform)'=='Release|Any CPU'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <PrecompiledHeader>

@@ -13,7 +13,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <TempPlatform Condition="'$(Platform)' == 'x64'">x64</TempPlatform>
     <TempPlatform Condition="'$(Platform)' == 'x86'">Win32</TempPlatform>
-    <TempPlatform Condition="'$(Platform)' == 'arm64'">ARM64</TempPlatform>
+    <TempPlatform Condition="'$(Platform)' == 'arm64'">arm64</TempPlatform>
   </PropertyGroup>
 
   <ItemGroup>
