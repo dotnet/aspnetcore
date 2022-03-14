@@ -79,13 +79,13 @@ public static partial class RequestDelegateFactory
     private static readonly BinaryExpression TempSourceStringNullExpr = Expression.Equal(TempSourceStringExpr, Expression.Constant(null));
     private static readonly UnaryExpression TempSourceStringIsNotNullOrEmptyExpr = Expression.Not(Expression.Call(StringIsNullOrEmptyMethod, TempSourceStringExpr));
 
-    private static readonly ConstructorInfo RouteHandlerFilterContextConstructor = typeof(RouteHandlerFilterContext).GetConstructor(new[] { typeof(HttpContext), typeof(object[]) })!;
-    private static readonly ParameterExpression FilterContextExpr = Expression.Parameter(typeof(RouteHandlerFilterContext), "context");
-    private static readonly MemberExpression FilterContextParametersExpr = Expression.Property(FilterContextExpr, typeof(RouteHandlerFilterContext).GetProperty(nameof(RouteHandlerFilterContext.Parameters))!);
-    private static readonly MemberExpression FilterContextHttpContextExpr = Expression.Property(FilterContextExpr, typeof(RouteHandlerFilterContext).GetProperty(nameof(RouteHandlerFilterContext.HttpContext))!);
+    private static readonly ConstructorInfo RouteHandlerInvocationContextConstructor = typeof(RouteHandlerInvocationContext).GetConstructor(new[] { typeof(HttpContext), typeof(object[]) })!;
+    private static readonly ParameterExpression FilterContextExpr = Expression.Parameter(typeof(RouteHandlerInvocationContext), "context");
+    private static readonly MemberExpression FilterContextParametersExpr = Expression.Property(FilterContextExpr, typeof(RouteHandlerInvocationContext).GetProperty(nameof(RouteHandlerInvocationContext.Parameters))!);
+    private static readonly MemberExpression FilterContextHttpContextExpr = Expression.Property(FilterContextExpr, typeof(RouteHandlerInvocationContext).GetProperty(nameof(RouteHandlerInvocationContext.HttpContext))!);
     private static readonly MemberExpression FilterContextHttpContextResponseExpr = Expression.Property(FilterContextHttpContextExpr, typeof(HttpContext).GetProperty(nameof(HttpContext.Response))!);
     private static readonly MemberExpression FilterContextHttpContextStatusCodeExpr = Expression.Property(FilterContextHttpContextResponseExpr, typeof(HttpResponse).GetProperty(nameof(HttpResponse.StatusCode))!);
-    private static readonly ParameterExpression InvokedFilterContextExpr = Expression.Parameter(typeof(RouteHandlerFilterContext), "filterContext");
+    private static readonly ParameterExpression InvokedFilterContextExpr = Expression.Parameter(typeof(RouteHandlerInvocationContext), "filterContext");
 
     private static readonly string[] DefaultAcceptsContentType = new[] { "application/json" };
     private static readonly string[] FormFileContentType = new[] { "multipart/form-data" };
@@ -196,15 +196,15 @@ public static partial class RequestDelegateFactory
         if (factoryContext.Filters is { Count: > 0 })
         {
             var filterPipeline = CreateFilterPipeline(methodInfo, targetExpression, factoryContext);
-            Expression<Func<RouteHandlerFilterContext, ValueTask<object?>>> invokePipeline = (context) => filterPipeline(context);
+            Expression<Func<RouteHandlerInvocationContext, ValueTask<object?>>> invokePipeline = (context) => filterPipeline(context);
             returnType = typeof(ValueTask<object?>);
-            // var filterContext = new RouteHandlerFilterContext(httpContext, new[] { (object)name_local, (object)int_local });
+            // var filterContext = new RouteHandlerInvocationContext(httpContext, new[] { (object)name_local, (object)int_local });
             // invokePipeline.Invoke(filterContext);
             factoryContext.MethodCall = Expression.Block(
                 new[] { InvokedFilterContextExpr },
                 Expression.Assign(
                     InvokedFilterContextExpr,
-                    Expression.New(RouteHandlerFilterContextConstructor,
+                    Expression.New(RouteHandlerInvocationContextConstructor,
                         new Expression[] { HttpContextExpr, Expression.NewArrayInit(typeof(object), factoryContext.BoxedArgs) })),
                     Expression.Invoke(invokePipeline, InvokedFilterContextExpr)
                 );
@@ -245,8 +245,12 @@ public static partial class RequestDelegateFactory
         {
             var currentFilterFactory = factoryContext.Filters[i];
             var nextFilter = filteredInvocation;
-            var currentFilter = currentFilterFactory(methodInfo, nextFilter);
-            filteredInvocation = (RouteHandlerFilterContext context) => currentFilter(context);
+            var currentFilter = currentFilterFactory(
+                new RouteHandlerContext(
+                    methodInfo,
+                    new EndpointMetadataCollection(factoryContext.Metadata)),
+                nextFilter);
+            filteredInvocation = (RouteHandlerInvocationContext context) => currentFilter(context);
 
         }
         return filteredInvocation;
@@ -265,7 +269,7 @@ public static partial class RequestDelegateFactory
         {
             args[i] = CreateArgument(parameters[i], factoryContext);
             // Register expressions containing the boxed and unboxed variants
-            // of the route handler's arguments for use in RouteHandlerFilterContext
+            // of the route handler's arguments for use in RouteHandlerInvocationContext
             // construction and route handler invocation.
             // (string)context.Parameters[0];
             factoryContext.ContextArgAccess.Add(
@@ -1694,7 +1698,7 @@ public static partial class RequestDelegateFactory
         public List<Expression> ContextArgAccess { get; } = new();
         public Expression? MethodCall { get; set; }
         public List<Expression> BoxedArgs { get; } = new();
-        public List<Func<MethodInfo, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>? Filters { get; init; }
+        public List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>? Filters { get; init; }
     }
 
     private static class RequestDelegateFactoryConstants

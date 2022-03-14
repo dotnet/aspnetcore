@@ -965,7 +965,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
             _logger = loggerFactory.CreateLogger<ServiceAccessingRouteHandlerFilter>();
         }
 
-        public async ValueTask<object?> InvokeAsync(RouteHandlerFilterContext context, RouteHandlerFilterDelegate next)
+        public async ValueTask<object?> InvokeAsync(RouteHandlerInvocationContext context, RouteHandlerFilterDelegate next)
         {
             context.HttpContext.Items["loggerErrorIsEnabled"] = _logger.IsEnabled(LogLevel.Error);
             return await next(context);
@@ -974,7 +974,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
 
     class IncrementArgFilter : IRouteHandlerFilter
     {
-        public async ValueTask<object?> InvokeAsync(RouteHandlerFilterContext context, RouteHandlerFilterDelegate next)
+        public async ValueTask<object?> InvokeAsync(RouteHandlerInvocationContext context, RouteHandlerFilterDelegate next)
         {
             context.Parameters[0] = ((int)context.Parameters[0]!) + 1;
             return await next(context);

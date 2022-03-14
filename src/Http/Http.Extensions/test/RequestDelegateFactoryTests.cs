@@ -4216,9 +4216,9 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
         {
-            RouteHandlerFilterFactories = new List<Func<MethodInfo, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
             {
-                (methodInfo, next) => async (context) =>
+                (routeHandlerContext, next) => async (context) =>
                 {
                     context.Parameters[0] = context.Parameters[0] != null ? $"{((string)context.Parameters[0]!)}Prefix" : "NULL";
                     return await next(context);
@@ -4250,8 +4250,8 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
         {
-            RouteHandlerFilterFactories = new List<Func<MethodInfo, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>() {
-                (methodInfo, next) => async (context) =>
+            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>() {
+                (routeHandlerContext, next) => async (context) =>
                 {
                     if (context.HttpContext.Response.StatusCode == 400)
                     {
@@ -4296,14 +4296,14 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
         {
-            RouteHandlerFilterFactories = new List<Func<MethodInfo, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
             {
-                (methodInfo, next) => async (context) =>
+                (routeHandlerContext, next) => async (context) =>
                 {
                     context.Parameters[1] = ((int)context.Parameters[1]!) + 2;
                     return await next(context);
                 },
-                (methodInfo, next) => async (context) =>
+                (routeHandlerContext, next) => async (context) =>
                 {
                     foreach (var parameter in context.Parameters)
                     {
@@ -4344,11 +4344,11 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
         {
-            RouteHandlerFilterFactories = new List<Func<MethodInfo, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
             {
-                (methodInfo, next) =>
+                (routeHandlerContext, next) =>
                 {
-                    var parameters = methodInfo.GetParameters();
+                    var parameters = routeHandlerContext.MethodInfo.GetParameters();
                     var isInt = parameters.Length == 2 && parameters[1].ParameterType == typeof(int);
                     return async (context) =>
                     {
@@ -4395,9 +4395,9 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create(PrintTodo, new RequestDelegateFactoryOptions()
         {
-            RouteHandlerFilterFactories = new List<Func<MethodInfo, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
             {
-                (methodInfo, next) => async (context) =>
+                (routeHandlerContext, next) => async (context) =>
                 {
                     Todo originalTodo = (Todo)context.Parameters[0]!;
                     originalTodo!.IsComplete = !originalTodo.IsComplete;
@@ -4436,9 +4436,9 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
         {
-            RouteHandlerFilterFactories = new List<Func<MethodInfo, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
             {
-                (methodInfo, next) => async (context) =>
+                (routeHandlerContext, next) => async (context) =>
                 {
                     var previousResult = await next(context);
                     if (previousResult is string stringResult)
@@ -4479,9 +4479,9 @@ public class RequestDelegateFactoryTests : LoggedTest
         // Act
         var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
         {
-            RouteHandlerFilterFactories = new List<Func<MethodInfo, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
             {
-                (methodInfo, next) => async (context) =>
+                (routeHandlerContext, next) => async (context) =>
                 {
                     var previousResult = await next(context);
                     if (previousResult is string stringResult)
@@ -4490,7 +4490,7 @@ public class RequestDelegateFactoryTests : LoggedTest
                     }
                     return previousResult;
                 },
-                (methodInfo, next) => async (context) =>
+                (RouteHandlerContext, next) => async (context) =>
                 {
                     context.Parameters[0] = context.Parameters[0] != null ? $"{((string)context.Parameters[0]!)}Prefix" : "NULL";
                     return await next(context);

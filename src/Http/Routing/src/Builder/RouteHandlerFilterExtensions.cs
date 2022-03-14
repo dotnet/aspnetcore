@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -50,7 +49,7 @@ public static class RouteHandlerFilterExtensions
     /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
     /// <param name="routeHandlerFilter">A <see cref="Delegate"/> representing the core logic of the filter.</param>
     /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the route handler.</returns>
-    public static RouteHandlerBuilder AddFilter(this RouteHandlerBuilder builder, Func<RouteHandlerFilterContext, RouteHandlerFilterDelegate, ValueTask<object?>> routeHandlerFilter)
+    public static RouteHandlerBuilder AddFilter(this RouteHandlerBuilder builder, Func<RouteHandlerInvocationContext, RouteHandlerFilterDelegate, ValueTask<object?>> routeHandlerFilter)
     {
         builder.RouteHandlerFilterFactories.Add((methodInfo, next) => (context) => routeHandlerFilter(context, next));
         return builder;
@@ -62,7 +61,7 @@ public static class RouteHandlerFilterExtensions
     /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
     /// <param name="filterFactory">A <see cref="Delegate"/> representing the logic for constructing the filter.</param>
     /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the route handler.</returns>
-    public static RouteHandlerBuilder AddFilter(this RouteHandlerBuilder builder, Func<MethodInfo, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate> filterFactory)
+    public static RouteHandlerBuilder AddFilter(this RouteHandlerBuilder builder, Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate> filterFactory)
     {
         builder.RouteHandlerFilterFactories.Add(filterFactory);
         return builder;

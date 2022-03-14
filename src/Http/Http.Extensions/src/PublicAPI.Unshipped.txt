@@ -1,5 +1,5 @@
 #nullable enable
-Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.RouteHandlerFilterFactories.get -> System.Collections.Generic.IReadOnlyList<System.Func<System.Reflection.MethodInfo!, Microsoft.AspNetCore.Http.RouteHandlerFilterDelegate!, Microsoft.AspNetCore.Http.RouteHandlerFilterDelegate!>!>?
+Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.RouteHandlerFilterFactories.get -> System.Collections.Generic.IReadOnlyList<System.Func<Microsoft.AspNetCore.Http.RouteHandlerContext!, Microsoft.AspNetCore.Http.RouteHandlerFilterDelegate!, Microsoft.AspNetCore.Http.RouteHandlerFilterDelegate!>!>?
 Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.RouteHandlerFilterFactories.init -> void
 Microsoft.Extensions.DependencyInjection.RouteHandlerJsonServiceExtensions
 static Microsoft.Extensions.DependencyInjection.RouteHandlerJsonServiceExtensions.ConfigureRouteHandlerJsonOptions(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Http.Json.JsonOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

@@ -7,14 +7,14 @@ namespace Microsoft.AspNetCore.Http;
 /// Provides an abstraction for wrapping the <see cref="HttpContext"/> and parameters
 /// provided to a route handler.
 /// </summary>
-public class RouteHandlerFilterContext
+public class RouteHandlerInvocationContext
 {
     /// <summary>
-    /// Creates a new instance of the <see cref="RouteHandlerFilterContext"/> for a given request.
+    /// Creates a new instance of the <see cref="RouteHandlerInvocationContext"/> for a given request.
     /// </summary>
     /// <param name="httpContext">The <see cref="HttpContext"/> associated with the current request.</param>
     /// <param name="parameters">A list of parameters provided in the current request.</param>
-    public RouteHandlerFilterContext(HttpContext httpContext, params object[] parameters)
+    public RouteHandlerInvocationContext(HttpContext httpContext, params object[] parameters)
     {
         HttpContext = httpContext;
         Parameters = parameters;
