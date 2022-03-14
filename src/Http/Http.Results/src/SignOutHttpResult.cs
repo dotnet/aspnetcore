@@ -70,14 +70,19 @@ public sealed partial class SignOutHttpResult : IResult
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-out operation.</param>
     internal SignOutHttpResult(IList<string> authenticationSchemes, AuthenticationProperties? properties)
     {
-        AuthenticationSchemes = authenticationSchemes ?? throw new ArgumentNullException(nameof(authenticationSchemes));
+        if (authenticationSchemes is null)
+        {
+            throw new ArgumentNullException(nameof(authenticationSchemes));
+        }
+
+        AuthenticationSchemes = authenticationSchemes.AsReadOnly();
         Properties = properties;
     }
 
     /// <summary>
     /// Gets or sets the authentication schemes that are challenged.
     /// </summary>
-    public IList<string> AuthenticationSchemes { get; internal init; }
+    public IReadOnlyList<string> AuthenticationSchemes { get; internal init; }
 
     /// <summary>
     /// Gets or sets the <see cref="AuthenticationProperties"/> used to perform the sign-out operation.
@@ -106,7 +111,7 @@ public sealed partial class SignOutHttpResult : IResult
 
     private static partial class Log
     {
-        public static void SignOutResultExecuting(ILogger logger, IList<string> authenticationSchemes)
+        public static void SignOutResultExecuting(ILogger logger, IReadOnlyList<string> authenticationSchemes)
         {
             if (logger.IsEnabled(LogLevel.Information))
             {

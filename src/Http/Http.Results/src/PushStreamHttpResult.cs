@@ -6,7 +6,8 @@ using Microsoft.Net.Http.Headers;
 namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
-/// 
+/// Represents an <see cref="IResult"/> that when executed will
+/// write a file from the writer callback to the response.
 /// </summary>
 public sealed class PushStreamHttpResult : IResult, IFileHttpResult
 {
@@ -18,46 +19,27 @@ public sealed class PushStreamHttpResult : IResult, IFileHttpResult
         ContentType = contentType ?? "application/octet-stream";
     }
 
-    /// <summary>
-    /// Gets the Content-Type header for the response.
-    /// </summary>
+    /// <inheritdoc/>
     public string ContentType { get; internal set; }
 
-    /// <summary>
-    /// Gets the file name that will be used in the Content-Disposition header of the response.
-    /// </summary>
+    /// <inheritdoc/>
     public string? FileDownloadName { get; internal set; }
 
-    /// <summary>
-    /// Gets or sets the last modified information associated with the <see cref="IFileHttpResult"/>.
-    /// </summary>
+    /// <inheritdoc/>
     public DateTimeOffset? LastModified { get; internal set; }
 
-    /// <summary>
-    /// Gets or sets the etag associated with the <see cref="IFileHttpResult"/>.
-    /// </summary>
+    /// <inheritdoc/>
     public EntityTagHeaderValue? EntityTag { get; internal init; }
 
-    /// <summary>
-    /// Gets or sets the value that enables range processing for the <see cref="IFileHttpResult"/>.
-    /// </summary>
+    /// <inheritdoc/>
     public bool EnableRangeProcessing { get; internal init; }
 
-    /// <summary>
-    /// Gets or sets the file length information associated with the <see cref="IFileHttpResult"/>.
-    /// </summary>
+    /// <inheritdoc/>
     public long? FileLength { get; internal set; }
 
     /// <inheritdoc/>
-    public Task ExecuteAsync(HttpContext httpContext)
-    {
-        return HttpResultsWriter.WriteResultAsFileAsync(httpContext,
-            (context, _, _) => _streamWriterCallback(httpContext.Response.Body),
-            FileDownloadName,
-            FileLength,
-            ContentType,
-            EnableRangeProcessing,
-            LastModified,
-            EntityTag);
-    }
+    public Task ExecuteAsync(HttpContext httpContext) => HttpResultsWriter.WriteResultAsFileAsync(
+            httpContext,
+            fileHttpResult: this,
+            (context, _, _) => _streamWriterCallback(httpContext.Response.Body));
 }

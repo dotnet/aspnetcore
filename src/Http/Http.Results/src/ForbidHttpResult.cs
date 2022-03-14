@@ -8,12 +8,15 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Http;
 
-internal sealed partial class ForbidHttpResult : IResult
+/// <summary>
+/// An <see cref="IResult"/> that on execution invokes <see cref="M:HttpContext.ForbidAsync"/>.
+/// </summary>
+public sealed partial class ForbidHttpResult : IResult
 {
     /// <summary>
     /// Initializes a new instance of <see cref="ForbidHttpResult"/>.
     /// </summary>
-    public ForbidHttpResult()
+    internal ForbidHttpResult()
         : this(Array.Empty<string>())
     {
     }
@@ -23,7 +26,7 @@ internal sealed partial class ForbidHttpResult : IResult
     /// specified authentication scheme.
     /// </summary>
     /// <param name="authenticationScheme">The authentication scheme to challenge.</param>
-    public ForbidHttpResult(string authenticationScheme)
+    internal ForbidHttpResult(string authenticationScheme)
         : this(new[] { authenticationScheme })
     {
     }
@@ -33,7 +36,7 @@ internal sealed partial class ForbidHttpResult : IResult
     /// specified authentication schemes.
     /// </summary>
     /// <param name="authenticationSchemes">The authentication schemes to challenge.</param>
-    public ForbidHttpResult(IList<string> authenticationSchemes)
+    internal ForbidHttpResult(IList<string> authenticationSchemes)
         : this(authenticationSchemes, properties: null)
     {
     }
@@ -44,7 +47,7 @@ internal sealed partial class ForbidHttpResult : IResult
     /// </summary>
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
     /// challenge.</param>
-    public ForbidHttpResult(AuthenticationProperties? properties)
+    internal ForbidHttpResult(AuthenticationProperties? properties)
         : this(Array.Empty<string>(), properties)
     {
     }
@@ -56,7 +59,7 @@ internal sealed partial class ForbidHttpResult : IResult
     /// <param name="authenticationScheme">The authentication schemes to challenge.</param>
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
     /// challenge.</param>
-    public ForbidHttpResult(string authenticationScheme, AuthenticationProperties? properties)
+    internal ForbidHttpResult(string authenticationScheme, AuthenticationProperties? properties)
         : this(new[] { authenticationScheme }, properties)
     {
     }
@@ -68,21 +71,21 @@ internal sealed partial class ForbidHttpResult : IResult
     /// <param name="authenticationSchemes">The authentication scheme to challenge.</param>
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
     /// challenge.</param>
-    public ForbidHttpResult(IList<string> authenticationSchemes, AuthenticationProperties? properties)
+    internal ForbidHttpResult(IList<string> authenticationSchemes, AuthenticationProperties? properties)
     {
-        AuthenticationSchemes = authenticationSchemes;
+        AuthenticationSchemes = authenticationSchemes.AsReadOnly();
         Properties = properties;
     }
 
     /// <summary>
     /// Gets or sets the authentication schemes that are challenged.
     /// </summary>
-    public IList<string> AuthenticationSchemes { get; init; }
+    public IReadOnlyList<string> AuthenticationSchemes { get; internal init; }
 
     /// <summary>
     /// Gets or sets the <see cref="AuthenticationProperties"/> used to perform the authentication challenge.
     /// </summary>
-    public AuthenticationProperties? Properties { get; init; }
+    public AuthenticationProperties? Properties { get; internal init; }
 
     /// <inheritdoc />
     public async Task ExecuteAsync(HttpContext httpContext)
@@ -106,7 +109,7 @@ internal sealed partial class ForbidHttpResult : IResult
 
     private static partial class Log
     {
-        public static void ForbidResultExecuting(ILogger logger, IList<string> authenticationSchemes)
+        public static void ForbidResultExecuting(ILogger logger, IReadOnlyList<string> authenticationSchemes)
         {
             if (logger.IsEnabled(LogLevel.Information))
             {

@@ -6,7 +6,8 @@ namespace Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
 
 /// <summary>
-/// 
+/// An <see cref="IResult"/> that on execution will write an object to the response
+/// with Ok (200) status code.
 /// </summary>
 public sealed class OkObjectHttpResult : IResult, IObjectHttpResult, IStatusCodeHttpResult
 {
@@ -15,16 +16,13 @@ public sealed class OkObjectHttpResult : IResult, IObjectHttpResult, IStatusCode
         Value = value;
     }
 
-    /// <summary>
-    /// Gets or sets the object result.
-    /// </summary>
+    /// <inheritdoc/>
     public object? Value { get; internal init; }
 
-    /// <summary>
-    /// 
-    /// </summary>
+    /// <inheritdoc/>
     public int? StatusCode => StatusCodes.Status200OK;
 
+    /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
-        => HttpResultsWriter.WriteResultAsJson(httpContext, Value, statusCode: StatusCode);
+        => HttpResultsWriter.WriteResultAsJson(httpContext, objectHttpResult: this);
 }

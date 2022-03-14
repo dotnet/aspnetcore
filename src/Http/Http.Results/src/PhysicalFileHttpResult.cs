@@ -23,34 +23,22 @@ public sealed partial class PhysicalFileHttpResult : IResult, IFileHttpResult
         ContentType = contentType ?? "application/octet-stream";
     }
 
-    /// <summary>
-    /// Gets the Content-Type header for the response.
-    /// </summary>
-    public string ContentType { get; internal set;}
+    /// <inheritdoc/>
+    public string ContentType { get; internal set; }
 
-    /// <summary>
-    /// Gets the file name that will be used in the Content-Disposition header of the response.
-    /// </summary>
-    public string? FileDownloadName { get; internal set;}
+    /// <inheritdoc/>
+    public string? FileDownloadName { get; internal set; }
 
-    /// <summary>
-    /// Gets or sets the last modified information associated with the <see cref="IFileHttpResult"/>.
-    /// </summary>
+    /// <inheritdoc/>
     public DateTimeOffset? LastModified { get; internal set; }
 
-    /// <summary>
-    /// Gets or sets the etag associated with the <see cref="FileHttpResult"/>.
-    /// </summary>
+    /// <inheritdoc/>
     public EntityTagHeaderValue? EntityTag { get; internal init; }
 
-    /// <summary>
-    /// Gets or sets the value that enables range processing for the <see cref="IFileHttpResult"/>.
-    /// </summary>
+    /// <inheritdoc/>
     public bool EnableRangeProcessing { get; internal init; }
 
-    /// <summary>
-    /// Gets or sets the file length information associated with the <see cref="IFileHttpResult"/>.
-    /// </summary>
+    /// <inheritdoc/>
     public long? FileLength { get; internal set; }
 
     /// <summary>
@@ -62,12 +50,7 @@ public sealed partial class PhysicalFileHttpResult : IResult, IFileHttpResult
     internal Func<string, FileInfoWrapper> GetFileInfoWrapper { get; init; } =
         static path => new FileInfoWrapper(path);
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="httpContext"></param>
-    /// <returns></returns>
-    /// <exception cref="FileNotFoundException"></exception>
+    /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {
         var fileInfo = GetFileInfoWrapper(FileName);
@@ -76,17 +59,13 @@ public sealed partial class PhysicalFileHttpResult : IResult, IFileHttpResult
             throw new FileNotFoundException($"Could not find file: {FileName}", FileName);
         }
 
-        LastModified = LastModified ?? fileInfo.LastWriteTimeUtc;
+        LastModified ??= fileInfo.LastWriteTimeUtc;
         FileLength = fileInfo.Length;
 
-        return HttpResultsWriter.WriteResultAsFileAsync(httpContext,
-            ExecuteCoreAsync,
-            FileDownloadName,
-            FileLength,
-            ContentType,
-            EnableRangeProcessing,
-            LastModified,
-            EntityTag);
+        return HttpResultsWriter.WriteResultAsFileAsync(
+            httpContext,
+            fileHttpResult: this,
+            writeOperation: ExecuteCoreAsync);
     }
 
     private Task ExecuteCoreAsync(HttpContext httpContext, RangeItemHeaderValue? range, long rangeLength)

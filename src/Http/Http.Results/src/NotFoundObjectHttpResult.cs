@@ -4,7 +4,8 @@
 namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
-/// 
+/// An <see cref="IResult"/> that on execution will write an object to the response
+/// with Not Found (404) status code.
 /// </summary>
 public sealed class NotFoundObjectHttpResult : IResult, IObjectHttpResult, IStatusCodeHttpResult
 {
@@ -13,16 +14,13 @@ public sealed class NotFoundObjectHttpResult : IResult, IObjectHttpResult, IStat
         Value = value;
     }
 
-    /// <summary>
-    /// Gets or sets the object result.
-    /// </summary>
+    /// <inheritdoc/>
     public object? Value { get; internal init; }
 
-    /// <summary>
-    /// 
-    /// </summary>
+    /// <inheritdoc/>
     public int? StatusCode => StatusCodes.Status404NotFound;
 
+    /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
-        => HttpResultsWriter.WriteResultAsJson(httpContext, Value, statusCode: StatusCode);
+        => HttpResultsWriter.WriteResultAsJson(httpContext, objectHttpResult: this);
 }

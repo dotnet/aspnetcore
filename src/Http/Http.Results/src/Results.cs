@@ -32,7 +32,7 @@ public static class Results
     public static IResult Challenge(
         AuthenticationProperties? properties = null,
         IList<string>? authenticationSchemes = null)
-        => new ChallengeHttpResult { AuthenticationSchemes = authenticationSchemes ?? Array.Empty<string>(), Properties = properties };
+        => new ChallengeHttpResult(authenticationSchemes: authenticationSchemes ?? Array.Empty<string>(), properties);
 
     /// <summary>
     /// Creates a <see cref="IResult"/> that on execution invokes <see cref="AuthenticationHttpContextExtensions.ForbidAsync(HttpContext, string?, AuthenticationProperties?)"/>.
@@ -50,7 +50,7 @@ public static class Results
     /// a redirect to show a login page.
     /// </remarks>
     public static IResult Forbid(AuthenticationProperties? properties = null, IList<string>? authenticationSchemes = null)
-        => new ForbidHttpResult { Properties = properties, AuthenticationSchemes = authenticationSchemes ?? Array.Empty<string>(), };
+        => new ForbidHttpResult(authenticationSchemes: authenticationSchemes ?? Array.Empty<string>(), properties);
 
     /// <summary>
     /// Creates an <see cref="IResult"/> that on execution invokes <see cref="AuthenticationHttpContextExtensions.SignInAsync(HttpContext, string?, ClaimsPrincipal, AuthenticationProperties?)" />.

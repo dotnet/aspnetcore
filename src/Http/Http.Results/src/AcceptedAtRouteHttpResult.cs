@@ -8,7 +8,9 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
-/// 
+/// An <see cref="IResult"/> that on execution will write an object to the response
+/// with status code Accepted (202) and Location header.
+/// Targets a registered route.
 /// </summary>
 public sealed class AcceptedAtRouteHttpResult : IResult, IObjectHttpResult, IAtRouteHttpResult, IStatusCodeHttpResult
 {
@@ -40,30 +42,21 @@ public sealed class AcceptedAtRouteHttpResult : IResult, IObjectHttpResult, IAtR
         RouteValues = routeValues == null ? null : new RouteValueDictionary(routeValues);
     }
 
-    /// <summary>
-    /// Gets or sets the object result.
-    /// </summary>
+    /// <inheritdoc/>
     public object? Value { get; }
 
-    /// <summary>
-    /// Gets or sets the name of the route to use for generating the URL.
-    /// </summary>
+    /// <inheritdoc/>
     public string? RouteName { get; }
 
-    /// <summary>
-    /// Gets or sets the route data to use for generating the URL.
-    /// </summary>
+    /// <inheritdoc/>
     public RouteValueDictionary? RouteValues { get; }
 
-    /// <summary>
-    /// 
-    /// </summary>
+    /// <inheritdoc/>
     public int? StatusCode => StatusCodes.Status202Accepted;
 
     /// <inheritdoc/>
-
     public Task ExecuteAsync(HttpContext httpContext)
-        => HttpResultsWriter.WriteResultAsJson(httpContext, Value, statusCode: StatusCode, responseHeader: ConfigureResponseHeaders);
+        => HttpResultsWriter.WriteResultAsJson(httpContext, objectHttpResult: this, configureResponseHeader: ConfigureResponseHeaders);
 
     private void ConfigureResponseHeaders(HttpContext context)
     {

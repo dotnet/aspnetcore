@@ -10,12 +10,12 @@ namespace Microsoft.AspNetCore.Http;
 /// </summary>
 public sealed class JsonHttpResult : IResult, IObjectHttpResult, IStatusCodeHttpResult
 {
-    public JsonHttpResult(object? value, JsonSerializerOptions? jsonSerializerOptions)
+    internal JsonHttpResult(object? value, JsonSerializerOptions? jsonSerializerOptions)
         : this(value, statusCode: null, jsonSerializerOptions: jsonSerializerOptions)
     {
     }
 
-    public JsonHttpResult(object? value, int? statusCode, JsonSerializerOptions? jsonSerializerOptions)
+    internal JsonHttpResult(object? value, int? statusCode, JsonSerializerOptions? jsonSerializerOptions)
     {
         Value = value;
         StatusCode = statusCode;
@@ -31,11 +31,9 @@ public sealed class JsonHttpResult : IResult, IObjectHttpResult, IStatusCodeHttp
     /// When using <c>Newtonsoft.Json</c>, this should be an instance of <c>JsonSerializerSettings</c>.
     /// </para>
     /// </summary>
-    public JsonSerializerOptions? JsonSerializerOptions { get; init; }
+    public JsonSerializerOptions? JsonSerializerOptions { get; internal init; }
 
-    /// <summary>
-    /// Gets or sets the object result.
-    /// </summary>
+    /// <inheritdoc/>
     public object? Value { get; }
 
     /// <summary>
@@ -43,11 +41,14 @@ public sealed class JsonHttpResult : IResult, IObjectHttpResult, IStatusCodeHttp
     /// </summary>
     public string? ContentType { get; internal set; }
 
-    /// <summary>
-    /// 
-    /// </summary>
+    /// <inheritdoc/>
     public int? StatusCode { get; }
 
+    /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
-        => HttpResultsWriter.WriteResultAsJson(httpContext, Value, ContentType, StatusCode, JsonSerializerOptions);
+        => HttpResultsWriter.WriteResultAsJson(
+            httpContext,
+            objectHttpResult: this,
+            ContentType,
+            JsonSerializerOptions);
 }

@@ -45,7 +45,8 @@ public sealed partial class RedirectToRouteHttpResult : IResult, IRedirectHttpRe
     /// </summary>
     /// <param name="routeName">The name of the route.</param>
     /// <param name="routeValues">The parameters for the route.</param>
-    /// <param name="permanent">If set to true, makes the redirect permanent (301). Otherwise a temporary redirect is used (302).</param>
+    /// <param name="permanent">If set to true, makes the redirect permanent (301).
+    /// Otherwise a temporary redirect is used (302).</param>
     internal RedirectToRouteHttpResult(
         string? routeName,
         object? routeValues,
@@ -60,8 +61,10 @@ public sealed partial class RedirectToRouteHttpResult : IResult, IRedirectHttpRe
     /// </summary>
     /// <param name="routeName">The name of the route.</param>
     /// <param name="routeValues">The parameters for the route.</param>
-    /// <param name="permanent">If set to true, makes the redirect permanent (301). Otherwise a temporary redirect is used (302).</param>
-    /// <param name="preserveMethod">If set to true, make the temporary redirect (307) or permanent redirect (308) preserve the initial request method.</param>
+    /// <param name="permanent">If set to true, makes the redirect permanent (301).
+    /// Otherwise a temporary redirect is used (302).</param>
+    /// <param name="preserveMethod">If set to true, make the temporary redirect (307)
+    /// or permanent redirect (308) preserve the initial request method.</param>
     internal RedirectToRouteHttpResult(
         string? routeName,
         object? routeValues,
@@ -92,7 +95,8 @@ public sealed partial class RedirectToRouteHttpResult : IResult, IRedirectHttpRe
     /// </summary>
     /// <param name="routeName">The name of the route.</param>
     /// <param name="routeValues">The parameters for the route.</param>
-    /// <param name="permanent">If set to true, makes the redirect permanent (301). Otherwise a temporary redirect is used (302).</param>
+    /// <param name="permanent">If set to true, makes the redirect permanent (301).
+    /// Otherwise a temporary redirect is used (302).</param>
     /// <param name="fragment">The fragment to add to the URL.</param>
     internal RedirectToRouteHttpResult(
         string? routeName,
@@ -109,8 +113,10 @@ public sealed partial class RedirectToRouteHttpResult : IResult, IRedirectHttpRe
     /// </summary>
     /// <param name="routeName">The name of the route.</param>
     /// <param name="routeValues">The parameters for the route.</param>
-    /// <param name="permanent">If set to true, makes the redirect permanent (301). Otherwise a temporary redirect is used (302).</param>
-    /// <param name="preserveMethod">If set to true, make the temporary redirect (307) or permanent redirect (308) preserve the initial request method.</param>
+    /// <param name="permanent">If set to true, makes the redirect permanent (301).
+    /// Otherwise a temporary redirect is used (302).</param>
+    /// <param name="preserveMethod">If set to true, make the temporary redirect (307)
+    /// or permanent redirect (308) preserve the initial request method.</param>
     /// <param name="fragment">The fragment to add to the URL.</param>
     internal RedirectToRouteHttpResult(
         string? routeName,
@@ -126,39 +132,25 @@ public sealed partial class RedirectToRouteHttpResult : IResult, IRedirectHttpRe
         Fragment = fragment;
     }
 
-    /// <summary>
-    /// Gets the name of the route to use for generating the URL.
-    /// </summary>
+    /// <inheritdoc/>
     public string? RouteName { get; }
 
-    /// <summary>
-    /// Gets the route data to use for generating the URL.
-    /// </summary>
+    /// <inheritdoc/>
     public RouteValueDictionary? RouteValues { get; }
 
-    /// <summary>
-    /// Gets an indication that the redirect is permanent.
-    /// </summary>
+    /// <inheritdoc/>
     public bool Permanent { get; }
 
-    /// <summary>
-    /// Gets an indication that the redirect preserves the initial request method.
-    /// </summary>
+    /// <inheritdoc/>
     public bool PreserveMethod { get; }
 
-    /// <summary>
-    /// Gets the fragment to add to the URL.
-    /// </summary>
+    /// <inheritdoc/>
     public string? Fragment { get; }
 
-    /// <summary>
-    /// Gets an indication that only local URLs are accepted.
-    /// </summary>
+    /// <inheritdoc/>
     public bool AcceptLocalUrlOnly => true;
 
-    /// <summary>
-    /// Gets the URL to redirect to.
-    /// </summary>
+    /// <inheritdoc/>
     public string? Url => _destinationUrl;
 
     /// <inheritdoc />

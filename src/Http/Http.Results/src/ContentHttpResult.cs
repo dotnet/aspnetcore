@@ -9,9 +9,10 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
-/// An <see cref="StatusCodeHttpResult"/> that when executed will produce a response with content.
+/// An <see cref="StatusCodeHttpResult"/> that when executed
+/// will produce a response with content.
 /// </summary>
-public sealed partial class ContentHttpResult : IResult, IStatusCodeHttpResult, IContentHttpResult
+public sealed partial class ContentHttpResult : IResult, IStatusCodeHttpResult
 {
     private const string DefaultContentType = "text/plain; charset=utf-8";
     private static readonly Encoding DefaultEncoding = Encoding.UTF8;
@@ -30,9 +31,7 @@ public sealed partial class ContentHttpResult : IResult, IStatusCodeHttpResult, 
     /// </summary>
     public string? ContentType { get; internal init; }
 
-    /// <summary>
-    /// 
-    /// </summary>
+    /// <inheritdoc/>
     public int? StatusCode { get; internal init; }
 
     /// <summary>

@@ -73,14 +73,14 @@ public sealed partial class ChallengeHttpResult : IResult
     /// challenge.</param>
     internal ChallengeHttpResult(IList<string> authenticationSchemes, AuthenticationProperties? properties)
     {
-        AuthenticationSchemes = authenticationSchemes;
+        AuthenticationSchemes = authenticationSchemes.AsReadOnly();
         Properties = properties;
     }
 
     /// <summary>
     /// Gets or sets the authentication schemes that are challenged.
     /// </summary>
-    public IList<string> AuthenticationSchemes { get; internal init; } = Array.Empty<string>();
+    public IReadOnlyList<string> AuthenticationSchemes { get; internal init; } = Array.Empty<string>();
 
     /// <summary>
     /// Gets or sets the <see cref="AuthenticationProperties"/> used to perform the sign-out operation.
@@ -109,7 +109,7 @@ public sealed partial class ChallengeHttpResult : IResult
 
     private static partial class Log
     {
-        public static void ChallengeResultExecuting(ILogger logger, IList<string> authenticationSchemes)
+        public static void ChallengeResultExecuting(ILogger logger, IReadOnlyList<string> authenticationSchemes)
         {
             if (logger.IsEnabled(LogLevel.Information))
             {

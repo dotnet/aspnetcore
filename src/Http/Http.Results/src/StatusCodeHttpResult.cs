@@ -7,10 +7,8 @@ namespace Microsoft.AspNetCore.Http;
 /// Represents an <see cref="IResult"/> that when executed will
 /// produce an HTTP response with the given response status code.
 /// </summary>
-public sealed partial class StatusCodeHttpResult : IResult, IStatusCodeHttpResult
+internal sealed partial class StatusCodeHttpResult : IResult, IStatusCodeHttpResult
 {
-    private readonly int _statuCode;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="StatusCodeHttpResult"/> class
     /// with the given <paramref name="statusCode"/>.
@@ -18,13 +16,11 @@ public sealed partial class StatusCodeHttpResult : IResult, IStatusCodeHttpResul
     /// <param name="statusCode">The HTTP status code of the response.</param>
     internal StatusCodeHttpResult(int statusCode)
     {
-        _statuCode = statusCode;
+        StatusCode = statusCode;
     }
 
-    /// <summary>
-    /// Gets or sets the HTTP status code.
-    /// </summary>
-    public int? StatusCode => _statuCode;
+    /// <inheritdoc/>
+    public int? StatusCode { get; }
 
     /// <summary>
     /// Sets the status code on the HTTP response.
@@ -33,7 +29,7 @@ public sealed partial class StatusCodeHttpResult : IResult, IStatusCodeHttpResul
     /// <returns>A task that represents the asynchronous execute operation.</returns>
     public Task ExecuteAsync(HttpContext httpContext)
     {
-        HttpResultsWriter.WriteResultAsStatusCode(httpContext, _statuCode);
+        HttpResultsWriter.WriteResultAsStatusCode(httpContext, statusCodeHttpResult: this);
         return Task.CompletedTask;
     }
 }

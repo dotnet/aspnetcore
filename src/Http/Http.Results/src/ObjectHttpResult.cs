@@ -36,9 +36,7 @@ internal sealed class ObjectHttpResult : IResult, IObjectHttpResult, IStatusCode
         StatusCode = statusCode;
     }
 
-    /// <summary>
-    /// Gets or sets the object result.
-    /// </summary>
+    /// <inheritdoc/>
     public object? Value { get; internal init; }
 
     /// <summary>
@@ -46,9 +44,7 @@ internal sealed class ObjectHttpResult : IResult, IObjectHttpResult, IStatusCode
     /// </summary>
     public string? ContentType { get; internal init; }
 
-    /// <summary>
-    /// 
-    /// </summary>
+    /// <inheritdoc/>
     public int? StatusCode { get; internal init; }
 
     /// <summary>
@@ -57,5 +53,5 @@ internal sealed class ObjectHttpResult : IResult, IObjectHttpResult, IStatusCode
     /// <param name="httpContext"></param>
     /// <returns></returns>
     public Task ExecuteAsync(HttpContext httpContext)
-        => HttpResultsWriter.WriteResultAsJson(httpContext, Value, ContentType, StatusCode);
+        => HttpResultsWriter.WriteResultAsJson(httpContext, objectHttpResult: this, ContentType);
 }

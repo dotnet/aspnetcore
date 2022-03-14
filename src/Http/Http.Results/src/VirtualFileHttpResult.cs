@@ -10,8 +10,8 @@ using Microsoft.Net.Http.Headers;
 namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
-/// A <see cref="IResult" /> that on execution writes the file specified using a virtual path to the response
-/// using mechanisms provided by the host.
+/// A <see cref="IResult" /> that on execution writes the file specified
+/// using a virtual path to the response using mechanisms provided by the host.
 /// </summary>
 public sealed class VirtualFileHttpResult : IResult, IFileHttpResult
 {
@@ -30,34 +30,22 @@ public sealed class VirtualFileHttpResult : IResult, IFileHttpResult
         ContentType = contentType ?? "application/octet-stream";
     }
 
-    /// <summary>
-    /// Gets the Content-Type header for the response.
-    /// </summary>
+    /// <inheritdoc />
     public string ContentType { get; internal set; }
 
-    /// <summary>
-    /// Gets the file name that will be used in the Content-Disposition header of the response.
-    /// </summary>
+    /// <inheritdoc />
     public string? FileDownloadName { get; internal set; }
 
-    /// <summary>
-    /// Gets or sets the last modified information associated with the <see cref="IFileHttpResult"/>.
-    /// </summary>
+    /// <inheritdoc />
     public DateTimeOffset? LastModified { get; internal set; }
 
-    /// <summary>
-    /// Gets or sets the etag associated with the <see cref="IFileHttpResult"/>.
-    /// </summary>
+    /// <inheritdoc />
     public EntityTagHeaderValue? EntityTag { get; internal init; }
 
-    /// <summary>
-    /// Gets or sets the value that enables range processing for the <see cref="IFileHttpResult"/>.
-    /// </summary>
+    /// <inheritdoc />
     public bool EnableRangeProcessing { get; internal init; }
 
-    /// <summary>
-    /// Gets or sets the file length information associated with the <see cref="IFileHttpResult"/>.
-    /// </summary>
+    /// <inheritdoc />
     public long? FileLength { get; internal set; }
 
     /// <summary>
@@ -67,7 +55,7 @@ public sealed class VirtualFileHttpResult : IResult, IFileHttpResult
     {
         get => _fileName;
         [MemberNotNull(nameof(_fileName))]
-        set => _fileName = value ?? throw new ArgumentNullException(nameof(value));
+        internal set => _fileName = value ?? throw new ArgumentNullException(nameof(value));
     }
 
     /// <inheritdoc/>
@@ -85,14 +73,10 @@ public sealed class VirtualFileHttpResult : IResult, IFileHttpResult
         LastModified = LastModified ?? fileInfo.LastModified;
         FileLength = fileInfo.Length;
 
-        return HttpResultsWriter.WriteResultAsFileAsync(httpContext,
-            ExecuteCoreAsync,
-            FileDownloadName,
-            FileLength,
-            ContentType,
-            EnableRangeProcessing,
-            LastModified,
-            EntityTag);
+        return HttpResultsWriter.WriteResultAsFileAsync(
+            httpContext,
+            fileHttpResult: this,
+            ExecuteCoreAsync);
     }
 
     private Task ExecuteCoreAsync(HttpContext httpContext, RangeItemHeaderValue? range, long rangeLength)

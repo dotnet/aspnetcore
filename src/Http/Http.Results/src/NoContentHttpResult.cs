@@ -4,24 +4,22 @@
 namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
-/// 
+/// Represents an <see cref="IResult"/> that when executed will
+/// produce an HTTP response with the No Content (204) status code.
 /// </summary>
 public class NoContentHttpResult : IResult, IStatusCodeHttpResult
 {
-    private readonly int _statuCode = StatusCodes.Status204NoContent;
-
     internal NoContentHttpResult()
     {
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    public int? StatusCode => _statuCode;
+    /// <inheritdoc/>
+    public int? StatusCode => StatusCodes.Status204NoContent;
 
+    /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {
-        HttpResultsWriter.WriteResultAsStatusCode(httpContext, _statuCode);
+        HttpResultsWriter.WriteResultAsStatusCode(httpContext, statusCodeHttpResult: this);
         return Task.CompletedTask;
     }
 }

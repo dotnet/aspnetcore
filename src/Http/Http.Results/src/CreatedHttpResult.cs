@@ -4,7 +4,8 @@
 namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
-/// 
+/// An <see cref="IResult"/> that on execution will write an object to the response
+/// with status code Created (201) and Location header.
 /// </summary>
 public sealed class CreatedHttpResult : IResult, IObjectHttpResult, IStatusCodeHttpResult, IAtLocationHttpResult
 {
@@ -45,23 +46,21 @@ public sealed class CreatedHttpResult : IResult, IObjectHttpResult, IStatusCodeH
         }
     }
 
-    /// <summary>
-    /// Gets or sets the object result.
-    /// </summary>
+    /// <inheritdoc/>
     public object? Value { get; }
 
-    /// <summary>
-    /// Gets or sets the HTTP status code.
-    /// </summary>
+    /// <inheritdoc/>
     public int? StatusCode => StatusCodes.Status201Created;
 
-    /// <summary>
-    /// Gets the location at which the status of the requested content can be monitored.
-    /// </summary>
+    /// <inheritdoc/>
     public string? Location { get; }
 
+    /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
-        => HttpResultsWriter.WriteResultAsJson(httpContext, Value, statusCode: StatusCode, responseHeader: ConfigureResponseHeaders);
+        => HttpResultsWriter.WriteResultAsJson(
+            httpContext,
+            objectHttpResult: this,
+            configureResponseHeader: ConfigureResponseHeaders);
 
     private void ConfigureResponseHeaders(HttpContext context)
     {

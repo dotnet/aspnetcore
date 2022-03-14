@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 /// An <see cref="IResult"/> that on execution will write Problem Details
 /// HTTP API responses based on https://tools.ietf.org/html/rfc7807
 /// </summary>
-public sealed class ProblemHttpResult : IResult, IProblemHttpResult
+public sealed class ProblemHttpResult : IResult, IObjectHttpResult
 {
     internal ProblemHttpResult(ProblemDetails problemDetails)
     {
@@ -27,6 +27,15 @@ public sealed class ProblemHttpResult : IResult, IProblemHttpResult
     public string ContentType => "application/problem+json";
 
     /// <inheritdoc/>
+    public object? Value => ProblemDetails;
+
+    /// <inheritdoc/>
+    public int? StatusCode => ProblemDetails.Status;
+
+    /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
-        => HttpResultsWriter.WriteResultAsJson(httpContext, ProblemDetails, ContentType);
+        => HttpResultsWriter.WriteResultAsJson(
+            httpContext,
+            objectHttpResult: this,
+            ContentType);
 }

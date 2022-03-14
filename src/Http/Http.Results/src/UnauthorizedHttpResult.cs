@@ -4,29 +4,22 @@
 namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
-/// 
+/// Represents an <see cref="IResult"/> that when executed will
+/// produce an HTTP response with the No Unauthorized (401) status code.
 /// </summary>
 public sealed class UnauthorizedHttpResult : IResult, IStatusCodeHttpResult
 {
-    private readonly int _statuCode = StatusCodes.Status401Unauthorized;
-
     internal UnauthorizedHttpResult()
     {
     }
 
-    /// <summary>
-    /// Gets or sets the HTTP status code.
-    /// </summary>
-    public int? StatusCode => _statuCode;
+    /// <inheritdoc />
+    public int? StatusCode => StatusCodes.Status401Unauthorized;
 
-    /// <summary>
-    /// Sets the status code on the HTTP response.
-    /// </summary>
-    /// <param name="httpContext">The <see cref="HttpContext"/> for the current request.</param>
-    /// <returns>A task that represents the asynchronous execute operation.</returns>
+    /// <inheritdoc />
     public Task ExecuteAsync(HttpContext httpContext)
     {
-        HttpResultsWriter.WriteResultAsStatusCode(httpContext, _statuCode);
+        HttpResultsWriter.WriteResultAsStatusCode(httpContext, statusCodeHttpResult: this);
         return Task.CompletedTask;
     }
 
