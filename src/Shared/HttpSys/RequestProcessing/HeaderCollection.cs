@@ -272,7 +272,7 @@ internal class HeaderCollection : IHeaderDictionary
     {
         if (headerCharacters != null)
         {
-            var invalid = HttpCharacters.IndexOfInvalidFieldValueChar(headerCharacters);
+            var invalid = HttpCharacters.IndexOfInvalidFieldValueCharExtended(headerCharacters);
             if (invalid >= 0)
             {
                 throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, "Invalid control character in header: 0x{0:X2}", headerCharacters[invalid]));
