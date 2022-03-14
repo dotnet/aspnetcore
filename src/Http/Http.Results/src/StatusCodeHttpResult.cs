@@ -33,7 +33,7 @@ public sealed partial class StatusCodeHttpResult : IResult, IStatusCodeHttpResul
     /// <returns>A task that represents the asynchronous execute operation.</returns>
     public Task ExecuteAsync(HttpContext httpContext)
     {
-        HttpResultsWriter.SetHttpStatusCode(httpContext, _statuCode);
+        HttpResultsWriter.WriteResultAsStatusCode(httpContext, _statuCode);
         return Task.CompletedTask;
     }
 }

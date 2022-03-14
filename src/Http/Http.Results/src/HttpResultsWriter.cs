@@ -13,10 +13,8 @@ using Microsoft.Net.Http.Headers;
 
 internal static partial class HttpResultsWriter
 {
-    public static void SetHttpStatusCode(HttpContext httpContext, int statusCode)
+    public static void WriteResultAsStatusCode(HttpContext httpContext, int statusCode)
     {
-        // TODO: Check null httpContext
-
         Log.StatusCodeResultExecuting(GetLogger(httpContext), statusCode);
         httpContext.Response.StatusCode = statusCode;
     }
@@ -29,8 +27,6 @@ internal static partial class HttpResultsWriter
         JsonSerializerOptions? jsonSerializerOptions = null,
         Action<HttpContext>? responseHeader = null)
     {
-        // TODO: Check null httpContext
-
         Log.ObjectResultExecuting(GetLogger(httpContext), value, statusCode);
 
         if (value is ProblemDetails problemDetails)
@@ -41,7 +37,7 @@ internal static partial class HttpResultsWriter
 
         if (statusCode is { } code)
         {
-            SetHttpStatusCode(httpContext, code);
+            WriteResultAsStatusCode(httpContext, code);
         }
 
         responseHeader?.Invoke(httpContext);

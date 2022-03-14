@@ -21,7 +21,7 @@ public class NoContentHttpResult : IResult, IStatusCodeHttpResult
 
     public Task ExecuteAsync(HttpContext httpContext)
     {
-        HttpResultsWriter.SetHttpStatusCode(httpContext, _statuCode);
+        HttpResultsWriter.WriteResultAsStatusCode(httpContext, _statuCode);
         return Task.CompletedTask;
     }
 }
