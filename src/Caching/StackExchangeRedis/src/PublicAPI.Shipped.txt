@@ -24,3 +24,4 @@ Microsoft.Extensions.Caching.StackExchangeRedis.RedisCache.Dispose() -> void
 Microsoft.Extensions.Caching.StackExchangeRedis.RedisCacheOptions
 Microsoft.Extensions.Caching.StackExchangeRedis.RedisCacheOptions.RedisCacheOptions() -> void
 Microsoft.Extensions.DependencyInjection.StackExchangeRedisCacheServiceCollectionExtensions
+static Microsoft.Extensions.DependencyInjection.StackExchangeRedisCacheServiceCollectionExtensions.AddStackExchangeRedisCache(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

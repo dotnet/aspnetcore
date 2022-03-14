@@ -16,6 +16,16 @@ public static class StackExchangeRedisCacheServiceCollectionExtensions
     /// Adds Redis distributed caching services to the specified <see cref="IServiceCollection" />.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
+    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+    public static IServiceCollection AddStackExchangeRedisCache(this IServiceCollection services)
+    {
+        return AddStackExchangeRedisCache(services, (option) => { });
+    }
+
+    /// <summary>
+    /// Adds Redis distributed caching services to the specified <see cref="IServiceCollection" />.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
     /// <param name="setupAction">An <see cref="Action{RedisCacheOptions}"/> to configure the provided
     /// <see cref="RedisCacheOptions"/>.</param>
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
