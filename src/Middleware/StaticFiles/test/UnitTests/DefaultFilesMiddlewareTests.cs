@@ -133,6 +133,7 @@ public class DefaultFilesMiddlewareTests
     [InlineData("", @"./SubFolder", "", false)]
     [InlineData("", @"./SubFolder", "/你好", false)]
     [InlineData("", @"./SubFolder", "/你好/世界", false)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/40642")]
     public async Task FoundDirectoryWithDefaultFile_PathModified_All(string baseUrl, string baseDir, string requestUrl, bool appendTrailingSlash = true)
     {
         await FoundDirectoryWithDefaultFile_PathModified(baseUrl, baseDir, requestUrl, appendTrailingSlash);
@@ -153,6 +154,7 @@ public class DefaultFilesMiddlewareTests
     [InlineData("", @".\subFolder", "", false)]
     [InlineData("", @".\SubFolder", "/你好", false)]
     [InlineData("", @".\SubFolder", "/你好/世界", false)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/40642")]
     public async Task FoundDirectoryWithDefaultFile_PathModified_Windows(string baseUrl, string baseDir, string requestUrl, bool appendTrailingSlash = true)
     {
         await FoundDirectoryWithDefaultFile_PathModified(baseUrl, baseDir, requestUrl, appendTrailingSlash);
@@ -188,6 +190,7 @@ public class DefaultFilesMiddlewareTests
     [InlineData("", @"./", "/SubFolder", "?a=b")]
     [InlineData("", @"./SubFolder", "/你好", "?a=b")]
     [InlineData("", @"./SubFolder", "/你好/世界", "?a=b")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/40642")]
     public async Task NearMatch_RedirectAddSlash_All(string baseUrl, string baseDir, string requestUrl, string queryString)
     {
         await NearMatch_RedirectAddSlash(baseUrl, baseDir, requestUrl, queryString);
@@ -200,6 +203,7 @@ public class DefaultFilesMiddlewareTests
     [InlineData("", @".\", "/SubFolder", "?a=b")]
     [InlineData("", @".\SubFolder", "/你好", "?a=b")]
     [InlineData("", @".\SubFolder", "/你好/世界", "?a=b")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/40642")]
     public async Task NearMatch_RedirectAddSlash_Windows(string baseUrl, string baseDir, string requestUrl, string queryString)
     {
         await NearMatch_RedirectAddSlash(baseUrl, baseDir, requestUrl, queryString);

@@ -91,9 +91,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <LayoutTargetDir>$(TargetingPackLayoutRoot)$(TargetingPackSubPath)</LayoutTargetDir>
     <LocalInstallationOutputPath>$(LocalDotNetRoot)$(TargetingPackSubPath)</LocalInstallationOutputPath>
 
-    <ArchiveOutputFileName>aspnetcore-targeting-pack-$(PackageVersion)</ArchiveOutputFileName>
-    <ZipArchiveOutputPath>$(InstallersOutputPath)$(ArchiveOutputFileName).zip</ZipArchiveOutputPath>
-    <TarArchiveOutputPath>$(InstallersOutputPath)$(ArchiveOutputFileName).tar.gz</TarArchiveOutputPath>
+    <ArchiveOutputFileName>aspnetcore-targeting-pack-$(PackageVersion)-$(TargetRuntimeIdentifier)</ArchiveOutputFileName>
+    <ArchiveOutputPath>$(InstallersOutputPath)$(ArchiveOutputFileName)$(ArchiveExtension)</ArchiveOutputPath>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -259,30 +258,18 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   </Target>
 
   <Target Name="_CreateTargetingPackArchive"
-          Condition=" '$(IsPackable)' == 'true' "
           Inputs="@(RefPackContent)"
-          Outputs="$(ZipArchiveOutputPath);$(TarArchiveOutputPath)">
-    <PropertyGroup>
-      <_TarCommand>tar</_TarCommand>
-      <_TarCommand Condition="Exists('$(RepoRoot).tools\tar.exe')">"$(RepoRoot).tools\tar.exe"</_TarCommand>
-
-      <!-- For the tar packed with git, transform e.g. "C:\root\AspNetCore\File.tar.gz" to "/C/root/AspNetCore/File.tar.gz". -->
-      <_TarArchiveOutputPath>$(TarArchiveOutputPath)</_TarArchiveOutputPath>
-      <_TarArchiveOutputPath
-          Condition="Exists('$(repoRoot)\.tools\tar.fromGit')">/$(TarArchiveOutputPath.Replace('\','/').Replace(':',''))</_TarArchiveOutputPath>
-    </PropertyGroup>
-
+          Outputs="$(ArchiveOutputPath)">
     <ZipDirectory
       SourceDirectory="$(TargetingPackLayoutRoot)"
-      DestinationFile="$(ZipArchiveOutputPath)"
-      Overwrite="true" />
-
-    <!-- Requires Windows 10 version 1803 or newer -->
-    <Message Importance="High" Text="Executing: $(_TarCommand) -czf &quot;$(_TarArchiveOutputPath)&quot; ." />
-    <Exec Command="$(_TarCommand) -czf &quot;$(_TarArchiveOutputPath)&quot; ."
-        WorkingDirectory="$(TargetingPackLayoutRoot)" />
-
-    <Message Importance="High" Text="$(MSBuildProjectName) -> $(TarArchiveOutputPath)" />
+      DestinationFile="$(ArchiveOutputPath)"
+      Overwrite="true"
+      Condition="'$(ArchiveExtension)' == '.zip'" />
+    <Exec
+      Command="tar -czf $(ArchiveOutputPath) ."
+      WorkingDirectory="$(TargetingPackLayoutRoot)"
+      Condition="'$(ArchiveExtension)' == '.tar.gz'" />
+    <Message Importance="High" Text="$(MSBuildProjectName) -> $(ArchiveOutputPath)" />
   </Target>
 
   <Target Name="GenerateFrameworkListFile">

@@ -19,3 +19,7 @@ Microsoft.AspNetCore.Routing.RouteValueDictionary.RouteValueDictionary(System.Co
 abstract Microsoft.AspNetCore.Http.HttpResponse.ContentType.get -> string?
 Microsoft.AspNetCore.Http.Metadata.ISkipStatusCodePagesMetadata
 Microsoft.AspNetCore.Http.IRouteHandlerFilter
+Microsoft.AspNetCore.Http.Metadata.IEndpointDescriptionMetadata
+Microsoft.AspNetCore.Http.Metadata.IEndpointDescriptionMetadata.Description.get -> string!
+Microsoft.AspNetCore.Http.Metadata.IEndpointSummaryMetadata
+Microsoft.AspNetCore.Http.Metadata.IEndpointSummaryMetadata.Summary.get -> string!
