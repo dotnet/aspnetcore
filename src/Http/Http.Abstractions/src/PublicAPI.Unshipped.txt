@@ -12,6 +12,7 @@ Microsoft.AspNetCore.Http.IFileHttpResult.EnableRangeProcessing.get -> bool
 Microsoft.AspNetCore.Http.IFileHttpResult.EntityTag.get -> Microsoft.Net.Http.Headers.EntityTagHeaderValue?
 Microsoft.AspNetCore.Http.IFileHttpResult.FileDownloadName.get -> string?
 Microsoft.AspNetCore.Http.IFileHttpResult.FileLength.get -> long?
+Microsoft.AspNetCore.Http.IFileHttpResult.LastModified.get -> System.DateTimeOffset?
 Microsoft.AspNetCore.Http.IObjectHttpResult
 Microsoft.AspNetCore.Http.IObjectHttpResult.StatusCode.get -> int?
 Microsoft.AspNetCore.Http.IObjectHttpResult.Value.get -> object?

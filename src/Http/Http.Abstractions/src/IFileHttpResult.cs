@@ -26,7 +26,7 @@ public interface IFileHttpResult
     DateTimeOffset? LastModified { get; }
 
     /// <summary>
-    /// Gets or sets the etag associated with the <see cref="FileHttpResult"/>.
+    /// Gets or sets the etag associated with the <see cref="IFileHttpResult"/>.
     /// </summary>
     EntityTagHeaderValue? EntityTag { get; }
 
