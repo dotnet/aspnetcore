@@ -32,10 +32,10 @@ public static class RouteHandlerFilterExtensions
     /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the route handler.</returns>
     public static RouteHandlerBuilder AddFilter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TFilterType>(this RouteHandlerBuilder builder) where TFilterType : IRouteHandlerFilter
     {
-        var filterFactory = ActivatorUtilities.CreateFactory(typeof(TFilterType), new[] { typeof(RouteHandlerContext) });
+        var filterFactory = ActivatorUtilities.CreateFactory(typeof(TFilterType), Type.EmptyTypes);
         builder.RouteHandlerFilterFactories.Add((routeHandlerContext, next) => (context) =>
         {
-            var filter = (IRouteHandlerFilter)filterFactory.Invoke(context.HttpContext.RequestServices, new [] { routeHandlerContext });
+            var filter = (IRouteHandlerFilter)filterFactory.Invoke(context.HttpContext.RequestServices, Array.Empty<object>());
             return filter.InvokeAsync(context, next);
         });
         return builder;
