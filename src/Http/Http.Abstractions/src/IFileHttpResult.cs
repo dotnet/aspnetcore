@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Http;
 /// <summary>
 /// Defines a contract that represents the file result of an HTTP result endpoint.
 /// </summary>
-public interface IFileHttpResult
+public interface IFileHttpResult : IResult
 {
     /// <summary>
     /// Gets the Content-Type header for the response.

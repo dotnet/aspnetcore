@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Http;
 /// Defines a contract that represents the result of an HTTP result endpoint
 /// that constains an object route.
 /// </summary>
-public interface IAtRouteHttpResult
+public interface IAtRouteHttpResult : IResult
 {
     /// <summary>
     /// Gets the name of the route to use for generating the URL.

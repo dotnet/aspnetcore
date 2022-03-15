@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Http;
 /// <summary>
 /// Defines a contract that represents the HTTP Redirect result of an HTTP result endpoint.
 /// </summary>
-public interface IRedirectHttpResult
+public interface IRedirectHttpResult : IResult
 {
     /// <summary>
     /// Gets the value that specifies that the redirect should be permanent if true or temporary if false.

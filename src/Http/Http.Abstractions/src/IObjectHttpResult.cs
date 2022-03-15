@@ -5,17 +5,12 @@ namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
 /// Defines a contract that represents the result of an HTTP endpoint
-/// that contains an object <see cref="Value"/> and <see cref="StatusCode"/>.
+/// that contains an object <see cref="Value"/> and a given statu code.
 /// </summary>
-public interface IObjectHttpResult
+public interface IObjectHttpResult : IResult, IStatusCodeHttpResult
 {
     /// <summary>
     /// Gets or sets the object result.
     /// </summary>
     object? Value { get; }
-
-    /// <summary>
-    /// Gets or sets the HTTP status code.
-    /// </summary>
-    int? StatusCode { get; }
 }

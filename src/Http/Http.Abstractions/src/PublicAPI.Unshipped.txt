@@ -14,7 +14,6 @@ Microsoft.AspNetCore.Http.IFileHttpResult.FileDownloadName.get -> string?
 Microsoft.AspNetCore.Http.IFileHttpResult.FileLength.get -> long?
 Microsoft.AspNetCore.Http.IFileHttpResult.LastModified.get -> System.DateTimeOffset?
 Microsoft.AspNetCore.Http.IObjectHttpResult
-Microsoft.AspNetCore.Http.IObjectHttpResult.StatusCode.get -> int?
 Microsoft.AspNetCore.Http.IObjectHttpResult.Value.get -> object?
 Microsoft.AspNetCore.Http.IRedirectHttpResult
 Microsoft.AspNetCore.Http.IRedirectHttpResult.AcceptLocalUrlOnly.get -> bool

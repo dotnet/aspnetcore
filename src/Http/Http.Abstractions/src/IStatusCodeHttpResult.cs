@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Http;
 /// Defines a contract that represents the result of an HTTP endpoint
 /// that contains a <see cref="StatusCode"/>.
 /// </summary>
-public interface IStatusCodeHttpResult
+public interface IStatusCodeHttpResult : IResult
 {
     /// <summary>
     /// Gets or sets the HTTP status code.
