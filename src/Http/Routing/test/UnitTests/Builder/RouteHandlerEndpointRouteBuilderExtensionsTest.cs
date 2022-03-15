@@ -932,7 +932,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().BuildServiceProvider()));
 
-        string? PrintLogger(HttpContext context) => context.Items["loggerErrorIsEnabled"]?.ToString();
+        string? PrintLogger(HttpContext context) => $"loggerErrorIsEnabled: {context.Items["loggerErrorIsEnabled"]}, parentName: {context.Items["parentName"]}";
         var routeHandlerBuilder = builder.Map("/", PrintLogger);
         routeHandlerBuilder.AddFilter<ServiceAccessingRouteHandlerFilter>();
 
@@ -953,21 +953,24 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         httpResponse.Body.Seek(0, SeekOrigin.Begin);
         var streamReader = new StreamReader(httpResponse.Body);
         var body = streamReader.ReadToEndAsync().Result;
-        Assert.Equal("True", body);
+        Assert.Equal("loggerErrorIsEnabled: True, parentName: RouteHandlerEndpointRouteBuilderExtensionsTest", body);
     }
 
     class ServiceAccessingRouteHandlerFilter : IRouteHandlerFilter
     {
         private ILogger _logger;
+        private RouteHandlerContext _routeHandlerContext;
 
-        public ServiceAccessingRouteHandlerFilter(ILoggerFactory loggerFactory)
+        public ServiceAccessingRouteHandlerFilter(ILoggerFactory loggerFactory, RouteHandlerContext context)
         {
             _logger = loggerFactory.CreateLogger<ServiceAccessingRouteHandlerFilter>();
+            _routeHandlerContext = context;
         }
 
         public async ValueTask<object?> InvokeAsync(RouteHandlerInvocationContext context, RouteHandlerFilterDelegate next)
         {
             context.HttpContext.Items["loggerErrorIsEnabled"] = _logger.IsEnabled(LogLevel.Error);
+            context.HttpContext.Items["parentName"] = _routeHandlerContext.MethodInfo.DeclaringType?.Name;
             return await next(context);
         }
     }

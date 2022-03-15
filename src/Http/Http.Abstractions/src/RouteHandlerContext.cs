@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Http;
 /// Represents the information accessible via the route handler filter
 /// API when the user is constructing a new route handler.
 /// </summary>
-public class RouteHandlerContext
+public sealed class RouteHandlerContext
 {
     /// <summary>
     /// Creates a new instance of the <see cref="RouteHandlerContext"/>.
@@ -30,5 +30,5 @@ public class RouteHandlerContext
     /// <summary>
     /// The <see cref="EndpointMetadataCollection"/> associated with the current endpoint.
     /// </summary>
-    public EndpointMetadataCollection EndpointMetadata{ get; }
+    public EndpointMetadataCollection EndpointMetadata { get; }
 }

@@ -4371,6 +4371,61 @@ public class RequestDelegateFactoryTests : LoggedTest
     }
 
     [Fact]
+    public async Task RequestDelegateFactory_CanInvokeEndpointFilter_ThatUsesEndpointMetadata()
+    {
+        // Arrange
+        string HelloName(IFormFileCollection formFiles)
+        {
+            return $"Got {formFiles.Count} files.";
+        };
+
+        var fileContent = new StringContent("hello", Encoding.UTF8, "application/octet-stream");
+        var form = new MultipartFormDataContent("some-boundary");
+        form.Add(fileContent, "file", "file.txt");
+
+        var stream = new MemoryStream();
+        await form.CopyToAsync(stream);
+
+        stream.Seek(0, SeekOrigin.Begin);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Body = stream;
+        httpContext.Request.Headers["Content-Type"] = "multipart/form-data;boundary=some-boundary";
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
+
+        // Act
+        var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
+        {
+            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            {
+                (routeHandlerContext, next) =>
+                {
+                    var acceptsMetadata = routeHandlerContext.EndpointMetadata.OfType<IAcceptsMetadata>();
+                    var contentType = acceptsMetadata.SingleOrDefault()?.ContentTypes.SingleOrDefault();
+
+                    return async (context) =>
+                    {
+                        if (contentType == "multipart/form-data")
+                        {
+                            return "I see you expect a form.";
+                        }
+                        return await next(context);
+                    };
+                },
+            }
+        });
+        var requestDelegate = factoryResult.RequestDelegate;
+        await requestDelegate(httpContext);
+
+        // Assert
+        var responseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+        Assert.Equal("I see you expect a form.", responseBody);
+    }
+
+    [Fact]
     public async Task RequestDelegateFactory_CanInvokeSingleEndpointFilter_ThatModifiesBodyParameter()
     {
         // Arrange
