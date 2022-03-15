@@ -15,16 +15,6 @@ public static class HstsServicesExtensions
     /// Adds HSTS services.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> for adding services.</param>
-    /// <returns></returns>
-    public static IServiceCollection AddHsts(this IServiceCollection services)
-    {
-        return AddHsts(services, (option) => { });
-    }
-
-    /// <summary>
-    /// Adds HSTS services.
-    /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> for adding services.</param>
     /// <param name="configureOptions">A delegate to configure the <see cref="HstsOptions"/>.</param>
     /// <returns></returns>
     public static IServiceCollection AddHsts(this IServiceCollection services, Action<HstsOptions> configureOptions)
