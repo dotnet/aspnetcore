@@ -25,7 +25,6 @@
                         InstallCommand="/quiet /norestart"
                         RepairCommand="/quiet /repair"
                         UninstallCommand="/quiet /uninstall"
-                        Permanent="yes"
                         DetectCondition="DotNetRedistLtsProductVersion_x64 = v$(var.DotNetRedistLtsInstallerProductVersionx64)">
             </ExePackage>
 
@@ -38,7 +37,6 @@
                         InstallCommand="/quiet /norestart"
                         RepairCommand="/quiet /repair"
                         UninstallCommand="/quiet /uninstall"
-                        Permanent="yes"
                         DetectCondition="DotNetRedistLtsProductVersion_x86 = v$(var.DotNetRedistLtsInstallerProductVersionx86)">
             </ExePackage>
         </PackageGroup>

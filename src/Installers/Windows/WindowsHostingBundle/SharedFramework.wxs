@@ -25,7 +25,6 @@
                         InstallCommand="/quiet /norestart"
                         RepairCommand="/quiet /repair"
                         UninstallCommand="/quiet /uninstall"
-                        Permanent="yes"
                         DetectCondition="SharedFxRedistProductVersion_x64 = v$(var.SharedFxInstallerProductVersionx64)">
             </ExePackage>
 
@@ -38,7 +37,6 @@
                         InstallCommand="/quiet /norestart"
                         RepairCommand="/quiet /repair"
                         UninstallCommand="/quiet /uninstall"
-                        Permanent="yes"
                         DetectCondition="SharedFxRedistProductVersion_x86 = v$(var.SharedFxInstallerProductVersionx86)">
             </ExePackage>
         </PackageGroup>
