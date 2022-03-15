@@ -56,7 +56,30 @@ public class HttpResultsTests : IClassFixture<MvcTestFixture<BasicWebSite.Startu
 
         // Assert
         await response.AssertStatusCodeAsync(HttpStatusCode.NoContent);
+    }
 
+    [Fact]
+    public async Task ActionCanHaveAFilterForIResult()
+    {
+        // Arrange
+        var url = $"/filters/{nameof(BasicWebSite.Controllers.FiltersController.HttpResultsFilterForIResult)}";
+        var response = await Client.GetAsync(url);
+
+        // Assert
+        await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+        Assert.Single(response.Headers.GetValues("X-HttpResultType"));
+    }
+
+    [Fact]
+    public async Task ActionCanHaveAFilterForHttpResultsActionResult()
+    {
+        // Arrange
+        var url = $"/filters/{nameof(BasicWebSite.Controllers.FiltersController.HttpResultsFilter)}";
+        var response = await Client.GetAsync(url);
+
+        // Assert
+        await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+        Assert.Single(response.Headers.GetValues("X-HttpResultType"));
     }
 
 }

@@ -27,4 +27,10 @@ public class FiltersController : Controller
     {
         return Content($"CurrentCulture:{CultureInfo.CurrentCulture.Name},CurrentUICulture:{CultureInfo.CurrentUICulture.Name}");
     }
+
+    [HttpResultsFilter]
+    public IResult HttpResultsFilterForIResult() => Results.NoContent();
+
+    [HttpResultsFilter]
+    public IActionResult HttpResultsFilter() => new HttpResultsActionResult(Results.NoContent());
 }
