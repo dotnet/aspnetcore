@@ -2278,7 +2278,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// <returns></returns>
     protected virtual string CreateTwoFactorRecoveryCode()
     {
-        var recoveryCode = new StringBuilder();
+        var recoveryCode = new StringBuilder(11);
         recoveryCode.Append(GetRandomRecoveryCodeChar());
         recoveryCode.Append(GetRandomRecoveryCodeChar());
         recoveryCode.Append(GetRandomRecoveryCodeChar());
