@@ -544,18 +544,8 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
 
     internal static Func<ParameterExpression, Expression, Expression>? FindTryParseMethod(Type modelType)
     {
-        try
-        {
-            modelType = Nullable.GetUnderlyingType(modelType) ?? modelType;
-            return ParameterBindingMethodCache.FindTryParseMethod(modelType);
-        }
-        catch (InvalidOperationException)
-        {
-            // The ParameterBindingMethodCache.FindTryParseMethod throws an exception
-            // when an wrong try/parse method is detected
-            // but we don't need this behavior here and return null is enough
-            return null;
-        }
+        modelType = Nullable.GetUnderlyingType(modelType) ?? modelType;
+        return ParameterBindingMethodCache.FindTryParseMethod(modelType, throwOnInvalidMethod: false);
     }
 
     [MemberNotNull(nameof(_parameterMapping), nameof(_boundConstructorPropertyMapping))]

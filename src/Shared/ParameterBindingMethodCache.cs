@@ -43,16 +43,16 @@ internal sealed class ParameterBindingMethodCache
         _enumTryParseMethod = GetEnumTryParseMethod(preferNonGenericEnumParseOverload);
     }
 
-    public bool HasTryParseMethod(Type type)
+    public bool HasTryParseMethod(Type type, bool throwOnInvalidMethod = true)
     {
         var nonNullableParameterType = Nullable.GetUnderlyingType(type) ?? type;
-        return FindTryParseMethod(nonNullableParameterType) is not null;
+        return FindTryParseMethod(nonNullableParameterType, throwOnInvalidMethod) is not null;
     }
 
     public bool HasBindAsyncMethod(ParameterInfo parameter) =>
         FindBindAsyncMethod(parameter).Expression is not null;
 
-    public Func<ParameterExpression, Expression, Expression>? FindTryParseMethod(Type type)
+    public Func<ParameterExpression, Expression, Expression>? FindTryParseMethod(Type type, bool throwOnInvalidMethod = true)
     {
         Func<ParameterExpression, Expression, Expression>? Finder(Type type)
         {
@@ -144,7 +144,7 @@ internal sealed class ParameterBindingMethodCache
                 return (expression, formatProvider) => Expression.Call(methodInfo, TempSourceStringExpr, expression);
             }
 
-            if (GetAnyMethodFromHierarchy(type, "TryParse") is MethodInfo invalidMethod)
+            if (throwOnInvalidMethod && GetAnyMethodFromHierarchy(type, "TryParse") is MethodInfo invalidMethod)
             {
                 var stringBuilder = new StringBuilder();
                 stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"TryParse method found on {TypeNameHelper.GetTypeDisplayName(type, fullName: false)} with incorrect format. Must be a static method with format");
