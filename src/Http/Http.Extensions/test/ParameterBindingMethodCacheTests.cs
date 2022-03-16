@@ -380,12 +380,35 @@ public class ParameterBindingMethodCacheTests
         Assert.Contains($"bool TryParse(string, out {TypeNameHelper.GetTypeDisplayName(type, fullName: false)})", ex.Message);
     }
 
+    [Theory]
+    [InlineData(typeof(InvalidVoidReturnTryParseStruct))]
+    [InlineData(typeof(InvalidVoidReturnTryParseClass))]
+    [InlineData(typeof(InvalidWrongTypeTryParseStruct))]
+    [InlineData(typeof(InvalidWrongTypeTryParseClass))]
+    [InlineData(typeof(InvalidTryParseNullableStruct))]
+    [InlineData(typeof(InvalidTooFewArgsTryParseStruct))]
+    [InlineData(typeof(InvalidTooFewArgsTryParseClass))]
+    [InlineData(typeof(InvalidNonStaticTryParseStruct))]
+    [InlineData(typeof(InvalidNonStaticTryParseClass))]
+    [InlineData(typeof(TryParseWrongTypeInheritClass))]
+    [InlineData(typeof(TryParseWrongTypeFromInterface))]
+    public void FindTryParseMethod_DoesNotThrowIfInvalidTryParseOnType_WhenThrowOnInvalidFalse(Type type)
+    {
+        Assert.Null(new ParameterBindingMethodCache(throwOnInvalidMethod: false).FindTryParseMethod(type));
+    }
+
     [Fact]
     public void FindTryParseMethod_ThrowsIfMultipleInterfacesMatch()
     {
         var ex = Assert.Throws<InvalidOperationException>(
             () => new ParameterBindingMethodCache().FindTryParseMethod(typeof(TryParseFromMultipleInterfaces)));
         Assert.Equal("TryParseFromMultipleInterfaces implements multiple interfaces defining a static Boolean TryParse(System.String, TryParseFromMultipleInterfaces ByRef) method causing ambiguity.", ex.Message);
+    }
+
+    [Fact]
+    public void FindTryParseMethod_DoesNotThrowIfMultipleInterfacesMatch_WhenThrowOnInvalidFalse()
+    {
+        Assert.Null(new ParameterBindingMethodCache(throwOnInvalidMethod: false).FindTryParseMethod(typeof(TryParseFromMultipleInterfaces)));
     }
 
     [Theory]
@@ -419,6 +442,23 @@ public class ParameterBindingMethodCacheTests
         Assert.Contains($"ValueTask<{TypeNameHelper.GetTypeDisplayName(type, fullName: false)}?> BindAsync(HttpContext context)", ex.Message);
     }
 
+    [Theory]
+    [InlineData(typeof(InvalidWrongReturnBindAsyncStruct))]
+    [InlineData(typeof(InvalidWrongReturnBindAsyncClass))]
+    [InlineData(typeof(InvalidWrongParamBindAsyncStruct))]
+    [InlineData(typeof(InvalidWrongParamBindAsyncClass))]
+    [InlineData(typeof(BindAsyncWrongTypeInherit))]
+    [InlineData(typeof(BindAsyncWithParameterInfoWrongTypeInherit))]
+    [InlineData(typeof(BindAsyncWrongTypeFromInterface))]
+    [InlineData(typeof(BindAsyncBothBadMethods))]
+    public void FindBindAsyncMethod_DoesNotThrowIfInvalidBindAsyncOnType_WhenThrowOnInvalidFalse(Type type)
+    {
+        var cache = new ParameterBindingMethodCache(throwOnInvalidMethod: false);
+        var parameter = new MockParameterInfo(type, "anything");
+        var (expression, _) = cache.FindBindAsyncMethod(parameter);
+        Assert.Null(expression);
+    }
+
     [Fact]
     public void FindBindAsyncMethod_ThrowsIfMultipleInterfacesMatch()
     {
@@ -426,6 +466,15 @@ public class ParameterBindingMethodCacheTests
         var parameter = new MockParameterInfo(typeof(BindAsyncFromMultipleInterfaces), "anything");
         var ex = Assert.Throws<InvalidOperationException>(() => cache.FindBindAsyncMethod(parameter));
         Assert.Equal("BindAsyncFromMultipleInterfaces implements multiple interfaces defining a static System.Threading.Tasks.ValueTask`1[Microsoft.AspNetCore.Http.Extensions.Tests.ParameterBindingMethodCacheTests+BindAsyncFromMultipleInterfaces] BindAsync(Microsoft.AspNetCore.Http.HttpContext) method causing ambiguity.", ex.Message);
+    }
+
+    [Fact]
+    public void FindBindAsyncMethod_DoesNotThrowIfMultipleInterfacesMatch_WhenThrowOnInvalidFalse()
+    {
+        var cache = new ParameterBindingMethodCache(throwOnInvalidMethod: false);
+        var parameter = new MockParameterInfo(typeof(BindAsyncFromMultipleInterfaces), "anything");
+        var (expression, _) = cache.FindBindAsyncMethod(parameter);
+        Assert.Null(expression);
     }
 
     [Theory]
