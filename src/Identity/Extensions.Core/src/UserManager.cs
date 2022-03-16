@@ -2293,12 +2293,11 @@ public class UserManager<TUser> : IDisposable where TUser : class
         return recoveryCode.ToString();
     }
 
+    // We don't want to use any confusing characters like 0/O 1/I/L/l
+    // Taken from windows valid product key source
+    private static readonly char[] AllowedChars = "23456789BCDFGHJKMNPQRTVWXY".ToCharArray();
     private static char GetRandomRecoveryCodeChar()
     {
-        // We don't want to use any confusing characters like 0/O 1/I/L/l
-        // Taken from windows valid product key source
-        const string AllowedChars = "23456789BCDFGHJKMNPQRTVWXY";
-
         // Based on RandomNumberGenerator implementation of GetInt32
         uint range = (uint)AllowedChars.Length - 1;
 
