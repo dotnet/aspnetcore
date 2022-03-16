@@ -885,17 +885,33 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         Assert.Equal("ID: 3", body);
     }
 
-    public static object[][] AddFiltersByDelegateData =
-{
-        new object[] { (Action<RouteHandlerBuilder>)((RouteHandlerBuilder builder) => builder.AddFilter(async (context, next) => {
-                context.Parameters[0] = ((int)context.Parameters[0]!) + 1;
-                return await next(context);
-            })) },
-        new object[] { (Action<RouteHandlerBuilder>)((RouteHandlerBuilder builder) => builder.AddFilter((methodInfo, next) => async (context) => {
-                context.Parameters[0] = ((int)context.Parameters[0]!) + 1;
-                return await next(context);
-            })) },
-    };
+    public static object[][] AddFiltersByDelegateData
+    {
+        get
+        {
+            void WithFilter(RouteHandlerBuilder builder) =>
+                builder.AddFilter(async (context, next) =>
+                {
+                    context.Parameters[0] = ((int)context.Parameters[0]!) + 1;
+                    return await next(context);
+                });
+
+            void WithFilterFactory(RouteHandlerBuilder builder) =>
+                builder.AddFilter((routeHandlerContext, next) => async (context) =>
+                {
+                    Assert.NotNull(routeHandlerContext.MethodInfo);
+                    Assert.NotNull(routeHandlerContext.MethodInfo.DeclaringType);
+                    Assert.Equal("RouteHandlerEndpointRouteBuilderExtensionsTest", routeHandlerContext.MethodInfo.DeclaringType?.Name);
+                    context.Parameters[0] = ((int)context.Parameters[0]!) + 1;
+                    return await next(context);
+                });
+
+            return new object[][] {
+                new object[] { (Action<RouteHandlerBuilder>)WithFilter },
+                new object[] { (Action<RouteHandlerBuilder>)WithFilterFactory  }
+            };
+        }
+    }
 
     [Theory]
     [MemberData(nameof(AddFiltersByDelegateData))]

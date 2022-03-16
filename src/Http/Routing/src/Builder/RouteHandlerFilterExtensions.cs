@@ -20,7 +20,7 @@ public static class RouteHandlerFilterExtensions
     /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the route handler.</returns>
     public static RouteHandlerBuilder AddFilter(this RouteHandlerBuilder builder, IRouteHandlerFilter filter)
     {
-        builder.RouteHandlerFilterFactories.Add((methodInfo, next) => (context) => filter.InvokeAsync(context, next));
+        builder.RouteHandlerFilterFactories.Add((routeHandlerContext, next) => (context) => filter.InvokeAsync(context, next));
         return builder;
     }
 
@@ -49,7 +49,7 @@ public static class RouteHandlerFilterExtensions
     /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the route handler.</returns>
     public static RouteHandlerBuilder AddFilter(this RouteHandlerBuilder builder, Func<RouteHandlerInvocationContext, RouteHandlerFilterDelegate, ValueTask<object?>> routeHandlerFilter)
     {
-        builder.RouteHandlerFilterFactories.Add((methodInfo, next) => (context) => routeHandlerFilter(context, next));
+        builder.RouteHandlerFilterFactories.Add((routeHandlerContext, next) => (context) => routeHandlerFilter(context, next));
         return builder;
     }
 
