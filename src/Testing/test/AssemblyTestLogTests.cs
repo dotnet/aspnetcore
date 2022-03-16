@@ -42,30 +42,22 @@ public class AssemblyTestLogTests : LoggedTest
 
             var assembly = TestableAssembly.Create(typeof(AssemblyTestLog), logDirectory: tempDir);
             var assemblyName = assembly.GetName().Name;
-            var globalLogPath = Path.Combine(
-                tempDir,
-                assemblyName,
-                TestableAssembly.TFM,
-                "global.log");
-            var testLogDirectory = Path.Combine(
-                tempDir,
-                assemblyName,
-                TestableAssembly.TFM,
-                TestableAssembly.TestClassName);
-            var testLog = Path.Combine(
-                testLogDirectory,
-                $"{TestableAssembly.TestClassName}.{TestableAssembly.TestMethodName}.log");
+            var testName = $"{TestableAssembly.TestClassName}.{TestableAssembly.TestMethodName}";
+
+            var tfmPath = Path.Combine(tempDir, assemblyName, TestableAssembly.TFM);
+            var globalLogPath = Path.Combine(tfmPath, "global.log");
+            var testLog = Path.Combine(tfmPath, TestableAssembly.TestClassName, $"{testName}.log");
 
             using var testAssemblyLog = AssemblyTestLog.ForAssembly(assembly);
             testAssemblyLog.OnCI = true;
-            logger.LogInformation("Created test log in {tempDir}", testLogDirectory);
+            logger.LogInformation("Created test log in {baseDirectory}", tempDir);
 
             using (testAssemblyLog.StartTestLog(
                 output: null,
                 className: $"{assemblyName}.{TestableAssembly.TestClassName}",
                 loggerFactory: out var testLoggerFactory,
                 minLogLevel: LogLevel.Trace,
-                testName: $"{TestableAssembly.TestClassName}.{TestableAssembly.TestMethodName}"))
+                testName: testName))
             {
                 var testLogger = testLoggerFactory.CreateLogger("TestLogger");
                 testLogger.LogInformation("Information!");
@@ -75,7 +67,7 @@ public class AssemblyTestLogTests : LoggedTest
             Assert.True(File.Exists(globalLogPath), $"Expected global log file {globalLogPath} to exist.");
             Assert.True(File.Exists(testLog), $"Expected test log file {testLog} to exist.");
 
-            logger.LogInformation("Finished test log in {tempDir}", testLogDirectory);
+            logger.LogInformation("Finished test log in {baseDirectory}", tempDir);
         });
 
     [Fact]
